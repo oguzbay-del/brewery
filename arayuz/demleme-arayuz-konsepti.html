@@ -82,6 +82,7 @@ ul.clean{margin:0;padding-left:18px;display:grid;gap:4px}
 .sigo2{background:var(--card);border:1px solid var(--sep);border-radius:12px;padding:11px;text-align:center;font-weight:600;font-size:15px}
 .fld{background:var(--card);border-radius:10px;padding:9px 12px;font-size:14px;color:var(--label3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #pane-gi .body,#pane-yd .body,#pane-dk .body{grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content}
+#pane-es .body{grid-auto-rows:max-content}
 .browser .url{flex:1;min-width:0;background:var(--card);border-radius:8px;padding:5px 10px;font-family:ui-monospace,Menlo,monospace;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 14px 4px;font-size:13px;color:var(--label2)}
 .crumb a{color:var(--tint);text-decoration:none}
@@ -2553,7 +2554,7 @@ table.cmp td:first-child{font-weight:600}
         <div style="margin:0 12px 6px;background:color-mix(in srgb,var(--yellow) 18%,transparent);color:var(--label);border-radius:10px;padding:7px 10px;font-size:12px;display:flex;gap:6px;align-items:center"><svg class="ico" style="color:var(--yellow)"><use href="#i-warn"/></svg><span>Bağlantı yok · 3 ölçüm kuyrukta</span></div>
         <div class="large" style="font-size:22px">Demleme · #13</div>
         <div class="body">
-          <div class="group"><div class="cell">Mash pH<span class="v">5.38 · kuyrukta</span></div><div class="cell">Pre-boil SG<span class="v">1.044 · kuyrukta</span></div><div class="cell">Kaynatma başladı<span class="v">10:45 · kuyrukta</span></div></div><div class="group"><div class="cell" style="color:var(--label3)">OG ve ABV yeniden hesabı<span class="v">bağlantı bekliyor</span></div></div>
+          <div class="group"><div class="cell"><span>Mash pH<span class="sub">kuyrukta</span></span><span class="v">5.38</span></div><div class="cell"><span>Pre-boil SG<span class="sub">kuyrukta</span></span><span class="v">1.044</span></div><div class="cell"><span>Kaynatma başladı<span class="sub">kuyrukta</span></span><span class="v">10:45</span></div></div><div class="group"><div class="cell" style="color:var(--label3)"><span>OG ve ABV hesabı<span class="sub">bağlantı bekliyor</span></span></div></div>
           <p style="font-size:12px;color:var(--label2)">Demleme paketi cihazda olduğu için sayaç, alarm ve ölçüm girişi internetsiz çalışır. Ölçümler bağlantı gelince gönderilir; hesaplar o zaman yapılır.</p>
         </div>
       </div></div>
@@ -2562,7 +2563,7 @@ table.cmp td:first-child{font-weight:600}
         <div class="nav"><span></span><span class="t">Kaydedilemedi</span><span style="font-weight:600">Uygula</span></div>
         <div class="body">
           <p style="font-size:13px">Sen düzenlerken <b>Ayşe</b> <b>Citra Pale Ale</b> taslağını kaydetti. Farklı alanlarda hangisi kalsın?</p>
-          <div><div class="ghead">Citra whirlpool</div><div class="group"><div class="cell" style="font-weight:600">50 g<span class="sub" style="margin-left:6px">Ayşe · kaydedildi 10:12</span><span class="v" style="color:var(--tint)"><svg class="ico"><use href="#i-check"/></svg></span></div><div class="cell">55 g<span class="sub" style="margin-left:6px">senin değişikliğin · 10:14</span></div></div></div>
+          <div><div class="ghead">Citra whirlpool</div><div class="group"><div class="cell"><span style="font-weight:600">50 g<span class="sub" style="font-weight:400">Ayşe · kaydedildi 10:12</span></span><span class="v" style="color:var(--tint)"><svg class="ico"><use href="#i-check"/></svg></span></div><div class="cell"><span>55 g<span class="sub">senin değişikliğin · 10:14</span></span></div></div></div>
           <div><div class="ghead">Notlar</div><div class="group"><div class="cell" style="font-weight:600">İkisini birleştir<span class="v" style="color:var(--tint)"><svg class="ico"><use href="#i-check"/></svg></span></div></div></div>
         </div>
       </div></div>
