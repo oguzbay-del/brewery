@@ -421,12 +421,24 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Geçmiş partilerden ekipman kalibrasyonu | Ölçülen verim, kaynatma kaybı ve kayıplardan profili güncelleme önerisi | İkisi | Ev MVP |
 | Kurallar ve otomatik uyarılar | "SG 3 gündür sabit", "sıcaklık 22 °C'yi geçti", "dry hop zamanı" | İkisi | Ev MVP |
 | Tarif ve sürüm karşılaştırma | İki tarifi veya sürümü yan yana, malzeme ve tahmin farkları | İkisi | Ev MVP |
+| Dekoksiyon aracı | Kaynatılacak mash miktarı ve sıcaklık adımları; formülü var (BeerSmith) | İkisi | Ev MVP |
+| Kalori ve karbonhidrat | Bardak başına kalori ve karbonhidrat; formülü var; ABD "Alcohol Facts" kesinleşirse İşletme etiketinde de kullanılır (BeerSmith, Brewer's Friend) | İkisi | Ev MVP |
+| Ekstrakt biracısı araçları | Kısmi kaynatma ve üzerine eklenen su; LME, DME ve bal için gram ↔ mL (BeerSmith, Brewer's Friend) | Ev | Ev MVP |
+| Parti fotoğrafı ve not | Demleme günü ve tadımda fotoğraf (renk, berraklık, köpük); partinin zaman çizelgesinde (Brewer's Friend) | İkisi | Ev MVP |
+| Favoriler ve liste sütunları | Tarifi sabitleme ve favoriye alma; tarif listesinde gösterilecek sütunları seçme (BeerSmith) | İkisi | Ev MVP |
+| Şişe ve bardak başına maliyet | Litre maliyetini Kaplar tanımlarıyla şişe ve bardak başına gösterir (Brewer's Friend) | İkisi | Ev MVP (maliyet açıksa); İşletmede parti maliyetiyle |
 | Tadım notundan sonraki sürüme | Not, tarifte işaretli taslak değişikliğe dönüşür | İkisi | Ev 2. sürüm |
 | Hop yağ profili ve ikame önerisi | Stokta olmayan hop için benzer hop | İkisi | Ev 2. sürüm |
 | Geriye planlama | Ambalaj tarihinden demleme, dry hop, soğutma tarihleri | İkisi | Ev MVP |
 | Demleme kontrolcülerine tarif gönderme | Grainfather, BrewZilla/RAPT gibi cihazlara program aktarma | Ev | Ev 2. sürüm |
 | Laboratuvar su raporu içe aktarma | Rapordan su profili | İkisi | Ev 2. sürüm |
 | Şişe ve fıçıda karbonasyon takibi | Kondisyon süresi, hedef CO₂'ye ulaşma | İkisi | Ev 2. sürüm |
+| Aynı tarifin partilerini karşılaştırma | Bir tarifin bütün partilerinde OG, FG, verim ve tadım puanı yan yana ve eğilim olarak; İşletme SPC grafiğinin ev sürümü (BeerSmith, Brewer's Friend) | İkisi | Ev 2. sürüm |
+| Parti-gyle aracı | Tek mash'ten iki bira: ilk ve ikinci süzmenin yoğunluk ve hacim dağılımı; formülü var (BeerSmith) | İkisi | Ev 2. sürüm |
+| Brew sheet'i özelleştirme | Yazdırılan formda hangi bölüm ve alanların olacağını seçme (BeerSmith) | İkisi | Ev 2. sürüm |
+| Özel alanlar | Tarif ve partiye kullanıcının kendi alanları (değirmen ayarı, su kaynağı vb.) (BeerSmith) | İkisi | Ev 2. sürüm |
+| Yarışma formu çıktısı | BJCP yarışma kayıt bilgisi ve şişe etiketi (BeerSmith) | Ev | Ev 2. sürüm |
+| Soğutmasız (no-chill) IBU ayarı | Şıra soğutulmadan bekletildiğinde oluşan ek acılık; Avustralya ve İngiltere'de yaygın (Brewer's Friend, BeerSmith) | İkisi | Ev 2. sürüm |
 | Maya hasadı ve jenerasyon takibi | Hasat, jenerasyon, canlılık, hücre sayımı, maya sağlığı uyarısı | İşletme (ileri ev) | İşletme çekirdek |
 | Lota özel hammadde değerleri | Hop lotunun gerçek alfa değeri, malt analiz belgesi (COA); tarif lota göre ayarlanır | İşletme | İşletme çekirdek |
 | Ürün spesifikasyonu ve tolerans | Bira başına hedef aralıklar; aralık dışı uyarı | İşletme | İşletme çekirdek |
@@ -776,7 +788,7 @@ Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bul
 
 Temel aşama altın test seti geçince Ev modu başlar; beta (20–50 ev biracısı) tamamlanınca yayın ve ardından İşletme modu gelir. Tarih henüz belirlenmedi; ekip ve bütçe netleşince eklenecek.
 
-Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye ekipman kalibrasyonu, otomatik uyarılar, tarif karşılaştırma ve geriye planlama; İşletme modu çekirdeğine çoklu kullanıcı ve roller, lota özel hammadde, spesifikasyon ve serbest bırakma, CIP kaydı, verim analizi, maya jenerasyon takibi.
+Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye ekipman kalibrasyonu, otomatik uyarılar, tarif karşılaştırma, geriye planlama, dekoksiyon aracı, kalori, ekstrakt araçları, parti fotoğrafı, favoriler ve şişe başına maliyet; İşletme modu çekirdeğine çoklu kullanıcı ve roller, lota özel hammadde, spesifikasyon ve serbest bırakma, CIP kaydı, verim analizi, maya jenerasyon takibi.
 
 ## Planlama işleri ve açık konular
 
