@@ -111,7 +111,7 @@ Apple uygulamaları ve web aynı API'yi kullanır; hesap motoru, veri, yetki ve 
 
 ### Katmanlar
 
-Altı katman var. Her katman yalnız altındakini çağırır, katman atlanmaz.
+Altı katman var. Bağımlılık yalnız aşağı doğrudur ve istemci yalnız kenardan girer. Uygulama katmanı hem hesap hem veri katmanını çağırır; hesap katmanı veriye erişmez, yalnız kendisine verilen girdiyle çalışır.
 
 | Katman | Ne yapar | Ne yapmaz | Teknoloji (öneri) |
 | --- | --- | --- | --- |
@@ -271,7 +271,7 @@ Kullanılmayanlar: Firestore, Pub/Sub, Spanner ve Firebase Authentication gibi G
 
 ## Hesap motoru
 
-Formüllerin çoğu BeerSmith spesifikasyonundan, bilinen tutarsızlıkları düzeltilerek alınır; geç hop IBU ve priming hesabı Brewtarget yaklaşımından gelir. Kaynaklar: formül spesifikasyonu (`formuller.zip`) ve BeerSmith–Brewtarget karşılaştırması (`karsilastirma.zip`). İç birim SI.
+Formüllerin çoğu BeerSmith spesifikasyonundan, bilinen tutarsızlıkları düzeltilerek alınır; geç hop IBU ve priming hesabı Brewtarget yaklaşımından gelir. Kaynaklar: formül spesifikasyonu (`formuller/`) ve BeerSmith–Brewtarget karşılaştırması (`karsilastirma/`). İç birim SI.
 
 | Alan | Seçim | Not |
 | --- | --- | --- |
@@ -321,7 +321,7 @@ Mevcut spesifikasyon BeerSmith formülleri ve Brewtarget karşılaştırmasında
 | Küçükler: Noonan IBU, Mosher ve Daniels renk, Terrill doğrusal/kübik ve Novotný refraktometre, BU:GU, hop yağı oranı | Ayarlar › Hesaplama, tarif editörü | İkisi | Sonra |
 | Ekşi ve karışık fermantasyon (kettle sour pH hedefi), fıçıda (barrel) yıllandırma | Tarif editörü, fermantasyon profili | İkisi | Sonra |
 
-**Durum:** Ev MVP'deki altı hesabın (`formuller/07-ev-mvp-ek-hesaplar.md`, `testler/07_ev_mvp_ek_tv.py`) ve İşletme çekirdekteki beş hesabın (`formuller/08-isletme-cekirdek-hesaplar.md`, `testler/08_isletme_cekirdek_tv.py`) spesifikasyonu ve test vektörleri yazıldı. Bunlar BeerSmith'ten değil; endüstri tanımları ve bizim tasarımımız. Doğrulanacak varsayılanlar: ısıtma verimi, soğutucu zaman sabiti ve debisi, hop ve meyve emilimi, doğal gaz ısıl değeri, varsayılan slurry yoğunluğu, ince–kaba farkı.
+**Durum:** Ev MVP'deki altı hesabın (`formuller/07-ev-mvp-ek-hesaplar.md`, `testler/07_ev_mvp_ek_tv.py`) ve İşletme çekirdekteki beş hesabın (`formuller/08-isletme-cekirdek-hesaplar.md`, `testler/08_isletme_cekirdek_tv.py`) spesifikasyonu ve test vektörleri yazıldı; az okumayla tahmin, ekstrakt araçları ve soğutmasız IBU da yazıldı (formuller/10). Tablodaki gravite tetikleyicisi, fıçıda priming ve cask hesapları henüz yazılmadı. Bunlar BeerSmith'ten değil; endüstri tanımları ve bizim tasarımımız. Doğrulanacak varsayılanlar: ısıtma verimi, soğutucu zaman sabiti ve debisi, hop ve meyve emilimi, doğal gaz ısıl değeri, varsayılan slurry yoğunluğu, ince–kaba farkı.
 
 İşletme 2. sürümdeki üç hesap da yazıldı (`formuller/09-isletme-2-hesaplar.md`, `testler/09_isletme_2_tv.py`): AB etiket enerjisi, vergi motoru ve spunding. Vergi motoru yalnız yöntemleri içerir (hacim, saf alkol, hL·°P, Plato bandı, yıllık kademe); oranlar, bantlar ve indirimler kaynak ve tarihleriyle veri tablosunda tutulur. Dosyadaki oranlar örnek; Türkiye ÖTV tutarının güncel değeri ve birimi Resmi Gazete'den doğrulanacak.
 
@@ -333,7 +333,7 @@ Veri az olduğu için (yılda 10–100 parti) az veriyle çalışan, açıklanab
 
 | No | Model | Ne yapar | Yöntem | Segment | Önerilen aşama |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Fermantasyon bitiş tahmini | FG ve bitiş günü, güven aralığıyla | Üstel azalma eğrisi (07 §1) | İkisi | Ev MVP |
+| 1 | Fermantasyon bitiş tahmini | FG ve bitiş günü, güven aralığıyla | Üstel azalma eğrisi (07 §1); cihazı olmayan partide 2 elle okumayla (10 §1) | İkisi | Ev MVP |
 | 2 | Takılan fermantasyon uyarısı | Eğri beklenenden saparsa erken uyarı | Beklenen eğriden sapma ve eğim eşiği | İkisi | Ev MVP |
 | 3 | Kalibrasyon | Ekipman profilini partilerden öğrenir | Kayan ortalama ve 3 parti tutarlılık kuralı | İkisi | Ev MVP |
 | 4 | Kişisel attenuasyon | Maya üreticisinin değerini kullanıcının partileriyle düzeltir | Bayesçi güncelleme | İkisi | Ev 2. sürüm |
@@ -349,7 +349,7 @@ Veri az olduğu için (yılda 10–100 parti) az veriyle çalışan, açıklanab
 | 14 | Tank kapasitesi ve darboğaz | Doluluk, çakışma, planın tanklara otomatik yerleştirme önerisi | Takvim simülasyonu, kısıt çözücü | İşletme | İşletme 2. sürüm |
 | 15 | Maliyet sapması | Litre maliyeti değişiminin fiyat, miktar ve fire etkisine ayrılması | Etki ayrıştırma | İşletme | İşletme 2. sürüm |
 | 16 | Verim kaybı analizi | Düşük verim mash'ten mi süzmeden mi | Dönüşüm ve süzme verimi (08 §4) | İşletme | İşletme çekirdek |
-| 17 | Anonim ortak veri (isteğe bağlı) | Kullanıcı onayıyla maya ve ekipman istatistikleri birleştirilir; yeni kullanıcıya daha iyi varsayılan | Toplu istatistik; tarif paylaşımı değil | İkisi | Karar gerekli: "topluluk yok" kararına dokunuyor, KVKK açık onayı |
+| 17 | Anonim ortak veri (isteğe bağlı) | Kullanıcı onayıyla maya ve ekipman istatistikleri birleştirilir; yeni kullanıcıya daha iyi varsayılan | Toplu istatistik; tarif paylaşımı değil | İkisi | Karar gerekli: "topluluk yok" kararına dokunuyor, açık onay (UK GDPR, ABD eyalet yasaları, KVKK) |
 | 18 | Doğal dille soru sorma | Kullanıcının kendi verisi üzerinde soru-cevap; cevap veriye bağlantı verir | Büyük dil modeli | İkisi | Karar gerekli: maliyet ve gizlilik; ilk sürüm için gerekmez |
 
 **Ortak ilkeler (onaylanırsa):** tahmin her zaman aralıkla verilir; veri yetersizse model susar ve nedenini söyler; her sonuç "nasıl hesaplandı" sayfasıyla açıklanır; model hiçbir şeyi kendi kendine değiştirmez, yalnız önerir.
@@ -487,9 +487,9 @@ Amaç: kullanıcı her an nerede olduğunu, nasıl geri döneceğini ve yaptığ
 **Her ekran dört gezinme tipinden birine atanır:**
 
 - **Kök (sekme veya kenar çubuğu):** Tarif listesi, Bugün, Üretim panosu, Fermantasyon, Stok, Takvim, Onaylar, Raporlar, Ayarlar.
-- **İleri itme (hiyerarşik):** tarif editörü, su ve pH, mash ve maya, fermantasyon profili, malzeme, karşılaştırma, parti özeti, tank detayı, kalite, CIP ve ambalaj, maya yönetimi, izlenebilirlik, etiket, denetim kaydı, kalibrasyon, cihazlar, kaplar, bildirimler, hesap, mod. Geri düğmesi önceki ekranın adını taşır; soldan kaydırarak geri gidilir.
-- **Sheet (kendi içinde biten iş):** parti başlatma, ölçekleme, "nasıl hesaplandı", kendi malzemen, su raporu, tank hareketi, sapma kaydı, mal kabul, içe aktarma, kullanıcı daveti ve değiştirme, Bugün düzenleme, abonelik. Solda Vazgeç, sağda Kaydet veya Bitti.
-- **Tam ekran:** demleme günü, tarif sihirbazı, ekipman sihirbazı, ilk açılış; duvardaki iPad'de operatör görünümü. Çıkış her zaman sol üstte (Küçült veya Vazgeç).
+- **İleri itme (hiyerarşik):** tarif editörü, su ve pH, mash ve maya, fermantasyon profili, malzeme, karşılaştırma, parti özeti, tank detayı, kalite, CIP ve ambalaj, maya yönetimi, izlenebilirlik, etiket, denetim kaydı, kalibrasyon, cihazlar, kaplar, bildirimler, hesap, giriş yöntemleri, yardım ve destek, mod. Geri düğmesi önceki ekranın adını taşır; soldan kaydırarak geri gidilir.
+- **Sheet (kendi içinde biten iş):** parti başlatma, ölçekleme, "nasıl hesaplandı", kendi malzemen, su raporu, tank hareketi, sapma kaydı, mal kabul, içe aktarma, kullanıcı daveti ve değiştirme, Bugün düzenleme, abonelik, destek talebi, e-postayla giriş. Solda Vazgeç, sağda Kaydet veya Bitti.
+- **Tam ekran:** demleme günü, tarif sihirbazı, ekipman sihirbazı, ilk açılış, davet kabulü, güncelleme gerekli; duvardaki iPad'de operatör görünümü. Çıkış her zaman sol üstte (Küçült veya Vazgeç).
 
 **Kurallar:**
 
@@ -511,7 +511,7 @@ Amaç: kullanıcı her an nerede olduğunu, nasıl geri döneceğini ve yaptığ
 | Ekran | Kullanıcı nasıl kaybolur | Çözüm |
 | --- | --- | --- |
 | Tarif editörü | Su, mash, malzeme, ölçekleme, "nasıl hesaplandı" sayfaları üst üste açılır | Hepsi tek seviye; malzeme → kendi malzemen sheet içinde ileri itilir; iPad'de Inspector yerinde değişir |
-| Tarif sihirbazı | 9 adımda nerede olduğunu ve çıkışı bilmez | Adım göstergesi; her adımda "Editöre geç"; Vazgeç onaylı |
+| Tarif sihirbazı | 10 adımda nerede olduğunu ve çıkışı bilmez | Adım göstergesi; her adımda "Editöre geç"; Vazgeç onaylı |
 | Demleme günü | Sayaç çalışırken başka ekrana geçer, dönemez | "Demlemeye dön" şeridi; Live Activity aktif adıma açar; tam ekranda Küçült |
 | Parti başlatma | Başlattıktan sonra nerede olduğunu bilmez | Başlatınca parti ekranı açılır, üstte "Demlemeyi başlat" düğmesi; geri parti listesine |
 | Fermantasyon, Onaylar (bildirimden) | Bildirimden açılır, geri düğmesi yoktur | Tam geri yolu ile açılır |
@@ -629,7 +629,7 @@ Bildirimler üç yerden okunur: uygulama içindeki bildirim kutusu (çan), cihaz
 
 - **Bildirim kutusu (çan):** Her bildirim burada da durur; push kapalı olsa bile kaybolmaz.
 - **Push:** iPhone ve iPad'e Apple bildirimi; web'de tarayıcı bildirimi (kullanıcı izin verirse). Apple Watch ileride opsiyonel.
-- **E-posta:** Yalnız günlük özet, kullanıcı açarsa.
+- **E-posta:** Günlük özet (kullanıcı açarsa) ve işlem e-postaları: giriş bağlantısı, davet, destek yanıtı. Uyarılar e-postayla gitmez.
 - **Tek durum:** Bildirim sunucuda tek kayıttır; bir cihazda onaylanan, ertelenen veya yoksayılan bildirim diğer cihazlarda da kapanır ve push geri çekilir.
 
 ### Bildirim kutusu (çan)
@@ -832,7 +832,7 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 | Dosya içe ve dışa aktarma | BeerXML, BeerJSON, .bsmx, CSV | Güvenli XML ayrıştırıcı (dış varlık ve XML bombasına karşı); boyut sınırı; CSV enjeksiyonuna karşı hücre kaçışı |
 | Hesap motoru (Rust) | Hesap sonuçları | Bellek güvenli dil; girdi aralık kontrolü, sıfıra bölme ve sonsuz değer kontrolü; hesaplar yalnız sunucuda çalışır, istemci hesap sonucu gönderemez; test vektörleri her sürümde sunucuda çalıştırılır |
 | Ödeme ve abonelik | Ödeme bilgisi | StoreKit ve web ödeme sağlayıcısı; kart bilgisi bize gelmez; abonelik durumu sunucuda doğrulanır |
-| Kişisel veri ve uyum | KVKK, GDPR | En az veri; dışa aktarma ve hesap silme; saklanması zorunlu işletme kayıtlarında anonimleştirme; gizlilik politikası ve App Store gizlilik etiketi |
+| Kişisel veri ve uyum | UK GDPR, ABD eyalet gizlilik yasaları, KVKK | En az veri; dışa aktarma ve hesap silme; saklanması zorunlu işletme kayıtlarında anonimleştirme; gizlilik politikası ve App Store gizlilik etiketi |
 | Geliştirme ve işletim | Kod, sırlar, sunucular | Sırlar sır yöneticisinde; bağımlılık taraması; sunucuya en az yetki ve iki adımlı doğrulama; olay alarmları ve müdahale planı |
 | Destek paneli | Müşteri verisine içeriden erişim | Genel adreste yok, Identity-Aware Proxy ve passkey; müşteri izni ve süreli erişim; içerik değiştirilemez, müşteri yerine giriş yok; her erişim müşterinin denetim kaydında görünür |
 
@@ -857,16 +857,17 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 | Stil kılavuzları | Varsayılan kılavuz, yüklü kılavuzlar, kullanıcı kılavuzu | İkisi |
 | Kullanıcılar | Davet (süreli davet dahil), rol atama, devre dışı bırakma, ortak cihaz modu, kişi × yetki tablosu | İşletme |
 | Roller ve yetkiler | Rol listesi, yeni rol, rol kopyalama; açılış ekranı, kapsam; yetki grupları anahtarlarla; düzenleme yalnız iPad ve web | İşletme |
-| Güvenlik | İki adımlı doğrulama, oturum açık cihazlar ve uzaktan çıkış, uygulama kilidi (Face ID, PIN, işlemsizlik süresi), cihaz anahtarlarını yenileme | İkisi (2FA zorunluluğu ve kilit işletmede) |
+| Güvenlik | Giriş yöntemleri (Apple, Google, e-posta) ve passkey, oturum açık cihazlar ve uzaktan çıkış, destek erişimi izni ve geçmişi, uygulama kilidi (Face ID, PIN, işlemsizlik süresi), cihaz anahtarlarını yenileme | İkisi (2FA zorunluluğu ve kilit işletmede) |
 | Bildirimler | Demleme alarmları, fermantasyon kuralları, onay bekleyenler; 3 öncelik seviyesi, sessiz saatler, günlük özet; vardiyaya yönlendirme ve yükseltme (İşletme) | İkisi |
 | Cihazlar | Tilt, iSpindel, RAPT; veri alma adresi (webhook); tank eşleştirme; cihaz anahtarları; profesyonel sensörler ve endüstriyel ağ geçidi (Modbus TCP, OPC UA, MQTT; İşletme 2. sürüm) | İkisi |
 | Yazdırma ve formlar | Brew sheet, tank turu, "her partide tarama iste" | İkisi (tarama zorunluluğu işletmede) |
 | Veri ve yedekleme | İçe ve dışa aktarma, yedek | İkisi |
 | Abonelik | Plan, kullanıcı sayısı, yenileme | İkisi |
+| Yardım ve destek | Yardım arama, destek talebi açma, taleplerim, sistem durumu | İkisi |
 
 ## Ekran listesi
 
-Konseptte 62 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşamalarında 19, Apple Watch ekranı ileride opsiyonel; bu 19 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
+Konseptte 62 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşamalarında 19, Apple Watch ekranı ileride opsiyonel; bu 19 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında; destek paneli ayrıca İç kullanım grubunda (sayıya girmez). Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
 
 | Ekran | Durum | Segment | Gerektiği aşama |
 | --- | --- | --- | --- |
@@ -974,6 +975,12 @@ Sapma açılan parti "Beklemede" durumuna alınır; karardan sonra kaldığı ye
 | Kağıttaki QR kod | Kağıt ve düzeltme (doğru parti ve tur seçili) |
 | Spotlight, uygulama içi arama | Arama → kayıt |
 | Paylaşılan dosya (BeerXML, .bsmx) | İçe aktarma |
+| Çan simgesi | Bildirim kutusu; hatırlatıcıdan hızlı ölçüm girişi |
+| E-postadaki giriş bağlantısı | Giriş ve hesap bağlama (15 dk geçerli, tek kullanımlık) |
+| Davet bağlantısı | Davet kabulü; İşletmede ardından rolün açılış ekranı. Uygulama yoksa web'de açılır |
+| Destek yanıtı | Yardım ve destek › talep |
+| Eski uygulama sürümü, süresi dolmuş demleme paketi | Güncelleme gerekli; paket yenileme (Boş ve hata durumları) |
+| Abonelik veya deneme bitti | Abonelik; veriler silinmez, ücretli özellikler salt okunur |
 
 ## Veri modeli
 
@@ -1000,6 +1007,12 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
 | UserIdentity | Giriş kimlikleri: sağlayıcı (Apple / Google / e-posta), sağlayıcıdaki kalıcı kimlik, bağlanma zamanı; bir kullanıcıda birden çok; passkey kayıtları |
 | SupportGrant, SupportAction | Destek erişim izni (çalışma alanı, veren, talep numarası, başlangıç ve bitiş); destek ekibinin her işlemi (kim, neye, ne yaptı, gerekçe) |
+| Device, AlertRule | Cihaz (tür, veri adresi anahtarı, bağlı parti veya tank, kalibrasyon kaydı); uyarı kuralı (koşul, öncelik, kapsam, susturma) |
+| BrewDayPackage | Demleme paketi: parti, imza, oluşturma ve bitiş zamanı, içerik sürümü; kuyruktaki ölçümler bu kimlikle gelir |
+| QualitySpec, LabResult, Release | Bira başına spesifikasyon aralıkları; laboratuvar ve tadım sonuçları; serbest bırakma kararı (kim, ne zaman) |
+| CleaningRecord, YeastGeneration | CIP kaydı (tank, kimyasal, konsantrasyon, sıcaklık, süre, doğrulama); maya hasadı ve jenerasyon zinciri |
+| Subscription, Entitlement | Abonelik (kaynak: App Store / web, durum, yenileme, deneme); çalışma alanının açık özellikleri; yalnız sunucuda |
+| Attachment | Parti fotoğrafı ve notu, tadım fotoğrafı; nesne deposunda, partinin zaman çizelgesine bağlı |
 
 Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bulunur. Demleme günü ölçümleri cihazda üretilen UUID ile kuyruğa alınır; sunucu aynı kaydı iki kez işlemez.
 
@@ -1019,16 +1032,19 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 - [ ] Rakip incelemesi: Brewfather, Brewer's Friend, Grainfather; işletme tarafında Ekos, Ollie, Beer30 ve Breww özellikleri karşılaştırıldı (Kasım 2026); güncel fiyatlar açık
 - [ ] Altın test seti (10–20 tarif) ve gerçek demleme ölçümleriyle kalibrasyon; MPH ve BW pH modellerinden hangisinin daha doğru olduğu
 - [ ] Formül kararlarının karar kaydına (ADR) yazılması; hassasiyet ve yuvarlama kuralları
-- [ ] Malzeme veritabanı kaynağı (üretici teknik föyleri, Türkiye'de satılan ürünler) ve güncelleme süreci
+- [ ] Malzeme veritabanı kaynağı (üretici teknik föyleri, ABD ve İngiltere'de satılan ürünler öncelikli) ve güncelleme süreci
 - [ ] Veri modeli ve API; kayıtta sürüm kontrolü
 - [ ] Teknik deneme: Rust motorun sunucudaki yanıt süresi (tarif düzenlerken bekleme hissedilmemeli), demleme paketi ve ölçüm kuyruğu, Live Activity ve arka planda sayaç, Bluetooth (Tilt), VisionKit tarama
 - [ ] İçe aktarma: BeerXML, BeerJSON, `.bsmx`, Brewfather ve Brewer's Friend formatlarının çözümlenmesi; örnek dosyalar
 - [ ] Tasarım sistemi, tıklanabilir prototip, kullanıcı testi; erişilebilirlik; TR/EN yerelleştirme
 - [ ] Ürün adı ve marka araştırması, alan adı
-- [ ] KVKK/GDPR, gizlilik politikası, kullanım şartları
+- [ ] UK GDPR, ABD eyalet gizlilik yasaları ve KVKK; gizlilik politikası, kullanım şartları
 - [ ] BJCP ve BA kullanım izinleri
 - [ ] Alkol reklam ve tanıtım mevzuatı; App Store yaş sınırı
-- [ ] İşletme modu için ilk hedef pazar (ABD, İngiltere, Avustralya, Almanya/AB veya Türkiye; bkz. "Ülkelere göre yerelleştirme"), vergi rakamlarının resmi kaynaktan doğrulanması ve kayıt saklama süreleri
+- [ ] İşletme modu için ilk hedef pazar (ABD veya İngiltere; Avustralya, Almanya/AB ve Türkiye sonra; bkz. "Ülkelere göre yerelleştirme"), vergi rakamlarının resmi kaynaktan doğrulanması ve kayıt saklama süreleri
 - [ ] Ekip, bütçe, kilometre taşları; beta programı (20–50 ev biracısı)
+- [ ] Altyapı kurulumu: Google Cloud organizasyonu ve geliştirme, test, canlı projeleri; Terraform temeli; birleştirme kapısı (CI); Apple ve Google giriş kayıtları ve OAuth onay ekranı doğrulaması; e-posta sağlayıcısı ve alan adı doğrulaması (Apple gizli e-posta rölesi dahil)
+- [ ] Yayın öncesi bağımsız güvenlik incelemesi ve sızma testi: kimlik, yetki, çalışma alanı ayrımı, destek paneli
+- [ ] Destek talepleri: kendi sistemimizde mi, hazır bir destek aracıyla mı (karar gerekli)
 
-**Riskler:** arayüzün iki kez yazılmasının maliyeti; web–Apple özellik eşitliği; el yazısı tanımanın hatalı okuması; işletme segmentinde mevzuat yükünün sürekliliği; her hesabın internete bağlı olması (yanıt süresi, sunucu maliyeti, kesinti).
+**Riskler:** arayüzün iki kez yazılmasının maliyeti; web–Apple özellik eşitliği; el yazısı tanımanın hatalı okuması; işletme segmentinde mevzuat yükünün sürekliliği; her hesabın internete bağlı olması (yanıt süresi, sunucu maliyeti, kesinti); kodun tamamını Claude'un yazması (kimlik, yetki ve destek paneli gibi güvenlik kodunda bağımsız inceleme gerekir).
