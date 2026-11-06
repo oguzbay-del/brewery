@@ -1,0 +1,29 @@
+<!-- @dsCard height=288 -->
+<div class="cv">
+<style>
+.cv{position:relative;width:960px;height:288px;background:var(--bg);overflow:hidden;font-family:var(--font-sys)}
+.cv svg{position:absolute;left:0;top:0}
+.c-fill{fill:var(--tint-fill)} .c-tint{fill:var(--tint)} .c-ink{fill:var(--frame)} .c-hp{fill:var(--hp-bg)} .c-ok{fill:var(--green)} .c-bg{fill:var(--bg)} .c-amb{fill:var(--tint-fill)}
+.cv .tx{position:absolute;left:40px;bottom:34px;max-width:900px;display:grid;gap:10px}
+.cv .nm{font-size:60px;line-height:.95;font-weight:700;letter-spacing:-.02em;color:var(--label)}
+.cv .tg{font-size:14px;color:var(--label2)}
+</style>
+<!--
+blocks: tint-fill 420x112, tint 176x112, frame 160x112, hp-bg 124x112, green 80x112 (sides from space-4 multiples)
+arrangement: top-band skeleton, a strip of unequal bands flush across the top; the name is too wide for the 440px zone
+pattern: discs (rising bubbles) cut from the amber band in bg, two in tint-fill on the tint band; the README calls the accent wort amber and the system soft and rounded, so carbonation discs
+scales: disc diameters 2x radius-xs (14), 2x radius-sm (18), 2x radius-md (24), 2x radius-lg (28); band height 112 = 7x space-4
+-->
+<svg width="960" height="112" viewBox="0 0 960 112" aria-hidden="true">
+<rect class="c-fill" x="0" y="0" width="420" height="112"/>
+<rect class="c-tint" x="420" y="0" width="176" height="112"/>
+<rect class="c-ink" x="596" y="0" width="160" height="112"/>
+<rect class="c-hp" x="756" y="0" width="124" height="112"/>
+<rect class="c-ok" x="880" y="0" width="80" height="112"/>
+<circle class="c-bg" cx="56" cy="86" r="14"/><circle class="c-bg" cx="104" cy="58" r="9"/><circle class="c-bg" cx="140" cy="90" r="12"/>
+<circle class="c-bg" cx="186" cy="40" r="7"/><circle class="c-bg" cx="230" cy="72" r="14"/><circle class="c-bg" cx="276" cy="26" r="9"/>
+<circle class="c-bg" cx="318" cy="60" r="7"/><circle class="c-bg" cx="352" cy="92" r="12"/><circle class="c-bg" cx="386" cy="36" r="9"/>
+<circle class="c-amb" cx="462" cy="70" r="12"/><circle class="c-amb" cx="520" cy="34" r="7"/><circle class="c-amb" cx="560" cy="84" r="9"/>
+</svg>
+<div class="tx"><div class="nm">Demleme Tasarım Sistemi</div><div class="tg">Apple'ın diliyle tek vurgu: mayşe amberi. Ev biracısından küçük bira fabrikasına.</div></div>
+</div>

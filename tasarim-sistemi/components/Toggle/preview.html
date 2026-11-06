@@ -1,0 +1,8 @@
+<!-- @dsCard group="Kontroller" height=120 -->
+<div class="dm" style="padding:16px;display:grid;gap:12px;max-width:420px">
+<div class="dm-group">
+  <div class="dm-cell"><span>Aynı olayı birleştir<span class="sub">10 dk içinde tek bildirim</span></span><button class="dm-tog" role="switch" aria-checked="true" aria-label="Aynı olayı birleştir"></button></div>
+  <div class="dm-cell"><span>Tek kullanımlık</span><button class="dm-tog" role="switch" aria-checked="false" aria-label="Tek kullanımlık"></button></div>
+</div>
+</div>
+<script>document.querySelectorAll(".dm-tog").forEach(function(b){b.addEventListener("click",function(){b.setAttribute("aria-checked",b.getAttribute("aria-checked")==="true"?"false":"true")})})</script>

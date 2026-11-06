@@ -1,0 +1,6 @@
+# Brewtarget kaynak kodu: üçüncü taraf, yalnız okuma için; depoya konmaz
+src/
+# Klasörlerin zip kopyaları
+*.zip
+.DS_Store
+arayuz/undefined/

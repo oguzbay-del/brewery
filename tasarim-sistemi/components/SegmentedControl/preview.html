@@ -1,0 +1,6 @@
+<!-- @dsCard group="Kontroller" height=90 -->
+<div class="dm" style="padding:16px;display:grid;gap:12px;max-width:420px">
+<div class="dm-seg" role="group" aria-label="Kap türü"><button aria-pressed="false">Şişe</button><button aria-pressed="false">Kutu</button><button aria-pressed="true">Keg</button><button aria-pressed="false">Cask</button></div>
+<div class="dm-seg" role="group" aria-label="Mod"><button aria-pressed="true">Ev</button><button aria-pressed="false">İşletme</button></div>
+</div>
+<script>document.querySelectorAll(".dm-seg").forEach(function(g){g.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;g.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")})})})</script>
