@@ -131,6 +131,14 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 - **Tasarım:** renk, yazı ve boşluk değerleri tokens.json'dan Swift asset kataloğuna ve CSS'e üretilir (tasarım sistemi).
 - **Demleme paketi:** sayaç süreleri, adımlar, hedef değerler ve alarm zamanları sunucuda hesaplanıp pakete yazılır. Cihaz yalnız yürütür.
 
+### API ve istemci iletişimi
+
+- **Canlı güncelleme:** açık ekran sunucudan olay akışı alır (Server-Sent Events). Fermantasyon grafiği, bildirim kutusu sayısı, eşzamanlı düzenleme kilidi ve tank durumu yenilemeden güncellenir. Sunucuda olaylar podlar arasında PostgreSQL LISTEN/NOTIFY ile dağıtılır; yük artınca kuyruğa (NATS) geçilir. Uygulama arka plandayken push bildirimi kullanılır.
+- **Sürüm uyumu:** App Store'da eski uygulama sürümleri aylarca kullanılır. API sürümlüdür (/v1); geriye uyumsuz değişiklik yeni sürümle gelir, eski sürüm en az 6 ay açık kalır \[doğrulanacak\]. Var olan alanın anlamı değiştirilmez, yalnız yeni alan eklenir. Sunucu desteklenen en düşük uygulama sürümünü bildirir; altındaki uygulama "güncelle" ekranı gösterir. OpenAPI fark kontrolü her derlemede çalışır.
+- **Tekrar güvenliği:** kayıt oluşturan her istek istemcinin ürettiği istek anahtarını (idempotency key) taşır. Bağlantı kopup yeniden gönderilen istek ikinci kayıt oluşturmaz. Demleme günü ölçüm kuyruğundaki UUID kuralının bütün API'ye yayılmışı.
+- **Dış olaylar:** cihaz webhook'ları, App Store sunucu bildirimleri (abonelik yenileme, iade) ve web ödeme sağlayıcısının webhook'ları aynı alım servisinden girer: imza doğrulanır, kuyruğa yazılır, aynı olay iki kez işlenmez. Abonelik ve yetki durumu yalnız sunucuda tutulur.
+- **Demleme paketi bütünlüğü:** paket sunucuda imzalanır ve sürelidir (ör. 72 saat) \[doğrulanacak\]; kuyruktaki ölçümler paket kimliğiyle gönderilir, sunucu paketin o partiye ait olduğunu denetler.
+
 ### Hesap motoru servisi
 
 - **Ayrı servis:** dışarıdan erişilemez; yalnız çekirdek API iç ağdan, servisler arası mTLS ile çağırır. Kod istemcide ve genel ağda hiç bulunmaz; bu formül bilgisini de korur.
