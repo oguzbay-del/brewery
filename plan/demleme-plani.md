@@ -115,7 +115,7 @@ Altı katman var. Her katman yalnız altındakini çağırır, katman atlanmaz.
 | --- | --- | --- | --- |
 | 1 İstemci | Ekran, giriş, sayaç, bildirim gösterimi; demleme gününde paketi yürütür | Hesap, iş kuralı, yetki kararı | SwiftUI (iPad, iPhone); React + TypeScript (web) |
 | 2 Kenar | Tek genel adres; TLS, WAF, hız sınırı, kimlik belirteci kontrolü; web arayüzünü CDN'den dağıtır | İş kuralı | Bulutun yük dengeleyicisi ve CDN'i veya Kubernetes giriş denetleyicisi (Envoy tabanlı) |
-| 3 Uygulama | Tarif, parti, stok, rol, onay, bildirim kuralları; veriyi okur ve yazar; hesap motorunu çağırır | Formül | Çekirdek API (modüler monolit), arka plan işleri, cihaz verisi alımı; kimlik için OIDC sağlayıcı |
+| 3 Uygulama | Tarif, parti, stok, rol, onay, bildirim kuralları; veriyi okur ve yazar; hesap motorunu çağırır | Formül | Rust: çekirdek API (modüler monolit), arka plan işleri, cihaz verisi alımı; Apple ve Google girişi API içinde |
 | 4 Hesap | Tüm formüller: OG, IBU, renk, su ve pH, maya, hacim, maliyet, vergi, tahminler | Veri okuma veya yazma, kullanıcı ve yetki bilgisi | Rust hesap motoru, ayrı servis, yalnız iç ağda gRPC |
 | 5 Veri | Kalıcı kayıt, önbellek, dosya, iş kuyruğu | Hesap | PostgreSQL, Redis, S3 uyumlu nesne deposu, kuyruk |
 | 6 Platform | Çalıştırma, ağ, sır, gözlem, dağıtım | – | Kubernetes, Terraform/OpenTofu, GitOps (Argo CD), OpenTelemetry, sır yöneticisi |
@@ -175,8 +175,8 @@ Hedef: aynı sistem AWS, Azure veya Google Cloud'a kod değişmeden kurulabilsin
 - **Yalnız açık standartlara bağlı yönetilen servisler:** PostgreSQL, Redis, S3 API'si, OIDC, OpenTelemetry, OCI konteyner imajı. Bulutun kendine özgü veritabanı veya kuyruk servisi kullanılmaz.
 - **Nesne deposu soyutlaması:** Azure Blob S3 API'si konuşmadığı için depo erişimi tek bir kütüphane arayüzünden yapılır (S3, Azure Blob, GCS destekli).
 - **Altyapı kodla:** Terraform/OpenTofu modülleri; her bulut için yalnız alt modül değişir. Kubernetes tanımları ortak.
-- **Kimlik:** uygulama yalnız OIDC standardına bağlı; sağlayıcı (yönetilen servis veya Keycloak/ZITADEL) değiştirilebilir.
-- **İlk bulut seçimi** maliyet ve ekip deneyimiyle verilecek; taşınabilirlik bu kararı geri alınabilir yapar.
+- **Kimlik:** Apple ve Google OIDC standardıyla doğrulanır; doğrulama kendi kodumuzda, buluta bağlı kimlik servisi yok.
+- **İlk bulut seçimi**: Google Cloud (Mimari kararlar). Taşınabilirlik bu kararı geri alınabilir yapar.
 
 ### Ortamlar ve işletim
 
@@ -185,11 +185,45 @@ Hedef: aynı sistem AWS, Azure veya Google Cloud'a kod değişmeden kurulabilsin
 - **Gözlem:** log, metrik ve iz OpenTelemetry ile; hangi araca gideceği değiştirilebilir. Hesap motoru süresi ve hata oranı için alarm.
 - **Güvenlik:** servisler arası mTLS, Kubernetes ağ politikaları (hesap motoruna yalnız çekirdek API erişir), sırlar sır yöneticisinde ve KMS ile şifreli, imaj ve bağımlılık taraması (ayrıntı: Güvenlik bölümü).
 
-### Açık kararlar (mimari)
+### Mimari kararlar
 
-- Çekirdek API dili: Rust (hesap motoruyla tek dil, tek araç zinciri) öneriliyor; ekip deneyimine göre Kotlin veya TypeScript da olur. Hesap motoru her durumda Rust ve ayrı servis.
-- İlk bulut sağlayıcı ve bölgeler.
-- Kimlik sağlayıcı: yönetilen servis mi, kendi kurduğumuz Keycloak/ZITADEL mi.
+- **Sunucu kodu Rust.** Kodu Claude yazacağı için seçim ölçütü, hatanın kod çalışmadan yakalanması: güçlü tip sistemi, SQL sorgularının derleme sırasında veritabanı şemasına karşı denetlenmesi (sqlx), hesap motoruyla tek dil ve tek araç zinciri, OpenAPI sözleşmesinin koddan üretilmesi. Çekirdek API, arka plan işleri ve cihaz verisi alımı aynı Rust çalışma alanında, ayrı dağıtımlar olarak. İstemcilerde de tipli diller: Swift ve TypeScript (strict).
+- **Birleştirme kuralı:** her değişiklik derleme, tip kontrolü, lint, birim testleri, formül test vektörleri ve API sözleşme testinden geçmeden ana dala girmez. Claude'un yazdığı kod da insanın yazdığı gibi bu kapıdan geçer.
+- **İlk bulut Google Cloud.** Karşılıklar aşağıdaki tabloda.
+- **Kimlik:** Apple ve Google ile giriş, doğrulama çekirdek API'de; ayrı kimlik servisi yok (Kimlik ve giriş).
+
+### Google Cloud karşılıkları
+
+| Bileşen | Google Cloud | Taşınırken |
+| --- | --- | --- |
+| Kubernetes | GKE Autopilot | EKS, AKS |
+| PostgreSQL | Cloud SQL for PostgreSQL (yüksek erişilebilir, okuma kopyası) | RDS, Azure Database for PostgreSQL |
+| Redis | Memorystore for Redis | ElastiCache, Azure Cache for Redis |
+| Nesne deposu | Cloud Storage | S3, Azure Blob |
+| Kenar | Cloud Load Balancing, Cloud Armor (WAF), Cloud CDN | ALB, AWS WAF, CloudFront; Azure Front Door |
+| Sır ve şifreleme | Secret Manager, Cloud KMS (Kubernetes'e External Secrets ile) | Secrets Manager ve KMS; Key Vault |
+| İmaj deposu | Artifact Registry | ECR, ACR |
+| Gözlem | Cloud Logging, Monitoring, Trace (OpenTelemetry üzerinden) | CloudWatch, Azure Monitor veya Grafana |
+| E-posta | Google Cloud'da yok; ayrı sağlayıcı (ör. Postmark, SendGrid) \[doğrulanacak\] | Aynı sağlayıcı |
+| Bölgeler | ABD: us-east4 (Virginia); İngiltere: europe-west2 (Londra) \[doğrulanacak\] | Aynı şehirlerdeki bölgeler |
+
+Kullanılmayanlar: Firestore, Pub/Sub, Spanner ve Firebase Authentication gibi Google'a özgü servisler. Bunlar taşınmayı kod değişikliğine çevirir.
+
+### Kimlik ve giriş
+
+- **Ayrı kayıt yok:** kayıt formu ve şifre yok. İlk girişte hesap kendiliğinden açılır; kurulum yalnız mod, bölge ve ekipmanı sorar.
+- **Yöntemler:** Apple ile giriş ve Google ile giriş (iPhone, iPad, web). Yedek: e-postaya tek kullanımlık giriş bağlantısı. Apple veya Google hesabı olmayanlar ve işletmede iş e-postasıyla girmek isteyenler için.
+- **Doğrulama:** Apple ve Google'ın kimlik belirteci (OIDC) çekirdek API'de imza, yayıncı ve hedef uygulama açısından denetlenir; ardından kendi kısa ömürlü oturumumuz verilir. Kullanıcı kaydında e-posta değil, sağlayıcı ve sağlayıcıdaki kalıcı kimlik tutulur (Apple e-postayı gizleyebilir).
+- **Hesap bağlama:** aynı kişi Apple, Google ve e-postayı tek hesaba bağlayabilir (Ayarlar › Güvenlik). Biri kaybolsa da hesaba girilir.
+- **Davet:** e-posta adresine göre eşleştirilmez; tek kullanımlık davet bağlantısıyla kabul edilir. Davet edilen kişi istediği yöntemle girer.
+- **Yöneticiler:** ikinci adım olarak passkey (Face ID veya Touch ID) zorunlu.
+- **Ortak cihaz:** cihazı bir yönetici açar; çalışanlar kişiye özel PIN ile geçer.
+- **Apple kuralları:**
+  - Google gibi bir üçüncü taraf girişi sunan uygulama, gizlilik odaklı bir seçenek de sunmalı. Apple ile giriş bunu karşılar.
+  - Hesap silme uygulama içinden yapılabilmeli; silmede Apple belirteci de iptal edilir.
+  - Apple'ın gizli e-posta adreslerine posta göndermek için gönderen alan adımız Apple Developer hesabında kaydedilir. Yoksa hatırlatıcı ve giriş e-postaları ulaşmaz.
+- **Google kuralları:** iPhone ve iPad'de giriş sistem tarayıcı oturumuyla yapılır (uygulama içi web görünümü yasak). Google Cloud projesinde OAuth onay ekranı doğrulaması gerekir.
+- **İleride:** Microsoft ile giriş, Microsoft 365 kullanan işletmelerden talep gelirse.
 
 ## Hesap motoru
 
@@ -400,7 +434,7 @@ Her ekran benzer işi yapan bir Apple uygulamasının desenini kullanır; web ay
 - **Kontroller:** Stepper, Slider, Picker, segmented control; kaydırarak düzenle/sil; bağlam menüsü; iPad'de klavye kısayolları; dokunma alanı en az 44 pt.
 - **Sisteme entegrasyon:** Live Activity, widget, Siri ve Kısayollar, zamana duyarlı bildirim.
 - **Erişilebilirlik:** WCAG 2.2 AA hedeflenir. Okunması gereken her metin iki temada da en az 4.5:1; bunun için açık temada ikincil yazı Apple'ın %60 değeri yerine %75 opaklıkta, yeşil, turuncu, kırmızı ve operatör alarm renkleri bir ton koyu (değerler tasarım sisteminde). Odak halkası mavi, 3 px. VoiceOver ölçekleri okur; durum yalnız renkle anlatılmaz; Hareketi Azalt. Native uygulamada sistemin ikincil yazı rengi yerine bu değer, yüksek karşıtlık varyantıyla birlikte asset kataloğunda tanımlanır.
-- **Hesap:** Sign in with Apple; veri sunucuda olduğu için giriş ilk açılışta istenir.
+- **Hesap:** Apple veya Google ile giriş (yedek: e-posta bağlantısı); ayrı kayıt formu ve şifre yok. Veri sunucuda olduğu için giriş ilk açılışta istenir.
 
 ### Gezinme ve yön bulma
 
@@ -745,7 +779,7 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 | --- | --- | --- |
 | Cihaz (iPad, iPhone) | Cihazdaki veri ve belgeler | iOS Data Protection ile şifreli saklama; oturum anahtarları Keychain'de; işletmede Face ID veya PIN ile uygulama kilidi; ortak iPad'de kişiye özel PIN ve işlemsizlikte kilit; uygulama değiştiricide hassas alanlar gizli |
 | Web | Tarayıcı oturumu | HttpOnly, Secure, SameSite çerez; CSP; CSRF koruması; paylaşılan bilgisayar için kısa oturum ve "her yerden çıkış" |
-| Kimlik doğrulama | Kimin girdiği | Sign in with Apple; web'de şifresiz e-posta girişi veya passkey; yöneticilere iki adımlı doğrulama zorunlu; tek kullanımlık, 7 gün geçerli davet; cihaz oturumunu uzaktan kapatma |
+| Kimlik doğrulama | Kimin girdiği | Apple ve Google ile giriş, yedek olarak e-posta bağlantısı; şifre yok; yöneticilere passkey ile ikinci adım zorunlu; tek kullanımlık, 7 gün geçerli davet; cihaz oturumunu uzaktan kapatma |
 | Yetkilendirme | Kimin neyi görüp değiştirebildiği | Roller ve kapsam sunucuda denetlenir; her istek çalışma alanı ve kapsamla filtrelenir; maliyet gibi alanlar yetkisize hiç gönderilmez |
 | API sunucusu | Bulut verisi | TLS; çalışma alanları ayrık (satır düzeyinde güvenlik); hız sınırı; çakışmada sessiz üzerine yazma yok |
 | Veri saklama | Veritabanı, dosyalar, yedekler | Şifreli disk ve yedek; belgeler ayrı depoda, kısa süreli imzalı bağlantıyla; yedek başka bölgede, düzenli geri yükleme testi |
@@ -759,7 +793,7 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 
 **Açık kararlar:**
 
-- Ev modunda hesapsız kullanım yok: veri ve hesaplar sunucuda olduğu için ilk açılışta giriş gerekir (Sign in with Apple ile tek dokunuş). Bunun ilk açılışa etkisi kullanıcı testinde ölçülecek.
+- Ev modunda hesapsız kullanım yok: veri ve hesaplar sunucuda olduğu için ilk açılışta giriş gerekir (Apple veya Google ile tek dokunuş, ayrı kayıt yok). Bunun ilk açılışa etkisi kullanıcı testinde ölçülecek.
 - Sunucu bölgesi: ABD ve İngiltere bölgeleri öneriliyor; çalışma alanı açılışta bölgesini seçer, AB sonra (Platformlar ve mimari › Veri katmanı). Hukuki ve maliyet kararı.
 
 Ayarlar'a "Güvenlik" kategorisi eklenir: iki adımlı doğrulama, oturum açık cihazlar, uygulama kilidi, cihaz (iSpindel) anahtarlarını yenileme.
@@ -916,6 +950,7 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | PackageType, PackagingRun | Kap tanımı (tür: şişe / kutu / keg / cask, hacim, tek kullanımlık mi, malzeme, ağırlık); ambalaj kaydı satırları (parti, kap, adet, litre, lot, karbonasyon yöntemi) |
 | Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
 | CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
+| UserIdentity | Giriş kimlikleri: sağlayıcı (Apple / Google / e-posta), sağlayıcıdaki kalıcı kimlik, bağlanma zamanı; bir kullanıcıda birden çok; passkey kayıtları |
 
 Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bulunur. Demleme günü ölçümleri cihazda üretilen UUID ile kuyruğa alınır; sunucu aynı kaydı iki kez işlemez.
 
