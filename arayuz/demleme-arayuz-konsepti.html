@@ -3612,7 +3612,7 @@ table.cmp td:first-child{font-weight:600}
     </tbody>
   </table></div>
   <div class="grid2">
-    <div class="note"><h3>Ortak çekirdek</h3><ul class="clean"><li>Hesap motoru Rust ile bir kez yazılır ve yalnız sunucuda çalışır; Apple ve web aynı API'yi kullanır</li><li>Bir formül düzeltmesi sunucuda yapılır, her yere aynı anda gider</li><li>Ortak veri modeli ve API; her kayıtta UUID, güncelleme zamanı, sürüm numarası</li><li>Çevrimdışı senkron yok; yalnız demleme günü indirilen paketle internetsiz çalışır</li></ul></div>
+    <div class="note"><h3>Ortak çekirdek</h3><ul class="clean"><li>Hesap motoru Rust ile bir kez yazılır ve yalnız sunucuda çalışır; Apple ve web aynı API'yi kullanır</li><li>Bir formül düzeltmesi sunucuda yapılır, her yere aynı anda gider</li><li>Ortak veri modeli ve API; her kayıtta UUID, güncelleme zamanı, sürüm numarası</li><li>Çevrimdışı senkron yok; yalnız demleme günü indirilen paketle internetsiz çalışır</li><li>Katmanlı yapı: istemci yalnız arayüz; iş kuralları çekirdek API'de; hesap motoru ayrı servis, yalnız iç ağda; veri PostgreSQL'de</li><li>Kubernetes üzerinde, açık standartlarla; AWS, Azure veya Google Cloud'a taşınabilir</li></ul></div>
     <div class="note"><h3>Maliyet ve risk</h3><ul class="clean"><li>Arayüz iki kez yazılır (SwiftUI + React); Android olmadığı için bu katlanılabilir</li><li>Native olduğu için Live Activity, widget, arka planda sayaç doğal çalışır</li><li>Web ile Apple arasında özellik eşitliği için ortak tasarım sistemi ve ekran spesifikasyonları gerekir</li><li>Her hesap internete bağlı: yanıt süresi, sunucu maliyeti ve kesinti riski</li><li>Teknik deneme: sunucudaki hesap motorunun yanıt süresi, demleme paketi ve ölçüm kuyruğu</li></ul></div>
   </div>
 </section>

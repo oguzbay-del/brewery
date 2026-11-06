@@ -13,7 +13,7 @@ Bira üretimine odaklı, ev biracıları ve küçük işletmeler için iki modlu
 | Kapsam dışı | ERP katmanı: satış, sipariş, dağıtım, fıçı takibi, CRM, muhasebe. Topluluk ve herkese açık tarif paylaşımı (kullanıcılar mevcut platformları kullanır; bizde içe ve dışa aktarma var) |
 | Platformlar | iPad (tam), iPhone (demleme günü odaklı), web (Mac ve PC, tam). Apple Watch ileride opsiyonel |
 | Desteklenmeyen | Android, ayrı Mac ve Windows uygulaması; Apple Watch şimdilik yok (tasarımı konseptte duruyor, ileride opsiyonel eklenebilir) |
-| Mimari | Apple: native SwiftUI. Web: React + TypeScript. Hesap motoru: Rust, yalnız sunucuda; istemciler API ile kullanır |
+| Mimari | Apple: native SwiftUI. Web: React + TypeScript. Hesap motoru: Rust, yalnız sunucuda, ayrı servis; istemciler tek API ile kullanır. Altı katman, Kubernetes üzerinde, bulut sağlayıcıdan bağımsız |
 | Tasarım | Apple tasarım ilkeleri (HIG); her ekran benzer işi yapan bir Apple uygulamasından fikir alıyor |
 | Stil kılavuzları | BJCP 2021, BJCP mead/cider ve Brewers Association gömülü; her aşamada seçilebilir |
 | Demleme günü | Plan ve gerçekleşen ayrı; sayaç isteğe bağlı; yazdırma ve belge tarama |
@@ -106,6 +106,90 @@ Apple cihazları native SwiftUI, masaüstü web; hepsi sunucudaki tek hesap moto
 &#91;embedded content: mimari · Apple ve web istemcileri, sunucuda hesap ve veri, demleme günü yerelde\]
 
 Apple uygulamaları ve web aynı API'yi kullanır; hesap motoru, veri, yetki ve bildirim sunucuda. Cihazda yalnız demleme paketi ve salt okunur önbellek var.
+
+### Katmanlar
+
+Altı katman var. Her katman yalnız altındakini çağırır, katman atlanmaz.
+
+| Katman | Ne yapar | Ne yapmaz | Teknoloji (öneri) |
+| --- | --- | --- | --- |
+| 1 İstemci | Ekran, giriş, sayaç, bildirim gösterimi; demleme gününde paketi yürütür | Hesap, iş kuralı, yetki kararı | SwiftUI (iPad, iPhone); React + TypeScript (web) |
+| 2 Kenar | Tek genel adres; TLS, WAF, hız sınırı, kimlik belirteci kontrolü; web arayüzünü CDN'den dağıtır | İş kuralı | Bulutun yük dengeleyicisi ve CDN'i veya Kubernetes giriş denetleyicisi (Envoy tabanlı) |
+| 3 Uygulama | Tarif, parti, stok, rol, onay, bildirim kuralları; veriyi okur ve yazar; hesap motorunu çağırır | Formül | Çekirdek API (modüler monolit), arka plan işleri, cihaz verisi alımı; kimlik için OIDC sağlayıcı |
+| 4 Hesap | Tüm formüller: OG, IBU, renk, su ve pH, maya, hacim, maliyet, vergi, tahminler | Veri okuma veya yazma, kullanıcı ve yetki bilgisi | Rust hesap motoru, ayrı servis, yalnız iç ağda gRPC |
+| 5 Veri | Kalıcı kayıt, önbellek, dosya, iş kuyruğu | Hesap | PostgreSQL, Redis, S3 uyumlu nesne deposu, kuyruk |
+| 6 Platform | Çalıştırma, ağ, sır, gözlem, dağıtım | – | Kubernetes, Terraform/OpenTofu, GitOps (Argo CD), OpenTelemetry, sır yöneticisi |
+
+### İki kez yazmama kuralı
+
+Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazılmaz.
+
+- **Hesap:** yalnız Rust motorunda. İstemciye hesap kodu (WebAssembly dahil) gönderilmez.
+- **İş kuralları ve doğrulama:** yalnız çekirdek API'de. Alan tanımları ve sınırları (min, max, birim, zorunluluk) API'den veri olarak gelir; istemci bunları yalnız gösterir. Sunucu her kaydı yeniden doğrular.
+- **API sözleşmesi:** tek OpenAPI dosyası. Swift ve TypeScript istemci kodu bu dosyadan üretilir; elle yazılmaz.
+- **Birim dönüşümü ve yerelleştirme:** dönüşüm katsayıları ve metinler tek veri dosyasında; Swift ve TypeScript tarafına üretilir. İstemci yalnız biçimlendirir, hesap yapmaz.
+- **Tasarım:** renk, yazı ve boşluk değerleri tokens.json'dan Swift asset kataloğuna ve CSS'e üretilir (tasarım sistemi).
+- **Demleme paketi:** sayaç süreleri, adımlar, hedef değerler ve alarm zamanları sunucuda hesaplanıp pakete yazılır. Cihaz yalnız yürütür.
+
+### Hesap motoru servisi
+
+- **Ayrı servis:** dışarıdan erişilemez; yalnız çekirdek API iç ağdan, servisler arası mTLS ile çağırır. Kod istemcide ve genel ağda hiç bulunmaz; bu formül bilgisini de korur.
+- **Durumsuz saf fonksiyon:** girdi tam tarif anlık görüntüsü (malzemeler, ekipman, ayarlar), çıktı hesap sonuçları. Veritabanına, kullanıcıya ve yetkiye erişmez. Yatay ölçeklenir.
+- **Sürüm damgası:** her sonuç motor sürümünü taşır. Kaydedilen tarif sürümü ve parti, hesaplandığı motor sürümünü saklar. Motor güncellenince eski sonuç değişmez; yeniden hesap farkı gösterilir (İşletmede onaylı tarifte kullanıcı onayıyla).
+- **Önbellek:** çekirdek API girdi özetini (hash) anahtar yaparak sonucu Redis'te tutar; aynı girdi ikinci kez hesaplanmaz.
+- **Hız hedefi:** tarif hesabı p95 100 ms altında \[doğrulanacak\]. Tarif düzenlerken istemci değişiklikleri yaklaşık 300 ms bekleyip toplu gönderir, dönen sonucu gösterir.
+- **Test:** formül test vektörleri (formuller/testler/) ve altın tarif seti her sürümde dağıtımdan önce çalışır; fark varsa dağıtım durur.
+
+### Veri katmanı
+
+| Bileşen | Tutulan | Not |
+| --- | --- | --- |
+| PostgreSQL (yönetilen) | Tüm kayıtlar, tarif sürümleri, partiler, stok, roller, bildirimler, denetim kaydı | Tek doğruluk kaynağı. Çalışma alanı ayrımı satır düzeyinde güvenlikle; her kayıtta sürüm numarası (iyimser kilit). Okuma yükü için okuma kopyası |
+| Ölçümler (aynı PostgreSQL) | Cihaz ve elle ölçümler | Zamana göre bölümlü tablo; eski bölümler özetlenip arşive taşınır. Ayrı zaman serisi veritabanı ilk sürümde yok |
+| Redis (yönetilen) | Hesap sonucu önbelleği, oturum, hız sınırı sayaçları | Kaybolursa veri kaybı olmaz, yalnız yavaşlar |
+| Nesne deposu (S3 uyumlu) | Taranan kağıtlar, fotoğraflar, PDF ve dışa aktarmalar | Yükleme ve indirme kısa süreli imzalı bağlantıyla doğrudan; İşletme denetim arşivi için değiştirilemez (WORM) saklama |
+| Kuyruk | Bildirim, içe aktarma, rapor işleri; cihaz olayları | Başta PostgreSQL üzerinde outbox tablosu ve iş kuyruğu (ek altyapı yok); yük artınca NATS JetStream |
+| Arama | Tarif ve malzeme arama | Başta PostgreSQL tam metin araması; ayrı arama motoru gerekmez |
+
+- **Yedek:** sürekli yedek ve noktaya geri dönüş (PITR), başka bölgeye kopya, ayda bir geri yükleme testi. Hedef: veri kaybı en çok 5 dk, kesinti en çok 1 saat \[doğrulanacak\].
+- **Veri yeri:** çalışma alanı açılırken bölge seçilir (ABD veya İngiltere); verisi o bölgede kalır. AB bölgesi sonra.
+
+### Cihazda tutulan veri
+
+Cihazda olabildiğince az veri tutulur. Hepsi sunucudan yeniden üretilebilir; cihaz kaybolursa veri kaybı olmaz.
+
+| Veri | Nerede | Süre |
+| --- | --- | --- |
+| Oturum anahtarı | Keychain (Apple); web'de HttpOnly çerez | Oturum boyunca |
+| Salt okunur önbellek (son listeler, malzeme kütüphanesi) | Şifreli uygulama alanı | Süreli; açılışta tazelenir, çıkışta silinir |
+| Demleme paketi | Şifreli uygulama alanı | Parti bitene kadar |
+| Ölçüm kuyruğu | Şifreli uygulama alanı | Sunucu kabul edene kadar (UUID ile tekrar işlenmez) |
+| Arayüz tercihleri | Cihaz ayarları | Kalıcı; kişisel veri değil |
+
+Web'de demleme paketi yok; web her işlemde internet ister.
+
+### Bulut ve taşınabilirlik
+
+Hedef: aynı sistem AWS, Azure veya Google Cloud'a kod değişmeden kurulabilsin.
+
+- **Yalnız açık standartlara bağlı yönetilen servisler:** PostgreSQL, Redis, S3 API'si, OIDC, OpenTelemetry, OCI konteyner imajı. Bulutun kendine özgü veritabanı veya kuyruk servisi kullanılmaz.
+- **Nesne deposu soyutlaması:** Azure Blob S3 API'si konuşmadığı için depo erişimi tek bir kütüphane arayüzünden yapılır (S3, Azure Blob, GCS destekli).
+- **Altyapı kodla:** Terraform/OpenTofu modülleri; her bulut için yalnız alt modül değişir. Kubernetes tanımları ortak.
+- **Kimlik:** uygulama yalnız OIDC standardına bağlı; sağlayıcı (yönetilen servis veya Keycloak/ZITADEL) değiştirilebilir.
+- **İlk bulut seçimi** maliyet ve ekip deneyimiyle verilecek; taşınabilirlik bu kararı geri alınabilir yapar.
+
+### Ortamlar ve işletim
+
+- **Ortamlar:** geliştirme, test, canlı. Hepsi aynı altyapı koduyla; test ortamında anonimleştirilmiş veri.
+- **Dağıtım:** GitOps; her değişiklik depo üzerinden. Hesap motoru yeni sürümü önce küçük bir trafik payıyla (canary) açılır.
+- **Gözlem:** log, metrik ve iz OpenTelemetry ile; hangi araca gideceği değiştirilebilir. Hesap motoru süresi ve hata oranı için alarm.
+- **Güvenlik:** servisler arası mTLS, Kubernetes ağ politikaları (hesap motoruna yalnız çekirdek API erişir), sırlar sır yöneticisinde ve KMS ile şifreli, imaj ve bağımlılık taraması (ayrıntı: Güvenlik bölümü).
+
+### Açık kararlar (mimari)
+
+- Çekirdek API dili: Rust (hesap motoruyla tek dil, tek araç zinciri) öneriliyor; ekip deneyimine göre Kotlin veya TypeScript da olur. Hesap motoru her durumda Rust ve ayrı servis.
+- İlk bulut sağlayıcı ve bölgeler.
+- Kimlik sağlayıcı: yönetilen servis mi, kendi kurduğumuz Keycloak/ZITADEL mi.
 
 ## Hesap motoru
 
@@ -424,14 +508,14 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Tarif ve sürüm karşılaştırma | İki tarifi veya sürümü yan yana, malzeme ve tahmin farkları | İkisi | Ev MVP |
 | Dekoksiyon aracı | Kaynatılacak mash miktarı ve sıcaklık adımları; formülü var (BeerSmith) | İkisi | Ev MVP |
 | Kalori ve karbonhidrat | Bardak başına kalori ve karbonhidrat; formülü var; ABD "Alcohol Facts" kesinleşirse İşletme etiketinde de kullanılır (BeerSmith, Brewer's Friend) | İkisi | Ev MVP |
-| Ekstrakt biracısı araçları | Kısmi kaynatma ve üzerine eklenen su; LME, DME ve bal için gram ↔ mL (BeerSmith, Brewer's Friend) | Ev | Ev MVP |
+| Ekstrakt biracısı araçları | Kısmi kaynatma ve üzerine eklenen su; LME, DME ve bal için gram ↔ mL (BeerSmith, Brewer's Friend); formül: 10 §2 | Ev | Ev MVP |
 | Parti fotoğrafı ve not | Demleme günü ve tadımda fotoğraf (renk, berraklık, köpük); partinin zaman çizelgesinde (Brewer's Friend) | İkisi | Ev MVP |
 | Favoriler ve liste sütunları | Tarifi sabitleme ve favoriye alma; tarif listesinde gösterilecek sütunları seçme (BeerSmith) | İkisi | Ev MVP |
 | Şişe ve bardak başına maliyet | Litre maliyetini Kaplar tanımlarıyla şişe ve bardak başına gösterir (Brewer's Friend) | İkisi | Ev MVP (maliyet açıksa); İşletmede parti maliyetiyle |
 | Ölçümde kaynak etiketi | Fermantasyon okumalarında kaynak (cihaz / elle / kâğıt); grafikte farklı işaret, kalibrasyon ve tahmin modelinde ayrı ağırlık | İkisi | Ev MVP |
 | Elle okuma hatırlatıcısı | Cihazı olmayan partide fermantasyon profiline göre "SG ölçme zamanı" bildirimi (Bildirim yapısı › Hatırlatıcılar) | İkisi | Ev MVP |
 | Bildirimden hızlı giriş | Hatırlatıcıya dokununca tek alanlık SG ve sıcaklık girişi | İkisi | Ev MVP |
-| Az okumayla fermantasyon tahmini | Elle girilen 2–3 okumada tahminin ne zaman gösterileceği ve güven aralığı; formül 07 §1.4'te netleştirilecek | İkisi | Ev MVP |
+| Az okumayla fermantasyon tahmini | Elle girilen 2–3 okumada tahminin ne zaman gösterileceği ve güven aralığı; formül: 10 §1 | İkisi | Ev MVP |
 | Bildirim kutusu (çan) ve geçmiş | Bütün bildirimler tek listede; onayla, sonra hatırlat, yoksay; olay geçmişi (Bildirim yapısı) | İkisi | Ev MVP |
 | Tadım notundan sonraki sürüme | Not, tarifte işaretli taslak değişikliğe dönüşür | İkisi | Ev 2. sürüm |
 | Hop yağ profili ve ikame önerisi | Stokta olmayan hop için benzer hop | İkisi | Ev 2. sürüm |
@@ -444,7 +528,7 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Brew sheet'i özelleştirme | Yazdırılan formda hangi bölüm ve alanların olacağını seçme (BeerSmith) | İkisi | Ev 2. sürüm |
 | Özel alanlar | Tarif ve partiye kullanıcının kendi alanları (değirmen ayarı, su kaynağı vb.) (BeerSmith) | İkisi | Ev 2. sürüm |
 | Yarışma formu çıktısı | BJCP yarışma kayıt bilgisi ve şişe etiketi (BeerSmith) | Ev | Ev 2. sürüm |
-| Soğutmasız (no-chill) IBU ayarı | Şıra soğutulmadan bekletildiğinde oluşan ek acılık; Avustralya ve İngiltere'de yaygın (Brewer's Friend, BeerSmith) | İkisi | Ev 2. sürüm |
+| Soğutmasız (no-chill) IBU ayarı | Şıra soğutulmadan bekletildiğinde oluşan ek acılık; Avustralya ve İngiltere'de yaygın (Brewer's Friend, BeerSmith); formül: 10 §3 | İkisi | Ev 2. sürüm |
 | Maya hasadı ve jenerasyon takibi | Hasat, jenerasyon, canlılık, hücre sayımı, maya sağlığı uyarısı | İşletme (ileri ev) | İşletme çekirdek |
 | Lota özel hammadde değerleri | Hop lotunun gerçek alfa değeri, malt analiz belgesi (COA); tarif lota göre ayarlanır | İşletme | İşletme çekirdek |
 | Ürün spesifikasyonu ve tolerans | Bira başına hedef aralıklar; aralık dışı uyarı | İşletme | İşletme çekirdek |
@@ -676,7 +760,7 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 **Açık kararlar:**
 
 - Ev modunda hesapsız kullanım yok: veri ve hesaplar sunucuda olduğu için ilk açılışta giriş gerekir (Sign in with Apple ile tek dokunuş). Bunun ilk açılışa etkisi kullanıcı testinde ölçülecek.
-- Sunucu bölgesi: KVKK için Türkiye en kolayı; AB müşterileri için AB bölgesi gerekebilir. Hukuki ve maliyet kararı.
+- Sunucu bölgesi: ABD ve İngiltere bölgeleri öneriliyor; çalışma alanı açılışta bölgesini seçer, AB sonra (Platformlar ve mimari › Veri katmanı). Hukuki ve maliyet kararı.
 
 Ayarlar'a "Güvenlik" kategorisi eklenir: iki adımlı doğrulama, oturum açık cihazlar, uygulama kilidi, cihaz (iSpindel) anahtarlarını yenileme.
 
@@ -831,6 +915,7 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | AuditLog | Kim, ne zaman, önceki ve yeni değer; EditSession (yumuşak kilit) ile birlikte |
 | PackageType, PackagingRun | Kap tanımı (tür: şişe / kutu / keg / cask, hacim, tek kullanımlık mi, malzeme, ağırlık); ambalaj kaydı satırları (parti, kap, adet, litre, lot, karbonasyon yöntemi) |
 | Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
+| CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
 
 Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bulunur. Demleme günü ölçümleri cihazda üretilen UUID ile kuyruğa alınır; sunucu aynı kaydı iki kez işlemez.
 

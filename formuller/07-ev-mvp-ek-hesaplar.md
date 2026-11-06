@@ -48,6 +48,8 @@ Tahmin yalnız şu üç koşulda gösterilir:
 
 Koşullar sağlanmazsa ekranda "veri yetersiz" yazar, tahmin yapılmaz.
 
+Cihazı olmayan partide (yalnız elle veya kağıt okumalar) bunun yerine `10-elle-giris-ekstrakt-nochill.md` §1 kullanılır: FG tariften alınır, 2 okumayla gün aralığında tahmin verilir.
+
 ### 1.5 Çıktılar [tasarım]
 - **FG:** `FG∞`.
 - **Belirsizlik aralığı:** `RSS(FG∞) ≤ RSS_min · (1 + 4/(n−2))` koşulunu sağlayan `FG∞` değerlerinin en küçüğü ve en büyüğü. Yaklaşık %95 profil aralığıdır (F≈4).

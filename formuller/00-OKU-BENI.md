@@ -15,6 +15,7 @@ Kaynak: BeerSmith 4.0.22 (Linux `.deb`) — hesap fonksiyonları Ghidra ile deco
 | `07-ev-mvp-ek-hesaplar.md` | Ev MVP ek hesapları: fermantasyon tahmini, cihaz kalibrasyonu, ısınma ve soğuma süresi, ekipmana göre ölçekleme, iyon dengesi ve sertlik, hop ve meyve kayıpları (BeerSmith'ten değil, bizim tasarımımız) |
 | `08-isletme-cekirdek-hesaplar.md` | İşletme çekirdek hesapları: maliyet (FIFO, su, enerji, ambalaj), harmanlama, maya tekrar kullanımı (hücre sayımı, slurry), profesyonel verim (brewhouse, dönüşüm, süzme), malt analizinden ekstrakt potansiyeli |
 | `09-isletme-2-hesaplar.md` | İşletme 2. sürüm: AB etiket enerjisi, vergi motoru (yöntemler; oranlar veri tablosunda, örnek oran tablosu kaynaklı), spunding |
+| `10-elle-giris-ekstrakt-nochill.md` | Az okumayla (elle) fermantasyon tahmini, ekstrakt araçları (LME/DME/bal dönüşümleri, kısmi kaynatma, üstüne su), soğutmasız (no-chill) IBU ayarı |
 | `testler/` | Her bölüm için Python referans uygulaması ve test vektörleri (`python3 testler/02_hop_ibu.py` gibi çalışır) |
 | `HESAP-MOTORU-TAMAMI.md` | Beş bölümün tek dosyada birleşimi |
 
