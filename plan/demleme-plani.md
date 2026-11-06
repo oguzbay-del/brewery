@@ -81,6 +81,7 @@ Mod çalışma alanı bazında seçilir. **Açık:** modda tam çalışır. **Sa
 | Roller ve yetkiler, ortak cihazda kullanıcı değiştirme, denetim kaydı | Kapalı | Açık | Ev'de açılamaz |
 | Birimler | L, kg, °C (bölgeye göre) | + hL, bbl |  |
 | Kaplar | Sade (şişe ve keg) | Açık (şişe, kutu, keg, cask) | Vergi ve rapor uygunluğu yalnız İşletmede görünür |
+| Bildirim kutusu (çan) | Açık | Açık | İşletmede vardiya, yükseltme ve role göre dağıtım eklenir |
 
 Moddan moda geçişte veri silinmez; Ev'e dönülse de İşletme kayıtları (onaylar, denetim kaydı, lotlar) saklanır, yalnız görünmez.
 
@@ -427,6 +428,11 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Parti fotoğrafı ve not | Demleme günü ve tadımda fotoğraf (renk, berraklık, köpük); partinin zaman çizelgesinde (Brewer's Friend) | İkisi | Ev MVP |
 | Favoriler ve liste sütunları | Tarifi sabitleme ve favoriye alma; tarif listesinde gösterilecek sütunları seçme (BeerSmith) | İkisi | Ev MVP |
 | Şişe ve bardak başına maliyet | Litre maliyetini Kaplar tanımlarıyla şişe ve bardak başına gösterir (Brewer's Friend) | İkisi | Ev MVP (maliyet açıksa); İşletmede parti maliyetiyle |
+| Ölçümde kaynak etiketi | Fermantasyon okumalarında kaynak (cihaz / elle / kâğıt); grafikte farklı işaret, kalibrasyon ve tahmin modelinde ayrı ağırlık | İkisi | Ev MVP |
+| Elle okuma hatırlatıcısı | Cihazı olmayan partide fermantasyon profiline göre "SG ölçme zamanı" bildirimi (Bildirim yapısı › Hatırlatıcılar) | İkisi | Ev MVP |
+| Bildirimden hızlı giriş | Hatırlatıcıya dokununca tek alanlık SG ve sıcaklık girişi | İkisi | Ev MVP |
+| Az okumayla fermantasyon tahmini | Elle girilen 2–3 okumada tahminin ne zaman gösterileceği ve güven aralığı; formül 07 §1.4'te netleştirilecek | İkisi | Ev MVP |
+| Bildirim kutusu (çan) ve geçmiş | Bütün bildirimler tek listede; onayla, sonra hatırlat, yoksay; olay geçmişi (Bildirim yapısı) | İkisi | Ev MVP |
 | Tadım notundan sonraki sürüme | Not, tarifte işaretli taslak değişikliğe dönüşür | İkisi | Ev 2. sürüm |
 | Hop yağ profili ve ikame önerisi | Stokta olmayan hop için benzer hop | İkisi | Ev 2. sürüm |
 | Geriye planlama | Ambalaj tarihinden demleme, dry hop, soğutma tarihleri | İkisi | Ev MVP |
@@ -452,6 +458,50 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Pano ve analizler | Ekipman verimi, maya attenuasyonu, litre başı maliyet, tank kullanımı | İkisi | İşletme 2. sürüm |
 | Açık API ve webhook | Tank sensörleri, glikol kontrolcüsü, debimetre (basamaklar ve ilkeler: "Üst segment ve pazarlar") | İşletme | İşletme 2. sürüm |
 | Etiket bilgisi üretimi | ABV, lot kodu, son tüketim, alerjen, besin değeri (ülkeye göre zorunluluklar uzmanla netleştirilecek) | İşletme | İşletme 2. sürüm |
+
+## Bildirim yapısı
+
+Bildirimler üç yerden okunur: uygulama içindeki bildirim kutusu (çan), cihaza gelen bildirim (push) ve demleme günü için kilit ekranındaki Live Activity. Öncelik seviyeleri, sessiz saatler, vardiya ve yükseltme kuralları "Üst segment ve pazarlar" bölümünde ve Ayarlar › Bildirimler'de.
+
+### Kanallar
+
+- **Bildirim kutusu (çan):** Her bildirim burada da durur; push kapalı olsa bile kaybolmaz.
+- **Push:** iPhone ve iPad'e Apple bildirimi; web'de tarayıcı bildirimi (kullanıcı izin verirse). Apple Watch ileride opsiyonel.
+- **E-posta:** Yalnız günlük özet, kullanıcı açarsa.
+- **Tek durum:** Bildirim sunucuda tek kayıttır; bir cihazda onaylanan, ertelenen veya yoksayılan bildirim diğer cihazlarda da kapanır ve push geri çekilir.
+
+### Bildirim kutusu (çan)
+
+- **Yeri:** iPhone'da sekme köklerinin sağ üstünde çan, okunmamış sayısı rozetle; iPad ve web'de kenar çubuğunda "Bildirimler" satırı ve üst çubukta çan.
+- **Liste:** En yeni üstte; her satırda öncelik işareti (1 Acil, 2 Uyarı, 3 Bilgi), parti ve zaman. Filtreler: Tümü, Okunmamış, Acil, Hatırlatıcılar, Onay bekleyenler.
+- **Açınca:** İlgili parti ve adım, geri yolu hazır olarak açılır (Gezinme kuralı 5).
+- **Sekmeler:** "Bildirimler" (açık olanlar) ve "Geçmiş".
+
+### Bildirime ne yapılabilir
+
+| Eylem | Ne olur | Kısıt |
+| --- | --- | --- |
+| Aç | İlgili ekrana gider, bildirim okundu olur | – |
+| Onayla / Tamam | Bildirim kapanır; kim ve ne zaman kaydedilir | İşletmede acil uyarıda yükseltmeyi durdurur |
+| Sonra hatırlat | 15 dk, 1 saat, yarın sabah veya seçilen saatte yeniden gelir | Acil uyarı en fazla 30 dk ertelenir ve yükseltme süresi işlemeye devam eder |
+| Yoksay | Kutudan kalkar, geçmişte kalır | Acil uyarı yoksayılamaz, onay ister; "bu partide bu kuralı sustur" seçeneği ayrıca sorulur |
+| Kendiliğinden çözülme | Koşul düzelince (sıcaklık hedefe döndü, okuma girildi) "çözüldü" olarak kapanır, push geri çekilir | – |
+
+### Hatırlatıcılar
+
+- Parti başlatılınca fermantasyon profiline göre kurulur: elle okuma (cihazı olmayan partilerde), dry hop, cold crash, ambalaj. İlgili adım tamamlanınca kendiliğinden kalkar.
+- Bildirimden hızlı giriş: hatırlatıcıya dokununca uygulamayı gezmeden tek alanlık SG ve sıcaklık girişi açılır.
+
+### Bildirim geçmişi
+
+- Her bildirimin olayları kaydedilir: oluştu, hangi cihazlara gitti, okundu, onaylandı, ertelendi, yoksayıldı, çözüldü; kim ve ne zaman.
+- Görüldüğü yerler: bildirim kutusunun "Geçmiş" sekmesi, partinin zaman çizelgesi; İşletmede onay ve yoksaymalar denetim kaydında da.
+- Saklama (öneri): Ev'de 90 gün; İşletmede kayıt saklama süresi boyunca.
+
+### Mod farkı
+
+- **Ev:** Çan, eylemler, hatırlatıcılar ve geçmiş.
+- **İşletme:** Ek olarak vardiyaya yönlendirme, yükseltme ve role göre dağıtım. Ortak cihazda bildirim o anki kullanıcıya değil vardiyaya düşer; onaylayan kişi kayda yazılır.
 
 ## Üst segment ve pazarlar
 
@@ -653,7 +703,7 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 
 ## Ekran listesi
 
-Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 39, İşletme aşamalarında 18, Apple Watch ekranı ileride opsiyonel; bu 18 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
+Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 39, İşletme aşamalarında 18, Apple Watch ekranı ileride opsiyonel; bildirim kutusu henüz çizilmedi; bu 18 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
 
 | Ekran | Durum | Segment | Gerektiği aşama |
 | --- | --- | --- | --- |
@@ -715,6 +765,7 @@ Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 39, İşletme aşa
 | Mod ayrımı (Ayarlar › Çalışma alanı › Mod; Ev'de açılabilen özellikler, ekran haritası) | Tasarlandı | İkisi | Ev MVP |
 | Kaplar (Ayarlar › Ekipman ve tanklar › Kaplar; şişe, kutu, keg, cask) | Tasarlandı | İkisi | Ev MVP (kutu ve cask İşletme çekirdek) |
 | Gezinme kalıpları (geri düğmesi, sheet ve silme onayı, "Demlemeye dön" şeridi, derin bağlantı, "Devam et", web iz yolu) | Tasarlandı | İkisi | Ev MVP |
+| Bildirim kutusu (çan): liste, eylemler, geçmiş | Taslak yok | İkisi | Ev MVP |
 
 ## Ekran akışı
 
@@ -751,7 +802,7 @@ Sapma açılan parti "Beklemede" durumuna alınır; karardan sonra kaldığı ye
 | İlk açılış | İlk açılış → ekipman sihirbazı |
 | Uygulama simgesi · Ev | Tarif listesi; aktif parti varsa üstte kartı |
 | Uygulama simgesi · İşletme | Role göre: Operatör Bugün, Brewmaster Üretim panosu, Kalite Onaylar; ortak cihazda önce kullanıcı değiştir |
-| Bildirim | Demleme günü, Fermantasyon veya Onaylar; ilgili partinin ilgili adımına |
+| Bildirim | Demleme günü, Fermantasyon veya Onaylar; ilgili partinin ilgili adımına; tümü ayrıca bildirim kutusunda (çan) |
 | Live Activity | Demleme günü |
 | Widget | Fermantasyon |
 | Kağıttaki QR kod | Kağıt ve düzeltme (doğru parti ve tur seçili) |
@@ -772,13 +823,14 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | Batch | Parti: kod, tarif sürümü, aşama, tarihler |
 | BatchStep | Planlanan ve gerçek başlangıç/bitiş, durum, giriş kaynağı (sayaç / elle / kağıt) |
 | BatchIngredientActual, Deviation | Gerçek miktar ve ikame, plandan sapmalar |
-| Measurement, StageEvent | Zaman damgalı ölçümler ve aşama geçişleri |
+| Measurement, StageEvent | Zaman damgalı ölçümler (kaynak: cihaz / elle / kâğıt) ve aşama geçişleri |
 | Vessel, VesselOccupancy, Transfer | Tank/kazan; parti ↔ tank çoktan çoğa (bölme ve birleştirme); transferler |
 | StockLot, StockMovement | Lot bazlı stok, hareket defteri |
 | ScannedDocument | Taranan kağıt: parti, form türü, tarayan, saklama süresi |
 | ImportSource | İçe aktarılan kaynak dosya ve eşleştirme kararları |
 | AuditLog | Kim, ne zaman, önceki ve yeni değer; EditSession (yumuşak kilit) ile birlikte |
 | PackageType, PackagingRun | Kap tanımı (tür: şişe / kutu / keg / cask, hacim, tek kullanımlık mi, malzeme, ağırlık); ambalaj kaydı satırları (parti, kap, adet, litre, lot, karbonasyon yöntemi) |
+| Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
 
 Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bulunur. Demleme günü ölçümleri cihazda üretilen UUID ile kuyruğa alınır; sunucu aynı kaydı iki kez işlemez.
 
