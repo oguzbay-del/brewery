@@ -139,6 +139,40 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 - **Dış olaylar:** cihaz webhook'ları, App Store sunucu bildirimleri (abonelik yenileme, iade) ve web ödeme sağlayıcısının webhook'ları aynı alım servisinden girer: imza doğrulanır, kuyruğa yazılır, aynı olay iki kez işlenmez. Abonelik ve yetki durumu yalnız sunucuda tutulur.
 - **Demleme paketi bütünlüğü:** paket sunucuda imzalanır ve sürelidir (ör. 72 saat) \[doğrulanacak\]; kuyruktaki ölçümler paket kimliğiyle gönderilir, sunucu paketin o partiye ait olduğunu denetler.
 
+### Destek paneli (iç kullanım)
+
+Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez.
+
+**Ne yapılır**
+
+| İş | Not |
+| --- | --- |
+| Hesap ve çalışma alanı arama | Kullanıcı kimliği, e-posta, çalışma alanı adı; sonuçta yalnız özet (mod, bölge, abonelik, son giriş) |
+| Abonelik durumu | App Store ve web ödeme kaydını yeniden doğrulama; yetkiyi elle düzeltme gerekçeyle |
+| Oturum ve cihaz | Oturumları kapatma, cihaz (iSpindel) anahtarını yenileme, giriş yöntemlerini görme |
+| Hesap silme ve dışa aktarma | Talepleri izleme; süresi dolan silmeyi tamamlama |
+| Silinen kaydı geri getirme | Silinme zamanı işaretli kayıtlar, saklama süresi içinde |
+| "Verim kayboldu" ve hesap farkları | Kaydın sürüm geçmişi ve denetim kaydı; hesabı kayıtlı motor sürümüyle ve güncel sürümle yeniden çalıştırıp farkı görme |
+| Bildirim teslimi | Bir bildirimin hangi cihaza gittiği, okundu mu, push hatası |
+| Sistem durumu | Kuyruk birikimi, cihaz verisi gecikmesi, motor hata oranı (gözlem araçlarına bağlantı) |
+
+**Ne yapılmaz:** tarif, parti, stok gibi müşteri içeriği panelden değiştirilmez. Müşterinin yerine giriş yapılmaz; müşterinin gördüğü ekran yalnız okunur olarak açılabilir.
+
+**Erişim kuralları**
+
+- **Müşteri izni:** çalışma alanının içeriğini (tarif, parti, ölçüm) görmek için müşterinin izni gerekir. İzin destek talebi açılırken veya Ayarlar › Güvenlik › Destek erişimi'nden verilir; 72 saat geçerlidir \[doğrulanacak\]. İşletmede izni yönetici verir. Hesap özeti ve abonelik durumu izinsiz görülür.
+- **Gerekçe:** her erişim talep numarası ve gerekçe ister; süre bitince erişim kendiliğinden kapanır.
+- **Şeffaflık:** destek erişimleri müşterinin denetim kaydında ve Ayarlar › Güvenlik'te "Destek erişim geçmişi" olarak görünür: kim, ne zaman, neye baktı, ne yaptı.
+- **Destek rolleri:** Destek (okuma ve oturum işleri), Destek yöneticisi (abonelik düzeltme, geri getirme, silme tamamlama). Bu roller müşteri rollerinden tamamen ayrıdır.
+- **Acil durum:** güvenlik olayı veya yasal zorunlulukta izinsiz erişim yalnız iki kişi onayıyla açılır ve müşteriye sonradan bildirilir.
+
+**Teknik yapı**
+
+- Ayrı bir React uygulaması; aynı tasarım sistemiyle. Genel adresten erişilemez; giriş şirketin Google Workspace hesabı ve passkey ile, Google Cloud Identity-Aware Proxy arkasında.
+- Çekirdek API'nin ayrı bir iç uç grubu (/internal) kullanılır; bu uçlar genel API ağ geçidinde yayımlanmaz. İş kuralları yine çekirdek API'de, iki kez yazılmaz.
+- Her işlem değiştirilemez denetim kaydına yazılır.
+- Yol haritası: Ev MVP'de arama, abonelik, oturum, silme talepleri ve erişim kuralları; diğerleri İşletme aşamasıyla.
+
 ### Hesap motoru servisi
 
 - **Ayrı servis:** dışarıdan erişilemez; yalnız çekirdek API iç ağdan, servisler arası mTLS ile çağırır. Kod istemcide ve genel ağda hiç bulunmaz; bu formül bilgisini de korur.
@@ -798,13 +832,14 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 | Ödeme ve abonelik | Ödeme bilgisi | StoreKit ve web ödeme sağlayıcısı; kart bilgisi bize gelmez; abonelik durumu sunucuda doğrulanır |
 | Kişisel veri ve uyum | KVKK, GDPR | En az veri; dışa aktarma ve hesap silme; saklanması zorunlu işletme kayıtlarında anonimleştirme; gizlilik politikası ve App Store gizlilik etiketi |
 | Geliştirme ve işletim | Kod, sırlar, sunucular | Sırlar sır yöneticisinde; bağımlılık taraması; sunucuya en az yetki ve iki adımlı doğrulama; olay alarmları ve müdahale planı |
+| Destek paneli | Müşteri verisine içeriden erişim | Genel adreste yok, Identity-Aware Proxy ve passkey; müşteri izni ve süreli erişim; içerik değiştirilemez, müşteri yerine giriş yok; her erişim müşterinin denetim kaydında görünür |
 
 **Açık kararlar:**
 
 - Ev modunda hesapsız kullanım yok: veri ve hesaplar sunucuda olduğu için ilk açılışta giriş gerekir (Apple veya Google ile tek dokunuş, ayrı kayıt yok). Bunun ilk açılışa etkisi kullanıcı testinde ölçülecek.
 - Sunucu bölgesi: ABD ve İngiltere bölgeleri öneriliyor; çalışma alanı açılışta bölgesini seçer, AB sonra (Platformlar ve mimari › Veri katmanı). Hukuki ve maliyet kararı.
 
-Ayarlar'a "Güvenlik" kategorisi eklenir: iki adımlı doğrulama, oturum açık cihazlar, uygulama kilidi, cihaz (iSpindel) anahtarlarını yenileme.
+Ayarlar'a "Güvenlik" kategorisi eklenir: iki adımlı doğrulama, oturum açık cihazlar, uygulama kilidi, cihaz (iSpindel) anahtarlarını yenileme, destek erişimi izni ve geçmişi.
 
 ## Ayarlar
 
@@ -959,6 +994,7 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
 | CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
 | UserIdentity | Giriş kimlikleri: sağlayıcı (Apple / Google / e-posta), sağlayıcıdaki kalıcı kimlik, bağlanma zamanı; bir kullanıcıda birden çok; passkey kayıtları |
+| SupportGrant, SupportAction | Destek erişim izni (çalışma alanı, veren, talep numarası, başlangıç ve bitiş); destek ekibinin her işlemi (kim, neye, ne yaptı, gerekçe) |
 
 Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bulunur. Demleme günü ölçümleri cihazda üretilen UUID ile kuyruğa alınır; sunucu aynı kaydı iki kez işlemez.
 
