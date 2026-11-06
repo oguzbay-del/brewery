@@ -49,6 +49,11 @@ Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web
 - Web'de her ekranın kendi adresi vardır; üç seviyeden derin ekranlarda üstte iz yolu.
 - Uygulamada sistem bileşenleri kullanılır (SwiftUI `TabView`, `NavigationSplitView`, `List`, `Toggle`, `Picker`); buradaki bileşenler web uygulaması ve konsept için aynı görünümü tanımlar. iOS 26'nın cam (Liquid Glass) görünümü yalnız gezinme katmanında ve sistemden gelir; içerikte ve operatör görünümünde cam kullanılmaz.
 
+## Giriş düğmeleri ve iç araçlar
+
+- "Apple ile devam et" ve "Google ile devam et" düğmeleri kendimiz çizilmez: Apple'da `SignInWithAppleButton`, web'de Apple'ın JS düğmesi; Google için Google'ın marka kurallarındaki düğme. İkisi aynı boyda, alt alta; Apple üstte. Yedek "E-postayla bağlantı al" düz metin bağlantısıdır.
+- Destek paneli (iç kullanım) aynı token ve bileşenleri kullanır; ayırt etmek için adres çubuğunda ve başlıkta koyu "İÇ KULLANIM" etiketi bulunur. Müşteri ekranlarında bu etiket kullanılmaz.
+
 ## Operatör görünümü
 
 - Üretim panosu, Bugün, tank detayı ve demleme günü için cihaz başına açılan görünüm (ISA-101). Normal durum gri ve renksizdir: `hp-bg`, `hp-tile`, `hp-ink`, `hp-ink2`.
