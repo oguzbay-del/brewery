@@ -703,7 +703,7 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 
 ## Ekran listesi
 
-Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 39, İşletme aşamalarında 18, Apple Watch ekranı ileride opsiyonel; bildirim kutusu henüz çizilmedi; bu 18 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
+Konseptte 59 ekranın hepsi taslaklandı (Ev MVP aşamasında 40, İşletme aşamalarında 18, Apple Watch ekranı ileride opsiyonel; bu 18 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
 
 | Ekran | Durum | Segment | Gerektiği aşama |
 | --- | --- | --- | --- |
@@ -765,7 +765,7 @@ Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 39, İşletme aşa
 | Mod ayrımı (Ayarlar › Çalışma alanı › Mod; Ev'de açılabilen özellikler, ekran haritası) | Tasarlandı | İkisi | Ev MVP |
 | Kaplar (Ayarlar › Ekipman ve tanklar › Kaplar; şişe, kutu, keg, cask) | Tasarlandı | İkisi | Ev MVP (kutu ve cask İşletme çekirdek) |
 | Gezinme kalıpları (geri düğmesi, sheet ve silme onayı, "Demlemeye dön" şeridi, derin bağlantı, "Devam et", web iz yolu) | Tasarlandı | İkisi | Ev MVP |
-| Bildirim kutusu (çan): liste, eylemler, geçmiş | Taslak yok | İkisi | Ev MVP |
+| Bildirim kutusu (çan): liste, eylemler, geçmiş | Tasarlandı | İkisi | Ev MVP |
 
 ## Ekran akışı
 
