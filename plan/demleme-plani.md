@@ -82,6 +82,8 @@ Mod çalışma alanı bazında seçilir. **Açık:** modda tam çalışır. **Sa
 | Birimler | L, kg, °C (bölgeye göre) | + hL, bbl |  |
 | Kaplar | Sade (şişe ve keg) | Açık (şişe, kutu, keg, cask) | Vergi ve rapor uygunluğu yalnız İşletmede görünür |
 | Bildirim kutusu (çan) | Açık | Açık | İşletmede vardiya, yükseltme ve role göre dağıtım eklenir |
+| Giriş ve hesap bağlama, yardım ve destek | Açık | Açık | İşletmede destek erişim iznini yönetici verir; yöneticiye passkey zorunlu |
+| Davet kabulü | Sade | Açık | Ev'de tarif ve parti daveti; İşletmede rol ve ortak cihaz PIN'i |
 
 Moddan moda geçişte veri silinmez; Ev'e dönülse de İşletme kayıtları (onaylar, denetim kaydı, lotlar) saklanır, yalnız görünmez.
 
@@ -141,7 +143,7 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 
 ### Destek paneli (iç kullanım)
 
-Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez.
+Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez. Taslağı konseptte "İç kullanım" grubunda: hesap detayı, arama ve erişim isteği, hesap farkı.
 
 **Ne yapılır**
 
@@ -864,7 +866,7 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 
 ## Ekran listesi
 
-Konseptte 59 ekranın hepsi taslaklandı (Ev MVP aşamasında 40, İşletme aşamalarında 18, Apple Watch ekranı ileride opsiyonel; bu 18 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
+Konseptte 62 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşamalarında 19, Apple Watch ekranı ileride opsiyonel; bu 19 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
 
 | Ekran | Durum | Segment | Gerektiği aşama |
 | --- | --- | --- | --- |
@@ -927,6 +929,9 @@ Konseptte 59 ekranın hepsi taslaklandı (Ev MVP aşamasında 40, İşletme aşa
 | Kaplar (Ayarlar › Ekipman ve tanklar › Kaplar; şişe, kutu, keg, cask) | Tasarlandı | İkisi | Ev MVP (kutu ve cask İşletme çekirdek) |
 | Gezinme kalıpları (geri düğmesi, sheet ve silme onayı, "Demlemeye dön" şeridi, derin bağlantı, "Devam et", web iz yolu) | Tasarlandı | İkisi | Ev MVP |
 | Bildirim kutusu (çan): liste, eylemler, geçmiş | Tasarlandı | İkisi | Ev MVP |
+| Giriş ve hesap bağlama (e-posta bağlantısı, giriş yöntemleri, passkey, aynı e-posta başka hesapta) | Tasarlandı | İkisi | Ev MVP |
+| Yardım ve destek (yardım arama, talep açma, süreli erişim izni, talep yanıtı) | Tasarlandı | İkisi | Ev MVP |
+| Davet kabulü (davet edilen taraf, ortak cihaz PIN'i, süresi dolmuş davet) | Tasarlandı | İşletme | İşletme çekirdek |
 
 ## Ekran akışı
 

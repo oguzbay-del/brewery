@@ -68,6 +68,20 @@ ul.clean{margin:0;padding-left:18px;display:grid;gap:4px}
 .asheet .box div:first-child{border-top:0;font-size:12px;color:var(--label2);padding:10px 14px}
 .browser{border:1px solid var(--sep);border-radius:12px;overflow:hidden;background:var(--card)}
 .browser .bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--fill2);font-size:13px;color:var(--label2)}
+.dpwrap{min-width:880px}
+.dp{display:grid;grid-template-columns:190px 1fr;min-height:0;font-size:13.5px}
+.dp .side{background:var(--fill2);border-right:1px solid var(--sep);padding:10px;display:grid;gap:2px;align-content:start}
+.dp .side a{display:flex;justify-content:space-between;padding:7px 9px;border-radius:8px;color:var(--label);text-decoration:none}
+.dp .side a.on{background:var(--tint-fill);color:var(--tint-ink);font-weight:600}
+.dp .side .who{font-size:11.5px;color:var(--label2);padding:10px 9px 0;border-top:1px solid var(--sep);margin-top:8px}
+.dp .main{padding:14px 18px 18px;display:grid;gap:12px;align-content:start;min-width:0}
+.dp .kv{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.dp .kv div{background:var(--card);border-radius:10px;padding:8px 10px;display:grid;gap:2px}
+.dp .kv small{font-size:11.5px;color:var(--label2)}
+.inbadge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--label);color:var(--bg)}
+.sigo2{background:var(--card);border:1px solid var(--sep);border-radius:12px;padding:11px;text-align:center;font-weight:600;font-size:15px}
+.fld{background:var(--card);border-radius:10px;padding:9px 12px;font-size:14px;color:var(--label3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#pane-gi .body,#pane-yd .body,#pane-dk .body{grid-template-columns:minmax(0,1fr);grid-auto-rows:max-content}
 .browser .url{flex:1;min-width:0;background:var(--card);border-radius:8px;padding:5px 10px;font-family:ui-monospace,Menlo,monospace;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 14px 4px;font-size:13px;color:var(--label2)}
 .crumb a{color:var(--tint);text-decoration:none}
@@ -503,6 +517,9 @@ table.cmp td:first-child{font-weight:600}
       <tr><td>Bildirim yönlendirme<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar › Bildirimler, Odak, Planlı Özet, zamana duyarlı bildirim</td><td>Üç öncelik, sessiz saat, günlük özet; vardiya ve yükseltme İşletme'de</td></tr>
       <tr><td>Hesap<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar › Apple Hesabı</td><td>Cihaz listesi, çıkış, dışa aktarma ve hesap silme</td></tr>
       <tr><td>Boş ve hata durumları<span class="newdot" role="img" aria-label="yeni"></span></td><td>Notlar/Fotoğraflar boş durumları, Pages ortak düzenleme</td><td>Ne olduğunu ve ilk adımı söyleyen boş ekran; kaydederken kayıt değişmişse iki sürümü gösterip seçtir</td></tr>
+      <tr><td>Giriş ve hesap bağlama<span class="newdot" role="img" aria-label="yeni"></span></td><td>Slack ve Notion sihirli bağlantı, Ayarlar › Apple Hesabı</td><td>Şifre yok; aynı e-posta başka hesapta ise önce o hesapla girip bağlatır</td></tr>
+      <tr><td>Yardım ve destek<span class="newdot" role="img" aria-label="yeni"></span></td><td>Apple Destek uygulaması</td><td>Talep, ekran görüntüsü ve süreli erişim izni tek sheet'te; yanıt ve erişim aynı zaman çizelgesinde</td></tr>
+      <tr><td>Davet kabulü<span class="newdot" role="img" aria-label="yeni"></span></td><td>Slack daveti, Notlar paylaşım daveti</td><td>Çalışma alanı ve rol önce gösterilir; katılım Apple, Google veya e-postayla</td></tr>
       <tr><td>Abonelik<span class="newdot" role="img" aria-label="yeni"></span></td><td>App Store abonelikleri, Apple One</td><td>Planlar yan yana, mevcut plan işaretli; StoreKit'in hazır abonelik ekranı</td></tr>
     </tbody>
   </table></div>
@@ -531,6 +548,12 @@ table.cmp td:first-child{font-weight:600}
       <tr><td>Kağıttaki QR kod</td><td><a href="#" data-go="pp">Kağıt ve düzeltme</a></td><td>Brew sheet veya tank turu; doğru parti ve tur otomatik seçilir</td></tr>
       <tr><td>Spotlight · uygulama içi arama</td><td><a href="#" data-go="se">Arama</a> → kayıt</td><td>Tarif, parti, lot, tank</td></tr>
       <tr><td>Paylaşılan dosya (BeerXML, .bsmx)</td><td><a href="#" data-go="im">İçe aktarma</a></td><td>"Birlikte aç" ile</td></tr>
+      <tr><td>Çan simgesi</td><td><a href="#" data-go="bk">Bildirim kutusu</a></td><td>Her sekme kökünde; hatırlatıcıdan hızlı ölçüm girişi</td></tr>
+      <tr><td>E-postadaki giriş bağlantısı</td><td><a href="#" data-go="gi">Giriş ve hesap bağlama</a></td><td>15 dk geçerli, tek kullanımlık</td></tr>
+      <tr><td>Davet bağlantısı</td><td><a href="#" data-go="dk">Davet kabulü</a> → İşletmede <a href="#" data-go="td">Bugün</a></td><td>Uygulama yoksa web'de açılır, App Store önerilir</td></tr>
+      <tr><td>Destek yanıtı</td><td><a href="#" data-go="yd">Yardım ve destek</a> › talep</td><td>Bildirim kutusu ve e-posta</td></tr>
+      <tr><td>Eski uygulama sürümü, süresi dolmuş paket</td><td><a href="#" data-go="es">Boş ve hata durumları</a></td><td>Güncelleme gerekli; paket yenileme</td></tr>
+      <tr><td>Abonelik veya deneme bitti</td><td><a href="#" data-go="sub">Abonelik</a></td><td>Veriler silinmez; ücretli özellikler salt okunur</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -586,6 +609,7 @@ table.cmp td:first-child{font-weight:600}
     <button role="tab" id="tab-au" aria-selected="false" aria-controls="pane-au">Denetim kaydı<span class="newdot" role="img" aria-label="yeni"></span></button>
       <button role="tab" id="tab-tk" aria-selected="false" aria-controls="pane-tk">Tank detayı<span class="newdot" role="img" aria-label="yeni"></span></button>
       <button role="tab" id="tab-lt" aria-selected="false" aria-controls="pane-lt">İzlenebilirlik<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-dk" aria-selected="false" aria-controls="pane-dk">Davet kabulü<span class="newdot" role="img" aria-label="yeni"></span></button>
   </div></div>
   <div class="ng"><b>Sistem</b><div class="seg" role="tablist" aria-label="Sistem ekranları" id="grp-sistem">
     <button role="tab" id="tab-ob" aria-selected="false" aria-controls="pane-ob">İlk açılış<span class="newdot" role="img" aria-label="yeni"></span></button>
@@ -605,6 +629,11 @@ table.cmp td:first-child{font-weight:600}
     <button role="tab" id="tab-es" aria-selected="false" aria-controls="pane-es">Boş ve hata durumları<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-sub" aria-selected="false" aria-controls="pane-sub">Abonelik<span class="newdot" role="img" aria-label="yeni"></span></button>
       <button role="tab" id="tab-ac" aria-selected="false" aria-controls="pane-ac">Hesap<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-gi" aria-selected="false" aria-controls="pane-gi">Giriş ve hesap bağlama<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-yd" aria-selected="false" aria-controls="pane-yd">Yardım ve destek<span class="newdot" role="img" aria-label="yeni"></span></button>
+  </div></div>
+  <div class="ng"><b>İç kullanım</b><div class="seg" role="tablist" aria-label="İç kullanım ekranları" id="grp-ic">
+      <button role="tab" id="tab-dp" aria-selected="false" aria-controls="pane-dp">Destek paneli<span class="newdot" role="img" aria-label="yeni"></span></button>
   </div></div>
   </div>
 
@@ -2498,7 +2527,7 @@ table.cmp td:first-child{font-weight:600}
     <div style="margin-top:22px;display:grid;gap:10px">
       <h3 style="font-size:17px">Ekran haritası: hangi ekran hangi modda</h3>
       <div class="row" style="gap:12px;flex-wrap:wrap"><div class="mini-seg" id="mdsel" role="group" aria-label="Mod seç" style="width:240px"><span class="on" data-m="ev" role="button" tabindex="0">Ev</span><span data-m="is" role="button" tabindex="0">İşletme</span></div><div class="mdkey"><span><i></i>açık</span><span><i style="border:1px dashed var(--tint)"></i>sade</span><span><i style="background:transparent;border-style:dotted"></i>kapalı</span></div></div>
-      <div class="mdmap" id="mdmap" data-mode="ev"><div class="mdg"><b>Tarif</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="wiz"><span class="nm">Sihirbaz</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="rl"><span class="nm">Tarif listesi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="im"><span class="nm">İçe aktarma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="ed"><span class="nm">Tarif editörü</span><span class="ev">formül seçimleri gizli</span></a><a href="#" class="mdc" data-ev="A" data-go2="wa"><span class="nm">Su ve pH</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mm"><span class="nm">Mash ve maya</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fp"><span class="nm">Fermantasyon profili</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tl"><span class="nm">Kaynatma programı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mead"><span class="nm">Mead tarifi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="cmp"><span class="nm">Karşılaştırma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sg"><span class="nm">Stil kılavuzları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ing"><span class="nm">Malzeme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sc"><span class="nm">Ölçekleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="hw"><span class="nm">Nasıl hesaplandı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ci"><span class="nm">Kendi malzemen</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wr"><span class="nm">Su raporu</span><span class="ev"></span></a></div></div><div class="mdg"><b>Demleme</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="bd"><span class="nm">Demleme günü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="pp"><span class="nm">Kağıt ve düzeltme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fe"><span class="nm">Fermantasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wt"><span class="nm">Apple Watch (ileride)</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ru"><span class="nm">Uyarı kuralları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="bs"><span class="nm">Parti özeti</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tools"><span class="nm">Araçlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="pb"><span class="nm">Parti başlatma</span><span class="ev">tank ataması yok</span></a></div></div><div class="mdg"><b>Üretim</b><div class="mdw"><a href="#" class="mdc" data-ev="K" data-go2="td"><span class="nm">Bugün</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dz"><span class="nm">Bugün düzenleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="pr"><span class="nm">Üretim panosu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="op"><span class="nm">Operatör görünümü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="ap"><span class="nm">Onaylar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="qa"><span class="nm">Kalite</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="cip"><span class="nm">CIP ve ambalaj</span><span class="ev">Ev'de "Şişele / fıçıla" eylemi</span></a><a href="#" class="mdc" data-ev="KA" data-go2="ym"><span class="nm">Maya yönetimi</span><span class="ev">Ayarlar'dan açılabilir</span></a><a href="#" class="mdc" data-ev="K" data-go2="rp"><span class="nm">Raporlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="mv"><span class="nm">Tank hareketi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tt"><span class="nm">Tank turu çıktısı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dvx"><span class="nm">Sapma kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lb"><span class="nm">Etiket</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="us"><span class="nm">Kullanıcı değiştir ve davet</span><span class="ev">yalnız tarif/parti daveti</span></a><a href="#" class="mdc" data-ev="K" data-go2="au"><span class="nm">Denetim kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tk"><span class="nm">Tank detayı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lt"><span class="nm">İzlenebilirlik</span><span class="ev"></span></a></div></div><div class="mdg"><b>Sistem</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="ob"><span class="nm">İlk açılış</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="eqw"><span class="nm">Ekipman sihirbazı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="kp"><span class="nm">Kaplar</span><span class="ev">yalnız şişe ve keg</span></a><a href="#" class="mdc" data-ev="A" data-go2="cl"><span class="nm">Kalibrasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="dv"><span class="nm">Cihazlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="inv"><span class="nm">Stok</span><span class="ev">lot yok</span></a><a href="#" class="mdc" data-ev="S" data-go2="rcv"><span class="nm">Mal kabul ve sayım</span><span class="ev">lot ve barkod yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="cal"><span class="nm">Takvim</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="se"><span class="nm">Arama</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="st"><span class="nm">Ayarlar</span><span class="ev">işletme kategorileri gizli</span></a><a href="#" class="mdc" data-ev="S" data-go2="nt"><span class="nm">Bildirim yönlendirme</span><span class="ev">vardiya ve yükseltme yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="bk"><span class="nm">Bildirim kutusu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="md"><span class="nm">Mod ayrımı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="gz"><span class="nm">Gezinme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="es"><span class="nm">Boş ve hata durumları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sub"><span class="nm">Abonelik</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ac"><span class="nm">Hesap</span><span class="ev"></span></a></div></div></div>
+      <div class="mdmap" id="mdmap" data-mode="ev"><div class="mdg"><b>Tarif</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="wiz"><span class="nm">Sihirbaz</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="rl"><span class="nm">Tarif listesi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="im"><span class="nm">İçe aktarma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="ed"><span class="nm">Tarif editörü</span><span class="ev">formül seçimleri gizli</span></a><a href="#" class="mdc" data-ev="A" data-go2="wa"><span class="nm">Su ve pH</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mm"><span class="nm">Mash ve maya</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fp"><span class="nm">Fermantasyon profili</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tl"><span class="nm">Kaynatma programı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mead"><span class="nm">Mead tarifi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="cmp"><span class="nm">Karşılaştırma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sg"><span class="nm">Stil kılavuzları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ing"><span class="nm">Malzeme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sc"><span class="nm">Ölçekleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="hw"><span class="nm">Nasıl hesaplandı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ci"><span class="nm">Kendi malzemen</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wr"><span class="nm">Su raporu</span><span class="ev"></span></a></div></div><div class="mdg"><b>Demleme</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="bd"><span class="nm">Demleme günü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="pp"><span class="nm">Kağıt ve düzeltme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fe"><span class="nm">Fermantasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wt"><span class="nm">Apple Watch (ileride)</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ru"><span class="nm">Uyarı kuralları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="bs"><span class="nm">Parti özeti</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tools"><span class="nm">Araçlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="pb"><span class="nm">Parti başlatma</span><span class="ev">tank ataması yok</span></a></div></div><div class="mdg"><b>Üretim</b><div class="mdw"><a href="#" class="mdc" data-ev="K" data-go2="td"><span class="nm">Bugün</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dz"><span class="nm">Bugün düzenleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="pr"><span class="nm">Üretim panosu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="op"><span class="nm">Operatör görünümü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="ap"><span class="nm">Onaylar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="qa"><span class="nm">Kalite</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="cip"><span class="nm">CIP ve ambalaj</span><span class="ev">Ev'de "Şişele / fıçıla" eylemi</span></a><a href="#" class="mdc" data-ev="KA" data-go2="ym"><span class="nm">Maya yönetimi</span><span class="ev">Ayarlar'dan açılabilir</span></a><a href="#" class="mdc" data-ev="K" data-go2="rp"><span class="nm">Raporlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="mv"><span class="nm">Tank hareketi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tt"><span class="nm">Tank turu çıktısı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dvx"><span class="nm">Sapma kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lb"><span class="nm">Etiket</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="us"><span class="nm">Kullanıcı değiştir ve davet</span><span class="ev">yalnız tarif/parti daveti</span></a><a href="#" class="mdc" data-ev="K" data-go2="au"><span class="nm">Denetim kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tk"><span class="nm">Tank detayı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lt"><span class="nm">İzlenebilirlik</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="dk"><span class="nm">Davet kabulü</span><span class="ev">yalnız tarif/parti daveti</span></a></div></div><div class="mdg"><b>Sistem</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="ob"><span class="nm">İlk açılış</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="eqw"><span class="nm">Ekipman sihirbazı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="kp"><span class="nm">Kaplar</span><span class="ev">yalnız şişe ve keg</span></a><a href="#" class="mdc" data-ev="A" data-go2="cl"><span class="nm">Kalibrasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="dv"><span class="nm">Cihazlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="inv"><span class="nm">Stok</span><span class="ev">lot yok</span></a><a href="#" class="mdc" data-ev="S" data-go2="rcv"><span class="nm">Mal kabul ve sayım</span><span class="ev">lot ve barkod yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="cal"><span class="nm">Takvim</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="se"><span class="nm">Arama</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="st"><span class="nm">Ayarlar</span><span class="ev">işletme kategorileri gizli</span></a><a href="#" class="mdc" data-ev="S" data-go2="nt"><span class="nm">Bildirim yönlendirme</span><span class="ev">vardiya ve yükseltme yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="bk"><span class="nm">Bildirim kutusu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="md"><span class="nm">Mod ayrımı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="gz"><span class="nm">Gezinme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="es"><span class="nm">Boş ve hata durumları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sub"><span class="nm">Abonelik</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ac"><span class="nm">Hesap</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="gi"><span class="nm">Giriş ve hesap bağlama</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="yd"><span class="nm">Yardım ve destek</span><span class="ev"></span></a></div></div></div>
       <p style="font-size:12px;color:var(--label2)">İşletme modunda tüm ekranlar açık. Kutuya tıklayınca ekran açılır.</p>
     </div>
   </div>
@@ -2535,6 +2564,28 @@ table.cmp td:first-child{font-weight:600}
           <p style="font-size:13px">Sen düzenlerken <b>Ayşe</b> <b>Citra Pale Ale</b> taslağını kaydetti. Farklı alanlarda hangisi kalsın?</p>
           <div><div class="ghead">Citra whirlpool</div><div class="group"><div class="cell" style="font-weight:600">50 g<span class="sub" style="margin-left:6px">Ayşe · kaydedildi 10:12</span><span class="v" style="color:var(--tint)"><svg class="ico"><use href="#i-check"/></svg></span></div><div class="cell">55 g<span class="sub" style="margin-left:6px">senin değişikliğin · 10:14</span></div></div></div>
           <div><div class="ghead">Notlar</div><div class="group"><div class="cell" style="font-weight:600">İkisini birleştir<span class="v" style="color:var(--tint)"><svg class="ico"><use href="#i-check"/></svg></span></div></div></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="devlabel" style="margin-top:18px">iPHONE · güncelleme gerekli, demleme paketi süresi doldu</div>
+    <div class="strip">
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="body" style="align-content:center;justify-items:center;text-align:center;gap:12px">
+          <svg class="ico" style="font-size:44px;color:var(--tint)"><use href="#i-sparkle"/></svg>
+          <b style="font-size:17px">Güncelleme gerekli</b>
+          <p style="font-size:13px;color:var(--label2)">Bu sürüm (2.0.4) artık desteklenmiyor. Verilerin sunucuda, güncelleyince kaldığın yerden devam edersin.</p>
+          <button class="btn fill" style="width:100%">App Store'da güncelle</button>
+          <p style="font-size:11.5px;color:var(--label2)">Süren demleme varsa sayaç ve ölçüm girişi güncellemeden de çalışır.</p>
+        </div>
+      </div></div>
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="large" style="font-size:22px">Demleme · #14</div>
+        <div class="body">
+          <div class="callout warn"><svg class="ico"><use href="#i-warn"/></svg><span><b>Demleme paketinin süresi doldu.</b> İnternete bağlanınca yenilenir; kuyruktaki 2 ölçüm kaybolmaz.</span></div>
+          <button class="btn fill" style="width:100%">Şimdi yenile</button>
+          <p style="font-size:12px;color:var(--label2)">Paket 72 saat geçerli. Süresi dolunca sayaçlar durmaz; yeni adım başlatmak için yenileme gerekir.</p>
         </div>
       </div></div>
     </div>
@@ -3077,7 +3128,7 @@ table.cmp td:first-child{font-weight:600}
                 <div class="cell">Önce verilerimi dışa aktar<span class="pick">BeerJSON + CSV + PDF ›</span></div>
                 <div class="cell">Sahipliği devret<span class="pick">Ayşe K. ›</span></div>
               </div>
-              <div class="callout info"><svg class="ico"><use href="#i-info"/></svg><span>Silme 30 gün içinde aynı Apple hesabıyla girilerek geri alınabilir; sonra kalıcıdır. Mevzuat gereği saklanması gereken işletme kayıtları (denetim, ambalaj) çalışma alanında kalır, kişisel bilgin anonimleştirilir.</span></div>
+              <div class="callout info"><svg class="ico"><use href="#i-info"/></svg><span>Silme 30 gün içinde aynı hesapla girilerek geri alınabilir; sonra kalıcıdır. Mevzuat gereği saklanması gereken işletme kayıtları (denetim, ambalaj) çalışma alanında kalır, kişisel bilgin anonimleştirilir.</span></div>
               <button class="btn big" style="color:var(--red)">Hesabı sil</button>
             </div>
           </div>
@@ -3089,7 +3140,7 @@ table.cmp td:first-child{font-weight:600}
           <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
           <div class="nav"><span>‹ Ayarlar</span><span class="t">Hesap</span><span></span></div>
           <div class="body">
-            <div class="group"><div class="cell"><span class="badge" style="background:var(--tint-fill);border-radius:50%;width:40px;height:40px;font-size:16px;font-weight:700">OB</span><span><b>Oğuz B.</b><span class="sub">Sign in with Apple · gizli e-posta</span></span></div></div>
+            <div class="group"><div class="cell"><span class="badge" style="background:var(--tint-fill);border-radius:50%;width:40px;height:40px;font-size:16px;font-weight:700">OB</span><span><b>Oğuz B.</b><span class="sub">Apple ve Google ile giriş · gizli e-posta</span></span></div></div>
             <div><div class="ghead">Bağlantı</div><div class="group">
               <div class="cell"><span class="badge" style="background:var(--green);width:22px;height:22px;border-radius:50%;font-size:12px"><svg class="ico"><use href="#i-check"/></svg></span><span>Sunucuya bağlı<span class="sub">kuyrukta ölçüm yok · demleme paketi: Perşembe IPA #14</span></span></div>
                           </div></div>
@@ -3098,12 +3149,231 @@ table.cmp td:first-child{font-weight:600}
               <div class="cell"><span>iPad Pro<span class="sub">ortak cihaz · 2 dk önce</span></span></div>
               <div class="cell"><span>Web · Chrome, Windows<span class="sub">dün</span></span><span class="pick" style="color:var(--red)">Çıkış yap</span></div>
             </div></div>
+            <div class="group"><div class="cell" style="color:var(--tint)">Giriş yöntemleri<span class="v">Apple, Google ›</span></div></div>
             <div class="group"><div class="cell" style="color:var(--tint)">Verilerimi dışa aktar</div><div class="cell" style="color:var(--tint)">Çıkış yap</div><div class="cell" style="color:var(--red)">Hesabı sil</div></div>
           </div>
         </div></div>
       </div>
     </div>
     <div class="inspo"><span class="chip">İlham: <b>Ayarlar › Apple Hesabı</b> cihaz listesi ve çıkış</span><span class="chip">App Store kuralı: hesap açılan uygulamada hesap silme uygulama içinden yapılabilmeli</span><span class="chip">Hesapsız kullanım yok: veri ve hesaplar sunucuda, giriş ilk açılışta</span></div>
+  </div>
+
+
+  <!-- SIGN-IN AND ACCOUNT LINKING -->
+  <div id="pane-gi" role="tabpanel" aria-labelledby="tab-gi" hidden>
+    <div class="devlabel">iPHONE · e-postayla giriş, giriş yöntemleri, aynı e-posta başka hesapta</div>
+    <div class="strip">
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="nav"><span>‹ Geri</span><span class="t">E-postayla giriş</span><span></span></div>
+        <div class="body">
+          <p style="font-size:13px;color:var(--label2)">Şifre yok. E-postana tek kullanımlık bir giriş bağlantısı gönderiyoruz.</p>
+          <div class="fld" style="color:var(--label)">emma.clarke@hopworks.co.uk</div>
+          <button class="btn fill" style="width:100%">Bağlantı gönder</button>
+          <div class="callout ok"><svg class="ico"><use href="#i-checkc"/></svg><span><b>Bağlantı gönderildi.</b> 15 dakika geçerli; yalnız bu cihazda açılırsa girer. Gelmediyse istenmeyen klasörüne bak.</span></div>
+          <div class="row" style="gap:8px"><button class="btn sm" style="flex:1">Mail'i aç</button><button class="btn sm" style="flex:1">Tekrar gönder</button></div>
+          <p style="font-size:11.5px;color:var(--label2)">Apple veya Google hesabın varsa onlarla girmek daha hızlı.</p>
+        </div>
+      </div></div>
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="nav"><span>‹ Hesap</span><span class="t">Giriş yöntemleri</span><span></span></div>
+        <div class="body">
+          <div><div class="ghead">Bağlı</div><div class="group">
+            <div class="cell"><span>Apple<span class="sub">gizli e-posta · ilk giriş</span></span><span class="v" style="color:var(--green)"><svg class="ico"><use href="#i-check"/></svg></span></div>
+            <div class="cell"><span>Google<span class="sub">emma@gmail.com</span></span><span class="pick" style="color:var(--red);margin-left:auto;font-size:13px">Kaldır</span></div>
+            <div class="cell" style="color:var(--tint)"><svg class="ico"><use href="#i-plus"/></svg>E-posta bağlantısı ekle</div>
+          </div></div>
+          <div><div class="ghead">İkinci adım</div><div class="group">
+            <div class="cell"><span>Passkey<span class="sub">Face ID · bu iPhone</span></span><span class="v">Açık</span></div>
+            <div class="cell" style="color:var(--tint)"><svg class="ico"><use href="#i-plus"/></svg>Başka cihaza passkey ekle</div>
+          </div></div>
+          <p style="font-size:11.5px;color:var(--label2)">En az bir giriş yöntemi kalır; sonuncusu kaldırılamaz. Yönetici rolünde passkey zorunlu.</p>
+        </div>
+      </div></div>
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="body" style="align-content:center;gap:12px">
+          <svg class="ico" style="font-size:40px;color:var(--yellow);justify-self:center"><use href="#i-warn"/></svg>
+          <b style="font-size:17px;text-align:center">Bu e-postayla bir hesap var</b>
+          <p style="font-size:13px;color:var(--label2);text-align:center">emma.clarke@gmail.com, Apple ile açılmış bir hesaba bağlı. İki ayrı hesap açılmasın diye önce o hesapla gir; sonra Google'ı Giriş yöntemleri'nden bağla.</p>
+          <div class="siwa">Apple ile devam et</div>
+          <button class="btn" style="width:100%">Yine de ayrı hesap aç</button>
+        </div>
+      </div></div>
+    </div>
+    <div class="inspo"><span class="chip">İlham: <b>Slack</b> ve <b>Notion</b> "sihirli bağlantı", <b>Ayarlar › Apple Hesabı › Giriş ve Güvenlik</b></span><span class="chip">Ayrı kayıt formu ve şifre yok</span><span class="chip">Kullanıcı e-postayla değil, sağlayıcıdaki kimlikle tanınır</span></div>
+  </div>
+
+  <!-- HELP AND SUPPORT -->
+  <div id="pane-yd" role="tabpanel" aria-labelledby="tab-yd" hidden>
+    <div class="devlabel">iPHONE · Ayarlar › Yardım ve destek, talep aç, talep yanıtı</div>
+    <div class="strip">
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="nav"><span>‹ Ayarlar</span><span class="t">Yardım</span><span></span></div>
+        <div class="body">
+          <div class="search" style="font-size:13px"><svg class="ico"><use href="#i-search"/></svg>Yardımda ara</div>
+          <div class="group">
+            <div class="cell">Demleme günü internetsiz<span class="v">›</span></div>
+            <div class="cell">iSpindel kalibrasyonu<span class="v">›</span></div>
+            <div class="cell">IBU nasıl hesaplanıyor<span class="v">›</span></div>
+          </div>
+          <button class="btn fill" style="width:100%">Destek talebi aç</button>
+          <div><div class="ghead">Taleplerim</div><div class="group">
+            <div class="cell"><span>Tarifim kayboldu<span class="sub">#4182 · yanıtlandı · 10 dk önce</span></span><span class="v" style="color:var(--tint)">●</span></div>
+            <div class="cell"><span>Abonelik iki kez görünüyor<span class="sub">#3907 · kapandı</span></span><span class="v">›</span></div>
+          </div></div>
+          <div class="callout ok"><svg class="ico"><use href="#i-checkc"/></svg><span>Tüm servisler çalışıyor</span></div>
+        </div>
+      </div></div>
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="nav"><span>Vazgeç</span><span class="t">Yeni talep</span><span style="font-weight:600">Gönder</span></div>
+        <div class="body">
+          <div class="group">
+            <div class="cell">Konu<span class="v">Tarif ve hesap ›</span></div>
+            <div class="cell">İlgili kayıt<span class="v">Hazy IPA ›</span></div>
+          </div>
+          <div class="fld" style="min-height:58px;color:var(--label);white-space:normal">Hazy IPA tarifim listede yok, dün iPad'de vardı.</div>
+          <div class="group">
+            <div class="cell"><span>Ekran görüntüsü ekle</span><span class="v">1 ›</span></div>
+            <div class="cell"><span>Tanılama bilgisi<span class="sub">uygulama sürümü, cihaz, son hatalar</span></span><button class="tog on" aria-pressed="true" aria-label="açık"></button></div>
+            <div class="cell"><span>Destek verilerimi görebilir<span class="sub">72 saat; sonra kendiliğinden kapanır</span></span><button class="tog on" aria-pressed="true" aria-label="açık"></button></div>
+          </div>
+          <p style="font-size:11.5px;color:var(--label2)">Destek ekibi verini değiştiremez, yalnız görür. Her erişim Ayarlar › Güvenlik'te listelenir. İşletmede izni yönetici verir.</p>
+        </div>
+      </div></div>
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="nav"><span>‹ Destek</span><span class="t">#4182</span><span></span></div>
+        <div class="body">
+          <div class="group" style="padding:10px 14px;display:grid;gap:4px"><b style="font-size:13px">Deniz · Destek</b><span style="font-size:13px">Hazy IPA 3 Kasım 21:14'te iPad'den silinmiş. Geri getirdim; tarif listende en üstte.</span><span style="font-size:11px;color:var(--label2)">10 dk önce</span></div>
+          <div class="group" style="padding:10px 16px"><div class="tline">
+            <div class="k">Talep açıldı<small>dün 18:02 · erişim izni verildi (72 sa)</small></div>
+            <div class="k">Kayıt geri getirildi<small>09:24 · Hazy IPA · denetim kaydına yazıldı</small></div>
+            <div>Erişim kapatıldı<small>09:25 · Deniz kapattı</small></div>
+          </div></div>
+          <div class="row" style="gap:8px"><button class="btn sm fill" style="flex:1">Çözüldü</button><button class="btn sm" style="flex:1">Yanıtla</button></div>
+        </div>
+      </div></div>
+    </div>
+    <div class="inspo"><span class="chip">İlham: <b>Apple Destek</b> uygulaması talepleri, <b>Ayarlar › Gizlilik</b> izin listesi</span><span class="chip">Talep ve erişim aynı zaman çizelgesinde</span><span class="chip">Yanıt bildirim kutusuna ve e-postaya düşer</span></div>
+  </div>
+
+  <!-- INVITE ACCEPTANCE -->
+  <div id="pane-dk" role="tabpanel" aria-labelledby="tab-dk" hidden>
+    <div class="devlabel">iPHONE · davet bağlantısı açılınca (davet edilen kişi), PIN, süresi dolmuş davet</div>
+    <div class="strip">
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="body" style="align-content:center;justify-items:center;text-align:center;gap:12px">
+          <span class="badge" style="background:var(--tint-fill);color:var(--tint-ink);width:56px;height:56px;border-radius:14px;font-size:20px;font-weight:700">İB</span>
+          <b style="font-size:18px">İstanbul Bira Atölyesi</b>
+          <p style="font-size:13px;color:var(--label2)">Ayşe K. seni <b style="color:var(--label)">Operatör</b> olarak davet etti.</p>
+          <div class="group" style="width:100%;text-align:left">
+            <div class="cell">Rol<span class="v">Operatör</span></div>
+            <div class="cell">Davet geçerli<span class="v">5 gün daha</span></div>
+          </div>
+        </div>
+        <div style="padding:0 14px 22px;display:grid;gap:10px"><div class="siwa">Apple ile katıl</div><div class="sigo2">Google ile katıl</div><span style="color:var(--tint);text-align:center;font-weight:600;font-size:14px">E-postayla katıl</span></div>
+      </div></div>
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="nav"><span></span><span class="t">Ortak cihaz PIN'i</span><span style="font-weight:600">Bitti</span></div>
+        <div class="body" style="gap:14px">
+          <p style="font-size:13px;color:var(--label2)">Brewhouse'taki ortak iPad'de kendine geçmek için kullanacaksın. Kendi telefonunda gerekmez.</p>
+          <div class="row" style="justify-content:center;gap:12px">
+            <span style="width:14px;height:14px;border-radius:50%;background:var(--label)"></span><span style="width:14px;height:14px;border-radius:50%;background:var(--label)"></span><span style="width:14px;height:14px;border-radius:50%;border:2px solid var(--label3)"></span><span style="width:14px;height:14px;border-radius:50%;border:2px solid var(--label3)"></span>
+          </div>
+          <div class="callout info"><svg class="ico"><use href="#i-info"/></svg><span>Rolün: Operatör. Açılışta <b>Bugün</b> ekranın gelir; tarif onayı ve maliyet görünmez.</span></div>
+        </div>
+      </div></div>
+      <div class="iphone mini"><div class="scr">
+        <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
+        <div class="body" style="align-content:center;justify-items:center;text-align:center;gap:12px">
+          <svg class="ico" style="font-size:40px;color:var(--label3)"><use href="#i-timer"/></svg>
+          <b style="font-size:17px">Davetin süresi dolmuş</b>
+          <p style="font-size:13px;color:var(--label2)">Davetler 7 gün ve tek kullanımlık. Ayşe K.'den yenisini iste; bir dokunuşla gönderebilir.</p>
+          <button class="btn fill" style="width:100%">Yeni davet iste</button>
+        </div>
+      </div></div>
+    </div>
+    <div class="inspo"><span class="chip">İlham: <b>Slack</b> çalışma alanı daveti, <b>Notlar</b> paylaşım daveti</span><span class="chip">Davet e-postaya göre değil, bağlantıyla eşleşir; davet edilen istediği yöntemle girer</span><span class="chip">Ev'de yalnız tarif ve parti paylaşım daveti</span></div>
+  </div>
+
+  <!-- SUPPORT PANEL (INTERNAL) -->
+  <div id="pane-dp" role="tabpanel" aria-labelledby="tab-dp" hidden>
+    <p style="font-size:13px;color:var(--label2);margin:0 0 12px">İç kullanım: destek ekibinin web uygulaması. Müşteri uygulamasının parçası değil; ekran sayılarına girmez. Genel adreste yok, şirket hesabı ve passkey ile Identity-Aware Proxy arkasından açılır.</p>
+    <div class="devlabel">WEB · hesap detayı (müşteri izni var)</div>
+    <div class="scroller"><div class="dpwrap"><div class="browser">
+      <div class="bar"><span aria-label="geri">‹</span><span aria-label="ileri">›</span><span class="url">destek.ic/hesaplar/emma-clarke/kayitlar</span><span class="inbadge">İÇ KULLANIM</span></div>
+      <div class="dp">
+        <div class="side">
+          <a href="#" class="on">Hesaplar</a><a href="#">Talepler<span>12</span></a><a href="#">Abonelikler</a><a href="#">Silme talepleri<span>3</span></a><a href="#">Bildirim teslimi</a><a href="#">Sistem durumu</a>
+          <div class="who">Deniz A. · Destek<br>passkey ile giriş</div>
+        </div>
+        <div class="main">
+          <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+            <div style="display:grid;gap:2px"><span style="font-size:12px;color:var(--label2);font-weight:600">HESAP · TALEP #4182 "TARİFİM KAYBOLDU"</span><span style="font-size:22px;font-weight:700">Emma Clarke</span></div>
+            <div class="callout ok" style="padding:8px 10px"><svg class="ico"><use href="#i-lock"/></svg><span><b>Müşteri izni var</b> · 71 sa kaldı · <a href="#" style="color:var(--tint)">Erişimi bitir</a></span></div>
+          </div>
+          <div class="kv">
+            <div><small>Mod · bölge</small><b>Ev · İngiltere</b></div>
+            <div><small>Abonelik</small><b>Ev Pro · App Store</b><small>yenileme 12 Ara · doğrulandı</small></div>
+            <div><small>Giriş yöntemleri</small><b>Apple, Google</b><small>son giriş dün, iPad</small></div>
+            <div><small>Uygulama</small><b>iOS 2.3.1</b><small>desteklenen en düşük 2.1</small></div>
+          </div>
+          <div class="mini-seg" style="max-width:520px"><span class="on">Kayıtlar</span><span>Oturumlar</span><span>Bildirimler</span><span>Hesap farkı</span><span>Denetim</span></div>
+          <table class="ing">
+            <thead><tr><th>Kayıt</th><th>Son değişiklik</th><th>Durum</th><th class="r"></th></tr></thead>
+            <tbody>
+              <tr><td><b>Hazy IPA</b> · tarif v3</td><td>3 Kas 21:14 · iPad · Emma</td><td style="color:var(--red)">silindi · 27 gün geri alınabilir</td><td class="r"><button class="btn sm fill">Geri getir</button></td></tr>
+              <tr><td>Citra Pale Ale · tarif v4</td><td>1 Kas 10:02 · iPhone</td><td>etkin</td><td class="r"><button class="btn sm">Sürümler</button></td></tr>
+              <tr><td>Citra Pale Ale #12 · parti</td><td>bugün 06:00 · Tilt</td><td>fermantasyonda</td><td class="r"><button class="btn sm">Ölçümler</button></td></tr>
+            </tbody>
+          </table>
+          <div class="callout info"><svg class="ico"><use href="#i-info"/></svg><span>Bu panelden tarif, parti ve stok değiştirilemez; müşterinin yerine giriş yapılamaz. "Geri getir" yalnız Destek yöneticisi rolünde; gerekçe ister ve müşterinin denetim kaydına yazılır.</span></div>
+        </div>
+      </div>
+    </div></div></div>
+    <div class="devices" style="margin-top:22px">
+      <div>
+        <div class="devlabel">WEB · arama ve erişim isteği (izin yok)</div>
+        <div class="browser">
+          <div class="bar"><span>‹</span><span>›</span><span class="url">destek.ic/hesaplar?q=hopworks</span><span class="inbadge">İÇ</span></div>
+          <div style="padding:12px 14px;display:grid;gap:10px;font-size:13.5px">
+            <div class="fld" style="color:var(--label)">hopworks</div>
+            <table class="ing">
+              <thead><tr><th>Çalışma alanı</th><th>Mod</th><th>Bölge</th><th>Abonelik</th></tr></thead>
+              <tbody><tr><td><b>Hopworks Brewing</b><span style="display:block;font-size:12px;color:var(--label2)">sahip: Tom R.</span></td><td>İşletme</td><td>ABD</td><td>İşletme · web · aktif</td></tr></tbody>
+            </table>
+            <div class="group" style="padding:12px 14px;display:grid;gap:8px">
+              <b>İçeriği görmek için izin gerekiyor</b>
+              <div class="row" style="gap:8px;flex-wrap:wrap"><div class="fld" style="flex:1;min-width:140px;color:var(--label)">Talep #4190</div><div class="fld" style="flex:2;min-width:180px;color:var(--label)">Tank hareketi kaydedilmiyor</div></div>
+              <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn sm fill">Yöneticiden izin iste</button><button class="btn sm">Acil erişim (2 onay)</button></div>
+              <span style="font-size:12px;color:var(--label2)">İşletmede izni çalışma alanı yöneticisi verir. Acil erişim yalnız güvenlik olayı veya yasal zorunlulukta; ikinci bir destek yöneticisi onaylar, müşteriye sonradan bildirilir.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="devlabel">WEB · hesap farkı (motor sürümü)</div>
+        <div class="browser">
+          <div class="bar"><span class="url">…/emma-clarke/hesap-farki</span></div>
+          <div style="padding:12px 14px;display:grid;gap:10px">
+            <b style="font-size:14px">Citra Pale Ale v4</b>
+            <table class="ing"><thead><tr><th></th><th class="r">Kayıtlı 1.3.0</th><th class="r">Güncel 1.4.2</th></tr></thead><tbody>
+              <tr><td>OG</td><td class="r">1.052</td><td class="r">1.052</td></tr>
+              <tr><td>IBU</td><td class="r">38.2</td><td class="r"><b>37.6</b></td></tr>
+              <tr><td>Renk</td><td class="r">13.8 EBC</td><td class="r">13.8 EBC</td></tr>
+            </tbody></table>
+            <span style="font-size:12px;color:var(--label2)">Fark: 1.4.0'da Tinseth sabiti tam SI değerine alındı. Müşteriye açıklama şablonu hazır.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="inspo"><span class="chip">İlham: <b>Stripe</b> ve <b>Intercom</b> destek panelleri</span><span class="chip">Varsayılan salt okunur; her işlem gerekçe ister</span><span class="chip">Her erişim müşterinin "Destek erişim geçmişi"nde görünür</span><span class="chip">Tasarım sistemiyle aynı bileşenler</span></div>
   </div>
 
   <!-- CALIBRATION -->
