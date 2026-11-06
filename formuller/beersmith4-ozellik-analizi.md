@@ -1,6 +1,6 @@
 # BeerSmith 4.0.22 — Özellik ve İşleyiş Analizi
 
-Kaynak: `BeerSmith_4.0.22.dmg` (macOS, Intel + Apple Silicon). Analiz, paketteki **kaynak dosyalarından** (menü/ayar/alan tanım veritabanı `Resources.sqlite`, veri şeması `BeerSmith.sqlite`, rapor şablonları) yapıldı. Çalıştırılabilir dosya decompile edilmedi; formüllerin iç uygulaması bu yüzden bilinmiyor, yalnızca hangi seçeneklerin ve girdilerin olduğu biliniyor.
+Kaynak: `BeerSmith_4.0.22.dmg` (macOS, Intel + Apple Silicon). Analiz, paketteki **kaynak dosyalarından** (menü/ayar/alan tanım veritabanı `Resources.sqlite`, veri şeması `BeerSmith.sqlite`, rapor şablonları) yapıldı. Bu özellik analizinde çalıştırılabilir dosya decompile edilmedi; yalnız hangi seçeneklerin ve girdilerin olduğuna bakıldı. Formüllerin iç uygulaması daha sonra ayrı bir çalışmada, Linux sürümünün (`.deb`) hesap fonksiyonları Ghidra ile decompile edilerek çıkarıldı; sonuçlar `formuller/` klasöründe.
 
 ---
 
