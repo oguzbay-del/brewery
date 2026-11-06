@@ -17,8 +17,8 @@
  },
  "lastChange": {
   "by": "Oguz",
-  "at": "2026-11-06T14:33:55Z",
+  "at": "2026-11-06T14:51:00Z",
   "via": "Claude Code",
-  "note": "İlk sürüm: Demleme Arayüz Konsepti'nden renkler (3 tema), Dinamik Yazı ölçeği, boşluk ve köşe ölçeği, 10 bileşen"
+  "note": "Erişilebilirlik: açık temada label2, tint, green, yellow, red ve operatör alarm renkleri 4.5:1'e çıkarıldı; hp-a2-ink eklendi"
  }
 }

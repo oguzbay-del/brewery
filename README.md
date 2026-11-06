@@ -8,6 +8,7 @@ Ev biracıları ve küçük bira fabrikaları için iPad, iPhone, Apple Watch ve
 | `arayuz/` | Tıklanabilir arayüz konsepti, tek HTML dosyası ([yayın](https://claude.ai/artifact/BCEHj3wb6xj7eShvjTxKn6)) |
 | `tasarim-sistemi/` | Renkler, yazı ölçeği, boşluklar ve bileşenler ([yayın](https://claude.ai/artifact/ATVvgzfCftjr9YzVjhSe28)) |
 | `formuller/` | Hesap motoru formül spesifikasyonları ve Python test vektörleri |
+| `erisilebilirlik/` | Erişilebilirlik incelemeleri (WCAG 2.2 AA) |
 | `karsilastirma/` | BeerSmith ve Brewtarget hesaplarının karşılaştırması |
 | `CLAUDE.md` | Claude ile çalışırken uyulan kurallar |
 

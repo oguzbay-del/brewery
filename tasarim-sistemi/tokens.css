@@ -6,15 +6,15 @@
   --fill2: #f2f2f7;
   --sep: rgba(60,60,67,.18);
   --label: #000000;
-  --label2: rgba(60,60,67,.62);
+  --label2: rgba(60,60,67,.75);
   --label3: rgba(60,60,67,.35);
-  --tint: #a85f00;
+  --tint: #985600;
   --tint-fill: #e8901f;
   --tint-ink: #1a1206;
-  --tint-soft: rgba(168,95,0,.13);
-  --green: #248a3d;
-  --yellow: #b25000;
-  --red: #d70015;
+  --tint-soft: rgba(152,86,0,.13);
+  --green: #1d7233;
+  --yellow: #a04800;
+  --red: #c40013;
   --blue: #0066cc;
   --frame: #1d1d1f;
   --hp-bg: #cfd0d2;
@@ -24,8 +24,9 @@
   --hp-track: #b4b5b8;
   --hp-band: #f7f7f8;
   --hp-a1: #c4001a;
-  --hp-a2: #b35a00;
-  --hp-a3: #0a7f99;
+  --hp-a2: #9a4d00;
+  --hp-a2-ink: #ffffff;
+  --hp-a3: #086f86;
   --shadow-seg: 0 1px 2px rgba(0,0,0,.12);
   --shadow-knob: 0 1px 3px rgba(0,0,0,.25);
 }
@@ -55,6 +56,7 @@
   --hp-band: #8e8f93;
   --hp-a1: #ff5a5f;
   --hp-a2: #ffb340;
+  --hp-a2-ink: #111111;
   --hp-a3: #52c7e0;
 }
 [data-theme="contrast"] {

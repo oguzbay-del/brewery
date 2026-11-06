@@ -1,13 +1,14 @@
 <title>Demleme Arayüz Konsepti</title>
+<script>document.documentElement.lang="tr"</script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
 <style>
 /* Layout: anlatım tek sütun; her ekranda iPad (yatay) ve iPhone çerçevesi yan yana, dar ekranda alt alta. Apple sistem yazısı ve iOS sistem renk mantığı, uygulama vurgu rengi amber (wort). */
 :root{
   --bg:#f2f2f7; --card:#ffffff; --fill:#e5e5ea; --fill2:#f2f2f7; --sep:rgba(60,60,67,.18);
-  --label:#000000; --label2:rgba(60,60,67,.62); --label3:rgba(60,60,67,.35);
-  --tint:#a85f00; --tint-fill:#e8901f; --tint-ink:#1a1206; --tint-soft:rgba(168,95,0,.13);
-  --green:#248a3d; --yellow:#b25000; --red:#d70015; --blue:#0066cc;
+  --label:#000000; --label2:rgba(60,60,67,.75); --label3:rgba(60,60,67,.35);
+  --tint:#985600; --tint-fill:#e8901f; --tint-ink:#1a1206; --tint-soft:rgba(152,86,0,.13);
+  --green:#1d7233; --yellow:#a04800; --red:#c40013; --blue:#0066cc;
   --frame:#1d1d1f; --lock1:#2b2f3a; --lock2:#52423a;
   --sys:-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
   --round:"SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Helvetica Neue", system-ui, sans-serif;
@@ -54,11 +55,11 @@ ul.clean{margin:0;padding-left:18px;display:grid;gap:4px}
 
 
 /* operator (high-performance) view: ISA-101 inspired */
-.hp{--hp-bg:#cfd0d2;--hp-tile:#e2e3e5;--hp-ink:#1d1d1f;--hp-ink2:#4a4a4f;--hp-track:#b4b5b8;--hp-band:#f7f7f8;--hp-a1:#c4001a;--hp-a2:#b35a00;--hp-a3:#0a7f99;background:var(--hp-bg);color:var(--hp-ink)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hp{--hp-bg:#2b2c2e;--hp-tile:#3a3b3e;--hp-ink:#e6e6e8;--hp-ink2:#a9a9ad;--hp-track:#55565a;--hp-band:#8e8f93;--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0}}
-:root[data-theme="dark"] .hp{--hp-bg:#2b2c2e;--hp-tile:#3a3b3e;--hp-ink:#e6e6e8;--hp-ink2:#a9a9ad;--hp-track:#55565a;--hp-band:#8e8f93;--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0}
+.hp{--hp-bg:#cfd0d2;--hp-tile:#e2e3e5;--hp-ink:#1d1d1f;--hp-ink2:#4a4a4f;--hp-track:#b4b5b8;--hp-band:#f7f7f8;--hp-a1:#c4001a;--hp-a2:#9a4d00;--hp-a3:#086f86;--hp-a2-ink:#ffffff;background:var(--hp-bg);color:var(--hp-ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hp{--hp-bg:#2b2c2e;--hp-tile:#3a3b3e;--hp-ink:#e6e6e8;--hp-ink2:#a9a9ad;--hp-track:#55565a;--hp-band:#8e8f93;--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0;--hp-a2-ink:#111111}}
+:root[data-theme="dark"] .hp{--hp-bg:#2b2c2e;--hp-tile:#3a3b3e;--hp-ink:#e6e6e8;--hp-ink2:#a9a9ad;--hp-track:#55565a;--hp-band:#8e8f93;--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0;--hp-a2-ink:#111111}
 .ipad .scr.hp{background:var(--hp-bg)}
-.lvl{--hp-a1:#c4001a;--hp-a2:#b35a00;--hp-a3:#0a7f99}
+.lvl{--hp-a1:#c4001a;--hp-a2:#9a4d00;--hp-a3:#086f86;--hp-a2-ink:#ffffff}
 .backpill{margin:0 10px 6px;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:14px;background:var(--tint-fill);color:var(--tint-ink);font-size:12.5px;font-weight:600}
 .backpill .tm{margin-left:auto;font:600 13px/1 var(--round);font-variant-numeric:tabular-nums}
 .asheet{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:10px}
@@ -80,8 +81,8 @@ ul.clean{margin:0;padding-left:18px;display:grid;gap:4px}
 .mdmap[data-mode="ev"] .mdc[data-ev="K"],.mdmap[data-mode="ev"] .mdc[data-ev="KA"]{background:transparent;color:var(--label3);border-style:dotted}
 .mdkey{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--label2)}
 .mdkey i{display:inline-block;width:22px;height:12px;border-radius:4px;margin-right:4px;vertical-align:-1px;border:1px solid var(--sep);background:var(--card)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lvl{--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0}}
-:root[data-theme="dark"] .lvl{--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lvl{--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0;--hp-a2-ink:#111111}}
+:root[data-theme="dark"] .lvl{--hp-a1:#ff5a5f;--hp-a2:#ffb340;--hp-a3:#52c7e0;--hp-a2-ink:#111111}
 .edm{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;flex:none;color:#fff;font-weight:700;font-size:16px;line-height:1}
 .edm.rm{background:var(--red)} .edm.ad{background:var(--green)}
 .grip{margin-left:auto;color:var(--label3);font-size:18px;line-height:1;letter-spacing:-1px}
@@ -104,7 +105,7 @@ ul.clean{margin:0;padding-left:18px;display:grid;gap:4px}
 .hp .hpal .r{display:grid;grid-template-columns:22px 52px 1fr auto;gap:10px;align-items:center;padding:6px 10px;border-top:1px solid var(--hp-track)}
 .hp .hpal .r:first-child{border-top:0}
 .hpmark{display:inline-grid;place-items:center;width:18px;height:18px;font-size:11px;font-weight:800;color:#fff;border-radius:2px}
-.hpmark.a1{background:var(--hp-a1)} .hpmark.a2{background:var(--hp-a2);color:#111;transform:rotate(45deg) scale(.82)} .hpmark.a3{background:var(--hp-a3);border-radius:50%}
+.hpmark.a1{background:var(--hp-a1)} .hpmark.a2{background:var(--hp-a2);color:var(--hp-a2-ink,#111);transform:rotate(45deg) scale(.82)} .hpmark.a3{background:var(--hp-a3);border-radius:50%}
 .hpmark.a2>*{transform:rotate(-45deg)}
 .hp .ack{font-size:11.5px;font-weight:700;border:1px solid var(--hp-ink2);border-radius:4px;padding:2px 8px;color:var(--hp-ink)}
 .hpgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}
@@ -163,8 +164,8 @@ svg.flow [data-go]:focus-visible rect{stroke:var(--blue);stroke-width:2.5;stroke
 .ion small{font-size:10.5px;color:var(--label2);font-weight:600}
 .ion b{font:600 15px var(--round);font-variant-numeric:tabular-nums}
 .seg button{font:500 14px var(--sys);padding:7px 14px;border-radius:8px;border:0;background:transparent;color:var(--label);cursor:pointer}
-.seg button[aria-selected="true"]{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
-button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--tint-fill);outline-offset:2px}
+.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);font-weight:600}
+button:focus-visible,[tabindex]:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
 
 /* devices */
 .devices{display:grid;grid-template-columns:minmax(0,1fr) 316px;gap:22px;align-items:start}
@@ -411,13 +412,13 @@ table.cmp td:first-child{font-weight:600}
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
 </svg>
 
-<div class="wrap">
+<main class="wrap">
 <header class="top">
   <span class="eyebrow">Arayüz ve kullanım konsepti · v0.2 · Apple native</span>
   <h1>Demleme Arayüz Konsepti</h1>
   <p class="lead">iPad, iPhone ve Apple Watch için native SwiftUI uygulaması; masaüstünde (Mac ve PC) aynı özellikleri taşıyan web uygulaması. Ekranlar Apple'ın tasarım ilkelerine (HIG) göre çizildi ve her biri benzer işi yapan bir Apple uygulamasından fikir alıyor.</p>
   <div class="row"><span class="chip">Örnek tarif: <b>Citra Pale Ale</b> · 23 L · OG 1.052 · 38 IBU · 7 SRM</span><span class="chip">Tüm değerler örnektir</span></div>
-  <div class="row"><span style="font-size:13px;color:var(--label2)">Görünüm</span><div class="seg themesw" role="group" aria-label="Görünüm"><button data-th="system" aria-selected="true">Sistem</button><button data-th="light" aria-selected="false">Açık</button><button data-th="dark" aria-selected="false">Koyu</button></div></div>
+  <div class="row"><span style="font-size:13px;color:var(--label2)">Görünüm</span><div class="seg themesw" role="group" aria-label="Görünüm"><button data-th="system" aria-pressed="true">Sistem</button><button data-th="light" aria-pressed="false">Açık</button><button data-th="dark" aria-pressed="false">Koyu</button></div></div>
 </header>
 
 <section>
@@ -430,64 +431,64 @@ table.cmp td:first-child{font-weight:600}
       <tr><th colspan="3" style="text-align:left;background:var(--fill,transparent)">Tarif</th></tr>
       <tr><td>Tarif sihirbazı</td><td>iPhone Kurulum Asistanı, Sağlık ilk kurulum</td><td>Ekran başına tek soru, büyük ikon ve başlık, seçim kartları, altta sabit "Devam" düğmesi, ilerleme noktaları</td></tr>
       <tr><td>Tarif listesi</td><td>Notlar, Mail</td><td>Üç sütun: klasör, liste, önizleme; kartta biranın tahmini rengi</td></tr>
-      <tr><td>İçe aktarma<span class="newdot" aria-label="yeni"></span></td><td>Paylaş menüsü, Dosyalar, Fotoğraflar içe aktarma</td><td>Başka uygulamadan "Birlikte aç"; içe aktarmadan önce önizle, eşleşmeyen malzemeleri seç</td></tr>
+      <tr><td>İçe aktarma<span class="newdot" role="img" aria-label="yeni"></span></td><td>Paylaş menüsü, Dosyalar, Fotoğraflar içe aktarma</td><td>Başka uygulamadan "Birlikte aç"; içe aktarmadan önce önizle, eşleşmeyen malzemeleri seç</td></tr>
       <tr><td>Tarif editörü</td><td>Numbers, Notlar</td><td>Kenar çubuğu + içerik + sağda Inspector; tablo değişince her şey anında yeniden hesaplanır</td></tr>
       <tr><td>Su ve pH</td><td>Sağlık karşılaştırmalı grafikler, Numbers</td><td>Hedef ve gerçek profil üst üste çubuklar; tuzlar Inspector'da</td></tr>
-      <tr><td>Mash ve maya<span class="newdot" aria-label="yeni"></span></td><td>Fitness özel antrenman</td><td>Mash adımları antrenman blokları gibi: hedef sıcaklık ve süre, sürükleyerek sırala</td></tr>
-      <tr><td>Fermantasyon profili<span class="newdot" aria-label="yeni"></span></td><td>Ev otomasyonları, Fitness özel antrenman</td><td>"SG şu değere inince sonraki adım" koşulu; adım blokları ve grafik önizleme</td></tr>
+      <tr><td>Mash ve maya<span class="newdot" role="img" aria-label="yeni"></span></td><td>Fitness özel antrenman</td><td>Mash adımları antrenman blokları gibi: hedef sıcaklık ve süre, sürükleyerek sırala</td></tr>
+      <tr><td>Fermantasyon profili<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ev otomasyonları, Fitness özel antrenman</td><td>"SG şu değere inince sonraki adım" koşulu; adım blokları ve grafik önizleme</td></tr>
       <tr><td>Kaynatma programı</td><td>iMovie, GarageBand</td><td>Zaman çizelgesi; hop eklemeleri sürüklenebilir klipler, IBU anında güncellenir</td></tr>
-      <tr><td>Mead tarifi<span class="newdot" aria-label="yeni"></span></td><td>Sağlık İlaçlar</td><td>Besin dozları program olarak; her doz "eklendi" diye işaretlenir, kaçan doz hatırlatılır</td></tr>
+      <tr><td>Mead tarifi<span class="newdot" role="img" aria-label="yeni"></span></td><td>Sağlık İlaçlar</td><td>Besin dozları program olarak; her doz "eklendi" diye işaretlenir, kaçan doz hatırlatılır</td></tr>
       <tr><td>Karşılaştırma ve sürümler</td><td>Pages sürüm geçmişi, Xcode karşılaştırma</td><td>Sürümler zaman çizelgesinde; iki sürüm yan yana, farklar renkli</td></tr>
-      <tr><td>Stil kılavuzları<span class="newdot" aria-label="yeni"></span></td><td>Hava Durumu 10 günlük tahmin</td><td>Her değer bir aralık çubuğu (min–maks), tarifin değeri üzerinde nokta; BJCP ve BA alt alta</td></tr>
-      <tr><td>Malzeme<span class="newdot" aria-label="yeni"></span></td><td>App Store ürün sayfası, Müzik arşivi</td><td>Detayda yatay bilgi şeridi (alfa, yağ, yaş, stok); listede filtre ve sıralama</td></tr>
-      <tr><td>Ölçekleme<span class="newdot" aria-label="yeni"></span></td><td>Fotoğraflar düzenleme</td><td>Önce/sonra yan yana; hangi değerin korunduğu açıkça yazılır</td></tr>
-      <tr><td>Nasıl hesaplandı<span class="newdot" aria-label="yeni"></span></td><td>Hava Durumu ayrıntı kartları, Sağlık "Hakkında"</td><td>Her hesaplanan değere dokununca formül, girdiler ve katkılar</td></tr>
-      <tr><td>Kendi malzemen<span class="newdot" aria-label="yeni"></span></td><td>Kişiler yeni kişi, Canlı Metin</td><td>Kısa form, hazırdan kopyala; föyü tarayıp değerleri doldur</td></tr>
-      <tr><td>Su raporu<span class="newdot" aria-label="yeni"></span></td><td>Canlı Metin, Sağlık veri ekleme</td><td>Kağıt rapordan sayıları okur, iyon dengesiyle kontrol eder</td></tr>
+      <tr><td>Stil kılavuzları<span class="newdot" role="img" aria-label="yeni"></span></td><td>Hava Durumu 10 günlük tahmin</td><td>Her değer bir aralık çubuğu (min–maks), tarifin değeri üzerinde nokta; BJCP ve BA alt alta</td></tr>
+      <tr><td>Malzeme<span class="newdot" role="img" aria-label="yeni"></span></td><td>App Store ürün sayfası, Müzik arşivi</td><td>Detayda yatay bilgi şeridi (alfa, yağ, yaş, stok); listede filtre ve sıralama</td></tr>
+      <tr><td>Ölçekleme<span class="newdot" role="img" aria-label="yeni"></span></td><td>Fotoğraflar düzenleme</td><td>Önce/sonra yan yana; hangi değerin korunduğu açıkça yazılır</td></tr>
+      <tr><td>Nasıl hesaplandı<span class="newdot" role="img" aria-label="yeni"></span></td><td>Hava Durumu ayrıntı kartları, Sağlık "Hakkında"</td><td>Her hesaplanan değere dokununca formül, girdiler ve katkılar</td></tr>
+      <tr><td>Kendi malzemen<span class="newdot" role="img" aria-label="yeni"></span></td><td>Kişiler yeni kişi, Canlı Metin</td><td>Kısa form, hazırdan kopyala; föyü tarayıp değerleri doldur</td></tr>
+      <tr><td>Su raporu<span class="newdot" role="img" aria-label="yeni"></span></td><td>Canlı Metin, Sağlık veri ekleme</td><td>Kağıt rapordan sayıları okur, iyon dengesiyle kontrol eder</td></tr>
       <tr><th colspan="3" style="text-align:left;background:var(--fill,transparent)">Demleme</th></tr>
       <tr><td>Demleme günü</td><td>Fitness (antrenman), Saat, Haritalar</td><td>Canlı seans ve halka sayaç, "sıradaki adım" kartı, kilit ekranında Live Activity, Dynamic Island</td></tr>
       <tr><td>Kağıt ve düzeltme</td><td>Sağlık "Veri Ekle", Takvim, Fitness elle antrenman, Notlar belge tarama</td><td>Saat ve süre elle girilir, sonradan düzenlenir; plan ile gerçekleşen yan yana; kağıt taranıp eklenir</td></tr>
       <tr><td>Fermantasyon</td><td>Sağlık (Health)</td><td>Cihaz ölçümleri, "Öne Çıkanlar" yorumları, özet kartları, Swift Charts grafik, widget</td></tr>
-      <tr><td>Parti başlatma<span class="newdot" aria-label="yeni"></span></td><td>Takvim yeni etkinlik, Anımsatıcılar</td><td>Tarih, ekipman, tank; stok kontrolü ve hazırlık hatırlatmaları tek sayfada</td></tr>
-      <tr><td>Apple Watch<span class="newdot" aria-label="yeni"></span></td><td>Antrenman (watchOS), Saat zamanlayıcıları</td><td>Kaydırılan sayfalar, çoklu zamanlayıcı, titreşimli alarm, Digital Crown ile değer girişi</td></tr>
-      <tr><td>Uyarı kuralları<span class="newdot" aria-label="yeni"></span></td><td>Kestirmeler otomasyonları</td><td>"Eğer / O zaman" kartları; hazır kurallar açık gelir</td></tr>
+      <tr><td>Parti başlatma<span class="newdot" role="img" aria-label="yeni"></span></td><td>Takvim yeni etkinlik, Anımsatıcılar</td><td>Tarih, ekipman, tank; stok kontrolü ve hazırlık hatırlatmaları tek sayfada</td></tr>
+      <tr><td>Apple Watch<span class="newdot" role="img" aria-label="yeni"></span></td><td>Antrenman (watchOS), Saat zamanlayıcıları</td><td>Kaydırılan sayfalar, çoklu zamanlayıcı, titreşimli alarm, Digital Crown ile değer girişi</td></tr>
+      <tr><td>Uyarı kuralları<span class="newdot" role="img" aria-label="yeni"></span></td><td>Kestirmeler otomasyonları</td><td>"Eğer / O zaman" kartları; hazır kurallar açık gelir</td></tr>
       <tr><td>Parti özeti</td><td>Fitness antrenman özeti</td><td>Bitince özet kartı: hedef ve gerçek, verim, notlar</td></tr>
-      <tr><td>Araçlar<span class="newdot" aria-label="yeni"></span></td><td>Hesap Makinesi birim dönüştürme, Ölçü</td><td>Tek giriş alanı, sonuç anında; sık kullanılanlar üstte</td></tr>
+      <tr><td>Araçlar<span class="newdot" role="img" aria-label="yeni"></span></td><td>Hesap Makinesi birim dönüştürme, Ölçü</td><td>Tek giriş alanı, sonuç anında; sık kullanılanlar üstte</td></tr>
       <tr><th colspan="3" style="text-align:left;background:var(--fill,transparent)">Üretim</th></tr>
       <tr><td>Bugün</td><td>Takvim gün görünümü, Anımsatıcılar Bugün</td><td>Tüm partilerin görevleri saate göre tek listede</td></tr>
-      <tr><td>Bugün düzenleme<span class="newdot" aria-label="yeni"></span></td><td>Denetim Merkezi özelleştirme, Fitness "Özeti Düzenle", Anımsatıcılar akıllı listeler</td><td>Eksiyle çıkar, artıyla ekle, tutamaçla sırala; kayıtlı görünüm akıllı liste gibi</td></tr>
+      <tr><td>Bugün düzenleme<span class="newdot" role="img" aria-label="yeni"></span></td><td>Denetim Merkezi özelleştirme, Fitness "Özeti Düzenle", Anımsatıcılar akıllı listeler</td><td>Eksiyle çıkar, artıyla ekle, tutamaçla sırala; kayıtlı görünüm akıllı liste gibi</td></tr>
       <tr><td>Üretim panosu</td><td>Ev (Home), Takvim, Anımsatıcılar sütun görünümü</td><td>Her tank bir durum kutucuğu; haftalık tank takvimi; partiler aşama sütunlarında</td></tr>
-      <tr><td>Operatör görünümü<span class="newdot" aria-label="yeni"></span></td><td>(Apple dışı) ISA-101 kontrol odası ekranları</td><td>Normal durum gri, renk yalnız sapmada; şekil ve numarayla öncelik; normal aralık bantlı küçük ölçekler</td></tr>
+      <tr><td>Operatör görünümü<span class="newdot" role="img" aria-label="yeni"></span></td><td>(Apple dışı) ISA-101 kontrol odası ekranları</td><td>Normal durum gri, renk yalnız sapmada; şekil ve numarayla öncelik; normal aralık bantlı küçük ölçekler</td></tr>
       <tr><td>Onaylar</td><td>Mail gelen kutusu</td><td>Bekleyenler listesi, kaydırarak onayla/reddet, ayrıntı sağda</td></tr>
       <tr><td>Kalite</td><td>Sağlık aralık grafikleri</td><td>Spesifikasyon bandı ve ölçüm noktaları; banttan çıkan nokta kırmızı</td></tr>
-      <tr><td>CIP ve ambalaj<span class="newdot" aria-label="yeni"></span></td><td>Anımsatıcılar</td><td>Alt görevli kontrol listesi; her adım kim ve ne zaman ile işaretlenir</td></tr>
-      <tr><td>Maya yönetimi<span class="newdot" aria-label="yeni"></span></td><td>Sağlık eğilimleri, Bul</td><td>Canlılık düşüşü eğilim kartı; slurry hangi kapta, kaçıncı nesil, Bul'daki öğe listesi gibi</td></tr>
+      <tr><td>CIP ve ambalaj<span class="newdot" role="img" aria-label="yeni"></span></td><td>Anımsatıcılar</td><td>Alt görevli kontrol listesi; her adım kim ve ne zaman ile işaretlenir</td></tr>
+      <tr><td>Maya yönetimi<span class="newdot" role="img" aria-label="yeni"></span></td><td>Sağlık eğilimleri, Bul</td><td>Canlılık düşüşü eğilim kartı; slurry hangi kapta, kaçıncı nesil, Bul'daki öğe listesi gibi</td></tr>
       <tr><td>Raporlar</td><td>Sağlık özet kartları, Ekran Süresi</td><td>Haftalık özet, önceki dönemle karşılaştırma</td></tr>
-      <tr><td>Tank hareketi<span class="newdot" aria-label="yeni"></span></td><td>Dosyalar taşı/kopyala, iPad sürükle-bırak</td><td>Partiyi bir tanktan diğerine sürükle; hedef dolu ya da kirliyse bırakılamaz</td></tr>
-      <tr><td>Tank turu çıktısı<span class="newdot" aria-label="yeni"></span></td><td>Pages yazdırma, AirPrint</td><td>Yazdırmadan önce önizleme; kağıt boyutu ve şablon seçimi</td></tr>
-      <tr><td>Sapma kaydı<span class="newdot" aria-label="yeni"></span></td><td>Geri Bildirim Asistanı, Anımsatıcılar</td><td>Adım adım form (ne oldu, etki, kök neden); düzeltici faaliyet kişiye ve tarihe atanır</td></tr>
-      <tr><td>Etiket<span class="newdot" aria-label="yeni"></span></td><td>Pages şablonları</td><td>Şablon seç, alanlar tariften dolar, canlı önizleme</td></tr>
-      <tr><td>Kullanıcı değiştir ve davet<span class="newdot" aria-label="yeni"></span></td><td>Apple TV profil seçimi, Aile Paylaşımı</td><td>Ortak iPad'de yüz/isim kutucukları, PIN veya Face ID; davet rol seçerek gönderilir</td></tr>
-      <tr><td>Denetim kaydı<span class="newdot" aria-label="yeni"></span></td><td>Notlar/Numbers "Etkinlik", Cüzdan işlem geçmişi</td><td>Kim neyi ne zaman değiştirdi, kişiye ve tarihe göre filtre</td></tr>
-      <tr><td>Tank detayı<span class="newdot" aria-label="yeni"></span></td><td>Ev aksesuar ayrıntısı</td><td>Durum kartları, plan, CIP ve bakım geçmişi</td></tr>
-      <tr><td>İzlenebilirlik<span class="newdot" aria-label="yeni"></span></td><td>Dosyalar sütun görünümü</td><td>Lottan partiye, tanka, ambalaja soldan sağa zincir</td></tr>
+      <tr><td>Tank hareketi<span class="newdot" role="img" aria-label="yeni"></span></td><td>Dosyalar taşı/kopyala, iPad sürükle-bırak</td><td>Partiyi bir tanktan diğerine sürükle; hedef dolu ya da kirliyse bırakılamaz</td></tr>
+      <tr><td>Tank turu çıktısı<span class="newdot" role="img" aria-label="yeni"></span></td><td>Pages yazdırma, AirPrint</td><td>Yazdırmadan önce önizleme; kağıt boyutu ve şablon seçimi</td></tr>
+      <tr><td>Sapma kaydı<span class="newdot" role="img" aria-label="yeni"></span></td><td>Geri Bildirim Asistanı, Anımsatıcılar</td><td>Adım adım form (ne oldu, etki, kök neden); düzeltici faaliyet kişiye ve tarihe atanır</td></tr>
+      <tr><td>Etiket<span class="newdot" role="img" aria-label="yeni"></span></td><td>Pages şablonları</td><td>Şablon seç, alanlar tariften dolar, canlı önizleme</td></tr>
+      <tr><td>Kullanıcı değiştir ve davet<span class="newdot" role="img" aria-label="yeni"></span></td><td>Apple TV profil seçimi, Aile Paylaşımı</td><td>Ortak iPad'de yüz/isim kutucukları, PIN veya Face ID; davet rol seçerek gönderilir</td></tr>
+      <tr><td>Denetim kaydı<span class="newdot" role="img" aria-label="yeni"></span></td><td>Notlar/Numbers "Etkinlik", Cüzdan işlem geçmişi</td><td>Kim neyi ne zaman değiştirdi, kişiye ve tarihe göre filtre</td></tr>
+      <tr><td>Tank detayı<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ev aksesuar ayrıntısı</td><td>Durum kartları, plan, CIP ve bakım geçmişi</td></tr>
+      <tr><td>İzlenebilirlik<span class="newdot" role="img" aria-label="yeni"></span></td><td>Dosyalar sütun görünümü</td><td>Lottan partiye, tanka, ambalaja soldan sağa zincir</td></tr>
       <tr><th colspan="3" style="text-align:left;background:var(--fill,transparent)">Sistem</th></tr>
       <tr><td>İlk açılış</td><td>iPhone Kurulum Asistanı, Sign in with Apple</td><td>Kısa adımlar; veri sunucuda olduğu için giriş ilk açılışta</td></tr>
-      <tr><td>Ekipman sihirbazı<span class="newdot" aria-label="yeni"></span></td><td>Kurulum Asistanı</td><td>Dört soru, gerisi varsayılan</td></tr>
-      <tr><td>Kaplar<span class="newdot" aria-label="yeni"></span></td><td>Ayarlar listesi + ayrıntı, Kişiler kartı</td><td>Türe göre gruplu liste; vergi ve rapor uygunluğu girilen alanlardan kendiliğinden</td></tr>
-      <tr><td>Kalibrasyon<span class="newdot" aria-label="yeni"></span></td><td>Sağlık eğilimleri, Pil önerileri</td><td>Son partilerdeki eğilim küçük grafikle; öneri önce/sonra etkisiyle, onaysız değişiklik yok</td></tr>
-      <tr><td>Cihazlar<span class="newdot" aria-label="yeni"></span></td><td>Ev aksesuar ekleme</td><td>QR/yakınlıkla ekle, odaya (tanka) ata, durum kutucuğu</td></tr>
+      <tr><td>Ekipman sihirbazı<span class="newdot" role="img" aria-label="yeni"></span></td><td>Kurulum Asistanı</td><td>Dört soru, gerisi varsayılan</td></tr>
+      <tr><td>Kaplar<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar listesi + ayrıntı, Kişiler kartı</td><td>Türe göre gruplu liste; vergi ve rapor uygunluğu girilen alanlardan kendiliğinden</td></tr>
+      <tr><td>Kalibrasyon<span class="newdot" role="img" aria-label="yeni"></span></td><td>Sağlık eğilimleri, Pil önerileri</td><td>Son partilerdeki eğilim küçük grafikle; öneri önce/sonra etkisiyle, onaysız değişiklik yok</td></tr>
+      <tr><td>Cihazlar<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ev aksesuar ekleme</td><td>QR/yakınlıkla ekle, odaya (tanka) ata, durum kutucuğu</td></tr>
       <tr><td>Stok</td><td>Numbers, Cüzdan, Anımsatıcılar</td><td>Tablo + Inspector'da lotlar; işlem geçmişi gibi hareketler; kategorili alışveriş listesi</td></tr>
-      <tr><td>Mal kabul ve sayım<span class="newdot" aria-label="yeni"></span></td><td>Kamera kod tarayıcı, Anımsatıcılar</td><td>Barkodu okut, satır işaretlenir; sayım farkı ayrı listede</td></tr>
-      <tr><td>Takvim<span class="newdot" aria-label="yeni"></span></td><td>Takvim ay görünümü</td><td>Ay görünümü, partiler renkli şerit; Apple Takvim'e abonelik</td></tr>
-      <tr><td>Arama<span class="newdot" aria-label="yeni"></span></td><td>Spotlight, Mail arama belirteçleri</td><td>Tek alan, sonuçlar türe göre gruplu; "Tank:", "Tarih:" gibi belirteçlerle daraltma</td></tr>
+      <tr><td>Mal kabul ve sayım<span class="newdot" role="img" aria-label="yeni"></span></td><td>Kamera kod tarayıcı, Anımsatıcılar</td><td>Barkodu okut, satır işaretlenir; sayım farkı ayrı listede</td></tr>
+      <tr><td>Takvim<span class="newdot" role="img" aria-label="yeni"></span></td><td>Takvim ay görünümü</td><td>Ay görünümü, partiler renkli şerit; Apple Takvim'e abonelik</td></tr>
+      <tr><td>Arama<span class="newdot" role="img" aria-label="yeni"></span></td><td>Spotlight, Mail arama belirteçleri</td><td>Tek alan, sonuçlar türe göre gruplu; "Tank:", "Tarih:" gibi belirteçlerle daraltma</td></tr>
       <tr><td>Ayarlar</td><td>Ayarlar (iPad), Sistem Ayarları</td><td>Solda renkli ikonlu kategoriler, sağda gruplu ayrıntı; iPhone'da gruplu liste</td></tr>
-      <tr><td>Gezinme<span class="newdot" aria-label="yeni"></span></td><td>Ayarlar ve Notlar'da geri düğmesi, Telefon ve Haritalar'ın süren işlem şeridi, Safari</td><td>Geri düğmesi önceki ekranın adını taşır; sheet'te Vazgeç/Kaydet ve silme onayı; süren demleme için şerit; web'de adres ve iz yolu</td></tr>
-      <tr><td>Mod ayrımı<span class="newdot" aria-label="yeni"></span></td><td>Ayarlar › Ekran Süresi "İzin Verilenler", Odak profilleri</td><td>Mod seçimi tek yerde; Ev'de gizlenenler listede görünür, açılabilenler tek tek anahtarla</td></tr>
-      <tr><td>Bildirim yönlendirme<span class="newdot" aria-label="yeni"></span></td><td>Ayarlar › Bildirimler, Odak, Planlı Özet, zamana duyarlı bildirim</td><td>Üç öncelik, sessiz saat, günlük özet; vardiya ve yükseltme İşletme'de</td></tr>
-      <tr><td>Hesap<span class="newdot" aria-label="yeni"></span></td><td>Ayarlar › Apple Hesabı</td><td>Cihaz listesi, çıkış, dışa aktarma ve hesap silme</td></tr>
-      <tr><td>Boş ve hata durumları<span class="newdot" aria-label="yeni"></span></td><td>Notlar/Fotoğraflar boş durumları, Pages ortak düzenleme</td><td>Ne olduğunu ve ilk adımı söyleyen boş ekran; kaydederken kayıt değişmişse iki sürümü gösterip seçtir</td></tr>
-      <tr><td>Abonelik<span class="newdot" aria-label="yeni"></span></td><td>App Store abonelikleri, Apple One</td><td>Planlar yan yana, mevcut plan işaretli; StoreKit'in hazır abonelik ekranı</td></tr>
+      <tr><td>Gezinme<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar ve Notlar'da geri düğmesi, Telefon ve Haritalar'ın süren işlem şeridi, Safari</td><td>Geri düğmesi önceki ekranın adını taşır; sheet'te Vazgeç/Kaydet ve silme onayı; süren demleme için şerit; web'de adres ve iz yolu</td></tr>
+      <tr><td>Mod ayrımı<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar › Ekran Süresi "İzin Verilenler", Odak profilleri</td><td>Mod seçimi tek yerde; Ev'de gizlenenler listede görünür, açılabilenler tek tek anahtarla</td></tr>
+      <tr><td>Bildirim yönlendirme<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar › Bildirimler, Odak, Planlı Özet, zamana duyarlı bildirim</td><td>Üç öncelik, sessiz saat, günlük özet; vardiya ve yükseltme İşletme'de</td></tr>
+      <tr><td>Hesap<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar › Apple Hesabı</td><td>Cihaz listesi, çıkış, dışa aktarma ve hesap silme</td></tr>
+      <tr><td>Boş ve hata durumları<span class="newdot" role="img" aria-label="yeni"></span></td><td>Notlar/Fotoğraflar boş durumları, Pages ortak düzenleme</td><td>Ne olduğunu ve ilk adımı söyleyen boş ekran; kaydederken kayıt değişmişse iki sürümü gösterip seçtir</td></tr>
+      <tr><td>Abonelik<span class="newdot" role="img" aria-label="yeni"></span></td><td>App Store abonelikleri, Apple One</td><td>Planlar yan yana, mevcut plan işaretli; StoreKit'in hazır abonelik ekranı</td></tr>
     </tbody>
   </table></div>
 </section>
@@ -526,68 +527,68 @@ table.cmp td:first-child{font-weight:600}
   <div class="navgroups">
   <div class="ng"><b>Tarif</b><div class="seg" role="tablist" aria-label="Tarif ekranları" id="grp-tarif">
     <button role="tab" id="tab-wiz" aria-selected="true" aria-controls="pane-wiz">Sihirbaz</button>
-    <button role="tab" id="tab-rl" aria-selected="false" aria-controls="pane-rl">Tarif listesi<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-im" aria-selected="false" aria-controls="pane-im">İçe aktarma<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-rl" aria-selected="false" aria-controls="pane-rl">Tarif listesi<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-im" aria-selected="false" aria-controls="pane-im">İçe aktarma<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-ed" aria-selected="false" aria-controls="pane-ed">Tarif editörü</button>
-    <button role="tab" id="tab-wa" aria-selected="false" aria-controls="pane-wa">Su ve pH<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-mm" aria-selected="false" aria-controls="pane-mm">Mash ve maya<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-fp" aria-selected="false" aria-controls="pane-fp">Fermantasyon profili<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-wa" aria-selected="false" aria-controls="pane-wa">Su ve pH<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-mm" aria-selected="false" aria-controls="pane-mm">Mash ve maya<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-fp" aria-selected="false" aria-controls="pane-fp">Fermantasyon profili<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-tl" aria-selected="false" aria-controls="pane-tl">Kaynatma programı</button>
-    <button role="tab" id="tab-mead" aria-selected="false" aria-controls="pane-mead">Mead tarifi<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-cmp" aria-selected="false" aria-controls="pane-cmp">Karşılaştırma<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-sg" aria-selected="false" aria-controls="pane-sg">Stil kılavuzları<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-ing" aria-selected="false" aria-controls="pane-ing">Malzeme<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-sc" aria-selected="false" aria-controls="pane-sc">Ölçekleme<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-hw" aria-selected="false" aria-controls="pane-hw">Nasıl hesaplandı<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-ci" aria-selected="false" aria-controls="pane-ci">Kendi malzemen<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-wr" aria-selected="false" aria-controls="pane-wr">Su raporu<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-mead" aria-selected="false" aria-controls="pane-mead">Mead tarifi<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-cmp" aria-selected="false" aria-controls="pane-cmp">Karşılaştırma<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-sg" aria-selected="false" aria-controls="pane-sg">Stil kılavuzları<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-ing" aria-selected="false" aria-controls="pane-ing">Malzeme<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-sc" aria-selected="false" aria-controls="pane-sc">Ölçekleme<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-hw" aria-selected="false" aria-controls="pane-hw">Nasıl hesaplandı<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-ci" aria-selected="false" aria-controls="pane-ci">Kendi malzemen<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-wr" aria-selected="false" aria-controls="pane-wr">Su raporu<span class="newdot" role="img" aria-label="yeni"></span></button>
   </div></div>
   <div class="ng"><b>Demleme</b><div class="seg" role="tablist" aria-label="Demleme ekranları" id="grp-demleme">
     <button role="tab" id="tab-bd" aria-selected="false" aria-controls="pane-bd">Demleme günü</button>
     <button role="tab" id="tab-pp" aria-selected="false" aria-controls="pane-pp">Kağıt ve düzeltme</button>
     <button role="tab" id="tab-fe" aria-selected="false" aria-controls="pane-fe">Fermantasyon</button>
-    <button role="tab" id="tab-wt" aria-selected="false" aria-controls="pane-wt">Apple Watch<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-ru" aria-selected="false" aria-controls="pane-ru">Uyarı kuralları<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-bs" aria-selected="false" aria-controls="pane-bs">Parti özeti<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-tools" aria-selected="false" aria-controls="pane-tools">Araçlar<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-pb" aria-selected="false" aria-controls="pane-pb">Parti başlatma<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-wt" aria-selected="false" aria-controls="pane-wt">Apple Watch<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-ru" aria-selected="false" aria-controls="pane-ru">Uyarı kuralları<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-bs" aria-selected="false" aria-controls="pane-bs">Parti özeti<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-tools" aria-selected="false" aria-controls="pane-tools">Araçlar<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-pb" aria-selected="false" aria-controls="pane-pb">Parti başlatma<span class="newdot" role="img" aria-label="yeni"></span></button>
   </div></div>
   <div class="ng"><b>Üretim</b><div class="seg" role="tablist" aria-label="İşletme ekranları" id="grp-uretim">
-    <button role="tab" id="tab-td" aria-selected="false" aria-controls="pane-td">Bugün<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-dz" aria-selected="false" aria-controls="pane-dz">Bugün düzenleme<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-td" aria-selected="false" aria-controls="pane-td">Bugün<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-dz" aria-selected="false" aria-controls="pane-dz">Bugün düzenleme<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-pr" aria-selected="false" aria-controls="pane-pr">Üretim panosu</button>
-    <button role="tab" id="tab-op" aria-selected="false" aria-controls="pane-op">Operatör görünümü<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-ap" aria-selected="false" aria-controls="pane-ap">Onaylar<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-qa" aria-selected="false" aria-controls="pane-qa">Kalite<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-cip" aria-selected="false" aria-controls="pane-cip">CIP ve ambalaj<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-ym" aria-selected="false" aria-controls="pane-ym">Maya yönetimi<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-rp" aria-selected="false" aria-controls="pane-rp">Raporlar<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-mv" aria-selected="false" aria-controls="pane-mv">Tank hareketi<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-tt" aria-selected="false" aria-controls="pane-tt">Tank turu çıktısı<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-dvx" aria-selected="false" aria-controls="pane-dvx">Sapma kaydı<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-lb" aria-selected="false" aria-controls="pane-lb">Etiket<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-us" aria-selected="false" aria-controls="pane-us">Kullanıcı değiştir ve davet<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-au" aria-selected="false" aria-controls="pane-au">Denetim kaydı<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-tk" aria-selected="false" aria-controls="pane-tk">Tank detayı<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-lt" aria-selected="false" aria-controls="pane-lt">İzlenebilirlik<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-op" aria-selected="false" aria-controls="pane-op">Operatör görünümü<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-ap" aria-selected="false" aria-controls="pane-ap">Onaylar<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-qa" aria-selected="false" aria-controls="pane-qa">Kalite<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-cip" aria-selected="false" aria-controls="pane-cip">CIP ve ambalaj<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-ym" aria-selected="false" aria-controls="pane-ym">Maya yönetimi<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-rp" aria-selected="false" aria-controls="pane-rp">Raporlar<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-mv" aria-selected="false" aria-controls="pane-mv">Tank hareketi<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-tt" aria-selected="false" aria-controls="pane-tt">Tank turu çıktısı<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-dvx" aria-selected="false" aria-controls="pane-dvx">Sapma kaydı<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-lb" aria-selected="false" aria-controls="pane-lb">Etiket<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-us" aria-selected="false" aria-controls="pane-us">Kullanıcı değiştir ve davet<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-au" aria-selected="false" aria-controls="pane-au">Denetim kaydı<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-tk" aria-selected="false" aria-controls="pane-tk">Tank detayı<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-lt" aria-selected="false" aria-controls="pane-lt">İzlenebilirlik<span class="newdot" role="img" aria-label="yeni"></span></button>
   </div></div>
   <div class="ng"><b>Sistem</b><div class="seg" role="tablist" aria-label="Sistem ekranları" id="grp-sistem">
-    <button role="tab" id="tab-ob" aria-selected="false" aria-controls="pane-ob">İlk açılış<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-eqw" aria-selected="false" aria-controls="pane-eqw">Ekipman sihirbazı<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-kp" aria-selected="false" aria-controls="pane-kp">Kaplar<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-cl" aria-selected="false" aria-controls="pane-cl">Kalibrasyon<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-dv" aria-selected="false" aria-controls="pane-dv">Cihazlar<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-ob" aria-selected="false" aria-controls="pane-ob">İlk açılış<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-eqw" aria-selected="false" aria-controls="pane-eqw">Ekipman sihirbazı<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-kp" aria-selected="false" aria-controls="pane-kp">Kaplar<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-cl" aria-selected="false" aria-controls="pane-cl">Kalibrasyon<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-dv" aria-selected="false" aria-controls="pane-dv">Cihazlar<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-inv" aria-selected="false" aria-controls="pane-inv">Stok</button>
-    <button role="tab" id="tab-rcv" aria-selected="false" aria-controls="pane-rcv">Mal kabul ve sayım<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-cal" aria-selected="false" aria-controls="pane-cal">Takvim<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-se" aria-selected="false" aria-controls="pane-se">Arama<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-rcv" aria-selected="false" aria-controls="pane-rcv">Mal kabul ve sayım<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-cal" aria-selected="false" aria-controls="pane-cal">Takvim<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-se" aria-selected="false" aria-controls="pane-se">Arama<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-st" aria-selected="false" aria-controls="pane-st">Ayarlar</button>
-    <button role="tab" id="tab-nt" aria-selected="false" aria-controls="pane-nt">Bildirim yönlendirme<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-md" aria-selected="false" aria-controls="pane-md">Mod ayrımı<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-gz" aria-selected="false" aria-controls="pane-gz">Gezinme<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-es" aria-selected="false" aria-controls="pane-es">Boş ve hata durumları<span class="newdot" aria-label="yeni"></span></button>
-    <button role="tab" id="tab-sub" aria-selected="false" aria-controls="pane-sub">Abonelik<span class="newdot" aria-label="yeni"></span></button>
-      <button role="tab" id="tab-ac" aria-selected="false" aria-controls="pane-ac">Hesap<span class="newdot" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-nt" aria-selected="false" aria-controls="pane-nt">Bildirim yönlendirme<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-md" aria-selected="false" aria-controls="pane-md">Mod ayrımı<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-gz" aria-selected="false" aria-controls="pane-gz">Gezinme<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-es" aria-selected="false" aria-controls="pane-es">Boş ve hata durumları<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-sub" aria-selected="false" aria-controls="pane-sub">Abonelik<span class="newdot" role="img" aria-label="yeni"></span></button>
+      <button role="tab" id="tab-ac" aria-selected="false" aria-controls="pane-ac">Hesap<span class="newdot" role="img" aria-label="yeni"></span></button>
   </div></div>
   </div>
 
@@ -3540,14 +3541,14 @@ table.cmp td:first-child{font-weight:600}
   </div>
   <p style="font-size:13px;color:var(--label2)">Kapsam dışı: Android, ayrı Mac ve Windows uygulaması (masaüstü web'den); topluluk ve herkese açık tarif paylaşımı (içe/dışa aktarma var); satış ve sipariş, dağıtım, fıçı takibi, CRM, muhasebe (ERP katmanı).</p>
 </section>
-</div>
+</main>
 
 <script>
 (function(){
   // theme
   (function(){var bs=[].slice.call(document.querySelectorAll('[data-th]'));
     function set(v){if(v==='system')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',v);
-      bs.forEach(function(b){b.setAttribute('aria-selected',b.getAttribute('data-th')===v);});try{localStorage.setItem('th',v);}catch(e){}}
+      bs.forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-th')===v);});try{localStorage.setItem('th',v);}catch(e){}}
     bs.forEach(function(b){b.addEventListener('click',function(){set(b.getAttribute('data-th'));});});
     var v='system';try{v=localStorage.getItem('th')||'system';}catch(e){}set(v);})();
   document.addEventListener('click',function(e){var b=e.target.closest('#pane-st .seg button');if(!b)return;[].forEach.call(b.parentNode.children,function(x){x.setAttribute('aria-selected',x===b);});});
