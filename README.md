@@ -1,6 +1,6 @@
 # Demleme
 
-Ev biracıları ve küçük bira fabrikaları için iPad, iPhone, Apple Watch ve web'de çalışacak tarif ve üretim uygulamasının plan ve tasarım çalışması. Uygulama kodu henüz yazılmadı.
+Ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışacak tarif ve üretim uygulamasının plan ve tasarım çalışması. Uygulama kodu henüz yazılmadı.
 
 | Klasör | İçerik |
 | --- | --- |

@@ -1,4 +1,4 @@
-Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone, Apple Watch ve web'de çalışan bir tarif ve üretim uygulaması. Görsel dil Apple'ın kendi uygulamalarını izler: sistem yazısı, sistem renkleri, standart bileşenler ve tek bir vurgu rengi, mayşe amberi.
+Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışan (Apple Watch ileride opsiyonel) bir tarif ve üretim uygulaması. Görsel dil Apple'ın kendi uygulamalarını izler: sistem yazısı, sistem renkleri, standart bileşenler ve tek bir vurgu rengi, mayşe amberi.
 
 ## İçerik ve dil
 

@@ -11,8 +11,8 @@ Bira üretimine odaklı, ev biracıları ve küçük işletmeler için iki modlu
 | Segmentler | Ev modu ve İşletme modu; tek uygulama, aynı veri modeli |
 | Kapsam | Tarif, demleme, fermantasyon, üretim, envanter, maliyet, mevzuat raporları |
 | Kapsam dışı | ERP katmanı: satış, sipariş, dağıtım, fıçı takibi, CRM, muhasebe. Topluluk ve herkese açık tarif paylaşımı (kullanıcılar mevcut platformları kullanır; bizde içe ve dışa aktarma var) |
-| Platformlar | iPad (tam), iPhone (demleme günü odaklı), Apple Watch, web (Mac ve PC, tam) |
-| Desteklenmeyen | Android, ayrı Mac ve Windows uygulaması |
+| Platformlar | iPad (tam), iPhone (demleme günü odaklı), web (Mac ve PC, tam). Apple Watch ileride opsiyonel |
+| Desteklenmeyen | Android, ayrı Mac ve Windows uygulaması; Apple Watch şimdilik yok (tasarımı konseptte duruyor, ileride opsiyonel eklenebilir) |
 | Mimari | Apple: native SwiftUI. Web: React + TypeScript. Hesap motoru: Rust, yalnız sunucuda; istemciler API ile kullanır |
 | Tasarım | Apple tasarım ilkeleri (HIG); her ekran benzer işi yapan bir Apple uygulamasından fikir alıyor |
 | Stil kılavuzları | BJCP 2021, BJCP mead/cider ve Brewers Association gömülü; her aşamada seçilebilir |
@@ -55,7 +55,7 @@ Mod çalışma alanı bazında seçilir. **Açık:** modda tam çalışır. **Sa
 | Tarif ölçekleme | Açık | Açık | hL ve bbl birimleri İşletmede |
 | **Demleme ve fermantasyon** |  |  |  |
 | Parti başlatma | Sade | Açık | İşletmede tank ataması ve yalnız onaylı sürüm |
-| Demleme günü, Live Activity, Apple Watch | Açık (adım adım rehber) | Açık (üretim kaydı) | İşletmede operatör, sapma ve QC kaydı |
+| Demleme günü, Live Activity | Açık (adım adım rehber) | Açık (üretim kaydı) | İşletmede operatör, sapma ve QC kaydı |
 | Kâğıt, aktarma ve düzeltme | Açık | Açık | Tarama Ev'de isteğe bağlı; İşletmede zorunlu yapılabilir ve saklama süresince silinemez |
 | Fermantasyon, otomatik uyarı kuralları, parti özeti, araçlar | Açık | Açık | İşletmede fermantasyon tank detayına bağlı |
 | Ambalaj | Sade | Açık | Ev'de ayrı ekran yok: fermantasyondaki "Şişele / fıçıla" eylemi (priming, adet); İşletmede CIP ve ambalaj kaydı |
@@ -92,13 +92,13 @@ Apple cihazları native SwiftUI, masaüstü web; hepsi sunucudaki tek hesap moto
 | --- | --- | --- |
 | iPad | Tam özellik | SwiftUI |
 | iPhone | Demleme günü, fermantasyon, stok ve alışveriş tam; tarif görüntüleme ve basit düzenleme | SwiftUI |
-| Apple Watch | Sayaç, hop alarmı, adım onayı | SwiftUI watchOS |
+| Apple Watch | Şimdilik yok; ileride opsiyonel (sayaç, hop alarmı, adım onayı; tasarımı konseptte hazır) | SwiftUI watchOS (ileride) |
 | Web (Mac ve PC) | iPad ile aynı, tam özellik | React + TypeScript |
 | Mac uygulaması, Android | Yok | – |
 
 - **Hesap motoru:** Rust ile bir kez yazılır ve yalnız sunucuda çalışır. Tarif hesabı, ölçekleme, su ve pH, maliyet, vergi gibi tüm hesaplar ve kayıt oluşturma işleri internetle yapılır. Sık yapılan küçük sorgular (liste, arama, malzeme bilgisi) önbellekten hemen gösterilir ve arkada sunucudan tazelenir; tarif düzenlerken değişiklikler kısa aralıklarla toplu gönderilir.
 - **Veri:** tek kaynak sunucudaki veritabanıdır; cihazda çevrimdışı senkron yok, yalnız salt okunur önbellek tutulur. Tek istisna demleme günü: parti başlatılınca demleme paketi (tarif, adımlar, sayaçlar, hedef değerler) cihaza indirilir; sayaç, adım onayı ve ölçüm girişi internetsiz çalışır. Girilen ölçümler gönderim kuyruğunda bekler, bağlantı gelince gönderilir. Bağlantı yokken hesap gerektiren işler (ör. gerçek değerlerle OG/ABV yeniden hesabı) bağlantıyı bekler.
-- **Apple'a özgü:** Live Activity ve Dynamic Island, widget'lar, Watch, zamana duyarlı bildirimler, VisionKit belge tarama, Bluetooth (Tilt).
+- **Apple'a özgü:** Live Activity ve Dynamic Island, zamana duyarlı bildirimler, VisionKit belge tarama, Bluetooth (Tilt).
 - **iPad uygulamasının Apple Silicon Mac'lerde çalışması** App Store Connect'te kapatılır; Mac'te tek deneyim web olur.
 - **Maliyet:** arayüz iki kez yazılır (SwiftUI + React); web ve Apple arasında özellik eşitliği için ortak tasarım sistemi ve ekran spesifikasyonları gerekir.
 
@@ -252,7 +252,7 @@ BJCP 2021, BJCP mead/cider ve Brewers Association gömülü gelir; kullanıcı k
 Tarif plan, parti gerçekleşendir; demleme gününde yapılan her değişiklik partiye yazılır, tarif değişmez. Üretim ortamı ıslak olduğu için uygulama kağıtla birlikte çalışır.
 
 - **Ekran:** iPhone'da tam ekran tek adım, halka sayaç, "sıradaki adım" kartı, büyük düğmeler, ekran kapanmaz. iPad'de adım listesi, aktif adım ve ölçümler aynı ekranda.
-- **Sistem:** kilit ekranında Live Activity, Dynamic Island'da sayaç, Apple Watch'ta titreşimli hop alarmı, zamana duyarlı bildirimler; indirilen demleme paketiyle internetsiz çalışır.
+- **Sistem:** kilit ekranında Live Activity, Dynamic Island'da sayaç, zamana duyarlı bildirimler; indirilen demleme paketiyle internetsiz çalışır.
 - **Sayaç isteğe bağlı:** her adımda Başlat / Bitir; saatler elle girilir ("Şimdi", "5 dk önce", "15 dk önce", "Plan gibi"); başlangıç + bitiş ya da başlangıç + süre. Adım sayaç bitmeden kapatılabilir; sonraki adımların saatleri kayar.
 - **Düzeltmeler:** gerçek miktar, süre, sıcaklık, hacim; malzeme ikamesi; ek su veya şeker; adım ekle, atla, sırasını değiştir. Her sapma işaretlenir, OG/IBU/ABV gerçek değerlerle sunucuda yeniden hesaplanır (bağlantı yoksa bağlantı gelince). İstenirse "Gerçekleşeni tarifin yeni sürümü olarak kaydet".
 - **Ölçüm yorumu:** girilen ölçüm yorumlanır (internetle; paketteki hedef değerle basit karşılaştırma internetsiz de çalışır) (ör. "hacim 0.6 L düşük ama SG hedefte, düzeltme gerekmiyor").
@@ -266,7 +266,7 @@ Tarif plan, parti gerçekleşendir; demleme gününde yapılan her değişiklik 
 Her demleme ayrı bir parti kaydıdır ve aynı anda istenen sayıda parti yürütülebilir. Parti aşamaları: Planlandı → Demleniyor → Fermantasyonda → Kondisyon → Ambalaja hazır → Ambalajlandı → Kapandı; sapmada Beklemede (ayrıntı: Ekran akışı › Parti durumları).
 
 - **Fermantasyon takibi (Sağlık uygulaması gibi):** Tilt, iSpindel, RAPT okumaları ve elle okuma; SG, sıcaklık ve pH grafiği; "Öne Çıkanlar" yorumları (bitiş tahmini, dry hop zamanı); ana ekran widget'ı.
-- **Ev modu:** Partiler listesi aşamaya göre gruplu; birden fazla fermentor; aynı gün iki demlemede iki ayrı Live Activity, Watch'ta parti adı her zaman görünür.
+- **Ev modu:** Partiler listesi aşamaya göre gruplu; birden fazla fermentor; aynı gün iki demlemede iki ayrı Live Activity, kilit ekranında parti adı her zaman görünür.
 - **İşletme modu, üretim panosu:** her tank bir durum kutucuğu (Ev uygulaması gibi); aşama sütunları; haftalık tank takvimi; kapasite ve çakışma uyarısı; CIP durumu tankın kullanılabilirliğine bağlı.
 - **Tank hareketleri:** transfer (FV → BBT), bölme (bir demleme iki tanka), birleştirme (iki demleme tek tanka), hepsi hacim kayıtlarıyla.
 - **İzlenebilirlik:** parti kodu ve lot numarası; hammadde lotundan ambalaja kadar.
@@ -313,7 +313,7 @@ Her ekran benzer işi yapan bir Apple uygulamasının desenini kullanır; web ay
 - **Baskı:** Yazdırılan formlar (brew sheet, tank turu, etiket) temadan bağımsız; her zaman beyaz kağıt üzerinde siyah.
 - **Operatör görünümü (ISA-101'den):** Üretim panosu, Bugün, Tank detayı ve Demleme günü için isteğe bağlı görünüm. Normal durum gri ve renksiz; aşama renkleri kalkar. Renk yalnız sapmada: 1 kırmızı kare acil, 2 turuncu eşkenar dörtgen uyarı, 3 cam göbeği daire bilgi (şekil ve numara rengi tekrarlar). Değerlerin yanında normal aralık bantlı küçük ölçekler; yanıp sönme yalnız onaylanmamış acil alarmda; onaylama kişiye yazılır. Ayarlar › Görünüm'den cihaz başına açılır (ör. üretim alanındaki duvar iPad'i). Tarif, rapor ve ayar ekranları değişmez; yazı ve bileşenler Apple dilinde kalır.
 - **Kontroller:** Stepper, Slider, Picker, segmented control; kaydırarak düzenle/sil; bağlam menüsü; iPad'de klavye kısayolları; dokunma alanı en az 44 pt.
-- **Sisteme entegrasyon:** Live Activity, Dynamic Island, Watch, widget, Siri ve Kısayollar, zamana duyarlı bildirim.
+- **Sisteme entegrasyon:** Live Activity, widget, Siri ve Kısayollar, zamana duyarlı bildirim.
 - **Erişilebilirlik:** WCAG 2.2 AA hedeflenir. Okunması gereken her metin iki temada da en az 4.5:1; bunun için açık temada ikincil yazı Apple'ın %60 değeri yerine %75 opaklıkta, yeşil, turuncu, kırmızı ve operatör alarm renkleri bir ton koyu (değerler tasarım sisteminde). Odak halkası mavi, 3 px. VoiceOver ölçekleri okur; durum yalnız renkle anlatılmaz; Hareketi Azalt. Native uygulamada sistemin ikincil yazı rengi yerine bu değer, yüksek karşıtlık varyantıyla birlikte asset kataloğunda tanımlanır.
 - **Hesap:** Sign in with Apple; veri sunucuda olduğu için giriş ilk açılışta istenir.
 
@@ -341,7 +341,7 @@ Amaç: kullanıcı her an nerede olduğunu, nasıl geri döneceğini ve yaptığ
 9. Mod veya yetki değişince kullanıcı artık göremediği bir ekrandaysa açılış ekranına alınır ve neden olduğu kısa bir notla söylenir.
 10. Kaydettikten sonra kullanıcı geldiği ekrana döner ve değişen satır kısa süre vurgulanır.
 11. Web: her ekranın kendi adresi var; tarayıcının geri ve ileri düğmeleri çalışır; üç seviyeden derin ekranlarda üstte iz yolu (Üretim › Tanklar › FV2). Apple uygulamalarında iz yolu yok; kenar çubuğu ve geri düğmesi yeter.
-12. Operatör görünümü açıkken üstte küçük "Operatör görünümü" etiketi; Apple Watch'ta en fazla iki seviye.
+12. Operatör görünümü açıkken üstte küçük "Operatör görünümü" etiketi.
 
 **Kaybolma riski olan ekranlar:**
 
@@ -349,7 +349,7 @@ Amaç: kullanıcı her an nerede olduğunu, nasıl geri döneceğini ve yaptığ
 | --- | --- | --- |
 | Tarif editörü | Su, mash, malzeme, ölçekleme, "nasıl hesaplandı" sayfaları üst üste açılır | Hepsi tek seviye; malzeme → kendi malzemen sheet içinde ileri itilir; iPad'de Inspector yerinde değişir |
 | Tarif sihirbazı | 9 adımda nerede olduğunu ve çıkışı bilmez | Adım göstergesi; her adımda "Editöre geç"; Vazgeç onaylı |
-| Demleme günü | Sayaç çalışırken başka ekrana geçer, dönemez | "Demlemeye dön" şeridi; Live Activity ve Watch doğrudan aktif adıma açar; tam ekranda Küçült |
+| Demleme günü | Sayaç çalışırken başka ekrana geçer, dönemez | "Demlemeye dön" şeridi; Live Activity aktif adıma açar; tam ekranda Küçült |
 | Parti başlatma | Başlattıktan sonra nerede olduğunu bilmez | Başlatınca parti ekranı açılır, üstte "Demlemeyi başlat" düğmesi; geri parti listesine |
 | Fermantasyon, Onaylar (bildirimden) | Bildirimden açılır, geri düğmesi yoktur | Tam geri yolu ile açılır |
 | Kâğıt ve düzeltme (QR'dan) | QR'dan açılan partide nerede olduğunu bilmez | Başlıkta parti ve tur; geri parti ekranına |
@@ -450,11 +450,11 @@ ABD'deki butik bira üreticilerinin kullandığı yazılım ve cihazlar ile hede
 | Özellik | Ne işe yarar | Kullanım yeri | Segment | Aşama |
 | --- | --- | --- | --- | --- |
 | Düzenlenebilir Pano ve Bugün | Kart ekle, çıkar, sırala; role göre hazır düzen; kayıtlı görünümler (ör. "yalnız aktif fermantasyonlar") | Üretim panosu ve Bugün'de "Düzenle"; web'de aynı | İşletme | İşletme çekirdek |
-| Tank widget'ı ve Watch komplikasyonu | Tank sıcaklığı, SG ve sıradaki iş ana ekranda ve saatte | iOS ana ve kilit ekranı, Apple Watch | İkisi | Fermantasyon widget'ı Ev MVP; tank widget'ı İşletme çekirdek |
+| Tank widget'ı | Tank sıcaklığı, SG ve sıradaki iş ana ve kilit ekranında | iOS ana ve kilit ekranı | İkisi | Fermantasyon widget'ı Ev MVP; tank widget'ı İşletme çekirdek |
 | Beklenen eğriye göre uyarı | Sabit eşik yerine önceki iyi partinin veya fermantasyon tahmininin eğrisinden sapmayı yakalar | Otomatik uyarı kuralları; Fermantasyon | İkisi | Ev MVP (analitik model 2 ile aynı; onay bekliyor) |
 | Bildirim öncelik seviyeleri | 3 seviye, operatör görünümündeki alarm seviyeleriyle aynı; en yüksek seviye Apple "Time Sensitive" bildirimi | Ayarlar › Bildirimler | İkisi | Ev MVP |
 | Alarm yorgunluğunu önleme | Aynı olayın uyarıları birleşir; sessiz saatler; kritik olmayanlar günlük özette | Ayarlar › Bildirimler | İkisi | Ev MVP |
-| Vardiyaya yönlendirme ve yükseltme | Uyarı o anki vardiyaya gider; belirlenen sürede onaylanmazsa bir üst kişiye geçer; Watch'tan tek dokunuşla onay | Ayarlar › Bildirimler; Bugün; Apple Watch | İşletme | İşletme çekirdek |
+| Vardiyaya yönlendirme ve yükseltme | Uyarı o anki vardiyaya gider; belirlenen sürede onaylanmazsa bir üst kişiye geçer; bildirimden tek dokunuşla onay | Ayarlar › Bildirimler | İşletme | İşletme çekirdek |
 | Vardiya devri | Açık uyarılar ve notlar sonraki vardiyanın Bugün ekranında kart olarak çıkar | Bugün | İşletme | İşletme çekirdek |
 | Süreli davet | Danışman veya muhasebeci için bitiş tarihli erişim | Kullanıcı davet akışı; Ayarlar › Kullanıcılar | İşletme | İşletme çekirdek |
 | Kişi × yetki tablosu | Rol matrisine ek olarak kimin neye yetkili olduğu kişi bazında tek tabloda | Ayarlar › Roller ve yetkiler | İşletme | İşletme çekirdek |
@@ -597,7 +597,7 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 
 | Katman | Korunan | Güvenlik özellikleri |
 | --- | --- | --- |
-| Cihaz (iPad, iPhone, Watch) | Cihazdaki veri ve belgeler | iOS Data Protection ile şifreli saklama; oturum anahtarları Keychain'de; işletmede Face ID veya PIN ile uygulama kilidi; ortak iPad'de kişiye özel PIN ve işlemsizlikte kilit; uygulama değiştiricide hassas alanlar gizli |
+| Cihaz (iPad, iPhone) | Cihazdaki veri ve belgeler | iOS Data Protection ile şifreli saklama; oturum anahtarları Keychain'de; işletmede Face ID veya PIN ile uygulama kilidi; ortak iPad'de kişiye özel PIN ve işlemsizlikte kilit; uygulama değiştiricide hassas alanlar gizli |
 | Web | Tarayıcı oturumu | HttpOnly, Secure, SameSite çerez; CSP; CSRF koruması; paylaşılan bilgisayar için kısa oturum ve "her yerden çıkış" |
 | Kimlik doğrulama | Kimin girdiği | Sign in with Apple; web'de şifresiz e-posta girişi veya passkey; yöneticilere iki adımlı doğrulama zorunlu; tek kullanımlık, 7 gün geçerli davet; cihaz oturumunu uzaktan kapatma |
 | Yetkilendirme | Kimin neyi görüp değiştirebildiği | Roller ve kapsam sunucuda denetlenir; her istek çalışma alanı ve kapsamla filtrelenir; maliyet gibi alanlar yetkisize hiç gönderilmez |
@@ -633,7 +633,7 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 | Kullanıcılar | Davet (süreli davet dahil), rol atama, devre dışı bırakma, ortak cihaz modu, kişi × yetki tablosu | İşletme |
 | Roller ve yetkiler | Rol listesi, yeni rol, rol kopyalama; açılış ekranı, kapsam; yetki grupları anahtarlarla; düzenleme yalnız iPad ve web | İşletme |
 | Güvenlik | İki adımlı doğrulama, oturum açık cihazlar ve uzaktan çıkış, uygulama kilidi (Face ID, PIN, işlemsizlik süresi), cihaz anahtarlarını yenileme | İkisi (2FA zorunluluğu ve kilit işletmede) |
-| Bildirimler | Demleme alarmları, fermantasyon kuralları, onay bekleyenler, Apple Watch; 3 öncelik seviyesi, sessiz saatler, günlük özet; vardiyaya yönlendirme ve yükseltme (İşletme) | İkisi |
+| Bildirimler | Demleme alarmları, fermantasyon kuralları, onay bekleyenler; 3 öncelik seviyesi, sessiz saatler, günlük özet; vardiyaya yönlendirme ve yükseltme (İşletme) | İkisi |
 | Cihazlar | Tilt, iSpindel, RAPT; veri alma adresi (webhook); tank eşleştirme; cihaz anahtarları; profesyonel sensörler ve endüstriyel ağ geçidi (Modbus TCP, OPC UA, MQTT; İşletme 2. sürüm) | İkisi |
 | Yazdırma ve formlar | Brew sheet, tank turu, "her partide tarama iste" | İkisi (tarama zorunluluğu işletmede) |
 | Veri ve yedekleme | İçe ve dışa aktarma, yedek | İkisi |
@@ -641,14 +641,14 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 
 ## Ekran listesi
 
-Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 40, İşletme aşamalarında 18; bu 18 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
+Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 39, İşletme aşamalarında 18, Apple Watch ekranı ileride opsiyonel; bu 18 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında. Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
 
 | Ekran | Durum | Segment | Gerektiği aşama |
 | --- | --- | --- | --- |
 | Tarif sihirbazı | Tasarlandı | İkisi | Ev MVP |
 | Tarif editörü | Tasarlandı | İkisi | Ev MVP |
 | Kaynatma programı | Tasarlandı | İkisi | Ev MVP |
-| Demleme günü, Live Activity, Watch | Tasarlandı | İkisi | Ev MVP |
+| Demleme günü, Live Activity | Tasarlandı | İkisi | Ev MVP |
 | Kağıt, aktarma ve düzeltme | Tasarlandı | İkisi | Ev MVP |
 | Fermantasyon | Tasarlandı | İkisi | Ev MVP |
 | Stok ve alışveriş listesi | Tasarlandı | İkisi | Ev MVP (lotlar işletmede) |
@@ -679,7 +679,7 @@ Konseptte 58 ekranın hepsi taslaklandı (Ev MVP aşamasında 40, İşletme aşa
 | Boş, bağlantı yok ve hata durumları | Tasarlandı | İkisi | Ev MVP |
 | Abonelik ve ödeme | Tasarlandı | İkisi | Ev MVP |
 | Global arama | Tasarlandı | İkisi | Ev MVP |
-| Apple Watch: sayaç listesi, adım onayı | Tasarlandı | İkisi | Ev MVP |
+| Apple Watch: sayaç listesi, adım onayı (opsiyonel) | Tasarlandı | İkisi | İleride, opsiyonel |
 | Stil kılavuzu karşılaştırması (BJCP ve BA) | Tasarlandı | İkisi | Ev MVP |
 | Tank hareketi: transfer, bölme, birleştirme | Tasarlandı | İşletme | İşletme çekirdek |
 | Ortak cihazda kullanıcı değiştirme | Tasarlandı | İşletme | İşletme çekirdek |
@@ -713,7 +713,7 @@ Ekranlar arası geçişin şeması [Demleme Arayüz Konsepti](https://claude.ai/
 1. **Tarif:** Sihirbaz, içe aktarma veya tarif listesinden (şablon, mevcut tarif) tarif editörüne. Editörden açılan sayfalar: su ve pH, su raporu, mash ve maya, malzeme ve kendi malzemen, ölçekleme, "nasıl hesaplandı", stil kılavuzları.
 2. **Onay (yalnız İşletme):** tarif sürümü onaya gönderilir; onaylı sürümden parti açılır.
 3. **Parti başlatma:** tarih, ekipman, hacim, tank; stoktan ayırır, eksikleri alışveriş listesine, hazırlığı takvime ekler. Stok mal kabulle beslenir.
-4. **Demleme günü:** sayacı Watch ve Live Activity ile paylaşır; brew sheet yazdırılır, taranıp "Kağıt ve düzeltme"de işlenir.
+4. **Demleme günü:** sayacı Live Activity ile paylaşır; brew sheet yazdırılır, taranıp "Kağıt ve düzeltme"de işlenir.
 5. **Fermantasyon:** fermantasyon profili, cihazlar ve uyarı kuralları besler. İşletmede tank detayı, tank hareketi, kalite ve sapma buradan açılır.
 6. **Ambalaj (İşletme):** CIP ve ambalaj kaydı; ardından etiket ve izlenebilirlik. Ev modunda ayrı ambalaj ekranı yok: fermantasyondaki "Şişele / fıçıla" eylemi (priming, adet) partiyi Ambalajlandı yapar, ardından parti özeti gelir.
 7. **Parti özeti:** plan–gerçekleşen ve tadım; tadım notu tarifin yeni sürümüne döner.
@@ -740,7 +740,7 @@ Sapma açılan parti "Beklemede" durumuna alınır; karardan sonra kaldığı ye
 | Uygulama simgesi · Ev | Tarif listesi; aktif parti varsa üstte kartı |
 | Uygulama simgesi · İşletme | Role göre: Operatör Bugün, Brewmaster Üretim panosu, Kalite Onaylar; ortak cihazda önce kullanıcı değiştir |
 | Bildirim | Demleme günü, Fermantasyon veya Onaylar; ilgili partinin ilgili adımına |
-| Live Activity, Apple Watch | Demleme günü |
+| Live Activity | Demleme günü |
 | Widget | Fermantasyon |
 | Kağıttaki QR kod | Kağıt ve düzeltme (doğru parti ve tur seçili) |
 | Spotlight, uygulama içi arama | Arama → kayıt |
