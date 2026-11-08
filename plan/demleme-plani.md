@@ -1031,9 +1031,9 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 
 Öncelik sırasıyla ilk beş iş: kullanıcı görüşmeleri ve MVP kapsamı, altın test seti ve formül kararları, veri modeli ve API, teknik deneme, ürün adı ve mevzuat kontrolü.
 
-- [ ] 5–10 ev biracısı ve 2–3 küçük işletmeyle görüşme; MVP kapsamı ve kullanıcı hikayeleri
+- [ ] 5–10 ev biracısı ve 2–3 küçük işletmeyle görüşme; MVP kapsamı ve kullanıcı hikayeleri. Kılavuz ve boş karar tablosu: `plan/gorusme.md`. Notlar yazılmadan altın test doldurulmaz
 - [ ] Rakip incelemesi: Brewfather, Brewer's Friend, Grainfather; işletme tarafında Ekos, Ollie, Beer30 ve Breww özellikleri karşılaştırıldı (Kasım 2026); güncel fiyatlar açık
-- [ ] Altın test seti (10–20 tarif) ve gerçek demleme ölçümleriyle kalibrasyon; MPH ve BW pH modellerinden hangisinin daha doğru olduğu
+- [ ] Altın test seti (10–20 tarif) ve gerçek demleme ölçümleriyle kalibrasyon; MPH ve BW pH modellerinden hangisinin daha doğru olduğu. Boş şablon: `formuller/ALTIN-TEST.md`. Görüşme tablosu dolmadan doldurulmaz; Python vektörleri bu testin yerine geçmez
 - [ ] Formül kararlarının karar kaydına (ADR) yazılması; hassasiyet ve yuvarlama kuralları
 - [ ] Malzeme veritabanı kaynağı (üretici teknik föyleri, ABD ve İngiltere'de satılan ürünler öncelikli) ve güncelleme süreci
 - [ ] Veri modeli ve API; kayıtta sürüm kontrolü

@@ -18,6 +18,7 @@ Kaynak: BeerSmith 4.0.22 (Linux `.deb`) — hesap fonksiyonları Ghidra ile deco
 | `10-elle-giris-ekstrakt-nochill.md` | Az okumayla (elle) fermantasyon tahmini, ekstrakt araçları (LME/DME/bal dönüşümleri, kısmi kaynatma, üstüne su), soğutmasız (no-chill) IBU ayarı |
 | `11-tetikleyici-fici-cask.md` | Fermantasyon adımına gravite tetikleyicisi (diacetyl rest, FG sabit, lagering), fıçıda priming (kafa boşluğu dahil), cask: hedef CO₂, kalan ekstrakt, priming, durultucu, kondisyon süresi |
 | `testler/` | Her bölüm için Python referans uygulaması ve test vektörleri (`python3 testler/02_hop_ibu.py` gibi çalışır) |
+| `ALTIN-TEST.md` | BeerSmith ekranı ve gerçek ölçümle karşılaştırılacak 16 senaryo. Boştur. `plan/gorusme.md` dolmadan doldurulmaz. `testler/` bunun yerine geçmez |
 | `HESAP-MOTORU-TAMAMI.md` | Beş bölümün tek dosyada birleşimi |
 
 ## Önemli genel notlar
