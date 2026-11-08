@@ -143,7 +143,7 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 
 ### Destek paneli (iç kullanım)
 
-Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez. Taslağı konseptte "İç kullanım" grubunda: hesap detayı, arama ve erişim isteği, hesap farkı.
+Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez. Taslağı konseptte "İç kullanım" grubunda: hesap detayı, talepler, arama ve erişim isteği, hesap farkı. Talep ve mesaj müşteri uygulamasındaki Yardım ve destek ekranıyla aynı kayıttır.
 
 **Ne yapılır**
 
@@ -157,6 +157,7 @@ Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. 
 | "Verim kayboldu" ve hesap farkları | Kaydın sürüm geçmişi ve denetim kaydı; hesabı kayıtlı motor sürümüyle ve güncel sürümle yeniden çalıştırıp farkı görme |
 | Bildirim teslimi | Bir bildirimin hangi cihaza gittiği, okundu mu, push hatası |
 | Sistem durumu | Kuyruk birikimi, cihaz verisi gecikmesi, motor hata oranı (gözlem araçlarına bağlantı) |
+| Destek talebi ve mesaj | Müşterinin talebi ve zaman çizelgesi (`SupportRequest`, `SupportMessage`). İç not müşteriye gitmez. Yanıt bildirim kutusuna ve e-postaya düşer |
 
 **Ne yapılmaz:** tarif, parti, stok gibi müşteri içeriği panelden değiştirilmez. Müşterinin yerine giriş yapılmaz; müşterinin gördüğü ekran yalnız okunur olarak açılabilir.
 
@@ -173,7 +174,7 @@ Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. 
 - Ayrı bir React uygulaması; aynı tasarım sistemiyle. Genel adresten erişilemez; giriş şirketin Google Workspace hesabı ve passkey ile, Google Cloud Identity-Aware Proxy arkasında.
 - Çekirdek API'nin ayrı bir iç uç grubu (/internal) kullanılır; bu uçlar genel API ağ geçidinde yayımlanmaz. İş kuralları yine çekirdek API'de, iki kez yazılmaz.
 - Her işlem değiştirilemez denetim kaydına yazılır.
-- Yol haritası: Ev MVP'de arama, abonelik, oturum, silme talepleri ve erişim kuralları; diğerleri İşletme aşamasıyla.
+- Yol haritası: Ev MVP'de arama, abonelik, oturum, silme talepleri, destek talebi ve mesaj, erişim kuralları; diğerleri İşletme aşamasıyla.
 
 ### Hesap motoru servisi
 
@@ -1006,7 +1007,9 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
 | CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
 | UserIdentity | Giriş kimlikleri: sağlayıcı (Apple / Google / e-posta), sağlayıcıdaki kalıcı kimlik, bağlanma zamanı; bir kullanıcıda birden çok; passkey kayıtları |
-| SupportGrant, SupportAction | Destek erişim izni (çalışma alanı, veren, talep numarası, başlangıç ve bitiş); destek ekibinin her işlemi (kim, neye, ne yaptı, gerekçe) |
+| SupportGrant, SupportAction | Destek erişim izni (çalışma alanı, veren, bağlı `SupportRequest`, başlangıç ve bitiş); destek ekibinin her işlemi (kim, neye, ne yaptı, gerekçe) |
+| SupportRequest | Destek talebi. Genel numara (ör. #4182), çalışma alanı, açan kullanıcı, konu kategorisi, başlık, isteğe bağlı ilgili kayıt (tarif sürümü veya parti), durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama özeti (uygulama sürümü, cihaz, son hatalar). Müşteride Ayarlar › Yardım ve destek › Taleplerim; destekte Talepler listesi |
+| SupportMessage | Talebin zaman çizelgesindeki kayıt: yazar (müşteri, destek veya sistem), metin, zaman, ekler (ekran görüntüsü; nesne deposunda, parti ekinden ayrı). Görünürlük müşteri veya iç not. İç not yalnız destek panelinde görünür; bildirim ve e-posta gitmez. Müşteriye giden yanıt bildirim kutusuna ve e-postaya düşer |
 | Device, AlertRule | Cihaz (tür, veri adresi anahtarı, bağlı parti veya tank, kalibrasyon kaydı); uyarı kuralı (koşul, öncelik, kapsam, susturma) |
 | BrewDayPackage | Demleme paketi: parti, imza, oluşturma ve bitiş zamanı, içerik sürümü; kuyruktaki ölçümler bu kimlikle gelir |
 | QualitySpec, LabResult, Release | Bira başına spesifikasyon aralıkları; laboratuvar ve tadım sonuçları; serbest bırakma kararı (kim, ne zaman) |
@@ -1045,6 +1048,6 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 - [ ] Ekip, bütçe, kilometre taşları; beta programı (20–50 ev biracısı)
 - [ ] Altyapı kurulumu: Google Cloud organizasyonu ve geliştirme, test, canlı projeleri; Terraform temeli; birleştirme kapısı (CI); Apple ve Google giriş kayıtları ve OAuth onay ekranı doğrulaması; e-posta sağlayıcısı ve alan adı doğrulaması (Apple gizli e-posta rölesi dahil)
 - [ ] Yayın öncesi bağımsız güvenlik incelemesi ve sızma testi: kimlik, yetki, çalışma alanı ayrımı, destek paneli
-- [ ] Destek talepleri: kendi sistemimizde mi, hazır bir destek aracıyla mı (karar gerekli)
+- [x] Destek talebi ve mesaj kendi veri modelimizde (`SupportRequest`, `SupportMessage`). Hazır bir destek aracı kullanılırsa yalnız yansıma olur; kaynak kayıt çekirdek API'dedir
 
 **Riskler:** arayüzün iki kez yazılmasının maliyeti; web–Apple özellik eşitliği; el yazısı tanımanın hatalı okuması; işletme segmentinde mevzuat yükünün sürekliliği; her hesabın internete bağlı olması (yanıt süresi, sunucu maliyeti, kesinti); kodun tamamını Claude'un yazması (kimlik, yetki ve destek paneli gibi güvenlik kodunda bağımsız inceleme gerekir).

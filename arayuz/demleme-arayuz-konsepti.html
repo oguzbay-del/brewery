@@ -3260,6 +3260,7 @@ table.cmp td:first-child{font-weight:600}
       </div></div>
     </div>
     <div class="inspo"><span class="chip">İlham: <b>Apple Destek</b> uygulaması talepleri, <b>Ayarlar › Gizlilik</b> izin listesi</span><span class="chip">Talep ve erişim aynı zaman çizelgesinde</span><span class="chip">Yanıt bildirim kutusuna ve e-postaya düşer</span></div>
+    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p><span style="font-family:var(--mono)">SupportRequest</span>: genel numara, konu, ilgili kayıt, durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama. <span style="font-family:var(--mono)">SupportMessage</span>: yazar (müşteri, destek veya sistem), metin, zaman, ekran görüntüsü. Bu iki ekranda Taleplerim ve #4182 zaman çizelgesi bu kayıtlardır. İç not burada görünmez.</p></div>
   </div>
 
   <!-- INVITE ACCEPTANCE -->
@@ -3375,6 +3376,7 @@ table.cmp td:first-child{font-weight:600}
       </div>
     </div>
     <div class="inspo"><span class="chip">İlham: <b>Stripe</b> ve <b>Intercom</b> destek panelleri</span><span class="chip">Varsayılan salt okunur; her işlem gerekçe ister</span><span class="chip">Her erişim müşterinin "Destek erişim geçmişi"nde görünür</span><span class="chip">Tasarım sistemiyle aynı bileşenler</span></div>
+    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p>Aynı <span style="font-family:var(--mono)">SupportRequest</span> ve <span style="font-family:var(--mono)">SupportMessage</span>. Talepler listesi ve #4182 başlığı taleptir; zaman çizelgesindeki müşteri ve destek yazıları mesajdır. İç not aynı mesaj kaydında, görünürlüğü yalnız destek; müşteri ekranına, bildirime ve e-postaya gitmez. <span style="font-family:var(--mono)">SupportGrant</span> bu talebe bağlı süreli izin, <span style="font-family:var(--mono)">SupportAction</span> paneldeki her işlemdir.</p></div>
   </div>
 
   <!-- CALIBRATION -->
