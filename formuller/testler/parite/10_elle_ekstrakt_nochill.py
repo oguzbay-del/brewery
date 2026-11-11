@@ -178,4 +178,43 @@ def uret():
         base, nc, extra = ref.nochill_ibu(h, sg, vol, mode, **kw)
         v.ekle("nochill_ibu", girdi, [base, nc, extra])
 
+    # T1.14g: yöntem seçimi, gösterim, durgunluk, basit no-chill kuralı
+    okumalar = [
+        ([(48, 1.030), (96, 1.018)], "iki okuma"),
+        ([(48, 1.030)], "tek okuma"),
+        ([(24, 1.046), (36, 1.042)], "gecikme öncesi/%30 yok"),
+        ([(96, 1.018), (168, 1.013), (216, 1.013)], "durgun, hedefte"),
+        ([(48, 1.030), (120, 1.024), (168, 1.024)], "durgun, yüksek"),
+        ([(96, 1.018), (168, 1.014), (216, 1.013)], "1 puanlık durgunluk"),
+        ([(48, 1.020), (94, 1.019)], "46 sa arayla, durgunluk değil"),
+        ([(48, 1.030), (84, 1.014)], "geç okuma"),
+        ([(50, 1.0125), (80, 1.0120)], "hedefe ulaştı"),
+        ([(50, 1.0125), (98, 1.0135)], "48 sa tam, fark 100 birim"),
+        ([(50, 1.0125), (98, 1.0136)], "fark 101 birim: durgun değil"),
+        ([(50, 1.0125), (97.9, 1.0125)], "47.9 sa: durgun değil"),
+        ([(96, 1.016), (144, 1.016)], "durgun, FG+0.004 sınırı (400 birim)"),
+        ([(96, 1.0161), (144, 1.0161)], "durgun, sınırın 1 birim üstü"),
+        ([(30, 1.040), (60, 1.0400)], "k ≈ pozitif, düşüş yeterli değil"),
+        ([(13, 1.049), (14, 1.0495)], "k ≤ 0"),
+        ([(60, 1.030), (36, 1.040)], "sırasız"),
+        ([(5.0, 1.049), (8.0, 1.048)], "hepsi gecikme öncesi"),
+    ]
+    for rd, not_ in okumalar:
+        girdi = {"readings": [list(p) for p in rd], "og": 1.050, "fg_prior": 1.012}
+        dene("few_status", girdi, lambda rd=rd: ref.few_status(rd, 1.050, 1.012), not_)
+        v.ekle("stall_check", {"readings": [list(p) for p in rd], "fg_prior": 1.012},
+               ref.stall_check(rd, 1.012), not_)
+    v.ekle("stall_check", {"readings": [], "fg_prior": 1.012}, ref.stall_check([], 1.012), "boş")
+    v.ekle("few_status", {"readings": [], "og": 1.050, "fg_prior": 1.012, "lag": 12.0},
+           ref.few_status([], 1.050, 1.012), "boş")
+    v.ekle("few_status", {"readings": [[20, 1.040], [30, 1.030]], "og": 1.050, "fg_prior": 1.012, "lag": 24.0},
+           ref.few_status([(20, 1.040), (30, 1.030)], 1.050, 1.012, 24.0), "lag 24")
+    for dev, n in ((True, 0), (True, 3), (False, 2), (False, 0)):
+        v.ekle("forecast_method", {"device_sufficient": dev, "manual_count": n}, ref.forecast_method(dev, n))
+    for src in ("cihaz", "elle", "kagit"):
+        for dev in (True, False):
+            v.ekle("reading_role", {"source": src, "batch_has_device": dev}, ref.reading_role(src, dev))
+    for t in (0, 5, 10, 60, 80.5):
+        v.ekle("nochill_rule_time", {"t_min": t}, ref.nochill_rule_time(t))
+
     return v.yaz()

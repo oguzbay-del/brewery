@@ -125,6 +125,29 @@ def uret():
                     (0.375, 0.25), (2.5, 1), (3.5, 1), (0.0, 0.1)]:
         v.ekle("round_to", {"q": q, "step": step}, ref.round_to(q, step))
 
+    # 4b. T1.14g: çarpan kuralları (§4.1–4.2) ve ölçekleme kaydı (§4.4)
+    for tip in ("mash", "seker", "hop_ibu", "hop_aroma", "tuz", "misc", "maya_paket"):
+        for mode in ("hedef", "oran"):
+            for pb, wr in ((False, None), (True, 1.4), (False, 0.8)):
+                girdi = {"tip": tip, "v0": 23, "v1": 40, "eff0": 0.72, "eff1": 0.78, "mode": mode,
+                         "per_batch": pb, "water_ratio": wr}
+                v.ekle("scale_factor", girdi, ref.scale_factor(tip, 23, 40, 0.72, 0.78, mode, pb, wr))
+    v.ekle("scale_factor", {"tip": "mash", "v0": 40, "v1": 19, "eff0": 0.80, "eff1": 0.68, "mode": "hedef",
+                            "per_batch": False, "water_ratio": None},
+           ref.scale_factor("mash", 40, 19, 0.80, 0.68, "hedef"))
+    for need, per in ((200.0, 100.0), (200.0000001, 100.0), (200.0000000001, 100.0), (50.0, 100.0), (0.0, 100.0),
+                      (305.0, 100.0), (99.9999999999, 100.0), (450.2, 200.0)):
+        v.ekle("yeast_packs", {"cells_needed_billion": need, "cells_per_pack_billion": per},
+               ref.yeast_packs(need, per), "yukarı yuvarlama, 1e-9 tolerans, en az 1")
+    for scope, mode, v0, v1, e0, e1, ver in (("tarif", "hedef", 23, 40, 0.72, 0.78, 3), ("parti", "hedef", 23, 40, 0.72, 0.78, 3),
+                                             ("tarif", "oran", 20, 5, 0.75, 0.75, 1), ("parti", "oran", 20, 20, 0.7, 0.7, 0)):
+        v.ekle("scaling_record", {"scope": scope, "mode": mode, "v0": v0, "v1": v1, "eff0": e0, "eff1": e1,
+                                  "recipe_version": ver},
+               ref.scaling_record(scope, mode, v0, v1, e0, e1, ver))
+    for scope, mode in (("seri", "hedef"), ("tarif", "karisik")):
+        v.ekle("scaling_record", {"scope": scope, "mode": mode, "v0": 20, "v1": 10, "eff0": 0.7, "eff1": 0.7,
+                                  "recipe_version": 1}, {"hata": "ValueError"}, "geçersiz kapsam/mod")
+
     # 5. İyon dengesi ve sertlik
     sular = [{"Ca": 38, "Mg": 8, "Na": 18, "SO4": 32, "Cl": 40, "HCO3": 110},
              {"Ca": 100, "Mg": 10, "Na": 10, "SO4": 250, "Cl": 50, "HCO3": 30},

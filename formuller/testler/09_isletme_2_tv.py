@@ -129,6 +129,53 @@ def spund(target_vol, T_C, fg_expected):
     return {"kalinti_vol": r(residual_co2(T_C), 2), "gereken_g_L": r(need_g, 2), "kapama_SG": r(to_sg(close_P), 4),
             "puan_once": r((to_sg(close_P) - fg_expected)*1000, 1), "ayar_psi": r(psi, 1), "ayar_bar": r(psi*0.0689476, 2)}
 
+# ---------------------------------------------------------------- 4. Beyan, vergilenecek hacim, spunding uyarıları (T1.14g)
+LABEL_NUTRITION_EXEMPT_ABV = D("1.2")      # §1.3 [mevzuat, doğrulanacak]: bu ABV'nin üstünde besin değeri beyanı zorunlu değil
+
+def label_declaration(abv):
+    """§1.3 hangi beyan: ABV > %1.2 ise besin değeri beyanı zorunlu değildir, yalnız enerji beyan edilebilir
+    ("enerji_istege_bagli"); ABV ≤ %1.2 ise beyan ülke etiket şablonuna göre ("ulke_sablonu"). Karşılaştırma Decimal.
+    (Enerji kJ/kcal tam sayıya, besin değerleri 0.1 g'a yuvarlanır: label_energy.)"""
+    return "enerji_istege_bagli" if d(abv) > LABEL_NUTRITION_EXEMPT_ABV else "ulke_sablonu"
+
+TAX_TRIGGERS = ("ambalaj", "cikis", "satis")          # §2.1 verginin doğduğu an (veri tablosu seçer)
+TAX_OTHER = ("imha", "iade", "lab")                   # ayrı satırlarda raporlanan hacimler
+
+def taxable_volume(events, trigger, start, end, deduct=()):
+    """§2.1 dönem vergilenecek hacmi (litre, Decimal). events = [(tarih 'YYYY-MM-DD', tür, litre)]; tür
+    TAX_TRIGGERS ya da TAX_OTHER. start ≤ tarih ≤ end (sınırlar dahil, ISO metin karşılaştırması).
+    vergilenen = trigger türündeki olayların toplamı (diğer tetikleyici türleri sayılmaz); imha/iade/lab ayrı satır;
+    deduct (veri tablosu kuralı) içindeki türler vergilenenden düşülür; sonuç negatif olmaz."""
+    if trigger not in TAX_TRIGGERS: raise ValueError("bilinmeyen tetikleyici: %s" % trigger)
+    if any(k not in TAX_OTHER for k in deduct): raise ValueError("düşülebilir tür imha/iade/lab olmalı")
+    taxed = D(0); other = {k: D(0) for k in TAX_OTHER}
+    for date, kind, litres in events:
+        if kind not in TAX_TRIGGERS and kind not in TAX_OTHER: raise ValueError("bilinmeyen olay türü: %s" % kind)
+        if not (start <= date <= end): continue
+        v = d(litres)
+        if kind == trigger: taxed += v
+        elif kind in other: other[kind] += v
+    net = taxed
+    for k in TAX_OTHER:
+        if k in deduct: net = net - other[k]
+    return {"vergilenecek": max(net, D(0)), "vergilenen": taxed,
+            "imha": other["imha"], "iade": other["iade"], "lab": other["lab"]}
+
+SPUND_WIDE_U = 200        # [tasarım, doğrulanacak] FG güven aralığı genişliği eşiği: 0.002 SG (200 birim)
+def spund_warnings(target_vol, T_C, tank_max_psi=None, fg_range=None, wide_u=SPUND_WIDE_U):
+    """§3.4 uyarı kodları. tank_max_psi: tank kaydındaki çalışma basıncı (None: denetim yok); ayar basıncı onu aşarsa
+    "tank_basinc_asildi" ve engellenir. fg_range = (alt, üst) FG güven aralığı (07 §1); genişlik > wide_u birim ise
+    "erken_kapama_riski" (1–2 puan erken kapatma). Dönüş: {"uyari": [...], "engellendi": bool}."""
+    out = []
+    psi = co2_pressure_psi(T_C, target_vol)
+    blocked = tank_max_psi is not None and psi > tank_max_psi
+    if blocked: out.append("tank_basinc_asildi")
+    if fg_range is not None and _u_sg(fg_range[1]) - _u_sg(fg_range[0]) > wide_u: out.append("erken_kapama_riski")
+    return {"uyari": out, "engellendi": blocked}
+
+def _u_sg(sg): return round(sg * 100000)
+
+
 # ================================================================ TEST VEKTÖRLERİ
 if __name__ == "__main__":
     print("== 1 Etiket enerjisi")

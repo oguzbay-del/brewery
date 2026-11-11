@@ -138,6 +138,33 @@ fn parite_08() {
                 let r = b::ebc_from_lab(c.f("ebc"));
                 c.check(&json!({"EBC": r.ebc, "SRM": r.srm, "°L": r.lovibond}));
             }
+            "yeast_reuse_warnings" => {
+                let w = b::yeast_reuse_warnings(
+                    c.f("generation"),
+                    c.f("days_since_harvest"),
+                    c.v("viability").as_f64(),
+                    c.f("max_generation"),
+                    c.b("history_differs"),
+                );
+                let codes: Vec<&str> = w.iter().map(|x| x.as_str()).collect();
+                c.check(&json!(codes));
+            }
+            "diastatic_check" => {
+                let grains: Vec<(f64, f64)> = c
+                    .v("grains")
+                    .as_array()
+                    .expect("grains")
+                    .iter()
+                    .map(|g| (num(&g[0]), num(&g[1])))
+                    .collect();
+                let r = b::diastatic_check(&grains, c.f("threshold"));
+                let uyari: Vec<&str> = if r.low_diastatic_power {
+                    vec!["dusuk_diastatik_guc"]
+                } else {
+                    vec![]
+                };
+                c.check(&json!({"ortalama": r.average, "uyari": uyari}));
+            }
             _ => return false,
         }
         true

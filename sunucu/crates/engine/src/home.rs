@@ -431,6 +431,102 @@ pub fn round_to(q: f64, step: f64) -> f64 {
     (q / step).round_ties_even() * step
 }
 
+/// First-estimate factor of one ingredient (spec §4.1–4.2), covering the rules that
+/// [`scale_recipe`] leaves out.
+///
+/// [`ScaleMode::Ratio`]: everything by `r = v1 / v0` (`per_batch` and `water_ratio` are
+/// ignored). [`ScaleMode::Target`]: mash grain `r·η0/η1`; salt by the water-volume ratio
+/// `water_ratio` (falls back to `r`); misc marked "per batch" stays 1; everything else `r`.
+/// Acid, yeast packs ([`yeast_packs`]) and the mash profile are recomputed with 03/04/05, not
+/// scaled by a factor.
+#[must_use]
+#[allow(clippy::too_many_arguments)]
+pub fn scale_factor(
+    kind: IngredientKind,
+    v0: f64,
+    v1: f64,
+    eff0: f64,
+    eff1: f64,
+    mode: ScaleMode,
+    per_batch: bool,
+    water_ratio: Option<f64>,
+) -> f64 {
+    let rv = v1 / v0;
+    if mode == ScaleMode::Ratio {
+        return rv;
+    }
+    match (mode, kind) {
+        (ScaleMode::Target, IngredientKind::Mash) => rv * eff0 / eff1,
+        (ScaleMode::Target, IngredientKind::Salt) => water_ratio.unwrap_or(rv),
+        (ScaleMode::Target, IngredientKind::Misc) if per_batch => 1.0,
+        _ => rv,
+    }
+}
+
+/// Number of yeast packs from the recomputed cell need, rounded up (spec §4.1), at least 1.
+/// The ratio is compared with a 1e-9 tolerance: a ratio of 2.0000000001 counts as 2 packs.
+#[must_use]
+#[allow(clippy::cast_possible_truncation)]
+pub fn yeast_packs(cells_needed_billion: f64, cells_per_pack_billion: f64) -> i64 {
+    ((cells_needed_billion / cells_per_pack_billion - 1e-9).ceil() as i64).max(1)
+}
+
+/// Where a scaling is applied (spec §4.4).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScaleScope {
+    /// Scaling in the recipe: creates a new recipe version.
+    Recipe,
+    /// Scaling at batch start: applies to that batch only; the recipe is unchanged.
+    Batch,
+}
+
+/// Scaling record (spec §4.4).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ScalingRecord {
+    /// Scope.
+    pub scope: ScaleScope,
+    /// Mode.
+    pub mode: ScaleMode,
+    /// Source fermenter volume, L.
+    pub v0: f64,
+    /// Target fermenter volume, L.
+    pub v1: f64,
+    /// Source mash efficiency.
+    pub eff0: f64,
+    /// Target mash efficiency.
+    pub eff1: f64,
+    /// Volume ratio `v1 / v0`.
+    pub ratio: f64,
+    /// Recipe version after the scaling (+1 for [`ScaleScope::Recipe`]).
+    pub recipe_version: u32,
+    /// True when the recipe itself changed.
+    pub recipe_changed: bool,
+}
+
+/// Builds the scaling record (spec §4.4): a recipe scaling bumps the recipe version; a batch
+/// scaling leaves recipe and version untouched.
+#[must_use]
+pub fn scaling_record(
+    scope: ScaleScope,
+    mode: ScaleMode,
+    volumes: (f64, f64),
+    efficiencies: (f64, f64),
+    recipe_version: u32,
+) -> ScalingRecord {
+    let recipe = scope == ScaleScope::Recipe;
+    ScalingRecord {
+        scope,
+        mode,
+        v0: volumes.0,
+        v1: volumes.1,
+        eff0: efficiencies.0,
+        eff1: efficiencies.1,
+        ratio: volumes.1 / volumes.0,
+        recipe_version: recipe_version + u32::from(recipe),
+        recipe_changed: recipe,
+    }
+}
+
 // ------------------------------------------------------------------ §5 ion balance
 
 /// Equivalent weights, g/eq (§5.1).

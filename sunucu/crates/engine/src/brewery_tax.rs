@@ -11,7 +11,7 @@ use std::fmt;
 
 use rust_decimal::{Decimal, RoundingStrategy};
 
-use crate::units::{round_py, to_plato, to_sg};
+use crate::units::{gravity_units, round_py, to_plato, to_sg};
 
 // ---------------------------------------------------------------------------------------------
 // Constants
@@ -250,6 +250,8 @@ pub enum TaxError {
     MissingInput(&'static str),
     /// Decimal overflow.
     Overflow,
+    /// Deduction list holds a kind other than destroyed, returned or lab.
+    BadDeduction,
 }
 
 impl fmt::Display for TaxError {
@@ -261,6 +263,7 @@ impl fmt::Display for TaxError {
             Self::UnknownMethod(m) => write!(f, "unknown method: {m}"),
             Self::MissingInput(name) => write!(f, "missing input: {name}"),
             Self::Overflow => f.write_str("decimal overflow"),
+            Self::BadDeduction => f.write_str("deduction kind must be destroyed, returned or lab"),
         }
     }
 }
@@ -559,6 +562,235 @@ pub fn spund(target_vol: f64, t_c: f64, fg_expected: f64) -> Spund {
         setting_psi: round_py(psi, 1),
         setting_bar: round_py(psi * 0.068_947_6, 2),
     }
+}
+
+// ---------------------------------------------------------------------------------------------
+// 4. Declaration, taxable volume, spunding warnings
+// ---------------------------------------------------------------------------------------------
+
+/// Which nutrition declaration applies (spec §1.3).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LabelDeclaration {
+    /// ABV above 1.2 %: nutrition declaration not mandatory, energy may be declared.
+    EnergyOptional,
+    /// ABV at most 1.2 %: declaration follows the country label template.
+    CountryTemplate,
+}
+
+impl LabelDeclaration {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::EnergyOptional => "enerji_istege_bagli",
+            Self::CountryTemplate => "ulke_sablonu",
+        }
+    }
+}
+
+/// Declaration rule by ABV (spec §1.3) [to be verified]: above 1.2 % vol energy is optional,
+/// otherwise the country template decides. Compared as `Decimal`; 1.2 itself is not above.
+#[must_use]
+pub fn label_declaration(abv: Decimal) -> LabelDeclaration {
+    if abv > Decimal::new(12, 1) {
+        LabelDeclaration::EnergyOptional
+    } else {
+        LabelDeclaration::CountryTemplate
+    }
+}
+
+/// Moment the tax arises (spec §2.1); chosen by the country data table.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TaxTrigger {
+    /// Packaging (`ambalaj`).
+    Packaging,
+    /// Release from bond (`cikis`).
+    Release,
+    /// Sale (`satis`).
+    Sale,
+}
+
+/// Kind of a volume event (spec §2.1).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VolumeEventKind {
+    /// Packaging event.
+    Packaging,
+    /// Release from bond.
+    Release,
+    /// Sale.
+    Sale,
+    /// Destroyed volume (`imha`).
+    Destroyed,
+    /// Returned volume (`iade`).
+    Returned,
+    /// Laboratory sample (`lab`).
+    Lab,
+}
+
+impl VolumeEventKind {
+    /// Parses the vector name; `None` for an unknown kind.
+    #[must_use]
+    pub fn parse(name: &str) -> Option<Self> {
+        Some(match name {
+            "ambalaj" => Self::Packaging,
+            "cikis" => Self::Release,
+            "satis" => Self::Sale,
+            "imha" => Self::Destroyed,
+            "iade" => Self::Returned,
+            "lab" => Self::Lab,
+            _ => return None,
+        })
+    }
+
+    fn is_trigger(self, t: TaxTrigger) -> bool {
+        matches!(
+            (self, t),
+            (Self::Packaging, TaxTrigger::Packaging)
+                | (Self::Release, TaxTrigger::Release)
+                | (Self::Sale, TaxTrigger::Sale)
+        )
+    }
+}
+
+/// One volume event: ISO date (`YYYY-MM-DD`), kind, litres.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VolumeEvent {
+    /// ISO date, compared as text.
+    pub date: String,
+    /// Event kind.
+    pub kind: VolumeEventKind,
+    /// Litres.
+    pub litres: Decimal,
+}
+
+/// Result of [`taxable_volume`], litres.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TaxableVolume {
+    /// Taxable volume after the deductions, never negative.
+    pub taxable: Decimal,
+    /// Sum of events of the trigger kind.
+    pub taxed: Decimal,
+    /// Destroyed volume (own line).
+    pub destroyed: Decimal,
+    /// Returned volume (own line).
+    pub returned: Decimal,
+    /// Laboratory volume (own line).
+    pub lab: Decimal,
+}
+
+/// Taxable volume of a period (spec §2.1): events of the trigger kind within
+/// `start ≤ date ≤ end` (ISO text comparison); destroyed, returned and lab volumes are reported
+/// on own lines and subtracted only for the kinds in `deduct` (data table rule); other trigger
+/// kinds are ignored; the result is clamped at zero.
+///
+/// # Errors
+/// [`TaxError::BadDeduction`] when `deduct` holds a kind other than destroyed, returned or lab;
+/// [`TaxError::Overflow`] on decimal overflow.
+pub fn taxable_volume(
+    events: &[VolumeEvent],
+    trigger: TaxTrigger,
+    start: &str,
+    end: &str,
+    deduct: &[VolumeEventKind],
+) -> Result<TaxableVolume, TaxError> {
+    use VolumeEventKind as K;
+    if deduct
+        .iter()
+        .any(|k| !matches!(k, K::Destroyed | K::Returned | K::Lab))
+    {
+        return Err(TaxError::BadDeduction);
+    }
+    let add = |a: Decimal, b: Decimal| a.checked_add(b).ok_or(TaxError::Overflow);
+    let (mut taxed, mut destroyed, mut returned, mut lab) =
+        (Decimal::ZERO, Decimal::ZERO, Decimal::ZERO, Decimal::ZERO);
+    for e in events {
+        if e.date.as_str() < start || e.date.as_str() > end {
+            continue;
+        }
+        if e.kind.is_trigger(trigger) {
+            taxed = add(taxed, e.litres)?;
+        } else {
+            match e.kind {
+                K::Destroyed => destroyed = add(destroyed, e.litres)?,
+                K::Returned => returned = add(returned, e.litres)?,
+                K::Lab => lab = add(lab, e.litres)?,
+                _ => {}
+            }
+        }
+    }
+    let mut net = taxed;
+    for (kind, amount) in [
+        (K::Destroyed, destroyed),
+        (K::Returned, returned),
+        (K::Lab, lab),
+    ] {
+        if deduct.contains(&kind) {
+            net = net.checked_sub(amount).ok_or(TaxError::Overflow)?;
+        }
+    }
+    Ok(TaxableVolume {
+        taxable: max_py(net, Decimal::ZERO),
+        taxed,
+        destroyed,
+        returned,
+        lab,
+    })
+}
+
+/// Default FG confidence-interval width above which early closing is flagged: 0.002 SG
+/// (200 gravity units) [design, to be verified; the spec gives no number].
+pub const SPUND_WIDE_U: i64 = 200;
+
+/// Spunding warning (spec §3.4); codes, not text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SpundWarning {
+    /// Set pressure exceeds the tank working pressure: blocked.
+    TankPressureExceeded,
+    /// Wide FG confidence interval: risk of closing 1–2 points early.
+    EarlyClosingRisk,
+}
+
+impl SpundWarning {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::TankPressureExceeded => "tank_basinc_asildi",
+            Self::EarlyClosingRisk => "erken_kapama_riski",
+        }
+    }
+}
+
+/// Warnings and blocking flag of [`spund_warnings`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SpundWarnings {
+    /// Warning codes, in this order: tank pressure, early closing.
+    pub warnings: Vec<SpundWarning>,
+    /// True when the plan is blocked (set pressure above the tank limit).
+    pub blocked: bool,
+}
+
+/// Spunding warnings (spec §3.4). `tank_max_psi`: tank working pressure (`None`: no check);
+/// `fg_range`: FG confidence interval `(low, high)` from 07 §1 (`None`: no check), width
+/// compared in gravity units against `wide_u`.
+#[must_use]
+pub fn spund_warnings(
+    target_vol: f64,
+    t_c: f64,
+    tank_max_psi: Option<f64>,
+    fg_range: Option<(f64, f64)>,
+    wide_u: i64,
+) -> SpundWarnings {
+    let mut warnings = Vec::new();
+    let psi = co2_pressure_psi(t_c, target_vol);
+    let blocked = tank_max_psi.is_some_and(|m| psi > m);
+    if blocked {
+        warnings.push(SpundWarning::TankPressureExceeded);
+    }
+    if fg_range.is_some_and(|(lo, hi)| gravity_units(hi) - gravity_units(lo) > wide_u) {
+        warnings.push(SpundWarning::EarlyClosingRisk);
+    }
+    SpundWarnings { warnings, blocked }
 }
 
 #[cfg(test)]

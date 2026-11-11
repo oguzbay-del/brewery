@@ -330,3 +330,92 @@ pub fn ebc_from_lab(ebc: f64) -> LabColor {
         lovibond: round_py((ebc / 1.97 + 0.76) / 1.3546, 2),
     }
 }
+
+// ------------------------------------------------------------------ 6. Warning rules
+
+/// Generation limit default for reused yeast (spec §3.4).
+pub const YEAST_MAX_GENERATION: u32 = 8;
+
+/// Warning on reusing harvested yeast (spec §3.4); codes, not text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum YeastWarning {
+    /// Generation above the limit: "new culture recommended".
+    GenerationLimit,
+    /// More than 14 days since harvest: "viability may be low, count recommended".
+    HarvestOver14Days,
+    /// Viability below 80 %: "starter or fresh yeast".
+    LowViability,
+    /// Information: different style or strain history; show the generation chain.
+    HistoryInfo,
+}
+
+impl YeastWarning {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::GenerationLimit => "nesil_siniri",
+            Self::HarvestOver14Days => "hasat_14_gun",
+            Self::LowViability => "canlilik_dusuk",
+            Self::HistoryInfo => "bilgi_gecmis",
+        }
+    }
+}
+
+/// Yeast reuse warnings in table order (spec §3.4). `viability` is a fraction (0–1) or
+/// `None` when not measured (no viability warning then).
+#[must_use]
+pub fn yeast_reuse_warnings(
+    generation: f64,
+    days_since_harvest: f64,
+    viability: Option<f64>,
+    max_generation: f64,
+    history_differs: bool,
+) -> Vec<YeastWarning> {
+    let mut out = Vec::new();
+    if generation > max_generation {
+        out.push(YeastWarning::GenerationLimit);
+    }
+    if days_since_harvest > 14.0 {
+        out.push(YeastWarning::HarvestOver14Days);
+    }
+    if viability.is_some_and(|v| v < 0.80) {
+        out.push(YeastWarning::LowViability);
+    }
+    if history_differs {
+        out.push(YeastWarning::HistoryInfo);
+    }
+    out
+}
+
+/// Minimum weighted-average diastatic power of the grain bill, °L (spec §5.4)
+/// [to be verified].
+pub const DIASTATIC_MIN_L: f64 = 35.0;
+
+/// Result of [`diastatic_check`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct DiastaticCheck {
+    /// Weight-averaged diastatic power, °L.
+    pub average: f64,
+    /// True when the grain bill may not convert itself (average below the threshold).
+    pub low_diastatic_power: bool,
+}
+
+/// "Does the grain bill convert itself" check (spec §5.4). `grains` are
+/// `(kg, diastatic power °L)` for every grain (0 when a grain has none). An empty or
+/// zero-weight bill gives average 0 and no warning.
+#[must_use]
+pub fn diastatic_check(grains: &[(f64, f64)], threshold: f64) -> DiastaticCheck {
+    let w: f64 = grains.iter().map(|g| g.0).sum();
+    if w <= 0.0 {
+        return DiastaticCheck {
+            average: 0.0,
+            low_diastatic_power: false,
+        };
+    }
+    let average = grains.iter().map(|g| g.0 * g.1).sum::<f64>() / w;
+    DiastaticCheck {
+        average,
+        low_diastatic_power: average < threshold,
+    }
+}

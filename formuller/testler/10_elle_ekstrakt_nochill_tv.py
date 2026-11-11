@@ -154,6 +154,52 @@ def nochill_ibu(hops, sg, v, mode="kural", T0=95.0, T_amb=20.0, v_cube=None):
     return r(base, 1), r(nc, 1), r(extra, 1)
 
 
+# ================================================================ 4. Yöntem seçimi, gösterim ve durgunluk kuralları (T1.14g)
+def stall_check(readings, fg_prior):
+    """§1.5 durgunluk kuralı: son iki okuma ≥ 48 saat arayla ve |Δu| ≤ 100 ise
+    SG_son ≤ FG + 0.004 (u ile) -> "bitmis_gorunuyor", değilse "takilmis"; kural devreye girmezse None.
+    Tek okuma ya da boş liste: None."""
+    readings = sorted(readings)
+    if len(readings) < 2: return None
+    (t1, g1), (t2, g2) = readings[-2], readings[-1]
+    if t2 - t1 >= 48 and abs(u(g1) - u(g2)) <= STALL_U:
+        return "bitmis_gorunuyor" if u(g2) <= u(fg_prior) + NEAR_U else "takilmis"
+    return None
+
+def forecast_method(device_sufficient, manual_count):
+    """§1.1 hangi yöntem ne zaman: cihaz verisi yeterliyse (07 §1.4) "cihaz" (07 §1);
+    değilse ve elle okuma varsa "elle" (10 §1); hiçbiri yoksa "yok"."""
+    if device_sufficient: return "cihaz"
+    return "elle" if manual_count > 0 else "yok"
+
+def reading_role(source, batch_has_device):
+    """§1.1 ölçümün kaynak etiketi (cihaz/elle/kagit): cihaz verisi olan partide elle/kağıt okuma modele girmez,
+    cihazın sapma düzeltmesinde kullanılır (07 §2.2); cihazsız partide elle/kağıt okuma model noktasıdır."""
+    if source == "cihaz": return "model"
+    return "sapma_duzeltmesi" if batch_has_device else "model"
+
+def few_status(readings, og, fg_prior, lag=LAG_H):
+    """§1.4 değerlendirme sırası, yalnız durum kodu: (1) durgunluk, (2) gecikme sonrası ≥ 2 okuma, (3) %30,
+    (4) hedefe ulaştı, (5) k > 0; hepsi geçerse "goster". Boş liste: "az_okuma"."""
+    readings = sorted(readings)
+    if not readings: return "az_okuma"
+    post = [(t, g) for t, g in readings if t > lag]
+    sg_now = readings[-1][1]
+    s = stall_check(readings, fg_prior)
+    if s: return s
+    if len(post) < 2: return "az_okuma"
+    if 10 * (u(og) - u(sg_now)) < 3 * (u(og) - u(fg_prior)): return "dusus_yetersiz"
+    if u(sg_now) <= u(fg_prior) + EPS_U: return "hedefe_ulasti"
+    k, _ = k_fit(post, og, fg_prior, lag)
+    if k is None or k <= 0: return "k_pozitif_degil"
+    return "goster"
+
+NOCHILL_RULE_MIN = 20.0   # §3.1 basit kural: her katkıya +20 dk
+def nochill_rule_time(t_min):
+    """§3.1 basit kural: katkı süresine +20 dk; kaynatma sonu (0 dk) katkısı 20 dk sayılır."""
+    return t_min + NOCHILL_RULE_MIN
+
+
 if __name__ == "__main__":
     print("== 1. Az okumayla tahmin (OG 1.050, FG ön 1.012, gecikme 12 sa)")
     print("T1a iki okuma 48 sa 1.030, 96 sa 1.018:", few_forecast([(48, 1.030), (96, 1.018)], 1.050, 1.012))

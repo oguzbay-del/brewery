@@ -9,7 +9,9 @@
 mod ortak;
 
 use engine::hops;
-use engine::manual::{self, ExtractKind, FewForecast, Insufficient, ManualError, NochillMode};
+use engine::manual::{
+    self, ExtractKind, FewForecast, Insufficient, ManualError, NochillMode, ReadingSource,
+};
 use engine::units::{gravity_units, round_py};
 use serde_json::{Value, json};
 
@@ -183,6 +185,41 @@ fn parite_10() {
                     manual::nochill_ibu(&triples(c.v("hops")), c.f("sg"), c.f("v"), mode);
                 c.check(&json!([base, nc, extra]));
             }
+            "stall_check" => c.check(&match manual::stall_check(
+                &pairs(c.v("readings")),
+                c.f("fg_prior"),
+            ) {
+                None => Value::Null,
+                Some(s) => json!(s.as_str()),
+            }),
+            "few_status" => c.check(&json!(
+                manual::few_status(
+                    &pairs(c.v("readings")),
+                    c.f("og"),
+                    c.f("fg_prior"),
+                    opt(c, "lag", manual::LAG_H),
+                )
+                .as_str()
+            )),
+            "forecast_method" => c.check(&json!(
+                manual::forecast_method(
+                    c.b("device_sufficient"),
+                    usize::try_from(c.i("manual_count")).unwrap(),
+                )
+                .as_str()
+            )),
+            "reading_role" => {
+                let src = match c.v("source").as_str().unwrap() {
+                    "cihaz" => ReadingSource::Device,
+                    "elle" => ReadingSource::Manual,
+                    "kagit" => ReadingSource::Paper,
+                    other => panic!("unknown source {other}"),
+                };
+                c.check(&json!(
+                    manual::reading_role(src, c.b("batch_has_device")).as_str()
+                ));
+            }
+            "nochill_rule_time" => c.check_f(manual::nochill_rule_time(c.f("t_min"))),
             _ => return false,
         }
         true

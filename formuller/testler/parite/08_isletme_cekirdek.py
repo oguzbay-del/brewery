@@ -87,4 +87,20 @@ def uret():
         v.ekle("malt_from_analysis", {"fgdb": fg, "moisture": mo, "fc_diff": fc}, ref.malt_from_analysis(fg, mo, fc))
     for ebc in (3.5, 0.0, 25.0, 150.0):
         v.ekle("ebc_from_lab", {"ebc": ebc}, ref.ebc_from_lab(ebc))
+
+    # T1.14g: uyarı kuralları (§3.4, §5.4)
+    for gen, gun, via, mx, hist in (
+            (1, 3, 0.95, 8, False), (8, 14, 0.80, 8, False), (9, 15, 0.79, 8, False), (3, 20, None, 8, False),
+            (5, 2, 0.5, 8, True), (6, 14, 0.9, 5, False), (12, 30, 0.1, 8, True), (0, 0, 1.0, 8, False),
+            (2, 14.5, None, 8, False), (4, 7, 0.7999999, 8, False), (4, 7, 230 / 288, 8, False)):
+        v.ekle("yeast_reuse_warnings", {"generation": gen, "days_since_harvest": gun, "viability": via,
+                                        "max_generation": mx, "history_differs": hist},
+               ref.yeast_reuse_warnings(gen, gun, via, mx, hist), "kod listesi, tablo sırası")
+    for gr, thr in (([(4.5, 35.0), (0.5, 0.0)], 35.0), ([(5.0, 40.0)], 35.0), ([(4.0, 30.0), (1.0, 60.0)], 35.0),
+                    ([(4.5, 50.0), (0.45, 0.0), (0.3, 0.0)], 35.0), ([(2.0, 100.0), (3.0, 0.0)], 35.0),
+                    ([(1.0, 35.0)], 35.0), ([(3.0, 20.0), (3.0, 50.0)], 35.0), ([], 35.0), ([(0.0, 10.0)], 35.0),
+                    ([(5.0, 30.0)], 25.0)):
+        res = ref.diastatic_check(gr, thr)
+        v.ekle("diastatic_check", {"grains": [list(g) for g in gr], "threshold": thr}, res,
+               "ağırlıklı ortalama < eşik; diastatik gücü olmayan tahıl 0")
     return v.yaz()

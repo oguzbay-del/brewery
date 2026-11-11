@@ -152,8 +152,66 @@ fn parite_09() {
                     "ayar_bar": s.setting_bar,
                 }));
             }
+            "label_declaration" => c.check(&json!(bt::label_declaration(dec(c, "abv")).as_str())),
+            "taxable_volume" => taxable_volume_case(c),
+            "spund_warnings" => {
+                let range = c
+                    .v("fg_range")
+                    .as_array()
+                    .map(|r| (r[0].as_f64().unwrap(), r[1].as_f64().unwrap()));
+                let w = bt::spund_warnings(
+                    c.f("target_vol"),
+                    c.f("t_c"),
+                    c.v("tank_max_psi").as_f64(),
+                    range,
+                    c.i("wide_u"),
+                );
+                let codes: Vec<&str> = w.warnings.iter().map(|x| x.as_str()).collect();
+                c.check(&json!({"uyari": codes, "engellendi": w.blocked}));
+            }
             _ => return false,
         }
         true
     });
+}
+
+fn taxable_volume_case(c: &Case) {
+    let error = || c.check(&json!({ "hata": "ValueError" }));
+    let trigger = match c.v("trigger").as_str().unwrap() {
+        "ambalaj" => bt::TaxTrigger::Packaging,
+        "cikis" => bt::TaxTrigger::Release,
+        "satis" => bt::TaxTrigger::Sale,
+        _ => return error(),
+    };
+    let mut events = Vec::new();
+    for e in c.v("events").as_array().unwrap() {
+        let Some(kind) = bt::VolumeEventKind::parse(e[1].as_str().unwrap()) else {
+            return error();
+        };
+        events.push(bt::VolumeEvent {
+            date: e[0].as_str().unwrap().to_owned(),
+            kind,
+            litres: dec_str(&e[2]),
+        });
+    }
+    let deduct: Vec<bt::VolumeEventKind> = c
+        .v("deduct")
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|k| bt::VolumeEventKind::parse(k.as_str().unwrap()).unwrap())
+        .collect();
+    match bt::taxable_volume(
+        &events,
+        trigger,
+        c.v("start").as_str().unwrap(),
+        c.v("end").as_str().unwrap(),
+        &deduct,
+    ) {
+        Ok(r) => c.check(&json!({
+            "vergilenecek": dec_json(r.taxable), "vergilenen": dec_json(r.taxed),
+            "imha": dec_json(r.destroyed), "iade": dec_json(r.returned), "lab": dec_json(r.lab),
+        })),
+        Err(_) => error(),
+    }
 }

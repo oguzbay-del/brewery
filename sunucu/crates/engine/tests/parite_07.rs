@@ -181,6 +181,55 @@ fn parite_07() {
                     .collect();
                 c.check(&Value::Object(map));
             }
+            "scale_factor" => {
+                let mode = if c.v("mode").as_str() == Some("oran") {
+                    ScaleMode::Ratio
+                } else {
+                    ScaleMode::Target
+                };
+                c.check_f(home::scale_factor(
+                    kind(c.v("tip").as_str().unwrap()),
+                    c.f("v0"),
+                    c.f("v1"),
+                    c.f("eff0"),
+                    c.f("eff1"),
+                    mode,
+                    c.b("per_batch"),
+                    c.v("water_ratio").as_f64(),
+                ));
+            }
+            "yeast_packs" => c.check(&json!(home::yeast_packs(
+                c.f("cells_needed_billion"),
+                c.f("cells_per_pack_billion")
+            ))),
+            "scaling_record" => {
+                let scope = match c.v("scope").as_str().unwrap() {
+                    "tarif" => Some(home::ScaleScope::Recipe),
+                    "parti" => Some(home::ScaleScope::Batch),
+                    _ => None,
+                };
+                let mode = match c.v("mode").as_str().unwrap() {
+                    "hedef" => Some(ScaleMode::Target),
+                    "oran" => Some(ScaleMode::Ratio),
+                    _ => None,
+                };
+                let (Some(scope), Some(mode)) = (scope, mode) else {
+                    c.check(&json!({"hata": "ValueError"}));
+                    return true;
+                };
+                let r = home::scaling_record(
+                    scope,
+                    mode,
+                    (c.f("v0"), c.f("v1")),
+                    (c.f("eff0"), c.f("eff1")),
+                    u32::try_from(c.i("recipe_version")).unwrap(),
+                );
+                c.check(&json!({
+                    "kapsam": c.v("scope"), "mod": c.v("mode"), "v0": r.v0, "v1": r.v1,
+                    "eff0": r.eff0, "eff1": r.eff1, "oran": r.ratio,
+                    "tarif_surumu": r.recipe_version, "tarif_degisti": r.recipe_changed,
+                }));
+            }
             "round_to" => c.check_f(home::round_to(c.f("q"), c.f("step"))),
             "ion_balance" => {
                 let w = c.v("p");

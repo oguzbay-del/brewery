@@ -144,6 +144,36 @@ def dryhop_loss(g_by_form): return sum(HOP_ABS[f]*g for f, g in g_by_form.items(
 def fruit(kg, density=1.05, sediment=0.20):
     v = kg/density; return v, v*sediment                 # eklenen hacim, tortuda kalan
 
+# ---------------------------------------------------------------- 7. Ölçekleme: çarpan kuralları ve kayıt (T1.14g)
+def scale_factor(tip, V0, V1, eff0, eff1, mode="hedef", per_batch=False, water_ratio=None):
+    """§4.1–4.2 bir malzemenin ilk-tahmin çarpanı (scale_recipe'in kapsamadığı kurallar dahil).
+    mode 'oran': her şey r = V1/V0 (per_batch ve su oranı yok sayılır). mode 'hedef':
+      mash: r·η0/η1; tuz: su hacimleri oranı (water_ratio; verilmezse r); misc ve per_batch ('parti başına'): 1;
+      diğerleri (seker, hop_ibu, hop_aroma, misc, maya_paket): r. Asit, maya paketi ve mash profili bu çarpanla
+      değil, 03/04/05 ile yeniden hesaplanır (§4.1 tablosu)."""
+    rv = V1/V0
+    if mode == "oran": return rv
+    if tip == "mash": return rv*eff0/eff1
+    if tip == "tuz": return rv if water_ratio is None else water_ratio
+    if tip == "misc" and per_batch: return 1.0
+    return rv
+
+def yeast_packs(cells_needed_billion, cells_per_pack_billion):
+    """§4.1 maya: yeniden hesaplanan hücre ihtiyacından paket sayısı, yukarı yuvarlanır (en az 1 paket).
+    Oran 1e-9 toleransla: 2.0000000001 paket 2 sayılır."""
+    return max(1, math.ceil(cells_needed_billion/cells_per_pack_billion - 1e-9))
+
+def scaling_record(scope, mode, V0, V1, eff0, eff1, recipe_version):
+    """§4.4 ölçekleme kaydı. scope 'tarif': tarifte yeni sürüm oluşur (sürüm + 1), tarif değişir;
+    scope 'parti': yalnız o partiye uygulanır, tarif ve sürümü değişmez. Kayıt: kapsam, mod, hacimler, verimler,
+    oran r = V1/V0, ölçeklemeden sonraki tarif sürümü, tarif değişti mi."""
+    if scope not in ("tarif", "parti"): raise ValueError("kapsam tarif ya da parti olmalı")
+    if mode not in ("hedef", "oran"): raise ValueError("mod hedef ya da oran olmalı")
+    yeni = recipe_version + 1 if scope == "tarif" else recipe_version
+    return {"kapsam": scope, "mod": mode, "v0": V0, "v1": V1, "eff0": eff0, "eff1": eff1, "oran": V1/V0,
+            "tarif_surumu": yeni, "tarif_degisti": scope == "tarif"}
+
+
 # ================================================================ TEST VEKTÖRLERİ
 if __name__ == "__main__":
     print("== 1 Fermantasyon tahmini")

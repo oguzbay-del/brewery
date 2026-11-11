@@ -141,7 +141,7 @@ ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0
 
 ### 3.4 Uyarılar [tasarım]
 - **Tank basınç sınırı:** ayar basıncı tank kaydındaki çalışma basıncını aşarsa engellenir. Önerilen çözüm: daha düşük hedef ya da daha soğuk fermantasyon.
-- **FG belirsizliği:** kapama gravitesi beklenen FG'ye bağlıdır. Fermantasyon tahmini (07 §1) güven aralığı genişse "1–2 puan erken kapatma riski" gösterilir.
+- **FG belirsizliği:** kapama gravitesi beklenen FG'ye bağlıdır. Fermantasyon tahmini (07 §1) güven aralığı genişse (aralık genişliği > 0.002 SG, tam sayı birimde 200; varsayılan, doğrulanacak) "1–2 puan erken kapatma riski" gösterilir.
 - **İzleme:** basınç sensörü varsa gerçek basınç ve sıcaklıktan anlık CO₂ hacmi hesaplanır (04 §3.5'in tersi, sayısal çözüm) ve grafikte gösterilir.
 
 ---

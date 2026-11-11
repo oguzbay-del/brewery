@@ -208,4 +208,42 @@ def uret():
                       (3.0, 4.0, 1.016), (1.0, 25.0, 1.010), (0.8, 25.0, 1.010),   # son ikisi: hedef kalıntının altında
                       (2.5, 15.0, 1.004), (2.4, 0.0, 1.012)):
         v.ekle("spund", {"target_vol": tv, "t_c": t, "fg_expected": fg}, ref.spund(tv, t, fg))
+
+    # ---- T1.14g: beyan, vergilenecek hacim (§2.1), spunding uyarıları (§3.4)
+    for abv in ("0.5", "1.2", "1.20", "1.21", "1.3", "5.0", "5.14", "0", "1.1999", "12"):
+        v.ekle("label_declaration", {"abv": abv}, ref.label_declaration(abv), "%1.2 sınırı Decimal; 1.2 dahil değil")
+
+    ev = [["2026-03-31", "ambalaj", "1500"], ["2026-04-01", "ambalaj", "2000.5"], ["2026-04-10", "cikis", "800"],
+          ["2026-04-15", "satis", "700.25"], ["2026-04-20", "imha", "50"], ["2026-04-22", "iade", "30.5"],
+          ["2026-04-25", "lab", "5"], ["2026-04-30", "ambalaj", "1000"], ["2026-05-01", "ambalaj", "999"],
+          ["2026-04-28", "cikis", "100"]]
+    for trig, dd in (("ambalaj", ()), ("ambalaj", ("imha",)), ("ambalaj", ("imha", "iade", "lab")),
+                     ("cikis", ()), ("cikis", ("iade",)), ("satis", ("imha", "iade", "lab")),
+                     ("satis", ("lab",))):
+        girdi = {"events": ev, "trigger": trig, "start": "2026-04-01", "end": "2026-04-30", "deduct": list(dd)}
+        r = ref.taxable_volume([tuple(e) for e in ev], trig, "2026-04-01", "2026-04-30", dd)
+        v.ekle("taxable_volume", girdi, r, "dönem sınırları dahil; diğer tetikleyiciler sayılmaz")
+    küçük = [["2026-04-02", "ambalaj", "10"], ["2026-04-03", "imha", "25"]]
+    r = ref.taxable_volume([tuple(e) for e in küçük], "ambalaj", "2026-04-01", "2026-04-30", ("imha",))
+    v.ekle("taxable_volume", {"events": küçük, "trigger": "ambalaj", "start": "2026-04-01", "end": "2026-04-30",
+                              "deduct": ["imha"]}, r, "düşüş vergilenenden büyük: sıfıra kenetlenir")
+    v.ekle("taxable_volume", {"events": [], "trigger": "ambalaj", "start": "2026-04-01", "end": "2026-04-30",
+                              "deduct": []},
+           ref.taxable_volume([], "ambalaj", "2026-04-01", "2026-04-30"), "boş")
+    for evs, trig, dd, not_ in (([["2026-04-02", "ambalaj", "10"]], "uretim", [], "bilinmeyen tetikleyici"),
+                                ([["2026-04-02", "ambalaj", "10"]], "ambalaj", ["satis"], "düşülemeyen tür"),
+                                ([["2026-04-02", "fire", "10"]], "ambalaj", [], "bilinmeyen olay türü")):
+        v.ekle("taxable_volume", {"events": evs, "trigger": trig, "start": "2026-04-01", "end": "2026-04-30",
+                                  "deduct": dd},
+               _hata_ile(lambda: ref.taxable_volume([tuple(e) for e in evs], trig, "2026-04-01", "2026-04-30", dd)), not_)
+
+    for tv, t, mx, rng, wu in ((2.5, 12.0, 25.0, (1.0100, 1.0110), 200), (2.5, 12.0, 15.0, (1.0100, 1.0110), 200),
+                               (2.5, 12.0, 25.0, (1.0100, 1.0140), 200), (2.5, 12.0, None, None, 200),
+                               (2.5, 12.0, 25.0, (1.010, 1.012), 200), (2.5, 12.0, 25.0, (1.010, 1.01201), 200),
+                               (3.0, 4.0, 10.0, (1.008, 1.016), 200), (2.6, 18.0, 27.1, None, 200),
+                               (2.6, 18.0, 27.0, (1.012, 1.013), 50), (0.0, 12.0, 0.0, None, 200),
+                               (2.5, 12.0, None, (1.014, 1.010), 200)):
+        v.ekle("spund_warnings", {"target_vol": tv, "t_c": t, "tank_max_psi": mx,
+                                  "fg_range": None if rng is None else list(rng), "wide_u": wu},
+               ref.spund_warnings(tv, t, mx, rng, wu), "kod listesi + engellendi")
     return v.yaz()

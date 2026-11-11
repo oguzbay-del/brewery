@@ -101,6 +101,27 @@ def malt_from_analysis(fgdb, moisture, fc_diff):
 
 def ebc_from_lab(ebc): return {"EBC": ebc, "SRM": r(ebc/1.97, 2), "°L": r((ebc/1.97 + 0.76)/1.3546, 2)}  # 1.3546: plan kararı (01 §1.5 notu)
 
+# ---------------------------------------------------------------- 6. Uyarı kuralları (T1.14g)
+def yeast_reuse_warnings(generation, days_since_harvest, viability=None, max_generation=8, history_differs=False):
+    """§3.4 uyarı tablosu, tablo sırasıyla kod listesi. viability: kesir (0-1) ya da None (ölçülmemiş: canlılık
+    uyarısı verilmez). history_differs: farklı stil ya da maya suşu geçmişi (bilgi)."""
+    out = []
+    if generation > max_generation: out.append("nesil_siniri")                 # "yeni kültür önerilir"
+    if days_since_harvest > 14: out.append("hasat_14_gun")                     # "canlılık düşük olabilir, sayım önerilir"
+    if viability is not None and viability < 0.80: out.append("canlilik_dusuk")  # "starter veya taze maya"
+    if history_differs: out.append("bilgi_gecmis")                             # bilgi: nesil zinciri gösterilir
+    return out
+
+DIASTATIC_MIN_L = 35.0     # [doğrulanacak eşik] tahıl faturası ağırlıklı ortalaması bunun altındaysa uyarı
+def diastatic_check(grains, threshold=DIASTATIC_MIN_L):
+    """§5.4 kendi kendini dönüştürür mü: grains = [(kg, diastatik_güç_°L)] (tahıl faturasındaki bütün tahıllar;
+    diastatik gücü olmayan tahıl 0 ile girilir). Ağırlıklı ortalama < eşik ise uyarı. Boş/sıfır ağırlık: uyarı yok."""
+    w = sum(kg for kg, _ in grains)
+    if w <= 0: return {"ortalama": 0.0, "uyari": []}
+    avg = sum(kg*dp for kg, dp in grains)/w
+    return {"ortalama": avg, "uyari": ["dusuk_diastatik_guc"] if avg < threshold else []}
+
+
 # ================================================================ TEST VEKTÖRLERİ
 if __name__ == "__main__":
     print("== 1 Maliyet")

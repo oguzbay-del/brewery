@@ -446,3 +446,205 @@ pub fn nochill_ibu(
         round_py(extra, 1),
     )
 }
+
+// ------------------------------------------------------------------ method choice, display and stall rules
+
+/// Stall-rule outcome (spec §1.5).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Stall {
+    /// Last SG at most FG + 0.004: "looks finished".
+    LooksFinished,
+    /// Last SG above FG + 0.004: "may be stuck".
+    PossiblyStuck,
+}
+
+impl Stall {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::LooksFinished => "bitmis_gorunuyor",
+            Self::PossiblyStuck => "takilmis",
+        }
+    }
+}
+
+fn sorted_readings(readings: &[(f64, f64)]) -> Vec<(f64, f64)> {
+    let mut rd = readings.to_vec();
+    rd.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.total_cmp(&b.1)));
+    rd
+}
+
+/// Stall rule (spec §1.5): the last two readings (sorted by time) are at least 48 h apart
+/// and differ by at most 100 gravity units. `None` when the rule does not apply (also for
+/// fewer than two readings).
+#[must_use]
+pub fn stall_check(readings: &[(f64, f64)], fg_prior: f64) -> Option<Stall> {
+    let rd = sorted_readings(readings);
+    let [.., (t1, g1), (t2, g2)] = rd.as_slice() else {
+        return None;
+    };
+    if t2 - t1 >= 48.0 && (gravity_units(*g1) - gravity_units(*g2)).abs() <= STALL_U {
+        Some(if gravity_units(*g2) <= gravity_units(fg_prior) + NEAR_U {
+            Stall::LooksFinished
+        } else {
+            Stall::PossiblyStuck
+        })
+    } else {
+        None
+    }
+}
+
+/// Which forecast method applies (spec §1.1).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ForecastMethod {
+    /// Device data is sufficient (07 §1.4): use the 07 §1 model.
+    Device,
+    /// Manual readings only: use the section 10 model.
+    Manual,
+    /// Neither: no forecast.
+    None,
+}
+
+impl ForecastMethod {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Device => "cihaz",
+            Self::Manual => "elle",
+            Self::None => "yok",
+        }
+    }
+}
+
+/// Method choice (spec §1.1): device data when sufficient, else manual readings if any.
+#[must_use]
+pub fn forecast_method(device_sufficient: bool, manual_count: usize) -> ForecastMethod {
+    if device_sufficient {
+        ForecastMethod::Device
+    } else if manual_count > 0 {
+        ForecastMethod::Manual
+    } else {
+        ForecastMethod::None
+    }
+}
+
+/// Source label of a reading (spec §1.1).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReadingSource {
+    /// Device (sensor).
+    Device,
+    /// Manual hydrometer or refractometer.
+    Manual,
+    /// Paper log.
+    Paper,
+}
+
+/// What a reading is used for (spec §1.1).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ReadingRole {
+    /// A point of the fermentation model.
+    Model,
+    /// Device bias correction (07 §2.2); not a model point.
+    BiasCorrection,
+}
+
+impl ReadingRole {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Model => "model",
+            Self::BiasCorrection => "sapma_duzeltmesi",
+        }
+    }
+}
+
+/// Role of a reading by source label (spec §1.1): manual and paper readings of a batch
+/// with device data are bias-correction points, otherwise model points.
+#[must_use]
+pub fn reading_role(source: ReadingSource, batch_has_device: bool) -> ReadingRole {
+    if source != ReadingSource::Device && batch_has_device {
+        ReadingRole::BiasCorrection
+    } else {
+        ReadingRole::Model
+    }
+}
+
+/// Display status of the few-readings estimate (spec §1.4, evaluation order as listed).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FewStatus {
+    /// All conditions hold: show the estimate.
+    Show,
+    /// Stall rule: looks finished.
+    LooksFinished,
+    /// Stall rule: may be stuck.
+    PossiblyStuck,
+    /// Fewer than two readings after the lag phase (also: no readings).
+    NeedTwoReadings,
+    /// Less than 30 % of the expected drop is complete.
+    DropBelow30Percent,
+    /// Within 0.0005 of the target.
+    TargetReached,
+    /// The fitted decay rate is not positive.
+    NonPositiveK,
+}
+
+impl FewStatus {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Show => "goster",
+            Self::LooksFinished => "bitmis_gorunuyor",
+            Self::PossiblyStuck => "takilmis",
+            Self::NeedTwoReadings => "az_okuma",
+            Self::DropBelow30Percent => "dusus_yetersiz",
+            Self::TargetReached => "hedefe_ulasti",
+            Self::NonPositiveK => "k_pozitif_degil",
+        }
+    }
+}
+
+/// Whether the few-readings estimate is shown (spec §1.4): stall rule, two readings after
+/// lag, 30 % drop, target reached, positive `k`, in that order.
+#[must_use]
+pub fn few_status(readings: &[(f64, f64)], og: f64, fg_prior: f64, lag: f64) -> FewStatus {
+    let rd = sorted_readings(readings);
+    let Some(&(_, sg_now)) = rd.last() else {
+        return FewStatus::NeedTwoReadings;
+    };
+    if let Some(s) = stall_check(&rd, fg_prior) {
+        return match s {
+            Stall::LooksFinished => FewStatus::LooksFinished,
+            Stall::PossiblyStuck => FewStatus::PossiblyStuck,
+        };
+    }
+    let post: Vec<(f64, f64)> = rd.iter().copied().filter(|&(t, _)| t > lag).collect();
+    if post.len() < 2 {
+        return FewStatus::NeedTwoReadings;
+    }
+    if 10 * (gravity_units(og) - gravity_units(sg_now))
+        < 3 * (gravity_units(og) - gravity_units(fg_prior))
+    {
+        return FewStatus::DropBelow30Percent;
+    }
+    if gravity_units(sg_now) <= gravity_units(fg_prior) + EPS_U {
+        return FewStatus::TargetReached;
+    }
+    match k_fit(&post, og, fg_prior, lag, true) {
+        Some((k, _)) if k > 0.0 => FewStatus::Show,
+        _ => FewStatus::NonPositiveK,
+    }
+}
+
+/// Simple no-chill rule: extra minutes added to every hop addition (spec §3.1).
+pub const NOCHILL_RULE_MIN: f64 = 20.0;
+
+/// No-chill rule time (spec §3.1): addition time plus 20 minutes; a flame-out (0 min)
+/// addition counts as 20 minutes.
+#[must_use]
+pub fn nochill_rule_time(t_min: f64) -> f64 {
+    t_min + NOCHILL_RULE_MIN
+}
