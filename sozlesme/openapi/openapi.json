@@ -1,0 +1,149 @@
+{
+  "components": {
+    "schemas": {
+      "ErrorBody": {
+        "description": "Machine-readable error detail.",
+        "properties": {
+          "code": {
+            "description": "Stable error code (for clients to branch on).",
+            "type": "string"
+          },
+          "message": {
+            "description": "Human-readable message (English; not shown to end users).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "description": "Common error envelope returned by every `/v1` endpoint on failure.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody",
+            "description": "Error detail."
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "type": "object"
+      },
+      "HealthResponse": {
+        "description": "Response of `GET /healthz`.",
+        "properties": {
+          "service": {
+            "description": "Service name.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Always `\"ok\"` while the process is serving.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Service version.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "service",
+          "version"
+        ],
+        "type": "object"
+      },
+      "VersionResponse": {
+        "description": "Response of `GET /v1/version`.",
+        "properties": {
+          "api": {
+            "description": "API version (the `api` crate version).",
+            "type": "string"
+          },
+          "engine": {
+            "description": "Calculation engine version; `null` until the engine is wired in.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "api"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "",
+    "license": {
+      "name": ""
+    },
+    "title": "api",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/healthz": {
+      "get": {
+        "operationId": "healthz",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Service is alive"
+          }
+        },
+        "summary": "Liveness probe (unversioned).",
+        "tags": [
+          "system"
+        ]
+      }
+    },
+    "/v1/version": {
+      "get": {
+        "operationId": "getVersion",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                }
+              }
+            },
+            "description": "Version information"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Reports the API and engine versions.",
+        "tags": [
+          "system"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Service status and version",
+      "name": "system"
+    }
+  ]
+}

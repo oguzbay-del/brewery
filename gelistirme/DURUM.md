@@ -32,3 +32,5 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - T0.2 Rust çalışma alanı: 6 crate, sağlık uçları, gRPC (protox, sistem protoc gerekmez), 9 test (11.11.2026)
 - T0.6 iOS iskeleti: XcodeGen projesi, 27 renk açık/koyu/yüksek karşıtlık, doğrulama betikleri (11.11.2026; Swift derlemesi macOS CI'da)
 - T0.5 Web iskeleti: Vite, React 19, TypeScript strict, token'lardan CSS, Vitest ve Playwright (400 ve 1280 px) (11.11.2026)
+- T0.4 API sözleşmesi: utoipa ile OpenAPI koddan, `/v1/version`, ortak hata şeması, TypeScript tipleri, fark denetimi (11.11.2026)
+- Düzeltme: kök `.gitignore`'daki `src/` her düzeydeki src klasörlerini yok sayıyordu; T0.2 ve T0.5 kaynak kodu depoya girmemişti. Kural `/src/` yapıldı, kaynaklar eklendi (11.11.2026)

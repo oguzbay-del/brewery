@@ -1,0 +1,6 @@
+# Apple swift-openapi-generator configuration.
+# Input document: sozlesme/openapi/openapi.json
+generate:
+  - types
+  - client
+accessModifier: public

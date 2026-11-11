@@ -1,0 +1,15 @@
+{
+  "name": "@demleme/api-client-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript types generated from sozlesme/openapi/openapi.json",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "gen": "openapi-typescript ../../openapi/openapi.json -o src/schema.d.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}

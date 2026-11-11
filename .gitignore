@@ -1,5 +1,5 @@
 # Brewtarget kaynak kodu: üçüncü taraf, yalnız okuma için; depoya konmaz
-src/
+/src/
 # Klasörlerin zip kopyaları
 *.zip
 .DS_Store
@@ -16,3 +16,15 @@ web/node_modules/
 web/dist/
 web/test-results/
 web/playwright-report/
+
+# sozlesme: üretilen TypeScript tipleri depoda tutulur
+
+# altyapi/compose: yerel geçersiz kılmalar
+altyapi/compose/.env
+# Terraform: yerel durum ve gerçek değişkenler (kilit dosyaları depoda kalır)
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.auto.tfvars
+crash.log
