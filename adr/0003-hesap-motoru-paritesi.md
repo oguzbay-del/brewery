@@ -15,7 +15,7 @@ Aşama 1 kapısı: Rust motoru Python referansıyla (`formuller/testler/*.py`) b
 3. **Rust testi.** `sunucu/crates/engine/tests/parite_NN.rs` dosyayı `tests/ortak` ile okur; her `fonk` bir motor çağrısına eşlenir, eşlenmeyen vaka testi düşürür. Tolerans: sayılarda `|a − b| ≤ 1e-9 · max(1, |b|)`, tam sayı, metin, mantıksal ve ondalıkta tam eşitlik.
 4. **Modül düzeni.** `engine` içinde bölüm başına bir modül: `units` (ortak dönüşümler), `density` 01, `hops` 02, `water` 03, `yeast` 04, `mash` 05, `home` 07, `brewery` 08, `brewery_tax` 09, `manual` 10, `trigger` 11. Bir bölümün başka bölümden ihtiyacı olan fonksiyon kopyalanmaz, o modülden çağrılır.
 5. **Birimler.** Motor fonksiyonları spesifikasyondaki birimi alır (01–05 BeerSmith İngiliz iç birimleri, 07–11 metrik); dönüşüm API katmanının işidir. Her fonksiyonun belgesinde birim yazılır.
-6. **Yuvarlama ve eşik.** Gravite eşikleri `units::gravity_units` (yarımda çifte, Python `round` ile aynı) ile tam sayı birimde karşılaştırılır. Python'un ara adımda yuvarladığı yerde `units::round_py`; çıktılar yuvarlanmaz.
+6. **Yuvarlama ve eşik.** Gravite eşikleri `units::gravity_units` (yarımda çifte, Python `round` ile aynı) ile tam sayı birimde karşılaştırılır. Python'un yuvarladığı yerde (ara adım ya da referansın döndürdüğü değer) `units::round_py` (Python `round` ile aynı: ikili değerin tam ondalık açılımı, yarımda çifte); başka yerde çıktı yuvarlanmaz.
 7. **Bağımlılık.** `engine` IO'suz kalır. Saf hesap crate'i (para ve vergi için `rust_decimal`) kabul edilir; test bağımlılığı yalnız `serde_json`.
 8. **NNLS (03 §NNLS).** Referans scipy kullanıyor ve CI'da scipy yok; parite betiği saf Python Lawson–Hanson yazar, scipy varsa onunla da karşılaştırır.
 
