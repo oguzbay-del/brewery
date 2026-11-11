@@ -1,0 +1,57 @@
+# Varsayılan: namespace'teki bütün podlara giriş kapalı; gerekenler aşağıda açılır.
+# (Çıkış kısıtlanmaz.) Politikayı uygulayan bir CNI gerekir.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: varsayilan-giris-kapali
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+# Hesap motoruna yalnız api erişir.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: engine-service-yalniz-api
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/name: engine-service }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app.kubernetes.io/name: api }
+      ports:
+        - { protocol: TCP, port: 50051 }
+---
+# api ve ingest dışarıdan (kenar katmanı / yük dengeleyici) gelen trafiği alır.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-ingest-giris
+spec:
+  podSelector:
+    matchExpressions:
+      - { key: app.kubernetes.io/name, operator: In, values: [api, ingest] }
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - { protocol: TCP, port: 8080 }
+        - { protocol: TCP, port: 8082 }
+---
+# NATS istemci portu yalnız uygulama servislerine açık.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nats-uygulama-servisleri
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/name: nats }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest] }
+      ports:
+        - { protocol: TCP, port: 4222 }

@@ -1,0 +1,23 @@
+# Yerel (kind): PostgreSQL ve Redis küme içinde, imajlar yerelde derlenip kümeye yüklenir.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: demleme
+resources:
+  - ../../base
+  - veri.yaml
+images:
+  - { name: demleme/api, newTag: dev }
+  - { name: demleme/engine-service, newTag: dev }
+  - { name: demleme/worker, newTag: dev }
+  - { name: demleme/ingest, newTag: dev }
+# Yalnız yerel örnek değer (compose ile aynı); gerçek ortamlara girmez.
+secretGenerator:
+  - name: demleme-postgres
+    literals:
+      - POSTGRES_PASSWORD=demleme-yerel
+  - name: demleme-dis-servisler
+    literals:
+      - DATABASE_URL=postgres://demleme:demleme-yerel@postgres:5432/demleme
+      - REDIS_URL=redis://redis:6379
+generatorOptions:
+  disableNameSuffixHash: true

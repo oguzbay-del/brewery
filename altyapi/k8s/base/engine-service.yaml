@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: engine-service }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: engine-service }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: engine-service
+          image: demleme/engine-service
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: grpc, containerPort: 50051 }
+          env:
+            - { name: PORT, value: "50051" }
+            - { name: SERVICE_NAME, value: engine-service }
+          envFrom:
+            - configMapRef: { name: demleme-config }
+          # Yerel gRPC sağlık protokolü (grpc.health.v1); imajda grpc_health_probe da var.
+          readinessProbe:
+            grpc: { port: 50051 }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            grpc: { port: 50051 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 100m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: { sizeLimit: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: engine-service
+spec:
+  selector: { app.kubernetes.io/name: engine-service }
+  ports:
+    - { name: grpc, port: 50051, targetPort: grpc }

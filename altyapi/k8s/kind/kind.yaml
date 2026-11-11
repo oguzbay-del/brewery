@@ -1,0 +1,22 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: demleme
+# Kubernetes 1.35+ kubelet'i cgroup v1 ana makinede varsayılan olarak başlamaz
+# (bazı CI ve korumalı ortamlar hâlâ v1). v2'de bu ayar etkisizdir.
+kubeadmConfigPatches:
+  - |
+    kind: KubeletConfiguration
+    failCgroupV1: false
+# CAP_SYS_RESOURCE'u olmayan Docker ana makinelerinde (korumalı ortamlar) runc
+# negatif oom_score_adj yazamaz ve hiçbir pod başlamaz; bu ayar değeri kısıtlar.
+# CAP_SYS_RESOURCE olan makinelerde etkisi yalnız pod OOM önceliğindedir (kind için önemsiz).
+containerdConfigPatches:
+  - |
+    [plugins.'io.containerd.cri.v1.runtime']
+      restrict_oom_score_adj = true
+# kind'ın varsayılan CNI'si (kindnet) NetworkPolicy için nftables ister; her ana makinenin çekirdeği
+# bunu sağlamaz. Politikaları uygulamak için Calico (iptables) kurulur: kind-up.sh.
+networking:
+  disableDefaultCNI: true
+nodes:
+  - role: control-plane

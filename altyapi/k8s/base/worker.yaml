@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: worker }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: worker }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: worker
+          image: demleme/worker
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: http, containerPort: 8081 }
+          env:
+            - { name: PORT, value: "8081" }
+            - { name: SERVICE_NAME, value: worker }
+          envFrom:
+            - configMapRef: { name: demleme-config }
+            - secretRef: { name: demleme-dis-servisler }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: { sizeLimit: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: worker
+spec:
+  selector: { app.kubernetes.io/name: worker }
+  ports:
+    - { name: http, port: 8081, targetPort: http }

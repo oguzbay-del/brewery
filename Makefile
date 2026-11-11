@@ -8,7 +8,7 @@ COMPOSE      := docker compose -f $(COMPOSE_FILE)
 BUILD_CA := altyapi/compose/.build-ca.pem
 
 .DEFAULT_GOAL := help
-.PHONY: help up down logs ps smoke test lint
+.PHONY: help up down logs ps smoke test lint kind-up kind-test kind-down
 
 help: ## Hedefleri listeler
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -35,3 +35,12 @@ test: ## Sunucu testleri: cargo test --workspace
 lint: ## Sunucu biçim ve clippy denetimi
 	cd sunucu && cargo fmt --all -- --check
 	cd sunucu && cargo clippy --workspace --all-targets -- -D warnings
+
+kind-up: ## kind kümesi kurar, imajları yükler, altyapi/k8s/overlays/yerel'i uygular
+	altyapi/k8s/kind-up.sh
+
+kind-test: ## kind duman testi: podlar, /healthz, gRPC sağlığı, ağ politikası
+	altyapi/k8s/kind-test.sh
+
+kind-down: ## kind kümesini siler
+	altyapi/k8s/kind-down.sh
