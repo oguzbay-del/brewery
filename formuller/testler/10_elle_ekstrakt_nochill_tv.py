@@ -18,18 +18,23 @@ EPS = 0.0005          # 07 §1.5 ile aynı (u biriminde EPS_U = 50)
 EPS_U = 50
 STALL_U = 100         # durgunluk: fark ≤ 0.001 (100 birim)
 NEAR_U = 400          # "bitmiş görünüyor": SG_son ≤ FG + 0.004 (400 birim)
+W_U = 300             # geç okuma ağırlığı: SG − FG < 0.003 (300 birim) ise ağırlık (SG−FG)/0.003 (F1 karar 11)
 
-def k_fit(readings, og, fg, lag=LAG_H):
+def weight(sg, fg):
+    """Okumanın en küçük kareler ağırlığı: SG − FG ≥ 0.003 ise 1, altında doğrusal düşer (tam sayı birimde)."""
+    return min(1.0, (u(sg) - u(fg)) / W_U)
+
+def k_fit(readings, og, fg, lag=LAG_H, weighted=True):
     """FG sabit (ön tahmin), OG t=0'da bilinir. y = ln((SG-FG)/(OG-FG)) = -k (t-lag).
-    Orijinden geçen en küçük kareler: k = -Σxy/Σx²."""
-    xs, ys = [], []
+    Orijinden geçen ağırlıklı en küçük kareler: k = -Σ w·x·y / Σ w·x²  (w = weight(SG, FG); weighted=False: w = 1)."""
+    xs, ys, ws = [], [], []
     for t, sg in readings:
         x = t - lag
         if x <= 0 or u(sg) - u(fg) <= EPS_U: continue
-        xs.append(x); ys.append(math.log((sg - fg) / (og - fg)))
+        xs.append(x); ys.append(math.log((sg - fg) / (og - fg))); ws.append(weight(sg, fg) if weighted else 1.0)
     if not xs: return None, []
-    sxx = sum(x * x for x in xs)
-    k = -sum(x * y for x, y in zip(xs, ys)) / sxx
+    sxx = sum(w * x * x for w, x in zip(ws, xs))
+    k = -sum(w * x * y for w, x, y in zip(ws, xs, ys)) / sxx
     k_each = [-y / x for x, y in zip(xs, ys)]
     return k, k_each
 
@@ -123,13 +128,16 @@ def topoff_temp(v_wort, T_wort, v_water, T_target, c_ratio=1.0):
 # ================================================================ 3. Soğutmasız (no-chill) IBU
 def ftemp(Tc): return 1.0 if Tc >= 100 else 2.39e11 * math.exp(-9773 / (Tc + 273.15))
 
-TAU_20L_H = 4.0        # 20 L HDPE küp, durgun hava 20 °C, saat       [doğrulanacak]
+TAU_20L_H = 5.0        # 20 L HDPE küp, durgun hava 20 °C, saat       [doğrulanacak] (F1 karar 7: kaba ısı dengesi 4.4–6.6 sa)
 def tau_h(v_L, tau20=TAU_20L_H): return tau20 * (v_L / 20.0) ** (1 / 3)
 
-def t_eq_min(T0, T_amb, tau_hours, dt=0.5, Tstop=60.0):
+TSTOP_C = 40.0         # bu sıcaklığın altı ihmal edilir (F1 karar 6; önceki değer 60 °C)
+
+def t_eq_min(T0, T_amb, tau_hours, dt=0.5, Tstop=TSTOP_C):
     """Küpte soğuma T(t) = Tamb + (T0-Tamb)e^(-t/τ). Eşdeğer kaynatma dakikası = ∫ ftemp(T) dt.
-    60 °C altı katkısı ihmal edilir (bilinçli yaklaşım; ftemp(60 °C) = 0.0435, kesme eşdeğer süreyi
-    %13 (T0 95) – %42 (T0 80) azaltır; karar listesi F1 Ö7). Yöntem: sol Riemann toplamı, adım dt = 0.5 dk."""
+    40 °C altı katkısı ihmal edilir (bilinçli yaklaşım; ftemp(40 °C) = 0.00668; kesme eşdeğer süreyi, kesmesiz
+    integrale göre, τ = 5 sa için yaklaşık %4 (T0 95) – %10 (T0 80) azaltır; 60 °C kesmesi %12 – %30 azaltırdı).
+    Yöntem: sol Riemann toplamı, adım dt = 0.5 dk."""
     tau = tau_hours * 60; t = 0.0; s = 0.0
     while True:
         T = T_amb + (T0 - T_amb) * math.exp(-t / tau)
@@ -155,6 +163,18 @@ if __name__ == "__main__":
     print("T1e durgun, yüksek 120 sa 1.024, 168 sa 1.024:", few_forecast([(48, 1.030), (120, 1.024), (168, 1.024)], 1.050, 1.012))
     print("T1g 1 puanlık durgunluk (1.014 → 1.013, 48 sa arayla):", few_forecast([(96, 1.018), (168, 1.014), (216, 1.013)], 1.050, 1.012))
     print("T1f tutarsız 48 sa 1.020, 94 sa 1.019 (46 sa arayla, durgunluk değil):", few_forecast([(48, 1.020), (94, 1.019)], 1.050, 1.012))
+    _rd = [(48, 1.030), (84, 1.014)]
+    _kw, _ = k_fit(_rd, 1.050, 1.012); _ku, _ = k_fit(_rd, 1.050, 1.012, weighted=False)
+    print("T1h geç okuma ağırlığı: 48 sa 1.030, 84 sa 1.014 (SG−FG = 0.002, ağırlık %.3f): k ağırlıklı %.5f, ağırlıksız %.5f; w(1.030) = %.1f, w(1.0125) = %.3f" %
+          (weight(1.014, 1.012), _kw, _ku, weight(1.030, 1.012), weight(1.0125, 1.012)))
+    _fw = few_forecast(_rd, 1.050, 1.012)
+    print("T1h tahmin (ağırlıklı):", _fw)
+    _l = [(48, 1.030), (84, 1.014)]
+    _ends = lambda wt: t_end(1.050, 1.012, k_fit(_l, 1.050, 1.012, weighted=wt)[0])
+    print("T1h bitiş saati ağırlıklı %.1f, ağırlıksız %.1f; 1 puanlık okuma hatası (84 sa 1.013 yerine 1.014): ağırlıklı %.1f / ağırlıksız %.1f" %
+          (_ends(True), _ends(False),
+           t_end(1.050, 1.012, k_fit([(48, 1.030), (84, 1.013)], 1.050, 1.012)[0]),
+           t_end(1.050, 1.012, k_fit([(48, 1.030), (84, 1.013)], 1.050, 1.012, weighted=False)[0])))
 
     print("\n== 2. Ekstrakt")
     print("T2a PPG→puan/(kg/L) katsayısı: %.4f" % PPG_TO_PKL)
@@ -177,7 +197,8 @@ if __name__ == "__main__":
     for tau in (3, 4, 6):
         print("T3a τ=%d sa, T0 95, ortam 20: eşdeğer %.1f dk" % (tau, t_eq_min(95, 20, tau)))
     print("T3b τ(40 L) = %.2f sa" % tau_h(40))
+    print("T3f Ftemp(40 °C) = %.5f ; Ftemp(60 °C) = %.4f ; ince adım (dt 0.01 dk) T0 95, τ 5 sa: %.1f dk" % (ftemp(40), ftemp(60), t_eq_min(95, 20, 5, dt=0.01)))
     hops = [(28, 0.10, 60), (28, 0.10, 0)]
     print("T3c kural  (60 dk + 0 dk, 28 g %10):", nochill_ibu(hops, 1.050, 20, "kural"))
-    print("T3d model  (aynı, τ 4 sa, T0 95):", nochill_ibu(hops, 1.050, 20, "model"))
+    print("T3d model  (aynı, τ 5 sa, T0 95):", nochill_ibu(hops, 1.050, 20, "model"))
     print("T3e model, T0 80 (whirlpool sonrası):", nochill_ibu(hops, 1.050, 20, "model", T0=80))

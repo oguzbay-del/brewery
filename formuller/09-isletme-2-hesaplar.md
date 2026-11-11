@@ -34,14 +34,18 @@ Biradaki yağ, organik asit, poliol ve lif ihmal edilebilir düzeydedir. Laborat
 ### 1.2 Bileşenler [kesin, tasarım]
 
 ```
-alkol (g/100 mL)          = ABV · 0.78924                 (etanol yoğunluğu, 20 °C)
+alkol (g/100 mL)          = ABV · 0.78924                 (ölçülmüş ABV; etanol yoğunluğu, 20 °C)
+                          = ABW · SG_son · 0.9982         (tahmini ABV; aşağıya bakın)
 gerçek ekstrakt (g/100 mL) = RE (°P, g/100 g) · SG_son        (RE: 01 §6.1)
 karbonhidrat (g/100 mL)   = gerçek ekstrakt − protein − (kül, girilmişse)
 enerji                    = Σ bileşen · katsayı
 ```
 
 - **ABV:** ölçülmüş değer varsa o kullanılır (etikette beyan edilen ABV), yoksa 01 §6.3'teki tahmin.
-- **Tahmini ABV'de iç tutarsızlık (bilinen, %0.75):** tahmini ABV 0.79661 ile türetilip gram'a 0.78924 ile çevrilir (4.056 g); doğrudan `ABW × SG × 0.9982` 4.086 g verir (yaklaşık 1 kJ). `RE × SG` çarpımında su yoğunluğu (0.9982) yoktur (%0.2). Ölçülmüş ABV'de mevcut yol doğrudur. Tahmini değerde ABW'den doğrudan gitme tercihi karar listesinde (F1-kararlar).
+- **Alkol gramı, iki yol [tasarım; F1 kararı 13]:**
+  - ölçülmüş ABV: `alkol (g/100 mL) = ABV · 0.78924` (hacim yüzdesi × etanol yoğunluğu; doğru yol);
+  - tahmini ABV: `alkol (g/100 mL) = ABW · SG_son · 0.9982` (ABW: 01 §6.2'deki g/100 g, doğrudan). Eski yol (tahmini ABV 0.79661 ile türetilip 0.78924 ile gram'a çevrilir) pilsner örneğinde 4.056 g, yeni yol 4.086 g verir (%0.75, yaklaşık 1 kJ); vektör 1.1 ve 1.2 yeni yola göre.
+  - `RE × SG` çarpımında su yoğunluğu (0.9982) yoktur (%0.2); karar kapsamı dışında, değişmedi.
 - **Protein:** laboratuvar değeri yoksa varsayılan 0.4 g/100 mL [doğrulanacak; tahıl faturasına göre 0.2–0.6 arası değişir].
 
 ### 1.3 Yuvarlama ve beyan [mevzuat, doğrulanacak]
@@ -77,7 +81,8 @@ Mevzuat raporu bu hesabı kullanır.
 - **°P kaynağı:** ölçülmüş başlangıç ekstraktı (Stammwürze), yani OG'nin °P karşılığı.
 - **Para birimi ve yuvarlama:** veri tablosundan; kuruş ve sent yuvarlaması satır bazında ya da toplamda (varsayılan mod: yarım yukarı).
 - **Ondalık tip:** tutarlar, oranlar, hacim, ABV ve °P ondalık tiple (Decimal) hesaplanır ve karşılaştırılır; ikili kayan nokta kullanılmaz (`round(2.675, 2) = 2.67` tuzağı; bant ve `floor(°P)` sınırında yanlış banda düşme).
-- **Girdi yuvarlama kuralı (veri tablosu, yöntem başına):** ABV ve °P'nin vergi için kaç haneye (`input_dp`) ve hangi yönde (yukarı, aşağı/kesme, en yakın) yuvarlanacağı. Kural yoksa değer yuvarlanmadan kullanılır (10.05 °P, ≤10.0 bandının dışında kalır). İngiltere'de ABV'nin bir ondalığa aşağı kesildiğini hatırlıyorum, emin değilim **[doğrulanacak]**.
+- **Girdi yuvarlama kuralı (veri tablosu, yöntem başına):** ABV ve °P'nin vergi için kaç haneye (`input_dp`) ve hangi yönde (yukarı, aşağı/kesme, en yakın) yuvarlanacağı. **Varsayılan "yuvarlama yok"**: satır bunu açıkça yazar (`input_dp = None`; 10.05 °P, ≤10.0 bandının dışında kalır). **Kuralı tanımsız satırda motor hata verir** (ABV ya da °P kullanan yöntemler: `saf_alkol`, `hl_plato`, `plato_bandi`; `ValueError`, vektör 2.13); sessiz varsayılan yoktur. İngiltere'de ABV'nin bir ondalığa aşağı kesildiğini hatırlıyorum, emin değilim **[doğrulanacak]** (F1 kararı 4).
+- **Satır durumu:** her ülke satırı `doğrulanacak` başlar. Yalnız resmi kaynak (HMRC/gov.uk, BierStG, TTB, Resmi Gazete) ve kaynak tarihi birlikte kaydedilince `doğrulandı` olur; resmi olmayan kaynaklar (haber, hesaplama siteleri) satırı doğrulanmış yapmaz (vektör 2.14). Bu dosyadaki örnek tablonun hiçbir satırı `doğrulandı` değildir.
 - **Bant sınırı türü (veri tablosu):** üst sınırın banda dahil olup olmadığı. Varsayılan: `saf_alkol` dışlayıcı (`ABV < üst`), `plato_bandi` kapsayıcı (`°P ≤ üst`); her satırda açıkça yazılır.
 - **Uç durumlar:** son bant/kademe açık uçlu olmalıdır (üst sınır `None`); aksi hâlde bant bulunamazsa ya da son kademenin üstünde hacim kalırsa motor hata verir, sessizce 0 vergi hesaplamaz. İndirim oranı oranı aşamaz (`max(oran − indirim, 0)`); satır vergisi hiçbir zaman negatif olmaz.
 
@@ -113,8 +118,10 @@ Tank detayı ve araçlar bu hesabı kullanır. Fermantasyonun son birkaç puanı
 ```
 kalıntı CO₂ (vol)  = 04 §3.2 formülü, fermantasyon sıcaklığında
 gereken (vol)      = hedef vol − kalıntı
-gereken (g/L)      = gereken vol · 1.977                   (1 vol CO₂ = 1.977 g/L, 0 °C 1 atm)
+gereken (g/L)      = gereken vol · 1.9635                  (1 vol CO₂ = 44.01/22.414 = 1.9635 g/L, ideal gaz, 0 °C 1 atm)
 ```
+
+**Tek sabit [F1 kararı 9]:** 09, 10 ve 11'in hepsi 1.9635 g/L/vol kullanır (eski 1.977 gerçek gaz değeriydi; kalıntı vol ile birlikte kullanılan ideal gaz sabiti seçildi). 04 §3.7'deki BeerSmith değerleri (1.9642 / 1.96042) yalnız "BeerSmith uyumu" notudur, motor 1.9635 kullanır.
 
 ### 3.2 Kapama gravitesi [endüstri: Balling]
 2.0665 g ekstrakt → 1 g alkol + 0.9565 g CO₂ + 0.11 g maya.
@@ -145,8 +152,8 @@ ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0
 
 | No | Girdi | Beklenen |
 |---|---|---|
-| 1.1 | Pilsner OG 1.048, FG 1.009, protein 0.4 | ABV 5.14, alkol 4.06 g, gerçek ekstrakt 4.08 g, karbonhidrat 3.7 g; **187 kJ / 45 kcal** /100 mL |
-| 1.2 | Citra Pale Ale OG 1.052, FG 1.011 | ABV 5.41; 204 kJ / 49 kcal |
+| 1.1 | Pilsner OG 1.048, FG 1.009, protein 0.4 | ABV 5.14, alkol 4.09 g (ABW yolu), gerçek ekstrakt 4.08 g, karbonhidrat 3.7 g; **188 kJ / 45 kcal** /100 mL |
+| 1.2 | Citra Pale Ale OG 1.052, FG 1.011 | ABV 5.41; alkol 4.31 g; 204 kJ / 49 kcal |
 | 1.3 | 1.1 ama ölçülen ABV %5.0 | alkol 3.95 g; 184 kJ / 44 kcal |
 | 2.1 | 20 hL, %5.0, `saf_alkol` 21.78/LPA | 100 LPA → 2 178.00 |
 | 2.2 | aynı, bantlar (<3.5: 9.27, <8.5: 21.78, diğer (üst sınır `None`): 29.54), indirim 5.0/LPA | 1 678.00 |
@@ -155,13 +162,16 @@ ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0
 | 2.5 | 20 hL, `kademeli_hacim` (60 000 bbl'a kadar 3.50/bbl, sonra 16/bbl), yıl başı | 59.65 |
 | 2.6 | aynı, bu yıl eşiğe 10 hL kalmış | 10 hL @3.50 + 10 hL @16 /bbl = 166.17 |
 | 2.7 | 20 hL, `hacim` 12.49/L (= 1249 PB/hL) | 24 980.00 |
-| 2.8 | 20 hL, `plato_bandi` (2.4 bantları), 10.0 °P; 10.05 °P; 10.05 °P ve `input_dp` = 1 (yarım yukarı) | 337.60 (kapsayıcı sınır); 506.40; 506.40 |
+| 2.8 | 20 hL, `plato_bandi` (2.4 bantları), 10.0 °P; 10.05 °P (`input_dp = None`); 10.05 °P ve `input_dp` = 1 (yarım yukarı) | 337.60 (kapsayıcı sınır); 506.40; 506.40 |
 | 2.9 | 20 hL, ABV 3.5, `saf_alkol` bantları (2.2), dışlayıcı sınır | 70 LPA × 21.78 = 1 524.60 (ikinci bant) |
 | 2.10 | 20 hL, %5.0, `saf_alkol` oran 4.0, indirim 5.0/LPA | 0.00 (negatif değil) |
 | 2.12 | Girdi yuvarlama: 2.675, `input_dp` = 2, yarım yukarı | 2.68 (ikili kayan noktada 2.67 çıkardı) |
-| 2.11 | `kademeli_hacim`, tek kademe 100 hL'ye kadar 3.0, yıl içi 95 hL, yeni 20 hL | hata (15 hL kademesiz) |
-| 3.1 | hedef 2.5 vol, 12 °C, FG 1.010 | kalıntı 1.12 vol; 2.73 g/L gerekli; **kapama SG 1.0128** (2.8 puan önce); ayar 19.5 psi = 1.35 bar |
-| 3.2 | hedef 2.6 vol, 18 °C, FG 1.012 | kalıntı 0.92 vol; 3.33 g/L; kapama SG 1.0154 (3.4 puan); 27.1 psi = 1.87 bar |
+| 2.11 | `kademeli_hacim`, tek kademe 100 hL'ye kadar 3.0, yıl içi 95 hL, yeni 20 hL | hata (15 hL kademesiz; F1 kararı 5: son kademe açık uçlu girilir, kapalıysa aşım hata) |
+| 2.13 | 20 hL, %5.0, `saf_alkol` oran 21.78, girdi yuvarlama kuralı yazılmamış | hata (kural tanımsız) |
+| 2.13b | aynı, `input_dp = None` (açıkça yuvarlama yok) | 2 178.00 |
+| 2.14 | `row_status()`; `row_status("gov.uk SPR kılavuzu", "2026-10-31")` | doğrulanacak; doğrulandı |
+| 3.1 | hedef 2.5 vol, 12 °C, FG 1.010 | kalıntı 1.12 vol; 2.71 g/L gerekli; **kapama SG 1.0128** (2.8 puan önce); ayar 19.5 psi = 1.35 bar |
+| 3.2 | hedef 2.6 vol, 18 °C, FG 1.012 | kalıntı 0.92 vol; 3.31 g/L; kapama SG 1.0154 (3.4 puan); 27.1 psi = 1.87 bar |
 
 ## 5. Açık noktalar
 

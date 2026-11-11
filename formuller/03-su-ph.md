@@ -66,7 +66,7 @@ Misc (`F_M_UNITS`) → gram dönüşümü (`BSMisc::ToGrams`):
 
 **Asit seçimi `F_R_ACID` / `F_PH_ACID`:** 0 = None, 1 = Lactic, 2 = Phosphoric, 3 = Acid Malt.
 
-**Asit modeli `F_R_ACID_MODEL`:** 0 = "MPH 3 Model", 1 = "BW Model" (kodda "BNW"). Reçetede ekipman profilinden gelir (`F_E_ACID_MODEL`). Liste varsayılanı **1 (BW)**. Bu son bilgi AddList'in son parametresinin varsayılan indeks olduğu varsayımına dayanır **[belirsiz]**.
+**Asit modeli `F_R_ACID_MODEL`:** 0 = "MPH 3 Model", 1 = "BW Model" (kodda "BNW"). Reçetede ekipman profilinden gelir (`F_E_ACID_MODEL`). BeerSmith liste varsayılanı **1 (BW)** (AddList'in son parametresinin varsayılan indeks olduğu varsayımına dayanır **[belirsiz]**). **Bizim motorun varsayılanı 0 (MPH)**; BW seçenek olarak kalır ve "doğrulanacak" işaretlidir (F1 kararı 3, bkz. §5.2 ve §6.8).
 
 ---
 
@@ -241,6 +241,7 @@ Ayrıntılar:
 - Paydada **tüm** mash tahıllarının ağırlığı (`F_R_MASH_GRAIN_WEIGHT`) var. Sayılmayan tipler (şeker vb.) S'ye 0 katar, yani pH 5.72 olan bir baz malt gibi davranır.
 - Asit malt (yaklaşık 3 SRM) burada sıradan açık malt gibi sayılır. Asitliği ayrıca 5.4'teki terimle eklenir.
 - Kristal ve kavrulmuş ayrımı renk eşikleriyle yapılır: < 14 SRM baz malt, 14–200 kristal/karamel (renkle doğrusal artan asitlik), ≥ 200 kavrulmuş (asitlik sabit 42, kristal eğrisine göre daha az asidik).
+- **Bizim model (F1 kararı 12a):** `g(c) = min(c − 1.9, 0.453·c + 5.0)` (c < 200), c ≥ 200 için 42.0. İki doğrunun kesişimi 6.9/0.547 = 12.614 SRM'dedir; fonksiyon 14 SRM'de sürekli olur (13.99 → 11.337, 14 → 11.342; BeerSmith: 12.09 → 11.342). 12.614 SRM altındaki ve 14 SRM üstündeki maltlarda sonuç BeerSmith ile aynıdır. 200 SRM'deki sıçrama (95.6 → 42.0) kavrulmuş malt için bilinçli bir model seçimi olarak korunur [doğrulanacak]. BeerSmith uyumu modunda eski fonksiyon kullanılır.
 - Model adı: kodda geçmiyor. Renk tabanlı ampirik grist pH yaklaşımı, Troester'in "kristal malt asitliği renkle artar, kavrulmuş daha az" bulgusuyla uyumlu **[tahmin]**.
 
 ### 5.2 RA → pH eğimi [kesin]
@@ -252,7 +253,7 @@ model 1 (BW):     m = t · 0.47930613 · 0.17 / 1.5
 0.47930613, L/kg değerini qt/lb'ye çeviren katsayıdır (1 qt/lb = 2.0864 L/kg). Dolayısıyla BW için `m = 0.17 · t[qt/lb] / 1.5`.
 Model 0'da t dönüştürülmeden L/kg olarak kullanılır **[kesin]**. Model adları: "MPH 3" ve "BW (Bru'n Water)" arayüz metinlerinden alındı. Katsayıların literatürdeki kaynağı **[belirsiz]**.
 
-**[doğrulanacak]** Eğim `m` ve mash kalınlığı `t` örtük bir tampon kapasitesi verir: `B = t / m` (mEq/(kg·pH)). MPH için t = 3'te B ≈ 38; BW için kalınlıktan bağımsız B ≈ 18.4, yani bildiğim literatür aralığının (baz maltlar için kabaca 30–50) yaklaşık yarısı. Sonuç: T3'te BW asit önerisi MPH'nin yarısı (1.77 mL / 3.52 mL). Hangi modelin varsayılan olacağı karar listesinde (F1-kararlar); ölçülmüş mash pH verisiyle karşılaştırılana kadar bu iki modelin farkı kullanıcıya gösterilmelidir.
+**[doğrulanacak]** Eğim `m` ve mash kalınlığı `t` örtük bir tampon kapasitesi verir: `B = t / m` (mEq/(kg·pH)). MPH için t = 3'te B ≈ 38; BW için kalınlıktan bağımsız B ≈ 18.4, yani bildiğim literatür aralığının (baz maltlar için kabaca 30–50) yaklaşık yarısı. Sonuç: T3'te BW asit önerisi MPH'nin yarısı (1.77 mL / 3.52 mL). **Karar (F1 kararı 3):** MPH varsayılan model, BW seçenek ve "doğrulanacak". BW seçilince ekran `uyarilar` alanına "BW modeli doğrulanacak: MPH'ye göre yaklaşık yarı asit önerir" notunu yazar. Kesin varsayılan, altın testteki ölçülmüş mash pH ile (ALTIN-TEST senaryo 12 ve 13) verilecek.
 
 **Kenar durumlar:** `t ≤ 0` ya da `W ≤ 0` iken eğim `m = 0` olur ve `ΔpH / m` tanımsızdır; motor bu durumda sıfır değil "mash kalınlığı/tahıl ağırlığı eksik" hatası verir.
 
@@ -274,7 +275,8 @@ p    = F_M_ACID_PCT / 100
 V_L  = asit hacmi (L)                       (ToFluidOz → L)
 Laktik:   MWk = 0.09009 ; ρ = 1 + 0.237·p
 Fosforik: MWk = 0.098   ; ρ = 1 + 0.49·p + 0.365·p²
-f    = model 1 ise AcidFraction(laktik→1, fosforik→2, pH = 5.4), değilse 1
+f    = model 1 ise AcidFraction(laktik→1, fosforik→2, pH = 5.4), değilse 1      (BeerSmith uyumu)
+       bizim model: f = AcidFraction(asit, hedef pH), iki modelde de (§6.8)
 ΔmEq/L = − p · 1000 · ρ · V_L · f / (MWk · W_kg · t)
 ```
 p·ρ·V_L·1000 gram saf asittir. MWk'ya bölmek mmol verir, f ile çarpınca mEq, mash suyu hacmine bölünce mEq/L elde edilir.
@@ -327,7 +329,7 @@ q(pH) = (r1 + 2·r1·r2 + 3·r1·r2·r3) / D      (molekül başına verilen ort
 asit = 0              → 0
 asit ∈ {1, 3} (laktik veya asit malt): MW = 90.09 ; ρ = 1 + 0.237·c/100
 asit = 2 (fosforik):   MW = 98.0  ; ρ = 1 + 0.49·c/100 + 0.375·(c/100)²
-f = model 1 ise AcidFraction(asit, 5.4), değilse 1
+f = model 1 ise AcidFraction(asit, 5.4), değilse 1       (BeerSmith uyumu; bizim model: AcidFraction(asit, hedef pH), §6.8)
 asit = 3 (asit malt):  miktar = mEq · 100 · MW / (c · f · 1000)        [g malt / L mash suyu]
 diğer:                 miktar = mEq · 100 · MW / (c · f · ρ · 1000)    [mL çözelti / L mash suyu]
 ```
@@ -404,13 +406,15 @@ Fosforik: mL = (0.098   / c / (1 + 0.49·c + 0.365·c²))   · Asit(mol/L) · V_
 Asit malt (3) veya diğer: 0
 Sonuç: laktik/fosforik sıfır ya da negatifse 0.
 ```
+**Bizim model:** pH_t sparge hedefidir (§6.8); model 0 sonucu `AcidFraction(asit, pH_t)` ile bölünür.
+
 **Kenar durum (model 1):** su pH'ı 4.3 ise (alkalinite son noktası) C_T paydası 0 olur; `pH_w ≤ 4.3` için hesap yapılmaz ("sparge suyu zaten asidik, asit gerekmez"). `pH_w ≤ pH_t` ise asit 0 (aşağıdaki "sıfır ya da negatif" kuralı).
 Kural 6.3'teki gibidir: ΔpH (mash pH − hedef) < 0 ya da asit = 0 ise sparge sonucu da 0 olur. Bu koşul sparge suyuna değil mash pH'ına bakar **[kesin]**.
 
 ### 6.6 Görüntüleme [kesin]
 `AcidAmountString`: sıvı asit için `mL` ve hesap 48 tbsp'den küçükse "(x tbsp)" eklenir (1 tbsp = 1/256 gal). Asit malt kullanıcının ağırlık biriminde gösterilir. Asit yoksa " - ".
 
-### 6.7 pH aracı varsayılanları (BSTools Mash pH Tool) [kesin]
+### 6.7 pH aracı varsayılanları (BSTools Mash pH Tool) [kesin; BeerSmith değerleri]
 | Alan | Varsayılan |
 |---|---|
 | `F_PH_PH_MEAS` ölçülen mash pH | 5.6 |
@@ -423,7 +427,16 @@ Kural 6.3'teki gibidir: ΔpH (mash pH − hedef) < 0 ya da asit = 0 ise sparge s
 | `F_PH_CONCENTRATION` | %88 |
 | `F_PH_MODEL` | 1 (BW) |
 
-Araçta mash kalınlığı `t = V_mash[L] / W[kg]` ve sparge hacmi doğrudan `F_PH_SPARGE_VOL` olarak alınır. Formüller reçete sürümüyle aynıdır.
+Araçta mash kalınlığı `t = V_mash[L] / W[kg]` ve sparge hacmi doğrudan `F_PH_SPARGE_VOL` olarak alınır. Formüller reçete sürümüyle aynıdır. Bizim uygulamada `F_PH_MODEL` varsayılanı 0 (MPH), ayrı sparge hedefi alanı vardır (§6.8).
+
+### 6.8 Bizim model: düzeltmeler ve uyarılar [tasarım; F1 kararı 3 ve 12]
+BeerSmith uyumu için §5–§6 aynen korunur (karşılaştırma ekranı ve altın test). Kendi modelimiz (varsayılan) şu farklarla çalışır:
+- **Varsayılan model MPH (0).** BW (1) seçenektir ve "doğrulanacak" işaretlidir (§5.2).
+- **Sürekli grist fonksiyonu (12a):** §5.1'deki `min(c − 1.9, 0.453·c + 5.0)`.
+- **Ayrışma kesri hedef pH'ta (12b):** mash asidinde (`MiscAcidRA`, `PHAcidPerLiter`) `f = AcidFraction(asit, hedef pH)`, **iki modelde de** (BeerSmith'te yalnız model 1 ve sabit 5.4). Sparge asidinde model 0 sonucu `AcidFraction(asit, sparge hedefi)`'ne bölünür (laktik asidin %97 ayrışması hesaba katılır, BeerSmith'e göre %3 daha fazla asit). Asit malt için aynı kural (pK 3.86). Model 1 sparge zaten `AcidFraction`'a bölüyordu.
+- **Ayrı sparge hedefi (12c):** yeni alan `F_R_SPARGE_TARGET_PH`, varsayılan **6.0** [doğrulanacak]. §6.5'teki `pH_t` bu alandan gelir; mash hedefi (`F_R_TARGET_PH`) yalnız mash asidini belirler. BeerSmith uyumu modunda ikisi aynı alandır. Sparge asidinin ΔpH koşulu (§6.5, son paragraf) değişmedi.
+- **Tebeşir uyarısı (12d):** model değişmez (tebeşir tam çözünür varsayımı §1.2). Reçetede tebeşir (WA tipi 6) miktarı > 0 ise ekran `uyarilar` alanına "çözünürlük düşük, asitli mash olmadan etkisi abartılı olabilir (tebeşir)" yazar.
+- **Uyarı alanı:** hesap çıktısına `uyarilar: [...]` (metin listesi) eklenir; hesap uyarıyla durmaz. Referans uygulama: `uyarilar(model, tuz_gram)` (test betiği 03).
 
 ---
 
@@ -479,7 +492,8 @@ Base suyu ve seyreltme suyu hacimle karıştırılır: `Mix_i = (V_b·B_i + V_d�
 | `F_R_TARGET_PH` | 5.2 | hedef pH (mash ve sparge) |
 | `F_R_ACID` | 1 (Lactic) **[belirsiz]** | asit seçimi |
 | `F_R_ACID_CONC` | %88 | asit derişimi; asit malt seçiliyse maltın asit % değeri |
-| `F_E_ACID_MODEL` / `F_R_ACID_MODEL` | 1 (BW) **[belirsiz]** | model |
+| `F_E_ACID_MODEL` / `F_R_ACID_MODEL` | BeerSmith: 1 (BW) **[belirsiz]**; bizim motor: **0 (MPH)** | model (§6.8) |
+| `F_R_SPARGE_TARGET_PH` (yeni, bizim) | 6.0 [doğrulanacak] | sparge asidinin hedef pH'ı (§6.8) |
 | `F_R_RUNOFF_PH` | 6.0 | yalnızca kayıt |
 | `F_R_IGNORE_WATER_AGENTS` | 0 | |
 | `F_R_HOLD_SPARGE_SALTS` | 0 | |
@@ -503,8 +517,8 @@ Resources.sqlite `Option` tablosunda su/pH ile ilgili global bir ayar yok. Yaln�
 7. Model adlarının literatürdeki karşılıkları (MPH 3, BW) ve katsayıların kaynağı kodda yok. Grist modeli **[tahmin]**.
 8. SO₄/Cl için Cl = 0 koruması derleyicinin kaldırdığı blokta; döndürülen değer bilinmiyor.
 9. Tahıl rengi iç biriminin SRM olduğu varsayıldı.
-10. Grist fonksiyonu `g(c)` 14 SRM'de süreksizdir (13.99 SRM → 12.09, 14 SRM → 11.34). Birebir uyum için korunur; kendi modelimizde sürekli yapılması karar listesinde (F1-kararlar).
-11. Mash asidinde ayrışma kesri hedef pH yerine sabit 5.4'te alınır; model 0 sparge hesabı ise laktik asidin %97 ayrışmasını hesaba katmaz (yaklaşık %3 eksik asit). Sparge hedefi mash hedefiyle aynı alandır: 5.4 için 2.86 mL, yaygın 6.0 hedefi için 2.15 mL (T4 koşullarında). Tebeşirin tam çözündüğü varsayımı alkaliniteyi olduğundan büyük gösterebilir.
+10. Grist fonksiyonu `g(c)` 14 SRM'de süreksizdir (13.99 SRM → 12.09, 14 SRM → 11.34). BeerSmith uyumu için korunur; kendi modelimizde sürekli yapıldı (§5.1, §6.8; F1 kararı 12a).
+11. Mash asidinde ayrışma kesri hedef pH yerine sabit 5.4'te alınır; model 0 sparge hesabı ise laktik asidin %97 ayrışmasını hesaba katmaz (yaklaşık %3 eksik asit). Sparge hedefi mash hedefiyle aynı alandır: 5.4 için 2.86 mL, yaygın 6.0 hedefi için 2.15 mL (T4 koşullarında). Tebeşirin tam çözündüğü varsayımı alkaliniteyi olduğundan büyük gösterebilir. Kendi modelimizde ayrışma hedef pH'ta alınır, sparge hedefi ayrıdır ve tebeşir için ekran uyarısı verilir (§6.8; F1 kararı 12b, 12c, 12d).
 
 ---
 
@@ -555,10 +569,33 @@ Asit malt (%3, `F_R_ACID_CONC` = 3), yinelemeli `PhAcidMaltAmt` (eklenen malt 3 
 - Model 0: 1. tur 124.83 g (pH 5.4071), 2. tur +4.05 g → **toplam 128.88 g**, pH_adj 5.4002
 - Model 1: 1. tur **62.78 g**, pH_adj 5.4036 (< 0.005 olduğu için durur)
 
+Yukarıdaki tablo ve asit malt değerleri **BeerSmith uyumu** modudur. **Bizim model** (§6.8, ayrışma hedef pH 5.4'te, iki modelde de):
+
+| | Model 0 (MPH, varsayılan) | Model 1 (BW) |
+|---|---|---|
+| Laktik %88, mL/L | 0.246440 | 0.120469 |
+| **Laktik %88, toplam (14.7 L)** | **3.623 mL** | **1.771 mL** |
+| Asit malt %3, 1. tur | 128.43 g (pH 5.4073) | 62.78 g (pH 5.4036, durur) |
+| Asit malt, 2. tur | +4.29 g → **toplam 132.72 g**, pH_adj 5.4002 | |
+
 ### T4: Sparge asidi
 HCO₃ = 150 ppm, su pH 7.5, hedef 5.4, laktik %88. Toplam su 30 L, W = 4.9 kg, t = 3 → V_sp = 30 − 14.7 = **15.3 L**.
 - Model 0 (karbonat dengesi): 0.00220511 mol/L → **2.858 mL**
 - Model 1 (BW): 0.00229262 mol/L → **2.971 mL**
+
+Bu değerler BeerSmith uyumu modudur (hedef 5.4). **T4b, bizim model** (model 0 `AcidFraction`'a bölünür; ayrı sparge hedefi):
+| sparge hedefi | Model 0 (MPH) | Model 1 (BW) |
+|---|---|---|
+| 5.4 | 0.00226871 mol/L → **2.940 mL** | 0.00229262 mol/L → **2.971 mL** |
+| 6.0 (varsayılan) | 0.00166758 mol/L → **2.161 mL** | 0.00170903 mol/L → **2.215 mL** |
+
+### T9: Grist sürekliliği (bizim model, §5.1)
+- `g(13.99)`: BeerSmith 12.090, bizim **11.337**; `g(14)`: 11.342 (iki modelde de); `g(12.614)` = 10.714.
+- Tek malt 13 SRM (W = 1 kg): grist pH BeerSmith 5.3459, bizim **5.3530**.
+
+### T10: Varsayılan model ve uyarılar (§6.8)
+- Varsayılan model 0 (MPH); 5 g gypsum, tebeşir yok → `uyarilar = []`.
+- BW (1) seçili ve 2 g tebeşir → `uyarilar` iki madde: "BW modeli doğrulanacak…" ve "çözünürlük düşük, asitli mash olmadan etkisi abartılı olabilir (tebeşir)".
 
 ### T5: Renk aralığı (RA = 1.1166)
 SRM_min = **5.29**, SRM_max = **10.12**

@@ -395,6 +395,8 @@ g/L → vol : ÷ 1.96042
 ```
 İki sabit birbirinin tersi değil: gidiş-dönüş yaklaşık %0.2 kayar. Kodda böyle; uyumluluk gerekiyorsa korunmalı. Fiziksel değer yaklaşık 1.96–1.98 g/L'dir.
 
+**Bizim motor (F1 kararı 9):** BeerSmith uyumu notudur; yeni bölümlerde (09, 10, 11) ve motorda tek sabit **1.9635 g/L/vol** (= 44.01/22.414, ideal gaz) kullanılır. 1.9642 ve 1.96042 yalnız BeerSmith karşılaştırma ekranında geçerlidir.
+
 ---
 
 ## 4. Uygulama notları / bilinen tuhaflıklar (özet)

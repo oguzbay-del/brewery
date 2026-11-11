@@ -43,11 +43,12 @@ def predicted_trigger(fg_inf, A, k, fg_ref, delta):
     return ("tetik", math.log(A / (target_u / 100000)) / k)
 
 def fg_reference(fg_recipe, fg_inf=None, shown=False, delta=0.004):
-    """Tahmin gösteriliyorsa ve FG∞ eşiğin (FG_tarif + Δ) 1 puan altından yukarıdaysa FG_ref = FG∞ (ölü bölge
-    yok: eşik asimptotun altında kalmaz). Aşağı yönde eski 0.004 farkı korunur."""
+    """Tahmin gösteriliyorsa ve FG∞, FG_tarif'ten (Δ − 1 puan)'dan fazla saparsa FG_ref = FG∞. Yukarı yönde ölü bölge yok
+    (eşik asimptotun altında kalmaz); aşağı yön de Δ'ya bağlı, yani simetrik (F1 karar 14; eski sabit 0.004 kalktı)."""
     if shown and fg_inf is not None:
-        if u(fg_inf) > u(fg_recipe) + u(delta) - 100: return fg_inf, "tahmin"
-        if u(fg_inf) < u(fg_recipe) - 400: return fg_inf, "tahmin"
+        margin = u(delta) - 100
+        if u(fg_inf) > u(fg_recipe) + margin: return fg_inf, "tahmin"
+        if u(fg_inf) < u(fg_recipe) - margin: return fg_inf, "tahmin"
     return fg_recipe, "tarif"
 
 def is_stable(points, hours=48, min_n=24):
@@ -76,34 +77,66 @@ R = 8.314462618; P_ATM = 101325.0; VM = 22.414      # L/mol (0 °C, 1 atm)
 M_DEX_MONO = 198.17; M_SUC = 342.30; M_INVERT = 360.31   # g/mol; CO2 verimi: 2, 4, 4 mol
 SUGARS = {"dekstroz": (M_DEX_MONO, 2), "sakaroz": (M_SUC, 4), "invert": (M_INVERT, 4)}
 
-def sugar_from_mol(mol, kind, dry=1.0):
-    """dry = ürünün kuru madde oranı (0–1); şurup/blok ürünlerde < 1. Varsayılan 1.0 (saf kuru şeker)
-    [doğrulanacak; malzeme veritabanından gelir]."""
-    M, n = SUGARS[kind]; return mol / n * M / dry
+UYARI_KURU = "kuru madde bilinmiyor: 1.0 varsayıldı (şurup ve bloklarda şeker miktarı eksik çıkabilir)"
+
+def sugar_from_mol(mol, kind, dry=None):
+    """dry = ürünün kuru madde oranı (0–1), malzeme veritabanından gelir. None (bilinmiyor): 1.0 ile hesaplanır,
+    hesap durmaz, çağıran 'kuru madde bilinmiyor' uyarısı ekler (F1 karar 1)."""
+    M, n = SUGARS[kind]; return mol / n * M / (1.0 if dry is None else dry)
 
 def bottle_mol(vol_t, T_res, V_beer):
     return max(0.0, vol_t - residual_vol(T_res)) * V_beer / VM
 
-def head_mol(vol_t, T_cond, V_head, purged=True):
-    """Kafa boşluğunda dengedeki CO2. Kısmi basınç = gösterge basıncı + 1 atm (tablo saf CO2 varsayar).
-    Fıçı CO2 ile süpürülmüşse başta 1 atm CO2 zaten var."""
-    P_abs = co2_psi(vol_t, T_cond) * 6894.757 + P_ATM
-    T_K = T_cond + 273.15
-    n = P_abs * V_head / 1000 / (R * T_K)
-    n0 = P_ATM * V_head / 1000 / (R * T_K) if purged else 0.0
-    return max(0.0, n - n0), P_abs
+def p_abs_Pa(vol, T_C): return co2_psi(vol, T_C) * 6894.757 + P_ATM     # CO2 tablosu (saf CO2 kısmi basıncı), mutlak
 
-def keg_priming(vol_t, T_res, T_cond, V_beer, V_head, kind="dekstroz", purged=True, mode="tam", part=1/3, T_serv=4.0, dry=1.0):
+def head_gas_mol(vol, T_C, V_head):
+    """V_head litrelik boşlukta, T_C'de biradaki 'vol' CO2 ile dengedeki CO2 mol sayısı (kısmi basınç = tablo mutlak)."""
+    return p_abs_Pa(vol, T_C) * V_head / 1000 / (R * (T_C + 273.15))
+
+def head_mol(vol_t, T_cond, V_head, purged=True):
+    """Kafa boşluğunda dengedeki CO2 (kondisyon sıcaklığında; eski tanım, geriye dönük). Fıçı CO2 ile süpürülmüşse
+    başta 1 atm CO2 zaten var."""
+    n = head_gas_mol(vol_t, T_cond, V_head)
+    n0 = P_ATM * V_head / 1000 / (R * (T_cond + 273.15)) if purged else 0.0
+    return max(0.0, n - n0), p_abs_Pa(vol_t, T_cond)
+
+def equilibrium_vol(n_total, T_C, V_beer, V_head):
+    """Fıçıdaki toplam CO2 (mol, biradaki + boşluktaki, süpürme gazı dahil) T_C'de dengeye gelince biradaki vol.
+    Bisection; toplam(v) = v·V_beer/22.414 + CO2 mol(boşluk, v) artan."""
+    lo, hi = 0.0, 10.0
+    for _ in range(100):
+        mid = (lo + hi) / 2
+        tot = mid * V_beer / VM + head_gas_mol(mid, T_C, V_head)
+        if tot < n_total: lo = mid
+        else: hi = mid
+    return (lo + hi) / 2
+
+def keg_priming(vol_t, T_res, T_cond, V_beer, V_head, kind="dekstroz", purged=True, mode="tam", part=1/3, T_serv=4.0, dry=None, limit_bar=None):
+    """Şeker, toplam CO2 korunarak SERVİS sıcaklığındaki (T_serv) denge hedef vol'ü verecek biçimde hesaplanır
+    (F1 karar 2): şeker CO2'si = biradaki (hedef − kalıntı) + servis dengesindeki boşluk CO2'si − başlangıç gazı.
+    Kondisyon sıcaklığındaki (T_cond) tepe basıncı aynı toplam CO2'den ayrıca hesaplanır; limit_bar (fıçı çalışma/güvenlik
+    basıncı, bar gösterge) verilir ve tepe toplam gösterge basıncı onu aşarsa uyarı çıkar."""
     nb = bottle_mol(vol_t, T_res, V_beer)
-    nh, P_abs = head_mol(vol_t, T_cond, V_head, purged)
+    n0 = P_ATM * V_head / 1000 / (R * (T_cond + 273.15)) if purged else 0.0
+    nh = max(0.0, head_gas_mol(vol_t, T_serv, V_head) - n0)            # servis dengesi
+    n_sugar_co2 = (nb + nh) * (1.0 if mode == "tam" else part)
     full = sugar_from_mol(nb + nh, kind, dry)
     bottle_same = sugar_from_mol(nb, kind, dry)
-    p_co2 = (P_abs - P_ATM) / 1e5
-    # havalı fıçıda kafa boşluğundaki 1 atm hava ayrıca basınç yapar: gösterge basıncı = CO2 tablo basıncı + 1 atm
-    p_total = p_co2 + (0.0 if purged or V_head <= 0 else P_ATM / 1e5)
+    # kondisyon sıcaklığında, aynı toplam CO2 ile tepe
+    n_total = residual_vol(T_res) * V_beer / VM + n_sugar_co2 + n0
+    v_peak = equilibrium_vol(n_total, T_cond, V_beer, V_head)
+    p_peak = (p_abs_Pa(v_peak, T_cond) - P_ATM) / 1e5
+    air = 0.0 if purged or V_head <= 0 else P_ATM / 1e5            # havalı fıçıda boşluktaki 1 atm hava ayrıca basınç yapar
+    p_peak_total = p_peak + air
+    p_serv = (p_abs_Pa(vol_t, T_serv) - P_ATM) / 1e5
+    warn = []
+    if dry is None: warn.append(UYARI_KURU)
+    if limit_bar is not None and p_peak_total > limit_bar:
+        warn.append("tepe basıncı fıçı sınırını aşıyor: %.2f bar > %.2f bar (kondisyon %.0f °C)" % (p_peak_total, limit_bar, T_cond))
     out = {"seker_g": r(full if mode == "tam" else full * part, 1), "sise_esdegeri_g": r(bottle_same, 1),
            "kafa_payi_%": r(100 * (full / bottle_same - 1), 1) if bottle_same > 0 else None,
-           "denge_basinci_bar": r(p_co2, 2), "toplam_gosterge_bar": r(p_total, 2)}
+           "servis_basinci_bar": r(p_serv, 2), "tepe_vol": r(v_peak, 2), "tepe_basinci_bar": r(p_peak, 2),
+           "tepe_toplam_gosterge_bar": r(p_peak_total, 2), "uyarilar": warn}
     if mode == "kismi":
         out["co2_tamamlama_bar"] = r(co2_psi(vol_t, T_serv) * 0.0689476, 2)   # serviste hedefe çıkarır
     return out
@@ -119,12 +152,13 @@ def co2_from_remaining(sg_rack, fg_ref):
     dRE_gL = 0.8192 * dAE * 10 * sg_rack
     return dRE_gL * CO2_PER_EXTRACT / G_PER_VOL
 
-def cask_priming(V, vol_t, T_res, sg_rack, fg_ref, kind="invert", dry=1.0):
+def cask_priming(V, vol_t, T_res, sg_rack, fg_ref, kind="invert", dry=None):
     res = residual_vol(T_res); fromx = co2_from_remaining(sg_rack, fg_ref)
     need = vol_t - res - fromx
     g = sugar_from_mol(max(0.0, need) * V / VM, kind, dry)
     return {"kalinti_vol": r(res, 2), "ekstrakttan_vol": r(fromx, 2), "eksik_vol": r(need, 2),
-            "seker_g": r(g, 1), "g_L": r(g / V, 2), "fazla": need < 0}
+            "seker_g": r(g, 1), "g_L": r(g / V, 2), "fazla": need < 0,
+            "uyarilar": [UYARI_KURU] if dry is None else []}
 
 def finings_mL(V, rate_mL_per_L=2.0): return V * rate_mL_per_L     # [doğrulanacak]
 
@@ -146,6 +180,7 @@ if __name__ == "__main__":
     print("T1e son 48 sa eğim -0.00024/gün → sabit:", is_stable(flat))
     drop = [(h, 1.0200 - 0.00005 * (h - 150)) for h in range(150, 200)]
     print("T1f son 48 sa eğim -0.0012/gün → sabit değil:", is_stable(drop))
+    print("T1m aşağı yön Δ'ya bağlı (simetrik): tarif 1.010, FG∞ 1.0085, Δ 0.002:", fg_reference(1.010, 1.0085, True, 0.002), "| tarif 1.012, FG∞ 1.0085, Δ 0.004:", fg_reference(1.012, 1.0085, True, 0.004), "| tarif 1.012, FG∞ 1.0095, Δ 0.004:", fg_reference(1.012, 1.0095, True, 0.004))
     print("T1i ölü bölge: tarif 1.010, FG∞ 1.013, Δ 0.002 (ale):", fg_reference(1.010, 1.013, True, 0.002))
     print("T1j tetik erişilemez (FG_ref 1.010, FG∞ 1.013, Δ 0.002):", predicted_trigger(1.013, 0.037, 0.03, 1.010, 0.002))
     print("T1k tetik zaten geçmiş (A 0.003 ≤ Δ 0.004):", predicted_trigger(1.012, 0.003, 0.03, 1.012, 0.004))
@@ -153,18 +188,22 @@ if __name__ == "__main__":
     print("T1h lager süresi OG 1.048: %d hafta; OG 1.072: %d hafta" % (lager_weeks(1.048), lager_weeks(1.072)))
     print("T1l lager süresi OG 1.050: %d; 1.056: %d; 1.080: %d; 1.0485: %d hafta" % (lager_weeks(1.050), lager_weeks(1.056), lager_weeks(1.080), lager_weeks(1.0485)))
 
-    print("\n== 2. Fıçıda priming (2.4 vol, fermantasyon 20 °C, kondisyon 20 °C)")
-    print("T2a 19 L bira, 0 L boşluk:", keg_priming(2.4, 20, 20, 19, 0))
-    print("T2b 19 L bira, 2 L boşluk, CO2 ile süpürülmüş:", keg_priming(2.4, 20, 20, 19, 2))
-    print("T2c aynı, hava ile:", keg_priming(2.4, 20, 20, 19, 2, purged=False))
-    print("T2d kısmi (1/3) + CO2 ile tamamla, servis 4 °C:", keg_priming(2.4, 20, 20, 19, 2, mode="kismi"))
-    print("T2e sakaroz, T2b koşulları:", keg_priming(2.4, 20, 20, 19, 2, kind="sakaroz"))
+    print("\n== 2. Fıçıda priming (2.4 vol, fermantasyon 20 °C, kondisyon 20 °C, servis 4 °C)")
+    print("T2a 19 L bira, 0 L boşluk:", keg_priming(2.4, 20, 20, 19, 0, dry=1.0))
+    print("T2b 19 L bira, 2 L boşluk, CO2 ile süpürülmüş:", keg_priming(2.4, 20, 20, 19, 2, dry=1.0))
+    print("T2c aynı, hava ile:", keg_priming(2.4, 20, 20, 19, 2, purged=False, dry=1.0))
+    print("T2d kısmi (1/3) + CO2 ile tamamla, servis 4 °C:", keg_priming(2.4, 20, 20, 19, 2, mode="kismi", dry=1.0))
+    print("T2e sakaroz, T2b koşulları:", keg_priming(2.4, 20, 20, 19, 2, kind="sakaroz", dry=1.0))
+    print("T2g kuru madde bilinmiyor (dry=None):", keg_priming(2.4, 20, 20, 19, 2))
+    print("T2h servis = kondisyon sıcaklığı (20 °C): eski tanımla aynı:", keg_priming(2.4, 20, 20, 19, 2, T_serv=20.0, dry=1.0))
+    print("T2i sıcak kondisyon 25 °C, havayla, fıçı sınırı 2.5 bar:", keg_priming(2.4, 20, 25, 19, 2, purged=False, dry=1.0, limit_bar=2.5))
 
     print("\n== 3. Cask (firkin 40.9 L, hedef 1.1 vol)")
-    print("T3a FG'de alındı, fermantasyon 19 °C:", cask_priming(40.9, 1.1, 19, 1.010, 1.010))
-    print("T3b 1 puan kala alındı:", cask_priming(40.9, 1.1, 19, 1.011, 1.010))
-    print("T3c 2 puan kala alındı (fazla):", cask_priming(40.9, 1.1, 19, 1.012, 1.010))
+    print("T3a FG'de alındı, fermantasyon 19 °C:", cask_priming(40.9, 1.1, 19, 1.010, 1.010, dry=1.0))
+    print("T3b 1 puan kala alındı:", cask_priming(40.9, 1.1, 19, 1.011, 1.010, dry=1.0))
+    print("T3c 2 puan kala alındı (fazla):", cask_priming(40.9, 1.1, 19, 1.012, 1.010, dry=1.0))
     print("T3d 2 puandan CO2: %.2f vol" % co2_from_remaining(1.012, 1.010))
     print("T3g invert şeker %80 kuru madde:", cask_priming(40.9, 1.1, 19, 1.010, 1.010, dry=0.8))
+    print("T3h kuru madde bilinmiyor:", cask_priming(40.9, 1.1, 19, 1.010, 1.010))
     print("T3e durultucu, firkin, 2 mL/L: %.0f mL" % finings_mL(40.9))
     print("T3f kondisyon 12 °C: %.1f gün; 8 °C: %.1f gün" % (cask_days(12), cask_days(8)))

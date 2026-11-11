@@ -45,7 +45,7 @@ Ayrıntılı iş listesi aşama başında yazılır (Opus).
 |---|---|---|---|---|---|---|
 | F1 | Formüllerin bağımsız doğrulaması: 03 su ve pH, 09 vergi yöntemleri, 10, 11 | Rapor `gelistirme/raporlar/F1-formul-dogrulama.md`; bulgular formüllere işlendi | – | Claude | Fable | bitti (11.11.2026; rapor: 22 bulgu, 2 kritik) |
 | F1.1 | F1 bulgularını formüllere ve test vektörlerine işle; yargı gerektirenleri listele | Kritik ve önemli bulgular kapandı veya karar listesinde; `formuller/testler/*.py` geçiyor | F1 | Claude | Sonnet (işleme), Opus (inceleme) | bitti (11.11.2026; 14 karar maddesi F1.2) |
-| F1.2 | F1 karar listesindeki 14 maddeyi incele, öneriyle ürün sahibine sun, kararları formüllere işle | `gelistirme/raporlar/F1-kararlar.md` her maddede karar var; formüller ve testler güncel | F1.1 | Claude | Opus (inceleme), Sonnet (işleme) | sürüyor (kararlar verildi, uygulanıyor) |
+| F1.2 | F1 karar listesindeki 14 maddeyi incele, öneriyle ürün sahibine sun, kararları formüllere işle | `gelistirme/raporlar/F1-kararlar.md` her maddede karar var; formüller ve testler güncel | F1.1 | Claude | Opus (inceleme), Sonnet (işleme) | bitti (11.11.2026) |
 | T1.0 | Aşama 1 iş listesini çıkar (formül dosyası başına bir iş) | Bu tabloda T1.x satırları | T0.11 | Claude | Opus | bekliyor |
 
 ## Aşama 2–6

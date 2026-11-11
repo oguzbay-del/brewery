@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 0 Temel
-**Sürüyor (duraklatıldı):** T0.7 Kubernetes, T0.9 CI, F1.2 kararların uygulanması (Sonnet). 12:20 UTC'de Sonnet 5 saatlik kullanım sınırı doldu; 13:00'te sıfırlanır. T0.9'un yarım işi `is/T0.9-ci` dalında; devam etmeden önce `git checkout is/T0.9-ci -- .github && git reset -q .github`.
+**Sürüyor:** T0.7 Kubernetes ve kind (Sonnet); CI'ın ikinci çalışması izleniyor (web ve iOS düzeltmeleri)
 **Sıradaki iş:** T0.7 Kubernetes ve kind (Sonnet) · T0.9 CI (Sonnet); ardından T0.11 kapı kontrolü (Opus)
 **Paralel başlatılabilir:** F1 formül doğrulaması (Fable)
 
@@ -39,3 +39,5 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - T0.12 Koyu tema yüksek karşıtlık token'ları; tasarım sistemi yayını güncellendi (11.11.2026)
 - T0.3 Docker Compose: `make up` 10 servis sağlıklı (PostgreSQL, Redis, NATS JetStream, API, hesap motoru, worker, ingest, Mailpit, sahte GitHub ve APNs), `make smoke` geçiyor (11.11.2026)
 - F1 Formül doğrulaması (Fable): 22 bulgu, 2 kritik (11.11.2026)
+- T0.9 CI: 6 iş akışı GitHub'da çalışıyor; ilk çalışmada sunucu, sözleşme, belgeler, altyapı geçti; web (Prettier) ve iOS (import sırası, AppIcon) düzeltildi (11.11.2026)
+- F1.1 ve F1.2: doğrulama bulguları ve 14 karar formüllere işlendi; 20 vektör değişti, 17 yeni. Açık varsayımlar: sparge hedef pH 6.0, grist 200 SRM üstü, ikisi "doğrulanacak" (11.11.2026)

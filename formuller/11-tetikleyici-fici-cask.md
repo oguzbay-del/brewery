@@ -24,8 +24,8 @@ Fermantasyon profilindeki bir adım süre yerine gravite koşuluyla başlayabili
 
 ### 1.1 Referans FG [tasarım]
 - Varsayılan `FG_ref = FG_tarif` (maya attenüasyonu ve mash sıcaklığı düzeltmesiyle, 01).
-- Fermantasyon tahmini gösteriliyorsa (07 §1.4) ve `FG∞ > FG_tarif + Δ − 0.001` ya da `FG∞ < FG_tarif − 0.004` ise `FG_ref = FG∞`. Maya beklenenden farklı attenüe ediyorsa tetik tarifin FG'sine göre ya hiç gelmez ya da erken gelir. Ekranda "tahmine göre" notu çıkar.
-- Yukarı yöndeki eşik Δ'ya bağlıdır (sabit 0.004 değil): `FG∞`, `FG_tarif + Δ` ile `FG_tarif + 0.004` arasındaysa tetik eşiği asimptotun altında kalır ve hiç gelmezdi (ale: FG_tarif 1.010, FG∞ 1.013, Δ 0.002).
+- Fermantasyon tahmini gösteriliyorsa (07 §1.4) ve `FG∞ > FG_tarif + Δ − 0.001` ya da `FG∞ < FG_tarif − (Δ − 0.001)` ise `FG_ref = FG∞` (tam sayı birimde: `u(FG∞) > u(FG_tarif) + u(Δ) − 100` ya da `< u(FG_tarif) − (u(Δ) − 100)`). Maya beklenenden farklı attenüe ediyorsa tetik tarifin FG'sine göre ya hiç gelmez ya da erken gelir. Ekranda "tahmine göre" notu çıkar.
+- **Her iki yön de Δ'ya bağlıdır (simetrik; F1 kararı 14).** Yukarı yön: `FG∞`, `FG_tarif + Δ` ile `FG_tarif + 0.004` arasındaysa tetik eşiği asimptotun altında kalır ve hiç gelmezdi (ale: FG_tarif 1.010, FG∞ 1.013, Δ 0.002). Aşağı yön: eskiden sabit 0.004 idi; artık Δ'ya göre (ale: FG_tarif 1.010, FG∞ 1.0085, Δ 0.002 → tahmin; eski kuralda tarif kalırdı, tetik gerçek FG'nin 1.5 puan üstünde, yani erken gelirdi; vektör 1m).
 
 ### 1.2 "Puan kala" koşulu [tasarım]
 ```
@@ -69,14 +69,27 @@ Planda seçilen yöntem: Brewtarget stokiyometrisi + BeerSmith kalıntı CO₂'s
 ```
 n_bira (mol) = max(0, hedef_vol − kalıntı_vol(T_fermantasyon_max)) × V_bira / 22.414
 ```
-Şeker miktarı kuramsal CO₂ verimiyle (glukoz 0.4886, sakaroz 0.5143 g CO₂/g), §3.2'deki kalan ekstrakt ise Balling oranıyla (0.9565/2.0665 = 0.4629 g CO₂/g) hesaplanır; iki varsayım %5–10 farklıdır. Tek varsayımın seçimi açık karardır (F1-kararlar).
+**İki ayrı CO₂ verimi varsayımı bilinçli olarak korunur [F1 kararı 10]:** priming şekeri tamamen fermente olur ve maya büyümesi ihmal edilir, bu yüzden şekerde **kuramsal** verim kullanılır (glukoz 0.4886, sakaroz 0.5143 g CO₂/g). §3.2'deki kalan ekstraktta ise maya biyokütlesi de oluştuğundan **Balling** oranı kullanılır (0.9565/2.0665 = 0.4629 g CO₂/g). İki varsayım %5–10 farklıdır; fark kasıtlıdır, tek varsayıma indirilmez.
+**1 vol CO₂ = 1.9635 g/L** (= 44.01/22.414, ideal gaz; 09 ve 10 ile tek sabit, F1 kararı 9).
 
-### 2.2 Kafa boşluğundaki CO₂ [kesin fizik]
-Denge basıncı 04 §3.5 polinomundan (kondisyon sıcaklığında). Tablo saf CO₂ kafa boşluğu varsayar, dolayısıyla CO₂ kısmi basıncı = gösterge + 1 atm:
+### 2.2 Kafa boşluğundaki CO₂ ve hesap sıcaklığı [kesin fizik; F1 kararı 2]
+Denge basıncı 04 §3.5 polinomundan. Tablo saf CO₂ kafa boşluğu varsayar, dolayısıyla CO₂ kısmi basıncı = gösterge + 1 atm.
+
+**Şeker, servis sıcaklığındaki dengeye göre hesaplanır** (toplam CO₂ korunur): fıçı kondisyonda ılık, serviste soğuktur; soğuyunca boşluktaki CO₂'nin bir kısmı biraya geçer. Şeker, soğuk serviste biranın tam hedef vol'ünde olacağı miktardır:
 ```
-n_boşluk = P_abs × V_boşluk / (R × T_K) − n_başlangıç
-n_başlangıç = 1 atm × V_boşluk / (R × T_K)   (fıçı CO₂ ile süpürüldüyse; havayla ise 0)
+n_boşluk,servis = P_abs(hedef_vol, T_servis) × V_boşluk / (R × T_servis,K) − n_başlangıç
+n_başlangıç     = 1 atm × V_boşluk / (R × T_kondisyon,K)   (fıçı CO₂ ile süpürüldüyse; havayla ise 0)
+n_şeker_CO₂     = n_bira + max(0, n_boşluk,servis)
 ```
+(Eski tanım şekeri kondisyon sıcaklığındaki boşluk dengesiyle kuruyordu ve servis sıcaklığında hedefin üstüne çıkıyordu: 2b koşullarında +0.09 vol. `T_servis = T_kondisyon` verilirse eski sonuç aynen çıkar, vektör 2h.)
+
+**Tepe basıncı (kondisyon sıcaklığında):** aynı toplam CO₂, kondisyon sıcaklığında yeniden dengeye getirilir:
+```
+n_toplam = kalıntı_vol(T_ferm)·V_bira/22.414 + n_şeker_CO₂ + n_başlangıç
+v_tepe:   v·V_bira/22.414 + P_abs(v, T_kond)·V_boşluk/(R·T_kond,K) = n_toplam      (v için sayısal çözüm, bisection)
+tepe_basinci_bar = (P_abs(v_tepe, T_kond) − 1 atm)/10⁵      ; havayla dolu fıçıda toplam gösterge + 1.013 bar
+```
+Ekran tepe basıncını ayrıca gösterir ve fıçı kaydındaki çalışma/güvenlik basıncıyla (`limit_bar`) karşılaştırır; aşarsa **`uyarilar`** alanına "tepe basıncı fıçı sınırını aşıyor: X bar > Y bar (kondisyon T °C)" yazılır. Hesap uyarıyla durmaz.
 
 ### 2.3 Şeker [kesin stokiyometri]
 | Şeker | Mol CO₂ / mol şeker | Molar kütle |
@@ -87,14 +100,14 @@ n_başlangıç = 1 atm × V_boşluk / (R × T_K)   (fıçı CO₂ ile süpürül
 
 `şeker (g) = (n_bira + n_boşluk) / (mol CO₂ / mol şeker) × M / kuru_madde`
 
-`kuru_madde` (0–1): ürünün kuru madde oranı; şurup ve bloklarda (invert şeker) 1'den küçüktür, malzeme veritabanından gelir. Varsayılan **1.0** (saf kuru şeker) [doğrulanacak]; %80 kuru madde için aynı CO₂ 1/0.8 = 1.25 kat ürün ister (vektör 3g).
+`kuru_madde` (0–1): ürünün kuru madde oranı. **Her şeker ve şurup malzemesinde bulunan bir alandır** ve değeri malzeme veritabanından gelir (şurup ve bloklarda, ör. invert şeker, 1'den küçüktür; %80 kuru madde için aynı CO₂ 1/0.8 = 1.25 kat ürün ister, vektör 3g). **Alan boşsa** ekran uyarır ve hesap **durmaz**: 1.0 ile hesaplanır ve **`uyarilar`** alanına "kuru madde bilinmiyor: 1.0 varsayıldı (şurup ve bloklarda şeker miktarı eksik çıkabilir)" yazılır (vektör 2g, 3h) [F1 kararı 1; tipik invert şurup değerleri %70–85, ürüne göre, doğrulanacak]. Saf kuru şekerde (dekstroz, sakaroz) 1.0 veritabanından gelir, uyarı çıkmaz.
 
 Karşılaştırma notu: aynı girdi (2.4 vol, 20 °C, 19 L) için 04 §5.3 BeerSmith yöntemi 117.3 g (susuz glukoza denk sabit), bu belge 129.2 g (dekstroz monohidrat, stokiyometrik) verir; fark %10'dur ve karşılaştırma ekranında not edilir. Bizim değer stokiyometrik olarak doğrudur.
 
 ### 2.4 Modlar [tasarım]
-- **Tam doğal karbonasyon:** §2.1 + §2.2. 19 L birada 2 L boşluk ≈ %11 fazla şeker (süpürülmüş fıçı).
-- **Gösterilen basınç:** `denge_basinci_bar` CO₂ tablosundaki (kısmi) gösterge basıncıdır. Havayla dolu (süpürülmemiş) fıçıda kafa boşluğundaki 1 atm hava ayrıca basınç yaptığı için gerçek fıçı gösterge basıncı `toplam_gosterge_bar = denge_basinci_bar + 1.013` olur (örnek: 1.80 → 2.81 bar); fıçı ve emniyet vanası sınırı bu değerle karşılaştırılır. Süpürülmüş fıçıda ve boşluk 0 iken ikisi aynıdır.
-- **Kısmi + CO₂ ile tamamla:** tam miktarın **1/3**'ü [doğrulanacak]. Kapak contasını oturtur ve oksijeni süpürür; servis sıcaklığında hedef vol için gereken CO₂ basıncı (04 §3.5) ayrıca gösterilir. Daha az tortu, daha hızlı servis.
+- **Tam doğal karbonasyon:** §2.1 + §2.2. 19 L birada 2 L boşluk, 4 °C servis için ≈ %5 fazla şeker (süpürülmüş fıçı; kondisyon sıcaklığında kurulsaydı %11).
+- **Gösterilen basınçlar:** `servis_basinci_bar`, hedef vol için servis sıcaklığındaki CO₂ tablosu basıncıdır (örnek 0.74 bar). `tepe_basinci_bar`, kondisyon sıcaklığındaki CO₂ (kısmi) gösterge basıncıdır. Havayla dolu (süpürülmemiş) fıçıda kafa boşluğundaki 1 atm hava ayrıca basınç yaptığı için gerçek fıçı gösterge basıncı `tepe_toplam_gosterge_bar = tepe_basinci_bar + 1.013` olur (örnek: 1.71 → 2.72 bar); fıçı ve emniyet vanası sınırı bu değerle karşılaştırılır (§2.2 uyarısı). Süpürülmüş fıçıda ve boşluk 0 iken ikisi aynıdır.
+- **Kısmi + CO₂ ile tamamla:** tam miktarın **1/3**'ü [doğrulanacak]. Kapak contasını oturtur ve oksijeni süpürür; servis sıcaklığında hedef vol için gereken CO₂ basıncı (04 §3.5; `co2_tamamlama_bar`) ayrıca gösterilir. Daha az tortu, daha hızlı servis.
 - Kafa boşluğu ekipman profilindeki fıçı hacminden (Kaplar) ve doldurulan litreden gelir.
 
 ---
@@ -107,7 +120,7 @@ Cask ale, fıçıda ikinci fermantasyonla düşük karbonasyona getirilir ve el 
 Varsayılan **1.1 vol**, aralık 0.9–1.4. Mahzen sıcaklığı 11–13 °C.
 
 ### 3.2 Kalan ekstrakttan gelen CO₂ [kesin: Balling]
-Cask çoğu zaman FG'ye 1–2 puan kala doldurulur; kalan ekstrakt CO₂ üretir.
+Cask çoğu zaman FG'ye 1–2 puan kala doldurulur; kalan ekstrakt CO₂ üretir (Balling oranı, §2.1'deki gerekçeyle).
 ```
 ΔAE (°P)   = Plato(SG_dolum) − Plato(FG_ref)
 ΔRE (g/L)  = 0.8192 × ΔAE × 10 × SG_dolum            (gerçek ekstrakt; Balling RE = 0.1808·OE + 0.8192·AE)
@@ -119,7 +132,7 @@ Bir puan kalan ekstrakt yaklaşık **0.5 vol** verir; iki puan hedefin üstüne 
 ### 3.3 Priming [kesin stokiyometri]
 ```
 eksik_vol = hedef − kalıntı_vol(T_fermantasyon_max) − CO₂_ekstrakttan
-şeker = §2.3 ile (varsayılan invert şeker)
+şeker = §2.3 ile (varsayılan invert şeker; kuru madde boşsa §2.3 uyarısı)
 ```
 - `eksik_vol < 0` ise şeker önerilmez; "fazla CO₂: mahzende spile ile boşaltılır" notu çıkar.
 - Kafa boşluğu cask'ta küçük ve servis basınçsız olduğu için §2.2 uygulanmaz.
@@ -146,6 +159,7 @@ gün = 3 × 2^((12 − T_mahzen) / 10)
 | 1b | Aynı eğri, model tahmini | 73.2 saat |
 | 1c | 13. saatte tek nokta eşik altında, 14'te üstünde, 15–17 altında | tetik 15. saat (13 tetiklemez) |
 | 1d | FG tarif 1.012, tahmin 1.018 gösteriliyor (Δ 0.004) | FG_ref 1.018 (tahmin) |
+| 1m | Aşağı yön Δ'ya bağlı: FG tarif 1.010, tahmin FG∞ 1.0085, Δ 0.002; FG tarif 1.012, FG∞ 1.0085, Δ 0.004; FG tarif 1.012, FG∞ 1.0095, Δ 0.004 | FG_ref 1.0085 (tahmin); 1.0085 (tahmin); 1.012 (tarif) |
 | 1i | Ölü bölge: FG tarif 1.010, tahmin FG∞ 1.013, Δ 0.002 (ale) | FG_ref 1.013 (tahmin) |
 | 1j | FG_ref 1.010, FG∞ 1.013, Δ 0.002, A 0.037, k 0.03 | tetik erişilemez |
 | 1k | FG_ref 1.012 = FG∞, A 0.003, Δ 0.004 | tetik zaten geçmiş (t = 0) |
@@ -154,20 +168,25 @@ gün = 3 × 2^((12 − T_mahzen) / 10)
 | 1g | 15 → 2 °C, 2 °C/gün | 156 saat |
 | 1h | OG 1.048; 1.072 | 6 hafta; 9 hafta |
 | 1l | OG 1.050; 1.056; 1.080; 1.0485 | 7; 7; 10; 7 hafta (yukarı yuvarlama) |
-| 2a | 2.4 vol, fermantasyon 20 °C, 19 L, boşluk 0 | dekstroz 129.2 g (şişeyle aynı) |
-| 2b | Aynı, 2 L boşluk, CO₂ ile süpürülmüş | 143.8 g (+%11.3), denge 1.80 bar |
-| 2c | Aynı, havayla | 152.1 g (+%17.7); CO₂ tablo basıncı 1.80 bar, toplam gösterge **2.81 bar** |
-| 2d | Kısmi 1/3, servis 4 °C | 47.9 g; CO₂ ile 0.74 bar |
-| 2e | 2b, sakaroz | 124.2 g |
+| 2a | 2.4 vol, fermantasyon 20 °C, kondisyon 20 °C, servis 4 °C, 19 L, boşluk 0, kuru madde 1.0 | dekstroz 129.2 g (şişeyle aynı); servis 0.74 bar, tepe 1.80 bar |
+| 2b | Aynı, 2 L boşluk, CO₂ ile süpürülmüş | 136.1 g (+%5.3); servis 0.74 bar; tepe 2.32 vol, 1.71 bar |
+| 2c | Aynı, havayla | 144.3 g (+%11.7); tepe CO₂ basıncı 1.71 bar, toplam gösterge **2.72 bar** |
+| 2d | Kısmi 1/3, servis 4 °C | 45.4 g; CO₂ ile 0.74 bar; tepe 0.64 bar |
+| 2e | 2b, sakaroz | 117.5 g (şişe eşdeğeri 111.6 g) |
+| 2g | 2b ama kuru madde bilinmiyor (`dry = None`) | 136.1 g (1.0 ile); `uyarilar`: "kuru madde bilinmiyor" |
+| 2h | 2b ama servis 20 °C (= kondisyon): eski tanım | 143.8 g (+%11.3), tepe 1.80 bar |
+| 2i | Kondisyon 25 °C, havayla, fıçı sınırı 2.5 bar | 144.3 g; tepe 2.29 vol, CO₂ 2.02 bar, toplam gösterge 3.04 bar; `uyarilar`: "tepe basıncı fıçı sınırını aşıyor: 3.04 bar > 2.50 bar" |
 | 3a | Firkin 40.9 L, hedef 1.1 vol, fermantasyon 19 °C, FG'de dolum | kalıntı 0.89 vol, eksik 0.21 vol, invert 34.9 g (0.85 g/L) |
 | 3b | 1 puan kala dolum | ekstrakttan 0.50 vol, şeker yok, fazla |
 | 3c | 2 puan kala dolum | ekstrakttan 0.99 vol, şeker yok, fazla |
 | 3g | 3a ama invert şeker %80 kuru madde | 43.7 g (1.07 g/L) |
+| 3h | 3a ama kuru madde bilinmiyor | 34.9 g (1.0 ile); `uyarilar`: "kuru madde bilinmiyor" |
 | 3e | Durultucu 2 mL/L, firkin | 82 mL |
 | 3f | Mahzen 12 °C; 8 °C | 3.0 gün; 4.0 gün |
 
 ## 5. Açık noktalar
-- Kafa boşluğu dengesi kondisyon sıcaklığında kurulur; fıçı servis sıcaklığına soğutulunca kafa boşluğundaki CO₂'nin bir kısmı biraya geçer ve bira hedefin üstüne çıkar (2b koşullarında 4 °C'de yaklaşık +0.09 vol). Hesap sıcaklığı tercihi karar listesinde (F1-kararlar).
+- Şeker servis sıcaklığındaki dengeye göre kurulur (§2.2, F1 kararı 2); servis sıcaklığı kullanıcı girdisidir (varsayılan 4 °C). Kondisyonun servisten sıcak olduğu ve fıçının serviste soğutulduğu varsayılır. Soğuk kondisyonda (T_kond < T_servis) tepe basıncı servis basıncından düşük çıkar, uyarı gerekmez.
+- Havalı fıçıda hava kısmı basıncı, sıcaklık değişiminde sabit 1 atm alınır (sıcaklık ve hava miktarı etkisi ihmal) [tasarım].
 - Kalıntı vol polinomu ile basınç polinomu tam tutarlı değil: kalıntı vol'de (0.8615, 20 °C) basınç 0 olmalıyken polinom 1.76 psi (0.12 bar) verir; hedef kalıntıya yakınken kafa boşluğu payı tam sıfır çıkmaz. Etkisi küçük.
 - Kafa payı yüzdesi (`kafa_payi_%`) hedef ≤ kalıntı iken (şişe eşdeğeri 0) tanımsızdır, "—" gösterilir.
 - **Doğrulanacak:** Δ varsayılanları, lager soğutma hızı, lagering kuralı, kısmi priming oranı (1/3), cask hedef vol, isinglass oranı, cask kondisyon süresi.
