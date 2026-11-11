@@ -2,42 +2,28 @@
 
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
-**Aşama:** 0 Temel
-**Sürüyor:** T0.7 Kubernetes ve kind (Sonnet); CI'ın ikinci çalışması izleniyor (web ve iOS düzeltmeleri)
-**Sıradaki iş:** T0.7 Kubernetes ve kind (Sonnet) · T0.9 CI (Sonnet); ardından T0.11 kapı kontrolü (Opus)
-**Paralel başlatılabilir:** F1 formül doğrulaması (Fable)
+**Aşama:** 1 Hesap motoru (Aşama 0 kapandı: ADR-0002)
+**Sıradaki iş:** T1.0 Aşama 1 iş listesini çıkar (Opus): formül dosyası başına bir iş (01–05, 07–11), her biri Rust `engine` crate'ine port + Python paritesi testi; engine-service gRPC uçları.
+**Öneri:** Aşama 1'e yeni bir oturumda başla (token tasarrufu).
 
 ## Ortam
 
-- Kurulu: Rust 1.97, Node 22, npm 10, Docker istemcisi.
-- Docker: oturum başında `dockerd` elle başlatılır (günlük scratchpad'de). Bu ortamda imaj derlemesi için `make up BUILD_CA_FILE=/root/.ccr/ca-bundle.crt` gerekir (TLS vekili). Terraform 1.17.2 scratchpad/bin'de; kind ve kubectl kurulu değil (T0.7'de kurulur).
+- Kurulu: Rust 1.97, Node 22, Docker istemcisi. Oturum başında `dockerd` elle başlatılır.
+- scratchpad/bin: terraform 1.17.2, kind 0.33.0, kubectl 1.37.2, actionlint 1.7.12. Yeni oturumda scratchpad boşsa yeniden indirilir (README'lerde yazılı).
+- Bu ortamda imaj derlemesi: `make up BUILD_CA_FILE=/root/.ccr/ca-bundle.crt` (TLS vekili).
+- CI: GitHub Actions, 6 iş akışı; iOS GitHub macOS makinelerinde.
 
 ## Engeller
 
-- GitHub iş akışı dosyalarının gönderilmesi bu ortamda engelli değil (`is/T0.9-ci` dalı gönderildi).
-
-
-- iOS ilk macOS derlemesinde olası sorunlar (T0.6): Swift 6 katı eşzamanlılık, test barındırma (test host), Info.plist ayar adları, simülatör adı. Derleme O3 (macOS CI) ile.
-
+- Yok. Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
 
 ## Son kararlar
 
-- 11 Kasım 2026: tam geliştirmeye geçildi. Görüşme ve altın test kodun başlamasının değil Aşama 5'in (beta) kapısı.
-- ADR-0001: depo düzeni, kod İngilizce ve belgeler Türkçe, Kustomize, XcodeGen, `is/T…` dalları, commit mesajı iş numarasıyla başlar.
-- Her aşamaya yeni oturum açılır (token tasarrufu).
+- 11.11.2026: tam geliştirme; görüşme ve altın test Aşama 5 kapısı.
+- ADR-0001 depo düzeni; ADR-0002 Aşama 0 kapanışı ve sapmalar.
+- F1: formüller Fable ile bağımsız doğrulandı; 22 bulgu ve 14 karar işlendi. Kayan nokta ilkesi: gravite eşikleri tam sayı birimde (`round(SG*100000)`), sürekli büyüklükte 1e-9 (formuller/00-OKU-BENI.md).
+- Her aşamaya yeni oturum.
 
-## Son biten işler
+## Son biten işler (Aşama 0)
 
-- T0.1 Depo düzeni ve ADR-0001 (11.11.2026)
-- T0.2 Rust çalışma alanı: 6 crate, sağlık uçları, gRPC (protox, sistem protoc gerekmez), 9 test (11.11.2026)
-- T0.6 iOS iskeleti: XcodeGen projesi, 27 renk açık/koyu/yüksek karşıtlık, doğrulama betikleri (11.11.2026; Swift derlemesi macOS CI'da)
-- T0.5 Web iskeleti: Vite, React 19, TypeScript strict, token'lardan CSS, Vitest ve Playwright (400 ve 1280 px) (11.11.2026)
-- T0.4 API sözleşmesi: utoipa ile OpenAPI koddan, `/v1/version`, ortak hata şeması, TypeScript tipleri, fark denetimi (11.11.2026)
-- Düzeltme: kök `.gitignore`'daki `src/` her düzeydeki src klasörlerini yok sayıyordu; T0.2 ve T0.5 kaynak kodu depoya girmemişti. Kural `/src/` yapıldı, kaynaklar eklendi (11.11.2026)
-- T0.8 Terraform iskeleti: 7 GCP modülü, dev, test, canlı; validate geçiyor. Açık kararlar: denetim kovasında WORM ve saklama süresi, CMEK kapsamı, yedeğin başka bölgeye kopyası (veri yeri), CI için Workload Identity (11.11.2026)
-- T0.10 Modül CLAUDE.md dosyaları (11.11.2026)
-- T0.12 Koyu tema yüksek karşıtlık token'ları; tasarım sistemi yayını güncellendi (11.11.2026)
-- T0.3 Docker Compose: `make up` 10 servis sağlıklı (PostgreSQL, Redis, NATS JetStream, API, hesap motoru, worker, ingest, Mailpit, sahte GitHub ve APNs), `make smoke` geçiyor (11.11.2026)
-- F1 Formül doğrulaması (Fable): 22 bulgu, 2 kritik (11.11.2026)
-- T0.9 CI: 6 iş akışı GitHub'da çalışıyor; ilk çalışmada sunucu, sözleşme, belgeler, altyapı geçti; web (Prettier) ve iOS (import sırası, AppIcon) düzeltildi (11.11.2026)
-- F1.1 ve F1.2: doğrulama bulguları ve 14 karar formüllere işlendi; 20 vektör değişti, 17 yeni. Açık varsayımlar: sparge hedef pH 6.0, grist 200 SRM üstü, ikisi "doğrulanacak" (11.11.2026)
+T0.1 depo düzeni · T0.2 Rust iskeleti · T0.3 Docker Compose · T0.4 API sözleşmesi · T0.5 web · T0.6 iOS · T0.7 Kubernetes ve kind · T0.8 Terraform · T0.9 CI · T0.10 modül belgeleri · T0.11 kapı · T0.12 koyu yüksek karşıtlık · F1, F1.1, F1.2 formül doğrulaması

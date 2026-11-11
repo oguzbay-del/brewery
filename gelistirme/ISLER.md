@@ -17,7 +17,7 @@ Geliştirmenin tek takip yeri. Durum değişince bu dosya ve `DURUM.md` aynı co
 
 Alt ajan iş tarifi her zaman şunları içerir: okunacak dosyalar, yapılacak iş, bitti ölçütü, çalıştırılacak testler, "en fazla 20 satır rapor". Alt ajan commit atmaz; commit'i ana oturum inceledikten sonra atar.
 
-## Aşama 0: Temel
+## Aşama 0: Temel · KAPANDI (11.11.2026, ADR-0002)
 
 Kapı: bütün sistem yerelde tek komutla ayağa kalkıyor, CI yeşil, kind üzerinde duman testi geçiyor.
 
@@ -29,11 +29,11 @@ Kapı: bütün sistem yerelde tek komutla ayağa kalkıyor, CI yeşil, kind üze
 | T0.4 | API sözleşmesi iskeleti: OpenAPI koddan üretiliyor; Swift ve TypeScript istemci üretimi; gRPC proto | Üretim betiği çalışıyor, fark kontrolü CI'da | T0.2 | Claude | Sonnet | bitti (11.11.2026) |
 | T0.5 | Web iskeleti: React + TypeScript (strict), tasarım token'ları `tokens.json`'dan CSS'e; Playwright duman testi | `npm test` ve Playwright geçiyor | T0.1 | Claude | Sonnet | bitti (11.11.2026) |
 | T0.6 | iOS iskeleti: SwiftUI proje, token'lardan asset kataloğu üretimi, birim test hedefi | Proje dosyaları hazır; derleme macOS CI'da (T0.9) | T0.1 | Claude | Sonnet | bitti (11.11.2026; derleme macOS CI bekliyor) |
-| T0.7 | Kubernetes tanımları (Helm veya Kustomize) ve kind duman testi betiği | `make kind-test` geçiyor | T0.3 | Claude | Sonnet | sürüyor |
+| T0.7 | Kubernetes tanımları (Helm veya Kustomize) ve kind duman testi betiği | `make kind-test` geçiyor | T0.3 | Claude | Sonnet | bitti (11.11.2026) |
 | T0.8 | Terraform iskeleti (GKE Autopilot, Cloud SQL, Memorystore, Cloud Storage, Artifact Registry) | `terraform validate` geçiyor; `plan` için hesap gerekmez | T0.1 | Claude | Sonnet | bitti (11.11.2026) |
-| T0.9 | CI: Rust, web, sözleşme farkı, Python test vektörleri, tutarlılık betiği, Compose duman testi; macOS iş akışı tanımı | İş akışı dosyaları yazıldı, yerelde `act` veya eşdeğer ile denendi | T0.2–T0.5 | Claude | Sonnet | bitti (11.11.2026; ilk GitHub çalışması izleniyor) |
+| T0.9 | CI: Rust, web, sözleşme farkı, Python test vektörleri, tutarlılık betiği, Compose duman testi; macOS iş akışı tanımı | İş akışı dosyaları yazıldı, yerelde `act` veya eşdeğer ile denendi | T0.2–T0.5 | Claude | Sonnet | bitti (11.11.2026; GitHub'da 6 iş akışı yeşil) |
 | T0.10 | Modül README ve CLAUDE.md şablonları (ne yapar, neye dokunmaz, nasıl test edilir) | Her modülde var | T0.2, T0.5, T0.6 | Claude | Haiku | bitti (11.11.2026) |
-| T0.11 | Aşama 0 kapı kontrolü ve inceleme | Kapı maddeleri sağlandı; sapmalar ADR'de | T0.3–T0.10 | Claude | Opus | bekliyor |
+| T0.11 | Aşama 0 kapı kontrolü ve inceleme | Kapı maddeleri sağlandı; sapmalar ADR'de | T0.3–T0.10 | Claude | Opus | bitti (11.11.2026) |
 | T0.12 | Tasarım sistemi: koyu tema için yüksek karşıtlık değerleri (5 token); web ve iOS üretimi | Oranlar: metin 7:1, ayırıcı 3:1; web ve iOS üretim denetimleri geçiyor; tasarım sistemi yayını güncel | T0.5, T0.6 | Claude | Sonnet | bitti (11.11.2026) |
 
 ## Aşama 1: Hesap motoru
@@ -66,6 +66,6 @@ Aşamalar plan › Geliştirme düzeni ve plan › Yol haritasında. Her aşaman
 |---|---|---|---|
 | O1 | Kullanıcı görüşmeleri (`plan/gorusme.md`) | Aşama 5 kapısı | bekliyor |
 | O2 | BeerSmith ekranından altın test sayıları (`formuller/ALTIN-TEST.md`) | Aşama 5 kapısı | bekliyor |
-| O3 | Apple Developer hesabı, macOS CI (GitHub Actions macOS veya Xcode Cloud) | T0.9, Aşama 4 | bekliyor |
+| O3 | Apple Developer hesabı, macOS CI (GitHub Actions macOS veya Xcode Cloud) | T0.9, Aşama 4 | kısmen: macOS CI GitHub'ın macOS makinelerinde çalışıyor; Apple Developer hesabı ve cihaz testi bekliyor |
 | O4 | Google Cloud organizasyonu ve faturalandırma | Aşama 5 | bekliyor |
 | O5 | GitHub'da eski 7 dalı silme | – | bekliyor |
