@@ -8,7 +8,7 @@ COMPOSE      := docker compose -f $(COMPOSE_FILE)
 BUILD_CA := altyapi/compose/.build-ca.pem
 
 .DEFAULT_GOAL := help
-.PHONY: help up down logs ps smoke test lint kind-up kind-test kind-down
+.PHONY: help up down logs ps smoke test lint kind-up kind-test kind-down vektor
 
 help: ## Hedefleri listeler
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-8s %s\n", $$1, $$2}'
@@ -31,6 +31,9 @@ smoke: ## Her servisin sağlığını denetler (önce make up)
 
 test: ## Sunucu testleri: cargo test --workspace
 	cd sunucu && cargo test --workspace
+
+vektor: ## Parite vektörlerini Python referansından üretir (ADR-0003)
+	python3 -I formuller/testler/parite/uret.py
 
 lint: ## Sunucu biçim ve clippy denetimi
 	cd sunucu && cargo fmt --all -- --check

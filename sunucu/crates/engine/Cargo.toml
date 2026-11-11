@@ -10,3 +10,7 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+# Test-only: parity vectors are JSON (ADR-0003).
+[dev-dependencies]
+serde_json.workspace = true

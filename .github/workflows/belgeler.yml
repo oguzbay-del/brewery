@@ -49,3 +49,9 @@ jobs:
             python3 -I "$f"
             echo "::endgroup::"
           done
+
+      - name: Parite vektörleri güncel (ADR-0003)
+        run: |
+          python3 -I formuller/testler/parite/uret.py
+          git diff --exit-code -- formuller/testler/vektorler
+          test -z "$(git status --porcelain -- formuller/testler/vektorler)"

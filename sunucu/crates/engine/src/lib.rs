@@ -4,6 +4,22 @@
 //! dependencies are allowed in this crate. Every function is deterministic and
 //! testable with plain inputs and outputs. Formulas arrive in Phase 1, following the
 //! specifications and test vectors under `formuller/`.
+//!
+//! One module per formula section. Parity with the Python reference is checked by the
+//! integration tests in `tests/parite_NN.rs` against `formuller/testler/vektorler/NN.json`
+//! (ADR-0003).
+
+pub mod brewery;
+pub mod brewery_tax;
+pub mod density;
+pub mod home;
+pub mod hops;
+pub mod manual;
+pub mod mash;
+pub mod trigger;
+pub mod units;
+pub mod water;
+pub mod yeast;
 
 /// Returns the engine crate version.
 #[must_use]

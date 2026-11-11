@@ -5,10 +5,12 @@ on:
     branches: [main, "is/**"]
     paths:
       - "sunucu/**"
+      - "formuller/testler/vektorler/**"
       - ".github/workflows/sunucu.yml"
   pull_request:
     paths:
       - "sunucu/**"
+      - "formuller/testler/vektorler/**"
       - ".github/workflows/sunucu.yml"
 
 concurrency:
