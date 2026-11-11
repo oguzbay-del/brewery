@@ -28,3 +28,4 @@ altyapi/compose/.env
 terraform.tfvars
 *.auto.tfvars
 crash.log
+altyapi/compose/.build-ca.pem

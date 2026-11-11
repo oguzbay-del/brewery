@@ -1,0 +1,8 @@
+{
+  "name": "APNs: send notification",
+  "request": { "method": "POST", "urlPathPattern": "/3/device/[0-9a-fA-F]+" },
+  "response": {
+    "status": 200,
+    "headers": { "apns-id": "00000000-0000-4000-8000-000000000000" }
+  }
+}

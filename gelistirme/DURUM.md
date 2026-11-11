@@ -3,14 +3,14 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 0 Temel
-**Sürüyor:** T0.3 Docker Compose (Sonnet), F1 formül doğrulaması (Fable)
-**Sıradaki iş:** T0.3 bitince T0.7 Kubernetes ve kind (Sonnet) ve T0.9 CI (Sonnet), ardından T0.11 kapı kontrolü (Opus)
+**Sürüyor:** F1.1 formül bulgularının işlenmesi (Sonnet)
+**Sıradaki iş:** T0.7 Kubernetes ve kind (Sonnet) · T0.9 CI (Sonnet); ardından T0.11 kapı kontrolü (Opus)
 **Paralel başlatılabilir:** F1 formül doğrulaması (Fable)
 
 ## Ortam
 
 - Kurulu: Rust 1.97, Node 22, npm 10, Docker istemcisi.
-- Eksik: Docker arka plan servisi çalışmıyor; kind, kubectl, Terraform, protoc kurulu değil (indirme adresleri erişilebilir). T0.3 başında `dockerd` başlatılmaya ve araçlar kurulmaya çalışılır; olmazsa engel olarak yazılır.
+- Docker: oturum başında `dockerd` elle başlatılır (günlük scratchpad'de). Bu ortamda imaj derlemesi için `make up BUILD_CA_FILE=/root/.ccr/ca-bundle.crt` gerekir (TLS vekili). Terraform 1.17.2 scratchpad/bin'de; kind ve kubectl kurulu değil (T0.7'de kurulur).
 
 ## Engeller
 
@@ -36,3 +36,5 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - T0.8 Terraform iskeleti: 7 GCP modülü, dev, test, canlı; validate geçiyor. Açık kararlar: denetim kovasında WORM ve saklama süresi, CMEK kapsamı, yedeğin başka bölgeye kopyası (veri yeri), CI için Workload Identity (11.11.2026)
 - T0.10 Modül CLAUDE.md dosyaları (11.11.2026)
 - T0.12 Koyu tema yüksek karşıtlık token'ları; tasarım sistemi yayını güncellendi (11.11.2026)
+- T0.3 Docker Compose: `make up` 10 servis sağlıklı (PostgreSQL, Redis, NATS JetStream, API, hesap motoru, worker, ingest, Mailpit, sahte GitHub ve APNs), `make smoke` geçiyor (11.11.2026)
+- F1 Formül doğrulaması (Fable): 22 bulgu, 2 kritik (11.11.2026)

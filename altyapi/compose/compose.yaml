@@ -1,0 +1,208 @@
+# Yerel sistem: tüm servisler ve sahte dış servisler. Kullanım: kökte `make up`.
+name: demleme
+
+x-rust-service: &rust-service
+  restart: unless-stopped
+  environment: &rust-env
+    RUST_LOG: info
+    DATABASE_URL: postgres://${POSTGRES_USER:-demleme}:${POSTGRES_PASSWORD:-demleme-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
+    REDIS_URL: redis://redis:6379
+    NATS_URL: nats://nats:4222
+    ENGINE_URL: http://engine-service:50051
+    SMTP_HOST: mailpit
+    SMTP_PORT: "1025"
+    GITHUB_API_URL: http://github-mock:8080
+    APNS_URL: http://apns-mock:8080
+  depends_on: &rust-deps
+    postgres: { condition: service_healthy }
+    redis: { condition: service_healthy }
+    nats: { condition: service_healthy }
+
+x-http-health: &http-health
+  interval: 5s
+  timeout: 3s
+  retries: 12
+  start_period: 5s
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-demleme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-demleme-yerel}
+      POSTGRES_DB: ${POSTGRES_DB:-demleme}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  nats:
+    image: nats:2-alpine
+    restart: unless-stopped
+    command: ["-js", "-sd", "/data", "-m", "8222"]
+    volumes:
+      - natsdata:/data
+    ports:
+      - "127.0.0.1:${NATS_PORT:-4222}:4222"
+      - "127.0.0.1:${NATS_MONITOR_PORT:-8222}:8222"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8222/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  github-mock:
+    image: wiremock/wiremock:3.13.2
+    restart: unless-stopped
+    command: ["--disable-banner"]
+    volumes:
+      - ./mocks/github/mappings:/home/wiremock/mappings:ro
+    ports:
+      - "127.0.0.1:${GITHUB_MOCK_PORT:-8090}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/__admin/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  apns-mock:
+    image: wiremock/wiremock:3.13.2
+    restart: unless-stopped
+    command: ["--disable-banner"]
+    volumes:
+      - ./mocks/apns/mappings:/home/wiremock/mappings:ro
+    ports:
+      - "127.0.0.1:${APNS_MOCK_PORT:-8091}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/__admin/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  engine-service:
+    <<: *rust-service
+    build:
+      context: ../../sunucu
+      additional_contexts:
+        proto: ../../sozlesme/proto
+      secrets: [build_ca]
+      args:
+        BIN: engine-service
+    image: demleme/engine-service:dev
+    environment:
+      <<: *rust-env
+      PORT: "50051"
+      SERVICE_NAME: engine-service
+    ports:
+      - "127.0.0.1:${ENGINE_PORT:-50051}:50051"
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=127.0.0.1:50051"]
+      <<: *http-health
+
+  api:
+    <<: *rust-service
+    build:
+      context: ../../sunucu
+      additional_contexts:
+        proto: ../../sozlesme/proto
+      secrets: [build_ca]
+      args:
+        BIN: api
+    image: demleme/api:dev
+    environment:
+      <<: *rust-env
+      PORT: "8080"
+      SERVICE_NAME: api
+    depends_on:
+      <<: *rust-deps
+      engine-service: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:${API_PORT:-8080}:8080"
+    healthcheck:
+      test: &healthz-probe ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/$${PORT}; printf 'GET /healthz HTTP/1.0\\r\\n\\r\\n' >&3; head -n1 <&3 | grep -q ' 200 '"]
+      <<: *http-health
+
+  worker:
+    <<: *rust-service
+    build:
+      context: ../../sunucu
+      additional_contexts:
+        proto: ../../sozlesme/proto
+      secrets: [build_ca]
+      args:
+        BIN: worker
+    image: demleme/worker:dev
+    environment:
+      <<: *rust-env
+      PORT: "8081"
+      SERVICE_NAME: worker
+    depends_on:
+      <<: *rust-deps
+      engine-service: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:${WORKER_PORT:-8081}:8081"
+    healthcheck:
+      test: *healthz-probe
+      <<: *http-health
+
+  ingest:
+    <<: *rust-service
+    build:
+      context: ../../sunucu
+      additional_contexts:
+        proto: ../../sozlesme/proto
+      secrets: [build_ca]
+      args:
+        BIN: ingest
+    image: demleme/ingest:dev
+    environment:
+      <<: *rust-env
+      PORT: "8082"
+      SERVICE_NAME: ingest
+    ports:
+      - "127.0.0.1:${INGEST_PORT:-8082}:8082"
+    healthcheck:
+      test: *healthz-probe
+      <<: *http-health
+
+secrets:
+  # Yalnız TLS'i araya giren bir proxy arkasında derlerken dolu olur. Makefile bu
+  # dosyayı her `make up`ta üretir (BUILD_CA_FILE verilirse içine kopyalar, yoksa
+  # boş bırakır); boşsa varsayılan güven deposu kullanılır.
+  build_ca:
+    file: ./.build-ca.pem
+
+volumes:
+  pgdata:
+  natsdata:

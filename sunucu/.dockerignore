@@ -1,0 +1,8 @@
+# Docker derleme bağlamı sunucu/ klasörüdür; gereksiz dosyalar bağlama girmez.
+target/
+**/target/
+.git
+.gitignore
+Dockerfile
+.dockerignore
+**/*.md

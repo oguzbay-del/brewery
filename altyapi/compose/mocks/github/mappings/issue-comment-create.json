@@ -1,0 +1,13 @@
+{
+  "name": "GitHub: add issue comment",
+  "request": { "method": "POST", "urlPathPattern": "/repos/[^/]+/[^/]+/issues/[0-9]+/comments" },
+  "response": {
+    "status": 201,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "id": 1,
+      "body": "mock comment",
+      "html_url": "http://localhost:8090/mock/issues/1#issuecomment-1"
+    }
+  }
+}

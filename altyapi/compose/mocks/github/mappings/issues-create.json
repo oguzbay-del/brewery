@@ -1,0 +1,16 @@
+{
+  "name": "GitHub: create issue",
+  "request": { "method": "POST", "urlPathPattern": "/repos/[^/]+/[^/]+/issues" },
+  "response": {
+    "status": 201,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "id": 1,
+      "number": 1,
+      "state": "open",
+      "title": "mock issue",
+      "html_url": "http://localhost:8090/mock/issues/1",
+      "url": "http://localhost:8090/repos/mock/mock/issues/1"
+    }
+  }
+}
