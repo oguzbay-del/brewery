@@ -9,8 +9,8 @@ Theme mapping:
     light    -> universal appearance (no appearances entry)
     dark     -> appearances: luminosity=dark
     contrast -> appearances: contrast=high (light + high contrast).
-                Dark + high contrast falls back to the dark value, because
-                tokens.json defines a single contrast value per token.
+                Dark + high contrast uses the contrast-dark value, falling
+                back to the dark value if a token defines none.
 """
 import json
 import re
@@ -71,7 +71,7 @@ def colorset(token):
     colors.append(entry(v["dark"], dark))
     if "contrast" in v:
         colors.append(entry(v["contrast"], high))
-        colors.append(entry(v["dark"], dark + high))
+        colors.append(entry(v.get("contrast-dark", v["dark"]), dark + high))
     return {"colors": colors, **INFO}
 
 

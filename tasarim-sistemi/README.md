@@ -22,7 +22,7 @@ Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web
 ## Temalar ve erişilebilirlik
 
 - Üç tema: Açık, Koyu ve Yüksek karşıtlık. Varsayılan "Sistem": cihazın açık/koyu ayarını izler; seçim cihaz başına. iOS "Karşıtlığı Artır" açıkken Yüksek karşıtlık teması kullanılır.
-- Açık ve koyu temada okunması gereken her metin en az 4.5:1 karşıtlıktadır. Bunun için açık temada `label2` Apple'ın %60 değeri yerine %75 opaklıkta, `tint`, `green`, `yellow` ve `red` bir ton koyudur. Yüksek karşıtlık teması `label2`, `tint`, `tint-fill`, `tint-ink` ve `sep` değerlerini daha da koyulaştırır. `label3` yalnız süs ve pasif öge içindir (pasif öge karşıtlık şartından muaftır).
+- Açık ve koyu temada okunması gereken her metin en az 4.5:1 karşıtlıktadır. Bunun için açık temada `label2` Apple'ın %60 değeri yerine %75 opaklıkta, `tint`, `green`, `yellow` ve `red` bir ton koyudur. Yüksek karşıtlık teması `label2`, `tint`, `tint-fill`, `tint-ink` ve `sep` değerlerini daha da koyulaştırır. `label3` yalnız süs ve pasif öge içindir (pasif öge karşıtlık şartından muaftır). Koyu temada yüksek karşıtlık (`contrast-dark`, koyu + Karşıtlığı Artır) aynı 5 token için daha parlak değer verir: `bg`/`card` üzerinde `label2` 12.6/10.7:1, `tint` 13.2/10.7:1, `sep` 3.9:1, `tint-fill` `bg` üzerinde 13.2:1, `tint-ink` `tint-fill` üzerinde 13.2:1.
 - Odak halkası `blue`, 3 px, 2 px dışarıda.
 - Durum hiçbir zaman yalnız renkle anlatılmaz: alarm işaretleri renk + şekil + numara, uyarı kutuları ikon + metin taşır.
 - Yazı boyutu iOS Dinamik Yazı ayarını izler; tablodaki `t-` stilleri varsayılan (Large) boyutlardır. "Hareketi Azalt" açıkken geçiş animasyonları kapanır.

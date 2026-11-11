@@ -66,6 +66,13 @@
   --tint-fill: #8a4d00;
   --tint-ink: #ffffff;
 }
+[data-theme="contrast-dark"] {
+  --sep: rgba(235,235,245,.45);
+  --label2: rgba(235,235,245,.85);
+  --tint: #ffc266;
+  --tint-fill: #ffc266;
+  --tint-ink: #000000;
+}
 :root {
   --space-1: 4px;
   --space-2: 8px;

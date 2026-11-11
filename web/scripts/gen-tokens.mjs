@@ -17,7 +17,7 @@ const colorsFor = (theme) =>
     .map((t) => [t.name, t.value[theme]]);
 
 const themeIds = tokens.color.themes.map((t) => t.id);
-for (const required of ['light', 'dark', 'contrast']) {
+for (const required of ['light', 'dark', 'contrast', 'contrast-dark']) {
   if (!themeIds.includes(required)) throw new Error(`tokens.json: theme "${required}" missing`);
 }
 
@@ -41,7 +41,7 @@ const out = [
   '}',
   '',
   '@media (prefers-color-scheme: dark) {',
-  '  :root:not([data-theme="light"]):not([data-theme="contrast"]) {',
+  '  :root:not([data-theme="light"]):not([data-theme="contrast"]):not([data-theme="contrast-dark"]) {',
   '    color-scheme: dark;',
   decls(colorsFor('dark'), '    '),
   '  }',
@@ -61,6 +61,24 @@ const out = [
   '',
   ':root[data-theme="contrast"] {',
   decls(colorsFor('contrast'), '  '),
+  '}',
+  '',
+  '/* Dark + high contrast: overrides the same tokens on top of the dark theme. */',
+  '@media (prefers-contrast: more) and (prefers-color-scheme: dark) {',
+  '  :root:not([data-theme="light"]):not([data-theme="contrast"]) {',
+  decls(colorsFor('contrast-dark'), '    '),
+  '  }',
+  '}',
+  '',
+  '@media (prefers-contrast: more) {',
+  '  :root[data-theme="dark"] {',
+  decls(colorsFor('contrast-dark'), '    '),
+  '  }',
+  '}',
+  '',
+  ':root[data-theme="contrast-dark"] {',
+  '  color-scheme: dark;',
+  decls(colorsFor('contrast-dark'), '  '),
   '}',
   '',
 ].join('\n');
