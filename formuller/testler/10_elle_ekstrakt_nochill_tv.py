@@ -6,10 +6,18 @@ import math
 
 def r(x, n=3): return round(x, n)
 
+# Karşılaştırma ilkesi (00-OKU-BENI.md › Önemli genel notlar): gravite eşikleri tam sayı birimde, 1 birim = 0.00001 SG
+# (0.01 puan): u(x) = round(x*100000). Sürekli büyüklüklerde (oran, eğim) açık tolerans TOL.
+def u(sg): return round(sg * 100000)
+TOL = 1e-9
+
 # ================================================================ 1. Az okumayla fermantasyon tahmini
 LAG_H = 12.0          # gecikme fazı varsayılanı, saat            [doğrulanacak]
 SIGMA_FG = 0.003      # FG ön tahmininin belirsizliği (±)          [doğrulanacak]
-EPS = 0.0005          # 07 §1.5 ile aynı
+EPS = 0.0005          # 07 §1.5 ile aynı (u biriminde EPS_U = 50)
+EPS_U = 50
+STALL_U = 100         # durgunluk: fark ≤ 0.001 (100 birim)
+NEAR_U = 400          # "bitmiş görünüyor": SG_son ≤ FG + 0.004 (400 birim)
 
 def k_fit(readings, og, fg, lag=LAG_H):
     """FG sabit (ön tahmin), OG t=0'da bilinir. y = ln((SG-FG)/(OG-FG)) = -k (t-lag).
@@ -17,7 +25,7 @@ def k_fit(readings, og, fg, lag=LAG_H):
     xs, ys = [], []
     for t, sg in readings:
         x = t - lag
-        if x <= 0 or sg - fg <= EPS: continue
+        if x <= 0 or u(sg) - u(fg) <= EPS_U: continue
         xs.append(x); ys.append(math.log((sg - fg) / (og - fg)))
     if not xs: return None, []
     sxx = sum(x * x for x in xs)
@@ -33,28 +41,28 @@ def few_forecast(readings, og, fg_prior, lag=LAG_H, sigma=SIGMA_FG):
     readings = sorted(readings)
     post = [(t, g) for t, g in readings if t > lag]
     sg_now = readings[-1][1]; t_now = readings[-1][0]
-    # durgunluk kontrolü (§1.5): son iki okuma ≥48 saat arayla ve ≤0.001 fark
+    # durgunluk kontrolü (§1.5): son iki okuma ≥48 saat arayla ve ≤0.001 fark (tam sayı birimde)
     if len(readings) >= 2:
         (t1, g1), (t2, g2) = readings[-2], readings[-1]
-        if t2 - t1 >= 48 and abs(g1 - g2) <= 0.001:
-            if g2 <= fg_prior + 0.004: return {"durum": "bitmiş görünüyor", "FG_olculen": g2}
+        if t2 - t1 >= 48 and abs(u(g1) - u(g2)) <= STALL_U:
+            if u(g2) <= u(fg_prior) + NEAR_U: return {"durum": "bitmiş görünüyor", "FG_olculen": g2}
             return {"durum": "takılmış olabilir", "SG": g2, "FG_beklenen": fg_prior}
     if len(post) < 2:
         return {"durum": "veri yetersiz", "neden": "gecikme sonrası en az 2 okuma gerekir"}
-    if (og - sg_now) < 0.30 * (og - fg_prior):
+    if 10 * (u(og) - u(sg_now)) < 3 * (u(og) - u(fg_prior)):      # düşüş < %30
         return {"durum": "veri yetersiz", "neden": "beklenen düşüşün %30'u tamamlanmadı"}
-    if sg_now <= fg_prior + EPS:
+    if u(sg_now) <= u(fg_prior) + EPS_U:
         return {"durum": "hedefe ulaştı; durgunluk için 48 saat sonra tekrar ölç"}
     k, k_each = k_fit(post, og, fg_prior, lag)
     if k is None or k <= 0:
         return {"durum": "veri yetersiz", "neden": "k ≤ 0"}
     ends = []
     for fg in (fg_prior - sigma, fg_prior, fg_prior + sigma):
-        if sg_now - fg <= EPS:            # bu FG'ye zaten ulaşılmış
+        if u(sg_now) - u(fg) <= EPS_U:    # bu FG'ye zaten ulaşılmış
             ends.append(t_now); continue
         kk, _ = k_fit(post, og, fg, lag)
         ends.append(t_end(og, fg, kk, lag) if kk and kk > 0 else float("inf"))
-    tutarsiz = len(k_each) >= 2 and max(k_each) / min(k_each) > 2.0 if min(k_each) > 0 else True
+    tutarsiz = len(k_each) >= 2 and max(k_each) / min(k_each) > 2.0 + TOL if min(k_each) > 0 else True
     lo, mid, hi = min(ends), ends[1], max(ends)
     return {"k_saat": r(k, 4), "bitis_saat": r(mid, 1),
             "aralik_gun": (math.floor(lo / 24), math.ceil(hi / 24)),
@@ -92,10 +100,14 @@ def extract_for_og(kind, og, v_final_L):
     pts = (og - 1) * 1000
     return pts * v_final_L / points_kg_L(EXTRACT[kind]["yield"]) * 1000
 
-def partial_boil(og_final, v_final, v_kettle_post):
-    """Kısmi kaynatma: kazandaki (seyreltme öncesi) gravite ve eklenecek su."""
-    pts_k = (og_final - 1) * 1000 * v_final / v_kettle_post
-    return {"SG_kazan": r(1 + pts_k / 1000, 4), "ust_su_L": r(v_final - v_kettle_post, 2)}
+def partial_boil(og_final, v_final, v_kettle_post, loss=0.0):
+    """Kısmi kaynatma: v_kettle_post = kaynatma sonu kazan hacmi; loss = kazanda kalan hacim (trub, hop emilimi).
+    Fermentöre giden = v_kettle_post - loss; açığı su kapatır (§2.5). Şeker de kayıpla birlikte gitmez,
+    bu yüzden kazan gravitesi fermentöre giden hacme göre hesaplanır."""
+    v_out = v_kettle_post - loss
+    if v_out <= 0 or v_final < v_out: raise ValueError("geçersiz hacim: fermentöre giden hacim 0 < V ≤ V_son olmalı")
+    pts_k = (og_final - 1) * 1000 * v_final / v_out
+    return {"SG_kazan": r(1 + pts_k / 1000, 4), "ust_su_L": r(v_final - v_out, 2)}
 
 def tinseth_util(sg, t): return 1.65 * 0.000125 ** (sg - 1) * (1 - math.exp(-0.04 * t)) / 4.15
 
@@ -116,7 +128,8 @@ def tau_h(v_L, tau20=TAU_20L_H): return tau20 * (v_L / 20.0) ** (1 / 3)
 
 def t_eq_min(T0, T_amb, tau_hours, dt=0.5, Tstop=60.0):
     """Küpte soğuma T(t) = Tamb + (T0-Tamb)e^(-t/τ). Eşdeğer kaynatma dakikası = ∫ ftemp(T) dt.
-    60 °C altı katkısı ihmal edilir (ftemp < 0.01)."""
+    60 °C altı katkısı ihmal edilir (bilinçli yaklaşım; ftemp(60 °C) = 0.0435, kesme eşdeğer süreyi
+    %13 (T0 95) – %42 (T0 80) azaltır; karar listesi F1 Ö7). Yöntem: sol Riemann toplamı, adım dt = 0.5 dk."""
     tau = tau_hours * 60; t = 0.0; s = 0.0
     while True:
         T = T_amb + (T0 - T_amb) * math.exp(-t / tau)
@@ -140,7 +153,8 @@ if __name__ == "__main__":
     print("T1c erken okumalar 24 sa 1.046, 36 sa 1.042:", few_forecast([(24, 1.046), (36, 1.042)], 1.050, 1.012))
     print("T1d durgun, hedefte 168 sa 1.013, 216 sa 1.013:", few_forecast([(96, 1.018), (168, 1.013), (216, 1.013)], 1.050, 1.012))
     print("T1e durgun, yüksek 120 sa 1.024, 168 sa 1.024:", few_forecast([(48, 1.030), (120, 1.024), (168, 1.024)], 1.050, 1.012))
-    print("T1f tutarsız 48 sa 1.020, 96 sa 1.019:", few_forecast([(48, 1.020), (96, 1.019)], 1.050, 1.012))
+    print("T1g 1 puanlık durgunluk (1.014 → 1.013, 48 sa arayla):", few_forecast([(96, 1.018), (168, 1.014), (216, 1.013)], 1.050, 1.012))
+    print("T1f tutarsız 48 sa 1.020, 94 sa 1.019 (46 sa arayla, durgunluk değil):", few_forecast([(48, 1.020), (94, 1.019)], 1.050, 1.012))
 
     print("\n== 2. Ekstrakt")
     print("T2a PPG→puan/(kg/L) katsayısı: %.4f" % PPG_TO_PKL)
@@ -155,6 +169,8 @@ if __name__ == "__main__":
     hops = [(28, 0.10, 60), (28, 0.10, 10)]
     print("T2h IBU kısmi (SG_kazan %.3f): %.1f ; tam hacim (SG 1.050): %.1f" %
           (pb["SG_kazan"], partial_boil_ibu(hops, pb["SG_kazan"], 20), partial_boil_ibu(hops, 1.050, 20)))
+    pb2 = partial_boil(1.050, 20, 10, loss=1.0)
+    print("T2j kısmi kaynatma, 1 L kayıp (kazanda kalan):", pb2)
     print("T2i 10 L şıra 30 °C + 10 L su, hedef 20 °C -> su sıcaklığı %.1f °C" % topoff_temp(10, 30, 10, 20))
 
     print("\n== 3. No-chill (1.050, 20 L)")

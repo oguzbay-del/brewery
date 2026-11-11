@@ -252,6 +252,10 @@ model 1 (BW):     m = t · 0.47930613 · 0.17 / 1.5
 0.47930613, L/kg değerini qt/lb'ye çeviren katsayıdır (1 qt/lb = 2.0864 L/kg). Dolayısıyla BW için `m = 0.17 · t[qt/lb] / 1.5`.
 Model 0'da t dönüştürülmeden L/kg olarak kullanılır **[kesin]**. Model adları: "MPH 3" ve "BW (Bru'n Water)" arayüz metinlerinden alındı. Katsayıların literatürdeki kaynağı **[belirsiz]**.
 
+**[doğrulanacak]** Eğim `m` ve mash kalınlığı `t` örtük bir tampon kapasitesi verir: `B = t / m` (mEq/(kg·pH)). MPH için t = 3'te B ≈ 38; BW için kalınlıktan bağımsız B ≈ 18.4, yani bildiğim literatür aralığının (baz maltlar için kabaca 30–50) yaklaşık yarısı. Sonuç: T3'te BW asit önerisi MPH'nin yarısı (1.77 mL / 3.52 mL). Hangi modelin varsayılan olacağı karar listesinde (F1-kararlar); ölçülmüş mash pH verisiyle karşılaştırılana kadar bu iki modelin farkı kullanıcıya gösterilmelidir.
+
+**Kenar durumlar:** `t ≤ 0` ya da `W ≤ 0` iken eğim `m = 0` olur ve `ΔpH / m` tanımsızdır; motor bu durumda sıfır değil "mash kalınlığı/tahıl ağırlığı eksik" hatası verir.
+
 ### 5.3 Tahmini mash pH'ı (asitsiz) [kesin]
 **Kaynak:** `GetEstMashPH` → `F_R_EST_MASH_PH`.
 ```
@@ -400,6 +404,7 @@ Fosforik: mL = (0.098   / c / (1 + 0.49·c + 0.365·c²))   · Asit(mol/L) · V_
 Asit malt (3) veya diğer: 0
 Sonuç: laktik/fosforik sıfır ya da negatifse 0.
 ```
+**Kenar durum (model 1):** su pH'ı 4.3 ise (alkalinite son noktası) C_T paydası 0 olur; `pH_w ≤ 4.3` için hesap yapılmaz ("sparge suyu zaten asidik, asit gerekmez"). `pH_w ≤ pH_t` ise asit 0 (aşağıdaki "sıfır ya da negatif" kuralı).
 Kural 6.3'teki gibidir: ΔpH (mash pH − hedef) < 0 ya da asit = 0 ise sparge sonucu da 0 olur. Bu koşul sparge suyuna değil mash pH'ına bakar **[kesin]**.
 
 ### 6.6 Görüntüleme [kesin]
@@ -498,6 +503,8 @@ Resources.sqlite `Option` tablosunda su/pH ile ilgili global bir ayar yok. Yaln�
 7. Model adlarının literatürdeki karşılıkları (MPH 3, BW) ve katsayıların kaynağı kodda yok. Grist modeli **[tahmin]**.
 8. SO₄/Cl için Cl = 0 koruması derleyicinin kaldırdığı blokta; döndürülen değer bilinmiyor.
 9. Tahıl rengi iç biriminin SRM olduğu varsayıldı.
+10. Grist fonksiyonu `g(c)` 14 SRM'de süreksizdir (13.99 SRM → 12.09, 14 SRM → 11.34). Birebir uyum için korunur; kendi modelimizde sürekli yapılması karar listesinde (F1-kararlar).
+11. Mash asidinde ayrışma kesri hedef pH yerine sabit 5.4'te alınır; model 0 sparge hesabı ise laktik asidin %97 ayrışmasını hesaba katmaz (yaklaşık %3 eksik asit). Sparge hedefi mash hedefiyle aynı alandır: 5.4 için 2.86 mL, yaygın 6.0 hedefi için 2.15 mL (T4 koşullarında). Tebeşirin tam çözündüğü varsayımı alkaliniteyi olduğundan büyük gösterebilir.
 
 ---
 
@@ -523,6 +530,8 @@ Su: Ca 50, Mg 10, HCO₃ 150 ppm.
 - RA = **81.354** ppm CaCO₃
 
 ### T3: Örnek tahıl faturası için mash pH ve asit
+Not: aşağıdaki tuz katkısı T1'deki ppm değerleridir (20 L için hesaplanmış); mash suyu 14.7 L olduğundan aynı ppm'i 14.7 L'de veren miktar 5·14.7/20 = 3.675 g gypsum ve 2.205 g CaCl₂'dir. Örnekte ppm doğrudan mash profiline eklenmiştir; formül sonuçları bundan etkilenmez.
+
 Tahıl (hepsi Grain, Mash): 4.5 kg Pale (2 SRM), 0.3 kg Crystal (60 SRM), 0.1 kg Chocolate (350 SRM). W = 4.9 kg, t = 3.0 L/kg (mash suyu 14.7 L).
 - S = 4.5/4.9·0.1 + 0.3/4.9·(0.453·60+5) + 0.1/4.9·42 = **2.91918**
 - pH_grist = 5.72 − 0.0337·S = **5.62162**

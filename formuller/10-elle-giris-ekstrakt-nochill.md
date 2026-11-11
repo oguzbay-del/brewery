@@ -7,6 +7,8 @@ Planın "Ek özellikler" tablosundaki üç Ev MVP satırının hesapları:
 
 Bunlar BeerSmith'ten çıkarılmadı; bizim tasarımımız. Referans uygulama ve test vektörleri: `testler/10_elle_ekstrakt_nochill_tv.py` (`python3 -I testler/10_elle_ekstrakt_nochill_tv.py`).
 
+**Karşılaştırma ilkesi** (00-OKU-BENI.md › Önemli genel notlar): bu dosyadaki bütün gravite eşikleri (0.0005, 0.001, 0.003, 0.004, %30) tam sayı birimde karşılaştırılır; 1 birim = 0.00001 SG (0.01 puan), `u(SG) = round(SG × 100000)`. Sürekli büyüklüklerde (oran, eğim) açık tolerans 1e-9 kullanılır. Gerekçe: `1.014 − 1.013 = 0.001000000000000112` olduğundan `≤ 0.001` ikili kayan noktada yanlış çıkar.
+
 İşaretler: **[kesin]** tanım veya birim dönüşümü; **[tasarım]** bizim seçtiğimiz yöntem; **[doğrulanacak]** varsayılan değer.
 
 Birimler: °C, L, g, kg, dakika, saat; yoğunluk SG.
@@ -37,21 +39,23 @@ Her okuma için `x = t − L`, `y = ln((SG − FG)/(OG − FG))`. Orijinden geç
 ```
 k = −Σ(x·y) / Σ(x²)
 ```
-- `SG − FG ≤ 0.0005` olan okuma kullanılmaz (log tanımsızlaşır).
+- `SG − FG ≤ 0.0005` (`u(SG) − u(FG) ≤ 50`) olan okuma kullanılmaz (log tanımsızlaşır).
 - Çözücü gerekmez, her zaman tek sonuç verir.
 
 ### 1.4 Ne zaman gösterilir [tasarım]
 Dört koşul birlikte:
 - gecikme fazından sonra en az **2 okuma**,
-- son okuma beklenen düşüşün en az **%30**'unu tamamlamış (07 §1.4 ile aynı eşik),
+- son okuma beklenen düşüşün en az **%30**'unu tamamlamış (07 §1.4 ile aynı eşik; tam sayı birimde `10·(u(OG) − u(SG_son)) ≥ 3·(u(OG) − u(FG))`),
 - `k > 0`,
 - durgunluk kuralı (§1.5) devreye girmemiş.
+
+**Değerlendirme sırası** (referans uygulama): (1) durgunluk kuralı (§1.5; gecikme öncesi okumalar da sayılır, veri yeterliliğinden önce çalışır), (2) gecikme sonrası en az 2 okuma, (3) %30 koşulu, (4) `SG_son ≤ FG + 0.0005` ise "hedefe ulaştı; durgunluk için 48 saat sonra tekrar ölç", (5) `k > 0`.
 
 Koşul sağlanmazsa "veri yetersiz" yazılır ve hatırlatıcı bir sonraki okumayı ister (plan: Bildirim yapısı › Hatırlatıcılar).
 
 ### 1.5 Durgunluk kuralı [tasarım]
-Son iki okuma en az **48 saat** arayla alınmış ve farkı **≤ 0.001** ise:
-- `SG_son ≤ FG + 0.004` → "bitmiş görünüyor". Ambalaj adımı önerilir.
+Son iki okuma en az **48 saat** arayla alınmış ve farkı **≤ 0.001** (`|u(SG₁) − u(SG₂)| ≤ 100`) ise:
+- `SG_son ≤ FG + 0.004` (`u(SG_son) ≤ u(FG) + 400`) → "bitmiş görünüyor". Ambalaj adımı önerilir.
 - değilse → "takılmış olabilir" uyarısı. Uyarı kuralları ekranındaki "takılma" kuralını tetikler.
 
 Bu, ev biracılarının bilinen "iki üç gün aynı okuma" kuralının sayısal hali.
@@ -60,7 +64,7 @@ Bu, ev biracılarının bilinen "iki üç gün aynı okuma" kuralının sayısal
 - **Bitiş zamanı:** `t_bitiş = L + ln((OG − FG)/ε)/k`, `ε = 0.0005` (07 §1.5 ile aynı).
 - **Aralık:** FG ön tahmini `±σ` kaydırılıp (`σ = 0.003` [doğrulanacak]) `k` yeniden oturtulur. Üç bitiş zamanının en küçüğü ve en büyüğü alınır.
 - **Gösterim:** gün çözünürlüğünde aralık ("2–7 gün içinde") ve "yaklaşık" etiketi. Saat verilmez. Elle okumada saat hassasiyeti yanıltıcıdır.
-- **Tutarsızlık:** okumaların tek tek verdiği `k` değerlerinin oranı 2'den büyükse "okumalar birbiriyle uyuşmuyor" notu çıkar (yanlış okuma, sıcaklık düzeltmesi unutulmuş ya da profil adımı değişmiş olabilir).
+- **Tutarsızlık:** okumaların tek tek verdiği `k` değerlerinin oranı 2'den büyükse (`> 2 + 1e-9`) "okumalar birbiriyle uyuşmuyor" notu çıkar (yanlış okuma, sıcaklık düzeltmesi unutulmuş ya da profil adımı değişmiş olabilir).
 - Grafikte elle okumalar ayrı işaretle çizilir; tahmin eğrisi kesikli çizgidir.
 
 ### 1.7 Bilinen sınırlar
@@ -106,12 +110,15 @@ Ekstraktta mash verimi yoktur (%100 kabul). Tahıl demlemesiyle (steep) gelen pu
 ### 2.5 Kısmi kaynatma ve üstüne su [tasarım]
 Kazanda `V_k` litre kaynatılır, fermentörde `V_son`a suyla tamamlanır.
 ```
-puan_kazan = puan_son · V_son / V_k
-eklenecek su = V_son − V_k − kayıplar
+fermentöre giden = V_k − kayıp
+eklenecek su     = V_son − (V_k − kayıp) = V_son − V_k + kayıp
+puan_kazan       = puan_son · V_son / (V_k − kayıp)
 ```
+`V_k` kaynatma sonu kazan hacmi, `kayıp` kazanda kalan hacimdir (trub, hop emilimi). Kayıpla birlikte şeker de kazanda kaldığı için fermentöre giden şıranın gravitesi, kayıpsız hesaba göre yüksek olmalı; açığı su kapatır (kayıp arttıkça eklenecek su artar). `V_k − kayıp > V_son` ise kısmi kaynatma anlamsız, uyarı verilir.
 - **IBU:** Tinseth kullanımı **kazandaki gravitede** hesaplanır, mg/L **son hacimde**: `IBU = U(SG_kazan, t) · AA · g · 1000 / V_son`. Yüksek kazan gravitesi kullanımı düşürür. Örnek (§4): aynı hop, kısmi kaynatmada 28 IBU, tam hacimde 44 IBU.
 - **Geç ekstrakt:** Ekstraktın bir kısmı kaynatma sonunda eklenirse kazan gravitesi zamana göre değişir. 02'deki geç ekstrakt SG segmentleri kullanılır.
 - **Renk:** Morey son hacimle (değişiklik yok). Kısmi kaynatmadaki ek koyulaşma modellenmez.
+- Yüksek hop yükünde kazandaki alfa asit derişimi Tinseth'in doğrulandığı aralığın (ve çözünürlük sınırının) üstüne çıkabilir (§4 2h örneğinde 560 mg/L); sonuç iyimser olabilir, ekranda "yaklaşık" etiketi gösterilir.
 - BeerSmith'in kısmi kaynatmada IBU'yu hangi graviteyle hesapladığı [doğrulanacak]. Karşılaştırma ekranında fark not edilir.
 
 ### 2.6 Üstüne eklenen suyun sıcaklığı [yaklaşık fizik]
@@ -139,8 +146,10 @@ T(t) = T_ortam + (T₀ − T_ortam) · e^(−t/τ)
 Eşdeğer kaynatma dakikası, sıcaklığa bağlı göreli hızın (02 §3, Malowicki–Shellhammer) integralidir:
 ```
 t_eş = ∫ Ftemp(T(t)) dt         (T < 60 °C katkısı ihmal)
-Ftemp(T) = 2.39·10¹¹ · e^(−9773/(T + 273.15))
+Ftemp(T) = 2.39·10¹¹ · e^(−9773/(T + 273.15))      T ≥ 100 °C için Ftemp = 1 (kırpma)
 ```
+- **Sayısal yöntem:** sol Riemann toplamı, adım `dt = 0.5 dk`. Test vektörü 3a/3d/3e bu yöntemle üretilir; ince adımlı integral T₀ 95 °C, τ = 4 sa için 32.9 dk verir (vektör 33.1 dk). Rust motoru aynı yöntemi kullanır ya da vektörü ±0.3 dk toleransla geçer.
+- **60 °C kesmesi bilinçli bir yaklaşımdır:** `Ftemp(60 °C) = 0.0435` (ihmal edilebilir değil). Kesme, eşdeğer süreyi T₀ 95 °C için yaklaşık %13, T₀ 80 °C için yaklaşık %42 azaltır **[doğrulanacak]**.
 Her katkı `t + t_eş` süresiyle Tinseth'e girer. Bu, Brewtarget'ın mIBU (Hosom) yaklaşımıyla aynı fikir; yalnız soğuma eğrisi küp için yavaş.
 
 - `T₀`: küpe dolum sıcaklığı. Varsayılan 95 °C. Whirlpool sonrası doluyorsa whirlpool bitiş sıcaklığı.
@@ -164,7 +173,8 @@ Her katkı `t + t_eş` süresiyle Tinseth'e girer. Bu, Brewtarget'ın mIBU (Hoso
 | 1c | 24 sa 1.046, 36 sa 1.042 | veri yetersiz (%30 tamamlanmadı) |
 | 1d | 96 sa 1.018, 168 sa 1.013, 216 sa 1.013 | bitmiş görünüyor, FG 1.013 |
 | 1e | 48 sa 1.030, 120 sa 1.024, 168 sa 1.024 | takılmış olabilir |
-| 1f | 48 sa 1.020, 96 sa 1.019 | k 0.0237/sa, aralık 6–10. gün, tutarsız |
+| 1f | 48 sa 1.020, 94 sa 1.019 (46 sa arayla) | k 0.0243/sa, aralık 6–10. gün, tutarsız |
+| 1g | 96 sa 1.018, 168 sa 1.014, 216 sa 1.013 (1 puanlık fark, 48 sa) | bitmiş görünüyor, FG 1.013 |
 | 2a | PPG → puan/(kg/L) | 8.3454 |
 | 2b | LME / DME / bal | 299.4 / 364.7 / 287.9 puan/(kg/L) |
 | 2c | 1500 g LME; 1 lb LME | 1056.3 mL; 319.4 mL |
@@ -173,6 +183,7 @@ Her katkı `t + t_eş` süresiyle Tinseth'e girer. Bu, Brewtarget'ın mIBU (Hoso
 | 2f | OG 1.050, 20 L | LME 3340 g; DME 2742 g |
 | 2g | OG 1.050, 20 L, kazanda 10 L | kazan SG 1.100, 10 L su |
 | 2h | 28 g %10 60 dk + 28 g %10 10 dk, 20 L | kısmi (SG 1.100) 28.1 IBU; tam hacim 44.0 IBU |
+| 2j | 2g ama kazanda 1 L kayıp | kazan SG 1.1111, 11 L su |
 | 2i | 10 L şıra 30 °C + 10 L su, hedef 20 °C | su 10.0 °C |
 | 3a | T₀ 95, ortam 20; τ 3 / 4 / 6 sa | t_eş 24.8 / 33.1 / 49.5 dk |
 | 3b | τ, 40 L | 5.04 sa |

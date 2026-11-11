@@ -2,6 +2,7 @@
 Çalıştır: python3 -I testler/09_isletme_2_tv.py   (yalnız standart kütüphane)
 Vergi oranları ÖRNEKTİR; kaynak ve tarih spesifikasyonda (09 §2.4). Gerçek oranlar veri tablosundan gelir."""
 import math
+from decimal import Decimal as D, ROUND_HALF_UP, ROUND_FLOOR
 
 def r(x, n=3): return round(x, n)
 def to_plato(sg): return 135.997*sg**3 - 630.272*sg**2 + 1111.14*sg - 616.868      # 01 §1.1
@@ -29,38 +30,62 @@ def label_energy(og, fg, protein_g100mL=0.40, abv_measured=None):
             "protein_g": r(protein_g100mL, 1), "kJ": round(kj), "kcal": round(kcal)}
 
 # ---------------------------------------------------------------- 2. Vergi motoru (yöntemler veri, oranlar veri)
-HL_PER_BBL = 1.17348         # 31 US gal [kesin]
+# Para ve vergi hesabı ondalık tiple (Decimal); bant/eşik karşılaştırmaları da ondalık. (Karşılaştırma ilkesi:
+# 00-OKU-BENI.md › Önemli genel notlar.) Girdi (ABV, °P) yuvarlama kuralı ve bant sınırı türü veri tablosundadır.
+HL_PER_BBL = D("1.17348")    # 31 US gal [kesin]
 
-def tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=None, ytd=0.0, plato_trunc=True,
-             discount_per_lpa=0.0):
-    """method:
-      'hacim'        : oran × hacim birimi (rate = PB/hL)
-      'saf_alkol'    : oran × litre saf alkol (LPA = V × ABV/100); bands=[(abv_üst, oran)] varsa ABV bandından oran
+def d(x): return x if isinstance(x, D) else D(str(x))
+
+def _round_in(x, dp, mode):
+    """Girdi yuvarlaması (veri tablosu): dp = ondalık hane sayısı (None: yuvarlama yok), mode = decimal yuvarlama modu."""
+    x = d(x)
+    return x if dp is None else x.quantize(D(1).scaleb(-dp), rounding=mode)
+
+def _band(value, bands, inclusive):
+    """bands = [(üst, oran)] artan; inclusive: değer == üst ise o banda girer. Bant yoksa hata (sessiz 0 yok)."""
+    for upper, rate in bands:
+        if upper is None or (value <= d(upper) if inclusive else value < d(upper)): return d(rate)
+    raise ValueError("bant bulunamadı: son bant açık uçlu olmalı (üst sınır None)")
+
+def money(x, dp=2, mode=ROUND_HALF_UP):
+    """Para yuvarlaması (veri tablosundaki kurala göre; varsayılan: yarım yukarı)."""
+    return d(x).quantize(D(1).scaleb(-dp), rounding=mode)
+
+def tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=None, ytd=0,
+             plato_trunc=True, discount_per_lpa=0, input_dp=None, input_mode=ROUND_HALF_UP, inclusive=None):
+    """Dönüş: Decimal (yuvarlanmamış), her zaman ≥ 0. method:
+      'hacim'        : oran × hL (rate = para birimi / hL; litre başına oran × 100 olarak girilir)
+      'saf_alkol'    : oran × litre saf alkol (LPA = V × ABV/100); bands=[(abv_üst, oran)] varsa ABV bandından oran;
+                       bant sınırı varsayılan DIŞLAYICI (abv < üst)
       'hl_plato'     : oran × hL × °P (°P tam sayıya kesilebilir)
-      'plato_bandi'  : bands=[(plato_üst, PB/hL)]
-      'kademeli_hacim': tiers=[(yıllık_üst_hL, PB/hL)], ytd = bu yıl daha önce vergilenen hL"""
-    hl = V_L/100.0
+      'plato_bandi'  : bands=[(plato_üst, PB/hL)], bant sınırı varsayılan KAPSAYICI (°P ≤ üst)
+      'kademeli_hacim': tiers=[(yıllık_üst_hL, PB/hL)], ytd = bu yıl daha önce vergilenen hL; son kademenin üstü
+                       None (açık uçlu) olmalı, aksi hâlde kalan hacim için hata verilir
+    input_dp/input_mode: ABV ve °P'nin vergi için kaç haneye, hangi yönde yuvarlanacağı (None: yuvarlama yok)
+    inclusive: bant sınırı türünü ezer."""
+    hl = d(V_L) / 100
     if method == "hacim":
-        return rate*hl
+        return max(d(rate) * hl, D(0))
     if method == "saf_alkol":
-        lpa = V_L*abv/100.0
-        rt = rate
-        if bands:
-            rt = next(b for u, b in bands if abv < u)
-        return lpa*(rt - discount_per_lpa)
+        a = _round_in(abv, input_dp, input_mode)
+        lpa = d(V_L) * a / 100
+        rt = _band(a, bands, False if inclusive is None else inclusive) if bands else d(rate)
+        return max(lpa * max(rt - d(discount_per_lpa), D(0)), D(0))      # indirim oranı aşamaz, negatif vergi yok
     if method == "hl_plato":
-        p = math.floor(plato) if plato_trunc else plato
-        return rate*hl*p
+        p = _round_in(plato, input_dp, input_mode)
+        if plato_trunc: p = p.to_integral_value(rounding=ROUND_FLOOR)
+        return max(d(rate) * hl * p, D(0))
     if method == "plato_bandi":
-        rt = next(b for u, b in bands if plato <= u)
-        return rt*hl
+        p = _round_in(plato, input_dp, input_mode)
+        return _band(p, bands, True if inclusive is None else inclusive) * hl
     if method == "kademeli_hacim":
-        tax, start, left = 0.0, ytd, hl
+        tax, start, left = D(0), d(ytd), hl
         for upper, rt in tiers:
             if left <= 0: break
-            room = max(upper - start, 0.0)
+            room = left if upper is None else max(d(upper) - start, D(0))
             take = min(room, left)
-            tax += take*rt; start += take; left -= take
+            tax += take * d(rt); start += take; left -= take
+        if left > 0: raise ValueError("son kademenin üst sınırı aşıldı: %s hL kademesiz" % left)
         return tax
     raise ValueError(method)
 
@@ -94,17 +119,26 @@ if __name__ == "__main__":
     print("TV1.2 Citra PA OG 1.052 FG 1.011:", label_energy(1.052, 1.011))
     print("TV1.3 ölçülen ABV %5.0 ile Pilsner:", label_energy(1.048, 1.009, abv_measured=5.0))
 
-    print("== 2 Vergi (örnek oranlar, 20 hL, %5.0, 12 °P)")
+    print("== 2 Vergi (örnek oranlar, 20 hL, %5.0, 12 °P; Decimal)")
     V, A, P = 2000.0, 5.0, 12.0
-    print("TV2.1 saf alkol, 21.78 PB/LPA (örnek):", r(tax_line("saf_alkol", V, abv=A, rate=21.78), 2))
-    print("TV2.2 saf alkol, ABV bandı [(3.5, 9.27), (8.5, 21.78), (99, 29.54)] + indirim 5.0/LPA:",
-          r(tax_line("saf_alkol", V, abv=A, rate=None, bands=[(3.5, 9.27), (8.5, 21.78), (99, 29.54)], discount_per_lpa=5.0), 2))
-    print("TV2.3 hL·°P, 0.787 PB (12.6 °P kesilir -> 12):", r(tax_line("hl_plato", V, plato=12.6, rate=0.787), 2))
-    print("TV2.4 Plato bandı [(10.0,16.88),(14.0,25.32),(99,33.76)] PB/hL:", r(tax_line("plato_bandi", V, plato=P, bands=[(10.0, 16.88), (14.0, 25.32), (99, 33.76)]), 2))
-    tiers = [(60000*HL_PER_BBL, 3.50/HL_PER_BBL), (2000000*HL_PER_BBL, 16.0/HL_PER_BBL)]
-    print("TV2.5 kademeli (60 000 bbl @3.50, sonra @16 /bbl), 20 hL, ytd 0:", r(tax_line("kademeli_hacim", V, tiers=tiers), 2))
-    print("TV2.6 aynı, eşiği aşan: ytd = 60000 bbl − 10 hL:", r(tax_line("kademeli_hacim", V, tiers=tiers, ytd=60000*HL_PER_BBL - 10), 2))
-    print("TV2.7 hacim başına, 12.49 PB/L (örnek):", r(tax_line("hacim", V, rate=1249.0), 2))
+    def pr(x): return float(money(x))
+    print("TV2.1 saf alkol, 21.78 PB/LPA (örnek):", pr(tax_line("saf_alkol", V, abv=A, rate=21.78)))
+    print("TV2.2 saf alkol, ABV bandı [(3.5, 9.27), (8.5, 21.78), (None, 29.54)] + indirim 5.0/LPA:",
+          pr(tax_line("saf_alkol", V, abv=A, bands=[(3.5, 9.27), (8.5, 21.78), (None, 29.54)], discount_per_lpa=5.0)))
+    print("TV2.3 hL·°P, 0.787 PB (12.6 °P kesilir -> 12):", pr(tax_line("hl_plato", V, plato=12.6, rate=0.787)))
+    b4 = [(10.0, 16.88), (14.0, 25.32), (None, 33.76)]
+    print("TV2.4 Plato bandı [(10.0,16.88),(14.0,25.32),(None,33.76)] PB/hL:", pr(tax_line("plato_bandi", V, plato=P, bands=b4)))
+    tiers = [(60000*HL_PER_BBL, D("3.50")/HL_PER_BBL), (None, D("16.0")/HL_PER_BBL)]
+    print("TV2.5 kademeli (60 000 bbl @3.50, sonra @16 /bbl), 20 hL, ytd 0:", pr(tax_line("kademeli_hacim", V, tiers=tiers)))
+    print("TV2.6 aynı, eşiği aşan: ytd = 60000 bbl − 10 hL:", pr(tax_line("kademeli_hacim", V, tiers=tiers, ytd=60000*HL_PER_BBL - 10)))
+    print("TV2.7 hacim, 12.49 PB/L = 1249 PB/hL (örnek):", pr(tax_line("hacim", V, rate=1249.0)))
+    print("TV2.8 bant sınırı: ≤10.0 °P kapsayıcı; plato 10.0 ve 10.05 (input_dp yok) ve 10.05 (input_dp=1, yarım yukarı):",
+          [pr(tax_line("plato_bandi", V, plato=x, bands=b4, input_dp=dp)) for x, dp in ((10.0, None), (10.05, None), (10.05, 1))])
+    print("TV2.9 ABV 3.5 sınırı dışlayıcı (3.5 → ikinci bant), LPA 70:", pr(tax_line("saf_alkol", V, abv=3.5, bands=[(3.5, 9.27), (8.5, 21.78), (None, 29.54)])))
+    print("TV2.10 indirim > oran → vergi 0 (negatif değil):", pr(tax_line("saf_alkol", V, abv=A, rate=4.0, discount_per_lpa=5.0)))
+    try: tax_line("kademeli_hacim", V, tiers=[(100.0, 3.0)], ytd=95.0)
+    except ValueError as e: print("TV2.11 son kademe aşıldı → hata:", e)
+    print("TV2.12 float tuzağı: 2.675 girdisi (input_dp=2, yarım yukarı) →", _round_in(2.675, 2, ROUND_HALF_UP))
 
     print("== 3 Spunding")
     print("TV3.1 hedef 2.5 vol, 12 °C, FG 1.010:", spund(2.5, 12.0, 1.010))

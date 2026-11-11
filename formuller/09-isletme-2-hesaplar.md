@@ -41,6 +41,7 @@ enerji                    = Σ bileşen · katsayı
 ```
 
 - **ABV:** ölçülmüş değer varsa o kullanılır (etikette beyan edilen ABV), yoksa 01 §6.3'teki tahmin.
+- **Tahmini ABV'de iç tutarsızlık (bilinen, %0.75):** tahmini ABV 0.79661 ile türetilip gram'a 0.78924 ile çevrilir (4.056 g); doğrudan `ABW × SG × 0.9982` 4.086 g verir (yaklaşık 1 kJ). `RE × SG` çarpımında su yoğunluğu (0.9982) yoktur (%0.2). Ölçülmüş ABV'de mevcut yol doğrudur. Tahmini değerde ABW'den doğrudan gitme tercihi karar listesinde (F1-kararlar).
 - **Protein:** laboratuvar değeri yoksa varsayılan 0.4 g/100 mL [doğrulanacak; tahıl faturasına göre 0.2–0.6 arası değişir].
 
 ### 1.3 Yuvarlama ve beyan [mevzuat, doğrulanacak]
@@ -64,7 +65,7 @@ Mevzuat raporu bu hesabı kullanır.
 
 | Yöntem | Formül | Kullanan örnek ülke |
 |---|---|---|
-| `hacim` | oran × hacim | Türkiye ÖTV (maktu tutar; birim doğrulanacak), ABD federal (varil başına) |
+| `hacim` | oran × hL (oran birimi **hL başına**; litre başına oran × 100 olarak girilir) | Türkiye ÖTV (maktu tutar; birim doğrulanacak), ABD federal (varil başına) |
 | `saf_alkol` | oran × V × ABV/100 (litre saf alkol, LPA); ABV bandına göre oran; küçük üretici indirimi LPA başına | Birleşik Krallık |
 | `hl_plato` | oran × hL × °P (°P tam sayıya kesilebilir) | Almanya, Avusturya |
 | `plato_bandi` | °P bandına göre hL başına oran | İsviçre |
@@ -74,7 +75,11 @@ Mevzuat raporu bu hesabı kullanır.
 - **Ülke birden çok yöntemi birleştiriyorsa** (ör. bant + kademe + indirim), yöntemler zincir olarak uygulanır. Zincirin sırası veri tablosundadır.
 - **ABV kaynağı:** ölçülmüş (laboratuvar) değer; ölçüm yoksa tahmini, ama rapor bunu "tahmini" diye işaretler. Bazı ülkelerde beyan edilen ABV kullanılır; hangisi olduğu veri tablosundadır.
 - **°P kaynağı:** ölçülmüş başlangıç ekstraktı (Stammwürze), yani OG'nin °P karşılığı.
-- **Para birimi ve yuvarlama:** veri tablosundan; kuruş ve sent yuvarlaması satır bazında ya da toplamda.
+- **Para birimi ve yuvarlama:** veri tablosundan; kuruş ve sent yuvarlaması satır bazında ya da toplamda (varsayılan mod: yarım yukarı).
+- **Ondalık tip:** tutarlar, oranlar, hacim, ABV ve °P ondalık tiple (Decimal) hesaplanır ve karşılaştırılır; ikili kayan nokta kullanılmaz (`round(2.675, 2) = 2.67` tuzağı; bant ve `floor(°P)` sınırında yanlış banda düşme).
+- **Girdi yuvarlama kuralı (veri tablosu, yöntem başına):** ABV ve °P'nin vergi için kaç haneye (`input_dp`) ve hangi yönde (yukarı, aşağı/kesme, en yakın) yuvarlanacağı. Kural yoksa değer yuvarlanmadan kullanılır (10.05 °P, ≤10.0 bandının dışında kalır). İngiltere'de ABV'nin bir ondalığa aşağı kesildiğini hatırlıyorum, emin değilim **[doğrulanacak]**.
+- **Bant sınırı türü (veri tablosu):** üst sınırın banda dahil olup olmadığı. Varsayılan: `saf_alkol` dışlayıcı (`ABV < üst`), `plato_bandi` kapsayıcı (`°P ≤ üst`); her satırda açıkça yazılır.
+- **Uç durumlar:** son bant/kademe açık uçlu olmalıdır (üst sınır `None`); aksi hâlde bant bulunamazsa ya da son kademenin üstünde hacim kalırsa motor hata verir, sessizce 0 vergi hesaplamaz. İndirim oranı oranı aşamaz (`max(oran − indirim, 0)`); satır vergisi hiçbir zaman negatif olmaz.
 
 ### 2.3 Rapor çıktısı [tasarım]
 - Dönem (ay veya çeyrek), ürün, ambalaj tipi (fıçı/şişe/kutu) ve vergi satırı bazında hacim, ABV, °P, LPA, oran ve tutar.
@@ -144,12 +149,17 @@ ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0
 | 1.2 | Citra Pale Ale OG 1.052, FG 1.011 | ABV 5.41; 204 kJ / 49 kcal |
 | 1.3 | 1.1 ama ölçülen ABV %5.0 | alkol 3.95 g; 184 kJ / 44 kcal |
 | 2.1 | 20 hL, %5.0, `saf_alkol` 21.78/LPA | 100 LPA → 2 178.00 |
-| 2.2 | aynı, bantlar (<3.5: 9.27, <8.5: 21.78, diğer: 29.54), indirim 5.0/LPA | 1 678.00 |
+| 2.2 | aynı, bantlar (<3.5: 9.27, <8.5: 21.78, diğer (üst sınır `None`): 29.54), indirim 5.0/LPA | 1 678.00 |
 | 2.3 | 20 hL, 12.6 °P, `hl_plato` 0.787, °P kesilir | 20 · 12 · 0.787 = 188.88 |
-| 2.4 | 20 hL, 12 °P, `plato_bandi` (≤10: 16.88, ≤14: 25.32, diğer: 33.76) | 506.40 |
+| 2.4 | 20 hL, 12 °P, `plato_bandi` (≤10: 16.88, ≤14: 25.32, diğer (`None`): 33.76) | 506.40 |
 | 2.5 | 20 hL, `kademeli_hacim` (60 000 bbl'a kadar 3.50/bbl, sonra 16/bbl), yıl başı | 59.65 |
 | 2.6 | aynı, bu yıl eşiğe 10 hL kalmış | 10 hL @3.50 + 10 hL @16 /bbl = 166.17 |
-| 2.7 | 20 hL, `hacim` 12.49/L | 24 980.00 |
+| 2.7 | 20 hL, `hacim` 12.49/L (= 1249 PB/hL) | 24 980.00 |
+| 2.8 | 20 hL, `plato_bandi` (2.4 bantları), 10.0 °P; 10.05 °P; 10.05 °P ve `input_dp` = 1 (yarım yukarı) | 337.60 (kapsayıcı sınır); 506.40; 506.40 |
+| 2.9 | 20 hL, ABV 3.5, `saf_alkol` bantları (2.2), dışlayıcı sınır | 70 LPA × 21.78 = 1 524.60 (ikinci bant) |
+| 2.10 | 20 hL, %5.0, `saf_alkol` oran 4.0, indirim 5.0/LPA | 0.00 (negatif değil) |
+| 2.12 | Girdi yuvarlama: 2.675, `input_dp` = 2, yarım yukarı | 2.68 (ikili kayan noktada 2.67 çıkardı) |
+| 2.11 | `kademeli_hacim`, tek kademe 100 hL'ye kadar 3.0, yıl içi 95 hL, yeni 20 hL | hata (15 hL kademesiz) |
 | 3.1 | hedef 2.5 vol, 12 °C, FG 1.010 | kalıntı 1.12 vol; 2.73 g/L gerekli; **kapama SG 1.0128** (2.8 puan önce); ayar 19.5 psi = 1.35 bar |
 | 3.2 | hedef 2.6 vol, 18 °C, FG 1.012 | kalıntı 0.92 vol; 3.33 g/L; kapama SG 1.0154 (3.4 puan); 27.1 psi = 1.87 bar |
 
