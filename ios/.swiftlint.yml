@@ -1,0 +1,24 @@
+included:
+  - Demleme
+  - DemlemeTests
+  - DemlemeUITests
+excluded:
+  - Demleme/Design/Tokens.swift # generated
+disabled_rules:
+  - trailing_comma
+opt_in_rules:
+  - empty_count
+  - closure_spacing
+  - sorted_imports
+line_length:
+  warning: 120
+  error: 160
+file_length:
+  warning: 500
+  error: 1000
+function_body_length:
+  warning: 60
+  error: 120
+identifier_name:
+  min_length: 2
+  excluded: [id, x, y]
