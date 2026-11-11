@@ -1,0 +1,51 @@
+name: belgeler
+
+on:
+  push:
+    branches: [main, "is/**"]
+    paths:
+      - "plan/**"
+      - "arayuz/**"
+      - "formuller/**"
+      - "araclar/**"
+      - "tasarim-sistemi/**"
+      - "erisilebilirlik/**"
+      - ".github/workflows/belgeler.yml"
+  pull_request:
+    paths:
+      - "plan/**"
+      - "arayuz/**"
+      - "formuller/**"
+      - "araclar/**"
+      - "tasarim-sistemi/**"
+      - "erisilebilirlik/**"
+      - ".github/workflows/belgeler.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: tutarlılık ve formül testleri
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Plan, konsept ve formül tutarlılığı
+        run: python3 -I araclar/tutarlilik.py
+      - name: Formül test vektörleri
+        working-directory: formuller
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(testler/*.py)
+          test "${#files[@]}" -gt 0
+          for f in "${files[@]}"; do
+            echo "::group::$f"
+            python3 -I "$f"
+            echo "::endgroup::"
+          done

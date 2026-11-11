@@ -1,0 +1,60 @@
+name: ios
+
+on:
+  push:
+    branches: [main, "is/**"]
+    paths:
+      - "ios/**"
+      - "tasarim-sistemi/tokens.json"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - "tasarim-sistemi/tokens.json"
+      - ".github/workflows/ios.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    name: xcodegen, validate, test
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - name: Token ve proje denetimi
+        run: python3 -I ios/scripts/validate.py
+      - name: Install XcodeGen and SwiftLint
+        run: brew install xcodegen swiftlint
+      - name: Generate Xcode project
+        working-directory: ios
+        run: xcodegen generate
+      - name: SwiftLint
+        working-directory: ios
+        run: swiftlint lint --strict --reporter github-actions-logging
+      - name: Pick an iPhone simulator
+        id: sim
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          name=$(xcrun simctl list devices available iPhone | grep -oE 'iPhone [0-9]+[A-Za-z ]*' | sed -E 's/ +$//' | grep -vE 'SE|Air' | sort -V | tail -n 1)
+          test -n "$name"
+          echo "Using simulator: $name"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+      - name: xcodebuild test
+        working-directory: ios
+        env:
+          SIM_NAME: ${{ steps.sim.outputs.name }}
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -project Demleme.xcodeproj \
+            -scheme Demleme \
+            -destination "platform=iOS Simulator,name=$SIM_NAME" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
