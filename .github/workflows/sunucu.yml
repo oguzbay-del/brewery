@@ -1,0 +1,42 @@
+name: sunucu
+
+on:
+  push:
+    branches: [main, "is/**"]
+    paths:
+      - "sunucu/**"
+      - ".github/workflows/sunucu.yml"
+  pull_request:
+    paths:
+      - "sunucu/**"
+      - ".github/workflows/sunucu.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: fmt, clippy, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: sunucu
+    steps:
+      - uses: actions/checkout@v6
+      # rust-toolchain.toml (1.97.0, rustfmt, clippy) is the single source of the version.
+      - name: Install pinned toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: sunucu
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
