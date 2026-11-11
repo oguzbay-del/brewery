@@ -4,6 +4,8 @@ import importlib.util
 import pathlib
 import sys
 
+sys.dont_write_bytecode = True
+
 BURA = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(BURA))
 
