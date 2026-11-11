@@ -1,0 +1,69 @@
+resource "google_compute_network" "this" {
+  project                 = var.project_id
+  name                    = "${var.name}-vpc"
+  auto_create_subnetworks = false
+  routing_mode            = "REGIONAL"
+}
+
+resource "google_compute_subnetwork" "nodes" {
+  project                  = var.project_id
+  name                     = "${var.name}-nodes"
+  region                   = var.region
+  network                  = google_compute_network.this.id
+  ip_cidr_range            = var.subnet_cidr
+  private_ip_google_access = true
+
+  secondary_ip_range {
+    range_name    = "pods"
+    ip_cidr_range = var.pods_cidr
+  }
+
+  secondary_ip_range {
+    range_name    = "services"
+    ip_cidr_range = var.services_cidr
+  }
+
+  log_config {
+    aggregation_interval = "INTERVAL_10_MIN"
+    flow_sampling        = 0.1
+    metadata             = "INCLUDE_ALL_METADATA"
+  }
+}
+
+# Özel düğümlerin dışarı çıkışı (Apple/Google OIDC anahtarları, GitHub, e-posta sağlayıcı) için.
+resource "google_compute_router" "this" {
+  project = var.project_id
+  name    = "${var.name}-router"
+  region  = var.region
+  network = google_compute_network.this.id
+}
+
+resource "google_compute_router_nat" "this" {
+  project                            = var.project_id
+  name                               = "${var.name}-nat"
+  region                             = var.region
+  router                             = google_compute_router.this.name
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
+}
+
+# Özel hizmet erişimi: Cloud SQL ve Memorystore bu aralıktan özel IP alır.
+resource "google_compute_global_address" "psa" {
+  project       = var.project_id
+  name          = "${var.name}-psa"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = var.psa_prefix_length
+  network       = google_compute_network.this.id
+}
+
+resource "google_service_networking_connection" "psa" {
+  network                 = google_compute_network.this.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.psa.name]
+}
