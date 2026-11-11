@@ -140,6 +140,30 @@ pub fn sulfate_chloride_ratio(so4: f64, cl: f64) -> f64 {
     if cl == 0.0 { 0.0 } else { so4 / cl }
 }
 
+/// Sulphate/chloride balance class label (spec §4.4, `SulfateBalFunc` thresholds).
+#[must_use]
+pub fn sulfate_chloride_label(r: f64) -> &'static str {
+    if !(0.0..=18.0).contains(&r) {
+        "Out of Range"
+    } else if r < 0.4 {
+        "Extremely Malty"
+    } else if r < 0.6 {
+        "Very Malty"
+    } else if r < 0.8 {
+        "Malty"
+    } else if r < 1.5 {
+        "Balanced"
+    } else if r < 2.01 {
+        "Slightly Bitter"
+    } else if r < 6.01 {
+        "Bitter"
+    } else if r < 8.01 {
+        "Very Bitter"
+    } else {
+        "Extremely Bitter"
+    }
+}
+
 /// Suggested beer colour range `(min, max)` in SRM from RA (spec §4.5), floored at 0.
 #[must_use]
 pub fn color_range(ra: f64) -> (f64, f64) {
@@ -151,10 +175,17 @@ pub fn color_range(ra: f64) -> (f64, f64) {
 
 /// Boil concentration factor `S_boil` (spec §3.4). All volumes in litres: boil volume `vb`,
 /// post-boil volume `vp`, cooling loss, trub loss and fermenter top-up water.
-/// Returns 1 unless `vb > 0` and `vp > 0`.
+/// Returns 1 unless `vb > 0`, `vp > 0` and the recipe has boil ingredients (`F_R_HAS_BOIL_ING`).
 #[must_use]
-pub fn boil_scale(vb: f64, vp: f64, cool_loss: f64, trub_loss: f64, top_up: f64) -> f64 {
-    if vb > 0.0 && vp > 0.0 {
+pub fn boil_scale(
+    vb: f64,
+    vp: f64,
+    cool_loss: f64,
+    trub_loss: f64,
+    top_up: f64,
+    has_boil_ing: bool,
+) -> f64 {
+    if vb > 0.0 && vp > 0.0 && has_boil_ing {
         let a = vp - cool_loss;
         let b = a - trub_loss;
         ((vb / a) * b + top_up) / (b + top_up)
@@ -629,4 +660,251 @@ pub fn best_fit_profile(base: &[f64; ION_COUNT], s: f64, x: &[f64; 8]) -> [f64; 
                 .sum::<f64>();
     }
     out
+}
+
+/// RA to pH slope with the spec §5.2 edge case: `None` (error, "mash thickness or grain weight
+/// missing") when `t <= 0` or `w_kg <= 0`.
+#[must_use]
+pub fn mash_ra_slope_checked(model: u8, t: f64, w_kg: f64) -> Option<f64> {
+    if t <= 0.0 || w_kg <= 0.0 {
+        None
+    } else {
+        Some(mash_ra_slope(model, t))
+    }
+}
+
+/// RA equivalent in mEq/L (negative) of a liquid mash acid (spec §5.4a): `acid` 1 lactic,
+/// 2 phosphoric (density coefficient 0.365, unlike [`acid_per_liter`]'s 0.375). Other codes
+/// are not scanned by `FilterMashAgents` and contribute 0.
+#[must_use]
+pub fn misc_acid_ra(acid: u8, conc: f64, vol_l: f64, f: f64, w_kg: f64, t: f64) -> f64 {
+    let p = conc / 100.0;
+    let (mw, rho) = match acid {
+        1 => (0.09009, 1.0 + 0.237 * p),
+        2 => (0.098, 1.0 + 0.49 * p + 0.365 * p * p),
+        _ => return 0.0,
+    };
+    -(p * 1000.0 * rho * vol_l * f) / (mw * w_kg * t)
+}
+
+/// RA equivalent in mEq/L (negative) of acid malt (spec §5.4b); `w_kg` is total mash grain.
+#[must_use]
+pub fn acid_malt_ra(pct: f64, malt_kg: f64, f: f64, w_kg: f64, t: f64) -> f64 {
+    -((pct / 100.0) * 1000.0 * malt_kg * f) / (w_kg * t * 0.09009)
+}
+
+/// Sparge acid volume in mL (spec §6.5 "Hacme çevirme"): lactic (1) or phosphoric (2, density
+/// coefficient 0.365); every other code gives 0; a non-positive result is 0.
+#[must_use]
+pub fn sparge_acid_ml(mol_l: f64, v_l: f64, conc: f64, acid: u8) -> f64 {
+    let c = f64::max(conc, 1.0) / 100.0;
+    let ml = match acid {
+        1 => 0.09009 / c / (1.0 + 0.237 * c) * mol_l * v_l * 1000.0,
+        2 => 0.098 / c / (1.0 + 0.49 * c + 0.365 * c * c) * mol_l * v_l * 1000.0,
+        _ => return 0.0,
+    };
+    if ml > 0.0 { ml } else { 0.0 }
+}
+
+/// Whole sparge acidification (spec §6.5), mL. Zero for acid 0, 3 or other, or when the mash
+/// pH difference `mash_dph` is negative. Model 1 uses [`sparge_acid_bw`] (guarded), model 0
+/// [`sparge_acid_mph`] (own model: [`sparge_acid_mph_ours`]).
+#[must_use]
+#[allow(clippy::too_many_arguments)]
+pub fn sparge_acid_amount(
+    model: u8,
+    ours: bool,
+    hco3: f64,
+    ph_w: f64,
+    ph_t: f64,
+    acid: u8,
+    conc: f64,
+    mash_dph: f64,
+    v_sp_l: f64,
+) -> f64 {
+    if !(acid == 1 || acid == 2) || mash_dph < 0.0 {
+        return 0.0;
+    }
+    let mol = if model == 1 {
+        sparge_acid_bw(hco3, ph_w, ph_t, acid)
+    } else if ours {
+        sparge_acid_mph_ours(hco3, ph_w, ph_t, acid)
+    } else {
+        sparge_acid_mph(hco3, ph_w, ph_t)
+    };
+    sparge_acid_ml(mol, v_sp_l, conc, acid)
+}
+
+/// Amount-weighted base ion profile (spec §3.1); `waters` is (amount, ions). Zero profile when
+/// the total amount is not positive.
+#[must_use]
+pub fn base_profile(waters: &[(f64, [f64; ION_COUNT])]) -> [f64; ION_COUNT] {
+    let tot: f64 = waters.iter().map(|&(a, _)| a).sum();
+    let mut out = [0.0; ION_COUNT];
+    if tot <= 0.0 {
+        return out;
+    }
+    for (i, o) in out.iter_mut().enumerate() {
+        *o = waters.iter().map(|(a, ion)| ion[i] * a).sum::<f64>() / tot;
+    }
+    out
+}
+
+/// Amount-weighted water pH (spec §3.1); 7.0 when there is no water. `waters` is (amount, pH).
+#[must_use]
+pub fn water_ph(waters: &[(f64, f64)]) -> f64 {
+    let tot: f64 = waters.iter().map(|&(a, _)| a).sum();
+    if tot <= 0.0 {
+        return 7.0;
+    }
+    waters.iter().map(|&(a, ph)| ph * a).sum::<f64>() / tot
+}
+
+/// Salt additions' ion contribution honouring `F_R_IGNORE_WATER_AGENTS` (spec §2): zeros when
+/// `ignore`.
+#[must_use]
+pub fn agents_ppm(grams: &[(Salt, f64)], vol_l: f64, ignore: bool) -> [f64; ION_COUNT] {
+    if ignore {
+        [0.0; ION_COUNT]
+    } else {
+        salt_ppm(grams, vol_l)
+    }
+}
+
+/// Reference volume `F_M_TEMP_VOL` of a water agent (spec §2). `rtype` 0 extract, 1 partial
+/// mash, 2 all grain; `use_` 0 boil, 1 mash, 2 primary, 5 sparge, others fall to `final_vol`.
+#[must_use]
+pub fn agent_volume(
+    rtype: u8,
+    use_: u8,
+    mash_tot_water: f64,
+    sparge_vol: f64,
+    boil_vol: f64,
+    volume: f64,
+    final_vol: f64,
+) -> f64 {
+    if rtype == 1 || rtype == 2 {
+        match use_ {
+            1 => mash_tot_water,
+            5 => sparge_vol,
+            0 => boil_vol,
+            2 => volume,
+            _ => final_vol,
+        }
+    } else {
+        match use_ {
+            0 | 1 => boil_vol,
+            2 => volume,
+            _ => final_vol,
+        }
+    }
+}
+
+/// Mash + sparge blended profile (spec §3.3 `GetTotalWaterIon`).
+#[must_use]
+pub fn total_water_ion(
+    mash: &[f64; ION_COUNT],
+    sparge: &[f64; ION_COUNT],
+    vm: f64,
+    vs: f64,
+    has_mash: bool,
+) -> [f64; ION_COUNT] {
+    if has_mash && vs > 0.0 {
+        let mut out = [0.0; ION_COUNT];
+        for (i, o) in out.iter_mut().enumerate() {
+            *o = (vm * mash[i] + vs * sparge[i]) / (vm + vs);
+        }
+        out
+    } else {
+        *mash
+    }
+}
+
+/// Kettle top-up dilution factor `k_top` (spec §3.3); 1 when `v_topk` is 0.
+#[must_use]
+pub fn top_up_factor(v_avail: f64, vs: f64, v_topk: f64) -> f64 {
+    if v_topk == 0.0 {
+        1.0
+    } else {
+        (v_avail + vs) / (v_avail + vs + v_topk)
+    }
+}
+
+/// Boil input profile `Tot·k_top + Adj(boil agents)` (spec §3.3).
+#[must_use]
+pub fn boil_ion(total: &[f64; ION_COUNT], k_top: f64, adj0: &[f64; ION_COUNT]) -> [f64; ION_COUNT] {
+    let mut out = [0.0; ION_COUNT];
+    for (i, o) in out.iter_mut().enumerate() {
+        *o = total[i] * k_top + adj0[i];
+    }
+    out
+}
+
+/// Fermenter input profile `Boil·S_boil + Adj(primary agents)` (spec §3.3).
+#[must_use]
+pub fn beer_ion(boil: &[f64; ION_COUNT], s_boil: f64, adj2: &[f64; ION_COUNT]) -> [f64; ION_COUNT] {
+    let mut out = [0.0; ION_COUNT];
+    for (i, o) in out.iter_mut().enumerate() {
+        *o = boil[i] * s_boil + adj2[i];
+    }
+    out
+}
+
+/// Base scaling `s` of the salt matching objective (spec §7.1): `S_boil` only for extract
+/// recipes with boil ingredients, else 1.
+#[must_use]
+pub fn match_scale(mash_recipe: bool, has_boil_ing: bool, s_boil: f64) -> f64 {
+    if mash_recipe || !has_boil_ing {
+        1.0
+    } else {
+        s_boil
+    }
+}
+
+/// Salt grams from per-gallon concentrations `x` (spec §7.2): `(mash grams, sparge grams)`.
+/// With `combine` and sparge volume > 0 the volumes are added and no sparge addition is made.
+/// The 0.01 g removal threshold of `SetWaterAddition` is the caller's.
+#[must_use]
+pub fn salt_grams(
+    x: &[f64; 8],
+    v_mash_gal: f64,
+    v_sp_gal: f64,
+    combine: bool,
+) -> ([f64; 8], [f64; 8]) {
+    let vm = if combine && v_sp_gal > 0.0 {
+        v_mash_gal + v_sp_gal
+    } else {
+        v_mash_gal
+    };
+    let sp = if v_sp_gal > 0.0 && !combine {
+        v_sp_gal
+    } else {
+        0.0
+    };
+    (x.map(|k| k * vm), x.map(|k| k * sp))
+}
+
+/// Water profile tool mix (spec §7.4): volume-weighted base and dilution water. The spec
+/// leaves `Vb + Vd = 0` undefined; this returns the zero profile.
+#[must_use]
+pub fn profile_mix(
+    vb: f64,
+    b: &[f64; ION_COUNT],
+    vd: f64,
+    d: &[f64; ION_COUNT],
+) -> [f64; ION_COUNT] {
+    let mut out = [0.0; ION_COUNT];
+    if vb + vd <= 0.0 {
+        return out;
+    }
+    for (i, o) in out.iter_mut().enumerate() {
+        *o = (vb * b[i] + vd * d[i]) / (vb + vd);
+    }
+    out
+}
+
+/// Water profile tool grams (spec §7.4 quirk): `x · V_b` with the base volume only (gal).
+#[must_use]
+pub fn wp_grams(x: &[f64; 8], vb_gal: f64) -> [f64; 8] {
+    x.map(|k| k * vb_gal)
 }

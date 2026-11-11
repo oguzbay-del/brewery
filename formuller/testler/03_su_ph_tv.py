@@ -158,3 +158,123 @@ print("T9 grist g(c) BeerSmith 13.99/14:", round(gfun(13.99),3), round(gfun(14),
 print("T9b grist pH, tek malt 13 SRM: bizim", round(gristph([(1.0,13.0)],True)[0],4), " BeerSmith", round(gristph([(1.0,13.0)])[0],4))
 print("T10 varsayılan model:", DEFAULT_MODEL, uyarilar(DEFAULT_MODEL,{'gypsum':5}))
 print("T10b BW seçili + 2 g tebeşir:", uyarilar(1,{'chalk':2.0}))
+
+# ---- T1.14c: spesifikasyonda olup yukarıda fonksiyon olarak bulunmayan hesaplar (referans, Rust paritesi için)
+# Yukarıdaki fonksiyonlar değişmez; korumalar (guard) ayrı sarmalayıcılardır ve spesifikasyon metnine dayanır.
+def salt_ppm_guarded(grams, vol_L):
+    """§2: V_gal = 0 ise 0 (hacim <= 0 için de 0)."""
+    if vol_L <= 0: return [0.0]*6
+    return salt_ppm(grams, vol_L)
+def gristph_guarded(bill, bizim=False):
+    """§5.1: W <= 0 (boş fatura dahil) ise pH_grist = 7.0 (S = 0)."""
+    if sum(w for w,c in bill) <= 0: return 7.0, 0.0
+    return gristph(bill, bizim)
+def so4cl_ratio(so4, cl):
+    """§4.4: SO4/Cl; Cl = 0 koruması 0 döndürür (spesifikasyon önerisi [belirsiz])."""
+    return 0.0 if cl == 0 else so4/cl
+def so4cl_label(r):
+    """§4.4 sınıf etiketi (SulfateBalFunc eşikleri)."""
+    if r < 0 or r > 18: return "Out of Range"
+    if r < 0.4: return "Extremely Malty"
+    if r < 0.6: return "Very Malty"
+    if r < 0.8: return "Malty"
+    if r < 1.5: return "Balanced"
+    if r < 2.01: return "Slightly Bitter"
+    if r < 6.01: return "Bitter"
+    if r < 8.01: return "Very Bitter"
+    return "Extremely Bitter"
+def color_range(ra):
+    """§4.5: (SRM_min, SRM_max), 0'a tabanlı."""
+    return max(0.0, 5.2+0.082*ra), max(0.0, (ra+122.4)/12.2)
+def boil_scale(vb, vp, cool, trub, top, has_boil_ing=True):
+    """§3.4: S_boil; Vb > 0, Vp > 0 ve F_R_HAS_BOIL_ING > 0 değilse 1."""
+    if not (vb > 0 and vp > 0 and has_boil_ing): return 1.0
+    a_ = vp-cool; b_ = a_-trub
+    return ((vb/a_)*b_+top)/(b_+top)
+def slope_checked(model, t, w_kg):
+    """§5.2 kenar durum: t <= 0 veya W <= 0 ise hata (None); aksi halde eğim."""
+    if t <= 0 or w_kg <= 0: return None
+    return slope(model, t)
+def misc_acid_ra(acid, conc, vol_L, f, w_kg, t):
+    """§5.4(a): sıvı asidin RA eşdeğeri (mEq/L, negatif). acid 1 = laktik, 2 = fosforik (ρ'da 0.365).
+    Süzgeçteki dışı asit kodları (FilterMashAgents yalnız WA 10/11) 0 katkı verir."""
+    p_ = conc/100.0
+    if acid == 1: mw = 0.09009; rho = 1+0.237*p_
+    elif acid == 2: mw = 0.098; rho = 1+0.49*p_+0.365*p_*p_
+    else: return 0.0
+    return -(p_*1000*rho*vol_L*f)/(mw*w_kg*t)
+def acid_malt_ra(pct, malt_kg, f, w_kg, t):
+    """§5.4(b): asit maltın RA eşdeğeri (mEq/L, negatif); w_kg mash tahılının toplamı."""
+    return -((pct/100.0)*1000*malt_kg*f)/(w_kg*t*0.09009)
+def sparge_bnw_guarded(hco3, phw, pht, acid):
+    """§6.5 kenar durum (model 1): pH_w <= 4.3 ise hesap yapılmaz, 0."""
+    if phw <= 4.3: return 0.0
+    return sparge_bnw(hco3, phw, pht, acid)
+def sparge_acid_ml(mol_L, v_L, conc, acid):
+    """§6.5 hacme çevirme: laktik (1) ve fosforik (2, ρ'da 0.365); asit malt ve diğerleri 0; sonuç <= 0 ise 0."""
+    c = max(conc, 1.0)/100
+    if acid == 1: ml = 0.09009/c/(1+0.237*c)*mol_L*v_L*1000
+    elif acid == 2: ml = 0.098/c/(1+0.49*c+0.365*c*c)*mol_L*v_L*1000
+    else: return 0.0
+    return ml if ml > 0 else 0.0
+def sparge_acid_amount(model, bizim, hco3, phw, pht, acid, conc, mash_dph, v_sp):
+    """§6.5 bütün: mL. acid 0/3/diğer ya da mash ΔpH < 0 ise 0; model 1 BW (korumalı); model 0 MPH
+    (bizim modelde AcidFraction'a bölünür, §6.8)."""
+    if acid not in (1, 2) or mash_dph < 0: return 0.0
+    if model == 1: mol = sparge_bnw_guarded(hco3, phw, pht, acid)
+    elif bizim: mol = sparge_mpH_bizim(hco3, phw, pht, acid)
+    else: mol = sparge_mpH(hco3, phw, pht)
+    return sparge_acid_ml(mol, v_sp, conc, acid)
+# §3 profiller
+def base_profile(waters):
+    """§3.1: waters = [(miktar, [6 iyon])]; miktar-ağırlıklı ortalama, toplam 0 ise sıfır profil."""
+    tot = sum(a for a,_ in waters)
+    if tot <= 0: return [0.0]*6
+    return [sum(ion[i]*a for a,ion in waters)/tot for i in range(6)]
+def water_ph_mix(waters):
+    """§3.1: waters = [(miktar, pH)]; ağırlıklı ortalama, su yoksa (toplam 0) 7.0."""
+    tot = sum(a for a,_ in waters)
+    if tot <= 0: return 7.0
+    return sum(ph*a for a,ph in waters)/tot
+def agents_ppm(grams, vol_L, ignore):
+    """§2: F_R_IGNORE_WATER_AGENTS = 1 ise tüm tuz katkıları 0."""
+    return [0.0]*6 if ignore else salt_ppm_guarded(grams, vol_L)
+def agent_volume(rtype, use, mash_tot_water, sparge_vol, boil_vol, volume, final_vol):
+    """§2 referans hacim F_M_TEMP_VOL. rtype: 0 extract, 1 partial mash, 2 all grain. use: 0 boil, 1 mash, 2 primary, 5 sparge."""
+    if rtype in (1, 2):
+        return {1: mash_tot_water, 5: sparge_vol, 0: boil_vol, 2: volume}.get(use, final_vol)
+    if use in (0, 1): return boil_vol
+    if use == 2: return volume
+    return final_vol
+def total_water_ion(mash_i, sparge_i, vm, vs, has_mash):
+    """§3.3 mash + sparge karışımı (iyon listeleri)."""
+    if has_mash and vs > 0:
+        return [(vm*m+vs*s)/(vm+vs) for m,s in zip(mash_i, sparge_i)]
+    return list(mash_i)
+def top_up_factor(v_avail, vs, v_topk):
+    """§3.3 k_top."""
+    return (v_avail+vs)/(v_avail+vs+v_topk) if v_topk != 0 else 1.0
+def boil_ion(tot_i, k_top, adj0_i):
+    """§3.3 Boil_i = Tot_i·k_top + Adj(use=0, base yok)."""
+    return [t*k_top+a for t,a in zip(tot_i, adj0_i)]
+def beer_ion(boil_i, s_boil, adj2_i):
+    """§3.3 Beer_i = Boil_i·S_boil + Adj(use=2, base yok)."""
+    return [b*s_boil+a for b,a in zip(boil_i, adj2_i)]
+# §7 eşleştirme çevresi
+def match_scale(mash_recipe, has_boil_ing, s_boil_val):
+    """§7.1: mash'li reçetede 1; extract reçetede ve kaynatma malzemesi varsa S_boil; aksi halde 1."""
+    return 1.0 if mash_recipe or not has_boil_ing else s_boil_val
+def salt_grams(x, v_mash_gal, v_sp_gal, combine):
+    """§7.2: [gram_mash, gram_sparge]; birleştirme açık ve sparge > 0 ise hacimler toplanır, sparge 0."""
+    vm = v_mash_gal
+    if combine and v_sp_gal > 0: vm += v_sp_gal
+    sp = v_sp_gal if (v_sp_gal > 0 and not combine) else 0.0
+    return [[xk*vm for xk in x], [xk*sp for xk in x]]
+def profile_mix(vb, b, vd, d):
+    """§7.4: Mix_i = (Vb·B_i + Vd·D_i)/(Vb+Vd); toplam hacim 0 ise sıfır profil (spesifikasyonda tanımsız, seçim)."""
+    if vb+vd <= 0: return [0.0]*6
+    return [(vb*bi+vd*di)/(vb+vd) for bi,di in zip(b,d)]
+def wp_grams(x, vb_gal):
+    """§7.4 tuhaflığı: gramlar yalnız base hacmiyle (x·Vb)."""
+    return [xk*vb_gal for xk in x]
+print("T1.14c so4/cl etiket (1.426, 0.3, 19):", so4cl_label(1.426), so4cl_label(0.3), so4cl_label(19))

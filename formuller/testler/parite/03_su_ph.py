@@ -126,10 +126,12 @@ def uret():
         ({"gypsum": 0.0}, 20),
         ({s: 1.5 for s in salts}, 38.0),
         ({"soda": 2.25, "chalk": 1.0, "lime": 0.5}, 18.927),
+        ({"gypsum": 5, "cacl2": 3}, 0.0),      # hacim <= 0 koruması (T1.14c: ref.salt_ppm_guarded)
+        ({"gypsum": 5}, -3.0),
     ]:
-        v.ekle("salt_ppm", {"grams": gr, "vol_l": vol}, ref.salt_ppm(gr, vol))
+        v.ekle("salt_ppm", {"grams": gr, "vol_l": vol}, ref.salt_ppm_guarded(gr, vol))
     for s in salts:
-        v.ekle("salt_ppm", {"grams": {s: 10}, "vol_l": 25}, ref.salt_ppm({s: 10}, 25), "tek tuz: " + s)
+        v.ekle("salt_ppm", {"grams": {s: 10}, "vol_l": 25}, ref.salt_ppm_guarded({s: 10}, 25), "tek tuz: " + s)
 
     # --- §4 alkalinite, sertlik, RA
     for h in (0, 61, 122.5, 150, 300.5):
@@ -141,28 +143,25 @@ def uret():
 
     # §4.4 SO4/Cl (referans: print("T5 SO4/Cl", mash[3]/mash[4]); Cl=0 koruması spesifikasyondan: 0)
     mash = [ref.base[k] + ref.salt_ppm({"gypsum": 5, "cacl2": 3}, 20)[i] for i, k in enumerate(ions)]
-    v.ekle("sulfate_chloride_ratio", {"so4": mash[3], "cl": mash[4]}, mash[3] / mash[4])
-    v.ekle("sulfate_chloride_ratio", {"so4": 100.0, "cl": 25.0}, 100.0 / 25.0)
-    v.ekle("sulfate_chloride_ratio", {"so4": 40.0, "cl": 0.0}, 0.0, "Cl = 0 koruması (spesifikasyon §4.4 önerisi)")
+    v.ekle("sulfate_chloride_ratio", {"so4": mash[3], "cl": mash[4]}, ref.so4cl_ratio(mash[3], mash[4]))
+    v.ekle("sulfate_chloride_ratio", {"so4": 100.0, "cl": 25.0}, ref.so4cl_ratio(100.0, 25.0))
+    v.ekle("sulfate_chloride_ratio", {"so4": 40.0, "cl": 0.0}, ref.so4cl_ratio(40.0, 0.0), "Cl = 0 koruması (spesifikasyon §4.4 önerisi)")
+    # §4.4 sınıf etiketleri: her eşiğin iki yanı
+    for r in (-0.01, 0.0, 0.2, 0.39999, 0.4, 0.5, 0.6, 0.7, 0.8, 1.2, 1.426, 1.5, 1.9, 2.0, 2.01, 4.0, 6.0, 6.01, 7.0, 8.0, 8.01, 12.0, 18.0, 18.01, 40.0):
+        v.ekle("sulfate_chloride_label", {"ratio": r}, ref.so4cl_label(r))
 
-    # §4.5 renk aralığı (referans: 5.2+0.082*ra, (ra+122.4)/12.2; max(0, ·) spesifikasyondan)
-    for ra in (1.1166, 81.354, 0.0, -50.0, -200.0, 150.0):
-        v.ekle("color_range", {"ra": ra}, [max(0.0, 5.2 + 0.082 * ra), max(0.0, (ra + 122.4) / 12.2)])
+    # §4.5 renk aralığı (referans: ref.color_range)
+    for ra in (1.1166, 81.354, 0.0, -50.0, -200.0, 150.0, -63.4, -122.4, -130.0):
+        v.ekle("color_range", {"ra": ra}, ref.color_range(ra))
 
-    # §3.4 kaynatma derişim faktörü (referans T7 ifadesi; spesifikasyon koruması Vb>0 ve Vp>0)
-    def boil_scale(vb, vp, cool, trub, top):
-        if not (vb > 0 and vp > 0):
-            return 1.0
-        a_ = vp - cool
-        b_ = a_ - trub
-        return ((vb / a_) * b_ + top) / (b_ + top)
-
-    for vb, vp, cool, trub, top in (
-        (28.0, 24.0, 1.0, 1.0, 0.0), (28.0, 24.0, 1.0, 1.0, 2.0), (30.0, 25.5, 0.5, 1.5, 3.0),
-        (0.0, 24.0, 1.0, 1.0, 0.0), (28.0, 0.0, 1.0, 1.0, 0.0),
+    # §3.4 kaynatma derişim faktörü (referans: ref.boil_scale; Vb>0, Vp>0 ve kaynatma malzemesi koşulu)
+    for vb, vp, cool, trub, top, hb in (
+        (28.0, 24.0, 1.0, 1.0, 0.0, True), (28.0, 24.0, 1.0, 1.0, 2.0, True), (30.0, 25.5, 0.5, 1.5, 3.0, True),
+        (0.0, 24.0, 1.0, 1.0, 0.0, True), (28.0, 0.0, 1.0, 1.0, 0.0, True), (-1.0, 24.0, 1.0, 1.0, 0.0, True),
+        (28.0, 24.0, 1.0, 1.0, 0.0, False), (30.0, 25.5, 0.5, 1.5, 3.0, False),
     ):
-        v.ekle("boil_scale", {"vb": vb, "vp": vp, "cool_loss": cool, "trub_loss": trub, "top_up": top},
-               boil_scale(vb, vp, cool, trub, top))
+        v.ekle("boil_scale", {"vb": vb, "vp": vp, "cool_loss": cool, "trub_loss": trub, "top_up": top, "has_boil_ing": hb},
+               ref.boil_scale(vb, vp, cool, trub, top, hb))
 
     # --- §5.1 grist pH
     for c in (0, 1.9, 2, 5, 12.614, 6.9 / 0.547, 13.99, 14, 15, 60, 199.99, 200, 350, 500):
@@ -177,8 +176,10 @@ def uret():
     ]
     for b in bills:
         for bizim in (False, True):
-            gp, s = ref.gristph(b, bizim)
+            gp, s = ref.gristph_guarded(b, bizim)
             v.ekle("grist_ph", {"bill": b, "ours": bizim}, [gp, s])
+    for b in ([], [(0.0, 20.0)], [(0.0, 3.0), (0.0, 60.0)]):   # W <= 0 koruması (ref.gristph_guarded)
+        v.ekle("grist_ph", {"bill": b, "ours": False}, list(ref.gristph_guarded(b, False)), "W <= 0: 7.0")
 
     # --- §5.2 eğim
     for model in (0, 1):
@@ -238,6 +239,19 @@ def uret():
         v.ekle("lactic_acid_ra", {"conc": conc, "vol_l": vol_l, "f": f, "w_kg": w, "t": t},
                -(p_ * 1000 * rho * vol_l * f) / (0.09009 * w * t))
 
+    # --- §5.4 asitlerin RA eşdeğeri: fosforik dalı (ρ'da 0.365) ve asit malt (T1.14c)
+    for acid, conc, vol_l, f, w, t in (
+        (1, 88.0, 0.0035, 0.971968, 4.9, 3.0), (2, 85.0, 0.0030, 1.01508, 4.9, 3.0), (2, 10.0, 0.01, 0.6, 2.0, 2.5),
+        (2, 88.0, 0.0, 1.0, 4.9, 3.0), (3, 88.0, 0.0035, 1.0, 4.9, 3.0), (0, 88.0, 0.0035, 1.0, 4.9, 3.0),
+    ):
+        v.ekle("misc_acid_ra", {"acid": acid, "conc": conc, "vol_l": vol_l, "f": f, "w_kg": w, "t": t},
+               ref.misc_acid_ra(acid, conc, vol_l, f, w, t))
+    for pct, mk, f, w, t in ((3.0, 0.12888, 1.0, 5.03, 3.0), (2.5, 0.08, 0.9, 5.4, 2.6), (3.0, 0.0, 1.0, 4.9, 3.0)):
+        v.ekle("acid_malt_ra", {"pct": pct, "malt_kg": mk, "f": f, "w_kg": w, "t": t}, ref.acid_malt_ra(pct, mk, f, w, t))
+    for model, t, w in ((0, 3.0, 4.9), (1, 3.0, 4.9), (0, 0.0, 4.9), (1, -1.0, 4.9), (0, 3.0, 0.0), (1, 2.5, -2.0)):
+        v.ekle("mash_ra_slope_checked", {"model": model, "t": t, "w_kg": w}, ref.slope_checked(model, t, w),
+               "t <= 0 ya da W <= 0: null (hata)")
+
     # --- §5.5 ayarlanmış pH (referans adj_ph: asit maltlı)
     for model in (0, 1):
         for bizim in (False, True):
@@ -277,12 +291,59 @@ def uret():
             v.ekle("sparge_acid_mph", {"hco3": h, "ph_w": phw, "ph_t": pht}, ref.sparge_mpH(h, phw, pht))
             v.ekle("sparge_acid_mph_ours", {"hco3": h, "ph_w": phw, "ph_t": pht, "acid": 1}, ref.sparge_mpH_bizim(h, phw, pht, 1))
             for acid in (1, 2):
-                v.ekle("sparge_acid_bw", {"hco3": h, "ph_w": phw, "ph_t": pht, "acid": acid}, ref.sparge_bnw(h, phw, pht, acid))
+                v.ekle("sparge_acid_bw", {"hco3": h, "ph_w": phw, "ph_t": pht, "acid": acid}, ref.sparge_bnw_guarded(h, phw, pht, acid))
+    for phw in (4.3, 4.0, 4.31):       # pH_w <= 4.3 koruması (ref.sparge_bnw_guarded)
+        v.ekle("sparge_acid_bw", {"hco3": 150.0, "ph_w": phw, "ph_t": 5.4, "acid": 1}, ref.sparge_bnw_guarded(150.0, phw, 5.4, 1))
     v.ekle("sparge_acid_mph_ours", {"hco3": 150.0, "ph_w": 7.5, "ph_t": 6.0, "acid": 2}, ref.sparge_mpH_bizim(150.0, 7.5, 6.0, 2))
     for mol, vol, conc in ((0.00220511, 15.3, 88.0), (0.00229262, 15.3, 88.0), (0.00166758, 15.3, 88.0), (0.002, 10.0, 0.5), (0.0, 15.3, 88.0), (0.003, 20.0, 80.0)):
         v.ekle("lactic_ml", {"mol_l": mol, "v_l": vol, "conc": conc}, ref.lactic_mL(mol, vol, conc))
+    # sparge asidi hacmi, fosforik dahil ve sınırlar (ref.sparge_acid_ml)
+    for mol, vol, conc, acid in ((0.00220511, 15.3, 88.0, 1), (0.00220511, 15.3, 85.0, 2), (0.002, 10.0, 0.5, 2), (-0.001, 15.3, 88.0, 1),
+                                 (0.0, 15.3, 88.0, 2), (0.002, 15.3, 88.0, 3), (0.002, 15.3, 88.0, 0), (0.002, 15.3, 88.0, 4)):
+        v.ekle("sparge_acid_ml", {"mol_l": mol, "v_l": vol, "conc": conc, "acid": acid}, ref.sparge_acid_ml(mol, vol, conc, acid))
+    # §6.5 bütün (mash ΔpH koşulu, asit türü, model, korumalar)
+    for model in (0, 1):
+        for bizim in (False, True):
+            for acid in (0, 1, 2, 3):
+                for phw, pht, dph in ((7.5, 6.0, 0.2), (7.5, 5.4, 0.2), (7.5, 5.4, -0.1), (4.3, 5.4, 0.2), (5.0, 5.4, 0.2), (7.5, 8.0, 0.2)):
+                    v.ekle("sparge_acid_amount",
+                           {"model": model, "ours": bizim, "hco3": 150.0, "ph_w": phw, "ph_t": pht, "acid": acid, "conc": 88.0,
+                            "mash_dph": dph, "v_sp_l": 15.3},
+                           ref.sparge_acid_amount(model, bizim, 150.0, phw, pht, acid, 88.0, dph, 15.3))
     for vt, w, t in ((30.0, 4.9, 3.0), (25.0, 5.5, 2.6)):
         v.ekle("sparge_volume_l", {"total_l": vt, "w_kg": w, "t": t}, vt - w * t)
+
+    # --- §3 su profilleri (T1.14c)
+    wl = [(10.0, [50.0, 10.0, 15.0, 40.0, 30.0, 150.0]), (5.0, [20.0, 2.0, 5.0, 10.0, 8.0, 40.0])]
+    for waters in (wl, wl[:1], [], [(0.0, [1.0] * 6)], [(3.0, [0.0] * 6), (1.0, [8.0] * 6)]):
+        v.ekle("base_profile", {"waters": [[a, i] for a, i in waters]}, ref.base_profile(waters))
+    for phs in ([(10.0, 7.2), (5.0, 6.4)], [(4.0, 8.0)], [], [(0.0, 5.0)]):
+        v.ekle("water_ph", {"waters": [[a, p] for a, p in phs]}, ref.water_ph_mix(phs))
+    for gr, vol, ign in (({"gypsum": 5, "cacl2": 3}, 20.0, False), ({"gypsum": 5, "cacl2": 3}, 20.0, True), ({"gypsum": 5}, 0.0, False)):
+        v.ekle("agents_ppm", {"grams": gr, "vol_l": vol, "ignore": ign}, ref.agents_ppm(gr, vol, ign))
+    for rtype in (0, 1, 2):
+        for use in (0, 1, 2, 3, 4, 5):
+            v.ekle("agent_volume", {"rtype": rtype, "use": use, "mash_tot": 14.7, "sparge": 15.3, "boil": 28.0, "volume": 20.0, "final": 19.0},
+                   ref.agent_volume(rtype, use, 14.7, 15.3, 28.0, 20.0, 19.0))
+    mi, si = [162.33, 10.0, 15.0, 179.45, 125.81, 150.0], [60.0, 8.0, 12.0, 50.0, 40.0, 100.0]
+    for hm, vm, vs in ((True, 14.7, 15.3), (True, 14.7, 0.0), (False, 14.7, 15.3), (True, 0.0, 10.0)):
+        v.ekle("total_water_ion", {"mash": mi, "sparge": si, "vm": vm, "vs": vs, "has_mash": hm}, ref.total_water_ion(mi, si, vm, vs, hm))
+    for va, vs, vt in ((20.0, 10.0, 5.0), (20.0, 10.0, 0.0), (0.0, 0.0, 4.0)):
+        v.ekle("top_up_factor", {"v_avail": va, "vs": vs, "v_topk": vt}, ref.top_up_factor(va, vs, vt))
+    adj = [5.0, 0.0, 1.0, 12.0, 3.0, 0.0]
+    v.ekle("boil_ion", {"total": mi, "k_top": 0.8, "adj0": adj}, ref.boil_ion(mi, 0.8, adj))
+    v.ekle("beer_ion", {"boil": mi, "s_boil": 1.21739, "adj2": adj}, ref.beer_ion(mi, 1.21739, adj))
+
+    # --- §7.1 ölçek, §7.2 gram, §7.4 su profili aracı
+    for mr, hb in ((True, True), (True, False), (False, True), (False, False)):
+        v.ekle("match_scale", {"mash_recipe": mr, "has_boil_ing": hb, "s_boil": 1.21739}, ref.match_scale(mr, hb, 1.21739))
+    xs = [0.95, 0.12, 0.65, 0.0, 0.0, 0.0, 0.07, 0.0]
+    for vm, vsp, comb in ((3.88, 4.04, False), (3.88, 4.04, True), (5.28, 0.0, False), (5.28, 0.0, True)):
+        v.ekle("salt_grams", {"x": xs, "v_mash_gal": vm, "v_sp_gal": vsp, "combine": comb}, ref.salt_grams(xs, vm, vsp, comb))
+    for vb, vd in ((10.0, 5.0), (10.0, 0.0), (0.0, 5.0), (0.0, 0.0)):
+        b_, d_ = [50.0, 10.0, 15.0, 40.0, 30.0, 150.0], [5.0, 1.0, 2.0, 3.0, 4.0, 10.0]
+        v.ekle("profile_mix", {"vb": vb, "b": b_, "vd": vd, "d": d_}, ref.profile_mix(vb, b_, vd, d_), "Vb+Vd = 0: sıfır profil (seçim)")
+    v.ekle("wp_grams", {"x": xs, "vb_gal": 2.64}, ref.wp_grams(xs, 2.64))
 
     # --- §6.8 uyarılar
     for model, sg in ((0, {"gypsum": 5}), (1, {"chalk": 2.0}), (1, {}), (0, {"chalk": 1.0}), (0, {"chalk": 0.0}), (1, {"gypsum": 3, "chalk": 0.5})):

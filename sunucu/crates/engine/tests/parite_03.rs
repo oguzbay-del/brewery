@@ -23,6 +23,21 @@ fn ions(v: &Value) -> [f64; 6] {
     nums(v).try_into().expect("6 ions")
 }
 
+fn eight(v: &Value) -> [f64; 8] {
+    nums(v).try_into().expect("8 salts")
+}
+
+fn waters(v: &Value) -> Vec<(f64, [f64; 6])> {
+    v.as_array()
+        .expect("waters")
+        .iter()
+        .map(|p| {
+            let p = p.as_array().expect("pair");
+            (p[0].as_f64().expect("amount"), ions(&p[1]))
+        })
+        .collect()
+}
+
 fn bill(c: &Case) -> Vec<(f64, f64)> {
     c.v("bill")
         .as_array()
@@ -79,7 +94,119 @@ fn parite_03() {
                 c.f("cool_loss"),
                 c.f("trub_loss"),
                 c.f("top_up"),
+                c.b("has_boil_ing"),
             )),
+            "sulfate_chloride_label" => {
+                c.check(&json!(water::sulfate_chloride_label(c.f("ratio"))));
+            }
+            "mash_ra_slope_checked" => c.check(&json!(water::mash_ra_slope_checked(
+                small(c, "model"),
+                c.f("t"),
+                c.f("w_kg"),
+            ))),
+            "misc_acid_ra" => c.check_f(water::misc_acid_ra(
+                small(c, "acid"),
+                c.f("conc"),
+                c.f("vol_l"),
+                c.f("f"),
+                c.f("w_kg"),
+                c.f("t"),
+            )),
+            "acid_malt_ra" => c.check_f(water::acid_malt_ra(
+                c.f("pct"),
+                c.f("malt_kg"),
+                c.f("f"),
+                c.f("w_kg"),
+                c.f("t"),
+            )),
+            "sparge_acid_ml" => c.check_f(water::sparge_acid_ml(
+                c.f("mol_l"),
+                c.f("v_l"),
+                c.f("conc"),
+                small(c, "acid"),
+            )),
+            "sparge_acid_amount" => c.check_f(water::sparge_acid_amount(
+                small(c, "model"),
+                c.b("ours"),
+                c.f("hco3"),
+                c.f("ph_w"),
+                c.f("ph_t"),
+                small(c, "acid"),
+                c.f("conc"),
+                c.f("mash_dph"),
+                c.f("v_sp_l"),
+            )),
+            "base_profile" => c.check(&json!(water::base_profile(&waters(c.v("waters"))))),
+            "water_ph" => {
+                let w: Vec<(f64, f64)> = c
+                    .v("waters")
+                    .as_array()
+                    .expect("waters")
+                    .iter()
+                    .map(|p| {
+                        let p = p.as_array().expect("pair");
+                        (p[0].as_f64().expect("amount"), p[1].as_f64().expect("ph"))
+                    })
+                    .collect();
+                c.check_f(water::water_ph(&w));
+            }
+            "agents_ppm" => c.check(&json!(water::agents_ppm(
+                &salts(c.v("grams")),
+                c.f("vol_l"),
+                c.b("ignore"),
+            ))),
+            "agent_volume" => c.check_f(water::agent_volume(
+                small(c, "rtype"),
+                small(c, "use"),
+                c.f("mash_tot"),
+                c.f("sparge"),
+                c.f("boil"),
+                c.f("volume"),
+                c.f("final"),
+            )),
+            "total_water_ion" => c.check(&json!(water::total_water_ion(
+                &ions(c.v("mash")),
+                &ions(c.v("sparge")),
+                c.f("vm"),
+                c.f("vs"),
+                c.b("has_mash"),
+            ))),
+            "top_up_factor" => c.check_f(water::top_up_factor(
+                c.f("v_avail"),
+                c.f("vs"),
+                c.f("v_topk"),
+            )),
+            "boil_ion" => c.check(&json!(water::boil_ion(
+                &ions(c.v("total")),
+                c.f("k_top"),
+                &ions(c.v("adj0")),
+            ))),
+            "beer_ion" => c.check(&json!(water::beer_ion(
+                &ions(c.v("boil")),
+                c.f("s_boil"),
+                &ions(c.v("adj2")),
+            ))),
+            "match_scale" => c.check_f(water::match_scale(
+                c.b("mash_recipe"),
+                c.b("has_boil_ing"),
+                c.f("s_boil"),
+            )),
+            "salt_grams" => {
+                let (m, sp) = water::salt_grams(
+                    &eight(c.v("x")),
+                    c.f("v_mash_gal"),
+                    c.f("v_sp_gal"),
+                    c.b("combine"),
+                );
+                c.check(&json!([m, sp]));
+            }
+            "profile_mix" => c.check(&json!(water::profile_mix(
+                c.f("vb"),
+                &ions(c.v("b")),
+                c.f("vd"),
+                &ions(c.v("d")),
+            ))),
+            "wp_grams" => c.check(&json!(water::wp_grams(&eight(c.v("x")), c.f("vb_gal")))),
             "grist_g" => c.check_f(water::grist_g(c.f("c"), c.b("ours"))),
             "grist_ph" => {
                 let (ph, s) = water::grist_ph(&bill(c), c.b("ours"));

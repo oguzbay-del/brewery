@@ -117,6 +117,41 @@
    "fonk": "salt_ppm",
    "girdi": {
     "grams": {
+     "gypsum": 5,
+     "cacl2": 3
+    },
+    "vol_l": 0.0
+   },
+   "beklenen": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "fonk": "salt_ppm",
+   "girdi": {
+    "grams": {
+     "gypsum": 5
+    },
+    "vol_l": -3.0
+   },
+   "beklenen": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "fonk": "salt_ppm",
+   "girdi": {
+    "grams": {
      "gypsum": 10
     },
     "vol_l": 25
@@ -412,6 +447,181 @@
    "not": "Cl = 0 koruması (spesifikasyon §4.4 önerisi)"
   },
   {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": -0.01
+   },
+   "beklenen": "Out of Range"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.0
+   },
+   "beklenen": "Extremely Malty"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.2
+   },
+   "beklenen": "Extremely Malty"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.39999
+   },
+   "beklenen": "Extremely Malty"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.4
+   },
+   "beklenen": "Very Malty"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.5
+   },
+   "beklenen": "Very Malty"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.6
+   },
+   "beklenen": "Malty"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.7
+   },
+   "beklenen": "Malty"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 0.8
+   },
+   "beklenen": "Balanced"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 1.2
+   },
+   "beklenen": "Balanced"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 1.426
+   },
+   "beklenen": "Balanced"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 1.5
+   },
+   "beklenen": "Slightly Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 1.9
+   },
+   "beklenen": "Slightly Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 2.0
+   },
+   "beklenen": "Slightly Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 2.01
+   },
+   "beklenen": "Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 4.0
+   },
+   "beklenen": "Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 6.0
+   },
+   "beklenen": "Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 6.01
+   },
+   "beklenen": "Very Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 7.0
+   },
+   "beklenen": "Very Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 8.0
+   },
+   "beklenen": "Very Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 8.01
+   },
+   "beklenen": "Extremely Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 12.0
+   },
+   "beklenen": "Extremely Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 18.0
+   },
+   "beklenen": "Extremely Bitter"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 18.01
+   },
+   "beklenen": "Out of Range"
+  },
+  {
+   "fonk": "sulfate_chloride_label",
+   "girdi": {
+    "ratio": 40.0
+   },
+   "beklenen": "Out of Range"
+  },
+  {
    "fonk": "color_range",
    "girdi": {
     "ra": 1.1166
@@ -472,13 +682,44 @@
    ]
   },
   {
+   "fonk": "color_range",
+   "girdi": {
+    "ra": -63.4
+   },
+   "beklenen": [
+    0.0011999999999998678,
+    4.836065573770493
+   ]
+  },
+  {
+   "fonk": "color_range",
+   "girdi": {
+    "ra": -122.4
+   },
+   "beklenen": [
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "fonk": "color_range",
+   "girdi": {
+    "ra": -130.0
+   },
+   "beklenen": [
+    0.0,
+    0.0
+   ]
+  },
+  {
    "fonk": "boil_scale",
    "girdi": {
     "vb": 28.0,
     "vp": 24.0,
     "cool_loss": 1.0,
     "trub_loss": 1.0,
-    "top_up": 0.0
+    "top_up": 0.0,
+    "has_boil_ing": true
    },
    "beklenen": 1.2173913043478262
   },
@@ -489,7 +730,8 @@
     "vp": 24.0,
     "cool_loss": 1.0,
     "trub_loss": 1.0,
-    "top_up": 2.0
+    "top_up": 2.0,
+    "has_boil_ing": true
    },
    "beklenen": 1.1992753623188406
   },
@@ -500,7 +742,8 @@
     "vp": 25.5,
     "cool_loss": 0.5,
     "trub_loss": 1.5,
-    "top_up": 3.0
+    "top_up": 3.0,
+    "has_boil_ing": true
    },
    "beklenen": 1.1773584905660377
   },
@@ -511,7 +754,8 @@
     "vp": 24.0,
     "cool_loss": 1.0,
     "trub_loss": 1.0,
-    "top_up": 0.0
+    "top_up": 0.0,
+    "has_boil_ing": true
    },
    "beklenen": 1.0
   },
@@ -522,7 +766,44 @@
     "vp": 0.0,
     "cool_loss": 1.0,
     "trub_loss": 1.0,
-    "top_up": 0.0
+    "top_up": 0.0,
+    "has_boil_ing": true
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "boil_scale",
+   "girdi": {
+    "vb": -1.0,
+    "vp": 24.0,
+    "cool_loss": 1.0,
+    "trub_loss": 1.0,
+    "top_up": 0.0,
+    "has_boil_ing": true
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "boil_scale",
+   "girdi": {
+    "vb": 28.0,
+    "vp": 24.0,
+    "cool_loss": 1.0,
+    "trub_loss": 1.0,
+    "top_up": 0.0,
+    "has_boil_ing": false
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "boil_scale",
+   "girdi": {
+    "vb": 30.0,
+    "vp": 25.5,
+    "cool_loss": 0.5,
+    "trub_loss": 1.5,
+    "top_up": 3.0,
+    "has_boil_ing": false
    },
    "beklenen": 1.0
   },
@@ -981,6 +1262,56 @@
     5.397648266666667,
     9.565333333333333
    ]
+  },
+  {
+   "fonk": "grist_ph",
+   "girdi": {
+    "bill": [],
+    "ours": false
+   },
+   "beklenen": [
+    7.0,
+    0.0
+   ],
+   "not": "W <= 0: 7.0"
+  },
+  {
+   "fonk": "grist_ph",
+   "girdi": {
+    "bill": [
+     [
+      0.0,
+      20.0
+     ]
+    ],
+    "ours": false
+   },
+   "beklenen": [
+    7.0,
+    0.0
+   ],
+   "not": "W <= 0: 7.0"
+  },
+  {
+   "fonk": "grist_ph",
+   "girdi": {
+    "bill": [
+     [
+      0.0,
+      3.0
+     ],
+     [
+      0.0,
+      60.0
+     ]
+    ],
+    "ours": false
+   },
+   "beklenen": [
+    7.0,
+    0.0
+   ],
+   "not": "W <= 0: 7.0"
   },
   {
    "fonk": "mash_ra_slope",
@@ -2986,6 +3317,171 @@
    "beklenen": -19.014585414585415
   },
   {
+   "fonk": "misc_acid_ra",
+   "girdi": {
+    "acid": 1,
+    "conc": 88.0,
+    "vol_l": 0.0035,
+    "f": 0.971968,
+    "w_kg": 4.9,
+    "t": 3.0
+   },
+   "beklenen": -2.731976617431246
+  },
+  {
+   "fonk": "misc_acid_ra",
+   "girdi": {
+    "acid": 2,
+    "conc": 85.0,
+    "vol_l": 0.003,
+    "f": 1.01508,
+    "w_kg": 4.9,
+    "t": 3.0
+   },
+   "beklenen": -3.018987065441482
+  },
+  {
+   "fonk": "misc_acid_ra",
+   "girdi": {
+    "acid": 2,
+    "conc": 10.0,
+    "vol_l": 0.01,
+    "f": 0.6,
+    "w_kg": 2.0,
+    "t": 2.5
+   },
+   "beklenen": -1.288959183673469
+  },
+  {
+   "fonk": "misc_acid_ra",
+   "girdi": {
+    "acid": 2,
+    "conc": 88.0,
+    "vol_l": 0.0,
+    "f": 1.0,
+    "w_kg": 4.9,
+    "t": 3.0
+   },
+   "beklenen": -0.0
+  },
+  {
+   "fonk": "misc_acid_ra",
+   "girdi": {
+    "acid": 3,
+    "conc": 88.0,
+    "vol_l": 0.0035,
+    "f": 1.0,
+    "w_kg": 4.9,
+    "t": 3.0
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "misc_acid_ra",
+   "girdi": {
+    "acid": 0,
+    "conc": 88.0,
+    "vol_l": 0.0035,
+    "f": 1.0,
+    "w_kg": 4.9,
+    "t": 3.0
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "acid_malt_ra",
+   "girdi": {
+    "pct": 3.0,
+    "malt_kg": 0.12888,
+    "f": 1.0,
+    "w_kg": 5.03,
+    "t": 3.0
+   },
+   "beklenen": -2.844074414650955
+  },
+  {
+   "fonk": "acid_malt_ra",
+   "girdi": {
+    "pct": 2.5,
+    "malt_kg": 0.08,
+    "f": 0.9,
+    "w_kg": 5.4,
+    "t": 2.6
+   },
+   "beklenen": -1.423078346155269
+  },
+  {
+   "fonk": "acid_malt_ra",
+   "girdi": {
+    "pct": 3.0,
+    "malt_kg": 0.0,
+    "f": 1.0,
+    "w_kg": 4.9,
+    "t": 3.0
+   },
+   "beklenen": -0.0
+  },
+  {
+   "fonk": "mash_ra_slope_checked",
+   "girdi": {
+    "model": 0,
+    "t": 3.0,
+    "w_kg": 4.9
+   },
+   "beklenen": 0.079,
+   "not": "t <= 0 ya da W <= 0: null (hata)"
+  },
+  {
+   "fonk": "mash_ra_slope_checked",
+   "girdi": {
+    "model": 1,
+    "t": 3.0,
+    "w_kg": 4.9
+   },
+   "beklenen": 0.16296408420000003,
+   "not": "t <= 0 ya da W <= 0: null (hata)"
+  },
+  {
+   "fonk": "mash_ra_slope_checked",
+   "girdi": {
+    "model": 0,
+    "t": 0.0,
+    "w_kg": 4.9
+   },
+   "beklenen": null,
+   "not": "t <= 0 ya da W <= 0: null (hata)"
+  },
+  {
+   "fonk": "mash_ra_slope_checked",
+   "girdi": {
+    "model": 1,
+    "t": -1.0,
+    "w_kg": 4.9
+   },
+   "beklenen": null,
+   "not": "t <= 0 ya da W <= 0: null (hata)"
+  },
+  {
+   "fonk": "mash_ra_slope_checked",
+   "girdi": {
+    "model": 0,
+    "t": 3.0,
+    "w_kg": 0.0
+   },
+   "beklenen": null,
+   "not": "t <= 0 ya da W <= 0: null (hata)"
+  },
+  {
+   "fonk": "mash_ra_slope_checked",
+   "girdi": {
+    "model": 1,
+    "t": 2.5,
+    "w_kg": -2.0
+   },
+   "beklenen": null,
+   "not": "t <= 0 ya da W <= 0: null (hata)"
+  },
+  {
    "fonk": "adjusted_ph",
    "girdi": {
     "bill": [
@@ -4476,6 +4972,36 @@
    "beklenen": 0.003789444294848936
   },
   {
+   "fonk": "sparge_acid_bw",
+   "girdi": {
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 1
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_bw",
+   "girdi": {
+    "hco3": 150.0,
+    "ph_w": 4.0,
+    "ph_t": 5.4,
+    "acid": 1
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_bw",
+   "girdi": {
+    "hco3": 150.0,
+    "ph_w": 4.31,
+    "ph_t": 5.4,
+    "acid": 1
+   },
+   "beklenen": -1.14662632810604
+  },
+  {
    "fonk": "sparge_acid_mph_ours",
    "girdi": {
     "hco3": 150.0,
@@ -4540,6 +5066,1526 @@
    "beklenen": 5.679850369872225
   },
   {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": 0.00220511,
+    "v_l": 15.3,
+    "conc": 88.0,
+    "acid": 1
+   },
+   "beklenen": 2.8579023669697827
+  },
+  {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": 0.00220511,
+    "v_l": 15.3,
+    "conc": 85.0,
+    "acid": 2
+   },
+   "beklenen": 2.3150726708675244
+  },
+  {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": 0.002,
+    "v_l": 10.0,
+    "conc": 0.5,
+    "acid": 2
+   },
+   "beklenen": 195.0371988677892
+  },
+  {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": -0.001,
+    "v_l": 15.3,
+    "conc": 88.0,
+    "acid": 1
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": 0.0,
+    "v_l": 15.3,
+    "conc": 88.0,
+    "acid": 2
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": 0.002,
+    "v_l": 15.3,
+    "conc": 88.0,
+    "acid": 3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": 0.002,
+    "v_l": 15.3,
+    "conc": 88.0,
+    "acid": 0
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_ml",
+   "girdi": {
+    "mol_l": 0.002,
+    "v_l": 15.3,
+    "conc": 88.0,
+    "acid": 4
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.145701440422508
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.857905752447038
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 1.6459349548827997
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.192256055337766
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.1612456732527545
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.9403286546772716
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 1.5539127985286034
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.1596937984762907
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 0,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.214966451793767
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.971317585261659
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 1.592537470566079
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.1824554040873005
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": false,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 0,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.214966451793767
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.971317585261659
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 1,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 1.592537470566079
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 2.1824554040873005
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 2,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 6.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": -0.1,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 4.3,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 5.0,
+    "ph_t": 5.4,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "sparge_acid_amount",
+   "girdi": {
+    "model": 1,
+    "ours": true,
+    "hco3": 150.0,
+    "ph_w": 7.5,
+    "ph_t": 8.0,
+    "acid": 3,
+    "conc": 88.0,
+    "mash_dph": 0.2,
+    "v_sp_l": 15.3
+   },
+   "beklenen": 0.0
+  },
+  {
    "fonk": "sparge_volume_l",
    "girdi": {
     "total_l": 30.0,
@@ -4556,6 +6602,1048 @@
     "t": 2.6
    },
    "beklenen": 10.7
+  },
+  {
+   "fonk": "base_profile",
+   "girdi": {
+    "waters": [
+     [
+      10.0,
+      [
+       50.0,
+       10.0,
+       15.0,
+       40.0,
+       30.0,
+       150.0
+      ]
+     ],
+     [
+      5.0,
+      [
+       20.0,
+       2.0,
+       5.0,
+       10.0,
+       8.0,
+       40.0
+      ]
+     ]
+    ]
+   },
+   "beklenen": [
+    40.0,
+    7.333333333333333,
+    11.666666666666666,
+    30.0,
+    22.666666666666668,
+    113.33333333333333
+   ]
+  },
+  {
+   "fonk": "base_profile",
+   "girdi": {
+    "waters": [
+     [
+      10.0,
+      [
+       50.0,
+       10.0,
+       15.0,
+       40.0,
+       30.0,
+       150.0
+      ]
+     ]
+    ]
+   },
+   "beklenen": [
+    50.0,
+    10.0,
+    15.0,
+    40.0,
+    30.0,
+    150.0
+   ]
+  },
+  {
+   "fonk": "base_profile",
+   "girdi": {
+    "waters": []
+   },
+   "beklenen": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "fonk": "base_profile",
+   "girdi": {
+    "waters": [
+     [
+      0.0,
+      [
+       1.0,
+       1.0,
+       1.0,
+       1.0,
+       1.0,
+       1.0
+      ]
+     ]
+    ]
+   },
+   "beklenen": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "fonk": "base_profile",
+   "girdi": {
+    "waters": [
+     [
+      3.0,
+      [
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0,
+       0.0
+      ]
+     ],
+     [
+      1.0,
+      [
+       8.0,
+       8.0,
+       8.0,
+       8.0,
+       8.0,
+       8.0
+      ]
+     ]
+    ]
+   },
+   "beklenen": [
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0,
+    2.0
+   ]
+  },
+  {
+   "fonk": "water_ph",
+   "girdi": {
+    "waters": [
+     [
+      10.0,
+      7.2
+     ],
+     [
+      5.0,
+      6.4
+     ]
+    ]
+   },
+   "beklenen": 6.933333333333334
+  },
+  {
+   "fonk": "water_ph",
+   "girdi": {
+    "waters": [
+     [
+      4.0,
+      8.0
+     ]
+    ]
+   },
+   "beklenen": 8.0
+  },
+  {
+   "fonk": "water_ph",
+   "girdi": {
+    "waters": []
+   },
+   "beklenen": 7.0
+  },
+  {
+   "fonk": "water_ph",
+   "girdi": {
+    "waters": [
+     [
+      0.0,
+      5.0
+     ]
+    ]
+   },
+   "beklenen": 7.0
+  },
+  {
+   "fonk": "agents_ppm",
+   "girdi": {
+    "grams": {
+     "gypsum": 5,
+     "cacl2": 3
+    },
+    "vol_l": 20.0,
+    "ignore": false
+   },
+   "beklenen": [
+    112.33266249247156,
+    0.0,
+    0.0,
+    139.4536237578253,
+    95.80744735081652,
+    0.0
+   ]
+  },
+  {
+   "fonk": "agents_ppm",
+   "girdi": {
+    "grams": {
+     "gypsum": 5,
+     "cacl2": 3
+    },
+    "vol_l": 20.0,
+    "ignore": true
+   },
+   "beklenen": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "fonk": "agents_ppm",
+   "girdi": {
+    "grams": {
+     "gypsum": 5
+    },
+    "vol_l": 0.0,
+    "ignore": false
+   },
+   "beklenen": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 0,
+    "use": 0,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 28.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 0,
+    "use": 1,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 28.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 0,
+    "use": 2,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 20.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 0,
+    "use": 3,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 19.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 0,
+    "use": 4,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 19.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 0,
+    "use": 5,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 19.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 1,
+    "use": 0,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 28.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 1,
+    "use": 1,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 14.7
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 1,
+    "use": 2,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 20.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 1,
+    "use": 3,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 19.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 1,
+    "use": 4,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 19.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 1,
+    "use": 5,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 15.3
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 2,
+    "use": 0,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 28.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 2,
+    "use": 1,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 14.7
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 2,
+    "use": 2,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 20.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 2,
+    "use": 3,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 19.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 2,
+    "use": 4,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 19.0
+  },
+  {
+   "fonk": "agent_volume",
+   "girdi": {
+    "rtype": 2,
+    "use": 5,
+    "mash_tot": 14.7,
+    "sparge": 15.3,
+    "boil": 28.0,
+    "volume": 20.0,
+    "final": 19.0
+   },
+   "beklenen": 15.3
+  },
+  {
+   "fonk": "total_water_ion",
+   "girdi": {
+    "mash": [
+     162.33,
+     10.0,
+     15.0,
+     179.45,
+     125.81,
+     150.0
+    ],
+    "sparge": [
+     60.0,
+     8.0,
+     12.0,
+     50.0,
+     40.0,
+     100.0
+    ],
+    "vm": 14.7,
+    "vs": 15.3,
+    "has_mash": true
+   },
+   "beklenen": [
+    110.1417,
+    8.979999999999999,
+    13.47,
+    113.43049999999998,
+    82.04690000000001,
+    124.5
+   ]
+  },
+  {
+   "fonk": "total_water_ion",
+   "girdi": {
+    "mash": [
+     162.33,
+     10.0,
+     15.0,
+     179.45,
+     125.81,
+     150.0
+    ],
+    "sparge": [
+     60.0,
+     8.0,
+     12.0,
+     50.0,
+     40.0,
+     100.0
+    ],
+    "vm": 14.7,
+    "vs": 0.0,
+    "has_mash": true
+   },
+   "beklenen": [
+    162.33,
+    10.0,
+    15.0,
+    179.45,
+    125.81,
+    150.0
+   ]
+  },
+  {
+   "fonk": "total_water_ion",
+   "girdi": {
+    "mash": [
+     162.33,
+     10.0,
+     15.0,
+     179.45,
+     125.81,
+     150.0
+    ],
+    "sparge": [
+     60.0,
+     8.0,
+     12.0,
+     50.0,
+     40.0,
+     100.0
+    ],
+    "vm": 14.7,
+    "vs": 15.3,
+    "has_mash": false
+   },
+   "beklenen": [
+    162.33,
+    10.0,
+    15.0,
+    179.45,
+    125.81,
+    150.0
+   ]
+  },
+  {
+   "fonk": "total_water_ion",
+   "girdi": {
+    "mash": [
+     162.33,
+     10.0,
+     15.0,
+     179.45,
+     125.81,
+     150.0
+    ],
+    "sparge": [
+     60.0,
+     8.0,
+     12.0,
+     50.0,
+     40.0,
+     100.0
+    ],
+    "vm": 0.0,
+    "vs": 10.0,
+    "has_mash": true
+   },
+   "beklenen": [
+    60.0,
+    8.0,
+    12.0,
+    50.0,
+    40.0,
+    100.0
+   ]
+  },
+  {
+   "fonk": "top_up_factor",
+   "girdi": {
+    "v_avail": 20.0,
+    "vs": 10.0,
+    "v_topk": 5.0
+   },
+   "beklenen": 0.8571428571428571
+  },
+  {
+   "fonk": "top_up_factor",
+   "girdi": {
+    "v_avail": 20.0,
+    "vs": 10.0,
+    "v_topk": 0.0
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "top_up_factor",
+   "girdi": {
+    "v_avail": 0.0,
+    "vs": 0.0,
+    "v_topk": 4.0
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "boil_ion",
+   "girdi": {
+    "total": [
+     162.33,
+     10.0,
+     15.0,
+     179.45,
+     125.81,
+     150.0
+    ],
+    "k_top": 0.8,
+    "adj0": [
+     5.0,
+     0.0,
+     1.0,
+     12.0,
+     3.0,
+     0.0
+    ]
+   },
+   "beklenen": [
+    134.864,
+    8.0,
+    13.0,
+    155.56,
+    103.64800000000001,
+    120.0
+   ]
+  },
+  {
+   "fonk": "beer_ion",
+   "girdi": {
+    "boil": [
+     162.33,
+     10.0,
+     15.0,
+     179.45,
+     125.81,
+     150.0
+    ],
+    "s_boil": 1.21739,
+    "adj2": [
+     5.0,
+     0.0,
+     1.0,
+     12.0,
+     3.0,
+     0.0
+    ]
+   },
+   "beklenen": [
+    202.61891870000002,
+    12.1739,
+    19.260849999999998,
+    230.4606355,
+    156.1598359,
+    182.6085
+   ]
+  },
+  {
+   "fonk": "match_scale",
+   "girdi": {
+    "mash_recipe": true,
+    "has_boil_ing": true,
+    "s_boil": 1.21739
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "match_scale",
+   "girdi": {
+    "mash_recipe": true,
+    "has_boil_ing": false,
+    "s_boil": 1.21739
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "match_scale",
+   "girdi": {
+    "mash_recipe": false,
+    "has_boil_ing": true,
+    "s_boil": 1.21739
+   },
+   "beklenen": 1.21739
+  },
+  {
+   "fonk": "match_scale",
+   "girdi": {
+    "mash_recipe": false,
+    "has_boil_ing": false,
+    "s_boil": 1.21739
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "salt_grams",
+   "girdi": {
+    "x": [
+     0.95,
+     0.12,
+     0.65,
+     0.0,
+     0.0,
+     0.0,
+     0.07,
+     0.0
+    ],
+    "v_mash_gal": 3.88,
+    "v_sp_gal": 4.04,
+    "combine": false
+   },
+   "beklenen": [
+    [
+     3.686,
+     0.46559999999999996,
+     2.522,
+     0.0,
+     0.0,
+     0.0,
+     0.2716,
+     0.0
+    ],
+    [
+     3.8379999999999996,
+     0.4848,
+     2.6260000000000003,
+     0.0,
+     0.0,
+     0.0,
+     0.28280000000000005,
+     0.0
+    ]
+   ]
+  },
+  {
+   "fonk": "salt_grams",
+   "girdi": {
+    "x": [
+     0.95,
+     0.12,
+     0.65,
+     0.0,
+     0.0,
+     0.0,
+     0.07,
+     0.0
+    ],
+    "v_mash_gal": 3.88,
+    "v_sp_gal": 4.04,
+    "combine": true
+   },
+   "beklenen": [
+    [
+     7.524,
+     0.9503999999999999,
+     5.148,
+     0.0,
+     0.0,
+     0.0,
+     0.5544,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   ]
+  },
+  {
+   "fonk": "salt_grams",
+   "girdi": {
+    "x": [
+     0.95,
+     0.12,
+     0.65,
+     0.0,
+     0.0,
+     0.0,
+     0.07,
+     0.0
+    ],
+    "v_mash_gal": 5.28,
+    "v_sp_gal": 0.0,
+    "combine": false
+   },
+   "beklenen": [
+    [
+     5.016,
+     0.6336,
+     3.4320000000000004,
+     0.0,
+     0.0,
+     0.0,
+     0.36960000000000004,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   ]
+  },
+  {
+   "fonk": "salt_grams",
+   "girdi": {
+    "x": [
+     0.95,
+     0.12,
+     0.65,
+     0.0,
+     0.0,
+     0.0,
+     0.07,
+     0.0
+    ],
+    "v_mash_gal": 5.28,
+    "v_sp_gal": 0.0,
+    "combine": true
+   },
+   "beklenen": [
+    [
+     5.016,
+     0.6336,
+     3.4320000000000004,
+     0.0,
+     0.0,
+     0.0,
+     0.36960000000000004,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0
+    ]
+   ]
+  },
+  {
+   "fonk": "profile_mix",
+   "girdi": {
+    "vb": 10.0,
+    "b": [
+     50.0,
+     10.0,
+     15.0,
+     40.0,
+     30.0,
+     150.0
+    ],
+    "vd": 5.0,
+    "d": [
+     5.0,
+     1.0,
+     2.0,
+     3.0,
+     4.0,
+     10.0
+    ]
+   },
+   "beklenen": [
+    35.0,
+    7.0,
+    10.666666666666666,
+    27.666666666666668,
+    21.333333333333332,
+    103.33333333333333
+   ],
+   "not": "Vb+Vd = 0: sıfır profil (seçim)"
+  },
+  {
+   "fonk": "profile_mix",
+   "girdi": {
+    "vb": 10.0,
+    "b": [
+     50.0,
+     10.0,
+     15.0,
+     40.0,
+     30.0,
+     150.0
+    ],
+    "vd": 0.0,
+    "d": [
+     5.0,
+     1.0,
+     2.0,
+     3.0,
+     4.0,
+     10.0
+    ]
+   },
+   "beklenen": [
+    50.0,
+    10.0,
+    15.0,
+    40.0,
+    30.0,
+    150.0
+   ],
+   "not": "Vb+Vd = 0: sıfır profil (seçim)"
+  },
+  {
+   "fonk": "profile_mix",
+   "girdi": {
+    "vb": 0.0,
+    "b": [
+     50.0,
+     10.0,
+     15.0,
+     40.0,
+     30.0,
+     150.0
+    ],
+    "vd": 5.0,
+    "d": [
+     5.0,
+     1.0,
+     2.0,
+     3.0,
+     4.0,
+     10.0
+    ]
+   },
+   "beklenen": [
+    5.0,
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    10.0
+   ],
+   "not": "Vb+Vd = 0: sıfır profil (seçim)"
+  },
+  {
+   "fonk": "profile_mix",
+   "girdi": {
+    "vb": 0.0,
+    "b": [
+     50.0,
+     10.0,
+     15.0,
+     40.0,
+     30.0,
+     150.0
+    ],
+    "vd": 0.0,
+    "d": [
+     5.0,
+     1.0,
+     2.0,
+     3.0,
+     4.0,
+     10.0
+    ]
+   },
+   "beklenen": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "not": "Vb+Vd = 0: sıfır profil (seçim)"
+  },
+  {
+   "fonk": "wp_grams",
+   "girdi": {
+    "x": [
+     0.95,
+     0.12,
+     0.65,
+     0.0,
+     0.0,
+     0.0,
+     0.07,
+     0.0
+    ],
+    "vb_gal": 2.64
+   },
+   "beklenen": [
+    2.508,
+    0.3168,
+    1.7160000000000002,
+    0.0,
+    0.0,
+    0.0,
+    0.18480000000000002,
+    0.0
+   ]
   },
   {
    "fonk": "warnings",
