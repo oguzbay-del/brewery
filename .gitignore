@@ -10,3 +10,9 @@ sunucu/target/
 ios/*.xcodeproj/
 ios/DerivedData/
 ios/xcuserdata/
+
+# web
+web/node_modules/
+web/dist/
+web/test-results/
+web/playwright-report/
