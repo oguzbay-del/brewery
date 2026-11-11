@@ -30,3 +30,4 @@ terraform.tfvars
 crash.log
 altyapi/compose/.build-ca.pem
 altyapi/k8s/kind/.cache/
+.claude/worktrees/
