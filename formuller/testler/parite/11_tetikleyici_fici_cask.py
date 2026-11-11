@@ -235,4 +235,18 @@ def uret():
         v.ekle("cask_days", {"t_cellar": t, "base": 3.0, "t0": 12.0}, ref.cask_days(t))
     v.ekle("cask_days", {"t_cellar": 8, "base": 5.0, "t0": 10.0}, ref.cask_days(8, 5.0, 10.0))
 
+    # ---- 4. Varsayılanlar ve ilerleme (T1.14d)
+    for kind in ["lager", "ale"]:
+        v.ekle("default_delta", {"kind": kind}, ref.default_delta(kind))
+    v.ekle("defaults", {}, {"delta_lager": ref.DELTA_LAGER, "delta_ale": ref.DELTA_ALE,
+                            "lager_cool_rate": ref.LAGER_COOL_RATE, "partial_fraction": ref.PARTIAL_FRACTION,
+                            "cask_target_vol": ref.CASK_TARGET_VOL, "finings_ml_per_l": ref.FININGS_ML_PER_L},
+           "varsayılan sabitler")
+    for og, sg, fg, n in [(1.048, 1.048, 1.012, "başlangıç: 0"), (1.048, 1.012, 1.012, "bitiş: 1"),
+                          (1.048, 1.030, 1.012, "yarı"), (1.048, 1.020, 1.012, None), (1.048, 1.010, 1.012, "FG_ref altı: >1"),
+                          (1.048, 1.050, 1.012, "SG > OG: negatif"), (1.012, 1.010, 1.012, "OG = FG_ref: None"),
+                          (1.010, 1.008, 1.012, "OG < FG_ref: None"), (1.0485, 1.0165, 1.0105, None),
+                          (1.050, 1.016, 1.010, None)]:
+        v.ekle("progress", {"og": og, "sg": sg, "fg_ref": fg}, ref.progress(og, sg, fg), n)
+
     return v.yaz()

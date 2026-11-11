@@ -9,8 +9,8 @@
 mod ortak;
 
 use engine::trigger::{
-    self, CaskPriming, FgSource, KegMode, KegParams, KegPriming, Stability, Sugar, TriggerError,
-    TriggerForecast,
+    self, CaskPriming, FermentationType, FgSource, KegMode, KegParams, KegPriming, Stability,
+    Sugar, TriggerError, TriggerForecast,
 };
 use engine::{units, yeast};
 use serde_json::{Value, json};
@@ -225,6 +225,27 @@ fn parite_11() {
             }
             "finings_ml" => c.check_f(trigger::finings_ml(c.f("v"), c.f("rate"))),
             "cask_days" => c.check_f(trigger::cask_days(c.f("t_cellar"), c.f("base"), c.f("t0"))),
+            "default_delta" => {
+                let kind = match c.girdi["kind"].as_str().expect("kind") {
+                    "lager" => FermentationType::Lager,
+                    "ale" => FermentationType::Ale,
+                    other => panic!("unknown type {other}"),
+                };
+                c.check_f(trigger::default_delta(kind));
+            }
+            "defaults" => c.check(&json!({
+                "delta_lager": trigger::DELTA_LAGER,
+                "delta_ale": trigger::DELTA_ALE,
+                "lager_cool_rate": trigger::LAGER_COOL_RATE,
+                "partial_fraction": trigger::PARTIAL_FRACTION,
+                "cask_target_vol": trigger::CASK_TARGET_VOL,
+                "finings_ml_per_l": trigger::FININGS_ML_PER_L,
+            })),
+            "progress" => c.check(&json!(trigger::progress(
+                c.f("og"),
+                c.f("sg"),
+                c.f("fg_ref")
+            ))),
             _ => return false,
         }
         true

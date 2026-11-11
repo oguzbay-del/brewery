@@ -7506,6 +7506,130 @@
     "t0": 10.0
    },
    "beklenen": 5.743491774985175
+  },
+  {
+   "fonk": "default_delta",
+   "girdi": {
+    "kind": "lager"
+   },
+   "beklenen": 0.004
+  },
+  {
+   "fonk": "default_delta",
+   "girdi": {
+    "kind": "ale"
+   },
+   "beklenen": 0.002
+  },
+  {
+   "fonk": "defaults",
+   "girdi": {},
+   "beklenen": {
+    "delta_lager": 0.004,
+    "delta_ale": 0.002,
+    "lager_cool_rate": 2.0,
+    "partial_fraction": 0.3333333333333333,
+    "cask_target_vol": 1.1,
+    "finings_ml_per_l": 2.0
+   },
+   "not": "varsayılan sabitler"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.048,
+    "sg": 1.048,
+    "fg_ref": 1.012
+   },
+   "beklenen": 0.0,
+   "not": "başlangıç: 0"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.048,
+    "sg": 1.012,
+    "fg_ref": 1.012
+   },
+   "beklenen": 1.0,
+   "not": "bitiş: 1"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.048,
+    "sg": 1.03,
+    "fg_ref": 1.012
+   },
+   "beklenen": 0.5,
+   "not": "yarı"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.048,
+    "sg": 1.02,
+    "fg_ref": 1.012
+   },
+   "beklenen": 0.7777777777777778
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.048,
+    "sg": 1.01,
+    "fg_ref": 1.012
+   },
+   "beklenen": 1.0555555555555556,
+   "not": "FG_ref altı: >1"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.048,
+    "sg": 1.05,
+    "fg_ref": 1.012
+   },
+   "beklenen": -0.05555555555555555,
+   "not": "SG > OG: negatif"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.012,
+    "sg": 1.01,
+    "fg_ref": 1.012
+   },
+   "beklenen": null,
+   "not": "OG = FG_ref: None"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.01,
+    "sg": 1.008,
+    "fg_ref": 1.012
+   },
+   "beklenen": null,
+   "not": "OG < FG_ref: None"
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.0485,
+    "sg": 1.0165,
+    "fg_ref": 1.0105
+   },
+   "beklenen": 0.8421052631578947
+  },
+  {
+   "fonk": "progress",
+   "girdi": {
+    "og": 1.05,
+    "sg": 1.016,
+    "fg_ref": 1.01
+   },
+   "beklenen": 0.85
   }
  ]
 }

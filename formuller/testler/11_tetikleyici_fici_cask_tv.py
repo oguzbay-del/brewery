@@ -167,6 +167,26 @@ def cask_days(T_cellar, base=3.0, T0=12.0):
     return base * 2 ** ((T0 - T_cellar) / 10)
 
 
+# ================================================================ 4. Varsayılanlar ve ilerleme (T1.14d; spesifikasyon §1.1–1.2, §1.5, §2.4, §3.1, §3.4)
+DELTA_LAGER = 0.004             # §1.2 lager diacetyl rest [doğrulanacak]
+DELTA_ALE = 0.002               # §1.2 ale [doğrulanacak]
+LAGER_COOL_RATE = 2.0           # §1.5 °C/gün [doğrulanacak]
+PARTIAL_FRACTION = 1 / 3        # §2.4 kısmi priming oranı [doğrulanacak]
+CASK_TARGET_VOL = 1.1           # §3.1 vol [doğrulanacak]
+FININGS_ML_PER_L = 2.0          # §3.4 isinglass mL/L [doğrulanacak]
+
+def default_delta(kind):
+    """Fermantasyon türüne göre varsayılan Δ (SG): 'lager' 0.004, 'ale' 0.002. Başka tür KeyError."""
+    return {"lager": DELTA_LAGER, "ale": DELTA_ALE}[kind]
+
+def progress(og, sg, fg_ref):
+    """İlerleme oranı p = (OG − SG)/(OG − FG_ref), tam sayı gravite biriminde (0–1 ölçeği, yüzde için ×100).
+    OG ≤ FG_ref ise payda ≤ 0 ve oran anlamsız: None (ekranda '—'). SG > OG veya SG < FG_ref için sınırlanmaz."""
+    den = u(og) - u(fg_ref)
+    if den <= 0: return None
+    return (u(og) - u(sg)) / den
+
+
 if __name__ == "__main__":
     print("== 1. Gravite tetikleyicisi")
     pts = [(h, 1.012 + 0.036 * math.exp(-0.03 * h)) for h in range(12, 200)]

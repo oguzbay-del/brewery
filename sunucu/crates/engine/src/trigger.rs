@@ -499,3 +499,49 @@ pub fn finings_ml(v_l: f64, rate_ml_per_l: f64) -> f64 {
 pub fn cask_days(t_cellar_c: f64, base_days: f64, t0_c: f64) -> f64 {
     base_days * 2.0_f64.powf((t0_c - t_cellar_c) / 10.0)
 }
+
+// ================================================================ 4. Defaults and progress (T1.14d)
+
+/// Default Δ for a lager diacetyl rest, SG (spec §1.2; to be verified).
+pub const DELTA_LAGER: f64 = 0.004;
+/// Default Δ for an ale, SG (spec §1.2; to be verified).
+pub const DELTA_ALE: f64 = 0.002;
+/// Default lager cooling rate, °C/day (spec §1.5; to be verified).
+pub const LAGER_COOL_RATE: f64 = 2.0;
+/// Default fraction of the full sugar amount in partial keg mode (spec §2.4).
+pub const PARTIAL_FRACTION: f64 = 1.0 / 3.0;
+/// Default cask target CO2, volumes (spec §3.1).
+pub const CASK_TARGET_VOL: f64 = 1.1;
+/// Default finings dose, mL per litre (spec §3.4).
+pub const FININGS_ML_PER_L: f64 = 2.0;
+
+/// Fermentation type selecting the default trigger Δ.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FermentationType {
+    /// `"lager"`.
+    Lager,
+    /// `"ale"`.
+    Ale,
+}
+
+/// Default Δ (SG) for a fermentation type (spec §1.2).
+#[must_use]
+pub fn default_delta(kind: FermentationType) -> f64 {
+    match kind {
+        FermentationType::Lager => DELTA_LAGER,
+        FermentationType::Ale => DELTA_ALE,
+    }
+}
+
+/// Progress ratio `(OG − SG) / (OG − FG_ref)` in integer gravity units (0–1 scale,
+/// multiply by 100 for percent; spec §1.1–1.2). `None` when `u(OG) ≤ u(FG_ref)`
+/// (non-positive denominator). Not clamped.
+#[must_use]
+pub fn progress(og: f64, sg: f64, fg_ref: f64) -> Option<f64> {
+    let den = gravity_units(og) - gravity_units(fg_ref);
+    if den <= 0 {
+        return None;
+    }
+    #[allow(clippy::cast_precision_loss)]
+    Some((gravity_units(og) - gravity_units(sg)) as f64 / den as f64)
+}
