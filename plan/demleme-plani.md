@@ -143,7 +143,7 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 
 ### Destek paneli (iç kullanım)
 
-Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez. Taslağı konseptte "İç kullanım" grubunda: hesap detayı, talepler, arama ve erişim isteği, hesap farkı. Talep ve mesaj müşteri uygulamasındaki Yardım ve destek ekranıyla aynı kayıttır; destek ekibi talepleri GitHub Issues'ta yürütür (aşağıda).
+Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez. Taslağı konseptte "İç kullanım" grubunda: hesap detayı ve talebin GitHub bağlantısı (talep listesi GitHub'da), arama ve erişim isteği, hesap farkı. Talep ve mesaj müşteri uygulamasındaki Yardım ve destek ekranıyla aynı kayıttır; destek ekibi talepleri GitHub Issues'ta yürütür (aşağıda).
 
 **Ne yapılır**
 
@@ -171,7 +171,7 @@ Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. 
 
 **Teknik yapı**
 
-- Ayrı bir React uygulaması; aynı tasarım sistemiyle. Genel adresten erişilemez; giriş şirketin Google Workspace hesabı ve passkey ile, Google Cloud Identity-Aware Proxy arkasında.
+- Ayrı bir React uygulaması; aynı tasarım sistemiyle. Genel adresten erişilemez; giriş şirketin Google Workspace hesabı ve passkey ile, kümede çalışan açık kaynak bir OIDC ters vekili (ör. oauth2-proxy) arkasında; buluta bağlı erişim servisi kullanılmaz.
 - Çekirdek API'nin ayrı bir iç uç grubu (/internal) kullanılır; bu uçlar genel API ağ geçidinde yayımlanmaz. İş kuralları yine çekirdek API'de, iki kez yazılmaz.
 - Her işlem değiştirilemez denetim kaydına yazılır.
 - Yol haritası: Ev MVP'de arama, abonelik, oturum, silme talepleri, destek talebi ve mesaj (GitHub eşitlemesi dahil) ve erişim kuralları; diğerleri İşletme aşamasıyla.
@@ -182,7 +182,7 @@ Destek ekibi talepleri GitHub Issues'ta yürütür. Müşteri GitHub'ı görmez;
 
 | Olay | Uygulama → GitHub | GitHub → uygulama |
 | --- | --- | --- |
-| Talep açıldı | Özel destek deposunda Issue açılır: başlık, konu ve mod etiketi, uygulama sürümü, destek paneli bağlantısı. Talep numarası ile Issue numarası kayıtta eşlenir | – |
+| Talep açıldı | Özel destek deposunda Issue açılır: başlık, konu ve mod etiketi, uygulama sürümü, talep numarası ve çalışma alanının takma kimliği. Destek paneli bu numarayla açılır; iç adres Issue'ya yazılmaz. Talep numarası ile Issue numarası kayıtta eşlenir | – |
 | Müşteri yazdı | Yorum "Müşteri" başlığıyla eklenir; Issue kapalıysa yeniden açılır | – |
 | Destek yanıtı | – | `/yanit` ile başlayan yorum (veya destek panelinden yazılan) müşteriye gider: bildirim kutusu, push, e-posta. Diğer yorumlar iç nottur, müşteriye gitmez |
 | Durum | Müşteri "Çözüldü" derse Issue kapanır | Issue kapanınca talep "çözüldü"; `bekliyor:musteri` etiketi "yanıtlandı" yapar |
@@ -191,12 +191,21 @@ Destek ekibi talepleri GitHub Issues'ta yürütür. Müşteri GitHub'ı görmez;
 
 Etiketler: konu (hesap, abonelik, tarif ve hesap, cihaz, diğer), mod (ev, işletme), öncelik, `bekliyor:musteri`.
 
+**Talep durumları**
+
+| Durum | Ne zaman |
+| --- | --- |
+| Açık | Talep açıldı; ya da müşteri yanıtlandı veya çözüldü durumundaki talebe yeni mesaj yazdı (Issue yeniden açılır) |
+| Yanıtlandı | Müşteriye yanıt gitti (`/yanit` yorumu veya panel); `bekliyor:musteri` etiketi kendiliğinden eklenir |
+| Çözüldü | Issue kapandı veya müşteri "Çözüldü" dedi |
+| Kapandı | Çözüldü'den 14 gün sonra \[doğrulanacak\]; müşteri sonra yazarsa yeni talep açılır ve eskisine bağlanır |
+
 **Kişisel veri**
 
 - Ayrı, özel bir depo; yalnız destek ekibi erişir. Ürün deposuyla karışmaz.
 - Issue'ya ad, e-posta ve çalışma alanı adı yazılmaz; kullanıcı ve çalışma alanı takma kimlikle geçer. Müşterinin yazdığı metin olduğu gibi gider; talep formu "kişisel bilgi yazma" uyarısı gösterir.
-- Ekran görüntüsü ve tanılama dosyası GitHub'a yüklenmez; nesne deposunda kalır, Issue'da yalnız destek panelinde açılan bağlantı durur.
-- Hesap silinince ilgili Issue'lar silinir; silinemezse metin anonimleştirilir \[doğrulanacak: GitHub API ile Issue silme yetkisi\].
+- Ekran görüntüsü ve tanılama dosyası GitHub'a yüklenmez; nesne deposunda kalır, Issue'da yalnız ek sayısı yazar, ekler destek panelinde açılır.
+- Hesap silinince SupportRequest, SupportMessage ve ekleri silinir, ilgili Issue'lar da silinir; denetim kaydındaki SupportAction satırları kimlik anonimleştirilerek kalır. Issue silinemezse metin anonimleştirilir \[doğrulanacak: GitHub API ile Issue silme yetkisi ve düzenleme geçmişinde eski metnin kalıp kalmadığı\].
 - GitHub alt işleyen olarak gizlilik politikasına ve veri işleme sözleşmesine eklenir; veri ABD'de tutulur, İngiltere ve AB aktarımı için GitHub'ın veri işleme sözleşmesi \[doğrulanacak\].
 
 **Teknik yapı**
@@ -227,7 +236,7 @@ Etiketler: konu (hesap, abonelik, tarif ve hesap, cihaz, diğer), mod (ev, işle
 | Arama | Tarif ve malzeme arama | Başta PostgreSQL tam metin araması; ayrı arama motoru gerekmez |
 
 - **Yedek:** sürekli yedek ve noktaya geri dönüş (PITR), başka bölgeye kopya, ayda bir geri yükleme testi. Hedef: veri kaybı en çok 5 dk, kesinti en çok 1 saat \[doğrulanacak\].
-- **Veri yeri:** çalışma alanı açılırken bölge seçilir (ABD veya İngiltere); verisi o bölgede kalır. AB bölgesi sonra.
+- **Veri yeri:** çalışma alanı açılırken bölge seçilir (ABD veya İngiltere); verisi o bölgede kalır. AB bölgesi sonra. İstisna: destek talebinin metni ABD'deki GitHub'da tutulur; bu, bölge seçim ekranında ve gizlilik politikasında açıkça yazılır. İngiltere çalışma alanları için bunun kabul edilebilir olup olmadığı hukuki karar (açık).
 
 ### Cihazda tutulan veri
 
@@ -281,6 +290,7 @@ Hedef: aynı sistem AWS, Azure veya Google Cloud'a kod değişmeden kurulabilsin
 | Gözlem | Cloud Logging, Monitoring, Trace (OpenTelemetry üzerinden) | CloudWatch, Azure Monitor veya Grafana |
 | E-posta | Google Cloud'da yok; ayrı sağlayıcı (ör. Postmark, SendGrid) \[doğrulanacak\] | Aynı sağlayıcı |
 | Bölgeler | ABD: us-east4 (Virginia); İngiltere: europe-west2 (Londra) \[doğrulanacak\] | Aynı şehirlerdeki bölgeler |
+| Destek paneli girişi | Kubernetes'te OIDC ters vekili (ör. oauth2-proxy), Google Workspace ile giriş | Aynı (buluttan bağımsız) |
 
 Kullanılmayanlar: Firestore, Pub/Sub, Spanner ve Firebase Authentication gibi Google'a özgü servisler. Bunlar taşınmayı kod değişikliğine çevirir.
 
@@ -320,7 +330,7 @@ Her formül kararı nedeniyle birlikte karar kaydına (ADR) yazılır ve altın 
 
 ### Eksik hesaplar
 
-Mevcut spesifikasyon BeerSmith formülleri ve Brewtarget karşılaştırmasındaki düzeltmelerden oluşuyor. Aşağıdakiler henüz yazılmadı; karşılaştırma bilgiye dayanıyor, rakiplerin güncel özellik listeleriyle doğrulanmadı.
+Mevcut spesifikasyon BeerSmith formülleri ve Brewtarget karşılaştırmasındaki düzeltmelerden oluşuyor. Aşağıdaki tablo BeerSmith ve Brewtarget'ta olmayan hesaplar; hangilerinin yazıldığı tablonun altındaki Durum notunda, "Sonra" satırları henüz yazılmadı; karşılaştırma bilgiye dayanıyor, rakiplerin güncel özellik listeleriyle doğrulanmadı.
 
 | Eksik hesap | Kullanan ekran / neden | Segment | Aşama |
 | --- | --- | --- | --- |
@@ -352,7 +362,7 @@ Mevcut spesifikasyon BeerSmith formülleri ve Brewtarget karşılaştırmasında
 | Küçükler: Noonan IBU, Mosher ve Daniels renk, Terrill doğrusal/kübik ve Novotný refraktometre, BU:GU, hop yağı oranı | Ayarlar › Hesaplama, tarif editörü | İkisi | Sonra |
 | Ekşi ve karışık fermantasyon (kettle sour pH hedefi), fıçıda (barrel) yıllandırma | Tarif editörü, fermantasyon profili | İkisi | Sonra |
 
-**Durum:** Ev MVP'deki altı hesabın (`formuller/07-ev-mvp-ek-hesaplar.md`, `testler/07_ev_mvp_ek_tv.py`) ve İşletme çekirdekteki beş hesabın (`formuller/08-isletme-cekirdek-hesaplar.md`, `testler/08_isletme_cekirdek_tv.py`) spesifikasyonu ve test vektörleri yazıldı; az okumayla tahmin, ekstrakt araçları ve soğutmasız IBU da yazıldı (formuller/10). Gravite tetikleyicisi, fıçıda priming ve cask hesapları da yazıldı (formuller/11). Fıçı için "şişenin yarısı" alışkanlığı yerine fizik kullanılır: kafa boşluğu yüzünden fıçı şişeden biraz fazla şeker ister; kısmi priming + CO₂ ile tamamlama ayrı mod. Bunlar BeerSmith'ten değil; endüstri tanımları ve bizim tasarımımız. Doğrulanacak varsayılanlar: ısıtma verimi, soğutucu zaman sabiti ve debisi, hop ve meyve emilimi, doğal gaz ısıl değeri, varsayılan slurry yoğunluğu, ince–kaba farkı.
+**Durum:** Ev MVP'deki altı hesabın (`formuller/07-ev-mvp-ek-hesaplar.md`, `testler/07_ev_mvp_ek_tv.py`) ve İşletme çekirdekteki beş hesabın (`formuller/08-isletme-cekirdek-hesaplar.md`, `testler/08_isletme_cekirdek_tv.py`) spesifikasyonu ve test vektörleri yazıldı; az okumayla tahmin, ekstrakt araçları ve soğutmasız IBU da yazıldı (formuller/10). Gravite tetikleyicisi, fıçıda priming ve cask hesapları da yazıldı (formuller/11). Fıçı için "şişenin yarısı" alışkanlığı yerine fizik kullanılır: kafa boşluğu yüzünden fıçı şişeden biraz fazla şeker ister; kısmi priming + CO₂ ile tamamlama ayrı mod. Bunlar BeerSmith'ten değil; endüstri tanımları ve bizim tasarımımız. Doğrulanacak varsayılanlar: ısıtma verimi, soğutucu zaman sabiti ve debisi, hop ve meyve emilimi, doğal gaz ısıl değeri, varsayılan slurry yoğunluğu, ince–kaba farkı; formül 10 ve 11'in varsayılanları (gecikme fazı, FG belirsizliği, ekstrakt yoğunlukları, küp soğuma süresi, tetik eşikleri, lager soğutma hızı ve süresi, kısmi priming oranı, cask hedefi, durultucu oranı, kondisyon süresi). İşletme 2. sürümde depozito raporu ve BBT'de taşla karbonasyon süresi henüz yazılmadı.
 
 İşletme 2. sürümdeki üç hesap da yazıldı (`formuller/09-isletme-2-hesaplar.md`, `testler/09_isletme_2_tv.py`): AB etiket enerjisi, vergi motoru ve spunding. Vergi motoru yalnız yöntemleri içerir (hacim, saf alkol, hL·°P, Plato bandı, yıllık kademe); oranlar, bantlar ve indirimler kaynak ve tarihleriyle veri tablosunda tutulur. Dosyadaki oranlar örnek; Türkiye ÖTV tutarının güncel değeri ve birimi Resmi Gazete'den doğrulanacak.
 
@@ -660,7 +670,7 @@ Bildirimler üç yerden okunur: uygulama içindeki bildirim kutusu (çan), cihaz
 
 - **Bildirim kutusu (çan):** Her bildirim burada da durur; push kapalı olsa bile kaybolmaz.
 - **Push:** iPhone ve iPad'e Apple bildirimi; web'de tarayıcı bildirimi (kullanıcı izin verirse). Apple Watch ileride opsiyonel.
-- **E-posta:** Günlük özet (kullanıcı açarsa) ve işlem e-postaları: giriş bağlantısı, davet, destek yanıtı. Uyarılar e-postayla gitmez.
+- **E-posta:** Günlük özet (kullanıcı açarsa) ve işlem e-postaları: giriş bağlantısı, davet, destek yanıtı (e-postada yanıt metni yok; yalnız "yanıtınız var" ve uygulamaya bağlantı). Uyarılar e-postayla gitmez.
 - **Tek durum:** Bildirim sunucuda tek kayıttır; bir cihazda onaylanan, ertelenen veya yoksayılan bildirim diğer cihazlarda da kapanır ve push geri çekilir.
 
 ### Bildirim kutusu (çan)
@@ -863,9 +873,10 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 | Dosya içe ve dışa aktarma | BeerXML, BeerJSON, .bsmx, CSV | Güvenli XML ayrıştırıcı (dış varlık ve XML bombasına karşı); boyut sınırı; CSV enjeksiyonuna karşı hücre kaçışı |
 | Hesap motoru (Rust) | Hesap sonuçları | Bellek güvenli dil; girdi aralık kontrolü, sıfıra bölme ve sonsuz değer kontrolü; hesaplar yalnız sunucuda çalışır, istemci hesap sonucu gönderemez; test vektörleri her sürümde sunucuda çalıştırılır |
 | Ödeme ve abonelik | Ödeme bilgisi | StoreKit ve web ödeme sağlayıcısı; kart bilgisi bize gelmez; abonelik durumu sunucuda doğrulanır |
-| Kişisel veri ve uyum | UK GDPR, ABD eyalet gizlilik yasaları, KVKK | En az veri; veri kullanıcınındır ve tamamı dışa aktarılabilir (tarif BeerJSON ve BeerXML; parti, ölçüm ve stok CSV; belgeler ve fotoğraflar ZIP); hesap silme; saklanması zorunlu işletme kayıtlarında anonimleştirme; gizlilik politikası ve App Store gizlilik etiketi |
+| Kişisel veri ve uyum | UK GDPR, ABD eyalet gizlilik yasaları, KVKK | En az veri; veri kullanıcınındır ve tamamı dışa aktarılabilir (tarif BeerJSON ve BeerXML; parti, ölçüm ve stok CSV; ekipman, su profilleri, kendi malzemeler, cihaz kayıtları ve destek talepleri JSON; belgeler ve fotoğraflar ZIP); hesap silme; saklanması zorunlu işletme kayıtlarında anonimleştirme; gizlilik politikası ve App Store gizlilik etiketi |
 | Geliştirme ve işletim | Kod, sırlar, sunucular | Sırlar sır yöneticisinde; bağımlılık taraması; sunucuya en az yetki ve iki adımlı doğrulama; olay alarmları ve müdahale planı |
-| Destek paneli | Müşteri verisine içeriden erişim | Genel adreste yok, Identity-Aware Proxy ve passkey; müşteri izni ve süreli erişim; içerik değiştirilemez, müşteri yerine giriş yok; her erişim müşterinin denetim kaydında görünür |
+| Destek paneli | Müşteri verisine içeriden erişim | Genel adreste yok, OIDC ters vekili ve passkey; müşteri izni ve süreli erişim; içerik değiştirilemez, müşteri yerine giriş yok; her erişim müşterinin denetim kaydında görünür |
+| Destek talepleri (GitHub) | Issue'lardaki müşteri metni | Özel depo, erişim yalnız destek ekibine; GitHub organizasyonunda iki adımlı doğrulama zorunlu; GitHub App yalnız bu depoya, anahtarı sır yöneticisinde; /yanit yalnız destek ekibi listesindeki kişilerden kabul edilir; uygulamanın kendi yorumları webhook'ta yok sayılır; müşteriye gitmiş yorum düzenlenirse müşteride de "düzenlendi" notuyla güncellenir, silinirse geri çekilir; Issue işlemleri de SupportAction olarak denetim kaydına yazılır |
 
 **Açık kararlar:**
 
@@ -1044,7 +1055,7 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | CleaningRecord, YeastGeneration | CIP kaydı (tank, kimyasal, konsantrasyon, sıcaklık, süre, doğrulama); maya hasadı ve jenerasyon zinciri |
 | Subscription, Entitlement | Abonelik (kaynak: App Store / web, durum, yenileme, deneme); çalışma alanının açık özellikleri; yalnız sunucuda |
 | Attachment | Parti fotoğrafı ve notu, tadım fotoğrafı; nesne deposunda, partinin zaman çizelgesine bağlı |
-| SupportRequest, SupportMessage | Destek talebi: genel numara (#4182), çalışma alanı, açan kullanıcı, konu, başlık, isteğe bağlı ilgili kayıt (tarif sürümü veya parti), durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama özeti, GitHub Issue numarası ve son eşitleme. Mesaj: yazar (müşteri, destek, sistem), metin, zaman, ekler (nesne deposunda), görünürlük (müşteri / iç not), GitHub yorum kimliği. İç not müşteriye, bildirime ve e-postaya gitmez |
+| SupportRequest, SupportMessage | Destek talebi: genel numara (#4182), çalışma alanı ve takma kimliği (rastgele, kalıcı; GitHub'da yalnız bu görünür), açan kullanıcı, konu, başlık, isteğe bağlı ilgili kayıt (tarif sürümü veya parti), durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama özeti, GitHub Issue numarası ve son eşitleme. Mesaj: yazar (müşteri, destek, sistem), metin, zaman, ekler (nesne deposunda), görünürlük (müşteri / iç not), GitHub yorum kimliği. İç not müşteriye, bildirime ve e-postaya gitmez |
 
 Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bulunur. Demleme günü ölçümleri cihazda üretilen UUID ile kuyruğa alınır; sunucu aynı kaydı iki kez işlemez.
 
@@ -1066,7 +1077,7 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 - [ ] Formül kararlarının karar kaydına (ADR) yazılması; hassasiyet ve yuvarlama kuralları
 - [ ] Malzeme veritabanı kaynağı (üretici teknik föyleri, ABD ve İngiltere'de satılan ürünler öncelikli) ve güncelleme süreci
 - [ ] Veri modeli ve API; kayıtta sürüm kontrolü
-- [ ] Teknik deneme: Rust motorun sunucudaki yanıt süresi (tarif düzenlerken bekleme hissedilmemeli), demleme paketi ve ölçüm kuyruğu, Live Activity ve arka planda sayaç, Bluetooth (Tilt), VisionKit tarama
+- [ ] Teknik deneme: Rust motorun sunucudaki yanıt süresi (tarif düzenlerken bekleme hissedilmemeli), demleme paketi ve ölçüm kuyruğu, Live Activity ve arka planda sayaç, Bluetooth (Tilt), VisionKit tarama. Atılabilir prototiptir, ana dala girmez; görüşme ve altın test beklenirken yapılabilir
 - [ ] İçe aktarma: BeerXML, BeerJSON, `.bsmx`, Brewfather ve Brewer's Friend formatlarının çözümlenmesi; örnek dosyalar
 - [ ] Tasarım sistemi, tıklanabilir prototip, kullanıcı testi; erişilebilirlik; TR/EN yerelleştirme
 - [ ] Ürün adı ve marka araştırması, alan adı

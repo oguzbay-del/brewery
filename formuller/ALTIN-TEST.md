@@ -17,7 +17,7 @@ Geçme payı öneridir; ilk üç tarif görülünce `plan/gorusme.md` soru 5 ile
 | Renk | ±1 EBC |
 | Hacim (strike, sparge, kaynatma sonu) | ±0,1 L |
 | ABV | ±0,1 yüzde puan |
-| Mash pH | Pay yok. MPH ve BW yan yana yazılır; ikisi de seçenek kalır (plan › Hesap motoru), hangisinin varsayılan olacağı bu iki satırla ve görüşmedeki su satırıyla belirlenir |
+| Mash pH | Pay yok. MPH ve BW yan yana yazılır; ikisi de seçenek kalır (plan › Hesap motoru). Varsayılanı 12 ve 13'te kalibre pH metreyle ölçülen gerçek mash pH'ına (oda sıcaklığında) daha yakın olan model olur |
 
 Bir satır payın dışındaysa formül düzeltilir, pay genişletilerek geçilmiş sayılmaz.
 
@@ -47,8 +47,8 @@ On altı senaryo. Hepsi Ev MVP adayıdır; görüşme "yok" derse sağdaki işar
 | 9 | Aynı tarif, hop yaprak | Form çarpanı | aday | | | | | | | | | | |
 | 10 | Yüksek rakım | Kaynama sıcaklığı ve IBU | aday | | | | | | | | | | |
 | 11 | Aynı tarif, mash 65 °C ve 68 °C | FG sıcaklık düzeltmesi. İki satır gibi doldurulur | aday | | | | | | | | | | |
-| 12 | Yumuşak su, asit ekli | MPH ve BW yan yana. Model seçimi bu satırda yapılmaz | aday | | | | | | | | | | |
-| 13 | Sert, karbonatlı su | Aynı pH kararı, ikinci uç | aday | | | | | | | | | | |
+| 12 | Yumuşak su, asit ekli | MPH ve BW yan yana; Ölçüm sütununa gerçek mash pH | aday | | | | | | | | | | |
+| 13 | Sert, karbonatlı su | Aynı karşılaştırma, ikinci uç; Ölçüm sütununa gerçek mash pH | aday | | | | | | | | | | |
 | 14 | No-chill | Geç IBU ayarı | aday | | | | | | | | | | |
 | 15 | 20 L tarif 100 L'ye ölçek | Ölçek çarpanı. İşletme ekranı değil | aday | | | | | | | | | | |
 | 16 | Görüşmeden gönüllü bir gerçek parti | Ekran tahmini ve hidrometre. Kişi kodu (E1), ad yok | aday | | | | | | | | | | |
@@ -60,6 +60,6 @@ pH sütunları yalnız 12 ve 13 için doldurulur. Diğerlerinde boş kalır.
 - Görüşme tablosunda "yok" denen senaryo burada "Ev MVP dışı" yazıyor.
 - Kalan satırların OG, FG, IBU, EBC ve hacim hücrelerinde BeerSmith ve Python sayısının ikisi de var.
 - Pay dışındaki her satırın notu var ve formül işi kapanmadan "geçti" denmiyor.
-- 12 ve 13'te MPH ve BW'nin ikisi de yazılı; hangisinin motor varsayılanı olacağı görüşme kararında.
+- 12 ve 13'te MPH ve BW'nin ikisi de yazılı; ölçülen pH'a daha yakın olan motor varsayılanı olur. Ölçüm yoksa varsayılan görüşmedeki su satırıyla seçilir ve "ölçümle doğrulanacak" diye işaretlenir.
 
 Ondan sonra sıradaki plan işi formül ADR'si ve veri modeli API'sidir. Rust motoru bu tablo geçmeden yazılmaz.

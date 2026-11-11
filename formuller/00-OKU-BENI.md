@@ -19,11 +19,11 @@ Kaynak: BeerSmith 4.0.22 (Linux `.deb`) — hesap fonksiyonları Ghidra ile deco
 | `11-tetikleyici-fici-cask.md` | Fermantasyon adımına gravite tetikleyicisi (diacetyl rest, FG sabit, lagering), fıçıda priming (kafa boşluğu dahil), cask: hedef CO₂, kalan ekstrakt, priming, durultucu, kondisyon süresi |
 | `testler/` | Her bölüm için Python referans uygulaması ve test vektörleri (`python3 testler/02_hop_ibu.py` gibi çalışır) |
 | `ALTIN-TEST.md` | BeerSmith ekranı ve gerçek ölçümle karşılaştırılacak 16 senaryo. Boştur. `plan/gorusme.md` dolmadan doldurulmaz. `testler/` bunun yerine geçmez |
-| `HESAP-MOTORU-TAMAMI.md` | Beş bölümün tek dosyada birleşimi |
+| `HESAP-MOTORU-TAMAMI.md` | 01–05 bölümlerinin tek dosyada birleşimi (06–11 ayrı dosyalarda) |
 
 ## Önemli genel notlar
 
 - **Dahili birimler:** BeerSmith içeride İngiliz birimleri kullanıyor — hacim fl oz (`/128` = galon), ağırlık oz, sıcaklık °F, gravite SG, renk SRM. Kendi uygulamanızda metrik iç birim seçebilirsiniz; dönüşüm sabitleri dokümanlarda.
 - **"Belirsiz" işaretli kısımlar:** Her bölümün sonunda listelendi. Bunlar ya koddan kesin çıkarılamadı ya da programda hata gibi görünen davranışlar (ör. bazı sabitlerin iki yönde farklı yazılması). Birebir uyum mu, doğru formül mü istediğinize göre karar verin.
 - **Test vektörleri** formüllerin Python uygulamasından hesaplandı; BeerSmith'in kendi ekran çıktılarıyla karşılaştırılmadı. Kendi uygulamanızı yazmadan önce BeerSmith'te birkaç tarifi açıp sonuçları karşılaştırmanız önerilir.
-- Sistem tasarımında not edilen yaklaşım (önceki analizden): alan/ayar tanımları veri tablosunda, yerel+bulut senkron her kayıtta (ID, değişiklik zamanı, senkron durumu), raporlar şablonla.
+- Sistem tasarımında not edilen yaklaşım (önceki analizden): alan/ayar tanımları veri tablosunda, her kayıtta UUID, güncelleme zamanı ve sürüm numarası (çevrimdışı senkron yok; plan › Veri modeli), raporlar şablonla.

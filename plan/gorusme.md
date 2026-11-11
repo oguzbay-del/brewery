@@ -1,6 +1,6 @@
 # Görüşme ve Ev MVP kilidi
 
-Bu, planlama listesinin **1. işi**. Altın test (`formuller/ALTIN-TEST.md`) bu dosyadaki karar tablosu dolmadan doldurulmaz. Hesap motoru ve ekran kodu ikisi de bitmeden yazılmaz.
+Bu, planlama listesinin **1. işi**. Altın test (`formuller/ALTIN-TEST.md`) bu dosyadaki karar tablosu dolmadan doldurulmaz. Görüşme ve altın test bitmeden hesap motoru ve ekran kodu ana dala yazılmaz (teknik deneme atılabilir prototiptir).
 
 Görüşmeleri yapan kişi notu buraya işler. Bu dosyada görüşme yapılmış gibi sonuç yoktur.
 
@@ -63,7 +63,7 @@ Plandaki Ev MVP. Görüşme bitmeden sağ sütun boş kalır. Beş ev notu yokke
 | Özellik | Plandaki yer | Görüşme sonucu | Karar: Ev MVP / sonra / yok | Kim (kod) |
 | --- | --- | --- | --- | --- |
 | Tarif sihirbazı önde, editör sade | Mod ayrımı | | | |
-| Demleme günü internetsiz paket | Platformlar | | | |
+| Demleme paketinin sınırı: yalnız ölçüm girişi mi, gerçek değerle yeniden hesap da mı (paket kendisi sabit karar) | Platformlar | | | |
 | Sayaç isteğe bağlı, kağıt ve tarama | Demleme günü | | | |
 | BeerXML, BeerJSON, .bsmx içe aktarma | Planlama işleri | | | |
 | Su ve pH (malt bazlı grist pH; MPH/BW eğimi seçenek, varsayılan altın testle) | Hesap motoru | | | |
