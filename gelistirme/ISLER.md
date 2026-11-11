@@ -47,18 +47,19 @@ Yöntem: ADR-0003. Bölüm işleri (T1.1–T1.10) birbirine dokunmaz, paralel y�
 | F1.1 | F1 bulgularını formüllere ve test vektörlerine işle; yargı gerektirenleri listele | Kritik ve önemli bulgular kapandı veya karar listesinde; `formuller/testler/*.py` geçiyor | F1 | Claude | Sonnet (işleme), Opus (inceleme) | bitti (11.11.2026; 14 karar maddesi F1.2) |
 | F1.2 | F1 karar listesindeki 14 maddeyi incele, öneriyle ürün sahibine sun, kararları formüllere işle | `gelistirme/raporlar/F1-kararlar.md` her maddede karar var; formüller ve testler güncel | F1.1 | Claude | Opus (inceleme), Sonnet (işleme) | bitti (11.11.2026) |
 | T1.0 | Aşama 1 iş listesi ve parite yöntemi (ADR-0003); parite altyapısı (`parite/ortak.py`, `tests/ortak`, `units`, modül iskeletleri, CI denetimi) | Bu tabloda T1.x satırları; `make vektor` ve `parite_00` geçiyor | T0.11 | Claude | Opus | bitti (11.11.2026) |
-| T1.1 | 01 yoğunluk, alkol, renk → `density` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bekliyor |
-| T1.2 | 02 hop ve IBU → `hops` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bekliyor |
+| T1.1 | 01 yoğunluk, alkol, renk → `density` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bitti (11.11.2026) |
+| T1.2 | 02 hop ve IBU → `hops` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bitti (11.11.2026) |
 | T1.3 | 03 su ve pH → `water` (NNLS dahil) | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz; NNLS saf Python referansıyla | T1.0 | Claude | Sonnet | bekliyor |
-| T1.4 | 04 maya, mead, karbonasyon → `yeast` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bekliyor |
-| T1.5 | 05 mash ve hacimler → `mash` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bekliyor |
+| T1.4 | 04 maya, mead, karbonasyon → `yeast` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bitti (11.11.2026) |
+| T1.5 | 05 mash ve hacimler → `mash` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bitti (11.11.2026) |
 | T1.6 | 07 Ev MVP ek hesaplar → `home` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bekliyor |
 | T1.7 | 08 İşletme çekirdek → `brewery` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.0 | Claude | Sonnet | bekliyor |
 | T1.8 | 09 İşletme 2: etiket enerjisi, vergi (ondalık), spunding → `brewery_tax` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz; para `rust_decimal` | T1.0 | Claude | Sonnet | bekliyor |
 | T1.9 | 10 elle giriş, ekstrakt, no-chill → `manual` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.6 | Claude | Sonnet | bekliyor |
 | T1.10 | 11 tetikleyici, fıçı, cask → `trigger` | `parite/NN_*.py` vektörleri, `tests/parite_NN.rs` geçiyor; fmt, clippy temiz | T1.4, T1.6 | Claude | Sonnet | bekliyor |
+| T1.14 | Python referansı olmayan spesifikasyon hesapları: önce referans betiğe fonksiyon ve vektör, sonra Rust (bilinen: 02 §4–5, §7–9 tarif IBU, AAU, acılık ayarı, hop oranları; 05 §1, §3, §5.3–5.9 tahıl hacmi, emilim, BIAB, kaynatma sonrası, soğuma, buharlaşma, toplam su; diğer bölümler T1.1–T1.10 raporlarından) | Spesifikasyondaki her hesabın referansı ve parite vakası var | T1.1–T1.10 | Claude | Sonnet (yazım), Opus (inceleme) | bekliyor |
 | T1.11 | engine-service gRPC uçları: proto tasarımı (tarif özeti, su, mash hacimleri, karbonasyon, maya) ve uygulama; sözleşme üretimi | Proto ve OpenAPI fark kontrolü temiz; gRPC uç testleri geçiyor | T1.1–T1.10 | Claude | Opus (proto), Sonnet (uygulama) | bekliyor |
-| T1.12 | Bağımsız inceleme: Rust ile spesifikasyon arasında sapma, kapsanmayan fonksiyon | Rapor `gelistirme/raporlar/T1.12-motor-inceleme.md`; bulgular kapandı | T1.1–T1.10 | Claude | Fable | bekliyor |
+| T1.12 | Bağımsız inceleme: Rust ile spesifikasyon arasında sapma, kapsanmayan fonksiyon | Rapor `gelistirme/raporlar/T1.12-motor-inceleme.md`; bulgular kapandı | T1.1–T1.10, T1.14 | Claude | Fable | bekliyor |
 | T1.13 | Aşama 1 kapı kontrolü | Kapı maddeleri sağlandı; sapmalar ADR'de | T1.11, T1.12 | Claude | Opus | bekliyor |
 
 ## Aşama 2–6
