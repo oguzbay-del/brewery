@@ -42,7 +42,7 @@ Ayrıntılı iş listesi aşama başında yazılır (Opus).
 
 | İş | Tanım | Bitti ölçütü | Bağlı | Kim | Model | Durum |
 |---|---|---|---|---|---|---|
-| F1 | Formüllerin bağımsız doğrulaması: 03 su ve pH, 09 vergi yöntemleri, 10, 11 | Rapor `gelistirme/raporlar/F1-formul-dogrulama.md`; bulgular formüllere işlendi | – | Claude | Fable | bekliyor |
+| F1 | Formüllerin bağımsız doğrulaması: 03 su ve pH, 09 vergi yöntemleri, 10, 11 | Rapor `gelistirme/raporlar/F1-formul-dogrulama.md`; bulgular formüllere işlendi | – | Claude | Fable | sürüyor |
 | T1.0 | Aşama 1 iş listesini çıkar (formül dosyası başına bir iş) | Bu tabloda T1.x satırları | T0.11 | Claude | Opus | bekliyor |
 
 ## Aşama 2–6
