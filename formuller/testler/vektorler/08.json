@@ -1,0 +1,1204 @@
+{
+ "bolum": "08",
+ "kaynak": "formuller/testler/08_isletme_cekirdek_tv.py",
+ "vakalar": [
+  {
+   "fonk": "plato_to_sg",
+   "girdi": {
+    "p": 0.0
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "plato_to_sg",
+   "girdi": {
+    "p": 2.4
+   },
+   "beklenen": 1.0093570044559748
+  },
+  {
+   "fonk": "plato_to_sg",
+   "girdi": {
+    "p": 2.8
+   },
+   "beklenen": 1.0109314762746746
+  },
+  {
+   "fonk": "plato_to_sg",
+   "girdi": {
+    "p": 12.0
+   },
+   "beklenen": 1.0483750582240405
+  },
+  {
+   "fonk": "plato_to_sg",
+   "girdi": {
+    "p": 20.0
+   },
+   "beklenen": 1.082975090146371
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-A",
+      3.0,
+      1.1
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25
+     ]
+    ],
+    "qty": 4.5
+   },
+   "beklenen": {
+    "rows": [
+     [
+      "L-A",
+      3.0,
+      1.1,
+      3.3000000000000003
+     ],
+     [
+      "L-B",
+      1.5,
+      1.25,
+      1.875
+     ]
+    ],
+    "cost": 5.175000000000001,
+    "missing": 0.0
+   },
+   "not": "iki lota yayılır"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-A",
+      3.0,
+      1.1
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25
+     ]
+    ],
+    "qty": 2.0
+   },
+   "beklenen": {
+    "rows": [
+     [
+      "L-A",
+      2.0,
+      1.1,
+      2.2
+     ]
+    ],
+    "cost": 2.2,
+    "missing": 0.0
+   },
+   "not": "ilk lot yeter"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-A",
+      3.0,
+      1.1
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25
+     ]
+    ],
+    "qty": 3.0
+   },
+   "beklenen": {
+    "rows": [
+     [
+      "L-A",
+      3.0,
+      1.1,
+      3.3000000000000003
+     ]
+    ],
+    "cost": 3.3000000000000003,
+    "missing": 0.0
+   },
+   "not": "ilk lot tam biter"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-A",
+      3.0,
+      1.1
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25
+     ]
+    ],
+    "qty": 28.0
+   },
+   "beklenen": {
+    "rows": [
+     [
+      "L-A",
+      3.0,
+      1.1,
+      3.3000000000000003
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25,
+      31.25
+     ]
+    ],
+    "cost": 34.55,
+    "missing": 0.0
+   },
+   "not": "tüm stok, eksik yok"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-A",
+      3.0,
+      1.1
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25
+     ]
+    ],
+    "qty": 30.0
+   },
+   "beklenen": {
+    "rows": [
+     [
+      "L-A",
+      3.0,
+      1.1,
+      3.3000000000000003
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25,
+      31.25
+     ]
+    ],
+    "cost": 34.55,
+    "missing": 2.0
+   },
+   "not": "eksik 2.0"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-2411",
+      0.2,
+      52.0
+     ]
+    ],
+    "qty": 0.3
+   },
+   "beklenen": {
+    "rows": [
+     [
+      "L-2411",
+      0.2,
+      52.0,
+      10.4
+     ]
+    ],
+    "cost": 10.4,
+    "missing": 0.09999999999999998
+   },
+   "not": "stok yetmez (TV1.2)"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-A",
+      3.0,
+      1.1
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25
+     ]
+    ],
+    "qty": 0.0
+   },
+   "beklenen": {
+    "rows": [],
+    "cost": 0.0,
+    "missing": 0.0
+   },
+   "not": "sıfır ihtiyaç"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-A",
+      3.0,
+      1.1
+     ],
+     [
+      "L-B",
+      25.0,
+      1.25
+     ]
+    ],
+    "qty": -1.0
+   },
+   "beklenen": {
+    "rows": [],
+    "cost": 0.0,
+    "missing": 0.0
+   },
+   "not": "negatif ihtiyaç"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [],
+    "qty": 5.0
+   },
+   "beklenen": {
+    "rows": [],
+    "cost": 0.0,
+    "missing": 5.0
+   },
+   "not": "boş stok"
+  },
+  {
+   "fonk": "fifo_consume",
+   "girdi": {
+    "lots": [
+     [
+      "L-0",
+      0.0,
+      9.0
+     ],
+     [
+      "L-1",
+      2.0,
+      1.5
+     ]
+    ],
+    "qty": 1.0
+   },
+   "beklenen": {
+    "rows": [
+     [
+      "L-1",
+      1.0,
+      1.5,
+      1.5
+     ]
+    ],
+    "cost": 1.5,
+    "missing": 0.0
+   },
+   "not": "boş lot atlanır"
+  },
+  {
+   "fonk": "landed_price",
+   "girdi": {
+    "invoice_price": 1.2,
+    "qty": 25,
+    "shipping_share": 4.0
+   },
+   "beklenen": 1.36
+  },
+  {
+   "fonk": "landed_price",
+   "girdi": {
+    "invoice_price": 1.2,
+    "qty": 25,
+    "shipping_share": 0.0
+   },
+   "beklenen": 1.2
+  },
+  {
+   "fonk": "landed_price",
+   "girdi": {
+    "invoice_price": 52.0,
+    "qty": 0.5,
+    "shipping_share": 1.3
+   },
+   "beklenen": 54.6
+  },
+  {
+   "fonk": "landed_price",
+   "girdi": {
+    "invoice_price": 3.75,
+    "qty": 100,
+    "shipping_share": 12.5
+   },
+   "beklenen": 3.875
+  },
+  {
+   "fonk": "energy_cost_electric",
+   "girdi": {
+    "kwh": 4.99,
+    "price_kwh": 2.6
+   },
+   "beklenen": 12.974
+  },
+  {
+   "fonk": "energy_cost_electric",
+   "girdi": {
+    "kwh": 0.0,
+    "price_kwh": 2.6
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "energy_cost_electric",
+   "girdi": {
+    "kwh": 120.0,
+    "price_kwh": 0.18
+   },
+   "beklenen": 21.599999999999998
+  },
+  {
+   "fonk": "kwh_from_heat",
+   "girdi": {
+    "kj": 6716.022,
+    "eff": 0.9
+   },
+   "beklenen": 2.072846296296296
+  },
+  {
+   "fonk": "kwh_from_heat",
+   "girdi": {
+    "kj": 0.0,
+    "eff": 0.9
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "kwh_from_heat",
+   "girdi": {
+    "kj": 1000.0,
+    "eff": 1.0
+   },
+   "beklenen": 0.2777777777777778
+  },
+  {
+   "fonk": "kwh_from_heat",
+   "girdi": {
+    "kj": 50000.0,
+    "eff": 0.45
+   },
+   "beklenen": 30.864197530864196
+  },
+  {
+   "fonk": "gas_m3_from_heat",
+   "girdi": {
+    "kj": 6716.022,
+    "eff": 0.4,
+    "hu_kj_m3": 34500.0
+   },
+   "beklenen": 0.4866682608695652
+  },
+  {
+   "fonk": "gas_m3_from_heat",
+   "girdi": {
+    "kj": 1000.0,
+    "eff": 1.0,
+    "hu_kj_m3": 34500.0
+   },
+   "beklenen": 0.028985507246376812
+  },
+  {
+   "fonk": "gas_m3_from_heat",
+   "girdi": {
+    "kj": 50000.0,
+    "eff": 0.8,
+    "hu_kj_m3": 36000.0
+   },
+   "beklenen": 1.7361111111111112
+  },
+  {
+   "fonk": "batch_cost",
+   "girdi": {
+    "ingredient_cost": 18.4,
+    "water_l": 35.0,
+    "water_price_m3": 30.0,
+    "energy_cost": 12.974,
+    "pack_units": 60,
+    "pack_unit_cost": 0.35,
+    "packaged_l": 20.0
+   },
+   "beklenen": {
+    "malzeme": 18.4,
+    "su": 1.05,
+    "enerji": 12.97,
+    "ambalaj": 21.0,
+    "toplam": 53.42,
+    "litre": 2.671
+   }
+  },
+  {
+   "fonk": "batch_cost",
+   "girdi": {
+    "ingredient_cost": 0.0,
+    "water_l": 0.0,
+    "water_price_m3": 0.0,
+    "energy_cost": 0.0,
+    "pack_units": 0,
+    "pack_unit_cost": 0.0,
+    "packaged_l": 10.0
+   },
+   "beklenen": {
+    "malzeme": 0.0,
+    "su": 0.0,
+    "enerji": 0.0,
+    "ambalaj": 0.0,
+    "toplam": 0.0,
+    "litre": 0.0
+   }
+  },
+  {
+   "fonk": "batch_cost",
+   "girdi": {
+    "ingredient_cost": 100.0,
+    "water_l": 500.0,
+    "water_price_m3": 1.2,
+    "energy_cost": 40.0,
+    "pack_units": 1200,
+    "pack_unit_cost": 0.4,
+    "packaged_l": 950.0
+   },
+   "beklenen": {
+    "malzeme": 100.0,
+    "su": 0.6,
+    "enerji": 40.0,
+    "ambalaj": 480.0,
+    "toplam": 620.6,
+    "litre": 0.653
+   }
+  },
+  {
+   "fonk": "batch_cost",
+   "girdi": {
+    "ingredient_cost": 7.005,
+    "water_l": 12.5,
+    "water_price_m3": 2.333,
+    "energy_cost": 1.005,
+    "pack_units": 3,
+    "pack_unit_cost": 0.125,
+    "packaged_l": 3.0
+   },
+   "beklenen": {
+    "malzeme": 7.0,
+    "su": 0.03,
+    "enerji": 1.0,
+    "ambalaj": 0.38,
+    "toplam": 8.41,
+    "litre": 2.805
+   }
+  },
+  {
+   "fonk": "blend",
+   "girdi": {
+    "parts": [
+     {
+      "V": 960,
+      "ABV": 5.4,
+      "IBU": 38,
+      "SRM": 7.0,
+      "CO2": 1.0,
+      "P": 2.8
+     },
+     {
+      "V": 400,
+      "ABV": 4.6,
+      "IBU": 22,
+      "SRM": 4.0,
+      "CO2": 1.0,
+      "P": 2.4
+     }
+    ]
+   },
+   "beklenen": {
+    "V": 1360,
+    "ABV": 5.165,
+    "IBU": 33.294,
+    "SRM": 6.118,
+    "CO2": 1.0,
+    "P": 2.682
+   }
+  },
+  {
+   "fonk": "blend",
+   "girdi": {
+    "parts": [
+     {
+      "V": 960,
+      "ABV": 5.4,
+      "IBU": 38,
+      "SRM": 7.0,
+      "CO2": 1.0,
+      "P": 2.8
+     },
+     {
+      "V": 100.5,
+      "ABV": 0.0,
+      "IBU": 0.0,
+      "SRM": 0.0,
+      "CO2": 0.0,
+      "P": 0.0
+     }
+    ]
+   },
+   "beklenen": {
+    "V": 1060.5,
+    "ABV": 4.888,
+    "IBU": 34.399,
+    "SRM": 6.337,
+    "CO2": 0.905,
+    "P": 2.537
+   }
+  },
+  {
+   "fonk": "blend",
+   "girdi": {
+    "parts": [
+     {
+      "V": 960,
+      "ABV": 5.4,
+      "IBU": 38,
+      "SRM": 7.0,
+      "CO2": 1.0,
+      "P": 2.8
+     }
+    ]
+   },
+   "beklenen": {
+    "V": 960,
+    "ABV": 5.4,
+    "IBU": 38.0,
+    "SRM": 7.0,
+    "CO2": 1.0,
+    "P": 2.8
+   }
+  },
+  {
+   "fonk": "blend",
+   "girdi": {
+    "parts": [
+     {
+      "V": 960,
+      "ABV": 5.4,
+      "IBU": 38,
+      "SRM": 7.0,
+      "CO2": 1.0,
+      "P": 2.8
+     },
+     {
+      "V": 400,
+      "ABV": 4.6,
+      "IBU": 22,
+      "SRM": 4.0,
+      "CO2": 1.0,
+      "P": 2.4
+     },
+     {
+      "V": 250,
+      "ABV": 9.5,
+      "IBU": 60,
+      "SRM": 25.0,
+      "CO2": 2.4,
+      "P": 6.1
+     }
+    ]
+   },
+   "beklenen": {
+    "V": 1610,
+    "ABV": 5.838,
+    "IBU": 37.441,
+    "SRM": 9.05,
+    "CO2": 1.217,
+    "P": 3.219
+   }
+  },
+  {
+   "fonk": "blend",
+   "girdi": {
+    "parts": [
+     {
+      "V": 250,
+      "ABV": 9.5,
+      "IBU": 60,
+      "SRM": 25.0,
+      "CO2": 2.4,
+      "P": 6.1
+     },
+     {
+      "V": 100.5,
+      "ABV": 0.0,
+      "IBU": 0.0,
+      "SRM": 0.0,
+      "CO2": 0.0,
+      "P": 0.0
+     }
+    ]
+   },
+   "beklenen": {
+    "V": 350.5,
+    "ABV": 6.776,
+    "IBU": 42.796,
+    "SRM": 17.832,
+    "CO2": 1.712,
+    "P": 4.38
+   }
+  },
+  {
+   "fonk": "blend_volume_for_target",
+   "girdi": {
+    "v1": 960,
+    "x1": 5.4,
+    "x2": 4.6,
+    "xt": 5.2
+   },
+   "beklenen": 320.0,
+   "not": "hedef aralık dışı/uçta ise null"
+  },
+  {
+   "fonk": "blend_volume_for_target",
+   "girdi": {
+    "v1": 960,
+    "x1": 5.4,
+    "x2": 0.0,
+    "xt": 5.0
+   },
+   "beklenen": 76.80000000000007,
+   "not": "hedef aralık dışı/uçta ise null"
+  },
+  {
+   "fonk": "blend_volume_for_target",
+   "girdi": {
+    "v1": 500,
+    "x1": 20.0,
+    "x2": 40.0,
+    "xt": 30.0
+   },
+   "beklenen": 500.0,
+   "not": "hedef aralık dışı/uçta ise null"
+  },
+  {
+   "fonk": "blend_volume_for_target",
+   "girdi": {
+    "v1": 960,
+    "x1": 5.4,
+    "x2": 4.6,
+    "xt": 5.4
+   },
+   "beklenen": null,
+   "not": "hedef aralık dışı/uçta ise null"
+  },
+  {
+   "fonk": "blend_volume_for_target",
+   "girdi": {
+    "v1": 960,
+    "x1": 5.4,
+    "x2": 4.6,
+    "xt": 4.6
+   },
+   "beklenen": null,
+   "not": "hedef aralık dışı/uçta ise null"
+  },
+  {
+   "fonk": "blend_volume_for_target",
+   "girdi": {
+    "v1": 960,
+    "x1": 5.4,
+    "x2": 4.6,
+    "xt": 6.0
+   },
+   "beklenen": null,
+   "not": "hedef aralık dışı/uçta ise null"
+  },
+  {
+   "fonk": "blend_volume_for_target",
+   "girdi": {
+    "v1": 960,
+    "x1": 5.4,
+    "x2": 4.6,
+    "xt": 4.0
+   },
+   "beklenen": null,
+   "not": "hedef aralık dışı/uçta ise null"
+  },
+  {
+   "fonk": "cells_needed_billion",
+   "girdi": {
+    "pitch_m_ml_p": 0.75,
+    "v_l": 1000,
+    "p": 12.0
+   },
+   "beklenen": 9000.0
+  },
+  {
+   "fonk": "cells_needed_billion",
+   "girdi": {
+    "pitch_m_ml_p": 1.5,
+    "v_l": 20,
+    "p": 15.0
+   },
+   "beklenen": 450.0
+  },
+  {
+   "fonk": "cells_needed_billion",
+   "girdi": {
+    "pitch_m_ml_p": 0.5,
+    "v_l": 0,
+    "p": 10.0
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "hemocytometer",
+   "girdi": {
+    "total_counted": 230,
+    "squares_counted": 5,
+    "dilution": 100
+   },
+   "beklenen": 1150000000.0
+  },
+  {
+   "fonk": "hemocytometer",
+   "girdi": {
+    "total_counted": 80,
+    "squares_counted": 5,
+    "dilution": 1
+   },
+   "beklenen": 4000000.0
+  },
+  {
+   "fonk": "hemocytometer",
+   "girdi": {
+    "total_counted": 0,
+    "squares_counted": 5,
+    "dilution": 10
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "hemocytometer",
+   "girdi": {
+    "total_counted": 410,
+    "squares_counted": 10,
+    "dilution": 50
+   },
+   "beklenen": 512500000.0
+  },
+  {
+   "fonk": "viability_stain",
+   "girdi": {
+    "unstained": 212,
+    "stained": 18
+   },
+   "beklenen": 0.9217391304347826
+  },
+  {
+   "fonk": "viability_stain",
+   "girdi": {
+    "unstained": 100,
+    "stained": 0
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "viability_stain",
+   "girdi": {
+    "unstained": 0,
+    "stained": 40
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "viability_stain",
+   "girdi": {
+    "unstained": 95,
+    "stained": 5
+   },
+   "beklenen": 0.95
+  },
+  {
+   "fonk": "slurry_volume_ml",
+   "girdi": {
+    "cells_billion": 9000.0,
+    "density_cells_ml": 1150000000.0,
+    "viability": 0.9217391304347826,
+    "default_density": 1000000000.0
+   },
+   "beklenen": 8490.566037735849,
+   "not": "yoğunluk null/0 ise varsayılan"
+  },
+  {
+   "fonk": "slurry_volume_ml",
+   "girdi": {
+    "cells_billion": 9000.0,
+    "density_cells_ml": null,
+    "viability": 0.9,
+    "default_density": 1000000000.0
+   },
+   "beklenen": 10000.0,
+   "not": "yoğunluk null/0 ise varsayılan"
+  },
+  {
+   "fonk": "slurry_volume_ml",
+   "girdi": {
+    "cells_billion": 9000.0,
+    "density_cells_ml": 0.0,
+    "viability": 0.9,
+    "default_density": 1000000000.0
+   },
+   "beklenen": 10000.0,
+   "not": "yoğunluk null/0 ise varsayılan"
+  },
+  {
+   "fonk": "slurry_volume_ml",
+   "girdi": {
+    "cells_billion": 9000.0,
+    "density_cells_ml": null,
+    "viability": 1.0,
+    "default_density": 1000000000.0
+   },
+   "beklenen": 9000.0,
+   "not": "yoğunluk null/0 ise varsayılan"
+  },
+  {
+   "fonk": "slurry_volume_ml",
+   "girdi": {
+    "cells_billion": 100.0,
+    "density_cells_ml": 2000000000.0,
+    "viability": 0.8,
+    "default_density": 1000000000.0
+   },
+   "beklenen": 62.5,
+   "not": "yoğunluk null/0 ise varsayılan"
+  },
+  {
+   "fonk": "slurry_volume_ml",
+   "girdi": {
+    "cells_billion": 100.0,
+    "density_cells_ml": null,
+    "viability": 0.5,
+    "default_density": 500000000.0
+   },
+   "beklenen": 400.0,
+   "not": "yoğunluk null/0 ise varsayılan"
+  },
+  {
+   "fonk": "extract_kg",
+   "girdi": {
+    "v_l": 1040,
+    "p": 12.0,
+    "hot": true
+   },
+   "beklenen": 125.60371897570585
+  },
+  {
+   "fonk": "extract_kg",
+   "girdi": {
+    "v_l": 1040,
+    "p": 12.0,
+    "hot": false
+   },
+   "beklenen": 130.83720726636025
+  },
+  {
+   "fonk": "extract_kg",
+   "girdi": {
+    "v_l": 20.0,
+    "p": 0.0,
+    "hot": true
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "extract_kg",
+   "girdi": {
+    "v_l": 500.0,
+    "p": 16.5,
+    "hot": true
+   },
+   "beklenen": 84.55332737390025
+  },
+  {
+   "fonk": "brewhouse_yield",
+   "girdi": {
+    "v_l": 1040,
+    "p": 12.0,
+    "malt_kg": 170,
+    "hot": true
+   },
+   "beklenen": 73.88454057394462
+  },
+  {
+   "fonk": "brewhouse_yield",
+   "girdi": {
+    "v_l": 1040,
+    "p": 12.0,
+    "malt_kg": 170,
+    "hot": false
+   },
+   "beklenen": 76.96306309785898
+  },
+  {
+   "fonk": "brewhouse_yield",
+   "girdi": {
+    "v_l": 20.0,
+    "p": 14.0,
+    "malt_kg": 4.0,
+    "hot": true
+   },
+   "beklenen": 71.01964927617053
+  },
+  {
+   "fonk": "lab_extract_as_is",
+   "girdi": {
+    "fgdb": 81.5,
+    "moisture": 4.3,
+    "fc_diff": 0.0
+   },
+   "beklenen": 77.99549999999999
+  },
+  {
+   "fonk": "lab_extract_as_is",
+   "girdi": {
+    "fgdb": 81.5,
+    "moisture": 4.3,
+    "fc_diff": 1.5
+   },
+   "beklenen": 76.56
+  },
+  {
+   "fonk": "lab_extract_as_is",
+   "girdi": {
+    "fgdb": 80.0,
+    "moisture": 0.0,
+    "fc_diff": 2.0
+   },
+   "beklenen": 78.0
+  },
+  {
+   "fonk": "lab_extract_as_is",
+   "girdi": {
+    "fgdb": 82.0,
+    "moisture": 6.0,
+    "fc_diff": 0.0
+   },
+   "beklenen": 77.08
+  },
+  {
+   "fonk": "first_wort_max_p",
+   "girdi": {
+    "grain_kg": 170,
+    "extract_as_is_pct": 77.99549999999999,
+    "moisture_pct": 4.3,
+    "mash_water_l": 520
+   },
+   "beklenen": 20.09272280967025
+  },
+  {
+   "fonk": "first_wort_max_p",
+   "girdi": {
+    "grain_kg": 5.0,
+    "extract_as_is_pct": 78.0,
+    "moisture_pct": 4.0,
+    "mash_water_l": 15.0
+   },
+   "beklenen": 20.41884816753927
+  },
+  {
+   "fonk": "first_wort_max_p",
+   "girdi": {
+    "grain_kg": 5.0,
+    "extract_as_is_pct": 0.0,
+    "moisture_pct": 4.0,
+    "mash_water_l": 15.0
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "conversion_eff",
+   "girdi": {
+    "fw_measured_p": 19.6,
+    "fw_max_p": 20.09
+   },
+   "beklenen": 0.9756097560975611
+  },
+  {
+   "fonk": "conversion_eff",
+   "girdi": {
+    "fw_measured_p": 20.0,
+    "fw_max_p": 20.0
+   },
+   "beklenen": 1.0
+  },
+  {
+   "fonk": "conversion_eff",
+   "girdi": {
+    "fw_measured_p": 0.0,
+    "fw_max_p": 18.0
+   },
+   "beklenen": 0.0
+  },
+  {
+   "fonk": "malt_from_analysis",
+   "girdi": {
+    "fgdb": 81.5,
+    "moisture": 4.3,
+    "fc_diff": 1.5
+   },
+   "beklenen": {
+    "FGAI": 78.0,
+    "CGDB": 80.0,
+    "CGAI_yield": 76.56,
+    "potansiyel": 1.0354,
+    "potansiyel_BS": 1.0352,
+    "PPG": 35.38
+   }
+  },
+  {
+   "fonk": "malt_from_analysis",
+   "girdi": {
+    "fgdb": 81.0,
+    "moisture": 4.0,
+    "fc_diff": 2.0
+   },
+   "beklenen": {
+    "FGAI": 77.76,
+    "CGDB": 79.0,
+    "CGAI_yield": 75.84,
+    "potansiyel": 1.035,
+    "potansiyel_BS": 1.0349,
+    "PPG": 35.05
+   }
+  },
+  {
+   "fonk": "malt_from_analysis",
+   "girdi": {
+    "fgdb": 80.0,
+    "moisture": 0.0,
+    "fc_diff": 0.0
+   },
+   "beklenen": {
+    "FGAI": 80.0,
+    "CGDB": 80.0,
+    "CGAI_yield": 80.0,
+    "potansiyel": 1.037,
+    "potansiyel_BS": 1.0368,
+    "PPG": 36.97
+   }
+  },
+  {
+   "fonk": "malt_from_analysis",
+   "girdi": {
+    "fgdb": 85.2,
+    "moisture": 5.5,
+    "fc_diff": 1.0
+   },
+   "beklenen": {
+    "FGAI": 80.51,
+    "CGDB": 84.2,
+    "CGAI_yield": 79.57,
+    "potansiyel": 1.0368,
+    "potansiyel_BS": 1.0366,
+    "PPG": 36.77
+   }
+  },
+  {
+   "fonk": "malt_from_analysis",
+   "girdi": {
+    "fgdb": 70.0,
+    "moisture": 6.0,
+    "fc_diff": 3.0
+   },
+   "beklenen": {
+    "FGAI": 65.8,
+    "CGDB": 67.0,
+    "CGAI_yield": 62.98,
+    "potansiyel": 1.0291,
+    "potansiyel_BS": 1.029,
+    "PPG": 29.1
+   }
+  },
+  {
+   "fonk": "ebc_from_lab",
+   "girdi": {
+    "ebc": 3.5
+   },
+   "beklenen": {
+    "EBC": 3.5,
+    "SRM": 1.78,
+    "°L": 1.87
+   }
+  },
+  {
+   "fonk": "ebc_from_lab",
+   "girdi": {
+    "ebc": 0.0
+   },
+   "beklenen": {
+    "EBC": 0.0,
+    "SRM": 0.0,
+    "°L": 0.56
+   }
+  },
+  {
+   "fonk": "ebc_from_lab",
+   "girdi": {
+    "ebc": 25.0
+   },
+   "beklenen": {
+    "EBC": 25.0,
+    "SRM": 12.69,
+    "°L": 9.93
+   }
+  },
+  {
+   "fonk": "ebc_from_lab",
+   "girdi": {
+    "ebc": 150.0
+   },
+   "beklenen": {
+    "EBC": 150.0,
+    "SRM": 76.14,
+    "°L": 56.77
+   }
+  }
+ ]
+}
