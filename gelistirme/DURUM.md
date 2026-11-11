@@ -3,8 +3,8 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 0 Temel
-**Sürüyor:** T0.3 Compose, T0.4 API sözleşmesi, T0.8 Terraform (Sonnet), F1 formül doğrulaması (Fable)
-**Sıradaki iş:** T0.3 Docker Compose (Sonnet) · T0.4 API sözleşmesi iskeleti (Sonnet); ikisi de T0.2'ye bağlıydı, artık başlayabilir
+**Sürüyor:** T0.3 Docker Compose (Sonnet), F1 formül doğrulaması (Fable)
+**Sıradaki iş:** T0.3 bitince T0.7 Kubernetes ve kind (Sonnet) ve T0.9 CI (Sonnet), ardından T0.11 kapı kontrolü (Opus)
 **Paralel başlatılabilir:** F1 formül doğrulaması (Fable)
 
 ## Ortam
@@ -18,7 +18,6 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 - iOS ilk macOS derlemesinde olası sorunlar (T0.6): Swift 6 katı eşzamanlılık, test barındırma (test host), Info.plist ayar adları, simülatör adı. Derleme O3 (macOS CI) ile.
 
-- Tasarım sistemi: koyu tema için yüksek karşıtlık değerleri yok (tokens.json yalnız açık tema için 5 değer veriyor). Web ve iOS şimdilik koyu + karşıtlıkta koyu değerleri kullanıyor. Tasarım sistemine eklenecek.
 
 ## Son kararlar
 
@@ -34,3 +33,6 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - T0.5 Web iskeleti: Vite, React 19, TypeScript strict, token'lardan CSS, Vitest ve Playwright (400 ve 1280 px) (11.11.2026)
 - T0.4 API sözleşmesi: utoipa ile OpenAPI koddan, `/v1/version`, ortak hata şeması, TypeScript tipleri, fark denetimi (11.11.2026)
 - Düzeltme: kök `.gitignore`'daki `src/` her düzeydeki src klasörlerini yok sayıyordu; T0.2 ve T0.5 kaynak kodu depoya girmemişti. Kural `/src/` yapıldı, kaynaklar eklendi (11.11.2026)
+- T0.8 Terraform iskeleti: 7 GCP modülü, dev, test, canlı; validate geçiyor. Açık kararlar: denetim kovasında WORM ve saklama süresi, CMEK kapsamı, yedeğin başka bölgeye kopyası (veri yeri), CI için Workload Identity (11.11.2026)
+- T0.10 Modül CLAUDE.md dosyaları (11.11.2026)
+- T0.12 Koyu tema yüksek karşıtlık token'ları; tasarım sistemi yayını güncellendi (11.11.2026)
