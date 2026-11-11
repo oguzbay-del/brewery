@@ -1,6 +1,6 @@
+@testable import Demleme
 import Testing
 import UIKit
-@testable import Demleme
 
 /// Tests are hosted in the app, so Bundle.main is the app bundle.
 struct TokensTests {
