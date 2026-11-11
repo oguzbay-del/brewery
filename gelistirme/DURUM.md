@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 1 Hesap motoru (Aşama 0 kapandı: ADR-0002)
-**Sıradaki iş:** T1.1–T1.8 bölüm portları (paralel, Sonnet), sonra T1.9, T1.10, T1.11 gRPC, T1.12 Fable incelemesi, T1.13 kapı.
+**Sıradaki iş:** T1.12 Fable incelemesi sürüyor (02–11 ve 01 ayrı raporlar); sonra bulgular, T1.11 gRPC (ortak tarif girdi modeliyle), T1.13 kapı.
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -15,7 +15,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Engeller
 
-- Yok. Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
+- Yok. Not: 01 ve 02 ayrı tarif yapıları tanımlıyor; T1.11'den önce ortak girdi modeli gerekecek. Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
 
 ## Son kararlar
 
@@ -27,7 +27,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Son biten işler (Aşama 1)
 
-T1.0 iş listesi, ADR-0003, parite altyapısı
+T1.0 ADR-0003 ve parite altyapısı · T1.1–T1.10 bölüm portları · T1.14 referanssız spesifikasyon hesapları. Toplam 6764 parite vakası, hepsi eşit.
 
 ## Aşama 0 (kapandı)
 
