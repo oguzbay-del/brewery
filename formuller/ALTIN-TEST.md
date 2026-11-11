@@ -62,4 +62,4 @@ pH sütunları yalnız 12 ve 13 için doldurulur. Diğerlerinde boş kalır.
 - Pay dışındaki her satırın notu var ve formül işi kapanmadan "geçti" denmiyor.
 - 12 ve 13'te MPH ve BW'nin ikisi de yazılı; ölçülen pH'a daha yakın olan motor varsayılanı olur. Ölçüm yoksa varsayılan görüşmedeki su satırıyla seçilir ve "ölçümle doğrulanacak" diye işaretlenir.
 
-Ondan sonra sıradaki plan işi formül ADR'si ve veri modeli API'sidir. Rust motoru bu tablo geçmeden yazılmaz.
+Rust motoru bu tabloyu beklemeden yazılır (Aşama 1); bu tablo geçmeden beta (Aşama 5) açılmaz. Fark çıkan formül hem spesifikasyonda hem motorda düzeltilir.

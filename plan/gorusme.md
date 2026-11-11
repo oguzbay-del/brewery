@@ -1,6 +1,6 @@
 # Görüşme ve Ev MVP kilidi
 
-Bu, planlama listesinin **1. işi**. Altın test (`formuller/ALTIN-TEST.md`) bu dosyadaki karar tablosu dolmadan doldurulmaz. Görüşme ve altın test bitmeden hesap motoru ve ekran kodu ana dala yazılmaz (teknik deneme atılabilir prototiptir).
+Bu, planlama listesinin **1. işi**. Altın test (`formuller/ALTIN-TEST.md`) bu dosyadaki karar tablosu dolmadan doldurulmaz. Görüşme ve altın test Aşama 5'in (Ev MVP beta) kapısıdır; geliştirme bunları beklemeden sürer, sonuçlar gelince kapsam ve formüller düzeltilir.
 
 Görüşmeleri yapan kişi notu buraya işler. Bu dosyada görüşme yapılmış gibi sonuç yoktur.
 

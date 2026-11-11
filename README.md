@@ -1,6 +1,6 @@
 # Demleme
 
-Ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışacak tarif ve üretim uygulamasının plan ve tasarım çalışması. Uygulama kodu henüz yazılmadı.
+Ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışacak tarif ve üretim uygulamasının plan ve tasarım çalışması. Geliştirme sürüyor; durum için `gelistirme/DURUM.md`.
 
 | Klasör | İçerik |
 | --- | --- |
@@ -10,6 +10,7 @@ Ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çal�
 | `formuller/` | Hesap motoru formül spesifikasyonları ve Python test vektörleri |
 | `erisilebilirlik/` | Erişilebilirlik incelemeleri (WCAG 2.2 AA) |
 | `karsilastirma/` | BeerSmith ve Brewtarget hesaplarının karşılaştırması; FoamByte ile özellik, hesaplayıcı, SSS ve site karşılaştırmaları (`foambyte-*.md`) |
+| `gelistirme/` | Geliştirme takibi: `ISLER.md` (iş listesi, hangi işi hangi model yapar, durum), `DURUM.md` (neredeyiz, sıradaki iş) |
 | `araclar/` | `tutarlilik.py`: plan ile konsept arasında ekran sayıları, sekmeler, mod haritası, bağlantılar ve formül göndermeleri; test betiklerini çalıştırır, "doğrulanacak" sayar (`python3 -I araclar/tutarlilik.py`) |
 | `CLAUDE.md` | Claude ile çalışırken uyulan kurallar |
 

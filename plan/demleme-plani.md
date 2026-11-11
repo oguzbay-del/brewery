@@ -300,6 +300,13 @@ Amaç: Claude yazdığı her şeyi kendi ortamında çalıştırıp doğrulayabi
 - iOS uygulaması ince: iş kuralı sunucuda, Swift tarafında ekran ve sistem entegrasyonu kalır; cihaz testine kalan yüzey küçük tutulur.
 - Her ana dal birleştirmesinden önce: derleme, tip, lint, testler, formül paritesi, API sözleşme farkı, yerel uçtan uca test ve tutarlılık betiği.
 
+**Takip ve devam etme**
+
+- İşler depoda `gelistirme/ISLER.md`'de: her işin tanımı, bitti ölçütü, bağımlılığı, kimde olduğu (Claude veya ürün sahibi), hangi modelle yapılacağı ve durumu. İş bitince "bitti" ve commit numarası yazılır.
+- `gelistirme/DURUM.md` bir sayfalık özet: aşama, sıradaki iş, engeller, son kararlar. Her oturum yalnız bunu okuyarak başlar.
+- Model dağılımı: Opus karar, tasarım ve inceleme; Sonnet kodun yazımı ve testleri; Haiku mekanik işler; Fable yalnız kapılarda bağımsız doğrulama. Ana oturum büyük dosya okumaz, alt ajanlara net iş tarifi verir.
+- Her aşamaya yeni oturum açılır; "devam" denince sıradaki iş yapılır (CLAUDE.md'deki yordam).
+
 ### Google Cloud karşılıkları
 
 | Bileşen | Google Cloud | Taşınırken |
@@ -1087,7 +1094,7 @@ Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bul
 
 &#91;embedded content: yol haritası · 3 aşama, 2 kapı\]
 
-Temel aşama altın test seti geçince Ev modu başlar; beta (20–50 ev biracısı) tamamlanınca yayın ve ardından İşletme modu gelir. Tarih henüz belirlenmedi; ekip ve bütçe netleşince eklenecek.
+Geliştirme 11 Kasım 2026'da başladı; aşamalar ve işler depoda gelistirme/ISLER.md'de (Temel, hesap motoru, çekirdek API, web, iOS, Ev MVP beta, İşletme). Görüşmeler ve altın test kodun değil betanın kapısıdır; beta (20–50 ev biracısı) tamamlanınca yayın ve ardından İşletme modu gelir. Tarih henüz belirlenmedi; ekip ve bütçe netleşince eklenecek.
 
 Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye ekipman kalibrasyonu, otomatik uyarılar, tarif karşılaştırma, geriye planlama, dekoksiyon aracı, kalori, ekstrakt araçları, parti fotoğrafı, favoriler ve şişe başına maliyet; İşletme modu çekirdeğine çoklu kullanıcı ve roller, lota özel hammadde, spesifikasyon ve serbest bırakma, CIP kaydı, verim analizi, maya jenerasyon takibi.
 
@@ -1101,7 +1108,7 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 - [ ] Formül kararlarının karar kaydına (ADR) yazılması; hassasiyet ve yuvarlama kuralları
 - [ ] Malzeme veritabanı kaynağı (üretici teknik föyleri, ABD ve İngiltere'de satılan ürünler öncelikli) ve güncelleme süreci
 - [ ] Veri modeli ve API; kayıtta sürüm kontrolü
-- [ ] Teknik deneme: Rust motorun sunucudaki yanıt süresi (tarif düzenlerken bekleme hissedilmemeli), demleme paketi ve ölçüm kuyruğu, Live Activity ve arka planda sayaç, Bluetooth (Tilt), VisionKit tarama. Atılabilir prototiptir, ana dala girmez; görüşme ve altın test beklenirken yapılabilir
+- [ ] Teknik deneme: Rust motorun sunucudaki yanıt süresi (tarif düzenlerken bekleme hissedilmemeli), demleme paketi ve ölçüm kuyruğu, Live Activity ve arka planda sayaç, Bluetooth (Tilt), VisionKit tarama. Aşama 0 ve 1 içinde ölçülür (gelistirme/ISLER.md)
 - [ ] İçe aktarma: BeerXML, BeerJSON, `.bsmx`, Brewfather ve Brewer's Friend formatlarının çözümlenmesi; örnek dosyalar
 - [ ] Tasarım sistemi, tıklanabilir prototip, kullanıcı testi; erişilebilirlik; TR/EN yerelleştirme
 - [ ] Ürün adı ve marka araştırması, alan adı
