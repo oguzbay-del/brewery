@@ -1,3 +1,448 @@
 //! Section 10: manual-entry fermentation, extract tools, no-chill (`formuller/10-elle-giris-ekstrakt-nochill.md`).
 //!
-//! Units follow the specification of each function; see the section file.
+//! Units follow the specification of each function; see the section file. Metric
+//! throughout: °C, L, g, kg, minutes, hours; gravity is plain specific gravity (1.050).
+//! Gravity thresholds are compared in integer units via [`gravity_units`].
+//!
+//! Every function mirrors `formuller/testler/10_elle_ekstrakt_nochill_tv.py` (the parity
+//! reference). Tinseth utilisation and the temperature factor are the section 02
+//! functions ([`hops::tinseth_utilization`], [`hops::temperature_factor`]).
+
+use crate::hops;
+use crate::units::{self, gravity_units, round_py};
+
+/// Default lag-phase length in hours (spec §1.2) [to be verified].
+pub const LAG_H: f64 = 12.0;
+/// Uncertainty (±) of the prior FG estimate (spec §1.3) [to be verified].
+pub const SIGMA_FG: f64 = 0.003;
+/// End-of-fermentation margin above FG (same as 07 §1.5): 0.0005 SG.
+pub const EPS: f64 = 0.0005;
+/// [`EPS`] in gravity units.
+pub const EPS_U: i64 = 50;
+/// Stall rule: gravity difference of at most 0.001 (100 units), spec §1.5.
+pub const STALL_U: i64 = 100;
+/// "Looks finished": last SG at most FG + 0.004 (400 units), spec §1.5.
+pub const NEAR_U: i64 = 400;
+/// Late-reading weight: `SG − FG < 0.003` (300 units) is weighted `(SG − FG) / 0.003`.
+pub const W_U: i64 = 300;
+
+/// Pounds per kilogram.
+pub const LB_PER_KG: f64 = 2.204_622_62;
+/// US gallons per litre.
+pub const GAL_PER_L: f64 = 0.264_172_052;
+/// PPG to points per (kg/L): `LB_PER_KG / GAL_PER_L` ≈ 8.3454 (spec §2.1).
+pub const PPG_TO_PKL: f64 = LB_PER_KG / GAL_PER_L;
+
+/// Reference cube cooling time constant for 20 L, hours (spec §3.2) [to be verified].
+pub const TAU_20L_H: f64 = 5.0;
+/// Temperatures below this (°C) contribute nothing to no-chill isomerisation (spec §3.2).
+pub const TSTOP_C: f64 = 40.0;
+
+/// Upper bound on integration steps in [`t_eq_min`]; guards against an ambient
+/// temperature at or above the stop temperature, where the reference would never end.
+const T_EQ_MAX_STEPS: usize = 100_000_000;
+
+/// Errors where the Python reference raises.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ManualError {
+    /// `ValueError`: invalid volumes in [`partial_boil`].
+    InvalidVolume,
+    /// `IndexError`: [`few_forecast`] needs at least one reading.
+    NoReadings,
+    /// `OverflowError`: forecast range is unbounded (a fit gave no finite end time).
+    Unbounded,
+}
+
+/// Extract kind (spec §2.1).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExtractKind {
+    /// Liquid malt extract.
+    Lme,
+    /// Dry malt extract.
+    Dme,
+    /// Honey.
+    Honey,
+}
+
+impl ExtractKind {
+    /// Typical yield in percent (spec §2.1) [to be verified].
+    #[must_use]
+    pub fn yield_pct(self) -> f64 {
+        match self {
+            Self::Lme => 78.0,
+            Self::Dme => 95.0,
+            Self::Honey => 75.0,
+        }
+    }
+
+    /// Mass density in g/mL (DME: loose bulk density), spec §2.2.
+    #[must_use]
+    pub fn density_g_per_ml(self) -> f64 {
+        match self {
+            Self::Lme | Self::Honey => 1.42,
+            Self::Dme => 0.60,
+        }
+    }
+}
+
+/// Least-squares weight of a reading (spec §1.3): 1 when `SG − FG ≥ 0.003`, linearly
+/// less below, computed in gravity units.
+#[must_use]
+#[allow(clippy::cast_precision_loss)]
+pub fn weight(sg: f64, fg: f64) -> f64 {
+    ((gravity_units(sg) - gravity_units(fg)) as f64 / W_U as f64).min(1.0)
+}
+
+/// Decay rate fit with FG fixed and OG known at t = 0 (spec §1.3).
+///
+/// `y = ln((SG−FG)/(OG−FG)) = −k (t − lag)`, weighted least squares through the origin:
+/// `k = −Σ w·x·y / Σ w·x²`. `readings` are `(hours, SG)`; points with `t ≤ lag` or
+/// `SG − FG ≤ 0.0005` are skipped. Returns `(k per hour, per-reading k)`, or `None`
+/// when no reading is usable.
+#[must_use]
+pub fn k_fit(
+    readings: &[(f64, f64)],
+    og: f64,
+    fg: f64,
+    lag: f64,
+    weighted: bool,
+) -> Option<(f64, Vec<f64>)> {
+    let (mut xs, mut ys, mut ws) = (Vec::new(), Vec::new(), Vec::new());
+    for &(t, sg) in readings {
+        let x = t - lag;
+        if x <= 0.0 || gravity_units(sg) - gravity_units(fg) <= EPS_U {
+            continue;
+        }
+        xs.push(x);
+        ys.push(((sg - fg) / (og - fg)).ln());
+        ws.push(if weighted { weight(sg, fg) } else { 1.0 });
+    }
+    if xs.is_empty() {
+        return None;
+    }
+    let sxx: f64 = ws.iter().zip(&xs).map(|(w, x)| w * x * x).sum();
+    let swxy: f64 = ws
+        .iter()
+        .zip(&xs)
+        .zip(&ys)
+        .map(|((w, x), y)| w * x * y)
+        .sum();
+    let k = -swxy / sxx;
+    let k_each = xs.iter().zip(&ys).map(|(x, y)| -y / x).collect();
+    Some((k, k_each))
+}
+
+/// Hour at which the gravity is within [`EPS`] of FG: `lag + ln((OG−FG)/ε)/k` (spec §1.3).
+#[must_use]
+pub fn t_end(og: f64, fg: f64, k: f64, lag: f64) -> f64 {
+    lag + ((og - fg) / EPS).ln() / k
+}
+
+/// Why [`few_forecast`] shows no estimate (spec §1.4).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Insufficient {
+    /// Fewer than two readings after the lag phase.
+    NeedTwoReadings,
+    /// Less than 30 % of the expected drop is complete.
+    DropBelow30Percent,
+    /// The fitted decay rate is not positive.
+    NonPositiveK,
+}
+
+/// Result of [`few_forecast`].
+#[derive(Debug, Clone, PartialEq)]
+pub enum FewForecast {
+    /// Stall rule, close to FG: looks finished; carries the measured FG.
+    LooksFinished {
+        /// Last measured SG.
+        fg_measured: f64,
+    },
+    /// Stall rule, far above FG: fermentation may be stuck.
+    PossiblyStuck {
+        /// Last measured SG.
+        sg: f64,
+        /// Expected FG (prior).
+        fg_expected: f64,
+    },
+    /// No estimate possible yet.
+    Insufficient(Insufficient),
+    /// Within 0.0005 of the target; re-measure after 48 h to confirm a stall.
+    TargetReached,
+    /// Estimate (spec §1.6).
+    Estimate {
+        /// Decay rate per hour, rounded to 4 decimals.
+        k_per_hour: f64,
+        /// Finish hour for the prior FG, rounded to 1 decimal.
+        finish_hour: f64,
+        /// Finish range in whole days since pitching (floor of earliest, ceil of latest).
+        range_days: (i64, i64),
+        /// Days remaining from the last reading (floor, ceil), at least 0.
+        remaining_days: (i64, i64),
+        /// True when per-reading rates differ by more than a factor of 2.
+        inconsistent: bool,
+    },
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn floor_i(x: f64) -> i64 {
+    x.floor() as i64
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn ceil_i(x: f64) -> i64 {
+    x.ceil() as i64
+}
+
+/// Fermentation forecast from few manual readings (spec §1.3–§1.6).
+///
+/// `readings` are `(hours since pitching, SG)`, any order; `og` and `fg_prior` are SG;
+/// `lag` and `sigma` default to [`LAG_H`] and [`SIGMA_FG`].
+///
+/// # Errors
+/// [`ManualError::NoReadings`] for an empty list; [`ManualError::Unbounded`] when no
+/// finite upper end time exists.
+pub fn few_forecast(
+    readings: &[(f64, f64)],
+    og: f64,
+    fg_prior: f64,
+    lag: f64,
+    sigma: f64,
+) -> Result<FewForecast, ManualError> {
+    let mut readings = readings.to_vec();
+    readings.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.total_cmp(&b.1)));
+    let &(t_now, sg_now) = readings.last().ok_or(ManualError::NoReadings)?;
+    let post: Vec<(f64, f64)> = readings.iter().copied().filter(|&(t, _)| t > lag).collect();
+    // Stall rule (§1.5): last two readings ≥ 48 h apart and ≤ 0.001 difference.
+    if readings.len() >= 2 {
+        let (t1, g1) = readings[readings.len() - 2];
+        let (t2, g2) = readings[readings.len() - 1];
+        if t2 - t1 >= 48.0 && (gravity_units(g1) - gravity_units(g2)).abs() <= STALL_U {
+            return Ok(if gravity_units(g2) <= gravity_units(fg_prior) + NEAR_U {
+                FewForecast::LooksFinished { fg_measured: g2 }
+            } else {
+                FewForecast::PossiblyStuck {
+                    sg: g2,
+                    fg_expected: fg_prior,
+                }
+            });
+        }
+    }
+    if post.len() < 2 {
+        return Ok(FewForecast::Insufficient(Insufficient::NeedTwoReadings));
+    }
+    if 10 * (gravity_units(og) - gravity_units(sg_now))
+        < 3 * (gravity_units(og) - gravity_units(fg_prior))
+    {
+        return Ok(FewForecast::Insufficient(Insufficient::DropBelow30Percent));
+    }
+    if gravity_units(sg_now) <= gravity_units(fg_prior) + EPS_U {
+        return Ok(FewForecast::TargetReached);
+    }
+    let Some((k, k_each)) = k_fit(&post, og, fg_prior, lag, true).filter(|(k, _)| *k > 0.0) else {
+        return Ok(FewForecast::Insufficient(Insufficient::NonPositiveK));
+    };
+    let ends: Vec<f64> = [fg_prior - sigma, fg_prior, fg_prior + sigma]
+        .iter()
+        .map(|&fg| {
+            if gravity_units(sg_now) - gravity_units(fg) <= EPS_U {
+                return t_now; // this FG is already reached
+            }
+            match k_fit(&post, og, fg, lag, true) {
+                Some((kk, _)) if kk > 0.0 => t_end(og, fg, kk, lag),
+                _ => f64::INFINITY,
+            }
+        })
+        .collect();
+    let k_min = k_each.iter().copied().fold(f64::INFINITY, f64::min);
+    let k_max = k_each.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    let inconsistent = if k_min > 0.0 {
+        k_each.len() >= 2 && k_max / k_min > 2.0 + units::TOL
+    } else {
+        true
+    };
+    let lo = ends.iter().copied().fold(f64::INFINITY, f64::min);
+    let hi = ends.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    if !lo.is_finite() || !hi.is_finite() {
+        return Err(ManualError::Unbounded);
+    }
+    Ok(FewForecast::Estimate {
+        k_per_hour: round_py(k, 4),
+        finish_hour: round_py(ends[1], 1),
+        range_days: (floor_i(lo / 24.0), ceil_i(hi / 24.0)),
+        remaining_days: (
+            floor_i(((lo - t_now) / 24.0).max(0.0)),
+            ceil_i((hi - t_now) / 24.0),
+        ),
+        inconsistent,
+    })
+}
+
+/// PPG of an extract from its yield: `yield% · 46 / 100` (spec §2.1).
+#[must_use]
+pub fn ppg(yield_pct: f64) -> f64 {
+    yield_pct * 46.0 / 100.0
+}
+
+/// Points given by 1 kg in 1 L, from yield percent (spec §2.1): PPG × 8.3454.
+#[must_use]
+pub fn points_kg_l(yield_pct: f64) -> f64 {
+    ppg(yield_pct) * PPG_TO_PKL
+}
+
+/// Grams to millilitres for an extract kind (spec §2.2).
+#[must_use]
+pub fn g_to_ml(kind: ExtractKind, g: f64) -> f64 {
+    g / kind.density_g_per_ml()
+}
+
+/// Millilitres to grams for an extract kind (spec §2.2).
+#[must_use]
+pub fn ml_to_g(kind: ExtractKind, ml: f64) -> f64 {
+    ml * kind.density_g_per_ml()
+}
+
+/// Amount of `kind_to` giving the same points as `g` grams of `kind_from`:
+/// `m2 = m1 · yield1 / yield2` (spec §2.3). Grams in, grams out.
+#[must_use]
+pub fn swap(kind_from: ExtractKind, kind_to: ExtractKind, g: f64) -> f64 {
+    g * kind_from.yield_pct() / kind_to.yield_pct()
+}
+
+/// Extract mass in grams for a target OG in `v_final_l` litres, extract efficiency taken
+/// as 100 % (spec §2.4).
+#[must_use]
+pub fn extract_for_og(kind: ExtractKind, og: f64, v_final_l: f64) -> f64 {
+    let pts = (og - 1.0) * 1000.0;
+    pts * v_final_l / points_kg_l(kind.yield_pct()) * 1000.0
+}
+
+/// Partial boil result (spec §2.5).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PartialBoil {
+    /// Kettle gravity (SG), rounded to 4 decimals.
+    pub kettle_sg: f64,
+    /// Top-up water in litres, rounded to 2 decimals.
+    pub topup_l: f64,
+}
+
+/// Partial boil: kettle gravity and top-up water (spec §2.5).
+///
+/// `og_final` SG after topping up, `v_final` litres in the fermenter, `v_kettle_post`
+/// litres in the kettle at end of boil, `loss` litres left in the kettle (trub, hop
+/// absorption). Volume sent to the fermenter is `v_kettle_post − loss`.
+///
+/// # Errors
+/// [`ManualError::InvalidVolume`] unless `0 < v_out ≤ v_final`.
+pub fn partial_boil(
+    og_final: f64,
+    v_final: f64,
+    v_kettle_post: f64,
+    loss: f64,
+) -> Result<PartialBoil, ManualError> {
+    let v_out = v_kettle_post - loss;
+    if v_out <= 0.0 || v_final < v_out {
+        return Err(ManualError::InvalidVolume);
+    }
+    let pts_k = (og_final - 1.0) * 1000.0 * v_final / v_out;
+    Ok(PartialBoil {
+        kettle_sg: round_py(1.0 + pts_k / 1000.0, 4),
+        topup_l: round_py(v_final - v_out, 2),
+    })
+}
+
+/// IBU of a partial boil (spec §2.5): Tinseth utilisation at the kettle gravity, mg/L in
+/// the final volume. `hop_list` entries are `(grams, alpha-acid fraction, minutes)`;
+/// `v_final` litres.
+#[must_use]
+pub fn partial_boil_ibu(hop_list: &[(f64, f64, f64)], sg_kettle: f64, v_final: f64) -> f64 {
+    hop_list
+        .iter()
+        .map(|&(g, aa, t)| hops::tinseth_utilization(sg_kettle, t) * aa * g * 1000.0 / v_final)
+        .sum()
+}
+
+/// Temperature (°C) of the water to add so the mix reaches `t_target` (spec §2.6).
+/// Volumes in litres, temperatures in °C; `c_ratio` is the wort-to-water heat capacity
+/// ratio (≈ 1).
+#[must_use]
+pub fn topoff_temp(v_wort: f64, t_wort: f64, v_water: f64, t_target: f64, c_ratio: f64) -> f64 {
+    (t_target * (v_wort * c_ratio + v_water) - v_wort * c_ratio * t_wort) / v_water
+}
+
+/// Cooling time constant (hours) of a cube of `v_l` litres, scaled from the 20 L value
+/// `tau20` by the cube root of volume (spec §3.2).
+#[must_use]
+pub fn tau_h(v_l: f64, tau20: f64) -> f64 {
+    tau20 * (v_l / 20.0).powf(1.0 / 3.0)
+}
+
+/// Equivalent boil minutes of a no-chill cube (spec §3.2).
+///
+/// Cooling `T(t) = T_amb + (T0 − T_amb) e^(−t/τ)`; result is `∫ Ftemp(T) dt` as a left
+/// Riemann sum with step `dt` minutes, stopping once `T < t_stop` (°C). `tau_hours`
+/// is the time constant in hours.
+///
+/// The reference loops until `T < t_stop`; if `t_amb ≥ t_stop` it never ends. Here the
+/// loop is capped at 10^8 steps in that case.
+#[must_use]
+pub fn t_eq_min(t0: f64, t_amb: f64, tau_hours: f64, dt: f64, t_stop: f64) -> f64 {
+    let tau = tau_hours * 60.0;
+    let (mut t, mut s) = (0.0_f64, 0.0_f64);
+    for _ in 0..T_EQ_MAX_STEPS {
+        let temp = t_amb + (t0 - t_amb) * (-t / tau).exp();
+        if temp < t_stop {
+            break;
+        }
+        s += hops::temperature_factor(temp) * dt;
+        t += dt;
+    }
+    s
+}
+
+/// No-chill extra-time mode (spec §3.1–§3.2).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum NochillMode {
+    /// Rule of thumb: every addition gets +20 minutes.
+    Rule,
+    /// Model: plus the equivalent minutes from [`t_eq_min`] (dt 0.5 min, stop 40 °C).
+    Model {
+        /// Wort temperature at the start of the cube stand, °C.
+        t0: f64,
+        /// Ambient temperature, °C.
+        t_amb: f64,
+        /// Cube volume in litres; `None` or 0 uses the batch volume.
+        v_cube: Option<f64>,
+    },
+}
+
+/// No-chill IBU: `(base IBU, no-chill IBU, extra minutes)`, each rounded to 1 decimal
+/// (spec §3).
+///
+/// `hop_list` entries are `(grams, alpha-acid fraction, minutes)`, `sg` the boil
+/// gravity, `v` litres.
+#[must_use]
+pub fn nochill_ibu(
+    hop_list: &[(f64, f64, f64)],
+    sg: f64,
+    v: f64,
+    mode: NochillMode,
+) -> (f64, f64, f64) {
+    let extra = match mode {
+        NochillMode::Rule => 20.0,
+        NochillMode::Model { t0, t_amb, v_cube } => {
+            let vc = v_cube.filter(|x| *x != 0.0).unwrap_or(v);
+            t_eq_min(t0, t_amb, tau_h(vc, TAU_20L_H), 0.5, TSTOP_C)
+        }
+    };
+    let ibu = |add: f64| -> f64 {
+        hop_list
+            .iter()
+            .map(|&(g, aa, t)| hops::tinseth_utilization(sg, t + add) * aa * g * 1000.0 / v)
+            .sum()
+    };
+    (
+        round_py(ibu(0.0), 1),
+        round_py(ibu(extra), 1),
+        round_py(extra, 1),
+    )
+}
