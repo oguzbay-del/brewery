@@ -18,7 +18,7 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 2. Bağlı olduğu işler bitmiş, kimi `Claude`, durumu `bekliyor` olan ilk işi al. Kullanıcı başka bir iş ya da sayı söylediyse ona göre yap (ör. "devam, 3 iş").
 3. İşi ISLER.md'deki **Model** sütunundaki modelle yap: Opus işini ana oturumda; Sonnet, Haiku ve Fable işini Agent aracıyla alt ajana ver (`model` parametresiyle). Alt ajana okunacak dosyaları, bitti ölçütünü ve "testleri çalıştır, en fazla 20 satır rapor ver" talimatını yaz. Birbirine bağlı olmayan işler paralel alt ajanlarla yürüyebilir.
 4. Bitti ölçütünü kendin doğrula (testleri çalıştır, farkı incele). Geçmezse işi alt ajana geri gönder ya da düzelt.
-5. ISLER.md'de durumu `bitti (tarih, commit)` yap; DURUM.md'de sıradaki işi, engelleri ve "Son biten işler"i güncelle; commit at ve `main`'e gönder.
+5. ISLER.md'de durumu `bitti (tarih)` yap; DURUM.md'de sıradaki işi, engelleri ve "Son biten işler"i güncelle; commit mesajını iş numarasıyla başlat (`T0.2: ...`), commit at ve `main`'e gönder.
 6. Kullanıcıya en fazla beş satırla bildir: ne bitti, test sonucu, sıradaki iş. Kullanıcıdan karar gerekirse sor ve dur.
 7. Aşama kapısı kapanınca kullanıcıya yeni oturum açmasını öner.
 

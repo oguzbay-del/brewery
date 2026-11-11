@@ -2,7 +2,7 @@
 
 Geliştirmenin tek takip yeri. Durum değişince bu dosya ve `DURUM.md` aynı commit'te güncellenir.
 
-**Durum:** `bekliyor` · `sürüyor` · `bitti (tarih, commit)` · `engelli (neden)`
+**Durum:** `bekliyor` · `sürüyor` · `bitti (tarih)` · `engelli (neden)`. İşin commit'i mesajı iş numarasıyla başlayan commit'tir (`git log --grep '^T0.2:'`).
 **Kim:** `Claude` · `Oğuz` (ürün sahibi)
 **Model:** işi kimin yaptığı. Opus işi ana oturumda yapılır; diğerleri alt ajana (Agent aracı) verilir.
 
@@ -23,8 +23,8 @@ Kapı: bütün sistem yerelde tek komutla ayağa kalkıyor, CI yeşil, kind üze
 
 | İş | Tanım | Bitti ölçütü | Bağlı | Kim | Model | Durum |
 |---|---|---|---|---|---|---|
-| T0.1 | Depo düzeni ve ADR-0001: klasörler (`sunucu/` Rust çalışma alanı, `web/`, `ios/`, `sozlesme/`, `altyapi/`), adlandırma, dal ve commit kuralları | `adr/0001-depo-duzeni.md` yazıldı, klasörler ve README'leri var | – | Claude | Opus | bekliyor |
-| T0.2 | Rust çalışma alanı: `motor` (kütüphane), `motor-servis` (gRPC), `api`, `isler`, `alim`, `ortak`; her serviste sağlık ucu | `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test` geçiyor | T0.1 | Claude | Sonnet | bekliyor |
+| T0.1 | Depo düzeni ve ADR-0001: klasörler (`sunucu/` Rust çalışma alanı, `web/`, `ios/`, `sozlesme/`, `altyapi/`), adlandırma, dal ve commit kuralları | `adr/0001-depo-duzeni.md` yazıldı, klasörler ve README'leri var | – | Claude | Opus | bitti (11.11.2026) |
+| T0.2 | Rust çalışma alanı (`sunucu/`): `engine` (kütüphane), `engine-service` (gRPC), `api`, `worker`, `ingest`, `common`; her serviste sağlık ucu; `rust-toolchain.toml` | `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test` geçiyor | T0.1 | Claude | Sonnet | bekliyor |
 | T0.3 | Docker Compose: PostgreSQL, Redis, NATS, API, hesap motoru; sahte GitHub, e-posta ve APNs | `make up` ile hepsi ayağa kalkıyor, sağlık uçları 200 | T0.2 | Claude | Sonnet | bekliyor |
 | T0.4 | API sözleşmesi iskeleti: OpenAPI koddan üretiliyor; Swift ve TypeScript istemci üretimi; gRPC proto | Üretim betiği çalışıyor, fark kontrolü CI'da | T0.2 | Claude | Sonnet | bekliyor |
 | T0.5 | Web iskeleti: React + TypeScript (strict), tasarım token'ları `tokens.json`'dan CSS'e; Playwright duman testi | `npm test` ve Playwright geçiyor | T0.1 | Claude | Sonnet | bekliyor |
