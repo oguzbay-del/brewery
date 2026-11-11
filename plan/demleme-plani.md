@@ -236,7 +236,7 @@ Etiketler: konu (hesap, abonelik, tarif ve hesap, cihaz, diğer), mod (ev, işle
 | Arama | Tarif ve malzeme arama | Başta PostgreSQL tam metin araması; ayrı arama motoru gerekmez |
 
 - **Yedek:** sürekli yedek ve noktaya geri dönüş (PITR), başka bölgeye kopya, ayda bir geri yükleme testi. Hedef: veri kaybı en çok 5 dk, kesinti en çok 1 saat \[doğrulanacak\].
-- **Veri yeri:** çalışma alanı açılırken bölge seçilir (ABD veya İngiltere); verisi o bölgede kalır. AB bölgesi sonra. İstisna: destek talebinin metni ABD'deki GitHub'da tutulur; bu, bölge seçim ekranında ve gizlilik politikasında açıkça yazılır. İngiltere çalışma alanları için bunun kabul edilebilir olup olmadığı hukuki karar (açık).
+- **Veri yeri:** çalışma alanı açılırken bölge seçilir (ABD veya İngiltere); verisi o bölgede kalır. AB bölgesi sonra. İstisna: destek talebinin metni ABD'deki GitHub'da tutulur; bu, bölge seçim ekranında ve gizlilik politikasında açıkça yazılır. Karar: İngiltere çalışma alanları için de kabul edildi (11 Kasım 2026); GitHub'ın veri işleme sözleşmesi ve İngiltere aktarım eki \\\[doğrulanacak\\\].
 
 ### Cihazda tutulan veri
 
