@@ -135,7 +135,7 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 
 ### API ve istemci iletişimi
 
-- **Canlı güncelleme:** açık ekran sunucudan olay akışı alır (Server-Sent Events). Fermantasyon grafiği, bildirim kutusu sayısı, eşzamanlı düzenleme kilidi ve tank durumu yenilemeden güncellenir. Sunucuda olaylar podlar arasında PostgreSQL LISTEN/NOTIFY ile dağıtılır; yük artınca kuyruğa (NATS) geçilir. Uygulama arka plandayken push bildirimi kullanılır.
+- **Canlı güncelleme:** açık ekran sunucudan olay akışı alır (Server-Sent Events). Fermantasyon grafiği, bildirim kutusu sayısı, eşzamanlı düzenleme kilidi ve tank durumu yenilemeden güncellenir. Sunucuda olaylar podlar arasında NATS ile dağıtılır (ilk sürümden). Uygulama arka plandayken push bildirimi kullanılır.
 - **Sürüm uyumu:** App Store'da eski uygulama sürümleri aylarca kullanılır. API sürümlüdür (/v1); geriye uyumsuz değişiklik yeni sürümle gelir, eski sürüm en az 6 ay açık kalır \[doğrulanacak\]. Var olan alanın anlamı değiştirilmez, yalnız yeni alan eklenir. Sunucu desteklenen en düşük uygulama sürümünü bildirir; altındaki uygulama "güncelle" ekranı gösterir. OpenAPI fark kontrolü her derlemede çalışır.
 - **Tekrar güvenliği:** kayıt oluşturan her istek istemcinin ürettiği istek anahtarını (idempotency key) taşır. Bağlantı kopup yeniden gönderilen istek ikinci kayıt oluşturmaz. Demleme günü ölçüm kuyruğundaki UUID kuralının bütün API'ye yayılmışı.
 - **Dış olaylar:** cihaz webhook'ları, App Store sunucu bildirimleri (abonelik yenileme, iade), web ödeme sağlayıcısının webhook'ları ve GitHub (destek talepleri) aynı alım servisinden girer: imza doğrulanır, kuyruğa yazılır, aynı olay iki kez işlenmez. Abonelik ve yetki durumu yalnız sunucuda tutulur.
@@ -232,7 +232,7 @@ Etiketler: konu (hesap, abonelik, tarif ve hesap, cihaz, diğer), mod (ev, işle
 | Ölçümler (aynı PostgreSQL) | Cihaz ve elle ölçümler | Zamana göre bölümlü tablo; eski bölümler özetlenip arşive taşınır. Ayrı zaman serisi veritabanı ilk sürümde yok |
 | Redis (yönetilen) | Hesap sonucu önbelleği, oturum, hız sınırı sayaçları | Kaybolursa veri kaybı olmaz, yalnız yavaşlar |
 | Nesne deposu (S3 uyumlu) | Taranan kağıtlar, fotoğraflar, PDF ve dışa aktarmalar | Yükleme ve indirme kısa süreli imzalı bağlantıyla doğrudan; İşletme denetim arşivi için değiştirilemez (WORM) saklama |
-| Kuyruk | Bildirim, içe aktarma, rapor işleri; cihaz olayları | Başta PostgreSQL üzerinde outbox tablosu ve iş kuyruğu (ek altyapı yok); yük artınca NATS JetStream |
+| Kuyruk | Bildirim, içe aktarma, rapor işleri; cihaz olayları | İlk sürümden NATS JetStream; olaylar kayıtla aynı işlemde PostgreSQL'deki outbox tablosuna yazılır, oradan NATS'a aktarılır (kayıt ve olay birbirinden kopmaz) |
 | Arama | Tarif ve malzeme arama | Başta PostgreSQL tam metin araması; ayrı arama motoru gerekmez |
 
 - **Yedek:** sürekli yedek ve noktaya geri dönüş (PITR), başka bölgeye kopya, ayda bir geri yükleme testi. Hedef: veri kaybı en çok 5 dk, kesinti en çok 1 saat \[doğrulanacak\].
@@ -275,6 +275,30 @@ Hedef: aynı sistem AWS, Azure veya Google Cloud'a kod değişmeden kurulabilsin
 - **Birleştirme kuralı:** her değişiklik derleme, tip kontrolü, lint, birim testleri, formül test vektörleri ve API sözleşme testinden geçmeden ana dala girmez. Claude'un yazdığı kod da insanın yazdığı gibi bu kapıdan geçer.
 - **İlk bulut Google Cloud.** Karşılıklar aşağıdaki tabloda.
 - **Kimlik:** Apple ve Google ile giriş, doğrulama çekirdek API'de; ayrı kimlik servisi yok (Kimlik ve giriş).
+- **Geçici mimari yok:** plandaki yapı ilk sürümden kurulur: Kubernetes (GKE), hesap motoru ayrı servis (gRPC), Redis, NATS JetStream, OIDC ters vekili, GitOps. "Önce basit, sonra taşırız" yolu seçilmez.
+- **Hesap motoru ayrı servis kalır.** Kod aynı zamanda ayrı bir Rust kütüphanesidir; testleri servis olmadan da çalışır.
+- **iOS doğrulaması:** macOS CI ve gerçek cihaz testi ürün sahibi tarafından yapılır (imzalama ve App Store gönderimi dahil).
+
+### Geliştirme düzeni (kodu Claude yazar)
+
+Amaç: Claude yazdığı her şeyi kendi ortamında çalıştırıp doğrulayabilsin; doğrulayamadığı yer en aza insin ve kimde olduğu belli olsun.
+
+| Alan | Claude nasıl doğrular | İnsan gereken yer |
+| --- | --- | --- |
+| Rust sunucu ve hesap motoru | Derleme, birim ve özellik testleri, sqlx sorgu denetimi; formül paritesi: Python referansıyla Rust motoru aynı test vektörlerinde aynı sonucu vermezse CI durur | – |
+| Bütün sistem | Tek komutla yerelde ayağa kalkar (Docker Compose: API, hesap motoru, PostgreSQL, Redis, NATS, sahte GitHub, sahte e-posta, sahte APNs); uçtan uca testler burada çalışır | – |
+| Kubernetes ve altyapı | Aynı Kubernetes tanımları yerelde kind kümesine kurulup test edilir; Terraform `validate` ve `plan` CI'da | Bulut hesabı ve ilk kurulum onayı |
+| Web (React) | Playwright ile uçtan uca test ve ekran görüntüsü, 1280 ve 400 px, açık ve koyu tema; erişilebilirlik taraması | – |
+| iPhone ve iPad (SwiftUI) | macOS CI'da derleme, birim testi, simülatörde arayüz ve ekran görüntüsü testleri; Claude sonuçları okur | Gerçek cihaz: Live Activity, VisionKit, Bluetooth (Tilt), StoreKit, push; imzalama ve App Store (ürün sahibi) |
+| Güvenlik kodu | Testler ve statik tarama | Bağımsız inceleme ve sızma testi (planlama işlerinde) |
+
+**Kurallar**
+
+- Tek depo: sunucu, hesap motoru, web, iOS, API sözleşmesi ve altyapı tanımları aynı yerde; bir değişikliğin her yere etkisi aynı anda görülür.
+- Her modülde kısa bir README ve CLAUDE.md (ne yapar, neye dokunmaz, nasıl test edilir); her önemli karar için karar kaydı (ADR).
+- Küçük dosyalar, açık tipler; her şeyi yapan dosya yok.
+- iOS uygulaması ince: iş kuralı sunucuda, Swift tarafında ekran ve sistem entegrasyonu kalır; cihaz testine kalan yüzey küçük tutulur.
+- Her ana dal birleştirmesinden önce: derleme, tip, lint, testler, formül paritesi, API sözleşme farkı, yerel uçtan uca test ve tutarlılık betiği.
 
 ### Google Cloud karşılıkları
 
@@ -1089,5 +1113,6 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 - [ ] Altyapı kurulumu: Google Cloud organizasyonu ve geliştirme, test, canlı projeleri; Terraform temeli; birleştirme kapısı (CI); Apple ve Google giriş kayıtları ve OAuth onay ekranı doğrulaması; e-posta sağlayıcısı ve alan adı doğrulaması (Apple gizli e-posta rölesi dahil); destek için özel GitHub deposu ve GitHub App
 - [ ] Yayın öncesi bağımsız güvenlik incelemesi ve sızma testi: kimlik, yetki, çalışma alanı ayrımı, destek paneli
 - [ ] Destek talepleri (karar verildi): kayıt bizde (SupportRequest, SupportMessage), destek ekibi GitHub Issues'ta, iki yönlü eşitleme; özel destek deposu ve GitHub App kurulumu
+- [ ] macOS CI (GitHub Actions macOS veya Xcode Cloud) ve gerçek cihaz testi; Apple Developer hesabı ve imzalama (ürün sahibi)
 
 **Riskler:** arayüzün iki kez yazılmasının maliyeti; web–Apple özellik eşitliği; el yazısı tanımanın hatalı okuması; işletme segmentinde mevzuat yükünün sürekliliği; her hesabın internete bağlı olması (yanıt süresi, sunucu maliyeti, kesinti); kodun tamamını Claude'un yazması (kimlik, yetki ve destek paneli gibi güvenlik kodunda bağımsız inceleme gerekir).
