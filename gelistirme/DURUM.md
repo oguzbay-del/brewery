@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 0 Temel
-**Sürüyor:** F1.1 formül bulgularının işlenmesi (Sonnet)
+**Sürüyor (duraklatıldı):** T0.7 Kubernetes, T0.9 CI, F1.2 kararların uygulanması (Sonnet). 12:20 UTC'de Sonnet 5 saatlik kullanım sınırı doldu; 13:00'te sıfırlanır. T0.9'un yarım işi `is/T0.9-ci` dalında; devam etmeden önce `git checkout is/T0.9-ci -- .github && git reset -q .github`.
 **Sıradaki iş:** T0.7 Kubernetes ve kind (Sonnet) · T0.9 CI (Sonnet); ardından T0.11 kapı kontrolü (Opus)
 **Paralel başlatılabilir:** F1 formül doğrulaması (Fable)
 
@@ -14,7 +14,8 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Engeller
 
-- T0.9: GitHub iş akışı dosyalarının bu ortamdan gönderilmesi engellenebilir (dal silme engellenmişti). Engellenirse dosyalar hazırlanır, gönderimi Oğuz yapar.
+- GitHub iş akışı dosyalarının gönderilmesi bu ortamda engelli değil (`is/T0.9-ci` dalı gönderildi).
+
 
 - iOS ilk macOS derlemesinde olası sorunlar (T0.6): Swift 6 katı eşzamanlılık, test barındırma (test host), Info.plist ayar adları, simülatör adı. Derleme O3 (macOS CI) ile.
 
