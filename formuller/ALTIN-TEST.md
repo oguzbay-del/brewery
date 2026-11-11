@@ -17,7 +17,7 @@ Geçme payı öneridir; ilk üç tarif görülünce `plan/gorusme.md` soru 5 ile
 | Renk | ±1 EBC |
 | Hacim (strike, sparge, kaynatma sonu) | ±0,1 L |
 | ABV | ±0,1 yüzde puan |
-| Mash pH | Bu sette karar yok. MPH ve BW yan yana yazılır; hangisinin kalacağı görüşmedeki su satırına bakılır |
+| Mash pH | Pay yok. MPH ve BW yan yana yazılır; ikisi de seçenek kalır (plan › Hesap motoru), hangisinin varsayılan olacağı bu iki satırla ve görüşmedeki su satırıyla belirlenir |
 
 Bir satır payın dışındaysa formül düzeltilir, pay genişletilerek geçilmiş sayılmaz.
 

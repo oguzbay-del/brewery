@@ -3242,7 +3242,7 @@ table.cmp td:first-child{font-weight:600}
             <div class="cell"><span>Tanılama bilgisi<span class="sub">uygulama sürümü, cihaz, son hatalar</span></span><button class="tog on" aria-pressed="true" aria-label="açık"></button></div>
             <div class="cell"><span>Destek verilerimi görebilir<span class="sub">72 saat; sonra kendiliğinden kapanır</span></span><button class="tog on" aria-pressed="true" aria-label="açık"></button></div>
           </div>
-          <p style="font-size:11.5px;color:var(--label2)">Destek ekibi verini değiştiremez, yalnız görür. Her erişim Ayarlar › Güvenlik'te listelenir. İşletmede izni yönetici verir.</p>
+          <p style="font-size:11.5px;color:var(--label2)">Açıklamaya ad, adres veya şifre yazma. Destek ekibi verini değiştiremez, yalnız görür. Her erişim Ayarlar › Güvenlik'te listelenir. İşletmede izni yönetici verir.</p>
         </div>
       </div></div>
       <div class="iphone mini"><div class="scr">
@@ -3260,7 +3260,7 @@ table.cmp td:first-child{font-weight:600}
       </div></div>
     </div>
     <div class="inspo"><span class="chip">İlham: <b>Apple Destek</b> uygulaması talepleri, <b>Ayarlar › Gizlilik</b> izin listesi</span><span class="chip">Talep ve erişim aynı zaman çizelgesinde</span><span class="chip">Yanıt bildirim kutusuna ve e-postaya düşer</span></div>
-    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p><span style="font-family:var(--mono)">SupportRequest</span>: genel numara, konu, ilgili kayıt, durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama. <span style="font-family:var(--mono)">SupportMessage</span>: yazar (müşteri, destek veya sistem), metin, zaman, ekran görüntüsü. Bu iki ekranda Taleplerim ve #4182 zaman çizelgesi bu kayıtlardır. İç not burada görünmez.</p></div>
+    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p><span style="font-family:var(--mono)">SupportRequest</span>: genel numara, konu, ilgili kayıt, durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama. <span style="font-family:var(--mono)">SupportMessage</span>: yazar (müşteri, destek veya sistem), metin, zaman, ekran görüntüsü. Bu iki ekranda Taleplerim ve #4182 zaman çizelgesi bu kayıtlardır. İç not burada görünmez. Destek ekibi talebi arka planda GitHub Issues'ta yürütür; müşteri GitHub'ı görmez, yanıtlar buraya iki yönlü eşitlenir.</p></div>
   </div>
 
   <!-- INVITE ACCEPTANCE -->
@@ -3312,12 +3312,12 @@ table.cmp td:first-child{font-weight:600}
       <div class="bar"><span aria-label="geri">‹</span><span aria-label="ileri">›</span><span class="url">destek.ic/hesaplar/emma-clarke/kayitlar</span><span class="inbadge">İÇ KULLANIM</span></div>
       <div class="dp">
         <div class="side">
-          <a href="#" class="on">Hesaplar</a><a href="#">Talepler<span>12</span></a><a href="#">Abonelikler</a><a href="#">Silme talepleri<span>3</span></a><a href="#">Bildirim teslimi</a><a href="#">Sistem durumu</a>
+          <a href="#" class="on">Hesaplar</a><a href="#">Talepler · GitHub<span>12</span></a><a href="#">Abonelikler</a><a href="#">Silme talepleri<span>3</span></a><a href="#">Bildirim teslimi</a><a href="#">Sistem durumu</a>
           <div class="who">Deniz A. · Destek<br>passkey ile giriş</div>
         </div>
         <div class="main">
           <div class="row" style="justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
-            <div style="display:grid;gap:2px"><span style="font-size:12px;color:var(--label2);font-weight:600">HESAP · TALEP #4182 "TARİFİM KAYBOLDU"</span><span style="font-size:22px;font-weight:700">Emma Clarke</span></div>
+            <div style="display:grid;gap:2px"><span style="font-size:12px;color:var(--label2);font-weight:600">HESAP · TALEP #4182 "TARİFİM KAYBOLDU"</span><span style="font-size:22px;font-weight:700">Emma Clarke</span><a href="#" style="font-size:12.5px;color:var(--tint)">GitHub Issue #212 · W-7F3K ↗</a></div>
             <div class="callout ok" style="padding:8px 10px"><svg class="ico"><use href="#i-lock"/></svg><span><b>Müşteri izni var</b> · 71 sa kaldı · <a href="#" style="color:var(--tint)">Erişimi bitir</a></span></div>
           </div>
           <div class="kv">
@@ -3376,7 +3376,7 @@ table.cmp td:first-child{font-weight:600}
       </div>
     </div>
     <div class="inspo"><span class="chip">İlham: <b>Stripe</b> ve <b>Intercom</b> destek panelleri</span><span class="chip">Varsayılan salt okunur; her işlem gerekçe ister</span><span class="chip">Her erişim müşterinin "Destek erişim geçmişi"nde görünür</span><span class="chip">Tasarım sistemiyle aynı bileşenler</span></div>
-    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p>Aynı <span style="font-family:var(--mono)">SupportRequest</span> ve <span style="font-family:var(--mono)">SupportMessage</span>. Talepler listesi ve #4182 başlığı taleptir; zaman çizelgesindeki müşteri ve destek yazıları mesajdır. İç not aynı mesaj kaydında, görünürlüğü yalnız destek; müşteri ekranına, bildirime ve e-postaya gitmez. <span style="font-family:var(--mono)">SupportGrant</span> bu talebe bağlı süreli izin, <span style="font-family:var(--mono)">SupportAction</span> paneldeki her işlemdir.</p></div>
+    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p>Aynı <span style="font-family:var(--mono)">SupportRequest</span> ve <span style="font-family:var(--mono)">SupportMessage</span>. Talepler listesi ve #4182 başlığı taleptir; zaman çizelgesindeki müşteri ve destek yazıları mesajdır. İç not aynı mesaj kaydında, görünürlüğü yalnız destek; müşteri ekranına, bildirime ve e-postaya gitmez. <span style="font-family:var(--mono)">SupportGrant</span> bu talebe bağlı süreli izin, <span style="font-family:var(--mono)">SupportAction</span> paneldeki her işlemdir.</p><p>Ekip talebi GitHub Issues'ta yürütür (özel destek deposu). Issue'da ad ve e-posta yok, çalışma alanı takma kimlikle (W-7F3K) geçer; ekran görüntüsü GitHub'a gitmez. <span style="font-family:var(--mono)">/yanit</span> ile başlayan yorum müşteriye gider, diğerleri iç nottur. Issue kapanınca talep "çözüldü" olur.</p></div>
   </div>
 
   <!-- CALIBRATION -->

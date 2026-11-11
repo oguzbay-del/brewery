@@ -96,7 +96,7 @@ Apple cihazları native SwiftUI, masaüstü web; hepsi sunucudaki tek hesap moto
 | iPad | Tam özellik | SwiftUI |
 | iPhone | Demleme günü, fermantasyon, stok ve alışveriş tam; tarif görüntüleme ve basit düzenleme | SwiftUI |
 | Apple Watch | Şimdilik yok; ileride opsiyonel (sayaç, hop alarmı, adım onayı; tasarımı konseptte hazır) | SwiftUI watchOS (ileride) |
-| Web (Mac ve PC) | iPad ile aynı, tam özellik | React + TypeScript |
+| Web (Mac ve PC) | iPad ile aynı, tam özellik; güncel Chrome, Edge, Safari ve Firefox (Windows, macOS, Linux, ChromeOS) | React + TypeScript |
 | Mac uygulaması, Android | Yok | – |
 
 - **Hesap motoru:** Rust ile bir kez yazılır ve yalnız sunucuda çalışır. Tarif hesabı, ölçekleme, su ve pH, maliyet, vergi gibi tüm hesaplar ve kayıt oluşturma işleri internetle yapılır. Sık yapılan küçük sorgular (liste, arama, malzeme bilgisi) önbellekten hemen gösterilir ve arkada sunucudan tazelenir; tarif düzenlerken değişiklikler kısa aralıklarla toplu gönderilir.
@@ -138,12 +138,12 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 - **Canlı güncelleme:** açık ekran sunucudan olay akışı alır (Server-Sent Events). Fermantasyon grafiği, bildirim kutusu sayısı, eşzamanlı düzenleme kilidi ve tank durumu yenilemeden güncellenir. Sunucuda olaylar podlar arasında PostgreSQL LISTEN/NOTIFY ile dağıtılır; yük artınca kuyruğa (NATS) geçilir. Uygulama arka plandayken push bildirimi kullanılır.
 - **Sürüm uyumu:** App Store'da eski uygulama sürümleri aylarca kullanılır. API sürümlüdür (/v1); geriye uyumsuz değişiklik yeni sürümle gelir, eski sürüm en az 6 ay açık kalır \[doğrulanacak\]. Var olan alanın anlamı değiştirilmez, yalnız yeni alan eklenir. Sunucu desteklenen en düşük uygulama sürümünü bildirir; altındaki uygulama "güncelle" ekranı gösterir. OpenAPI fark kontrolü her derlemede çalışır.
 - **Tekrar güvenliği:** kayıt oluşturan her istek istemcinin ürettiği istek anahtarını (idempotency key) taşır. Bağlantı kopup yeniden gönderilen istek ikinci kayıt oluşturmaz. Demleme günü ölçüm kuyruğundaki UUID kuralının bütün API'ye yayılmışı.
-- **Dış olaylar:** cihaz webhook'ları, App Store sunucu bildirimleri (abonelik yenileme, iade) ve web ödeme sağlayıcısının webhook'ları aynı alım servisinden girer: imza doğrulanır, kuyruğa yazılır, aynı olay iki kez işlenmez. Abonelik ve yetki durumu yalnız sunucuda tutulur.
+- **Dış olaylar:** cihaz webhook'ları, App Store sunucu bildirimleri (abonelik yenileme, iade), web ödeme sağlayıcısının webhook'ları ve GitHub (destek talepleri) aynı alım servisinden girer: imza doğrulanır, kuyruğa yazılır, aynı olay iki kez işlenmez. Abonelik ve yetki durumu yalnız sunucuda tutulur.
 - **Demleme paketi bütünlüğü:** paket sunucuda imzalanır ve sürelidir (ör. 72 saat) \[doğrulanacak\]; kuyruktaki ölçümler paket kimliğiyle gönderilir, sunucu paketin o partiye ait olduğunu denetler.
 
 ### Destek paneli (iç kullanım)
 
-Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez. Taslağı konseptte "İç kullanım" grubunda: hesap detayı, talepler, arama ve erişim isteği, hesap farkı. Talep ve mesaj müşteri uygulamasındaki Yardım ve destek ekranıyla aynı kayıttır.
+Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. Müşteri uygulamasının parçası değil; ekran listesine ve ekran sayılarına girmez. Taslağı konseptte "İç kullanım" grubunda: hesap detayı, talepler, arama ve erişim isteği, hesap farkı. Talep ve mesaj müşteri uygulamasındaki Yardım ve destek ekranıyla aynı kayıttır; destek ekibi talepleri GitHub Issues'ta yürütür (aşağıda).
 
 **Ne yapılır**
 
@@ -157,7 +157,7 @@ Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. 
 | "Verim kayboldu" ve hesap farkları | Kaydın sürüm geçmişi ve denetim kaydı; hesabı kayıtlı motor sürümüyle ve güncel sürümle yeniden çalıştırıp farkı görme |
 | Bildirim teslimi | Bir bildirimin hangi cihaza gittiği, okundu mu, push hatası |
 | Sistem durumu | Kuyruk birikimi, cihaz verisi gecikmesi, motor hata oranı (gözlem araçlarına bağlantı) |
-| Destek talebi ve mesaj | Müşterinin talebi ve zaman çizelgesi (`SupportRequest`, `SupportMessage`). İç not müşteriye gitmez. Yanıt bildirim kutusuna ve e-postaya düşer |
+| Destek talebi ve mesaj | Talep ve zaman çizelgesi (SupportRequest, SupportMessage); GitHub Issue bağlantısı. İç not müşteriye gitmez; yanıt bildirim kutusuna, push'a ve e-postaya düşer |
 
 **Ne yapılmaz:** tarif, parti, stok gibi müşteri içeriği panelden değiştirilmez. Müşterinin yerine giriş yapılmaz; müşterinin gördüğü ekran yalnız okunur olarak açılabilir.
 
@@ -174,7 +174,37 @@ Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. 
 - Ayrı bir React uygulaması; aynı tasarım sistemiyle. Genel adresten erişilemez; giriş şirketin Google Workspace hesabı ve passkey ile, Google Cloud Identity-Aware Proxy arkasında.
 - Çekirdek API'nin ayrı bir iç uç grubu (/internal) kullanılır; bu uçlar genel API ağ geçidinde yayımlanmaz. İş kuralları yine çekirdek API'de, iki kez yazılmaz.
 - Her işlem değiştirilemez denetim kaydına yazılır.
-- Yol haritası: Ev MVP'de arama, abonelik, oturum, silme talepleri, destek talebi ve mesaj, erişim kuralları; diğerleri İşletme aşamasıyla.
+- Yol haritası: Ev MVP'de arama, abonelik, oturum, silme talepleri, destek talebi ve mesaj (GitHub eşitlemesi dahil) ve erişim kuralları; diğerleri İşletme aşamasıyla.
+
+### Destek talepleri: GitHub Issues
+
+Destek ekibi talepleri GitHub Issues'ta yürütür. Müşteri GitHub'ı görmez; talebini uygulamadaki Yardım ve destek ekranından açar ve izler. Talebin asıl kaydı çekirdek API'dedir (SupportRequest, SupportMessage); GitHub Issue ekibin çalışma yüzeyidir ve iki yönlü eşitlenir. GitHub'a ulaşılamazsa müşteri yine talep açar ve yazışmasını görür; eşitleme kuyrukta bekler.
+
+| Olay | Uygulama → GitHub | GitHub → uygulama |
+| --- | --- | --- |
+| Talep açıldı | Özel destek deposunda Issue açılır: başlık, konu ve mod etiketi, uygulama sürümü, destek paneli bağlantısı. Talep numarası ile Issue numarası kayıtta eşlenir | – |
+| Müşteri yazdı | Yorum "Müşteri" başlığıyla eklenir; Issue kapalıysa yeniden açılır | – |
+| Destek yanıtı | – | `/yanit` ile başlayan yorum (veya destek panelinden yazılan) müşteriye gider: bildirim kutusu, push, e-posta. Diğer yorumlar iç nottur, müşteriye gitmez |
+| Durum | Müşteri "Çözüldü" derse Issue kapanır | Issue kapanınca talep "çözüldü"; `bekliyor:musteri` etiketi "yanıtlandı" yapar |
+| Hata bağlantısı | – | Destek Issue'su bir geliştirme Issue'suna bağlanır; düzeltmeyi içeren sürüm yayınlanınca müşteriye "2.3.2'de düzeltildi" bildirimi gider |
+| Erişim izni | Müşteri izin verdiyse Issue'ya yalnız "izin var, bitiş: …" ve panel bağlantısı yazılır | – |
+
+Etiketler: konu (hesap, abonelik, tarif ve hesap, cihaz, diğer), mod (ev, işletme), öncelik, `bekliyor:musteri`.
+
+**Kişisel veri**
+
+- Ayrı, özel bir depo; yalnız destek ekibi erişir. Ürün deposuyla karışmaz.
+- Issue'ya ad, e-posta ve çalışma alanı adı yazılmaz; kullanıcı ve çalışma alanı takma kimlikle geçer. Müşterinin yazdığı metin olduğu gibi gider; talep formu "kişisel bilgi yazma" uyarısı gösterir.
+- Ekran görüntüsü ve tanılama dosyası GitHub'a yüklenmez; nesne deposunda kalır, Issue'da yalnız destek panelinde açılan bağlantı durur.
+- Hesap silinince ilgili Issue'lar silinir; silinemezse metin anonimleştirilir \[doğrulanacak: GitHub API ile Issue silme yetkisi\].
+- GitHub alt işleyen olarak gizlilik politikasına ve veri işleme sözleşmesine eklenir; veri ABD'de tutulur, İngiltere ve AB aktarımı için GitHub'ın veri işleme sözleşmesi \[doğrulanacak\].
+
+**Teknik yapı**
+
+- Yalnız destek deposuna yetkili bir GitHub App (Issues okuma ve yazma). Anahtarı sır yöneticisinde.
+- GitHub'dan gelen olaylar (Issue, yorum, etiket) dış olay alımı servisine webhook olarak gelir; imza doğrulanır, aynı teslim iki kez işlenmez.
+- Bizden GitHub'a giden işler outbox ve arka plan işleriyle; API sınırına takılırsa yeniden denenir.
+- Yanıt süresi hedefi abonelik katmanıyla birlikte karara bağlanır.
 
 ### Hesap motoru servisi
 
@@ -737,7 +767,7 @@ Rakip uygulamaların (BeerSmith, Brewfather, Brewer's Friend, Grainfather, Ekos,
 
 - **1 ay tam deneme:** deneme süresince tüm özellikler açık; hesaplar kısıtlanmaz (BeerSmith denemesinde hesapların güncellenmemesi şikayet konusu).
 - Deneme bitince veriler silinmez ve her zaman dışa aktarılabilir; ücretli özellikler salt okunur kalır.
-- Fiyatlar ve ücretsiz katmanın sınırı hâlâ açık karar.
+- Fiyatlar ve ücretsiz katmanın sınırı hâlâ açık karar. Karar verilirken katmanlara göre özellik matrisi yazılır: tarif, parti, cihaz, kullanıcı ve depolama sınırları, destek yanıt süresi. Hiçbir katmanda dışa aktarma kapatılmaz.
 
 ### Kalibrasyon asistanı
 
@@ -833,7 +863,7 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 | Dosya içe ve dışa aktarma | BeerXML, BeerJSON, .bsmx, CSV | Güvenli XML ayrıştırıcı (dış varlık ve XML bombasına karşı); boyut sınırı; CSV enjeksiyonuna karşı hücre kaçışı |
 | Hesap motoru (Rust) | Hesap sonuçları | Bellek güvenli dil; girdi aralık kontrolü, sıfıra bölme ve sonsuz değer kontrolü; hesaplar yalnız sunucuda çalışır, istemci hesap sonucu gönderemez; test vektörleri her sürümde sunucuda çalıştırılır |
 | Ödeme ve abonelik | Ödeme bilgisi | StoreKit ve web ödeme sağlayıcısı; kart bilgisi bize gelmez; abonelik durumu sunucuda doğrulanır |
-| Kişisel veri ve uyum | UK GDPR, ABD eyalet gizlilik yasaları, KVKK | En az veri; dışa aktarma ve hesap silme; saklanması zorunlu işletme kayıtlarında anonimleştirme; gizlilik politikası ve App Store gizlilik etiketi |
+| Kişisel veri ve uyum | UK GDPR, ABD eyalet gizlilik yasaları, KVKK | En az veri; veri kullanıcınındır ve tamamı dışa aktarılabilir (tarif BeerJSON ve BeerXML; parti, ölçüm ve stok CSV; belgeler ve fotoğraflar ZIP); hesap silme; saklanması zorunlu işletme kayıtlarında anonimleştirme; gizlilik politikası ve App Store gizlilik etiketi |
 | Geliştirme ve işletim | Kod, sırlar, sunucular | Sırlar sır yöneticisinde; bağımlılık taraması; sunucuya en az yetki ve iki adımlı doğrulama; olay alarmları ve müdahale planı |
 | Destek paneli | Müşteri verisine içeriden erişim | Genel adreste yok, Identity-Aware Proxy ve passkey; müşteri izni ve süreli erişim; içerik değiştirilemez, müşteri yerine giriş yok; her erişim müşterinin denetim kaydında görünür |
 
@@ -1007,15 +1037,14 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
 | CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
 | UserIdentity | Giriş kimlikleri: sağlayıcı (Apple / Google / e-posta), sağlayıcıdaki kalıcı kimlik, bağlanma zamanı; bir kullanıcıda birden çok; passkey kayıtları |
-| SupportGrant, SupportAction | Destek erişim izni (çalışma alanı, veren, bağlı `SupportRequest`, başlangıç ve bitiş); destek ekibinin her işlemi (kim, neye, ne yaptı, gerekçe) |
-| SupportRequest | Destek talebi. Genel numara (ör. #4182), çalışma alanı, açan kullanıcı, konu kategorisi, başlık, isteğe bağlı ilgili kayıt (tarif sürümü veya parti), durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama özeti (uygulama sürümü, cihaz, son hatalar). Müşteride Ayarlar › Yardım ve destek › Taleplerim; destekte Talepler listesi |
-| SupportMessage | Talebin zaman çizelgesindeki kayıt: yazar (müşteri, destek veya sistem), metin, zaman, ekler (ekran görüntüsü; nesne deposunda, parti ekinden ayrı). Görünürlük müşteri veya iç not. İç not yalnız destek panelinde görünür; bildirim ve e-posta gitmez. Müşteriye giden yanıt bildirim kutusuna ve e-postaya düşer |
+| SupportGrant, SupportAction | Destek erişim izni (çalışma alanı, veren, bağlı talep (SupportRequest), başlangıç ve bitiş); destek ekibinin her işlemi (kim, neye, ne yaptı, gerekçe) |
 | Device, AlertRule | Cihaz (tür, veri adresi anahtarı, bağlı parti veya tank, kalibrasyon kaydı); uyarı kuralı (koşul, öncelik, kapsam, susturma) |
 | BrewDayPackage | Demleme paketi: parti, imza, oluşturma ve bitiş zamanı, içerik sürümü; kuyruktaki ölçümler bu kimlikle gelir |
 | QualitySpec, LabResult, Release | Bira başına spesifikasyon aralıkları; laboratuvar ve tadım sonuçları; serbest bırakma kararı (kim, ne zaman) |
 | CleaningRecord, YeastGeneration | CIP kaydı (tank, kimyasal, konsantrasyon, sıcaklık, süre, doğrulama); maya hasadı ve jenerasyon zinciri |
 | Subscription, Entitlement | Abonelik (kaynak: App Store / web, durum, yenileme, deneme); çalışma alanının açık özellikleri; yalnız sunucuda |
 | Attachment | Parti fotoğrafı ve notu, tadım fotoğrafı; nesne deposunda, partinin zaman çizelgesine bağlı |
+| SupportRequest, SupportMessage | Destek talebi: genel numara (#4182), çalışma alanı, açan kullanıcı, konu, başlık, isteğe bağlı ilgili kayıt (tarif sürümü veya parti), durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama özeti, GitHub Issue numarası ve son eşitleme. Mesaj: yazar (müşteri, destek, sistem), metin, zaman, ekler (nesne deposunda), görünürlük (müşteri / iç not), GitHub yorum kimliği. İç not müşteriye, bildirime ve e-postaya gitmez |
 
 Her kayıtta UUID, güncelleme zamanı, silinme zamanı ve sürüm numarası bulunur. Demleme günü ölçümleri cihazda üretilen UUID ile kuyruğa alınır; sunucu aynı kaydı iki kez işlemez.
 
@@ -1031,9 +1060,9 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 
 Öncelik sırasıyla ilk beş iş: kullanıcı görüşmeleri ve MVP kapsamı, altın test seti ve formül kararları, veri modeli ve API, teknik deneme, ürün adı ve mevzuat kontrolü.
 
-- [ ] 5–10 ev biracısı ve 2–3 küçük işletmeyle görüşme; MVP kapsamı ve kullanıcı hikayeleri. Kılavuz ve boş karar tablosu: `plan/gorusme.md`. Notlar yazılmadan altın test doldurulmaz
-- [ ] Rakip incelemesi: Brewfather, Brewer's Friend, Grainfather; işletme tarafında Ekos, Ollie, Beer30 ve Breww özellikleri karşılaştırıldı (Kasım 2026); güncel fiyatlar açık
-- [ ] Altın test seti (10–20 tarif) ve gerçek demleme ölçümleriyle kalibrasyon; MPH ve BW pH modellerinden hangisinin daha doğru olduğu. Boş şablon: `formuller/ALTIN-TEST.md`. Görüşme tablosu dolmadan doldurulmaz; Python vektörleri bu testin yerine geçmez
+- [ ] 5–10 ev biracısı ve 2–3 küçük işletmeyle görüşme; MVP kapsamı ve kullanıcı hikayeleri. Kılavuz ve boş karar tablosu: plan/gorusme.md; görüşme notları yazılmadan altın test doldurulmaz
+- [ ] Rakip incelemesi: Brewfather, Brewer's Friend, Grainfather; işletme tarafında Ekos, Ollie, Beer30 ve Breww özellikleri karşılaştırıldı (Kasım 2026); FoamByte (ev ve nano üretici, web) ile karşılaştırma karsilastirma/foambyte-\*.md dosyalarında; güncel fiyatlar ve FoamByte ücretsiz katman sınırları açık
+- [ ] Altın test seti (10–20 tarif) ve gerçek demleme ölçümleriyle kalibrasyon; MPH ve BW pH modellerinden hangisinin daha doğru olduğu. Boş şablon: formuller/ALTIN-TEST.md (16 senaryo, BeerSmith ekranı ve gerçek ölçümle); Python test vektörleri bu testin yerine geçmez
 - [ ] Formül kararlarının karar kaydına (ADR) yazılması; hassasiyet ve yuvarlama kuralları
 - [ ] Malzeme veritabanı kaynağı (üretici teknik föyleri, ABD ve İngiltere'de satılan ürünler öncelikli) ve güncelleme süreci
 - [ ] Veri modeli ve API; kayıtta sürüm kontrolü
@@ -1046,8 +1075,8 @@ Ek özelliklerin aşamalara dağılımı "Ek özellikler" tablosunda: Ev MVP'ye 
 - [ ] Alkol reklam ve tanıtım mevzuatı; App Store yaş sınırı
 - [ ] İşletme modu için ilk hedef pazar (ABD veya İngiltere; Avustralya, Almanya/AB ve Türkiye sonra; bkz. "Ülkelere göre yerelleştirme"), vergi rakamlarının resmi kaynaktan doğrulanması ve kayıt saklama süreleri
 - [ ] Ekip, bütçe, kilometre taşları; beta programı (20–50 ev biracısı)
-- [ ] Altyapı kurulumu: Google Cloud organizasyonu ve geliştirme, test, canlı projeleri; Terraform temeli; birleştirme kapısı (CI); Apple ve Google giriş kayıtları ve OAuth onay ekranı doğrulaması; e-posta sağlayıcısı ve alan adı doğrulaması (Apple gizli e-posta rölesi dahil)
+- [ ] Altyapı kurulumu: Google Cloud organizasyonu ve geliştirme, test, canlı projeleri; Terraform temeli; birleştirme kapısı (CI); Apple ve Google giriş kayıtları ve OAuth onay ekranı doğrulaması; e-posta sağlayıcısı ve alan adı doğrulaması (Apple gizli e-posta rölesi dahil); destek için özel GitHub deposu ve GitHub App
 - [ ] Yayın öncesi bağımsız güvenlik incelemesi ve sızma testi: kimlik, yetki, çalışma alanı ayrımı, destek paneli
-- [x] Destek talebi ve mesaj kendi veri modelimizde (`SupportRequest`, `SupportMessage`). Hazır bir destek aracı kullanılırsa yalnız yansıma olur; kaynak kayıt çekirdek API'dedir
+- [ ] Destek talepleri (karar verildi): kayıt bizde (SupportRequest, SupportMessage), destek ekibi GitHub Issues'ta, iki yönlü eşitleme; özel destek deposu ve GitHub App kurulumu
 
 **Riskler:** arayüzün iki kez yazılmasının maliyeti; web–Apple özellik eşitliği; el yazısı tanımanın hatalı okuması; işletme segmentinde mevzuat yükünün sürekliliği; her hesabın internete bağlı olması (yanıt süresi, sunucu maliyeti, kesinti); kodun tamamını Claude'un yazması (kimlik, yetki ve destek paneli gibi güvenlik kodunda bağımsız inceleme gerekir).

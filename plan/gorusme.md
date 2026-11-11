@@ -44,7 +44,7 @@ Her sorunun kilitleyeceği karar yanında. Cevap "evet" diye yönlendirilmez.
 | 4 | İnternet kesilince hangi iş yarıda kalırsa uygulamayı bırakırsın? | Demleme paketinin sınırı (ölçüm girişi yeter mi, yeniden hesap da mı) |
 | 5 | OG, IBU, renk, hacim, mash pH. Hangisi yanlışsa tarifi uygulamada tutmazsın? | Altın testin geçme payı hangi sayıda sıkı |
 | 6 | Aşağıdaki "doğrulanacak" satırlarını tek tek: Ev'de ilk günden olsun mu, sonra mı, hiç mi? | Karar tablosu |
-| 7 | Ücretsiz deneme kaç gün olursa kartı görürsün? Görmezsen neden? | Deneme süresi \[doğrulanacak\] |
+| 7 | Ücretsiz bir sürüm olsaydı içinde ne olmalıydı? Hangisi için para verirsin? | Ücretsiz katmanın sınırı (deneme süresi planda karar: 1 ay tam deneme) |
 
 ## İşletmeye sorulacaklar
 
@@ -66,7 +66,7 @@ Plandaki Ev MVP. Görüşme bitmeden sağ sütun boş kalır. Beş ev notu yokke
 | Demleme günü internetsiz paket | Platformlar | | | |
 | Sayaç isteğe bağlı, kağıt ve tarama | Demleme günü | | | |
 | BeerXML, BeerJSON, .bsmx içe aktarma | Planlama işleri | | | |
-| Su ve pH (MPH veya BW, ikisi birden değil) | Hesap motoru | | | |
+| Su ve pH (malt bazlı grist pH; MPH/BW eğimi seçenek, varsayılan altın testle) | Hesap motoru | | | |
 | Ekipman kalibrasyonu | Ek özellikler, Ev MVP | | | |
 | Otomatik fermantasyon uyarısı | Ek özellikler, Ev MVP | | | |
 | Tarif karşılaştırma | Ek özellikler, Ev MVP | | | |
