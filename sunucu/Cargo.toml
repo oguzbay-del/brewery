@@ -1,0 +1,57 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/common",
+    "crates/engine",
+    "crates/engine-service",
+    "crates/api",
+    "crates/worker",
+    "crates/ingest",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+
+[workspace.dependencies]
+# Internal crates
+common = { path = "crates/common" }
+engine = { path = "crates/engine" }
+
+# Shared third-party crates
+axum = "0.8.9"
+http-body-util = "0.1.5"
+prost = "0.14.5"
+protox = "0.10.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "net", "signal"] }
+tokio-stream = { version = "0.1.19", features = ["net"] }
+tonic = "0.14.9"
+tonic-health = "0.14.9"
+tonic-prost = "0.14.9"
+tonic-prost-build = "0.14.9"
+tower = { version = "0.5.3", features = ["util"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+expect_used = "warn"
+dbg_macro = "warn"
+todo = "warn"
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

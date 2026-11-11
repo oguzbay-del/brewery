@@ -1,0 +1,12 @@
+[package]
+name = "engine"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+# Rule: no database, network or async dependencies in this crate.
+[dependencies]
+
+[lints]
+workspace = true

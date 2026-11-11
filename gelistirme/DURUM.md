@@ -3,8 +3,8 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 0 Temel
-**Sıradaki iş:** T0.2 Rust çalışma alanı (Sonnet)
-**Ardından:** T0.5 Web iskeleti (Sonnet) · T0.8 Terraform iskeleti (Sonnet) · T0.6 iOS iskeleti (Sonnet); bu üçü T0.2 ile paralel yürüyebilir
+**Sürüyor:** T0.5 Web, T0.6 iOS, T0.8 Terraform iskeletleri (Sonnet, paralel)
+**Sıradaki iş:** T0.3 Docker Compose (Sonnet) · T0.4 API sözleşmesi iskeleti (Sonnet); ikisi de T0.2'ye bağlıydı, artık başlayabilir
 **Paralel başlatılabilir:** F1 formül doğrulaması (Fable)
 
 ## Ortam
@@ -25,3 +25,4 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 ## Son biten işler
 
 - T0.1 Depo düzeni ve ADR-0001 (11.11.2026)
+- T0.2 Rust çalışma alanı: 6 crate, sağlık uçları, gRPC (protox, sistem protoc gerekmez), 9 test (11.11.2026)

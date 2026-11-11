@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+// Calculation engine service (internal network only).
+service EngineService {
+  // Returns the engine version.
+  rpc GetVersion(GetVersionRequest) returns (GetVersionResponse);
+}
+
+message GetVersionRequest {}
+
+message GetVersionResponse {
+  // Version of the engine library.
+  string version = 1;
+}

@@ -1,0 +1,24 @@
+[package]
+name = "common"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+# Shared HTTP helpers (health endpoint, graceful shutdown) for axum services.
+http = ["dep:axum", "dep:serde_json"]
+
+[dependencies]
+axum = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+tower.workspace = true
+
+[lints]
+workspace = true
