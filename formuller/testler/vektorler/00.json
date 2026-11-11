@@ -1,94 +1,14 @@
-{
- "bolum": "00",
- "kaynak": "formuller/testler/01_yogunluk_tv.py",
- "vakalar": [
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.0
-   },
-   "beklenen": -0.0030000000000427463
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.04
-   },
-   "beklenen": 9.993534207999915
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.05
-   },
-   "beklenen": 12.387647125000058
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.1
-   },
-   "beklenen": 23.76888699999995
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 0.0
-   },
-   "beklenen": 1.0
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 10.0
-   },
-   "beklenen": 1.0400291256004368
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 12.0
-   },
-   "beklenen": 1.0483750582240405
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 20.0
-   },
-   "beklenen": 1.082975090146371
-  },
-  {
-   "fonk": "gravity_units",
-   "girdi": {
-    "sg": 1.0
-   },
-   "beklenen": 100000,
-   "not": "Python round: yarımda çifte yuvarlar"
-  },
-  {
-   "fonk": "gravity_units",
-   "girdi": {
-    "sg": 1.0500049999
-   },
-   "beklenen": 105000,
-   "not": "Python round: yarımda çifte yuvarlar"
-  },
-  {
-   "fonk": "gravity_units",
-   "girdi": {
-    "sg": 1.012345
-   },
-   "beklenen": 101234,
-   "not": "Python round: yarımda çifte yuvarlar"
-  },
-  {
-   "fonk": "gravity_units",
-   "girdi": {
-    "sg": 0.999995
-   },
-   "beklenen": 100000,
-   "not": "Python round: yarımda çifte yuvarlar"
-  }
- ]
-}
+{"bolum":"00","kaynak":"formuller/testler/01_yogunluk_tv.py","vakalar":[
+{"fonk":"to_plato","girdi":{"sg":1.0},"beklenen":-0.0030000000000427463},
+{"fonk":"to_plato","girdi":{"sg":1.04},"beklenen":9.993534207999915},
+{"fonk":"to_plato","girdi":{"sg":1.05},"beklenen":12.387647125000058},
+{"fonk":"to_plato","girdi":{"sg":1.1},"beklenen":23.76888699999995},
+{"fonk":"to_sg","girdi":{"plato":0.0},"beklenen":1.0},
+{"fonk":"to_sg","girdi":{"plato":10.0},"beklenen":1.0400291256004368},
+{"fonk":"to_sg","girdi":{"plato":12.0},"beklenen":1.0483750582240405},
+{"fonk":"to_sg","girdi":{"plato":20.0},"beklenen":1.082975090146371},
+{"fonk":"gravity_units","girdi":{"sg":1.0},"beklenen":100000,"not":"Python round: yarımda çifte yuvarlar"},
+{"fonk":"gravity_units","girdi":{"sg":1.0500049999},"beklenen":105000,"not":"Python round: yarımda çifte yuvarlar"},
+{"fonk":"gravity_units","girdi":{"sg":1.012345},"beklenen":101234,"not":"Python round: yarımda çifte yuvarlar"},
+{"fonk":"gravity_units","girdi":{"sg":0.999995},"beklenen":100000,"not":"Python round: yarımda çifte yuvarlar"}
+]}

@@ -1,1647 +1,197 @@
-{
- "bolum": "01",
- "kaynak": "formuller/testler/01_yogunluk_tv.py",
- "vakalar": [
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.0
-   },
-   "beklenen": -0.0030000000000427463
-  },
-  {
-   "fonk": "sg_to_brix",
-   "girdi": {
-    "sg": 1.0
-   },
-   "beklenen": -0.004800000000045657
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.01
-   },
-   "beklenen": 2.5607778970000936
-  },
-  {
-   "fonk": "sg_to_brix",
-   "girdi": {
-    "sg": 1.01
-   },
-   "beklenen": 2.560507280099955
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.04
-   },
-   "beklenen": 9.993534207999915
-  },
-  {
-   "fonk": "sg_to_brix",
-   "girdi": {
-    "sg": 1.04
-   },
-   "beklenen": 9.993414566399906
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.05
-   },
-   "beklenen": 12.387647125000058
-  },
-  {
-   "fonk": "sg_to_brix",
-   "girdi": {
-    "sg": 1.05
-   },
-   "beklenen": 12.387028012500082
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.1
-   },
-   "beklenen": 23.76888699999995
-  },
-  {
-   "fonk": "sg_to_brix",
-   "girdi": {
-    "sg": 1.1
-   },
-   "beklenen": 23.77419210000005
-  },
-  {
-   "fonk": "to_plato",
-   "girdi": {
-    "sg": 1.12
-   },
-   "beklenen": 28.06159641599993
-  },
-  {
-   "fonk": "sg_to_brix",
-   "girdi": {
-    "sg": 1.12
-   },
-   "beklenen": 28.078405132799958
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 0.0
-   },
-   "beklenen": 1.0
-  },
-  {
-   "fonk": "brix_to_sg",
-   "girdi": {
-    "brix": 0.0
-   },
-   "beklenen": 1.0
-  },
-  {
-   "fonk": "brix_to_ri",
-   "girdi": {
-    "brix": 0.0
-   },
-   "beklenen": 1.33302
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 5.0
-   },
-   "beklenen": 1.0196688513847145
-  },
-  {
-   "fonk": "brix_to_sg",
-   "girdi": {
-    "brix": 5.0
-   },
-   "beklenen": 1.0196693777193944
-  },
-  {
-   "fonk": "brix_to_ri",
-   "girdi": {
-    "brix": 5.0
-   },
-   "beklenen": 1.340300743925
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 10.0
-   },
-   "beklenen": 1.0400291256004368
-  },
-  {
-   "fonk": "brix_to_sg",
-   "girdi": {
-    "brix": 10.0
-   },
-   "beklenen": 1.0400313056593289
-  },
-  {
-   "fonk": "brix_to_ri",
-   "girdi": {
-    "brix": 10.0
-   },
-   "beklenen": 1.3478710457
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 12.0
-   },
-   "beklenen": 1.0483750582240405
-  },
-  {
-   "fonk": "brix_to_sg",
-   "girdi": {
-    "brix": 12.0
-   },
-   "beklenen": 1.0483782421572725
-  },
-  {
-   "fonk": "brix_to_ri",
-   "girdi": {
-    "brix": 12.0
-   },
-   "beklenen": 1.350980242608
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 20.0
-   },
-   "beklenen": 1.082975090146371
-  },
-  {
-   "fonk": "brix_to_sg",
-   "girdi": {
-    "brix": 20.0
-   },
-   "beklenen": 1.0829844579302224
-  },
-  {
-   "fonk": "brix_to_ri",
-   "girdi": {
-    "brix": 20.0
-   },
-   "beklenen": 1.3638803228000003
-  },
-  {
-   "fonk": "to_sg",
-   "girdi": {
-    "plato": 30.0
-   },
-   "beklenen": 1.1291687645352322
-  },
-  {
-   "fonk": "brix_to_sg",
-   "girdi": {
-    "brix": 30.0
-   },
-   "beklenen": 1.1291914675590318
-  },
-  {
-   "fonk": "brix_to_ri",
-   "girdi": {
-    "brix": 30.0
-   },
-   "beklenen": 1.3810478313
-  },
-  {
-   "fonk": "ri_to_brix",
-   "girdi": {
-    "ri": 1.33302
-   },
-   "beklenen": 0.0,
-   "not": "gidiş-dönüş"
-  },
-  {
-   "fonk": "ri_to_brix",
-   "girdi": {
-    "ri": 1.340300743925
-   },
-   "beklenen": 5.000000000000001,
-   "not": "gidiş-dönüş"
-  },
-  {
-   "fonk": "ri_to_brix",
-   "girdi": {
-    "ri": 1.3478710457
-   },
-   "beklenen": 9.999999999999964,
-   "not": "gidiş-dönüş"
-  },
-  {
-   "fonk": "ri_to_brix",
-   "girdi": {
-    "ri": 1.3638803228000003
-   },
-   "beklenen": 20.0000000000001,
-   "not": "gidiş-dönüş"
-  },
-  {
-   "fonk": "ri_to_brix",
-   "girdi": {
-    "ri": 1.3810478313
-   },
-   "beklenen": 29.999999999999986,
-   "not": "gidiş-dönüş"
-  },
-  {
-   "fonk": "ri_to_brix",
-   "girdi": {
-    "ri": 1.345
-   },
-   "beklenen": 8.126150344647446
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 4.337475853422488
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 4.161616316184515
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 5.276399341392099
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 79.32797188069658
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 64.98547456466663
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 104.8293627586208
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 60.35113599999985
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.05,
-    "fg": 1.01
-   },
-   "beklenen": 5.200000000000005
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 5.388855789361488
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 5.543024015169848
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 7.0417648577746785
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 80.7067852915818
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 66.11499851086381
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 142.11424777464774
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 76.09989024000016
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.065,
-    "fg": 1.012
-   },
-   "beklenen": 6.942999999999992
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 6.835777917408878
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 6.716647458939265
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 8.566442573257044
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 78.90410852060452
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 64.63824570007924
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 176.0064018417268
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 98.00108416000063
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016
-   },
-   "beklenen": 8.448000000000008
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 4.842616471756182
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 5.3006889829753705
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 6.721929188187092
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 82.53254708821343
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 67.61066257466445
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 134.92607213387473
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 68.01806713759987
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.0609,
-    "fg": 1.0102
-   },
-   "beklenen": 6.641699999999996
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 6.395204022822467
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 9.582811244698162
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 12.149783905731967
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 89.22634493992041
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 73.0942217747828
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 253.33762666666698
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 92.76405600000042
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01
-   },
-   "beklenen": 12.150000000000013
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 2.6285457598964896
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 2.482352782164762
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 3.1348425187453715
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 79.61758957714234
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 65.22272938159502
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 60.96667876510073
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 35.495864960000134
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.03,
-    "fg": 1.006
-   },
-   "beklenen": 3.0720000000000027
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 10.254873681612711
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 10.076103574084849
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 12.964946665792507
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 77.46074658632521
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 63.455843603517614
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 279.6699198473289
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 152.0124200000001
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.025
-   },
-   "beklenen": 12.825000000000028
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 9.993534207999915
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 146.2032000000003
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.04,
-    "fg": 1.04
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": 5.080915576000052
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": -25.08293333333336
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": 64.42483200000011
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.01,
-    "fg": 1.02
-   },
-   "beklenen": -1.250000000000001
-  },
-  {
-   "fonk": "real_extract",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": 0.0016748511005163884
-  },
-  {
-   "fonk": "abw",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": 0.010251209825716975
-  },
-  {
-   "fonk": "abv",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": 0.012868542731972953
-  },
-  {
-   "fonk": "apparent_attenuation",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": 113.12538217174195
-  },
-  {
-   "fonk": "real_attenuation",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": 92.67231307509101
-  },
-  {
-   "fonk": "alcohol_calories",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": 0.24276938959863117
-  },
-  {
-   "fonk": "extract_calories",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": -1.3558159999997321
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.0001,
-    "fg": 1.0
-   },
-   "beklenen": 0.012499999999998623
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.00694,
-    "fg": 1.0
-   },
-   "beklenen": 0.8674999999999933,
-   "not": "eşik komşuluğu d=6.94"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.00695,
-    "fg": 1.0
-   },
-   "beklenen": 0.8757000000000015,
-   "not": "eşik komşuluğu d=6.95"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.00696,
-    "fg": 1.0
-   },
-   "beklenen": 0.8769600000000097,
-   "not": "eşik komşuluğu d=6.96"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.01044,
-    "fg": 1.0
-   },
-   "beklenen": 1.3154400000000006,
-   "not": "eşik komşuluğu d=10.44"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.01045,
-    "fg": 1.0
-   },
-   "beklenen": 1.327150000000009,
-   "not": "eşik komşuluğu d=10.45"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.01046,
-    "fg": 1.0
-   },
-   "beklenen": 1.328419999999989,
-   "not": "eşik komşuluğu d=10.46"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.01724,
-    "fg": 1.0
-   },
-   "beklenen": 2.1894799999999903,
-   "not": "eşik komşuluğu d=17.24"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.01725,
-    "fg": 1.0
-   },
-   "beklenen": 2.190749999999998,
-   "not": "eşik komşuluğu d=17.25"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.01726,
-    "fg": 1.0
-   },
-   "beklenen": 2.2092800000000072,
-   "not": "eşik komşuluğu d=17.26"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.02614,
-    "fg": 1.0
-   },
-   "beklenen": 3.3459200000000067,
-   "not": "eşik komşuluğu d=26.14"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.02615,
-    "fg": 1.0
-   },
-   "beklenen": 3.3471999999999866,
-   "not": "eşik komşuluğu d=26.15"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.02616,
-    "fg": 1.0
-   },
-   "beklenen": 3.374639999999995,
-   "not": "eşik komşuluğu d=26.16"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.03604,
-    "fg": 1.0
-   },
-   "beklenen": 4.649160000000009,
-   "not": "eşik komşuluğu d=36.04"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.03605,
-    "fg": 1.0
-   },
-   "beklenen": 4.650449999999989,
-   "not": "eşik komşuluğu d=36.05"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.03606,
-    "fg": 1.0
-   },
-   "beklenen": 4.6877999999999975,
-   "not": "eşik komşuluğu d=36.06"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.04654,
-    "fg": 1.0
-   },
-   "beklenen": 6.050200000000004,
-   "not": "eşik komşuluğu d=46.54"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.04655,
-    "fg": 1.0
-   },
-   "beklenen": 6.098050000000012,
-   "not": "eşik komşuluğu d=46.55"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.04656,
-    "fg": 1.0
-   },
-   "beklenen": 6.099359999999991,
-   "not": "eşik komşuluğu d=46.56"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.05714,
-    "fg": 1.0
-   },
-   "beklenen": 7.485339999999996,
-   "not": "eşik komşuluğu d=57.14"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.05715,
-    "fg": 1.0
-   },
-   "beklenen": 7.5438000000000045,
-   "not": "eşik komşuluğu d=57.15"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.05716,
-    "fg": 1.0
-   },
-   "beklenen": 7.545120000000013,
-   "not": "eşik komşuluğu d=57.16"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.0679400000000001,
-    "fg": 1.0
-   },
-   "beklenen": 8.968080000000015,
-   "not": "eşik komşuluğu d=67.94"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.06795,
-    "fg": 1.0
-   },
-   "beklenen": 8.969399999999995,
-   "not": "eşik komşuluğu d=67.95"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.06796,
-    "fg": 1.0
-   },
-   "beklenen": 9.038680000000003,
-   "not": "eşik komşuluğu d=67.96"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.07884,
-    "fg": 1.0
-   },
-   "beklenen": 10.485720000000002,
-   "not": "eşik komşuluğu d=78.84"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.07885,
-    "fg": 1.0
-   },
-   "beklenen": 10.565900000000012,
-   "not": "eşik komşuluğu d=78.85"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.07886,
-    "fg": 1.0
-   },
-   "beklenen": 10.567239999999991,
-   "not": "eşik komşuluğu d=78.86"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.08974,
-    "fg": 1.0
-   },
-   "beklenen": 12.02515999999999,
-   "not": "eşik komşuluğu d=89.74"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.08975,
-    "fg": 1.0
-   },
-   "beklenen": 12.0265,
-   "not": "eşik komşuluğu d=89.75"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.08976,
-    "fg": 1.0
-   },
-   "beklenen": 12.117600000000008,
-   "not": "eşik komşuluğu d=89.76"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.0,
-    "fg": 1.0
-   },
-   "beklenen": 0.0,
-   "not": "d = 0"
-  },
-  {
-   "fonk": "uk_tax_abv",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.005
-   },
-   "beklenen": 12.825000000000028,
-   "not": "d > 89.75"
-  },
-  {
-   "fonk": "morey_srm",
-   "girdi": {
-    "mcu_sum": 80.0,
-    "volume_gal": 6.0
-   },
-   "beklenen": 8.819064422399967
-  },
-  {
-   "fonk": "morey_srm",
-   "girdi": {
-    "mcu_sum": 20.0,
-    "volume_gal": 5.0
-   },
-   "beklenen": 3.8617129070467504
-  },
-  {
-   "fonk": "morey_srm",
-   "girdi": {
-    "mcu_sum": 150.0,
-    "volume_gal": 5.5
-   },
-   "beklenen": 14.407653706958163
-  },
-  {
-   "fonk": "morey_srm",
-   "girdi": {
-    "mcu_sum": 0.0,
-    "volume_gal": 5.0
-   },
-   "beklenen": 0.0
-  },
-  {
-   "fonk": "morey_srm",
-   "girdi": {
-    "mcu_sum": 1.0,
-    "volume_gal": 20.0
-   },
-   "beklenen": 0.1911835676377455
-  },
-  {
-   "fonk": "hydrometer_correction",
-   "girdi": {
-    "sg": 1.05,
-    "temp_f": 77,
-    "calib_f": 60
-   },
-   "beklenen": 1.0520003556412
-  },
-  {
-   "fonk": "hydrometer_correction",
-   "girdi": {
-    "sg": 1.05,
-    "temp_f": 60,
-    "calib_f": 60
-   },
-   "beklenen": 1.05
-  },
-  {
-   "fonk": "hydrometer_correction",
-   "girdi": {
-    "sg": 1.04,
-    "temp_f": 68,
-    "calib_f": 68
-   },
-   "beklenen": 1.04
-  },
-  {
-   "fonk": "hydrometer_correction",
-   "girdi": {
-    "sg": 1.06,
-    "temp_f": 100,
-    "calib_f": 60
-   },
-   "beklenen": 1.0661509992135831
-  },
-  {
-   "fonk": "hydrometer_correction",
-   "girdi": {
-    "sg": 1.02,
-    "temp_f": 40,
-    "calib_f": 60
-   },
-   "beklenen": 1.0189160502038972
-  },
-  {
-   "fonk": "hydrometer_correction",
-   "girdi": {
-    "sg": 1.05,
-    "temp_f": 59.5,
-    "calib_f": 68
-   },
-   "beklenen": 1.0491288304068664
-  },
-  {
-   "fonk": "refractometer_unfermented",
-   "girdi": {
-    "brix": 12.0,
-    "zero": 0.0,
-    "wcf": 1.02
-   },
-   "beklenen": 1.0473870547142368
-  },
-  {
-   "fonk": "refractometer_unfermented",
-   "girdi": {
-    "brix": 10.0,
-    "zero": 0.0,
-    "wcf": 1.0
-   },
-   "beklenen": 1.0400291256004368
-  },
-  {
-   "fonk": "refractometer_unfermented",
-   "girdi": {
-    "brix": 15.0,
-    "zero": 0.5,
-    "wcf": 1.04
-   },
-   "beklenen": 1.056594146769727
-  },
-  {
-   "fonk": "refractometer_unfermented",
-   "girdi": {
-    "brix": 0.0,
-    "zero": 0.0,
-    "wcf": 1.02
-   },
-   "beklenen": 1.0
-  },
-  {
-   "fonk": "refractometer_unfermented",
-   "girdi": {
-    "brix": 20.0,
-    "zero": -0.3,
-    "wcf": 1.02
-   },
-   "beklenen": 1.0825388669829457
-  },
-  {
-   "fonk": "refractometer_fermenting",
-   "girdi": {
-    "og": 1.05,
-    "brix": 6.5,
-    "zero": 0.0
-   },
-   "beklenen": 1.0106112849920814
-  },
-  {
-   "fonk": "refractometer_fermenting",
-   "girdi": {
-    "og": 1.06,
-    "brix": 8.0,
-    "zero": 0.0
-   },
-   "beklenen": 1.0139711877774022
-  },
-  {
-   "fonk": "refractometer_fermenting",
-   "girdi": {
-    "og": 1.04,
-    "brix": 5.0,
-    "zero": 0.3
-   },
-   "beklenen": 1.0055884401626973
-  },
-  {
-   "fonk": "refractometer_fermenting",
-   "girdi": {
-    "og": 1.08,
-    "brix": 12.0,
-    "zero": 0.0
-   },
-   "beklenen": 1.0277175397624443
-  },
-  {
-   "fonk": "refractometer_fermenting",
-   "girdi": {
-    "og": 1.1,
-    "brix": 0.0,
-    "zero": 0.0
-   },
-   "beklenen": 0.9418863215805153
-  },
-  {
-   "fonk": "refractometer_finished",
-   "girdi": {
-    "fg": 1.01,
-    "brix": 6.5,
-    "zero": 0.0
-   },
-   "beklenen": [
-    1.051371342494368,
-    4.2568560893583935,
-    4.49146583702543,
-    12.711179406231324
-   ],
-   "not": "[og, abw_yuzde, re, oe]"
-  },
-  {
-   "fonk": "refractometer_finished",
-   "girdi": {
-    "fg": 1.012,
-    "brix": 10.0,
-    "zero": 0.0
-   },
-   "beklenen": [
-    1.0845410514072027,
-    7.528593435004495,
-    6.427589520493314,
-    20.351366775358393
-   ],
-   "not": "[og, abw_yuzde, re, oe]"
-  },
-  {
-   "fonk": "refractometer_finished",
-   "girdi": {
-    "fg": 1.008,
-    "brix": 8.0,
-    "zero": 0.4
-   },
-   "beklenen": [
-    1.0659228386766642,
-    5.997592975302041,
-    4.751461277189037,
-    16.114719913073138
-   ],
-   "not": "[og, abw_yuzde, re, oe]"
-  },
-  {
-   "fonk": "refractometer_finished",
-   "girdi": {
-    "fg": 1.02,
-    "brix": 14.0,
-    "zero": 0.0
-   },
-   "beklenen": [
-    1.115076976695716,
-    9.875434764288343,
-    9.466512390755952,
-    27.02751915463827
-   ],
-   "not": "[og, abw_yuzde, re, oe]"
-  },
-  {
-   "fonk": "refractometer_finished",
-   "girdi": {
-    "fg": 1.005,
-    "brix": 4.0,
-    "zero": 0.0
-   },
-   "beklenen": [
-    1.0343337689374008,
-    3.004554923848218,
-    2.6861067179548854,
-    8.618840963149562
-   ],
-   "not": "[og, abw_yuzde, re, oe]"
-  },
-  {
-   "fonk": "fg_from_tolerance",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.01,
-    "tol": 10.0
-   },
-   "beklenen": 1.0259375
-  },
-  {
-   "fonk": "fg_from_tolerance",
-   "girdi": {
-    "og": 1.09,
-    "fg": 1.005,
-    "tol": 8.0
-   },
-   "beklenen": 1.030634765625
-  },
-  {
-   "fonk": "fg_from_tolerance",
-   "girdi": {
-    "og": 1.12,
-    "fg": 1.01,
-    "tol": 12.0
-   },
-   "beklenen": 1.0319140625
-  },
-  {
-   "fonk": "fg_from_tolerance",
-   "girdi": {
-    "og": 1.08,
-    "fg": 1.016,
-    "tol": 7.0
-   },
-   "beklenen": 1.02753125
-  },
-  {
-   "fonk": "fg_from_tolerance",
-   "girdi": {
-    "og": 1.06,
-    "fg": 1.012,
-    "tol": 5.0
-   },
-   "beklenen": 1.0225
-  },
-  {
-   "fonk": "fg_from_tolerance",
-   "girdi": {
-    "og": 1.13,
-    "fg": 1.02,
-    "tol": 9.5
-   },
-   "beklenen": 1.0609375
-  },
-  {
-   "fonk": "fg_from_tolerance",
-   "girdi": {
-    "og": 1.1,
-    "fg": 1.05,
-    "tol": 10.0
-   },
-   "beklenen": 1.0500000000000003
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.04,
-    "target": 1.05,
-    "volume_floz": 640.0,
-    "kind": 0
-   },
-   "beklenen": 18.181818181818198
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.04,
-    "target": 1.05,
-    "volume_floz": 640.0,
-    "kind": 1
-   },
-   "beklenen": 22.222222222222243
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.03,
-    "target": 1.06,
-    "volume_floz": 704.0,
-    "kind": 0
-   },
-   "beklenen": 60.000000000000064
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.05,
-    "target": 1.05,
-    "volume_floz": 640.0,
-    "kind": 0
-   },
-   "beklenen": 0
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.06,
-    "target": 1.05,
-    "volume_floz": 640.0,
-    "kind": 1
-   },
-   "beklenen": 0
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.04,
-    "target": 1.05,
-    "volume_floz": 0.0,
-    "kind": 0
-   },
-   "beklenen": 0.00028409090909090935
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.04,
-    "target": 1.05,
-    "volume_floz": 0.005,
-    "kind": 1
-   },
-   "beklenen": 0.0003472222222222225
-  },
-  {
-   "fonk": "gravity_adjust_extract_oz",
-   "girdi": {
-    "current": 1.02,
-    "target": 1.07,
-    "volume_floz": 1280.0,
-    "kind": 1
-   },
-   "beklenen": 222.22222222222243
-  },
-  {
-   "fonk": "gravity_adjust_water_floz",
-   "girdi": {
-    "current": 1.06,
-    "target": 1.05,
-    "volume_floz": 640.0
-   },
-   "beklenen": 128.0000000000001
-  },
-  {
-   "fonk": "gravity_adjust_water_floz",
-   "girdi": {
-    "current": 1.08,
-    "target": 1.04,
-    "volume_floz": 704.0
-   },
-   "beklenen": 704.0
-  },
-  {
-   "fonk": "gravity_adjust_water_floz",
-   "girdi": {
-    "current": 1.04,
-    "target": 1.05,
-    "volume_floz": 640.0
-   },
-   "beklenen": 0
-  },
-  {
-   "fonk": "gravity_adjust_water_floz",
-   "girdi": {
-    "current": 1.05,
-    "target": 1.05,
-    "volume_floz": 640.0
-   },
-   "beklenen": 0
-  },
-  {
-   "fonk": "gravity_adjust_water_floz",
-   "girdi": {
-    "current": 1.1,
-    "target": 1.03,
-    "volume_floz": 1280.0
-   },
-   "beklenen": 2986.666666666666
-  },
-  {
-   "fonk": "gravity_adjust_water_floz",
-   "girdi": {
-    "current": 1.05,
-    "target": 1.02,
-    "volume_floz": 0.0
-   },
-   "beklenen": 0
-  }
- ]
-}
+{"bolum":"01","kaynak":"formuller/testler/01_yogunluk_tv.py","vakalar":[
+{"fonk":"to_plato","girdi":{"sg":1.0},"beklenen":-0.0030000000000427463},
+{"fonk":"sg_to_brix","girdi":{"sg":1.0},"beklenen":-0.004800000000045657},
+{"fonk":"to_plato","girdi":{"sg":1.01},"beklenen":2.5607778970000936},
+{"fonk":"sg_to_brix","girdi":{"sg":1.01},"beklenen":2.560507280099955},
+{"fonk":"to_plato","girdi":{"sg":1.04},"beklenen":9.993534207999915},
+{"fonk":"sg_to_brix","girdi":{"sg":1.04},"beklenen":9.993414566399906},
+{"fonk":"to_plato","girdi":{"sg":1.05},"beklenen":12.387647125000058},
+{"fonk":"sg_to_brix","girdi":{"sg":1.05},"beklenen":12.387028012500082},
+{"fonk":"to_plato","girdi":{"sg":1.1},"beklenen":23.76888699999995},
+{"fonk":"sg_to_brix","girdi":{"sg":1.1},"beklenen":23.77419210000005},
+{"fonk":"to_plato","girdi":{"sg":1.12},"beklenen":28.06159641599993},
+{"fonk":"sg_to_brix","girdi":{"sg":1.12},"beklenen":28.078405132799958},
+{"fonk":"to_sg","girdi":{"plato":0.0},"beklenen":1.0},
+{"fonk":"brix_to_sg","girdi":{"brix":0.0},"beklenen":1.0},
+{"fonk":"brix_to_ri","girdi":{"brix":0.0},"beklenen":1.33302},
+{"fonk":"to_sg","girdi":{"plato":5.0},"beklenen":1.0196688513847145},
+{"fonk":"brix_to_sg","girdi":{"brix":5.0},"beklenen":1.0196693777193944},
+{"fonk":"brix_to_ri","girdi":{"brix":5.0},"beklenen":1.340300743925},
+{"fonk":"to_sg","girdi":{"plato":10.0},"beklenen":1.0400291256004368},
+{"fonk":"brix_to_sg","girdi":{"brix":10.0},"beklenen":1.0400313056593289},
+{"fonk":"brix_to_ri","girdi":{"brix":10.0},"beklenen":1.3478710457},
+{"fonk":"to_sg","girdi":{"plato":12.0},"beklenen":1.0483750582240405},
+{"fonk":"brix_to_sg","girdi":{"brix":12.0},"beklenen":1.0483782421572725},
+{"fonk":"brix_to_ri","girdi":{"brix":12.0},"beklenen":1.350980242608},
+{"fonk":"to_sg","girdi":{"plato":20.0},"beklenen":1.082975090146371},
+{"fonk":"brix_to_sg","girdi":{"brix":20.0},"beklenen":1.0829844579302224},
+{"fonk":"brix_to_ri","girdi":{"brix":20.0},"beklenen":1.3638803228000003},
+{"fonk":"to_sg","girdi":{"plato":30.0},"beklenen":1.1291687645352322},
+{"fonk":"brix_to_sg","girdi":{"brix":30.0},"beklenen":1.1291914675590318},
+{"fonk":"brix_to_ri","girdi":{"brix":30.0},"beklenen":1.3810478313},
+{"fonk":"ri_to_brix","girdi":{"ri":1.33302},"beklenen":0.0,"not":"gidiş-dönüş"},
+{"fonk":"ri_to_brix","girdi":{"ri":1.340300743925},"beklenen":5.000000000000001,"not":"gidiş-dönüş"},
+{"fonk":"ri_to_brix","girdi":{"ri":1.3478710457},"beklenen":9.999999999999964,"not":"gidiş-dönüş"},
+{"fonk":"ri_to_brix","girdi":{"ri":1.3638803228000003},"beklenen":20.0000000000001,"not":"gidiş-dönüş"},
+{"fonk":"ri_to_brix","girdi":{"ri":1.3810478313},"beklenen":29.999999999999986,"not":"gidiş-dönüş"},
+{"fonk":"ri_to_brix","girdi":{"ri":1.345},"beklenen":8.126150344647446},
+{"fonk":"real_extract","girdi":{"og":1.05,"fg":1.01},"beklenen":4.337475853422488},
+{"fonk":"abw","girdi":{"og":1.05,"fg":1.01},"beklenen":4.161616316184515},
+{"fonk":"abv","girdi":{"og":1.05,"fg":1.01},"beklenen":5.276399341392099},
+{"fonk":"apparent_attenuation","girdi":{"og":1.05,"fg":1.01},"beklenen":79.32797188069658},
+{"fonk":"real_attenuation","girdi":{"og":1.05,"fg":1.01},"beklenen":64.98547456466663},
+{"fonk":"alcohol_calories","girdi":{"og":1.05,"fg":1.01},"beklenen":104.8293627586208},
+{"fonk":"extract_calories","girdi":{"og":1.05,"fg":1.01},"beklenen":60.35113599999985},
+{"fonk":"uk_tax_abv","girdi":{"og":1.05,"fg":1.01},"beklenen":5.200000000000005},
+{"fonk":"real_extract","girdi":{"og":1.065,"fg":1.012},"beklenen":5.388855789361488},
+{"fonk":"abw","girdi":{"og":1.065,"fg":1.012},"beklenen":5.543024015169848},
+{"fonk":"abv","girdi":{"og":1.065,"fg":1.012},"beklenen":7.0417648577746785},
+{"fonk":"apparent_attenuation","girdi":{"og":1.065,"fg":1.012},"beklenen":80.7067852915818},
+{"fonk":"real_attenuation","girdi":{"og":1.065,"fg":1.012},"beklenen":66.11499851086381},
+{"fonk":"alcohol_calories","girdi":{"og":1.065,"fg":1.012},"beklenen":142.11424777464774},
+{"fonk":"extract_calories","girdi":{"og":1.065,"fg":1.012},"beklenen":76.09989024000016},
+{"fonk":"uk_tax_abv","girdi":{"og":1.065,"fg":1.012},"beklenen":6.942999999999992},
+{"fonk":"real_extract","girdi":{"og":1.08,"fg":1.016},"beklenen":6.835777917408878},
+{"fonk":"abw","girdi":{"og":1.08,"fg":1.016},"beklenen":6.716647458939265},
+{"fonk":"abv","girdi":{"og":1.08,"fg":1.016},"beklenen":8.566442573257044},
+{"fonk":"apparent_attenuation","girdi":{"og":1.08,"fg":1.016},"beklenen":78.90410852060452},
+{"fonk":"real_attenuation","girdi":{"og":1.08,"fg":1.016},"beklenen":64.63824570007924},
+{"fonk":"alcohol_calories","girdi":{"og":1.08,"fg":1.016},"beklenen":176.0064018417268},
+{"fonk":"extract_calories","girdi":{"og":1.08,"fg":1.016},"beklenen":98.00108416000063},
+{"fonk":"uk_tax_abv","girdi":{"og":1.08,"fg":1.016},"beklenen":8.448000000000008},
+{"fonk":"real_extract","girdi":{"og":1.0609,"fg":1.0102},"beklenen":4.842616471756182},
+{"fonk":"abw","girdi":{"og":1.0609,"fg":1.0102},"beklenen":5.3006889829753705},
+{"fonk":"abv","girdi":{"og":1.0609,"fg":1.0102},"beklenen":6.721929188187092},
+{"fonk":"apparent_attenuation","girdi":{"og":1.0609,"fg":1.0102},"beklenen":82.53254708821343},
+{"fonk":"real_attenuation","girdi":{"og":1.0609,"fg":1.0102},"beklenen":67.61066257466445},
+{"fonk":"alcohol_calories","girdi":{"og":1.0609,"fg":1.0102},"beklenen":134.92607213387473},
+{"fonk":"extract_calories","girdi":{"og":1.0609,"fg":1.0102},"beklenen":68.01806713759987},
+{"fonk":"uk_tax_abv","girdi":{"og":1.0609,"fg":1.0102},"beklenen":6.641699999999996},
+{"fonk":"real_extract","girdi":{"og":1.1,"fg":1.01},"beklenen":6.395204022822467},
+{"fonk":"abw","girdi":{"og":1.1,"fg":1.01},"beklenen":9.582811244698162},
+{"fonk":"abv","girdi":{"og":1.1,"fg":1.01},"beklenen":12.149783905731967},
+{"fonk":"apparent_attenuation","girdi":{"og":1.1,"fg":1.01},"beklenen":89.22634493992041},
+{"fonk":"real_attenuation","girdi":{"og":1.1,"fg":1.01},"beklenen":73.0942217747828},
+{"fonk":"alcohol_calories","girdi":{"og":1.1,"fg":1.01},"beklenen":253.33762666666698},
+{"fonk":"extract_calories","girdi":{"og":1.1,"fg":1.01},"beklenen":92.76405600000042},
+{"fonk":"uk_tax_abv","girdi":{"og":1.1,"fg":1.01},"beklenen":12.150000000000013},
+{"fonk":"real_extract","girdi":{"og":1.03,"fg":1.006},"beklenen":2.6285457598964896},
+{"fonk":"abw","girdi":{"og":1.03,"fg":1.006},"beklenen":2.482352782164762},
+{"fonk":"abv","girdi":{"og":1.03,"fg":1.006},"beklenen":3.1348425187453715},
+{"fonk":"apparent_attenuation","girdi":{"og":1.03,"fg":1.006},"beklenen":79.61758957714234},
+{"fonk":"real_attenuation","girdi":{"og":1.03,"fg":1.006},"beklenen":65.22272938159502},
+{"fonk":"alcohol_calories","girdi":{"og":1.03,"fg":1.006},"beklenen":60.96667876510073},
+{"fonk":"extract_calories","girdi":{"og":1.03,"fg":1.006},"beklenen":35.495864960000134},
+{"fonk":"uk_tax_abv","girdi":{"og":1.03,"fg":1.006},"beklenen":3.0720000000000027},
+{"fonk":"real_extract","girdi":{"og":1.12,"fg":1.025},"beklenen":10.254873681612711},
+{"fonk":"abw","girdi":{"og":1.12,"fg":1.025},"beklenen":10.076103574084849},
+{"fonk":"abv","girdi":{"og":1.12,"fg":1.025},"beklenen":12.964946665792507},
+{"fonk":"apparent_attenuation","girdi":{"og":1.12,"fg":1.025},"beklenen":77.46074658632521},
+{"fonk":"real_attenuation","girdi":{"og":1.12,"fg":1.025},"beklenen":63.455843603517614},
+{"fonk":"alcohol_calories","girdi":{"og":1.12,"fg":1.025},"beklenen":279.6699198473289},
+{"fonk":"extract_calories","girdi":{"og":1.12,"fg":1.025},"beklenen":152.0124200000001},
+{"fonk":"uk_tax_abv","girdi":{"og":1.12,"fg":1.025},"beklenen":12.825000000000028},
+{"fonk":"real_extract","girdi":{"og":1.04,"fg":1.04},"beklenen":9.993534207999915},
+{"fonk":"abw","girdi":{"og":1.04,"fg":1.04},"beklenen":0.0},
+{"fonk":"abv","girdi":{"og":1.04,"fg":1.04},"beklenen":0.0},
+{"fonk":"apparent_attenuation","girdi":{"og":1.04,"fg":1.04},"beklenen":0.0},
+{"fonk":"real_attenuation","girdi":{"og":1.04,"fg":1.04},"beklenen":0.0},
+{"fonk":"alcohol_calories","girdi":{"og":1.04,"fg":1.04},"beklenen":0.0},
+{"fonk":"extract_calories","girdi":{"og":1.04,"fg":1.04},"beklenen":146.2032000000003},
+{"fonk":"uk_tax_abv","girdi":{"og":1.04,"fg":1.04},"beklenen":0.0},
+{"fonk":"real_extract","girdi":{"og":1.01,"fg":1.02},"beklenen":5.080915576000052},
+{"fonk":"abw","girdi":{"og":1.01,"fg":1.02},"beklenen":0.0},
+{"fonk":"abv","girdi":{"og":1.01,"fg":1.02},"beklenen":0.0},
+{"fonk":"apparent_attenuation","girdi":{"og":1.01,"fg":1.02},"beklenen":0.0},
+{"fonk":"real_attenuation","girdi":{"og":1.01,"fg":1.02},"beklenen":0.0},
+{"fonk":"alcohol_calories","girdi":{"og":1.01,"fg":1.02},"beklenen":-25.08293333333336},
+{"fonk":"extract_calories","girdi":{"og":1.01,"fg":1.02},"beklenen":64.42483200000011},
+{"fonk":"uk_tax_abv","girdi":{"og":1.01,"fg":1.02},"beklenen":-1.250000000000001},
+{"fonk":"real_extract","girdi":{"og":1.0001,"fg":1.0},"beklenen":0.0016748511005163884},
+{"fonk":"abw","girdi":{"og":1.0001,"fg":1.0},"beklenen":0.010251209825716975},
+{"fonk":"abv","girdi":{"og":1.0001,"fg":1.0},"beklenen":0.012868542731972953},
+{"fonk":"apparent_attenuation","girdi":{"og":1.0001,"fg":1.0},"beklenen":113.12538217174195},
+{"fonk":"real_attenuation","girdi":{"og":1.0001,"fg":1.0},"beklenen":92.67231307509101},
+{"fonk":"alcohol_calories","girdi":{"og":1.0001,"fg":1.0},"beklenen":0.24276938959863117},
+{"fonk":"extract_calories","girdi":{"og":1.0001,"fg":1.0},"beklenen":-1.3558159999997321},
+{"fonk":"uk_tax_abv","girdi":{"og":1.0001,"fg":1.0},"beklenen":0.012499999999998623},
+{"fonk":"uk_tax_abv","girdi":{"og":1.00694,"fg":1.0},"beklenen":0.8674999999999933,"not":"eşik komşuluğu d=6.94"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.00695,"fg":1.0},"beklenen":0.8757000000000015,"not":"eşik komşuluğu d=6.95"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.00696,"fg":1.0},"beklenen":0.8769600000000097,"not":"eşik komşuluğu d=6.96"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.01044,"fg":1.0},"beklenen":1.3154400000000006,"not":"eşik komşuluğu d=10.44"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.01045,"fg":1.0},"beklenen":1.327150000000009,"not":"eşik komşuluğu d=10.45"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.01046,"fg":1.0},"beklenen":1.328419999999989,"not":"eşik komşuluğu d=10.46"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.01724,"fg":1.0},"beklenen":2.1894799999999903,"not":"eşik komşuluğu d=17.24"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.01725,"fg":1.0},"beklenen":2.190749999999998,"not":"eşik komşuluğu d=17.25"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.01726,"fg":1.0},"beklenen":2.2092800000000072,"not":"eşik komşuluğu d=17.26"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.02614,"fg":1.0},"beklenen":3.3459200000000067,"not":"eşik komşuluğu d=26.14"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.02615,"fg":1.0},"beklenen":3.3471999999999866,"not":"eşik komşuluğu d=26.15"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.02616,"fg":1.0},"beklenen":3.374639999999995,"not":"eşik komşuluğu d=26.16"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.03604,"fg":1.0},"beklenen":4.649160000000009,"not":"eşik komşuluğu d=36.04"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.03605,"fg":1.0},"beklenen":4.650449999999989,"not":"eşik komşuluğu d=36.05"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.03606,"fg":1.0},"beklenen":4.6877999999999975,"not":"eşik komşuluğu d=36.06"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.04654,"fg":1.0},"beklenen":6.050200000000004,"not":"eşik komşuluğu d=46.54"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.04655,"fg":1.0},"beklenen":6.098050000000012,"not":"eşik komşuluğu d=46.55"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.04656,"fg":1.0},"beklenen":6.099359999999991,"not":"eşik komşuluğu d=46.56"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.05714,"fg":1.0},"beklenen":7.485339999999996,"not":"eşik komşuluğu d=57.14"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.05715,"fg":1.0},"beklenen":7.5438000000000045,"not":"eşik komşuluğu d=57.15"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.05716,"fg":1.0},"beklenen":7.545120000000013,"not":"eşik komşuluğu d=57.16"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.0679400000000001,"fg":1.0},"beklenen":8.968080000000015,"not":"eşik komşuluğu d=67.94"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.06795,"fg":1.0},"beklenen":8.969399999999995,"not":"eşik komşuluğu d=67.95"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.06796,"fg":1.0},"beklenen":9.038680000000003,"not":"eşik komşuluğu d=67.96"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.07884,"fg":1.0},"beklenen":10.485720000000002,"not":"eşik komşuluğu d=78.84"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.07885,"fg":1.0},"beklenen":10.565900000000012,"not":"eşik komşuluğu d=78.85"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.07886,"fg":1.0},"beklenen":10.567239999999991,"not":"eşik komşuluğu d=78.86"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.08974,"fg":1.0},"beklenen":12.02515999999999,"not":"eşik komşuluğu d=89.74"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.08975,"fg":1.0},"beklenen":12.0265,"not":"eşik komşuluğu d=89.75"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.08976,"fg":1.0},"beklenen":12.117600000000008,"not":"eşik komşuluğu d=89.76"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.0,"fg":1.0},"beklenen":0.0,"not":"d = 0"},
+{"fonk":"uk_tax_abv","girdi":{"og":1.1,"fg":1.005},"beklenen":12.825000000000028,"not":"d > 89.75"},
+{"fonk":"morey_srm","girdi":{"mcu_sum":80.0,"volume_gal":6.0},"beklenen":8.819064422399967},
+{"fonk":"morey_srm","girdi":{"mcu_sum":20.0,"volume_gal":5.0},"beklenen":3.8617129070467504},
+{"fonk":"morey_srm","girdi":{"mcu_sum":150.0,"volume_gal":5.5},"beklenen":14.407653706958163},
+{"fonk":"morey_srm","girdi":{"mcu_sum":0.0,"volume_gal":5.0},"beklenen":0.0},
+{"fonk":"morey_srm","girdi":{"mcu_sum":1.0,"volume_gal":20.0},"beklenen":0.1911835676377455},
+{"fonk":"hydrometer_correction","girdi":{"sg":1.05,"temp_f":77,"calib_f":60},"beklenen":1.0520003556412},
+{"fonk":"hydrometer_correction","girdi":{"sg":1.05,"temp_f":60,"calib_f":60},"beklenen":1.05},
+{"fonk":"hydrometer_correction","girdi":{"sg":1.04,"temp_f":68,"calib_f":68},"beklenen":1.04},
+{"fonk":"hydrometer_correction","girdi":{"sg":1.06,"temp_f":100,"calib_f":60},"beklenen":1.0661509992135831},
+{"fonk":"hydrometer_correction","girdi":{"sg":1.02,"temp_f":40,"calib_f":60},"beklenen":1.0189160502038972},
+{"fonk":"hydrometer_correction","girdi":{"sg":1.05,"temp_f":59.5,"calib_f":68},"beklenen":1.0491288304068664},
+{"fonk":"refractometer_unfermented","girdi":{"brix":12.0,"zero":0.0,"wcf":1.02},"beklenen":1.0473870547142368},
+{"fonk":"refractometer_unfermented","girdi":{"brix":10.0,"zero":0.0,"wcf":1.0},"beklenen":1.0400291256004368},
+{"fonk":"refractometer_unfermented","girdi":{"brix":15.0,"zero":0.5,"wcf":1.04},"beklenen":1.056594146769727},
+{"fonk":"refractometer_unfermented","girdi":{"brix":0.0,"zero":0.0,"wcf":1.02},"beklenen":1.0},
+{"fonk":"refractometer_unfermented","girdi":{"brix":20.0,"zero":-0.3,"wcf":1.02},"beklenen":1.0825388669829457},
+{"fonk":"refractometer_fermenting","girdi":{"og":1.05,"brix":6.5,"zero":0.0},"beklenen":1.0106112849920814},
+{"fonk":"refractometer_fermenting","girdi":{"og":1.06,"brix":8.0,"zero":0.0},"beklenen":1.0139711877774022},
+{"fonk":"refractometer_fermenting","girdi":{"og":1.04,"brix":5.0,"zero":0.3},"beklenen":1.0055884401626973},
+{"fonk":"refractometer_fermenting","girdi":{"og":1.08,"brix":12.0,"zero":0.0},"beklenen":1.0277175397624443},
+{"fonk":"refractometer_fermenting","girdi":{"og":1.1,"brix":0.0,"zero":0.0},"beklenen":0.9418863215805153},
+{"fonk":"refractometer_finished","girdi":{"fg":1.01,"brix":6.5,"zero":0.0},"beklenen":[1.051371342494368,4.2568560893583935,4.49146583702543,12.711179406231324],"not":"[og, abw_yuzde, re, oe]"},
+{"fonk":"refractometer_finished","girdi":{"fg":1.012,"brix":10.0,"zero":0.0},"beklenen":[1.0845410514072027,7.528593435004495,6.427589520493314,20.351366775358393],"not":"[og, abw_yuzde, re, oe]"},
+{"fonk":"refractometer_finished","girdi":{"fg":1.008,"brix":8.0,"zero":0.4},"beklenen":[1.0659228386766642,5.997592975302041,4.751461277189037,16.114719913073138],"not":"[og, abw_yuzde, re, oe]"},
+{"fonk":"refractometer_finished","girdi":{"fg":1.02,"brix":14.0,"zero":0.0},"beklenen":[1.115076976695716,9.875434764288343,9.466512390755952,27.02751915463827],"not":"[og, abw_yuzde, re, oe]"},
+{"fonk":"refractometer_finished","girdi":{"fg":1.005,"brix":4.0,"zero":0.0},"beklenen":[1.0343337689374008,3.004554923848218,2.6861067179548854,8.618840963149562],"not":"[og, abw_yuzde, re, oe]"},
+{"fonk":"fg_from_tolerance","girdi":{"og":1.1,"fg":1.01,"tol":10.0},"beklenen":1.0259375},
+{"fonk":"fg_from_tolerance","girdi":{"og":1.09,"fg":1.005,"tol":8.0},"beklenen":1.030634765625},
+{"fonk":"fg_from_tolerance","girdi":{"og":1.12,"fg":1.01,"tol":12.0},"beklenen":1.0319140625},
+{"fonk":"fg_from_tolerance","girdi":{"og":1.08,"fg":1.016,"tol":7.0},"beklenen":1.02753125},
+{"fonk":"fg_from_tolerance","girdi":{"og":1.06,"fg":1.012,"tol":5.0},"beklenen":1.0225},
+{"fonk":"fg_from_tolerance","girdi":{"og":1.13,"fg":1.02,"tol":9.5},"beklenen":1.0609375},
+{"fonk":"fg_from_tolerance","girdi":{"og":1.1,"fg":1.05,"tol":10.0},"beklenen":1.0500000000000003},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.04,"target":1.05,"volume_floz":640.0,"kind":0},"beklenen":18.181818181818198},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.04,"target":1.05,"volume_floz":640.0,"kind":1},"beklenen":22.222222222222243},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.03,"target":1.06,"volume_floz":704.0,"kind":0},"beklenen":60.000000000000064},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.05,"target":1.05,"volume_floz":640.0,"kind":0},"beklenen":0},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.06,"target":1.05,"volume_floz":640.0,"kind":1},"beklenen":0},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.04,"target":1.05,"volume_floz":0.0,"kind":0},"beklenen":0.00028409090909090935},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.04,"target":1.05,"volume_floz":0.005,"kind":1},"beklenen":0.0003472222222222225},
+{"fonk":"gravity_adjust_extract_oz","girdi":{"current":1.02,"target":1.07,"volume_floz":1280.0,"kind":1},"beklenen":222.22222222222243},
+{"fonk":"gravity_adjust_water_floz","girdi":{"current":1.06,"target":1.05,"volume_floz":640.0},"beklenen":128.0000000000001},
+{"fonk":"gravity_adjust_water_floz","girdi":{"current":1.08,"target":1.04,"volume_floz":704.0},"beklenen":704.0},
+{"fonk":"gravity_adjust_water_floz","girdi":{"current":1.04,"target":1.05,"volume_floz":640.0},"beklenen":0},
+{"fonk":"gravity_adjust_water_floz","girdi":{"current":1.05,"target":1.05,"volume_floz":640.0},"beklenen":0},
+{"fonk":"gravity_adjust_water_floz","girdi":{"current":1.1,"target":1.03,"volume_floz":1280.0},"beklenen":2986.666666666666},
+{"fonk":"gravity_adjust_water_floz","girdi":{"current":1.05,"target":1.02,"volume_floz":0.0},"beklenen":0}
+]}

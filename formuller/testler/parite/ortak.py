@@ -60,6 +60,8 @@ class Vektor:
     def yaz(self):
         VEKTOR_DIZINI.mkdir(exist_ok=True)
         yol = VEKTOR_DIZINI / ("%s.json" % self.bolum)
-        veri = {"bolum": self.bolum, "kaynak": self.kaynak, "vakalar": self.vakalar}
-        yol.write_text(json.dumps(veri, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        # Satır başına bir vaka: dosya küçük kalır, fark okunur.
+        satirlar = [json.dumps(v, ensure_ascii=False, separators=(",", ":")) for v in self.vakalar]
+        bas = '{"bolum":%s,"kaynak":%s,"vakalar":[\n' % (json.dumps(self.bolum), json.dumps(self.kaynak, ensure_ascii=False))
+        yol.write_text(bas + ",\n".join(satirlar) + "\n]}\n", encoding="utf-8")
         return yol, len(self.vakalar)
