@@ -6,4 +6,7 @@ pub mod proto {
     tonic::include_proto!("demleme.engine.v1");
 }
 
+pub mod convert;
 pub mod service;
+pub mod status;
+pub mod tool;

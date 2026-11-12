@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 1 Hesap motoru (Aşama 0 kapandı: ADR-0002)
-**Sıradaki iş:** T1.11 uygulaması (ADR-0005): önce `ToolService`, sonra `RecipeService` ve diğerleri; sonra T1.13 kapı.
+**Sıradaki iş:** T1.11 `RecipeService` (ADR-0005; ToolService, `convert` ve `status` katmanları hazır), sonra öbür hizmetler, T1.13 kapı.
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam

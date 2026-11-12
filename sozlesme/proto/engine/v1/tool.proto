@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+// Small calculators, one RPC each (ADR-0005). Metric units; gravity in SG unless stated.
+service ToolService {
+  // Converts a gravity reading between SG, degrees Plato and degrees Brix.
+  rpc ConvertGravity(ConvertGravityRequest) returns (ConvertGravityResponse);
+  // Corrects a hydrometer reading for sample temperature.
+  rpc CorrectHydrometer(CorrectHydrometerRequest) returns (CorrectHydrometerResponse);
+  // Refractometer reading of unfermented wort to original gravity.
+  rpc RefractometerUnfermented(RefractometerUnfermentedRequest)
+      returns (RefractometerUnfermentedResponse);
+  // Refractometer reading of fermenting wort (with known OG) to current gravity.
+  rpc RefractometerFermenting(RefractometerFermentingRequest)
+      returns (RefractometerFermentingResponse);
+  // Alcohol by volume and by weight from OG and FG.
+  rpc CalculateAlcohol(CalculateAlcoholRequest) returns (CalculateAlcoholResponse);
+  // Dilutes a batch with water or with wort of another gravity.
+  rpc Dilute(DiluteRequest) returns (DiluteResponse);
+}
+
+// Gravity scale of a reading.
+enum GravityUnit {
+  GRAVITY_UNIT_UNSPECIFIED = 0;
+  // Specific gravity, e.g. 1.050.
+  GRAVITY_UNIT_SG = 1;
+  // Degrees Plato.
+  GRAVITY_UNIT_PLATO = 2;
+  // Degrees Brix.
+  GRAVITY_UNIT_BRIX = 3;
+}
+
+message ConvertGravityRequest {
+  double value = 1;
+  GravityUnit from = 2;
+  GravityUnit to = 3;
+}
+
+message ConvertGravityResponse {
+  // Converted value in the `to` unit.
+  double value = 1;
+}
+
+message CorrectHydrometerRequest {
+  // Reading, SG.
+  double sg = 1;
+  // Sample temperature, degrees C.
+  double sample_temp_c = 2;
+  // Temperature the hydrometer is calibrated at, degrees C.
+  double calibration_temp_c = 3;
+}
+
+message CorrectHydrometerResponse {
+  double corrected_sg = 1;
+}
+
+message RefractometerUnfermentedRequest {
+  // Reading, degrees Brix.
+  double brix = 1;
+  // Zero offset, degrees Brix (default 0).
+  optional double zero_brix = 2;
+  // Wort correction factor (default 1.02).
+  optional double wort_correction_factor = 3;
+}
+
+message RefractometerUnfermentedResponse {
+  double og_sg = 1;
+}
+
+message RefractometerFermentingRequest {
+  // Original gravity, SG.
+  double og_sg = 1;
+  // Reading, degrees Brix.
+  double brix = 2;
+  // Zero offset, degrees Brix (default 0).
+  optional double zero_brix = 3;
+}
+
+message RefractometerFermentingResponse {
+  double fg_sg = 1;
+}
+
+message CalculateAlcoholRequest {
+  double og_sg = 1;
+  double fg_sg = 2;
+}
+
+message CalculateAlcoholResponse {
+  // Alcohol by volume, percent.
+  double abv_pct = 1;
+  // Alcohol by weight, percent.
+  double abw_pct = 2;
+}
+
+message DiluteRequest {
+  // Start gravity, SG.
+  double sg = 1;
+  // Start volume, L.
+  double volume_l = 2;
+  // Added volume, L.
+  double added_volume_l = 3;
+  // The added liquid is wort rather than water.
+  bool added_is_wort = 4;
+  // Gravity of the added wort, SG (used only when `added_is_wort`; default 1.000).
+  optional double added_sg = 5;
+}
+
+message DiluteResponse {
+  double total_volume_l = 1;
+  double sg = 2;
+}

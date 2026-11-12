@@ -15,6 +15,7 @@ tokio-stream.workspace = true
 tonic.workspace = true
 tonic-health.workspace = true
 tonic-prost.workspace = true
+tonic-types.workspace = true
 tracing.workspace = true
 
 [build-dependencies]

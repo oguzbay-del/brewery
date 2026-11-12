@@ -34,6 +34,7 @@ tokio-stream = { version = "0.1.19", features = ["net"] }
 tonic = "0.14.9"
 tonic-health = "0.14.9"
 tonic-prost = "0.14.9"
+tonic-types = "0.14.9"
 tonic-prost-build = "0.14.9"
 tower = { version = "0.5.3", features = ["util"] }
 tracing = "0.1.44"

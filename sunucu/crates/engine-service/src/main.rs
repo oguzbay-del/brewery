@@ -3,7 +3,7 @@
 use std::net::SocketAddr;
 
 use common::{ServiceConfig, telemetry};
-use engine_service::service;
+use engine_service::{service, tool};
 use tonic::transport::Server;
 
 const DEFAULT_NAME: &str = "engine-service";
@@ -20,6 +20,11 @@ async fn main() -> common::Result<()> {
             service::EngineHandler,
         >>()
         .await;
+    reporter
+        .set_serving::<engine_service::proto::tool_service_server::ToolServiceServer<
+            tool::ToolHandler,
+        >>()
+        .await;
 
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     tracing::info!(%addr, version = engine::version(), "engine-service listening");
@@ -27,6 +32,7 @@ async fn main() -> common::Result<()> {
     Server::builder()
         .add_service(health_service)
         .add_service(service::server())
+        .add_service(tool::server())
         .serve_with_shutdown(addr, common::shutdown::shutdown_signal())
         .await
         .map_err(|e| common::Error::Io(std::io::Error::other(e)))?;
