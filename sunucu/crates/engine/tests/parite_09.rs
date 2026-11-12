@@ -110,15 +110,20 @@ fn parite_09() {
             "label_energy" => {
                 let abv_measured = c.v("abv_measured").as_f64();
                 let e = bt::label_energy(c.f("og"), c.f("fg"), c.f("protein_g100ml"), abv_measured);
-                c.check(&json!({
-                    "ABV": e.abv,
-                    "alkol_g": e.alcohol_g,
-                    "gercek_ekstrakt_g": e.real_extract_g,
-                    "karbonhidrat_g": e.carbohydrate_g,
-                    "protein_g": e.protein_g,
-                    "kJ": e.kj,
-                    "kcal": e.kcal,
-                }));
+                c.check_res(
+                    e.map(|e| {
+                        json!({
+                            "ABV": e.abv,
+                            "alkol_g": e.alcohol_g,
+                            "gercek_ekstrakt_g": e.real_extract_g,
+                            "karbonhidrat_g": e.carbohydrate_g,
+                            "protein_g": e.protein_g,
+                            "kJ": e.kj,
+                            "kcal": e.kcal,
+                        })
+                    })
+                    .map_err(engine::Error::from),
+                );
             }
             "tax_line" => run_tax_line(c),
             "round_in" => {
@@ -127,14 +132,14 @@ fn parite_09() {
                 } else {
                     Some((dp(c), mode(c, "mode")))
                 };
-                c.check(&dec_json(bt::round_in(dec(c, "x"), rounding)));
+                check_result(c, &bt::round_in(dec(c, "x"), rounding));
             }
             "band" => {
                 let b = bands(c, "bands");
                 let r = bt::band(dec(c, "value"), &b, c.b("inclusive"));
                 check_result(c, &r);
             }
-            "money" => c.check(&dec_json(bt::money(dec(c, "x"), dp(c), mode(c, "mode")))),
+            "money" => check_result(c, &bt::money(dec(c, "x"), dp(c), mode(c, "mode"))),
             "row_status" => c.check(&json!(bt::row_status(
                 c.v("resmi_kaynak").as_str(),
                 c.v("tarih").as_str()
@@ -217,4 +222,16 @@ fn taxable_volume_case(c: &Case) {
         })),
         Err(_) => error(),
     }
+}
+
+/// T1.16: non-finite energy input, over-long rounding rules and the error conversion.
+#[test]
+fn invalid_inputs_are_errors() {
+    assert!(bt::label_energy(f64::NAN, 1.010, 0.4, None).is_err());
+    assert!(bt::label_energy(1.050, 1.010, 0.4, Some(f64::INFINITY)).is_err());
+    let one = Decimal::from(1);
+    assert!(bt::money(one, 13, bt::RoundMode::HalfUp).is_err());
+    assert!(bt::round_in(one, Some((30, bt::RoundMode::HalfUp))).is_err());
+    let e: engine::Error = bt::TaxError::NoBand.into();
+    assert!(matches!(e, engine::Error::InvalidInput { .. }));
 }

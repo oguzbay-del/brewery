@@ -39,6 +39,7 @@ def gristph(bill, bizim=False):
 def slope(model,t):
     return t*0.47930613*0.17/1.5 if model==1 else 0.037+0.014*t
 def pks(a):
+    if a not in range(9): raise ValueError("asit kodu 0-8 olmalı")  # Karar (T1.16): eskiden laktik
     return {2:(2.12,7.2,12.44),4:(3.14,4.77,6.39),5:(4.75,20,20),6:(-7,20,20),7:(-1,1.92,20),8:(2.98,4.34,20)}.get(a,(3.86,20,20))
 def acidfrac(a,ph):
     k1,k2,k3=pks(a); r1=10**(ph-k1); r2=10**(ph-k2); r3=10**(ph-k3)
@@ -50,7 +51,9 @@ def fdiss(acid,model,ph_t,bizim):
     if bizim: return acidfrac(acid,ph_t)
     return acidfrac(acid,5.4) if model==1 else 1.0
 def acid_per_L(meq,acid,conc,model,ph_t=5.4,bizim=False):
+    if acid not in (0,1,2,3): raise ValueError("mash asit miktarı yalnız 0-3 kodları için tanımlı")  # Karar (T1.16): 4-8 eskiden fosforik sabitleri
     if acid==0: return 0
+    if conc<=0: raise ValueError("derişim > 0 olmalı")  # Karar (T1.16)
     if acid in (1,3): mw=90.09; rho=1+conc*0.237/100
     else: mw=98.0; rho=1+0.49*conc/100+0.375*(conc/100)**2
     f=fdiss(acid,model,ph_t,bizim)
@@ -116,7 +119,9 @@ print("T7 boilscale",((Vb/a_)*b_+top)/(b_+top))
 def adj_ph(bill_, acidmalt_g, pct, model, ra, t, bizim=False, target=5.4):
     """§5.5 (asit malt). target: hedef pH (§6.4); ayrışma kesri yalnız bizim modelde ona bağlıdır."""
     b=bill_+([(acidmalt_g/1000,3.0)] if acidmalt_g>0 else [])
-    W=sum(w for w,c in b); gp,_=gristph(b,bizim); sl=slope(model,t)
+    W=sum(w for w,c in b)
+    if W<=0 or t<=0: raise ValueError("tahıl ağırlığı ve kalınlık > 0 olmalı")  # Karar (T1.16)
+    gp,_=gristph(b,bizim); sl=slope(model,t)
     f=fdiss(3,model,target,bizim)
     acidra=-((pct/100)*1000*(acidmalt_g/1000)*f)/(W*t*0.09009)
     return gp+sl*(ra/50+acidra), W
@@ -193,8 +198,8 @@ def boil_scale(vb, vp, cool, trub, top, has_boil_ing=True):
     a_ = vp-cool; b_ = a_-trub
     return ((vb/a_)*b_+top)/(b_+top)
 def slope_checked(model, t, w_kg):
-    """§5.2 kenar durum: t <= 0 veya W <= 0 ise hata (None); aksi halde eğim."""
-    if t <= 0 or w_kg <= 0: return None
+    """§5.2 kenar durum: t <= 0 veya W <= 0 ise hata (ValueError, T1.16); aksi halde eğim."""
+    if t <= 0 or w_kg <= 0: raise ValueError("mash kalınlığı ve tahıl ağırlığı > 0 olmalı")
     return slope(model, t)
 def misc_acid_ra(acid, conc, vol_L, f, w_kg, t):
     """§5.4(a): sıvı asidin RA eşdeğeri (mEq/L, negatif). acid 1 = laktik, 2 = fosforik (ρ'da 0.365).
@@ -296,9 +301,10 @@ def gristph_typed(bill, bizim=False):
     return 5.72-0.0337*s, s
 
 def to_grams(amount, units):
-    """§0.1 ToGrams: None = tanımsız birim kodu. mL (5) değeri olduğu gibi gram sayar [belirsiz]."""
+    """§0.1 ToGrams: tanımsız birim kodu ValueError (T1.16). mL (5) değeri olduğu gibi gram sayar [belirsiz]."""
+    if units not in range(8): raise ValueError("birim kodu 0-7 olmalı")
     return {0: amount/1000.0, 1: amount, 2: amount*LB_G/16.0, 3: amount*LB_G, 4: amount*1000.0,
-            5: amount, 6: amount*0.8*4.93, 7: amount*0.8*14.78}.get(units)
+            5: amount, 6: amount*0.8*4.93, 7: amount*0.8*14.78}[units]
 
 def est_mash_ph(grist_ph, ra, sl):
     """§5.3 (T3 ifadesi: gp + ra/50*sl)."""
@@ -307,6 +313,8 @@ def est_mash_ph(grist_ph, ra, sl):
 def mash_acid_amount(est, target, model, t, w, acid, conc, bizim):
     """§6.3 (T3: dph/sl -> acid_per_L * W * t); acid 0 veya dph < 0 ise 0."""
     dph = est - target
+    if t <= 0 or w <= 0: raise ValueError("mash kalınlığı ve tahıl ağırlığı > 0 olmalı")  # Karar (T1.16)
+    if acid not in (0,1,2,3): raise ValueError("mash asit miktarı yalnız 0-3 kodları için tanımlı")  # Karar (T1.16)
     if acid == 0 or dph < 0: return 0.0
     sl = slope(model, t)
     return acid_per_L(dph/sl, acid, conc, model, target, bizim)*w*t
@@ -324,6 +332,7 @@ def adj_ph_liquid(grist_ph, ra, t, model, w_kg, acid, conc, vol_l, target, bizim
 
 def acid_malt_amount(bill, pct, model, ra, t, target, bizim):
     """§6.4: en fazla 8 tur. Döner (toplam g, son pH, yakınsadı). yakınsadı = pH_adj - hedef < 0.005 ile durdu."""
+    if pct <= 0: raise ValueError("asit malt yüzdesi > 0 olmalı")  # Karar (T1.16)
     tot = 0.0
     ph2 = 0.0
     ok = False

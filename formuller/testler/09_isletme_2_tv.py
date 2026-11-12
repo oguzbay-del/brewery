@@ -49,6 +49,7 @@ TANIMSIZ = _Tanimsiz()      # girdi yuvarlama kuralı satırda yazılmamış (F1
 def _round_in(x, dp, mode):
     """Girdi yuvarlaması (veri tablosu): dp = ondalık hane sayısı (None: yuvarlama yok), mode = decimal yuvarlama modu."""
     x = d(x)
+    if dp is not None and not 0 <= dp <= 12: raise ValueError("yuvarlama hanesi 0-12 olmalı")  # Karar (T1.16): eskiden 28 basamak sınırı
     return x if dp is None else x.quantize(D(1).scaleb(-dp), rounding=mode)
 
 def _check_bands(bands):
@@ -76,6 +77,7 @@ def row_status(resmi_kaynak=None, tarih=None):
 
 def money(x, dp=2, mode=ROUND_HALF_UP):
     """Para yuvarlaması (veri tablosundaki kurala göre; varsayılan: yarım yukarı)."""
+    if not 0 <= dp <= 12: raise ValueError("yuvarlama hanesi 0-12 olmalı")  # Karar (T1.16)
     return d(x).quantize(D(1).scaleb(-dp), rounding=mode)
 
 def tax_line(*a, **k):

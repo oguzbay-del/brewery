@@ -1,7 +1,7 @@
 """Bölüm 07 parite vektörleri: Ev MVP ek hesapları (ADR-0003)."""
 import math
 
-from ortak import Vektor, yukle
+from ortak import Vektor, dene, yukle
 
 
 def _sentetik(og, fg_true, k_true, lag, saat, adim=4):
@@ -133,7 +133,7 @@ def uret():
                ref.ispindel_eval(co2, 25.0, 66.5, ang), "aralık dışı uyarı, 1e-9 tolerans")
 
     def tilt(points):
-        e, s = ref.tilt_cal(points)
+        e, s = dene(ref.tilt_cal, points)
         v.ekle("tilt_cal", {"points": [list(p) for p in points]}, [e, s])
 
     tilt([(1.0545, 1.0520)])
@@ -145,18 +145,18 @@ def uret():
     adlar = ("water_l", "grain_kg", "kettle_kg", "t0", "t1", "power_kw", "eff")
     for a in [(15, 0, 8, 15, 72, 2.5, 0.90), (15, 5, 8, 64, 72, 2.5, 0.90), (28, 0, 8, 76, 100, 2.5, 0.90),
               (30, 6.5, 12, 10, 78, 3.5, 0.40), (20, 0, 0, 20, 20, 2.0, 0.9), (10, 0, 5, 90, 60, 2.0, 0.9)]:
-        v.ekle("heat_time_min", dict(zip(adlar, a)), ref.heat_time_min(*a))
+        v.ekle("heat_time_min", dict(zip(adlar, a)), dene(ref.heat_time_min, *a))
     for p, e in [(2.5, 0.85), (3.5, 0.9), (1.0, 0.5), (0.0, 0.8)]:
         v.ekle("boiloff_l_per_h", {"power_kw": p, "eff_boil": e}, ref.boiloff_L_per_h(p, e))
     for a in [(100, 15, 20, 25), (95, 10, 30, 18), (100, 25, 40, 12.5)]:
-        v.ekle("tau_from_batch", dict(zip(("t0", "tc", "t", "minutes"), a)), ref.tau_from_batch(*a))
-    tau = ref.tau_from_batch(100, 15, 20, 25)
+        v.ekle("tau_from_batch", dict(zip(("t0", "tc", "t", "minutes"), a)), dene(ref.tau_from_batch, *a))
+    tau = dene(ref.tau_from_batch, 100, 15, 20, 25)
     for a in [(100, 18, 20, tau, 40, 24), (100, 15, 20, tau, 24, 24), (95, 12, 25, 9.0, 24, 24),
               (90, 20, 30, 7.5, 12, 24)]:
         v.ekle("cool_time_immersion", dict(zip(("t0", "tc", "t", "tau", "vol_l", "vol_ref_l"), a)),
-               ref.cool_time_immersion(*a))
+               dene(ref.cool_time_immersion, *a))
     for a in [(23, 4), (20, 2.5), (0, 4)]:
-        v.ekle("cool_time_flow", {"vol_l": a[0], "flow_l_min": a[1]}, ref.cool_time_flow(*a))
+        v.ekle("cool_time_flow", {"vol_l": a[0], "flow_l_min": a[1]}, dene(ref.cool_time_flow, *a))
 
     # 4. Ölçekleme
     ing = {"Pale Ale malt": (4.50, "mash"), "Munich": (0.45, "mash"), "Crystal 40": (0.30, "mash"),
@@ -166,14 +166,14 @@ def uret():
     for v0, v1, e0, e1, mode in [(23, 40, 0.72, 0.78, "hedef"), (23, 40, 0.72, 0.78, "oran"),
                                  (23, 23, 0.72, 0.72, "hedef"), (40, 19, 0.80, 0.68, "hedef"),
                                  (20, 5, 0.75, 0.75, "oran")]:
-        out = ref.scale_recipe(ing, v0, v1, e0, e1, mode)
+        out = dene(ref.scale_recipe, ing, v0, v1, e0, e1, mode)
         v.ekle("scale_recipe", {"ing": {k: list(x) for k, x in ing.items()}, "v0": v0, "v1": v1,
                                 "eff0": e0, "eff1": e1, "mode": mode}, out)
-    out = ref.scale_recipe(ing, 23, 40, 0.72, 0.78)
+    out = dene(ref.scale_recipe, ing, 23, 40, 0.72, 0.78)
     for q, step in [(out["Pale Ale malt"], 0.01), (out["Magnum"], 1), (out["Gypsum"], 0.1), (0.125, 0.25),
                     (0.375, 0.25), (2.5, 1), (3.5, 1), (0.0, 0.1), (8.6957, 0.1), (0.35, 0.1), (0.05, 0.1),
                     (0.0499, 0.1), (1.5, 1), (0.5, 1), (0.49, 1), (7.825, 0.01), (-0.3, 0.1)]:
-        v.ekle("round_to", {"q": q, "step": step}, ref.round_to(q, step))
+        v.ekle("round_to", {"q": q, "step": step}, dene(ref.round_to, q, step))
 
     # 4b. T1.14g: çarpan kuralları (§4.1–4.2) ve ölçekleme kaydı (§4.4)
     for tip in ("mash", "seker", "hop_ibu", "hop_aroma", "tuz", "misc", "maya_paket"):
@@ -181,20 +181,20 @@ def uret():
             for pb, wr in ((False, None), (True, 1.4), (False, 0.8)):
                 girdi = {"tip": tip, "v0": 23, "v1": 40, "eff0": 0.72, "eff1": 0.78, "mode": mode,
                          "per_batch": pb, "water_ratio": wr}
-                v.ekle("scale_factor", girdi, ref.scale_factor(tip, 23, 40, 0.72, 0.78, mode, pb, wr))
+                v.ekle("scale_factor", girdi, dene(ref.scale_factor, tip, 23, 40, 0.72, 0.78, mode, pb, wr))
     v.ekle("scale_factor", {"tip": "mash", "v0": 40, "v1": 19, "eff0": 0.80, "eff1": 0.68, "mode": "hedef",
                             "per_batch": False, "water_ratio": None},
-           ref.scale_factor("mash", 40, 19, 0.80, 0.68, "hedef"))
+           dene(ref.scale_factor, "mash", 40, 19, 0.80, 0.68, "hedef"))
     for need, per in ((200.0, 100.0), (200.0000001, 100.0), (200.0000000001, 100.0), (50.0, 100.0), (0.0, 100.0),
                       (305.0, 100.0), (99.9999999999, 100.0), (450.2, 200.0),
                       (200.0000005, 100.0), (200.0000002, 100.0), (200.0000010, 100.0), (100.0, 100.0), (100.0000001, 100.0)):
         v.ekle("yeast_packs", {"cells_needed_billion": need, "cells_per_pack_billion": per},
-               ref.yeast_packs(need, per), "yukarı yuvarlama, 1e-9 tolerans, en az 1")
+               dene(ref.yeast_packs, need, per), "yukarı yuvarlama, 1e-9 tolerans, en az 1")
     for scope, mode, v0, v1, e0, e1, ver in (("tarif", "hedef", 23, 40, 0.72, 0.78, 3), ("parti", "hedef", 23, 40, 0.72, 0.78, 3),
                                              ("tarif", "oran", 20, 5, 0.75, 0.75, 1), ("parti", "oran", 20, 20, 0.7, 0.7, 0)):
         v.ekle("scaling_record", {"scope": scope, "mode": mode, "v0": v0, "v1": v1, "eff0": e0, "eff1": e1,
                                   "recipe_version": ver},
-               ref.scaling_record(scope, mode, v0, v1, e0, e1, ver))
+               dene(ref.scaling_record, scope, mode, v0, v1, e0, e1, ver))
     for scope, mode in (("seri", "hedef"), ("tarif", "karisik")):
         v.ekle("scaling_record", {"scope": scope, "mode": mode, "v0": 20, "v1": 10, "eff0": 0.7, "eff1": 0.7,
                                   "recipe_version": 1}, {"hata": "ValueError"}, "geçersiz kapsam/mod")
@@ -240,4 +240,23 @@ def uret():
         v.ekle("fruit", {"kg": kg, "density": d, "sediment": s}, [a, b])
     a, b = ref.fruit(3.0)
     v.ekle("fruit", {"kg": 3.0, "density": 1.05, "sediment": 0.20}, [a, b], "varsayılanlar")
+    n = "T1.16: hata"
+    ad = ("water_l", "grain_kg", "kettle_kg", "t0", "t1", "power_kw", "eff")
+    for a in ((15, 0, 8, 15, 72, 0.0, 0.9), (15, 0, 8, 15, 72, 2.5, 0.0), (15, 0, 8, 15, 72, -2.5, 0.9)):
+        v.ekle("heat_time_min", dict(zip(ad, a)), dene(ref.heat_time_min, *a), "güç ya da verim <= 0: " + n)
+    ad = ("t0", "tc", "t", "tau", "vol_l", "vol_ref_l")
+    for a in ((100, 20, 15, 25.0, 20, 20), (100, 20, 20, 25.0, 20, 20), (100, 20, 110, 25.0, 20, 20), (100, 15, 20, 25.0, 20, 0)):
+        v.ekle("cool_time_immersion", dict(zip(ad, a)), dene(ref.cool_time_immersion, *a), "hedef musluk suyunun altında (eskiden NaN): " + n)
+    v.ekle("tau_from_batch", {"t0": 100, "tc": 15, "t": 100, "minutes": 25}, dene(ref.tau_from_batch, 100, 15, 100, 25), "sıcaklık düşmedi: " + n)
+    v.ekle("cool_time_flow", {"vol_l": 23, "flow_l_min": 0}, dene(ref.cool_time_flow, 23, 0), n)
+    v.ekle("round_to", {"q": 1.0, "step": 0.0}, dene(ref.round_to, 1.0, 0.0), "adım 0: " + n)
+    v.ekle("yeast_packs", {"cells_needed_billion": 100.0, "cells_per_pack_billion": 0.0}, dene(ref.yeast_packs, 100.0, 0.0), n)
+    v.ekle("tilt_cal", {"points": []}, dene(ref.tilt_cal, []), "boş nokta listesi: " + n)
+    v.ekle("tilt_cal", {"points": [[1.0, 1.0], [1.0, 1.1]]}, dene(ref.tilt_cal, [(1.0, 1.0), (1.0, 1.1)]), "aynı okuma: " + n)
+    v.ekle("fruit", {"kg": 3.0, "density": 0.0, "sediment": 0.2}, dene(ref.fruit, 3.0, 0.0, 0.2), "yoğunluk 0: " + n)
+    ing = {"pale": (4.0, "mash")}
+    v.ekle("scale_recipe", {"ing": {k: list(x) for k, x in ing.items()}, "v0": 0, "v1": 40, "eff0": 0.72, "eff1": 0.78, "mode": "hedef"},
+           dene(ref.scale_recipe, ing, 0, 40, 0.72, 0.78, "hedef"), "V0 = 0: " + n)
+    v.ekle("scale_recipe", {"ing": {k: list(x) for k, x in ing.items()}, "v0": 23, "v1": 40, "eff0": 0.72, "eff1": 0.0, "mode": "hedef"},
+           dene(ref.scale_recipe, ing, 23, 40, 0.72, 0.0, "hedef"), "eff1 = 0: " + n)
     return v.yaz()

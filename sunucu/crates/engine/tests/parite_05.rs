@@ -2,7 +2,10 @@
 #![allow(clippy::unwrap_used)] // vector shapes are fixed by the generator; a panic is the right failure
 mod ortak;
 
-use engine::mash::{self, SpargeParams, StepInput, StepKind, StepResult, ThicknessStep, Tun};
+use engine::density::{GrainType, GrainUse, RecipeType};
+use engine::mash::{
+    self, MiscFluidUnit, SpargeParams, StepInput, StepKind, StepResult, ThicknessStep, Tun,
+};
 use ortak::Case;
 use serde_json::{Value, json};
 
@@ -78,17 +81,17 @@ fn result_json(r: &StepResult) -> Value {
     })
 }
 
-fn triples(c: &Case, name: &str) -> Vec<(i64, i64, f64)> {
+fn triples(c: &Case, name: &str) -> engine::Result<Vec<(GrainUse, GrainType, f64)>> {
     c.v(name)
         .as_array()
         .unwrap()
         .iter()
         .map(|e| {
-            (
-                e[0].as_i64().unwrap(),
-                e[1].as_i64().unwrap(),
+            Ok((
+                GrainUse::from_code(e[0].as_i64().unwrap())?,
+                GrainType::from_code(e[1].as_i64().unwrap())?,
                 e[2].as_f64().unwrap(),
-            )
+            ))
         })
         .collect()
 }
@@ -122,8 +125,10 @@ fn extra(c: &Case) -> bool {
                 .and_then(Value::as_bool)
                 .unwrap_or(false),
         )),
-        "mash_grain_weight" => c.check_f(mash::mash_grain_weight(&triples(c, "grains"))),
-        "sparge_grain_weight" => c.check_f(mash::sparge_grain_weight(&triples(c, "grains"))),
+        "mash_grain_weight" => c.check_r(triples(c, "grains").map(|g| mash::mash_grain_weight(&g))),
+        "sparge_grain_weight" => {
+            c.check_r(triples(c, "grains").map(|g| mash::sparge_grain_weight(&g)));
+        }
         "tun_vol_needed" => c.check_f(mash::tun_vol_needed(c.f("mash_tot_water"), c.f("W_mash"))),
         "tun_vol_needed_recipe" => c.check_f(mash::tun_vol_needed_recipe(
             c.f("mash_tot_water"),
@@ -295,26 +300,36 @@ fn extra(c: &Case) -> bool {
             c.b("use_second"),
             c.f("second_starter"),
         )),
-        "total_water" => c.check_f(mash::total_water(
-            c.i("recipe_type"),
-            c.b("has_boil_ing"),
-            c.f("mash_tot_water_"),
-            c.f("sparge"),
-            c.f("topup_kettle"),
-            c.f("topup_ferm"),
-            c.f("batch"),
-            c.f("v_preboil"),
-        )),
-        "total_grain_use" => {
-            let items: Vec<(i64, f64)> = c
+        "total_water" => c.check_r((|| {
+            Ok(mash::total_water(
+                RecipeType::from_code(c.i("recipe_type"))?,
+                c.b("has_boil_ing"),
+                c.f("mash_tot_water_"),
+                c.f("sparge"),
+                c.f("topup_kettle"),
+                c.f("topup_ferm"),
+                c.f("batch"),
+                c.f("v_preboil"),
+            ))
+        })()),
+        "total_grain_use" => c.check_r((|| {
+            let items: engine::Result<Vec<(GrainUse, f64)>> = c
                 .v("items")
                 .as_array()
                 .unwrap()
                 .iter()
-                .map(|e| (e[0].as_i64().unwrap(), e[1].as_f64().unwrap()))
+                .map(|e| {
+                    Ok((
+                        GrainUse::from_code(e[0].as_i64().unwrap())?,
+                        e[1].as_f64().unwrap(),
+                    ))
+                })
                 .collect();
-            c.check_f(mash::total_grain_use(&items, c.i("use")));
-        }
+            Ok(mash::total_grain_use(
+                &items?,
+                GrainUse::from_code(c.i("use"))?,
+            ))
+        })()),
         "steep_vol" => c.check_f(mash::steep_vol(
             c.f("v_preboil"),
             c.f("v_boilgrains"),
@@ -325,20 +340,22 @@ fn extra(c: &Case) -> bool {
             c.f("v_steep"),
             c.f("v_boilgrains"),
         )),
-        "primary_water_add" => c.check_f(mash::primary_water_add(
-            c.i("recipe_type"),
-            c.b("has_boil_ing"),
-            c.f("batch"),
-            c.f("v_postboil"),
-            c.f("v_primarygrains"),
-            c.f("topup_ferm"),
-        )),
-        "preboil_sg" => c.check(&opt_json(mash::preboil_sg(
+        "primary_water_add" => c.check_r((|| {
+            Ok(mash::primary_water_add(
+                RecipeType::from_code(c.i("recipe_type"))?,
+                c.b("has_boil_ing"),
+                c.f("batch"),
+                c.f("v_postboil"),
+                c.f("v_primarygrains"),
+                c.f("topup_ferm"),
+            ))
+        })()),
+        "preboil_sg" => c.check_r(mash::preboil_sg(
             c.f("og"),
             c.f("batch"),
             c.f("trub"),
             c.f("v_preboil"),
-        ))),
+        )),
         "volume_chain" => {
             let r = mash::volume_chain(
                 c.f("batch"),
@@ -356,7 +373,7 @@ fn extra(c: &Case) -> bool {
                 "evap_pct": r.evap_pct, "bottle": r.bottle,
             }));
         }
-        "wn_cool_loss" => c.check_f(mash::wn_cool_loss(
+        "wn_cool_loss" => c.check_r(mash::wn_cool_loss(
             c.f("v_ferm"),
             c.f("topup"),
             c.f("cool_pct"),
@@ -377,14 +394,16 @@ fn extra(c: &Case) -> bool {
             c.f("lauter_deadspace"),
             c.f("v_mash"),
         )),
-        "wn_total_water" => c.check_f(mash::wn_total_water(
-            c.i("brew_type"),
-            c.f("v_boil"),
-            c.f("topup"),
-            c.f("v_sparge"),
-            c.f("v_mash"),
-            c.f("topup_kettle"),
-        )),
+        "wn_total_water" => c.check_r((|| {
+            Ok(mash::wn_total_water(
+                RecipeType::from_code(c.i("brew_type"))?,
+                c.f("v_boil"),
+                c.f("topup"),
+                c.f("v_sparge"),
+                c.f("v_mash"),
+                c.f("topup_kettle"),
+            ))
+        })()),
         "wn_bottle_vol" => c.check_f(mash::wn_bottle_vol(c.f("v_ferm"), c.f("v_loss_ferm"))),
         "boil_off_tool" => {
             let r = mash::boil_off_tool(
@@ -407,17 +426,16 @@ fn extra(c: &Case) -> bool {
                 c.b("wort"),
                 opt(c, "sg_add").unwrap_or(1.0),
             );
-            c.check(&json!({"v_tot": r.v_tot, "sg": r.sg}));
+            c.check_res(r.map(|r| json!({"v_tot": r.v_tot, "sg": r.sg})));
         }
-        "gravity_adj_water_vol" => c.check_f(mash::gravity_adj_water_vol(
+        "gravity_adj_water_vol" => c.check_r(mash::gravity_adj_water_vol(
             c.f("v"),
             c.f("sg"),
             c.f("sg_target"),
         )),
-        "misc_to_fluid_oz" => c.check(&opt_json(mash::misc_to_fluid_oz(
-            c.f("amount"),
-            c.i("units"),
-        ))),
+        "misc_to_fluid_oz" => c.check_r((|| {
+            mash::misc_to_fluid_oz(c.f("amount"), MiscFluidUnit::from_code(c.i("units"))?)
+        })()),
         _ => return false,
     }
     true
@@ -501,4 +519,16 @@ fn parite_05() {
         }
         true
     });
+}
+
+/// T1.16: degenerate input is an error, not NaN or infinity.
+#[test]
+fn invalid_inputs_are_errors() {
+    assert!(StepKind::from_code(3).is_err());
+    assert!(MiscFluidUnit::from_code(13).is_err());
+    assert!(mash::dilution(1.050, 0.0, 0.0, false, 1.0).is_err());
+    assert!(mash::gravity_adj_water_vol(20.0, 1.050, 1.000).is_err());
+    assert!(mash::wn_cool_loss(20.0, 0.0, 100.0).is_err());
+    assert!(mash::preboil_sg(1.050, 20.0, 1.0, 0.0).is_err());
+    assert!(mash::dilution(f64::NAN, 10.0, 1.0, false, 1.0).is_err());
 }

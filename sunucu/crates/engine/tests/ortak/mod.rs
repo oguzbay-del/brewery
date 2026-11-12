@@ -92,6 +92,33 @@ impl Case {
         check_value(&self.label(), &serde_json::json!(actual), &self.beklenen);
     }
 
+    /// Compares an engine result: `Ok` against the number in `beklenen`, `Err` against a
+    /// `{"hata": ...}` expectation (ADR-0004 madde 3).
+    pub fn check_r(&self, r: engine::Result<f64>) {
+        match r {
+            Ok(x) => self.check_f(x),
+            Err(_) => self.check_hata(),
+        }
+    }
+
+    /// Like [`Case::check_r`] for any JSON-shaped result.
+    pub fn check_res(&self, r: engine::Result<Value>) {
+        match r {
+            Ok(v) => self.check(&v),
+            Err(_) => self.check_hata(),
+        }
+    }
+
+    /// Asserts the case expects an error (`{"hata": ...}`) because the engine returned `Err`.
+    pub fn check_hata(&self) {
+        assert!(
+            self.beklenen.get("hata").is_some(),
+            "{}: engine returned Err but the reference returned {}",
+            self.label(),
+            self.beklenen
+        );
+    }
+
     /// Compares any JSON-shaped result (numbers within tolerance, everything else exact).
     pub fn check(&self, actual: &Value) {
         check_value(&self.label(), actual, &self.beklenen);

@@ -7,7 +7,8 @@
 
 mod ortak;
 
-use engine::water::{self, Salt};
+use engine::density::GrainType;
+use engine::water::{self, Acid, MashModel, MiscUnit, Salt};
 use ortak::Case;
 use serde_json::{Value, json};
 
@@ -63,7 +64,7 @@ fn salts(v: &Value) -> Vec<(Salt, f64)> {
         .collect()
 }
 
-fn typed_bill(c: &Case) -> Vec<(f64, f64, u8)> {
+fn typed_bill(c: &Case) -> Vec<(f64, f64, GrainType)> {
     c.v("bill")
         .as_array()
         .expect("bill array")
@@ -73,7 +74,7 @@ fn typed_bill(c: &Case) -> Vec<(f64, f64, u8)> {
             (
                 p[0].as_f64().expect("kg"),
                 p[1].as_f64().expect("srm"),
-                u8::try_from(p[2].as_i64().expect("type")).expect("small type"),
+                GrainType::from_code(p[2].as_i64().expect("type")).expect("grain type"),
             )
         })
         .collect()
@@ -82,7 +83,11 @@ fn typed_bill(c: &Case) -> Vec<(f64, f64, u8)> {
 /// Strict check for sparge acid outputs (T1.12 B8): relative 1e-12 of the expected value with
 /// an absolute floor of 1e-18 (outputs are mol/L around 1e-6 to 1e-2 or mL), far below the
 /// shared harness tolerance of 1e-12 absolute.
-fn check_sparge(c: &Case, actual: f64) {
+fn check_sparge(c: &Case, actual: engine::Result<f64>) {
+    let Ok(actual) = actual else {
+        c.check_hata();
+        return;
+    };
     let e = c.beklenen.as_f64().expect("number");
     assert!(
         (actual - e).abs() <= 1e-18 + 1e-12 * e.abs(),
@@ -114,8 +119,12 @@ fn assert_kkt(c: &Case, base: &[f64; 6], s: f64, excluded: &[Salt], x: &[f64; 8]
     }
 }
 
-fn small(c: &Case, name: &str) -> u8 {
-    u8::try_from(c.i(name)).expect("small code")
+fn acid(c: &Case) -> Acid {
+    Acid::from_code(c.i("acid")).expect("acid code")
+}
+
+fn model(c: &Case) -> MashModel {
+    MashModel::from_code(c.i("model")).expect("model code")
 }
 
 #[test]
@@ -139,7 +148,7 @@ fn parite_03() {
                 let (lo, hi) = water::color_range(c.f("ra"));
                 c.check(&json!([lo, hi]));
             }
-            "boil_scale" => c.check_f(water::boil_scale(
+            "boil_scale" => c.check_r(water::boil_scale(
                 c.f("vb"),
                 c.f("vp"),
                 c.f("cool_loss"),
@@ -150,20 +159,20 @@ fn parite_03() {
             "sulfate_chloride_label" => {
                 c.check(&json!(water::sulfate_chloride_label(c.f("ratio"))));
             }
-            "mash_ra_slope_checked" => c.check(&json!(water::mash_ra_slope_checked(
-                small(c, "model"),
+            "mash_ra_slope_checked" => c.check_r(water::mash_ra_slope_checked(
+                model(c),
                 c.f("t"),
                 c.f("w_kg"),
-            ))),
-            "misc_acid_ra" => c.check_f(water::misc_acid_ra(
-                small(c, "acid"),
+            )),
+            "misc_acid_ra" => c.check_r(water::misc_acid_ra(
+                acid(c),
                 c.f("conc"),
                 c.f("vol_l"),
                 c.f("f"),
                 c.f("w_kg"),
                 c.f("t"),
             )),
-            "acid_malt_ra" => c.check_f(water::acid_malt_ra(
+            "acid_malt_ra" => c.check_r(water::acid_malt_ra(
                 c.f("pct"),
                 c.f("malt_kg"),
                 c.f("f"),
@@ -172,17 +181,22 @@ fn parite_03() {
             )),
             "sparge_acid_ml" => check_sparge(
                 c,
-                water::sparge_acid_ml(c.f("mol_l"), c.f("v_l"), c.f("conc"), small(c, "acid")),
+                Ok(water::sparge_acid_ml(
+                    c.f("mol_l"),
+                    c.f("v_l"),
+                    c.f("conc"),
+                    acid(c),
+                )),
             ),
             "sparge_acid_amount" => check_sparge(
                 c,
                 water::sparge_acid_amount(
-                    small(c, "model"),
+                    model(c),
                     c.b("ours"),
                     c.f("hco3"),
                     c.f("ph_w"),
                     c.f("ph_t"),
-                    small(c, "acid"),
+                    acid(c),
                     c.f("conc"),
                     c.f("mash_dph"),
                     c.f("v_sp_l"),
@@ -208,8 +222,8 @@ fn parite_03() {
                 c.b("ignore"),
             ))),
             "agent_volume" => c.check_f(water::agent_volume(
-                small(c, "rtype"),
-                small(c, "use"),
+                engine::density::RecipeType::from_code(c.i("rtype")).expect("recipe type"),
+                u8::try_from(c.i("use")).expect("use code"),
                 c.f("mash_tot"),
                 c.f("sparge"),
                 c.f("boil"),
@@ -264,37 +278,39 @@ fn parite_03() {
                 let (ph, s) = water::grist_ph(&bill(c), c.b("ours"));
                 c.check(&json!([ph, s]));
             }
-            "mash_ra_slope" => c.check_f(water::mash_ra_slope(small(c, "model"), c.f("t"))),
+            "mash_ra_slope" => c.check_f(water::mash_ra_slope(model(c), c.f("t"))),
             "est_mash_ph" => {
                 c.check_f(water::est_mash_ph(c.f("grist_ph"), c.f("ra"), c.f("slope")));
             }
-            "acid_pks" => c.check(&json!(water::acid_pks(small(c, "acid")))),
-            "acid_fraction" => c.check_f(water::acid_fraction(small(c, "acid"), c.f("ph"))),
+            "acid_pks" => {
+                c.check_res(Acid::from_code(c.i("acid")).map(|a| json!(water::acid_pks(a))));
+            }
+            "acid_fraction" => c.check_f(water::acid_fraction(acid(c), c.f("ph"))),
             "dissociation_fraction" => c.check_f(water::dissociation_fraction(
-                small(c, "acid"),
-                small(c, "model"),
+                acid(c),
+                model(c),
                 c.f("ph_t"),
                 c.b("ours"),
             )),
-            "acid_per_liter" => c.check_f(water::acid_per_liter(
+            "acid_per_liter" => c.check_r(water::acid_per_liter(
                 c.f("meq"),
-                small(c, "acid"),
+                acid(c),
                 c.f("conc"),
-                small(c, "model"),
+                model(c),
                 c.f("ph_t"),
                 c.b("ours"),
             )),
-            "mash_acid_amount" => c.check_f(water::mash_acid_amount(
+            "mash_acid_amount" => c.check_r(water::mash_acid_amount(
                 c.f("est_ph"),
                 c.f("target_ph"),
-                small(c, "model"),
+                model(c),
                 c.f("t"),
                 c.f("w_kg"),
-                small(c, "acid"),
+                acid(c),
                 c.f("conc"),
                 c.b("ours"),
             )),
-            "lactic_acid_ra" => c.check_f(water::lactic_acid_ra(
+            "lactic_acid_ra" => c.check_r(water::lactic_acid_ra(
                 c.f("conc"),
                 c.f("vol_l"),
                 c.f("f"),
@@ -302,60 +318,74 @@ fn parite_03() {
                 c.f("t"),
             )),
             "adjusted_ph" => {
-                let (ph, w) = water::adjusted_ph(
+                let r = water::adjusted_ph(
                     &bill(c),
                     c.f("acid_malt_g"),
                     c.f("pct"),
-                    small(c, "model"),
+                    model(c),
                     c.f("ra"),
                     c.f("t"),
                     c.f("target_ph"),
                     c.b("ours"),
                 );
-                c.check(&json!([ph, w]));
+                c.check_res(r.map(|(ph, w)| json!([ph, w])));
             }
             "acid_malt_amount" => {
-                let (g, ph) = water::acid_malt_amount(
+                let r = water::acid_malt_amount(
                     &bill(c),
                     c.f("pct"),
-                    small(c, "model"),
+                    model(c),
                     c.f("ra"),
                     c.f("t"),
                     c.f("target_ph"),
                     c.b("ours"),
                 );
-                c.check(&json!([g, ph]));
+                c.check_res(r.map(|(g, ph)| json!([g, ph])));
             }
             "sparge_acid_mph" => check_sparge(
                 c,
-                water::sparge_acid_mph(c.f("hco3"), c.f("ph_w"), c.f("ph_t")),
-            ),
-            "sparge_acid_mph_ours" => check_sparge(
-                c,
-                water::sparge_acid_mph_ours(
+                Ok(water::sparge_acid_mph(
                     c.f("hco3"),
                     c.f("ph_w"),
                     c.f("ph_t"),
-                    small(c, "acid"),
-                ),
+                )),
+            ),
+            "sparge_acid_mph_ours" => check_sparge(
+                c,
+                Ok(water::sparge_acid_mph_ours(
+                    c.f("hco3"),
+                    c.f("ph_w"),
+                    c.f("ph_t"),
+                    acid(c),
+                )),
             ),
             "sparge_acid_bw" => check_sparge(
                 c,
-                water::sparge_acid_bw(c.f("hco3"), c.f("ph_w"), c.f("ph_t"), small(c, "acid")),
+                Ok(water::sparge_acid_bw(
+                    c.f("hco3"),
+                    c.f("ph_w"),
+                    c.f("ph_t"),
+                    acid(c),
+                )),
             ),
-            "lactic_ml" => check_sparge(c, water::lactic_ml(c.f("mol_l"), c.f("v_l"), c.f("conc"))),
+            "lactic_ml" => check_sparge(
+                c,
+                Ok(water::lactic_ml(c.f("mol_l"), c.f("v_l"), c.f("conc"))),
+            ),
             "grist_ph_typed" => {
                 let (ph, sum) = water::grist_ph_typed(&typed_bill(c), c.b("ours"));
                 c.check(&json!([ph, sum]));
             }
-            "to_grams" => c.check(&json!(water::to_grams(c.f("amount"), small(c, "units")))),
-            "adjusted_ph_liquid" => c.check_f(water::adjusted_ph_liquid(
+            "to_grams" => c.check_r((|| {
+                water::to_grams(c.f("amount"), MiscUnit::from_code(c.i("units"))?)
+            })()),
+            "adjusted_ph_liquid" => c.check_r(water::adjusted_ph_liquid(
                 c.f("grist_ph"),
                 c.f("ra"),
                 c.f("t"),
-                small(c, "model"),
+                model(c),
                 c.f("w_kg"),
-                small(c, "acid"),
+                acid(c),
                 c.f("conc"),
                 c.f("vol_l"),
                 c.f("target_ph"),
@@ -365,13 +395,13 @@ fn parite_03() {
                 let r = water::acid_malt_amount_checked(
                     &bill(c),
                     c.f("pct"),
-                    small(c, "model"),
+                    model(c),
                     c.f("ra"),
                     c.f("t"),
                     c.f("target_ph"),
                     c.b("ours"),
                 );
-                c.check(&json!([r.total_g, r.ph, r.converged]));
+                c.check_res(r.map(|r| json!([r.total_g, r.ph, r.converged])));
             }
             "sparge_volume_l" => {
                 c.check_f(water::sparge_volume_l(
@@ -381,7 +411,7 @@ fn parite_03() {
                 ));
             }
             "warnings" => {
-                let w: Vec<&str> = water::warnings(small(c, "model"), &salts(c.v("salt_grams")))
+                let w: Vec<&str> = water::warnings(model(c), &salts(c.v("salt_grams")))
                     .into_iter()
                     .map(water::Warning::message)
                     .collect();
@@ -417,4 +447,18 @@ fn parite_03() {
         }
         true
     });
+}
+
+/// T1.16: non-finite input and unknown codes are errors.
+#[test]
+fn invalid_inputs_are_errors() {
+    assert!(Acid::from_code(9).is_err());
+    assert!(MashModel::from_code(2).is_err());
+    assert!(MiscUnit::from_code(8).is_err());
+    assert!(water::to_grams(f64::NAN, MiscUnit::G).is_err());
+    assert!(water::boil_scale(f64::INFINITY, 24.0, 1.0, 1.0, 0.0, true).is_err());
+    assert!(
+        water::mash_acid_amount(5.8, 5.4, MashModel::Bw, 0.0, 5.0, Acid::Lactic, 88.0, false)
+            .is_err()
+    );
 }

@@ -4,6 +4,7 @@
 //! degrees Fahrenheit, litres where stated. Every function documents its units.
 //! Ported one to one from `formuller/testler/04_maya_karb_tv.py` (ADR-0003).
 
+use crate::error::{Error, Result, ensure_finite, ensure_positive, finite_result};
 use crate::units::{GAL_L, to_plato, to_sg};
 
 /// Stir plate growth bonus, percent (spec §1.2).
@@ -51,21 +52,23 @@ pub fn viability(v0: f64, rate: f64, days: f64, floor: f64) -> f64 {
 }
 
 /// Inoculation rate, million cells per mL, to growth factor `g` (spec §1.9).
-#[must_use]
-pub fn innoc_rate(g: f64) -> f64 {
-    (g.ln() * -2.179_103_8 + 5.512_221).exp()
+/// Errors when `g` is not a finite positive number (the reference's `log` raises).
+pub fn innoc_rate(g: f64) -> Result<f64> {
+    ensure_positive("g", g)?;
+    finite_result("innoc_rate", (g.ln() * -2.179_103_8 + 5.512_221).exp())
 }
 
 /// Growth factor for inoculation rate `i` (million cells/mL), clamped to 1..6 (spec §1.9).
 ///
 /// Uses the exponent -2.1781038 (differs from [`innoc_rate`] in the reference).
-#[must_use]
-pub fn growth_rate(i: f64, stir: bool) -> f64 {
+/// Errors when `i` is not a finite positive number (the reference's `log` raises).
+pub fn growth_rate(i: f64, stir: bool) -> Result<f64> {
+    ensure_positive("i", i)?;
     let mut g = ((i.ln() - 5.512_221) / -2.178_103_8).exp();
     if stir {
         g *= 1.0 + STIR / 100.0;
     }
-    g.clamp(1.0, 6.0)
+    Ok(g.clamp(1.0, 6.0))
 }
 
 /// Cells needed, billions: `rate (M/mL/°P) × volume (L) × °Plato(sg)` (spec §1.8).
@@ -75,27 +78,32 @@ pub fn cells_needed(rate: f64, volume_l: f64, sg: f64) -> f64 {
 }
 
 /// Single-stage starter volume, litres, for `need` and `avail` billion cells (spec §1.10).
-#[must_use]
-pub fn new_starter_l(need: f64, avail: f64, stir: bool) -> f64 {
+/// Errors on non-finite input and when cells are needed but `avail <= 0` (zero division).
+pub fn new_starter_l(need: f64, avail: f64, stir: bool) -> Result<f64> {
+    ensure_finite("need", need)?;
+    ensure_finite("avail", avail)?;
     if need <= avail {
-        return 0.0;
+        return Ok(0.0);
     }
+    ensure_positive("avail", avail)?;
     let mut r = need / avail;
     if stir {
         r /= 1.0 + STIR / 100.0;
     }
     if r <= 1.0 {
-        return 0.0;
+        return Ok(0.0);
     }
-    avail / innoc_rate(r)
+    Ok(avail / innoc_rate(r)?)
 }
 
 /// Two-stage starter volumes `(stage1_l, stage2_l)`, litres (spec §1.11).
-#[must_use]
-pub fn two_stage_tool(need: f64, avail: f64, stir: bool) -> (f64, f64) {
+/// Errors on non-finite input.
+pub fn two_stage_tool(need: f64, avail: f64, stir: bool) -> Result<(f64, f64)> {
+    ensure_finite("need", need)?;
+    ensure_finite("avail", avail)?;
     let avail = avail.max(0.1);
     if avail > need {
-        return (0.0, 0.0);
+        return Ok((0.0, 0.0));
     }
     let mut r = need / avail;
     let mut s = 1.0;
@@ -104,9 +112,9 @@ pub fn two_stage_tool(need: f64, avail: f64, stir: bool) -> (f64, f64) {
         r /= s * s;
     }
     let g = r.sqrt();
-    let v1 = avail / innoc_rate(g);
-    let v2 = avail * g * s / innoc_rate(g);
-    (v1, v2)
+    let v1 = avail / innoc_rate(g)?;
+    let v2 = avail * g * s / innoc_rate(g)?;
+    Ok((v1, v2))
 }
 
 /// DME ounces for a starter of `vol_floz` fl oz at gravity `og` (spec §1.14).
@@ -174,17 +182,45 @@ pub fn mead_pitch(sg: f64) -> f64 {
     }
 }
 
+/// Nutrient used for YAN (spec §2.5): code 0 Fermaid-O (40 ppm per g/L), 1 Fermaid-K (100),
+/// 2 DAP (212.3).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum YanMethod {
+    /// Code 0.
+    FermaidO,
+    /// Code 1.
+    FermaidK,
+    /// Code 2.
+    Dap,
+}
+
+impl YanMethod {
+    /// From the code (0-2); other codes are an error (T1.16, was 100).
+    pub const fn from_code(code: i64) -> Result<Self> {
+        match code {
+            0 => Ok(Self::FermaidO),
+            1 => Ok(Self::FermaidK),
+            2 => Ok(Self::Dap),
+            _ => Err(Error::invalid("yan_method", "unknown code")),
+        }
+    }
+
+    /// ppm of YAN per g/L of the nutrient.
+    #[must_use]
+    pub const fn ppm_per_g_l(self) -> f64 {
+        match self {
+            Self::FermaidO => 40.0,
+            Self::FermaidK => 100.0,
+            Self::Dap => 212.3,
+        }
+    }
+}
+
 /// Yeast assimilable nitrogen, ppm, from `grams` of nutrient in `v_l` litres (spec §2.5).
-///
-/// `method` 0 = 40, 2 = 212.3, anything else = 100 ppm per g/L. Zero volume returns the
-/// bare factor.
+/// Zero volume returns the bare factor.
 #[must_use]
-pub fn yan(method: i64, grams: f64, v_l: f64) -> f64 {
-    let r = match method {
-        0 => 40.0,
-        2 => 212.3,
-        _ => 100.0,
-    };
+pub fn yan(method: YanMethod, grams: f64, v_l: f64) -> f64 {
+    let r = method.ppm_per_g_l();
     if v_l == 0.0 { r } else { r * grams / v_l }
 }
 
@@ -225,10 +261,12 @@ macro_rules! code_enum {
             /// Every variant in code order.
             pub const ALL: &'static [Self] = &[$(Self::$var),+];
 
-            /// Variant for a stored code, `None` when the code is not listed.
-            #[must_use]
-            pub fn from_code(code: i64) -> Option<Self> {
-                match code { $($code => Some(Self::$var),)+ _ => None }
+            /// Variant for a stored code; a code that is not listed is an error.
+            pub fn from_code(code: i64) -> Result<Self> {
+                match code {
+                    $($code => Ok(Self::$var),)+
+                    _ => Err(Error::invalid(stringify!($name), "unknown code")),
+                }
             }
 
             /// Stored code.
@@ -326,16 +364,18 @@ impl BackAgent {
 #[must_use]
 pub fn enum_name(kind: &str, code: i64) -> Option<&'static str> {
     match kind {
-        "y_form" => YeastForm::from_code(code).map(YeastForm::name),
-        "yc_yeast_form" => StarterYeastForm::from_code(code).map(StarterYeastForm::name),
-        "yc_type" => StarterType::from_code(code).map(StarterType::name),
-        "y_type" => YeastType::from_code(code).map(YeastType::name),
-        "r_type" => RecipeType::from_code(code).map(RecipeType::name),
-        "r_ale_type" => AleType::from_code(code).map(AleType::name),
-        "mead_method" => MeadMethod::from_code(code).map(MeadMethod::name),
-        "yeast_factor" => YeastNitrogen::from_code(code).map(YeastNitrogen::name),
-        "carb_type" => CarbType::from_code(code).map(CarbType::name),
-        "back_agent" => BackAgent::from_code(code).map(BackAgent::name),
+        "y_form" => YeastForm::from_code(code).ok().map(YeastForm::name),
+        "yc_yeast_form" => StarterYeastForm::from_code(code)
+            .ok()
+            .map(StarterYeastForm::name),
+        "yc_type" => StarterType::from_code(code).ok().map(StarterType::name),
+        "y_type" => YeastType::from_code(code).ok().map(YeastType::name),
+        "r_type" => RecipeType::from_code(code).ok().map(RecipeType::name),
+        "r_ale_type" => AleType::from_code(code).ok().map(AleType::name),
+        "mead_method" => MeadMethod::from_code(code).ok().map(MeadMethod::name),
+        "yeast_factor" => YeastNitrogen::from_code(code).ok().map(YeastNitrogen::name),
+        "carb_type" => CarbType::from_code(code).ok().map(CarbType::name),
+        "back_agent" => BackAgent::from_code(code).ok().map(BackAgent::name),
         _ => None,
     }
 }
@@ -468,31 +508,31 @@ pub fn yeast_age_recipe(age_days: &[i64]) -> f64 {
 
 /// New-yeast viability `V0`, percent, for an ingredient form (Dry 98, Culture 96, else 97).
 #[must_use]
-pub fn viability_v0_ingredient(form: i64) -> f64 {
+pub fn viability_v0_ingredient(form: YeastForm) -> f64 {
     match form {
-        1 => O_Y_DRY_VIABILITY,
-        3 => O_Y_SLURRY_VIABILITY,
+        YeastForm::Dry => O_Y_DRY_VIABILITY,
+        YeastForm::Culture => O_Y_SLURRY_VIABILITY,
         _ => O_Y_LIQUID_VIABILITY,
     }
 }
 
 /// New-yeast viability `V0`, percent, for a starter tool form (Dry 98, Slurry 96, else 97).
 #[must_use]
-pub fn viability_v0_tool(form: i64) -> f64 {
+pub fn viability_v0_tool(form: StarterYeastForm) -> f64 {
     match form {
-        1 => O_Y_DRY_VIABILITY,
-        2 => O_Y_SLURRY_VIABILITY,
-        _ => O_Y_LIQUID_VIABILITY,
+        StarterYeastForm::Dry => O_Y_DRY_VIABILITY,
+        StarterYeastForm::Slurry => O_Y_SLURRY_VIABILITY,
+        StarterYeastForm::Liquid => O_Y_LIQUID_VIABILITY,
     }
 }
 
 /// Monthly loss rate filled in for legacy data, percent (`YeastImportHook`, spec §1.4).
 #[must_use]
-pub fn import_age_rate(form: i64, white_labs: bool) -> f64 {
+pub fn import_age_rate(form: YeastForm, white_labs: bool) -> f64 {
     match form {
-        1 => 1.66,
-        3 => 25.0,
-        0 if white_labs => 5.0,
+        YeastForm::Dry => 1.66,
+        YeastForm::Culture => 25.0,
+        YeastForm::Liquid if white_labs => 5.0,
         _ => 10.0,
     }
 }
@@ -524,7 +564,7 @@ pub fn yeast_total_cells(
     use_pkgs: bool,
     cells_pkg: f64,
     new_amount: f64,
-    form: i64,
+    form: YeastForm,
     amount: f64,
     cells_ml: f64,
 ) -> f64 {
@@ -532,9 +572,8 @@ pub fn yeast_total_cells(
         return cells_pkg * new_amount;
     }
     match form {
-        1 => amount * 10.0,
-        0 | 2 | 3 => amount * cells_ml,
-        _ => 0.0,
+        YeastForm::Dry => amount * 10.0,
+        YeastForm::Liquid | YeastForm::Slant | YeastForm::Culture => amount * cells_ml,
     }
 }
 
@@ -560,9 +599,9 @@ pub struct RecipeYeast {
     /// `F_Y_VIABILITY_PCT`.
     pub viability_pct: f64,
     /// `F_Y_FORM`.
-    pub form: i64,
-    /// `F_Y_USE_PKGS`.
-    pub use_pkgs: i64,
+    pub form: YeastForm,
+    /// `F_Y_USE_PKGS` (code 1 = package mode).
+    pub use_pkgs: bool,
     /// Amount in volume/weight mode, ounces.
     pub amount_oz: f64,
     /// `F_Y_CELLS_ML`.
@@ -622,9 +661,9 @@ pub fn yeast_pack_viability(yeasts: &[RecipeYeast]) -> f64 {
 #[must_use]
 pub fn yeast_tot_grams(yeasts: &[RecipeYeast]) -> f64 {
     primary(yeasts)
-        .filter(|y| y.form == 1)
+        .filter(|y| y.form == YeastForm::Dry)
         .map(|y| {
-            if y.use_pkgs == 1 {
+            if y.use_pkgs {
                 y.new_amount * DRY_PKG_G
             } else {
                 y.amount_oz * OZ_G
@@ -638,7 +677,12 @@ pub fn yeast_tot_grams(yeasts: &[RecipeYeast]) -> f64 {
 #[must_use]
 pub fn yeast_first_fields(yeasts: &[RecipeYeast]) -> (i64, i64, f64, f64) {
     primary(yeasts).next().map_or((0, 1, 1.0, 75.0), |y| {
-        (y.form, y.use_pkgs, y.cells_ml, y.dry_pitch_rate)
+        (
+            y.form.code(),
+            i64::from(y.use_pkgs),
+            y.cells_ml,
+            y.dry_pitch_rate,
+        )
     })
 }
 
@@ -688,17 +732,16 @@ pub fn pitch_min_max_recipe(rec: f64) -> (f64, f64) {
     (rec - 0.4, rec + 0.4)
 }
 
-/// Starter tool pitch range by `F_YC_TYPE`; `None` for an unlisted type.
+/// Starter tool pitch range by `F_YC_TYPE`.
 #[must_use]
-pub fn pitch_min_max_tool(tool_type: i64, t: &PitchTargets) -> Option<(f64, f64)> {
+pub fn pitch_min_max_tool(tool_type: StarterType, t: &PitchTargets) -> (f64, f64) {
     let (center, delta) = match tool_type {
-        0 => (t.ale, 0.30),
-        1 => (t.lager, 0.25),
-        2 => (t.mix, 0.40),
-        3 => (t.wine, 0.25),
-        _ => return None,
+        StarterType::AleOrCider => (t.ale, 0.30),
+        StarterType::Lager => (t.lager, 0.25),
+        StarterType::HybridWheat => (t.mix, 0.40),
+        StarterType::MeadOrWine => (t.wine, 0.25),
     };
-    Some((center - delta, center + delta))
+    (center - delta, center + delta)
 }
 
 /// `PitchRange` text, `"min-max"` with two decimals.
@@ -731,11 +774,11 @@ pub fn dry_pitch_range(rec_dry: f64) -> String {
 
 /// Whether the dry yeast is pitched by weight: recipe `form == 1 && use_pkgs != 1`, tool `form == 1`.
 #[must_use]
-pub fn is_dry_by_weight(form: i64, use_pkgs: i64, tool: bool) -> bool {
+pub fn is_dry_by_weight(form: YeastForm, use_pkgs: bool, tool: bool) -> bool {
     if tool {
-        form == 1
+        form == YeastForm::Dry
     } else {
-        form == 1 && use_pkgs != 1
+        form == YeastForm::Dry && !use_pkgs
     }
 }
 
@@ -768,22 +811,23 @@ pub fn est_cells_ml(n: f64, v_ml: f64) -> f64 {
 // --- §1.9 cells after a starter ---
 
 /// `YeastCellsStarter`: `viable · GrowthRate(viable / starter_l)`; no starter means no growth.
-#[must_use]
-pub fn cells_starter(viable: f64, starter_l: f64, stir: bool) -> f64 {
+/// Errors on non-finite input.
+pub fn cells_starter(viable: f64, starter_l: f64, stir: bool) -> Result<f64> {
+    ensure_finite("viable", viable)?;
+    ensure_finite("starter_l", starter_l)?;
     let i = if starter_l > 0.0 {
         viable / starter_l
     } else {
         0.0
     };
     if i <= 0.0 {
-        return viable;
+        return Ok(viable);
     }
-    viable * growth_rate(i, stir)
+    Ok(viable * growth_rate(i, stir)?)
 }
 
 /// `YeastCellsSecStarter`: the second stage starts from the first stage's cells.
-#[must_use]
-pub fn cells_sec_starter(cells1: f64, sec_l: f64, stir: bool) -> f64 {
+pub fn cells_sec_starter(cells1: f64, sec_l: f64, stir: bool) -> Result<f64> {
     cells_starter(cells1, sec_l, stir)
 }
 
@@ -791,11 +835,14 @@ pub fn cells_sec_starter(cells1: f64, sec_l: f64, stir: bool) -> f64 {
 
 /// Recipe two-stage starter volumes `(stage1_l, stage2_l)`: needs `avail < need`, growth per
 /// stage capped at `growth_cap` (spec §1.11).
-#[must_use]
-pub fn two_stage_recipe(need: f64, avail: f64, stir: bool, growth_cap: f64) -> (f64, f64) {
+/// Errors on non-finite input.
+pub fn two_stage_recipe(need: f64, avail: f64, stir: bool, growth_cap: f64) -> Result<(f64, f64)> {
+    ensure_finite("need", need)?;
+    ensure_finite("avail", avail)?;
+    ensure_finite("growth_cap", growth_cap)?;
     let avail = avail.max(0.1);
     if avail >= need {
-        return (0.0, 0.0);
+        return Ok((0.0, 0.0));
     }
     let mut r = need / avail;
     let mut s = 1.0;
@@ -804,30 +851,35 @@ pub fn two_stage_recipe(need: f64, avail: f64, stir: bool, growth_cap: f64) -> (
         r /= s * s;
     }
     let g = r.sqrt().min(growth_cap);
-    let v1 = avail / innoc_rate(g);
-    let v2 = avail * g * s / innoc_rate(g);
-    (v1, v2)
+    let v1 = avail / innoc_rate(g)?;
+    let v2 = avail * g * s / innoc_rate(g)?;
+    Ok((v1, v2))
 }
 
 // --- §1.12 packs ---
 
 /// `YeastPacksNoStarter`: `1` below one pack, else `int(n / pkt + 0.99)`; `pkt ≤ 0` counts as 1.
-#[must_use]
+/// Errors on non-finite input.
 #[allow(clippy::cast_possible_truncation)]
-pub fn packs_no_starter(n: f64, pkt: f64) -> i64 {
+pub fn packs_no_starter(n: f64, pkt: f64) -> Result<i64> {
+    ensure_finite("n", n)?;
+    ensure_finite("pkt", pkt)?;
     let pkt = if pkt <= 0.0 { 1.0 } else { pkt };
-    if n < pkt {
+    Ok(if n < pkt {
         1
     } else {
         (n / pkt + 0.99).trunc() as i64
-    }
+    })
 }
 
 /// `YeastPacksStarter` / `CalcYeastPacksNeeded` with a starter: `int(packs) + 0.1`.
 ///
 /// `growth ≤ 0` counts as 1.2; a stir plate divides it by 1.45 (needs more packs).
-#[must_use]
-pub fn packs_starter(n: f64, pkt: f64, growth: f64, stir: bool) -> f64 {
+/// Errors on non-finite input.
+pub fn packs_starter(n: f64, pkt: f64, growth: f64, stir: bool) -> Result<f64> {
+    ensure_finite("n", n)?;
+    ensure_finite("pkt", pkt)?;
+    ensure_finite("growth", growth)?;
     let pkt = if pkt <= 0.0 { 1.0 } else { pkt };
     let mut g = if growth > 0.0 { growth } else { 1.2 };
     if stir {
@@ -838,16 +890,19 @@ pub fn packs_starter(n: f64, pkt: f64, growth: f64, stir: bool) -> f64 {
     } else {
         (n / (g * pkt) + 0.99).trunc()
     };
-    p + 0.1
+    Ok(p + 0.1)
 }
 
 /// Legacy `CalcYeastStarterSize`, litres: `pkt · pkt_size / InnocRate(r)` for `r > 1`.
-#[must_use]
-pub fn calc_yeast_starter_size(r: f64, pkt_size: f64, pkt: f64) -> f64 {
+/// Errors on non-finite input.
+pub fn calc_yeast_starter_size(r: f64, pkt_size: f64, pkt: f64) -> Result<f64> {
+    ensure_finite("r", r)?;
+    ensure_finite("pkt_size", pkt_size)?;
+    ensure_finite("pkt", pkt)?;
     if r > 1.0 {
-        pkt * pkt_size / innoc_rate(r)
+        Ok(pkt * pkt_size / innoc_rate(r)?)
     } else {
-        0.0
+        Ok(0.0)
     }
 }
 
@@ -908,10 +963,10 @@ pub enum YeastUnit {
 
 /// `YeastAmountUnitsFunc` / `YeastUnitsFunc`.
 #[must_use]
-pub fn yeast_units(use_pkgs: bool, form: i64, dry_unit: i64, wet_unit: i64) -> YeastUnit {
+pub fn yeast_units(use_pkgs: bool, form: YeastForm, dry_unit: i64, wet_unit: i64) -> YeastUnit {
     if use_pkgs {
         YeastUnit::Pkgs
-    } else if form == 1 {
+    } else if form == YeastForm::Dry {
         YeastUnit::Code(dry_unit)
     } else {
         YeastUnit::Code(wet_unit)
@@ -920,10 +975,10 @@ pub fn yeast_units(use_pkgs: bool, form: i64, dry_unit: i64, wet_unit: i64) -> Y
 
 /// `YeastImportHook` tolerance fix: tolerance 10 becomes 15 for Wine and 18 for Champagne.
 #[must_use]
-pub fn import_hook_tolerance(tol: i64, y_type: i64) -> i64 {
+pub fn import_hook_tolerance(tol: i64, y_type: YeastType) -> i64 {
     match (tol, y_type) {
-        (10, 2) => 15,
-        (10, 3) => 18,
+        (10, YeastType::Wine) => 15,
+        (10, YeastType::Champagne) => 18,
         _ => tol,
     }
 }
@@ -956,46 +1011,65 @@ pub fn mead_hydrate1(yeast_g: f64) -> f64 {
 
 // --- §2.4 nutrient programme ---
 
-fn yeast_n_factor(fac: i64) -> f64 {
-    YeastNitrogen::from_code(fac).map_or(YeastNitrogen::High.factor(), YeastNitrogen::factor)
-}
-
-/// Target YAN, ppm: `°P(OG) · 10 · k · (pct / 100)`; `fac` outside 0..=2 counts as High.
-#[must_use]
-pub fn mead_yan_target(sg: f64, pct: f64, fac: i64) -> f64 {
-    to_plato(sg) * 10.0 * yeast_n_factor(fac) * (pct / 100.0)
+/// Target YAN, ppm: `°P(OG) · 10 · k · (pct / 100)`. Errors on non-finite input.
+pub fn mead_yan_target(sg: f64, pct: f64, fac: YeastNitrogen) -> Result<f64> {
+    ensure_finite("sg", sg)?;
+    ensure_finite("pct", pct)?;
+    Ok(to_plato(sg) * 10.0 * fac.factor() * (pct / 100.0))
 }
 
 /// `MeadTotFermO`, grams: Fermaid-O total, only for method 0 (else 0).
-#[must_use]
-pub fn mead_tot_ferm_o(sg: f64, v_gal: f64, pct: f64, fac: i64, method: i64) -> f64 {
-    if method == 0 {
-        mead_yan_target(sg, pct, fac) * v_gal / 50.0
+pub fn mead_tot_ferm_o(
+    sg: f64,
+    v_gal: f64,
+    pct: f64,
+    fac: YeastNitrogen,
+    method: MeadMethod,
+) -> Result<f64> {
+    ensure_finite("v_gal", v_gal)?;
+    if method == MeadMethod::Tosna {
+        Ok(mead_yan_target(sg, pct, fac)? * v_gal / 50.0)
     } else {
-        0.0
+        mead_yan_target(sg, pct, fac).map(|_| 0.0)
     }
 }
 
 /// `MeadTotFermK`, grams: Fermaid-K total, only for method 1 (else 0).
-#[must_use]
-pub fn mead_tot_ferm_k(sg: f64, v_gal: f64, pct: f64, fac: i64, method: i64) -> f64 {
-    if method == 1 {
-        mead_yan_target(sg, pct, fac) * v_gal / 100.0
+pub fn mead_tot_ferm_k(
+    sg: f64,
+    v_gal: f64,
+    pct: f64,
+    fac: YeastNitrogen,
+    method: MeadMethod,
+) -> Result<f64> {
+    ensure_finite("v_gal", v_gal)?;
+    if method == MeadMethod::Tiosna {
+        Ok(mead_yan_target(sg, pct, fac)? * v_gal / 100.0)
     } else {
-        0.0
+        mead_yan_target(sg, pct, fac).map(|_| 0.0)
     }
 }
 
 /// `MeadFermO`, grams: one of the four Fermaid-O additions.
-#[must_use]
-pub fn mead_ferm_o(sg: f64, v_gal: f64, pct: f64, fac: i64, method: i64) -> f64 {
-    mead_tot_ferm_o(sg, v_gal, pct, fac, method) / 4.0
+pub fn mead_ferm_o(
+    sg: f64,
+    v_gal: f64,
+    pct: f64,
+    fac: YeastNitrogen,
+    method: MeadMethod,
+) -> Result<f64> {
+    Ok(mead_tot_ferm_o(sg, v_gal, pct, fac, method)? / 4.0)
 }
 
 /// `MeadFermK`, grams: one of the four Fermaid-K additions.
-#[must_use]
-pub fn mead_ferm_k(sg: f64, v_gal: f64, pct: f64, fac: i64, method: i64) -> f64 {
-    mead_tot_ferm_k(sg, v_gal, pct, fac, method) / 4.0
+pub fn mead_ferm_k(
+    sg: f64,
+    v_gal: f64,
+    pct: f64,
+    fac: YeastNitrogen,
+    method: MeadMethod,
+) -> Result<f64> {
+    Ok(mead_tot_ferm_k(sg, v_gal, pct, fac, method)? / 4.0)
 }
 
 /// A fermentable for [`mead_pct_honey`]: `F_G_TYPE`, subtype and OG points.
@@ -1025,69 +1099,88 @@ pub fn mead_pct_honey(ferms: &[MeadFerm], primary_pts: f64) -> f64 {
 
 // --- §2.5 YAN ---
 
-fn yan_factor(method: i64) -> f64 {
-    match method {
-        0 => 40.0,
-        2 => 212.3,
-        _ => 100.0,
-    }
-}
-
 /// `YANEquivalent`: organic nitrogen counts 4x for Fermaid-O (method 0).
 #[must_use]
-pub fn yan_equivalent(method: i64, y: f64) -> f64 {
-    if method == 0 { y * 4.0 } else { y }
+pub fn yan_equivalent(method: YanMethod, y: f64) -> f64 {
+    if method == YanMethod::FermaidO {
+        y * 4.0
+    } else {
+        y
+    }
 }
 
 /// `MeadYANAdded`, ppm. `total_g` is the nutrient total. The recipe version reads one
 /// addition (`total / 4`), a quirk of the reference (spec §2.5).
 #[must_use]
-pub fn mead_yan_added(method: i64, total_g: f64, v_l: f64, recipe: bool) -> f64 {
+pub fn mead_yan_added(method: YanMethod, total_g: f64, v_l: f64, recipe: bool) -> f64 {
     yan(method, if recipe { total_g / 4.0 } else { total_g }, v_l)
 }
 
 /// `MeadYANEquivalent`, ppm.
 #[must_use]
-pub fn mead_yan_equivalent(method: i64, total_g: f64, v_l: f64, recipe: bool) -> f64 {
+pub fn mead_yan_equivalent(method: YanMethod, total_g: f64, v_l: f64, recipe: bool) -> f64 {
     yan_equivalent(method, mead_yan_added(method, total_g, v_l, recipe))
 }
 
 /// `NutrientNeeded`, grams: `ppm · V(L) / c`.
 #[must_use]
-pub fn nutrient_needed(ppm: f64, method: i64, v_l: f64) -> f64 {
-    ppm * v_l / yan_factor(method)
+pub fn nutrient_needed(ppm: f64, method: YanMethod, v_l: f64) -> f64 {
+    ppm * v_l / method.ppm_per_g_l()
 }
 
 // --- §2.8 backsweetening ---
 
-/// Default potential of an agent code, degrees Brix; unlisted codes count as Other (15).
+/// Default potential of a backsweetening agent, degrees Brix.
 #[must_use]
-pub fn back_agent_og(agent: i64) -> f64 {
-    BackAgent::from_code(agent).map_or(15.0, BackAgent::potential_brix)
+pub fn back_agent_og(agent: BackAgent) -> f64 {
+    agent.potential_brix()
 }
 
 /// `BackAgentVol`, litres of agent for `v_l` of beverage at `sg_bev` to reach `sg_target`.
 #[must_use]
-pub fn back_agent_vol(v_l: f64, sg_bev: f64, sg_target: f64, agent: i64) -> f64 {
+pub fn back_agent_vol(v_l: f64, sg_bev: f64, sg_target: f64, agent: BackAgent) -> f64 {
     backsweeten_volume_l(v_l, sg_bev, sg_target, to_sg(back_agent_og(agent)))
 }
 
 /// `BackAgentWeight`, kg: `BrixToSG(potential) · volume` (the 258.2 Brix variant).
 #[must_use]
-pub fn back_agent_weight(v_l: f64, sg_bev: f64, sg_target: f64, agent: i64) -> f64 {
+pub fn back_agent_weight(v_l: f64, sg_bev: f64, sg_target: f64, agent: BackAgent) -> f64 {
     brix_to_sg(back_agent_og(agent)) * back_agent_vol(v_l, sg_bev, sg_target, agent)
 }
 
 // --- §3.3, §3.4 carbonation amount ---
 
-/// Priming sugar grams by agent: 0 corn sugar, 1 DME (x1.538), 2 table sugar (corn / 1.099).
+/// Priming sugar agent: code 0 corn sugar, 1 DME (x1.538), 2 table sugar (corn / 1.099).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PrimingAgent {
+    /// Code 0.
+    CornSugar,
+    /// Code 1.
+    Dme,
+    /// Code 2.
+    TableSugar,
+}
+
+impl PrimingAgent {
+    /// From the code (0-2); other codes are an error (T1.16, was corn sugar).
+    pub const fn from_code(code: i64) -> Result<Self> {
+        match code {
+            0 => Ok(Self::CornSugar),
+            1 => Ok(Self::Dme),
+            2 => Ok(Self::TableSugar),
+            _ => Err(Error::invalid("priming_agent", "unknown code")),
+        }
+    }
+}
+
+/// Priming sugar grams by agent (corn sugar baseline).
 #[must_use]
-pub fn carb_sugar_agent(agent: i64, vols: f64, temp_f: f64, gal: f64) -> f64 {
+pub fn carb_sugar_agent(agent: PrimingAgent, vols: f64, temp_f: f64, gal: f64) -> f64 {
     let g = sugar_g(vols, temp_f, gal, false);
     match agent {
-        1 => g * 1.538,
-        2 => g / 1.099,
-        _ => g,
+        PrimingAgent::Dme => g * 1.538,
+        PrimingAgent::TableSugar => g / 1.099,
+        PrimingAgent::CornSugar => g,
     }
 }
 
@@ -1104,14 +1197,14 @@ pub enum CarbAmount {
 /// `carb_rate / 100` when `carb_rate ≠ 0`. No keg factor (spec §3.3).
 #[must_use]
 pub fn carb_amount(
-    c_type: i64,
+    c_type: CarbType,
     vols: f64,
     temp_f: f64,
     gal: f64,
     carb_rate: f64,
-    agent: i64,
+    agent: PrimingAgent,
 ) -> CarbAmount {
-    if c_type == 1 {
+    if c_type == CarbType::Keg {
         return CarbAmount::PressurePsi(co2_psi(vols, temp_f));
     }
     let mut g = carb_sugar_agent(agent, vols, temp_f, gal);

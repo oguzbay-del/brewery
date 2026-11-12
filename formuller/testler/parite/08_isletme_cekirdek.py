@@ -1,7 +1,7 @@
 """Bölüm 08 (işletme çekirdek hesapları) parite vektörleri (ADR-0003)."""
 from decimal import Decimal
 
-from ortak import Vektor, yukle
+from ortak import Vektor, dene, yukle
 
 
 def dd(x):
@@ -57,9 +57,9 @@ def uret():
     kj_strike = (15 * 4.186 + 8 * 0.5) * (72 - 15)
     kj_boil = (28 * 4.186 + 8 * 0.5) * (100 - 76)
     for kj, eff in ((kj_strike + kj_boil, 0.90), (0.0, 0.9), (1000.0, 1.0), (50000.0, 0.45)):
-        v.ekle("kwh_from_heat", {"kj": kj, "eff": eff}, ref.kwh_from_heat(kj, eff))
+        v.ekle("kwh_from_heat", {"kj": kj, "eff": eff}, dene(ref.kwh_from_heat, kj, eff))
     for kj, eff, hu in ((kj_strike + kj_boil, 0.40, 34500.0), (1000.0, 1.0, 34500.0), (50000.0, 0.8, 36000.0)):
-        v.ekle("gas_m3_from_heat", {"kj": kj, "eff": eff, "hu_kj_m3": hu}, ref.gas_m3_from_heat(kj, eff, hu))
+        v.ekle("gas_m3_from_heat", {"kj": kj, "eff": eff, "hu_kj_m3": hu}, dene(ref.gas_m3_from_heat, kj, eff, hu))
     adlar = ("ingredient_cost", "water_l", "water_price_m3", "energy_cost", "pack_units", "pack_unit_cost", "packaged_l")
     for a in (("18.40", "35.0", "30.0", "12.9740", "60", "0.35", "20.0"), ("0.0", "0.0", "0.0", "0.0", "0", "0.0", "10.0"),
               ("100.0", "500.0", "1.2", "40.0", "1200", "0.4", "950.0"), ("7.005", "12.5", "2.333", "1.005", "3", "0.125", "3.0"),
@@ -83,42 +83,42 @@ def uret():
     w = dict(V=100.5, ABV=0.0, IBU=0.0, SRM=0.0, CO2=0.0, P=0.0)
     c = dict(V=250, ABV=9.5, IBU=60, SRM=25.0, CO2=2.4, P=6.1)
     for parts in ([a, b], [a, w], [a], [a, b, c], [c, w]):
-        v.ekle("blend", {"parts": parts}, ref.blend(parts))
+        v.ekle("blend", {"parts": parts}, dene(ref.blend, parts))
     for v1, x1, x2, xt in ((960, 5.4, 4.6, 5.2), (960, 5.4, 0.0, 5.0), (500, 20.0, 40.0, 30.0),
                             (960, 5.4, 4.6, 5.4), (960, 5.4, 4.6, 4.6), (960, 5.4, 4.6, 6.0), (960, 5.4, 4.6, 4.0),
                             (960, 5.4, 4.6, 4.6 + 5e-10), (960, 5.4, 4.6, 5.4 - 5e-10), (960, 5.4, 4.6, 4.6 + 2e-9),
                             (960, 5.4, 4.6, 5.4 - 2e-9), (960, 4.6, 5.4, 5.0), (500, 20.0, 40.0, 20.0), (500, 20.0, 40.0, 40.0)):
-        v.ekle("blend_volume_for_target", {"v1": v1, "x1": x1, "x2": x2, "xt": xt}, ref.blend_volume_for_target(v1, x1, x2, xt),
+        v.ekle("blend_volume_for_target", {"v1": v1, "x1": x1, "x2": x2, "xt": xt}, dene(ref.blend_volume_for_target, v1, x1, x2, xt),
                "hedef aralık dışı/uçta ise null")
 
     # 3. Maya
     for pitch, vl, p in ((0.75, 1000, 12.0), (1.5, 20, 15.0), (0.5, 0, 10.0)):
-        v.ekle("cells_needed_billion", {"pitch_m_ml_p": pitch, "v_l": vl, "p": p}, ref.cells_needed_billion(pitch, vl, p))
+        v.ekle("cells_needed_billion", {"pitch_m_ml_p": pitch, "v_l": vl, "p": p}, dene(ref.cells_needed_billion, pitch, vl, p))
     for tot, sq, dil in ((230, 5, 100), (80, 5, 1), (0, 5, 10), (410, 10, 50)):
-        v.ekle("hemocytometer", {"total_counted": tot, "squares_counted": sq, "dilution": dil}, ref.hemocytometer(tot, sq, dil))
+        v.ekle("hemocytometer", {"total_counted": tot, "squares_counted": sq, "dilution": dil}, dene(ref.hemocytometer, tot, sq, dil))
     for un, st in ((212, 18), (100, 0), (0, 40), (95, 5)):
-        v.ekle("viability_stain", {"unstained": un, "stained": st}, ref.viability_stain(un, st))
-    n = ref.cells_needed_billion(0.75, 1000, 12.0)
-    d = ref.hemocytometer(230, 5, 100)
-    via = ref.viability_stain(212, 18)
+        v.ekle("viability_stain", {"unstained": un, "stained": st}, dene(ref.viability_stain, un, st))
+    n = dene(ref.cells_needed_billion, 0.75, 1000, 12.0)
+    d = dene(ref.hemocytometer, 230, 5, 100)
+    via = dene(ref.viability_stain, 212, 18)
     for cells, dens, vi, ddef in ((n, d, via, 1.0e9), (n, None, 0.90, 1.0e9), (n, 0.0, 0.90, 1.0e9),
                                    (n, None, 1.0, 1.0e9), (100.0, 2.0e9, 0.8, 1.0e9), (100.0, None, 0.5, 5.0e8)):
         v.ekle("slurry_volume_ml", {"cells_billion": cells, "density_cells_ml": dens, "viability": vi, "default_density": ddef},
-               ref.slurry_volume_mL(cells, dens, vi, ddef), "yoğunluk null/0 ise varsayılan")
+               dene(ref.slurry_volume_mL, cells, dens, vi, ddef), "yoğunluk null/0 ise varsayılan")
 
     # 4. Profesyonel verim
     for vl, p, hot in ((1040, 12.0, True), (1040, 12.0, False), (20.0, 0.0, True), (500.0, 16.5, True)):
-        v.ekle("extract_kg", {"v_l": vl, "p": p, "hot": hot}, ref.extract_kg(vl, p, hot))
+        v.ekle("extract_kg", {"v_l": vl, "p": p, "hot": hot}, dene(ref.extract_kg, vl, p, hot))
     for vl, p, mk, hot in ((1040, 12.0, 170, True), (1040, 12.0, 170, False), (20.0, 14.0, 4.0, True)):
-        v.ekle("brewhouse_yield", {"v_l": vl, "p": p, "malt_kg": mk, "hot": hot}, ref.brewhouse_yield(vl, p, mk, hot))
+        v.ekle("brewhouse_yield", {"v_l": vl, "p": p, "malt_kg": mk, "hot": hot}, dene(ref.brewhouse_yield, vl, p, mk, hot))
     for fg, mo, fc in ((81.5, 4.3, 0.0), (81.5, 4.3, 1.5), (80.0, 0.0, 2.0), (82.0, 6.0, 0.0)):
         v.ekle("lab_extract_as_is", {"fgdb": fg, "moisture": mo, "fc_diff": fc}, ref.lab_extract_as_is(fg, mo, fc))
     lab = ref.lab_extract_as_is(81.5, 4.3)
     for gk, ex, mo, mw in ((170, lab, 4.3, 520), (5.0, 78.0, 4.0, 15.0), (5.0, 0.0, 4.0, 15.0)):
         v.ekle("first_wort_max_p", {"grain_kg": gk, "extract_as_is_pct": ex, "moisture_pct": mo, "mash_water_l": mw},
-               ref.first_wort_max_P(gk, ex, mo, mw))
+               dene(ref.first_wort_max_P, gk, ex, mo, mw))
     for m, mx in ((19.6, 20.09), (20.0, 20.0), (0.0, 18.0)):
-        v.ekle("conversion_eff", {"fw_measured_p": m, "fw_max_p": mx}, ref.conversion_eff(m, mx))
+        v.ekle("conversion_eff", {"fw_measured_p": m, "fw_max_p": mx}, dene(ref.conversion_eff, m, mx))
 
     # 5. Malt analizi
     for fg, mo, fc in ((81.5, 4.3, 1.5), (81.0, 4.0, 2.0), (80.0, 0.0, 0.0), (85.2, 5.5, 1.0), (70.0, 6.0, 3.0)):
@@ -149,4 +149,16 @@ def uret():
         res = ref.diastatic_check(gr, thr)
         v.ekle("diastatic_check", {"grains": [list(g) for g in gr], "threshold": thr}, res,
                "ağırlıklı ortalama < eşik; diastatik gücü olmayan tahıl 0")
+    n = "T1.16: hata"
+    v.ekle("kwh_from_heat", {"kj": 1000.0, "eff": 0.0}, dene(ref.kwh_from_heat, 1000.0, 0.0), "verim 0: " + n)
+    v.ekle("gas_m3_from_heat", {"kj": 1000.0, "eff": 0.0, "hu_kj_m3": 34500.0}, dene(ref.gas_m3_from_heat, 1000.0, 0.0, 34500.0), n)
+    v.ekle("blend", {"parts": []}, dene(ref.blend, []), "boş harman (eskiden NaN): " + n)
+    v.ekle("hemocytometer", {"total_counted": 100.0, "squares_counted": 0.0, "dilution": 1.0}, dene(ref.hemocytometer, 100.0, 0.0, 1.0), n)
+    v.ekle("viability_stain", {"unstained": 0.0, "stained": 0.0}, dene(ref.viability_stain, 0.0, 0.0), n)
+    v.ekle("slurry_volume_ml", {"cells_billion": 100.0, "density_cells_ml": None, "viability": 0.0, "default_density": 1.0e9},
+           dene(ref.slurry_volume_mL, 100.0, None, 0.0, 1.0e9), "canlılık 0: " + n)
+    v.ekle("brewhouse_yield", {"v_l": 20.0, "p": 12.0, "malt_kg": 0.0, "hot": True}, dene(ref.brewhouse_yield, 20.0, 12.0, 0.0, True), n)
+    v.ekle("first_wort_max_p", {"grain_kg": 0.0, "extract_as_is_pct": 80.0, "moisture_pct": 4.0, "mash_water_l": 0.0},
+           dene(ref.first_wort_max_P, 0.0, 80.0, 4.0, 0.0), n)
+    v.ekle("conversion_eff", {"fw_measured_p": 10.0, "fw_max_p": 0.0}, dene(ref.conversion_eff, 10.0, 0.0), n)
     return v.yaz()

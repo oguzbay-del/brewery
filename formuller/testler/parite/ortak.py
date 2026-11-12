@@ -45,6 +45,17 @@ def _temizle(x):
     raise TypeError("desteklenmeyen tip: %s" % type(x).__name__)
 
 
+def dene(f, *args, **kw):
+    """Referans çağrısı; istisna atarsa vektöre `{"hata": "ValueError"}` yazılır (ADR-0004 madde 3).
+
+    Motor tek hata tipi (`engine::Error`) döndürür; Python istisna sınıfı (ZeroDivisionError, KeyError, ...)
+    vektörde `ValueError` olarak normalleştirilir, Rust testi yalnız `hata` anahtarının varlığını denetler."""
+    try:
+        return f(*args, **kw)
+    except (ValueError, ZeroDivisionError, OverflowError, KeyError, ArithmeticError):
+        return {"hata": "ValueError"}
+
+
 class Vektor:
     def __init__(self, bolum, kaynak):
         self.bolum = bolum

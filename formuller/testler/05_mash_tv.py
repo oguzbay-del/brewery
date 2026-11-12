@@ -136,10 +136,17 @@ def grain_absorb(W_mash, biab=False):   # §1.2
 def sparge_absorb(W_sparge, biab=False):    # §1.3 (W_sparge = toplam sparge tahılı)
     return (ABS_BIAB if biab else ABS_STD)*W_sparge
 
+def _kod(ad, deger, gecerli):
+    """Karar (T1.16): listede olmayan kod ValueError."""
+    if deger not in gecerli: raise ValueError("%s kodu geçersiz: %r" % (ad, deger))
+
+
 def mash_grain_weight(grains):          # §2.6; grains = [(use, type, amount_kg)]
+    for u, t, a in grains: _kod("kullanım", u, range(9)); _kod("tip", t, range(9))
     return sum(a for u, t, a in grains if u < MASH_USE+1 and t in MASHABLE_TYPES)
 
 def sparge_grain_weight(grains):        # §1.3 (use == 8 ve type in {0, 3})
+    for u, t, a in grains: _kod("kullanım", u, range(9)); _kod("tip", t, range(9))
     return sum(a for u, t, a in grains if u == SPARGE_USE and t in MASHABLE_TYPES)
 
 def tun_vol_needed(mash_tot_water, W_mash):                 # §1.4
@@ -290,7 +297,8 @@ def bottle_vol_recipe(batch, fermenter_loss, include_starter, starter, use_secon
     return batch - fermenter_loss
 
 def total_water(recipe_type, has_boil_ing, mash_tot_water_, sparge, topup_kettle, topup_ferm, batch, v_preboil):
-    """§5.8. Tip 1/2: toplam; diğerleri Extract sayılır (tip > 2 belirtilmemiş, seçim)."""
+    """§5.8. Tip 1/2: toplam; diğerleri Extract sayılır (tip > 2 belirtilmemiş, seçim). Tarif tipi 0-6 (T1.16)."""
+    _kod("tarif tipi", recipe_type, range(7))
     if recipe_type in (1, 2):
         return mash_tot_water_ + sparge + topup_kettle + topup_ferm
     if not has_boil_ing:
@@ -298,6 +306,8 @@ def total_water(recipe_type, has_boil_ing, mash_tot_water_, sparge, topup_kettle
     return v_preboil + topup_ferm
 
 def total_grain_use(items, use):                            # §5.9 TotalGrainUseField; items = [(use, amount)]
+    _kod("kullanım", use, range(9))
+    for u, a in items: _kod("kullanım", u, range(9))
     return sum(a for u, a in items if u == use)
 
 def steep_vol(v_preboil, v_boilgrains, W_steep):            # §5.9; W_steep kg
@@ -308,11 +318,13 @@ def boil_water_add(v_preboil, v_steep, v_boilgrains):       # §5.9
     return v_preboil - v_steep - v_boilgrains
 
 def primary_water_add(recipe_type, has_boil_ing, batch, v_postboil, v_primarygrains, topup_ferm):
+    _kod("tarif tipi", recipe_type, range(7))
     post = v_postboil if (recipe_type <= 2 or has_boil_ing) else 0.0
     return batch - post - v_primarygrains - topup_ferm
 
-def preboil_sg(og, batch, trub, v_preboil):                 # §5.10 (v_preboil <= 0 -> None)
-    return 1 + (og-1)*(batch+trub)/v_preboil if v_preboil > 0 else None
+def preboil_sg(og, batch, trub, v_preboil):                 # §5.10 (v_preboil <= 0 -> ValueError, T1.16)
+    if v_preboil <= 0: raise ValueError("ön-kaynatma hacmi > 0 olmalı")  # Karar (T1.16): eskiden None
+    return 1 + (og-1)*(batch+trub)/v_preboil
 
 def volume_chain(batch, topup_ferm, trub, cool_pct, boil_off, boil_time_min, rate_flag, fermenter_loss):
     """§5.11 zincir (ekipman): boil-off -> pre-boil -> post-boil -> soğuma -> soğuk wort -> şişe."""
@@ -341,6 +353,7 @@ def wn_sparge_water(v_boil, absorb, topup_kettle, lauter_deadspace, v_mash):
     return v_boil + absorb - topup_kettle + lauter_deadspace - v_mash
 
 def wn_total_water(brew_type, v_boil, topup, v_sparge, v_mash, topup_kettle):
+    _kod("tarif tipi", brew_type, range(7))
     if brew_type == 0: return v_boil + topup
     return v_sparge + v_mash + topup_kettle + topup
 
@@ -371,7 +384,8 @@ def misc_to_fluid_oz(amount, units):
     ml = {0: amount/1000.0, 1: amount, 3: amount*LB_KG*1000.0, 4: amount*1000.0, 5: amount,
           6: amount*4.93, 7: amount*14.78, 11: amount*1000.0}
     if units in ml: return ml[units]/(FLOZ_L*1000.0)
-    return {2: amount, 8: amount*8.0, 9: amount*16.0, 10: amount*32.0, 12: amount*128.0}.get(units)
+    _kod("misc birimi", units, (2, 8, 9, 10, 12))  # Karar (T1.16): eskiden None
+    return {2: amount, 8: amount*8.0, 9: amount*16.0, 10: amount*32.0, 12: amount*128.0}[units]
 
 print("T1.14b grain_vol(5):", r(grain_vol(5)), " grain_absorb(5):", r(grain_absorb(5)), " BIAB:", r(grain_absorb(5, True)))
 print("T1.14b biab_mash_vol (TV8):", r(biab_mash_vol(bv, 1, 0, 5)), " sparge_vol (TV7):", r(sparge_vol(bv, absorb, 0, 1, 0, 16)))

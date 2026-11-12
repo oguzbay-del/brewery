@@ -43,6 +43,15 @@ pub fn gravity_units(sg: f64) -> i64 {
     (sg * 100_000.0).round_ties_even() as i64
 }
 
+/// Checked [`gravity_units`]: rejects NaN, infinities and values that would saturate `i64`.
+pub fn gravity_units_checked(sg: f64) -> crate::Result<i64> {
+    crate::error::ensure_finite("sg", sg)?;
+    if (sg * 100_000.0).abs() >= 9.0e18 {
+        return Err(crate::Error::invalid("sg", "out of range"));
+    }
+    Ok(gravity_units(sg))
+}
+
 /// Python-compatible `round(x, n)` for `n ≥ 0`.
 ///
 /// Rounds the exact binary value to `n` decimals, ties to even, as Python does

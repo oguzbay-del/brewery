@@ -1,5 +1,5 @@
 """Bölüm 02 (hop ve IBU) parite vektörleri: formuller/02-hop-ibu.md, referans formuller/testler/02_hop_ibu.py."""
-from ortak import Vektor, yukle
+from ortak import Vektor, dene, yukle
 
 SGLER = (1.000, 1.030, 1.040, 1.050, 1.051, 1.070, 1.100)
 
@@ -32,21 +32,25 @@ def uret():
     # §2.3 Garetz iteratif: araç yolu (v == bv) ve tarif yolu
     for t in (0.5, 1, 5, 6, 10, 11, 15, 20, 30, 45, 60, 70, 75, 90, 120):
         v.ekle("garetz_ibu", {"w": 1.0, "a": 5.0, "t": t, "sg": 1.050, "v": 5.0, "bv": 5.0},
-               ref.garetz_ibu(1.0, 5.0, t, 1.050, 5.0, 5.0))
+               dene(ref.garetz_ibu, 1.0, 5.0, t, 1.050, 5.0, 5.0))
     # T1.15 B9 / B18: büyük miktar, yavaş yakınsama, 10 000 adım sınırı
-    for w in (1e3, 1e5, 1e6):
+    for w in (1e3, 1e5, 1e6, 1e9, 1e12):  # 1e9 ve üstü sınırda yakınsamaz: hata (T1.16)
         v.ekle("garetz_ibu", {"w": w, "a": 20.0, "t": 60, "sg": 1.050, "v": 5.0, "bv": 5.0},
-               ref.garetz_ibu(w, 20.0, 60, 1.050, 5.0, 5.0), "T1.15 B9: yavaş yakınsama, adım sınırı")
+               dene(ref.garetz_ibu, w, 20.0, 60, 1.050, 5.0, 5.0), "T1.15 B9: yavaş yakınsama, adım sınırı")
     for sg in (1.030, 1.040, 1.050, 1.070):
         v.ekle("garetz_ibu", {"w": 2.0, "a": 12.0, "t": 60, "sg": sg, "v": 5.0, "bv": 6.5},
-               ref.garetz_ibu(2.0, 12.0, 60, sg, 5.0, 6.5), "v != bv: konsantrasyon faktörü")
+               dene(ref.garetz_ibu, 2.0, 12.0, 60, sg, 5.0, 6.5), "v != bv: konsantrasyon faktörü")
     v.ekle("garetz_ibu", {"w": 4.0, "a": 8.0, "t": 30, "sg": 1.060, "v": 10.0, "bv": 12.0},
-           ref.garetz_ibu(4.0, 8.0, 30, 1.060, 10.0, 12.0))
+           dene(ref.garetz_ibu, 4.0, 8.0, 30, 1.060, 10.0, 12.0))
     # ön koşullar: t<=0, w<=0, a<0 -> 0; a=0
     for (w, a, t) in ((1.0, 5.0, 0), (1.0, 5.0, -5), (0.0, 5.0, 60), (-1.0, 5.0, 60),
                       (1.0, -1.0, 60), (1.0, 0.0, 60)):
         v.ekle("garetz_ibu", {"w": w, "a": a, "t": t, "sg": 1.050, "v": 5.0, "bv": 5.0},
-               ref.garetz_ibu(w, a, t, 1.050, 5.0, 5.0), "ön koşul kenarı")
+               dene(ref.garetz_ibu, w, a, t, 1.050, 5.0, 5.0), "ön koşul kenarı")
+    # T1.16: hacim <= 0 ve gravite çarpanı <= 0 hata (eskiden NaN / negatif IBU)
+    for (sg, vv, bv) in ((1.050, 0.0, 5.0), (1.050, 5.0, 0.0), (1.050, -5.0, 5.0), (0.80, 5.0, 5.0), (0.0, 5.0, 5.0)):
+        v.ekle("garetz_ibu", {"w": 1.0, "a": 5.0, "t": 60, "sg": sg, "v": vv, "bv": bv},
+               dene(ref.garetz_ibu, 1.0, 5.0, 60, sg, vv, bv), "T1.16: geçersiz hacim ya da gravite: hata")
     for sg in (1.040, 1.050, 1.070):
         for t in (0.5, 5, 10, 15, 20, 30, 45, 60, 90, 130):
             v.ekle("garetz_utilization", {"sg": sg, "t": t}, ref.garetz_util(sg, t))
@@ -88,6 +92,8 @@ def uret():
     ):
         v.ekle("aged_alpha", {"alpha": a, "hsi": hsi, "temp_f": tf, "days": days, "storage": sf},
                ref.hop_alpha(a, hsi, tf, days, sf))
+    v.ekle("aged_alpha", {"alpha": 5.0, "hsi": -1.0, "temp_f": 68, "days": 180, "storage": 1.0},
+           dene(ref.hop_alpha, 5.0, -1.0, 68, 180, 1.0), "T1.16: negatif HSI hata")
 
     # ---- T1.14a: referansa sonradan eklenen fonksiyonlar ----
     opts = dict(ref.DEFAULT_OPTS)
@@ -118,21 +124,21 @@ def uret():
     for (ibu, vg, sg, t, a) in ((17.2137, 5.0, 1.05, 60, 5.0), (40.0, 5.5, 1.07, 30, 12.0), (30.0, 5.0, 1.05, 0, 5.0),
                                 (30.0, 5.0, 1.05, 60, 0.0), (0.0, 5.0, 1.05, 60, 5.0)):
         g = {"ibu": ibu, "v": vg, "sg": sg, "t": t, "a": a}
-        v.ekle("tinseth_weight", g, ref.tin_weight(ibu, vg, sg, t, a))
-        v.ekle("rager_weight", g, ref.rager_weight(ibu, vg, sg, t, a),
+        v.ekle("tinseth_weight", g, dene(ref.tin_weight, ibu, vg, sg, t, a))
+        v.ekle("rager_weight", g, dene(ref.rager_weight, ibu, vg, sg, t, a),
                "R(n)=0 veya A=0 -> 0 (seçim)" if t == 0 or a == 0 else None)
     # §2.3 Garetz ters (ikiye bölme)
     for (ibu, a, t, sg, vg) in ((30.0, 5.0, 60, 1.050, 5.0), (45.0, 12.0, 45, 1.060, 5.5), (20.0, 7.0, 30, 1.040, 6.0),
                                 (60.0, 14.0, 90, 1.070, 5.0), (15.0, 4.5, 20, 1.050, 5.0)):
         v.ekle("garetz_weight", {"ibu": ibu, "a": a, "t": t, "sg": sg, "v": vg},
-               ref.garetz_weight(ibu, a, t, sg, vg))
+               dene(ref.garetz_weight, ibu, a, t, sg, vg))
 
     # T1.15 B10: ulaşılamaz hedef (tablo değeri 0, t <= 10 dk) -> 0
     for (ibu, a, t, sg, vg) in ((30.0, 5.0, 5, 1.050, 5.0), (30.0, 5.0, 10, 1.050, 5.0),
                                 (30.0, 5.0, 0.5, 1.050, 5.0), (30.0, 0.0, 60, 1.050, 5.0),
                                 (1e9, 5.0, 60, 1.050, 5.0)):
         v.ekle("garetz_weight", {"ibu": ibu, "a": a, "t": t, "sg": sg, "v": vg},
-               ref.garetz_weight(ibu, a, t, sg, vg), "T1.15 B10: ulaşılamaz hedef -> 0")
+               dene(ref.garetz_weight, ibu, a, t, sg, vg), "T1.16: ulaşılamaz hedef -> hata")
 
     # §3.4 whirlpool
     for tc in (60.0, 80.0, 90.0, 100.0):
@@ -299,7 +305,7 @@ def uret():
 
     # §6.2 HopIBUAdjust
     for (wo, io, inew) in ((1.0, 20.0, 30.0), (2.5, 12.5, 5.0), (1.0, 0.0, 10.0), (1.0, -3.0, 10.0), (1.0, 20.0, 0.0)):
-        v.ekle("hop_ibu_adjust", {"w_old": wo, "ibu_old": io, "ibu_new": inew}, ref.hop_ibu_adjust(wo, io, inew))
+        v.ekle("hop_ibu_adjust", {"w_old": wo, "ibu_old": io, "ibu_new": inew}, dene(ref.hop_ibu_adjust, wo, io, inew))
 
     # §7 araç yolu: CalcIBU, CalcAAU ve toplamlar
     for eq in (0, 1, 2):
@@ -335,5 +341,5 @@ def uret():
     for st in (0, 1, 2, 7):
         for (a, hsi, tf, mo) in ((5, 30, 68, 6), (7.5, 40, 40, 12), (9.0, 100, 77, 3), (5, 30, 68, 0)):
             v.ekle("aged_alpha_months", {"alpha": a, "hsi": hsi, "temp_f": tf, "months": mo, "storage_type": st},
-                   ref.aged_alpha_months(a, hsi, tf, mo, st), "depolama tipi 7: tanımsız -> 1.0 (seçim)" if st == 7 else None)
+                   dene(ref.aged_alpha_months, a, hsi, tf, mo, st), "depolama tipi 7: tanımsız -> hata (T1.16)" if st == 7 else None)
     return v.yaz()

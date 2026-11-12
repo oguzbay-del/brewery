@@ -1,5 +1,5 @@
 """Bölüm 05 (mash, hacimler) parite vektörleri. Referans: formuller/testler/05_mash_tv.py (ADR-0003)."""
-from ortak import Vektor, yukle
+from ortak import Vektor, dene, yukle
 
 # Tun: (kütle kg, özgül ısı cal/g°C, hacim L). Sıfır = tun ısısı yok sayılır.
 TUN_KUCUK = (4.0, 0.12, 40.0)
@@ -151,7 +151,7 @@ def uret():
 
     # --- T1.14b: sonradan eklenen referans fonksiyonları (her biri girdi adlarıyla çağrılır) ---
     def k(fonk, **g):
-        v.ekle(fonk, g, getattr(ref, fonk)(**g))
+        v.ekle(fonk, g, dene(getattr(ref, fonk), **g))
 
     for w in (0.0, 5.0, 4.2, 12.345):
         k("grain_vol", W=w)
@@ -373,6 +373,14 @@ def uret():
               dict(sg0=1.060, v0=20.0, v_add=0.0, wort=False),
               dict(sg0=1.050, v0=10.0, v_add=10.0, wort=True, sg_add=1.080)):
         k("dilution", **g)
+    # T1.16: toplam hacim 0 -> sıfıra bölme (eskiden NaN); hedef 1.000 ve soğuma %100 de hata
+    k("dilution", sg0=1.050, v0=0.0, v_add=0.0, wort=False)
+    k("dilution", sg0=1.050, v0=0.0, v_add=0.0, wort=True, sg_add=1.040)
+    k("gravity_adj_water_vol", v=20.0, sg=1.050, sg_target=1.000)
+    k("wn_cool_loss", v_ferm=20.0, topup=0.0, cool_pct=100.0)
+    k("mash_grain_weight", grains=[[9, 0, 1.0]])
+    k("total_grain_use", items=[[2, 1.0]], use=9)
+    k("wn_total_water", brew_type=7, v_boil=28.958, topup=0.0, v_sparge=19.966, v_mash=15.0, topup_kettle=0.0)
     for vv, sg, tg in ((20.0, 1.060, 1.050), (20.0, 1.040, 1.050), (20.0, 1.050, 1.050), (25.0, 1.075, 1.045)):
         k("gravity_adj_water_vol", v=vv, sg=sg, sg_target=tg)
 

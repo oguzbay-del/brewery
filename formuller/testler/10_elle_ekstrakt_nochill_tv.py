@@ -197,6 +197,7 @@ def reading_role(source, batch_has_device):
 def few_status(readings, og, fg_prior, lag=LAG_H):
     """§1.4 değerlendirme sırası, yalnız durum kodu: (1) durgunluk, (2) gecikme sonrası ≥ 2 okuma, (3) %30,
     (4) hedefe ulaştı, (5) k > 0; hepsi geçerse "goster". Boş liste: "az_okuma"."""
+    if not _finite(og, fg_prior, lag, *[x for r_ in readings for x in r_]): raise ValueError("girdiler sonlu olmalı")  # Karar (T1.16)
     readings = sorted(readings)
     if not readings: return "az_okuma"
     post = [(t, g) for t, g in readings if t > lag]

@@ -5,6 +5,8 @@
 //! specific heats in cal/g°C, gravities as SG. Conversion from BeerSmith's internal units is
 //! the API layer's job (ADR-0003).
 
+use crate::density::{GrainType, GrainUse, RecipeType};
+use crate::error::{Error, Result, ensure_finite};
 use crate::units::round_py;
 
 /// One US fluid ounce in litres (`O_GRAIN_VOL`-style internal conversion, spec §0.1).
@@ -351,14 +353,13 @@ pub enum StepKind {
 }
 
 impl StepKind {
-    /// Maps the spec's numeric code (0, 1, 2); `None` for anything else.
-    #[must_use]
-    pub fn from_code(code: i64) -> Option<StepKind> {
+    /// Maps the spec's numeric code (0, 1, 2); anything else is an error.
+    pub const fn from_code(code: i64) -> Result<StepKind> {
         match code {
-            0 => Some(StepKind::Infusion),
-            1 => Some(StepKind::Decoction),
-            2 => Some(StepKind::Temperature),
-            _ => None,
+            0 => Ok(StepKind::Infusion),
+            1 => Ok(StepKind::Decoction),
+            2 => Ok(StepKind::Temperature),
+            _ => Err(Error::invalid("step_kind", "unknown code")),
         }
     }
 }
@@ -437,20 +438,24 @@ pub fn sparge_absorb(w_sparge: f64, biab: bool) -> f64 {
 /// Mash grain weight (spec §2.6): sum of `(use, type, amount_kg)` entries with `use < 1`
 /// (mash) and `type` Grain (0) or Adjunct (3). Returns kg.
 #[must_use]
-pub fn mash_grain_weight(grains: &[(i64, i64, f64)]) -> f64 {
+pub fn mash_grain_weight(grains: &[(GrainUse, GrainType, f64)]) -> f64 {
     grains
         .iter()
-        .filter(|(u, t, _)| *u < 1 && (*t == 0 || *t == 3))
+        .filter(|(u, t, _)| {
+            *u == GrainUse::Mash && matches!(t, GrainType::Grain | GrainType::Adjunct)
+        })
         .map(|(_, _, a)| a)
         .sum()
 }
 
 /// Sparge grain weight (spec §1.3): entries with `use == 8` and `type` 0 or 3. Returns kg.
 #[must_use]
-pub fn sparge_grain_weight(grains: &[(i64, i64, f64)]) -> f64 {
+pub fn sparge_grain_weight(grains: &[(GrainUse, GrainType, f64)]) -> f64 {
     grains
         .iter()
-        .filter(|(u, t, _)| *u == 8 && (*t == 0 || *t == 3))
+        .filter(|(u, t, _)| {
+            *u == GrainUse::Sparge && matches!(t, GrainType::Grain | GrainType::Adjunct)
+        })
         .map(|(_, _, a)| a)
         .sum()
 }
@@ -859,7 +864,7 @@ pub fn bottle_vol_recipe(
 #[must_use]
 #[allow(clippy::too_many_arguments)] // mirrors the spec signature
 pub fn total_water(
-    recipe_type: i64,
+    recipe_type: RecipeType,
     has_boil_ing: bool,
     mash_tot_water: f64,
     sparge: f64,
@@ -868,7 +873,7 @@ pub fn total_water(
     batch: f64,
     v_preboil: f64,
 ) -> f64 {
-    if recipe_type == 1 || recipe_type == 2 {
+    if matches!(recipe_type, RecipeType::PartialMash | RecipeType::AllGrain) {
         mash_tot_water + sparge + topup_kettle + topup_ferm
     } else if !has_boil_ing {
         batch
@@ -880,7 +885,7 @@ pub fn total_water(
 /// Sum of the amounts of `(use, amount)` entries whose use equals `use` (spec §5.9,
 /// `TotalGrainUseField`). Weight or volume, whatever the entries carry.
 #[must_use]
-pub fn total_grain_use(items: &[(i64, f64)], use_code: i64) -> f64 {
+pub fn total_grain_use(items: &[(GrainUse, f64)], use_code: GrainUse) -> f64 {
     items
         .iter()
         .filter(|(u, _)| *u == use_code)
@@ -908,14 +913,14 @@ pub fn boil_water_add(v_preboil: f64, v_steep: f64, v_boilgrains: f64) -> f64 {
 /// otherwise it is 0.
 #[must_use]
 pub fn primary_water_add(
-    recipe_type: i64,
+    recipe_type: RecipeType,
     has_boil_ing: bool,
     batch: f64,
     v_postboil: f64,
     v_primarygrains: f64,
     topup_ferm: f64,
 ) -> f64 {
-    let post = if recipe_type <= 2 || has_boil_ing {
+    let post = if recipe_type.code() <= 2 || has_boil_ing {
         v_postboil
     } else {
         0.0
@@ -924,10 +929,16 @@ pub fn primary_water_add(
 }
 
 /// Pre-boil gravity estimate (spec §5.10, `GetEstPostMashOG`): `og` SG, volumes L. `None`
-/// when `v_preboil <= 0`.
-#[must_use]
-pub fn preboil_sg(og: f64, batch: f64, trub: f64, v_preboil: f64) -> Option<f64> {
-    (v_preboil > 0.0).then(|| 1.0 + (og - 1.0) * (batch + trub) / v_preboil)
+/// when `v_preboil <= 0` (an error, T1.16).
+pub fn preboil_sg(og: f64, batch: f64, trub: f64, v_preboil: f64) -> Result<f64> {
+    ensure_finite("og", og)?;
+    ensure_finite("batch", batch)?;
+    ensure_finite("trub", trub)?;
+    ensure_finite("v_preboil", v_preboil)?;
+    if v_preboil <= 0.0 {
+        return Err(Error::invalid("v_preboil", "must be > 0"));
+    }
+    Ok(1.0 + (og - 1.0) * (batch + trub) / v_preboil)
 }
 
 /// Equipment volume chain (spec §5.11): result of [`volume_chain`], litres except `evap_pct`.
@@ -984,10 +995,16 @@ pub fn volume_chain(
 }
 
 /// "Water Needed" tool cooling loss (spec §5.12, `WNCoolLoss`): `(v_ferm − topup)·c/(1 − c)`
-/// with `c = cool_pct / 100`, litres.
-#[must_use]
-pub fn wn_cool_loss(v_ferm: f64, topup: f64, cool_pct: f64) -> f64 {
-    (v_ferm - topup) * (cool_pct / 100.0) / (1.0 - cool_pct / 100.0)
+/// with `c = cool_pct / 100`, litres. Errors on non-finite input and `cool_pct = 100`.
+#[allow(clippy::float_cmp)]
+pub fn wn_cool_loss(v_ferm: f64, topup: f64, cool_pct: f64) -> Result<f64> {
+    ensure_finite("v_ferm", v_ferm)?;
+    ensure_finite("topup", topup)?;
+    ensure_finite("cool_pct", cool_pct)?;
+    if cool_pct == 100.0 {
+        return Err(Error::invalid("cool_pct", "must differ from 100"));
+    }
+    Ok((v_ferm - topup) * (cool_pct / 100.0) / (1.0 - cool_pct / 100.0))
 }
 
 /// "Water Needed" boil volume (spec §5.12, `WNBoilVol`), litres.
@@ -1029,14 +1046,14 @@ pub fn wn_sparge_water(
 /// (`v_boil + topup`), anything else is mash based. Litres.
 #[must_use]
 pub fn wn_total_water(
-    brew_type: i64,
+    brew_type: RecipeType,
     v_boil: f64,
     topup: f64,
     v_sparge: f64,
     v_mash: f64,
     topup_kettle: f64,
 ) -> f64 {
-    if brew_type == 0 {
+    if brew_type == RecipeType::Extract {
         v_boil + topup
     } else {
         v_sparge + v_mash + topup_kettle + topup
@@ -1104,9 +1121,18 @@ pub struct Dilution {
 
 /// Dilution (spec §8.1): `v0` L at `sg0` plus `v_add` L of water, or of wort at `sg_add` when
 /// `wort`. A negative `v_add` leaves the gravity unchanged.
-#[must_use]
-pub fn dilution(sg0: f64, v0: f64, v_add: f64, wort: bool, sg_add: f64) -> Dilution {
+///
+/// Errors on non-finite input and a total volume of 0 when the gravity would be computed
+/// (division by zero).
+pub fn dilution(sg0: f64, v0: f64, v_add: f64, wort: bool, sg_add: f64) -> Result<Dilution> {
+    ensure_finite("sg0", sg0)?;
+    ensure_finite("v0", v0)?;
+    ensure_finite("v_add", v_add)?;
+    ensure_finite("sg_add", sg_add)?;
     let v_tot = v0 + v_add;
+    if v_add >= 0.0 && v_tot == 0.0 {
+        return Err(Error::invalid("v0", "total volume must not be 0"));
+    }
     let sg = if v_add < 0.0 {
         sg0
     } else if wort {
@@ -1114,36 +1140,95 @@ pub fn dilution(sg0: f64, v0: f64, v_add: f64, wort: bool, sg_add: f64) -> Dilut
     } else {
         1.0 + (sg0 - 1.0) * v0 / v_tot
     };
-    Dilution { v_tot, sg }
+    Ok(Dilution { v_tot, sg })
 }
 
 /// Water to dilute `v` L from `sg` to `sg_target` (spec §8.2, `GravityAdjWaterVol`); 0 if
-/// negative. Litres.
-#[must_use]
-pub fn gravity_adj_water_vol(v: f64, sg: f64, sg_target: f64) -> f64 {
-    (v * (sg - 1.0) / (sg_target - 1.0) - v).max(0.0)
+/// negative. Litres. Errors on non-finite input and `sg_target = 1.000` (division by zero).
+#[allow(clippy::float_cmp)]
+pub fn gravity_adj_water_vol(v: f64, sg: f64, sg_target: f64) -> Result<f64> {
+    ensure_finite("v", v)?;
+    ensure_finite("sg", sg)?;
+    ensure_finite("sg_target", sg_target)?;
+    if sg_target == 1.0 {
+        return Err(Error::invalid("sg_target", "must differ from 1.000"));
+    }
+    Ok((v * (sg - 1.0) / (sg_target - 1.0) - v).max(0.0))
 }
 
 /// Volume of a misc ingredient in US fluid ounces (spec §9, `BSMisc::ToFluidOz`).
 ///
 /// `amount` in the unit given by BeerSmith's `F_M_UNITS` code (0 mg, 1 g, 2 fl oz, 3 lb,
 /// 4 kg, 5 mL, 6 tsp, 7 tbsp, 8 cup, 9 pint, 10 quart, 11 L, 12 gal); weights count as
-/// 1 g = 1 mL. `None` for an unknown code. This returns BeerSmith's internal unit, not litres.
-#[must_use]
-pub fn misc_to_fluid_oz(amount: f64, units: i64) -> Option<f64> {
+/// 1 g = 1 mL. Returns BeerSmith's internal unit, not litres. Errors on a non-finite amount.
+pub fn misc_to_fluid_oz(amount: f64, units: MiscFluidUnit) -> Result<f64> {
+    ensure_finite("amount", amount)?;
     let ml = match units {
-        0 => amount / 1000.0,
-        1 | 5 => amount,
-        3 => amount * LB_KG * 1000.0,
-        4 | 11 => amount * 1000.0,
-        6 => amount * 4.93,
-        7 => amount * 14.78,
-        2 => return Some(amount),
-        8 => return Some(amount * 8.0),
-        9 => return Some(amount * 16.0),
-        10 => return Some(amount * 32.0),
-        12 => return Some(amount * 128.0),
-        _ => return None,
+        MiscFluidUnit::Mg => amount / 1000.0,
+        MiscFluidUnit::G | MiscFluidUnit::Ml => amount,
+        MiscFluidUnit::Lb => amount * LB_KG * 1000.0,
+        MiscFluidUnit::Kg | MiscFluidUnit::L => amount * 1000.0,
+        MiscFluidUnit::Tsp => amount * 4.93,
+        MiscFluidUnit::Tbsp => amount * 14.78,
+        MiscFluidUnit::FlOz => return Ok(amount),
+        MiscFluidUnit::Cup => return Ok(amount * 8.0),
+        MiscFluidUnit::Pint => return Ok(amount * 16.0),
+        MiscFluidUnit::Quart => return Ok(amount * 32.0),
+        MiscFluidUnit::Gal => return Ok(amount * 128.0),
     };
-    Some(ml / (FLOZ_L * 1000.0))
+    Ok(ml / (FLOZ_L * 1000.0))
+}
+
+/// Misc amount unit `F_M_UNITS` (spec §9): 0 mg, 1 g, 2 fl oz, 3 lb, 4 kg, 5 mL, 6 tsp,
+/// 7 tbsp, 8 cup, 9 pint, 10 quart, 11 L, 12 gal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MiscFluidUnit {
+    /// Code 0.
+    Mg,
+    /// Code 1.
+    G,
+    /// Code 2.
+    FlOz,
+    /// Code 3.
+    Lb,
+    /// Code 4.
+    Kg,
+    /// Code 5.
+    Ml,
+    /// Code 6.
+    Tsp,
+    /// Code 7.
+    Tbsp,
+    /// Code 8.
+    Cup,
+    /// Code 9.
+    Pint,
+    /// Code 10.
+    Quart,
+    /// Code 11.
+    L,
+    /// Code 12.
+    Gal,
+}
+
+impl MiscFluidUnit {
+    /// From the unit code (0-12); other codes are an error.
+    pub const fn from_code(code: i64) -> Result<Self> {
+        Ok(match code {
+            0 => Self::Mg,
+            1 => Self::G,
+            2 => Self::FlOz,
+            3 => Self::Lb,
+            4 => Self::Kg,
+            5 => Self::Ml,
+            6 => Self::Tsp,
+            7 => Self::Tbsp,
+            8 => Self::Cup,
+            9 => Self::Pint,
+            10 => Self::Quart,
+            11 => Self::L,
+            12 => Self::Gal,
+            _ => return Err(Error::invalid("misc_unit", "unknown code")),
+        })
+    }
 }

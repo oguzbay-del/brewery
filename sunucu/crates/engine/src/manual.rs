@@ -62,6 +62,21 @@ pub enum ManualError {
     InvalidInput,
 }
 
+impl From<ManualError> for crate::Error {
+    fn from(e: ManualError) -> Self {
+        match e {
+            ManualError::InvalidVolume => Self::invalid("volume", "invalid volumes"),
+            ManualError::NoReadings => {
+                Self::invalid("readings", "at least one reading is required")
+            }
+            ManualError::Unbounded => Self::Unreachable {
+                what: "forecast end time",
+            },
+            ManualError::InvalidInput => Self::invalid("input", "not finite or out of range"),
+        }
+    }
+}
+
 /// Extract kind (spec §2.1).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExtractKind {
@@ -96,9 +111,18 @@ impl ExtractKind {
 
 /// Least-squares weight of a reading (spec §1.3): 1 when `SG − FG ≥ 0.003`, linearly
 /// less below, computed in gravity units.
-#[must_use]
+/// Errors on non-finite input (T1.16).
 #[allow(clippy::cast_precision_loss)]
-pub fn weight(sg: f64, fg: f64) -> f64 {
+pub fn weight(sg: f64, fg: f64) -> crate::Result<f64> {
+    Ok(
+        ((units::gravity_units_checked(sg)? - units::gravity_units_checked(fg)?) as f64
+            / W_U as f64)
+            .min(1.0),
+    )
+}
+
+#[allow(clippy::cast_precision_loss)]
+fn weight_u(sg: f64, fg: f64) -> f64 {
     ((gravity_units(sg) - gravity_units(fg)) as f64 / W_U as f64).min(1.0)
 }
 
@@ -124,7 +148,7 @@ pub fn k_fit(
         }
         xs.push(x);
         ys.push(((sg - fg) / (og - fg)).ln());
-        ws.push(if weighted { weight(sg, fg) } else { 1.0 });
+        ws.push(if weighted { weight_u(sg, fg) } else { 1.0 });
     }
     if xs.is_empty() {
         return None;
@@ -646,8 +670,24 @@ impl FewStatus {
 
 /// Whether the few-readings estimate is shown (spec §1.4): stall rule, two readings after
 /// lag, 30 % drop, target reached, positive `k`, in that order.
-#[must_use]
-pub fn few_status(readings: &[(f64, f64)], og: f64, fg_prior: f64, lag: f64) -> FewStatus {
+///
+/// # Errors
+/// [`ManualError::InvalidInput`] for non-finite or out-of-range input (T1.16).
+pub fn few_status(
+    readings: &[(f64, f64)],
+    og: f64,
+    fg_prior: f64,
+    lag: f64,
+) -> Result<FewStatus, ManualError> {
+    if ![og, fg_prior, lag].into_iter().all(finite)
+        || !readings.iter().all(|&(t, g)| finite(t) && finite(g))
+    {
+        return Err(ManualError::InvalidInput);
+    }
+    Ok(few_status_checked(readings, og, fg_prior, lag))
+}
+
+fn few_status_checked(readings: &[(f64, f64)], og: f64, fg_prior: f64, lag: f64) -> FewStatus {
     let rd = sorted_readings(readings);
     let Some(&(_, sg_now)) = rd.last() else {
         return FewStatus::NeedTwoReadings;

@@ -235,5 +235,21 @@
 {"fonk":"fruit","girdi":{"kg":0.0,"density":1.05,"sediment":0.2},"beklenen":[0.0,0.0]},
 {"fonk":"fruit","girdi":{"kg":5.0,"density":1.1,"sediment":0.15},"beklenen":[4.545454545454545,0.6818181818181818]},
 {"fonk":"fruit","girdi":{"kg":1.5,"density":1.0,"sediment":0.3},"beklenen":[1.5,0.44999999999999996]},
-{"fonk":"fruit","girdi":{"kg":3.0,"density":1.05,"sediment":0.2},"beklenen":[2.857142857142857,0.5714285714285715],"not":"varsayılanlar"}
+{"fonk":"fruit","girdi":{"kg":3.0,"density":1.05,"sediment":0.2},"beklenen":[2.857142857142857,0.5714285714285715],"not":"varsayılanlar"},
+{"fonk":"heat_time_min","girdi":{"water_l":15,"grain_kg":0,"kettle_kg":8,"t0":15,"t1":72,"power_kw":0.0,"eff":0.9},"beklenen":{"hata":"ValueError"},"not":"güç ya da verim <= 0: T1.16: hata"},
+{"fonk":"heat_time_min","girdi":{"water_l":15,"grain_kg":0,"kettle_kg":8,"t0":15,"t1":72,"power_kw":2.5,"eff":0.0},"beklenen":{"hata":"ValueError"},"not":"güç ya da verim <= 0: T1.16: hata"},
+{"fonk":"heat_time_min","girdi":{"water_l":15,"grain_kg":0,"kettle_kg":8,"t0":15,"t1":72,"power_kw":-2.5,"eff":0.9},"beklenen":{"hata":"ValueError"},"not":"güç ya da verim <= 0: T1.16: hata"},
+{"fonk":"cool_time_immersion","girdi":{"t0":100,"tc":20,"t":15,"tau":25.0,"vol_l":20,"vol_ref_l":20},"beklenen":{"hata":"ValueError"},"not":"hedef musluk suyunun altında (eskiden NaN): T1.16: hata"},
+{"fonk":"cool_time_immersion","girdi":{"t0":100,"tc":20,"t":20,"tau":25.0,"vol_l":20,"vol_ref_l":20},"beklenen":{"hata":"ValueError"},"not":"hedef musluk suyunun altında (eskiden NaN): T1.16: hata"},
+{"fonk":"cool_time_immersion","girdi":{"t0":100,"tc":20,"t":110,"tau":25.0,"vol_l":20,"vol_ref_l":20},"beklenen":-2.944575891409588,"not":"hedef musluk suyunun altında (eskiden NaN): T1.16: hata"},
+{"fonk":"cool_time_immersion","girdi":{"t0":100,"tc":15,"t":20,"tau":25.0,"vol_l":20,"vol_ref_l":0},"beklenen":{"hata":"ValueError"},"not":"hedef musluk suyunun altında (eskiden NaN): T1.16: hata"},
+{"fonk":"tau_from_batch","girdi":{"t0":100,"tc":15,"t":100,"minutes":25},"beklenen":{"hata":"ValueError"},"not":"sıcaklık düşmedi: T1.16: hata"},
+{"fonk":"cool_time_flow","girdi":{"vol_l":23,"flow_l_min":0},"beklenen":{"hata":"ValueError"},"not":"T1.16: hata"},
+{"fonk":"round_to","girdi":{"q":1.0,"step":0.0},"beklenen":{"hata":"ValueError"},"not":"adım 0: T1.16: hata"},
+{"fonk":"yeast_packs","girdi":{"cells_needed_billion":100.0,"cells_per_pack_billion":0.0},"beklenen":{"hata":"ValueError"},"not":"T1.16: hata"},
+{"fonk":"tilt_cal","girdi":{"points":[]},"beklenen":{"hata":"ValueError"},"not":"boş nokta listesi: T1.16: hata"},
+{"fonk":"tilt_cal","girdi":{"points":[[1.0,1.0],[1.0,1.1]]},"beklenen":{"hata":"ValueError"},"not":"aynı okuma: T1.16: hata"},
+{"fonk":"fruit","girdi":{"kg":3.0,"density":0.0,"sediment":0.2},"beklenen":{"hata":"ValueError"},"not":"yoğunluk 0: T1.16: hata"},
+{"fonk":"scale_recipe","girdi":{"ing":{"pale":[4.0,"mash"]},"v0":0,"v1":40,"eff0":0.72,"eff1":0.78,"mode":"hedef"},"beklenen":{"hata":"ValueError"},"not":"V0 = 0: T1.16: hata"},
+{"fonk":"scale_recipe","girdi":{"ing":{"pale":[4.0,"mash"]},"v0":23,"v1":40,"eff0":0.72,"eff1":0.0,"mode":"hedef"},"beklenen":{"hata":"ValueError"},"not":"eff1 = 0: T1.16: hata"}
 ]}

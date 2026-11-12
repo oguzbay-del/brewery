@@ -111,6 +111,8 @@ def uret():
             beklenen = None if r is None else {"sabit": r[0], "egim_gun": r[1]}
         except IndexError:
             beklenen = {"hata": "IndexError"}
+        except ValueError:
+            beklenen = {"hata": "ValueError"}
         v.ekle("is_stable", girdi, beklenen, not_)
 
     flat = [[h, 1.0122 - 0.00001 * (h - 150)] for h in range(150, 200)]
@@ -123,6 +125,8 @@ def uret():
     st(flat, 24, 25, "24 saatte 25 nokta yok")
     st([[100.0, 1.01]] * 30, 48, 24, "aynı zaman: eğim tanımsız")
     st([], 48, 24, "boş")
+    st([[0.0, 1.0], [1e9, 1.0]], 48, 24, "T1.16: makul olmayan zaman: hata")
+    st([[0.0, 1.0], [1.0, 1.0]], 1e12, 1, "T1.16: makul olmayan pencere: hata")
     # eşik kenarları: günde 0.0005 SG
     st([[h, 1.0120 - (0.0005 / 24) * h] for h in range(0, 60)], 48, 24, "eşikte")
     st([[h, 1.0120 - (0.00051 / 24) * h] for h in range(0, 60)], 48, 24, "eşik üstü")
@@ -134,8 +138,11 @@ def uret():
             beklenen = ref.ramp_hours(a, b, rate)
         except ZeroDivisionError:
             beklenen = {"hata": "ZeroDivisionError"}
+        except ValueError:
+            beklenen = {"hata": "ValueError"}
         v.ekle("ramp_hours", {"t_from": a, "t_to": b, "rate": rate}, beklenen, not_)
 
+    rh(20.0, 5.0, 1e9, "T1.16: makul olmayan hız: hata")
     rh(15, 2, 2, "T1g")
     rh(2, 15, 2)
     rh(10, 10, 2)

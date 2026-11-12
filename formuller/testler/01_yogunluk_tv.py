@@ -23,7 +23,10 @@ def uk(og,fg):
     for lim,ff in [(695,.126),(1045,.127),(1725,.128),(2615,.129),(3605,.13),(4655,.131),(5715,.132),(6795,.133),(7885,.134),(8975,.135)]:
         if du>lim: f=ff
     return f*(du/100)
-def morey(lb_srm_sum, gal): return 1.4922*(lb_srm_sum/gal)**0.6859
+def morey(lb_srm_sum, gal):
+    # Karar (T1.16): negatif toplam ya da hacim <= 0 karmaşık sayı/sıfıra bölme verirdi; ValueError
+    if lb_srm_sum < 0 or gal <= 0: raise ValueError("morey: toplam >= 0, hacim > 0 olmalı")
+    return 1.4922*(lb_srm_sum/gal)**0.6859
 def hydro(sg,T_F,Tc_F):
     t=(T_F-32)*5/9; tc=(Tc_F-32)*5/9
     return sg + sg*((tc**3-t**3)*1.53243635e-08 + (tc-t)*1.62860587e-05 - (tc**2-t**2)*5.84994855e-06)
@@ -46,6 +49,7 @@ def fg_tol(og,fg,tol):
         elif a<tol: hi=mid
     return mid
 def gadj_oz(g,t,vol_floz,typ):
+    if typ not in (0, 1): raise ValueError("özüt türü 0 (DME) ya da 1 (LME) olmalı")  # Karar (T1.16)
     p=(t-g)*1000
     if p<=0: return 0
     p*=max(vol_floz,0.01)/128
@@ -125,8 +129,9 @@ ORNEK_AG = make_recipe(
     yeasts=[yeast(73, 77, 10)], mash_temps=[152], volume_floz=704)
 
 
-# --- §1.3 yoğunluk birimi çevirici (3 SG, 4 Plato, 31 Brix); bilinmeyen kod: x aynen döner ---
+# --- §1.3 yoğunluk birimi çevirici (3 SG, 4 Plato, 31 Brix); bilinmeyen kod: ValueError (T1.16) ---
 def bconv_hydrometer(x, frm, to):
+    if frm not in (3, 4, 31) or to not in (3, 4, 31): raise ValueError("bilinmeyen yoğunluk birimi kodu")  # Karar (T1.16)
     if frm == to:
         return x
     if frm == 3:
@@ -145,6 +150,7 @@ def bconv_hydrometer(x, frm, to):
 
 # --- §1.4 refraktometre birimi çevirici (3 SG, 31 Brix, 32 RI) ---
 def bconv_refractometer(x, frm, to):
+    if frm not in (3, 31, 32) or to not in (3, 31, 32): raise ValueError("bilinmeyen refraktometre birimi kodu")  # Karar (T1.16)
     if frm == to:
         return x
     if frm == 3: bx = bconv_hydrometer(x, 3, 31)
@@ -159,6 +165,7 @@ def bconv_refractometer(x, frm, to):
 
 # --- §1.5 renk birimi çevirici (29 SRM, 30 EBC, 47 °L) ---
 def bconv_color(x, frm, to):
+    if frm not in (29, 30, 47) or to not in (29, 30, 47): raise ValueError("bilinmeyen renk birimi kodu")  # Karar (T1.16)
     if frm == to:
         return x
     if frm == 29: srm = x
@@ -175,12 +182,14 @@ def bconv_color(x, frm, to):
 def potential_from_yield(y): return 1 + y * 0.046 / 100
 def yield_from_potential(sg): return min(100.0, max(0.0, ((sg - 1) * 1000 / 46) * 100))
 def bconv_grain_yield(x, frm):
+    if frm not in (3, 4, 31): raise ValueError("bilinmeyen yoğunluk birimi kodu")  # Karar (T1.16)
     """from == 3 (SG): YieldFromPotential; aksi halde PotentialFromYield (`to` spesifikasyonda kullanılmaz)."""
     return yield_from_potential(x) if frm == 3 else potential_from_yield(x)
 
 
 # --- §1.7 sıcaklık (1 °C, 2 °F, 40 K) ---
 def bconv_temperature(x, frm, to):
+    if frm not in (1, 2, 40) or to not in (1, 2, 40): raise ValueError("bilinmeyen sıcaklık birimi kodu")  # Karar (T1.16)
     if frm == to:
         return x
     if frm == 1: c = x
@@ -217,6 +226,7 @@ def fg_points(g, eff, atten, steep_eff=15.0):
 
 # --- §3 OG ve türevleri ---
 def og_points_phase(r, phase):
+    if phase not in range(9): raise ValueError("aşama kodu 0-8 olmalı")  # Karar (T1.16)
     s = 0.0
     for g in r["fermentables"]:
         if g["use"] <= phase or g["use"] == 8:

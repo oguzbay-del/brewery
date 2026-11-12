@@ -62,6 +62,7 @@ def fg_reference(fg_recipe, fg_inf=None, shown=False, delta=0.004):
 def is_stable(points, hours=48, min_n=24):
     """Son 'hours' saatin eğimi; |eğim|·24 ≤ 0.0005 ise FG sabit."""
     t_end = points[-1][0]
+    if not _fin(hours, *[x for pt in points for x in pt]): raise ValueError("girdiler sonlu olmalı")  # Karar (T1.16)
     p = [(t, g) for t, g in points if t >= t_end - hours]
     if len(p) < min_n: return None
     n = len(p); mx = sum(t for t, _ in p) / n; my = sum(g for _, g in p) / n
@@ -71,6 +72,7 @@ def is_stable(points, hours=48, min_n=24):
     return abs(b * 24) <= STABLE_PER_DAY + TOL, b * 24
 
 def ramp_hours(T_from, T_to, rate_C_per_day):
+    if not _fin(T_from, T_to, rate_C_per_day): raise ValueError("girdiler sonlu olmalı")  # Karar (T1.16)
     return abs(T_to - T_from) / rate_C_per_day * 24
 
 def lager_weeks(og, pts_per_week=8, lo=2, hi=12):

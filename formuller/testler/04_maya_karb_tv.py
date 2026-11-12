@@ -19,6 +19,7 @@ def GrowthRate(I,stir):
 def cells_needed(rate, V_L, sg): return rate*V_L*ToPlato(sg)
 def new_starter_L(need, avail, stir):
     if not need>avail: return 0.0
+    if avail<=0: raise ValueError("mevcut hücre > 0 olmalı")  # Karar (T1.16)
     r=need/avail
     if stir: r/=1+STIR/100
     if r<=1: return 0.0
@@ -54,7 +55,8 @@ def tosna(sg, V_gal, pct, fac, method):
     base=ToPlato(sg)*10*(pct/100)*k*V_gal
     return base/50 if method==0 else base/100
 def yan(method, grams, V_L):
-    r={0:40.0,1:100.0,2:212.3}.get(method,100.0)
+    if method not in (0,1,2): raise ValueError("YAN yöntemi 0-2 olmalı")  # Karar (T1.16)
+    r={0:40.0,1:100.0,2:212.3}[method]
     return r*grams/V_L if V_L!=0 else r
 P=print
 P("== Canlilik"); 
@@ -156,15 +158,23 @@ def YeastAgeRecipe(age_days_list):
 
 
 # --- §1.4 canlilik yardimcilari ---
+def _kod(ad, deger, gecerli):
+    """Karar (T1.16): listede olmayan kod ValueError (eskiden sessiz varsayılan)."""
+    if deger not in gecerli: raise ValueError("%s kodu geçersiz: %r" % (ad, deger))
+
+
 def ViabilityV0Ingredient(form):
+    _kod("maya formu", form, (0, 1, 2, 3))
     return 98.0 if form == 1 else 96.0 if form == 3 else 97.0
 
 
 def ViabilityV0Tool(form):
+    _kod("starter maya formu", form, (0, 1, 2))
     return 98.0 if form == 1 else 96.0 if form == 2 else 97.0
 
 
 def ImportAgeRate(form, white_labs):
+    _kod("maya formu", form, (0, 1, 2, 3))
     if form == 1:
         return 1.66
     if form == 3:
@@ -184,6 +194,7 @@ def ViableCells(total, v):
 
 # --- §1.5 toplam hucre ---
 def YeastTotalCells(use_pkgs, cells_pkg, new_amount, form, amount, cells_ml):
+    _kod("maya formu", form, (0, 1, 2, 3))
     if use_pkgs:
         return cells_pkg * new_amount
     if form == 1:
@@ -266,6 +277,7 @@ def PitchMinMaxRecipe(rec):
 
 
 def PitchMinMaxTool(tool_type, ale=0.75, lager=1.5, mix=1.0, wine=0.5):
+    _kod("starter türü", tool_type, (0, 1, 2, 3))
     t = {0: (ale, 0.30), 1: (lager, 0.25), 2: (mix, 0.40), 3: (wine, 0.25)}.get(tool_type)
     if t is None:
         return None
@@ -289,6 +301,7 @@ def DryPitchRange(rec_dry):
 
 
 def IsDryByWeight(form, use_pkgs, tool):
+    _kod("maya formu", form, (0, 1, 2, 3))
     return form == 1 if tool else (form == 1 and use_pkgs != 1)
 
 
@@ -366,11 +379,13 @@ def AvgAttenuation(lo, hi): return (lo + hi) / 2
 
 
 def YeastUnitsCode(use_pkgs, form, dry_unit=10, wet_unit=15):
+    _kod("maya formu", form, (0, 1, 2, 3))
     if use_pkgs: return "pkgs"
     return dry_unit if form == 1 else wet_unit
 
 
 def ImportHookTolerance(tol, y_type):
+    _kod("maya türü", y_type, (0, 1, 2, 3, 4))
     if tol == 10:
         if y_type == 2: return 15
         if y_type == 3: return 18
@@ -393,10 +408,12 @@ def MeadYanTarget(sg, pct, fac):
 
 
 def MeadTotFermO(sg, V_gal, pct, fac, method):
+    _kod("mead yöntemi", method, (0, 1))
     return MeadYanTarget(sg, pct, fac) * V_gal / 50 if method == 0 else 0.0
 
 
 def MeadTotFermK(sg, V_gal, pct, fac, method):
+    _kod("mead yöntemi", method, (0, 1))
     return MeadYanTarget(sg, pct, fac) * V_gal / 100 if method == 1 else 0.0
 
 
@@ -413,10 +430,14 @@ def MeadPctHoney(ferms, primary_pts):
 
 
 # --- §2.5 YAN ---
-def _yan_c(method): return {0: 40.0, 1: 100.0, 2: 212.3}.get(method, 100.0)
+def _yan_c(method):
+    _kod("YAN yöntemi", method, (0, 1, 2))
+    return {0: 40.0, 1: 100.0, 2: 212.3}[method]
 
 
-def YANEquivalent(method, y): return y * 4 if method == 0 else y
+def YANEquivalent(method, y):
+    _kod("YAN yöntemi", method, (0, 1, 2))
+    return y * 4 if method == 0 else y
 
 
 def MeadYANAdded(method, total_g, V_L, recipe):
@@ -434,7 +455,9 @@ def NutrientNeeded(ppm, method, V_L): return ppm * V_L / _yan_c(method)
 BACK_OG = {0: 82.5, 1: 70.0, 2: 15.0, 3: 75.0, 4: 98.0}
 
 
-def BackAgentOG(agent): return BACK_OG.get(agent, 15.0)
+def BackAgentOG(agent):
+    _kod("tatlandırma ajanı", agent, (0, 1, 2, 3, 4, 5))
+    return BACK_OG.get(agent, 15.0)
 
 
 def BackAgentVolSG(V_L, sg_bev, sg_target, sg_a):
@@ -453,12 +476,14 @@ def BackAgentWeight(V_L, sg_bev, sg_target, agent):
 # --- §3.3/§3.4 karbonasyon miktari ---
 def CarbSugarAgent(agent, vols, T_F, gal):
     """agent 0 misir, 1 DME, 2 sofra sekeri (misir / 1.099); gram."""
+    _kod("şeker ajanı", agent, (0, 1, 2))
     g = sugar_g(vols, T_F, gal, False)
     return g * 1.538 if agent == 1 else g / 1.099 if agent == 2 else g
 
 
 def CarbAmount(c_type, vols, T_F, gal, carb_rate, agent=0):
     """Keg (1): ["psi", basinc]; diger: ["g", seker], carb_rate != 0 ise / (rate/100)."""
+    _kod("karbonasyon türü", c_type, (0, 1, 2)); _kod("şeker ajanı", agent, (0, 1, 2))
     if c_type == 1:
         return ["psi", co2_psi(vols, T_F)]
     g = CarbSugarAgent(agent, vols, T_F, gal)

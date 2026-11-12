@@ -82,8 +82,8 @@ fn parite_08() {
                     dec(c, "shipping_share"),
                 );
                 match r {
-                    Some(x) => same(c, x, &c.beklenen, "price"),
-                    None => c.check(&json!({"hata": "ValueError"})),
+                    Ok(x) => same(c, x, &c.beklenen, "price"),
+                    Err(_) => c.check_hata(),
                 }
             }
             "energy_cost_electric" => {
@@ -94,9 +94,9 @@ fn parite_08() {
                     "cost",
                 );
             }
-            "kwh_from_heat" => c.check_f(b::kwh_from_heat(c.f("kj"), c.f("eff"))),
+            "kwh_from_heat" => c.check_r(b::kwh_from_heat(c.f("kj"), c.f("eff"))),
             "gas_m3_from_heat" => {
-                c.check_f(b::gas_m3_from_heat(c.f("kj"), c.f("eff"), c.f("hu_kj_m3")));
+                c.check_r(b::gas_m3_from_heat(c.f("kj"), c.f("eff"), c.f("hu_kj_m3")));
             }
             "batch_cost" => {
                 let r = b::batch_cost(
@@ -108,8 +108,8 @@ fn parite_08() {
                     dec(c, "pack_unit_cost"),
                     dec(c, "packaged_l"),
                 );
-                let Some(r) = r else {
-                    c.check(&json!({"hata": "ValueError"}));
+                let Ok(r) = r else {
+                    c.check_hata();
                     return true;
                 };
                 let e = &c.beklenen;
@@ -128,37 +128,40 @@ fn parite_08() {
                     .iter()
                     .map(part)
                     .collect();
-                let r = b::blend(&parts);
-                c.check(&json!({
-                    "V": r.v, "ABV": r.abv, "IBU": r.ibu, "SRM": r.srm, "CO2": r.co2, "P": r.p
+                c.check_res(b::blend(&parts).map(|r| {
+                    json!({
+                        "V": r.v, "ABV": r.abv, "IBU": r.ibu, "SRM": r.srm, "CO2": r.co2, "P": r.p
+                    })
                 }));
             }
             "blend_volume_for_target" => {
                 // A non-finite result must fail, not serialise to `null` (T1.12 C16).
-                match b::blend_volume_for_target(c.f("v1"), c.f("x1"), c.f("x2"), c.f("xt")) {
-                    Some(x) => c.check_f(x),
-                    None => c.check(&Value::Null),
-                }
+                c.check_r(b::blend_volume_for_target(
+                    c.f("v1"),
+                    c.f("x1"),
+                    c.f("x2"),
+                    c.f("xt"),
+                ));
             }
-            "cells_needed_billion" => c.check_f(b::cells_needed_billion(
+            "cells_needed_billion" => c.check_r(b::cells_needed_billion(
                 c.f("pitch_m_ml_p"),
                 c.f("v_l"),
                 c.f("p"),
             )),
-            "hemocytometer" => c.check_f(b::hemocytometer(
+            "hemocytometer" => c.check_r(b::hemocytometer(
                 c.f("total_counted"),
                 c.f("squares_counted"),
                 c.f("dilution"),
             )),
-            "viability_stain" => c.check_f(b::viability_stain(c.f("unstained"), c.f("stained"))),
-            "slurry_volume_ml" => c.check_f(b::slurry_volume_ml(
+            "viability_stain" => c.check_r(b::viability_stain(c.f("unstained"), c.f("stained"))),
+            "slurry_volume_ml" => c.check_r(b::slurry_volume_ml(
                 c.f("cells_billion"),
                 c.v("density_cells_ml").as_f64(),
                 c.f("viability"),
                 c.f("default_density"),
             )),
-            "extract_kg" => c.check_f(b::extract_kg(c.f("v_l"), c.f("p"), c.b("hot"))),
-            "brewhouse_yield" => c.check_f(b::brewhouse_yield(
+            "extract_kg" => c.check_r(b::extract_kg(c.f("v_l"), c.f("p"), c.b("hot"))),
+            "brewhouse_yield" => c.check_r(b::brewhouse_yield(
                 c.f("v_l"),
                 c.f("p"),
                 c.f("malt_kg"),
@@ -169,14 +172,14 @@ fn parite_08() {
                 c.f("moisture"),
                 c.f("fc_diff"),
             )),
-            "first_wort_max_p" => c.check_f(b::first_wort_max_p(
+            "first_wort_max_p" => c.check_r(b::first_wort_max_p(
                 c.f("grain_kg"),
                 c.f("extract_as_is_pct"),
                 c.f("moisture_pct"),
                 c.f("mash_water_l"),
             )),
             "conversion_eff" => {
-                c.check_f(b::conversion_eff(c.f("fw_measured_p"), c.f("fw_max_p")));
+                c.check_r(b::conversion_eff(c.f("fw_measured_p"), c.f("fw_max_p")));
             }
             "malt_from_analysis" => {
                 let r = b::malt_from_analysis(c.f("fgdb"), c.f("moisture"), c.f("fc_diff"));
@@ -220,4 +223,18 @@ fn parite_08() {
         }
         true
     });
+}
+
+/// T1.16: degenerate input is an error, not NaN or infinity.
+#[test]
+fn invalid_inputs_are_errors() {
+    assert!(b::blend(&[]).is_err());
+    assert!(b::hemocytometer(100.0, 0.0, 1.0).is_err());
+    assert!(b::viability_stain(0.0, 0.0).is_err());
+    assert!(b::kwh_from_heat(1.0, 0.0).is_err());
+    assert!(b::kwh_from_heat(f64::NAN, 0.9).is_err());
+    assert!(b::conversion_eff(10.0, 0.0).is_err());
+    assert!(b::brewhouse_yield(20.0, 12.0, 0.0, true).is_err());
+    assert!(b::slurry_volume_ml(100.0, Some(0.0), 0.0, 1.0e9).is_err());
+    assert!(b::first_wort_max_p(0.0, 80.0, 4.0, 0.0).is_err());
 }

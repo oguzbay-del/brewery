@@ -11,6 +11,7 @@ use std::fmt;
 
 use rust_decimal::{Decimal, RoundingStrategy};
 
+use crate::error::Error;
 use crate::units::{gravity_units, round_py, to_plato, to_sg};
 
 // ---------------------------------------------------------------------------------------------
@@ -103,14 +104,20 @@ pub struct LabelEnergy {
 /// `protein_g100ml` is the protein content in g/100 mL (reference default 0.40). A measured ABV
 /// (% vol) replaces the estimate and converts to grams with the ethanol density; otherwise
 /// ABW × SG × 0.9982 is used.
-#[must_use]
+///
+/// # Errors
+/// [`TaxError::InvalidInput`] for non-finite input or a non-finite result (T1.16).
 #[allow(clippy::cast_possible_truncation)]
 pub fn label_energy(
     og: f64,
     fg: f64,
     protein_g100ml: f64,
     abv_measured: Option<f64>,
-) -> LabelEnergy {
+) -> Result<LabelEnergy, TaxError> {
+    let inputs = [og, fg, protein_g100ml, abv_measured.unwrap_or(0.0)];
+    if !inputs.iter().all(|x| x.is_finite() && x.abs() <= 1.0e6) {
+        return Err(TaxError::InvalidInput);
+    }
     let (mut abv, w, re) = abv_from(og, fg);
     let alc_g = if let Some(measured) = abv_measured {
         abv = measured;
@@ -122,7 +129,13 @@ pub fn label_energy(
     let carb = (re_g - protein_g100ml).max(0.0);
     let kj = KJ_ALCOHOL * alc_g + KJ_CARBOHYDRATE * carb + KJ_PROTEIN * protein_g100ml;
     let kcal = KCAL_ALCOHOL * alc_g + KCAL_CARBOHYDRATE * carb + KCAL_PROTEIN * protein_g100ml;
-    LabelEnergy {
+    if ![abv, alc_g, re_g, carb, kj, kcal]
+        .iter()
+        .all(|x| x.is_finite())
+    {
+        return Err(TaxError::InvalidInput);
+    }
+    Ok(LabelEnergy {
         abv: round_py(abv, 2),
         alcohol_g: round_py(alc_g, 2),
         real_extract_g: round_py(re_g, 2),
@@ -130,7 +143,7 @@ pub fn label_energy(
         protein_g: round_py(protein_g100ml, 1),
         kj: kj.round_ties_even() as i64,
         kcal: kcal.round_ties_even() as i64,
-    }
+    })
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -282,6 +295,27 @@ impl fmt::Display for TaxError {
 
 impl std::error::Error for TaxError {}
 
+impl From<TaxError> for Error {
+    fn from(e: TaxError) -> Self {
+        match e {
+            TaxError::UndefinedInputRounding => {
+                Error::invalid("input_rounding", "rule is undefined")
+            }
+            TaxError::NoBand => Error::invalid("bands", "no band matched"),
+            TaxError::TierExceeded(_) => Error::invalid("volume", "above the last tier"),
+            TaxError::UnknownMethod(_) => Error::invalid("method", "unknown method"),
+            TaxError::MissingInput(field) => Error::invalid(field, "required input is missing"),
+            TaxError::Overflow => Error::invalid("amount", "decimal overflow"),
+            TaxError::BadDeduction => Error::invalid("deduct", "unknown deduction kind"),
+            TaxError::InvalidBands => Error::invalid("bands", "invalid band table"),
+            TaxError::InvalidInput => Error::invalid("input", "not finite or out of range"),
+        }
+    }
+}
+
+/// Largest number of decimals a rounding rule may ask for (T1.16, was unbounded).
+pub const MAX_DP: u32 = 12;
+
 /// Input of [`tax_line`]. Build with [`TaxLine::new`] and set the fields the method needs.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TaxLine<'a> {
@@ -421,17 +455,24 @@ fn div100(x: Decimal) -> Result<Decimal, TaxError> {
 }
 
 /// Python `Decimal.quantize(Decimal(1).scaleb(-dp), rounding=mode)`: exactly `dp` decimal places.
-fn quantize(x: Decimal, dp: u32, mode: RoundMode) -> Decimal {
+/// Errors when `dp` exceeds [`MAX_DP`] or the result needs more than 28 digits (the reference
+/// raises `InvalidOperation`).
+fn quantize(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, TaxError> {
+    if dp > MAX_DP {
+        return Err(TaxError::InvalidInput);
+    }
     let mut r = x.round_dp_with_strategy(dp, mode.strategy());
     r.rescale(dp);
-    r
+    if r.scale() != dp || r.mantissa().unsigned_abs() >= 10_u128.pow(28) {
+        return Err(TaxError::Overflow);
+    }
+    Ok(r)
 }
 
 /// Input rounding of ABV or °P (data table): `None` rounding leaves the value unchanged.
-#[must_use]
-pub fn round_in(x: Decimal, rounding: Option<(u32, RoundMode)>) -> Decimal {
+pub fn round_in(x: Decimal, rounding: Option<(u32, RoundMode)>) -> Result<Decimal, TaxError> {
     match rounding {
-        None => x,
+        None => Ok(x),
         Some((dp, mode)) => quantize(x, dp, mode),
     }
 }
@@ -466,8 +507,7 @@ pub fn row_status(official_source: Option<&str>, date: Option<&str>) -> &'static
 }
 
 /// Money rounding to `dp` places (data table rule; reference default is half up).
-#[must_use]
-pub fn money(x: Decimal, dp: u32, mode: RoundMode) -> Decimal {
+pub fn money(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, TaxError> {
     quantize(x, dp, mode)
 }
 
@@ -500,7 +540,7 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
         }
         Method::PureAlcohol => {
             let abv = p.abv.ok_or(TaxError::MissingInput("abv"))?;
-            let a = round_in(abv, rounding);
+            let a = round_in(abv, rounding)?;
             let lpa = div100(mul(p.volume_l, a)?)?;
             let rate = if p.bands.is_empty() {
                 p.rate.ok_or(TaxError::MissingInput("rate"))?
@@ -513,15 +553,15 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
         Method::HlPlato => {
             let plato = p.plato.ok_or(TaxError::MissingInput("plato"))?;
             let rate = p.rate.ok_or(TaxError::MissingInput("rate"))?;
-            let mut pl = round_in(plato, rounding);
+            let mut pl = round_in(plato, rounding)?;
             if p.plato_trunc {
-                pl = quantize(pl, 0, RoundMode::Floor);
+                pl = quantize(pl, 0, RoundMode::Floor)?;
             }
             Ok(max_py(mul(mul(rate, hl)?, pl)?, Decimal::ZERO))
         }
         Method::PlatoBand => {
             let plato = p.plato.ok_or(TaxError::MissingInput("plato"))?;
-            let pl = round_in(plato, rounding);
+            let pl = round_in(plato, rounding)?;
             let rate = band(pl, p.bands, p.inclusive.unwrap_or(true))?;
             mul(rate, hl)
         }

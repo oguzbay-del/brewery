@@ -1,5 +1,5 @@
 """Bölüm 01 parite vektörleri: yoğunluk, alkol, renk, ölçüm araçları (formuller/01-yogunluk-alkol-renk.md)."""
-from ortak import Vektor, yukle
+from ortak import Vektor, dene, yukle
 
 # (og, fg) çiftleri: tipik, spesifikasyon örnekleri, og == fg, og < fg (OE kırpması)
 CIFTLER = [
@@ -23,6 +23,7 @@ def uret():
     for b in (0.0, 5.0, 10.0, 20.0, 30.0):
         v.ekle("ri_to_brix", {"ri": ref.BrixToRI(b)}, ref.RIToBrix(ref.BrixToRI(b)), "gidiş-dönüş")
     v.ekle("ri_to_brix", {"ri": 1.3450}, ref.RIToBrix(1.3450))
+    v.ekle("ri_to_brix", {"ri": 1.2}, dene(ref.RIToBrix, 1.2), "kırılma indisi aralık dışı: karekök negatif (T1.16)")
 
     # §6 alkol, ekstrakt, attenuasyon, kalori, UK
     for og, fg in CIFTLER:
@@ -35,6 +36,7 @@ def uret():
         v.ekle("alcohol_calories", g, ref.alc_cal(og, fg))
         v.ekle("extract_calories", g, ref.ext_cal(og, fg))
         v.ekle("uk_tax_abv", g, ref.uk(og, fg))
+    v.ekle("alcohol_calories", {"og": 1.775, "fg": 1.0}, dene(ref.alc_cal, 1.775, 1.0), "OG = 1.775: sıfıra bölme (T1.16)")
     # UK eşikleri (§6.7, T1.12 C1): du = u(og) - u(fg) tam sayı birimde; her eşiğin -1, tam eşik ve +1 birimi,
     # üç farklı FG tabanında
     for lim in (695, 1045, 1725, 2615, 3605, 4655, 5715, 6795, 7885, 8975):
@@ -53,6 +55,9 @@ def uret():
     # §8 renk (Morey)
     for toplam, gal in ((80.0, 6.0), (20.0, 5.0), (150.0, 5.5), (0.0, 5.0), (1.0, 20.0)):
         v.ekle("morey_srm", {"mcu_sum": toplam, "volume_gal": gal}, ref.morey(toplam, gal))
+    for toplam, gal in ((80.0, 0.0), (-1.0, 5.0), (80.0, -5.0)):
+        v.ekle("morey_srm", {"mcu_sum": toplam, "volume_gal": gal}, dene(ref.morey, toplam, gal),
+               "hacim <= 0 ya da negatif toplam: hata (T1.16)")
 
     # §9.1 hidrometre sıcaklık düzeltmesi (°F)
     for sg, t, tc in ((1.050, 77, 60), (1.050, 60, 60), (1.040, 68, 68), (1.060, 100, 60), (1.020, 40, 60),
@@ -62,6 +67,8 @@ def uret():
     # §9.2 refraktometre
     for b, z, w in ((12.0, 0.0, 1.02), (10.0, 0.0, 1.0), (15.0, 0.5, 1.04), (0.0, 0.0, 1.02), (20.0, -0.3, 1.02)):
         v.ekle("refractometer_unfermented", {"brix": b, "zero": z, "wcf": w}, ref.refr0(b, z, w))
+    v.ekle("refractometer_unfermented", {"brix": 12.0, "zero": 0.0, "wcf": 0.0}, dene(ref.refr0, 12.0, 0.0, 0.0),
+           "wcf = 0: sıfıra bölme (T1.16)")
     for og, b, z in ((1.050, 6.5, 0.0), (1.060, 8.0, 0.0), (1.040, 5.0, 0.3), (1.080, 12.0, 0.0), (1.100, 0.0, 0.0)):
         v.ekle("refractometer_fermenting", {"og": og, "brix": b, "zero": z}, ref.refr1(og, b, z))
     for fg, b, z in ((1.010, 6.5, 0.0), (1.012, 10.0, 0.0), (1.008, 8.0, 0.4), (1.020, 14.0, 0.0), (1.005, 4.0, 0.0)):
@@ -91,11 +98,16 @@ def uret():
                            (1.040, 1.050, 0.005, 1), (1.020, 1.070, 1280.0, 1)):
         v.ekle("gravity_adjust_extract_oz", {"current": g, "target": t, "volume_floz": vol, "kind": typ},
                ref.gadj_oz(g, t, vol, typ))
+    for kind in (2, -1):
+        v.ekle("gravity_adjust_extract_oz", {"current": 1.040, "target": 1.050, "volume_floz": 640.0, "kind": kind},
+               dene(ref.gadj_oz, 1.040, 1.050, 640.0, kind), "bilinmeyen özüt türü kodu: hata (T1.16)")
     # §9.4 seyreltme
     for g, t, vol in ((1.060, 1.050, 640.0), (1.080, 1.040, 704.0), (1.040, 1.050, 640.0), (1.050, 1.050, 640.0),
                       (1.100, 1.030, 1280.0), (1.050, 1.020, 0.0)):
         v.ekle("gravity_adjust_water_floz", {"current": g, "target": t, "volume_floz": vol},
                ref.gadj_water(g, t, vol))
+    v.ekle("gravity_adjust_water_floz", {"current": 1.050, "target": 1.0, "volume_floz": 640.0},
+           dene(ref.gadj_water, 1.050, 1.0, 640.0), "hedef 1.000: sıfıra bölme (T1.16)")
 
     _uret_tam(v, ref)
     return v.yaz()
@@ -247,8 +259,17 @@ def _uret_tam(v, ref):
         v.ekle("potential_from_yield", {"yield_pct": y}, ref.potential_from_yield(y))
     for sg in (0.99, 1.0, 1.0368, 1.046, 1.0461, 1.05, 1.08):
         v.ekle("yield_from_potential", {"sg": sg}, ref.yield_from_potential(sg), "kırpma [0, 100]")
-    for x, frm in ((80.0, 31), (1.0368, 3), (1.0368, 4), (100.0, 2), (1.08, 3)):
+    for x, frm in ((80.0, 31), (1.0368, 3), (1.0368, 4), (1.08, 3)):
         v.ekle("grain_yield_convert", {"x": x, "from": frm}, ref.bconv_grain_yield(x, frm))
+    v.ekle("grain_yield_convert", {"x": 100.0, "from": 2}, dene(ref.bconv_grain_yield, 100.0, 2),
+           "bilinmeyen birim kodu: hata (T1.16)")
+    # T1.16: bilinmeyen birim kodları artık hata (eskiden x aynen dönerdi)
+    for fonk, fn, x, frm, to in (("convert_hydrometer", ref.bconv_hydrometer, 1.050, 7, 3),
+                                 ("convert_hydrometer", ref.bconv_hydrometer, 1.050, 3, 7),
+                                 ("convert_refractometer", ref.bconv_refractometer, 12.0, 5, 3),
+                                 ("convert_color", ref.bconv_color, 10.0, 29, 99),
+                                 ("convert_temperature", ref.bconv_temperature, 20.0, 5, 1)):
+        v.ekle(fonk, {"x": x, "from": frm, "to": to}, dene(fn, x, frm, to), "bilinmeyen birim kodu: hata (T1.16)")
 
     # --- §2 fermentable puanları: tip × kullanım × not_fermentable ---
     for typ in range(9):
@@ -269,6 +290,8 @@ def _uret_tam(v, ref):
 
     # --- §3-§5 reçete düzeyi ---
     tarifler = _tarifler(ref)
+    _r0 = next(iter(tarifler.values()))
+    v.ekle("og_points_phase", {"recipe": _r0, "phase": 9}, dene(ref.og_points_phase, _r0, 9), "bilinmeyen aşama kodu: hata (T1.16)")
     for ad, r in tarifler.items():
         n = "tarif=" + ad
         for phase in range(9):
@@ -286,7 +309,7 @@ def _uret_tam(v, ref):
         for hedef in (1.040, 1.080, 1.0, 0.99):
             s = ref.scale_gravity(r, hedef)
             v.ekle("scale_gravity", {"recipe": r, "og_target": hedef},
-                   "target_not_positive" if s is None else [g["amount_oz"] for g in s["fermentables"]],
+                   {"hata": "ValueError"} if s is None else [g["amount_oz"] for g in s["fermentables"]],
                    n + " [miktarlar oz] ya da hata")
         for w in (100.0, 232.0, 0.0, -1.0, r["mash"]["grain_weight"]):
             m = ref.scale_mash_from_grain_weight(r["mash"], w)

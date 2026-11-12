@@ -102,24 +102,24 @@ fn amounts(r: &d::Recipe) -> Vec<f64> {
     r.fermentables.iter().map(|g| g.amount_oz).collect()
 }
 
-fn hydro_unit(c: &ortak::Case, key: &str) -> d::HydrometerUnit {
-    d::HydrometerUnit::from_code(c.i(key)).expect("hydrometer unit")
+fn hydro_unit(c: &ortak::Case, key: &str) -> engine::Result<d::HydrometerUnit> {
+    d::HydrometerUnit::from_code(c.i(key))
 }
 
-fn refr_unit(c: &ortak::Case, key: &str) -> d::RefractometerUnit {
-    d::RefractometerUnit::from_code(c.i(key)).expect("refractometer unit")
+fn refr_unit(c: &ortak::Case, key: &str) -> engine::Result<d::RefractometerUnit> {
+    d::RefractometerUnit::from_code(c.i(key))
 }
 
-fn color_unit(c: &ortak::Case, key: &str) -> d::ColorUnit {
-    d::ColorUnit::from_code(c.i(key)).expect("colour unit")
+fn color_unit(c: &ortak::Case, key: &str) -> engine::Result<d::ColorUnit> {
+    d::ColorUnit::from_code(c.i(key))
 }
 
-fn temp_unit(c: &ortak::Case, key: &str) -> d::TemperatureUnit {
-    d::TemperatureUnit::from_code(c.i(key)).expect("temperature unit")
+fn temp_unit(c: &ortak::Case, key: &str) -> engine::Result<d::TemperatureUnit> {
+    d::TemperatureUnit::from_code(c.i(key))
 }
 
-fn refr_kind(c: &ortak::Case) -> d::RefractometerType {
-    d::RefractometerType::from_code(c.i("kind")).expect("refractometer type")
+fn refr_kind(c: &ortak::Case) -> engine::Result<d::RefractometerType> {
+    d::RefractometerType::from_code(c.i("kind"))
 }
 
 fn field(name: &str) -> d::GrainField {
@@ -140,48 +140,43 @@ fn parite_01() {
             "sg_to_brix" => c.check_f(d::sg_to_brix(c.f("sg"))),
             "brix_to_sg" => c.check_f(d::brix_to_sg(c.f("brix"))),
             "brix_to_ri" => c.check_f(d::brix_to_ri(c.f("brix"))),
-            "ri_to_brix" => c.check_f(d::ri_to_brix(c.f("ri"))),
-            "real_extract" => c.check_f(d::real_extract(c.f("og"), c.f("fg"))),
-            "abw" => c.check_f(d::abw(c.f("og"), c.f("fg"))),
-            "abv" => c.check_f(d::abv(c.f("og"), c.f("fg"))),
-            "apparent_attenuation" => c.check_f(d::apparent_attenuation(c.f("og"), c.f("fg"))),
-            "real_attenuation" => c.check_f(d::real_attenuation(c.f("og"), c.f("fg"))),
-            "alcohol_calories" => c.check_f(d::alcohol_calories(c.f("og"), c.f("fg"))),
-            "extract_calories" => c.check_f(d::extract_calories(c.f("og"), c.f("fg"))),
-            "uk_tax_abv" => c.check_f(d::uk_tax_abv(c.f("og"), c.f("fg"))),
-            "morey_srm" => c.check_f(d::morey_srm(c.f("mcu_sum"), c.f("volume_gal"))),
-            "hydrometer_correction" => c.check_f(d::hydrometer_correction(
+            "ri_to_brix" => c.check_r(d::ri_to_brix(c.f("ri"))),
+            "real_extract" => c.check_r(d::real_extract(c.f("og"), c.f("fg"))),
+            "abw" => c.check_r(d::abw(c.f("og"), c.f("fg"))),
+            "abv" => c.check_r(d::abv(c.f("og"), c.f("fg"))),
+            "apparent_attenuation" => c.check_r(d::apparent_attenuation(c.f("og"), c.f("fg"))),
+            "real_attenuation" => c.check_r(d::real_attenuation(c.f("og"), c.f("fg"))),
+            "alcohol_calories" => c.check_r(d::alcohol_calories(c.f("og"), c.f("fg"))),
+            "extract_calories" => c.check_r(d::extract_calories(c.f("og"), c.f("fg"))),
+            "uk_tax_abv" => c.check_r(d::uk_tax_abv(c.f("og"), c.f("fg"))),
+            "morey_srm" => c.check_r(d::morey_srm(c.f("mcu_sum"), c.f("volume_gal"))),
+            "hydrometer_correction" => c.check_r(d::hydrometer_correction(
                 c.f("sg"),
                 c.f("temp_f"),
                 c.f("calib_f"),
             )),
-            "refractometer_unfermented" => c.check_f(d::refractometer_unfermented(
+            "refractometer_unfermented" => c.check_r(d::refractometer_unfermented(
                 c.f("brix"),
                 c.f("zero"),
                 c.f("wcf"),
             )),
-            "refractometer_fermenting" => c.check_f(d::refractometer_fermenting(
+            "refractometer_fermenting" => c.check_r(d::refractometer_fermenting(
                 c.f("og"),
                 c.f("brix"),
                 c.f("zero"),
             )),
             "abv_abw_unclamped" => {
-                let (abv, abw) = d::abv_abw_unclamped(c.f("og"), c.f("fg"));
-                c.check(&json!([abv, abw]));
+                c.check_res(
+                    d::abv_abw_unclamped(c.f("og"), c.f("fg")).map(|(abv, abw)| json!([abv, abw])),
+                );
             }
-            "refractometer_abv" => c.check_f(d::refractometer_abv(
-                refr_kind(c),
-                c.f("gravity"),
-                c.f("brix"),
-                c.f("zero"),
-            )),
-            "refractometer_abw" => c.check_f(d::refractometer_abw(
-                refr_kind(c),
-                c.f("gravity"),
-                c.f("brix"),
-                c.f("zero"),
-            )),
-            "refractometer_finished_abv" => c.check_f(d::refractometer_finished_abv(
+            "refractometer_abv" => c.check_r((|| {
+                d::refractometer_abv(refr_kind(c)?, c.f("gravity"), c.f("brix"), c.f("zero"))
+            })()),
+            "refractometer_abw" => c.check_r((|| {
+                d::refractometer_abw(refr_kind(c)?, c.f("gravity"), c.f("brix"), c.f("zero"))
+            })()),
+            "refractometer_finished_abv" => c.check_r(d::refractometer_finished_abv(
                 c.f("fg"),
                 c.f("brix"),
                 c.f("zero"),
@@ -209,48 +204,44 @@ fn parite_01() {
                 c.check(&json!([name, d::recipe_color(&r), ok, amounts(&r)]));
             }
             "refractometer_finished" => {
-                let r = d::refractometer_finished(c.f("fg"), c.f("brix"), c.f("zero"));
-                c.check(&json!([r.og, r.abw_percent, r.re, r.oe]));
+                c.check_res(
+                    d::refractometer_finished(c.f("fg"), c.f("brix"), c.f("zero"))
+                        .map(|r| json!([r.og, r.abw_percent, r.re, r.oe])),
+                );
             }
             "fg_from_tolerance" => {
-                c.check_f(d::fg_from_tolerance(c.f("og"), c.f("fg"), c.f("tol")));
+                c.check_r(d::fg_from_tolerance(c.f("og"), c.f("fg"), c.f("tol")));
             }
-            "gravity_adjust_extract_oz" => c.check_f(d::gravity_adjust_extract_oz(
+            "gravity_adjust_extract_oz" => c.check_r((|| {
+                d::gravity_adjust_extract_oz(
+                    c.f("current"),
+                    c.f("target"),
+                    c.f("volume_floz"),
+                    d::AdjustExtract::from_code(c.i("kind"))?,
+                )
+            })()),
+            "gravity_adjust_water_floz" => c.check_r(d::gravity_adjust_water_floz(
                 c.f("current"),
                 c.f("target"),
                 c.f("volume_floz"),
-                c.i("kind"),
             )),
-            "gravity_adjust_water_floz" => c.check_f(d::gravity_adjust_water_floz(
-                c.f("current"),
-                c.f("target"),
-                c.f("volume_floz"),
-            )),
-            "convert_hydrometer" => c.check_f(d::convert_hydrometer(
-                c.f("x"),
-                hydro_unit(c, "from"),
-                hydro_unit(c, "to"),
-            )),
-            "convert_refractometer" => c.check_f(d::convert_refractometer(
-                c.f("x"),
-                refr_unit(c, "from"),
-                refr_unit(c, "to"),
-            )),
-            "convert_color" => c.check_f(d::convert_color(
-                c.f("x"),
-                color_unit(c, "from"),
-                color_unit(c, "to"),
-            )),
-            "convert_temperature" => c.check_f(d::convert_temperature(
-                c.f("x"),
-                temp_unit(c, "from"),
-                temp_unit(c, "to"),
-            )),
+            "convert_hydrometer" => c.check_r((|| {
+                d::convert_hydrometer(c.f("x"), hydro_unit(c, "from")?, hydro_unit(c, "to")?)
+            })()),
+            "convert_refractometer" => c.check_r((|| {
+                d::convert_refractometer(c.f("x"), refr_unit(c, "from")?, refr_unit(c, "to")?)
+            })()),
+            "convert_color" => c.check_r((|| {
+                d::convert_color(c.f("x"), color_unit(c, "from")?, color_unit(c, "to")?)
+            })()),
+            "convert_temperature" => c.check_r((|| {
+                d::convert_temperature(c.f("x"), temp_unit(c, "from")?, temp_unit(c, "to")?)
+            })()),
             "potential_from_yield" => c.check_f(d::potential_from_yield(c.f("yield_pct"))),
             "yield_from_potential" => c.check_f(d::yield_from_potential(c.f("sg"))),
-            "grain_yield_convert" => {
-                c.check_f(d::grain_yield_convert(c.f("x"), c.i("from") == 3));
-            }
+            "grain_yield_convert" => c.check_r((|| {
+                d::grain_yield_convert(c.f("x"), d::HydrometerUnit::from_code(c.i("from"))?)
+            })()),
             "grain_og_points" => c.check_f(d::grain_og_points(
                 &grain(c.v("grain")),
                 c.f("eff"),
@@ -263,13 +254,20 @@ fn parite_01() {
                 c.f("steep_eff"),
             )),
             "og_points_phase" => {
-                c.check_f(d::og_points_phase(&recipe(c.v("recipe")), c.i("phase")));
+                c.check_r((|| {
+                    Ok(d::og_points_phase(
+                        &recipe(c.v("recipe")),
+                        d::GrainUse::from_code(c.i("phase"))?,
+                    ))
+                })());
             }
-            "estimate_og" => c.check_f(d::estimate_og(
-                &recipe(c.v("recipe")),
-                c.f("volume_floz"),
-                c.i("phase"),
-            )),
+            "estimate_og" => c.check_r((|| {
+                Ok(d::estimate_og(
+                    &recipe(c.v("recipe")),
+                    c.f("volume_floz"),
+                    d::GrainUse::from_code(c.i("phase"))?,
+                ))
+            })()),
             "recipe_og" => c.check_f(d::recipe_og(&recipe(c.v("recipe")))),
             "recipe_virtual_og" => c.check_f(d::recipe_virtual_og(&recipe(c.v("recipe")))),
             "est_post_mash_og" => c.check_f(d::est_post_mash_og(&recipe(c.v("recipe")))),
@@ -282,12 +280,10 @@ fn parite_01() {
                 &recipe(c.v("recipe")),
                 c.f("boil_vol_floz"),
             )),
-            "scale_gravity" => match d::scale_gravity(&recipe(c.v("recipe")), c.f("og_target")) {
-                Ok(r) => c.check(&json!(amounts(&r))),
-                Err(d::GravityScaleError::TargetNotPositive) => {
-                    c.check(&json!("target_not_positive"));
-                }
-            },
+            "scale_gravity" => c.check_res(
+                d::scale_gravity(&recipe(c.v("recipe")), c.f("og_target"))
+                    .map(|r| json!(amounts(&r))),
+            ),
             "scale_mash_from_grain_weight" => {
                 let m =
                     d::scale_mash_from_grain_weight(&mash(c.v("mash")), c.f("grain_weight_new"));
@@ -316,9 +312,9 @@ fn parite_01() {
             "avg_attenuation" => c.check_f(d::avg_attenuation(c.f("min"), c.f("max"))),
             "original_extract" => c.check_f(d::original_extract(c.f("start_sg"))),
             "apparent_extract" => c.check_f(d::apparent_extract(c.f("final_sg"))),
-            "calories_alcohol" => c.check_f(d::calories_alcohol(c.f("og"), c.f("fg"))),
-            "calories_carbs" => c.check_f(d::calories_carbs(c.f("og"), c.f("fg"))),
-            "calories_total" => c.check_f(d::calories_total(c.f("og"), c.f("fg"))),
+            "calories_alcohol" => c.check_r(d::calories_alcohol(c.f("og"), c.f("fg"))),
+            "calories_carbs" => c.check_r(d::calories_carbs(c.f("og"), c.f("fg"))),
+            "calories_total" => c.check_r(d::calories_total(c.f("og"), c.f("fg"))),
             "carbohydrates_grams" => c.check_f(d::carbohydrates_grams(c.f("carb_kcal"))),
             "carb_calories" => c.check_f(d::carb_calories(c.f("total_kcal"), c.f("alc_kcal"))),
             "recipe_color" => c.check_f(d::recipe_color(&recipe(c.v("recipe")))),

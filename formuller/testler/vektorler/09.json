@@ -259,5 +259,11 @@
 {"fonk":"spund_warnings","girdi":{"target_vol":2.5,"t_c":12.0,"tank_max_psi":null,"fg_range":[1.014,1.01],"wide_u":200},"beklenen":{"uyari":[],"engellendi":false},"not":"kod listesi + engellendi"},
 {"fonk":"spund_warnings","girdi":{"target_vol":2.6,"t_c":18.0,"tank_max_psi":27.076251107200008,"fg_range":null,"wide_u":200},"beklenen":{"uyari":[],"engellendi":false},"not":"kod listesi + engellendi"},
 {"fonk":"spund_warnings","girdi":{"target_vol":2.6,"t_c":18.0,"tank_max_psi":27.07625110719901,"fg_range":null,"wide_u":200},"beklenen":{"uyari":[],"engellendi":false},"not":"kod listesi + engellendi"},
-{"fonk":"spund_warnings","girdi":{"target_vol":2.6,"t_c":18.0,"tank_max_psi":27.076251097200007,"fg_range":null,"wide_u":200},"beklenen":{"uyari":["tank_basinc_asildi"],"engellendi":true},"not":"kod listesi + engellendi"}
+{"fonk":"spund_warnings","girdi":{"target_vol":2.6,"t_c":18.0,"tank_max_psi":27.076251097200007,"fg_range":null,"wide_u":200},"beklenen":{"uyari":["tank_basinc_asildi"],"engellendi":true},"not":"kod listesi + engellendi"},
+{"fonk":"round_in","girdi":{"x":"1.5","dp":13,"mode":"ROUND_HALF_UP"},"beklenen":{"hata":"ValueError"},"not":"hane sınırı ya da 28 basamak: T1.16: hata"},
+{"fonk":"money","girdi":{"x":"1.5","dp":13,"mode":"ROUND_HALF_UP"},"beklenen":{"hata":"ValueError"},"not":"hane sınırı ya da 28 basamak: T1.16: hata"},
+{"fonk":"round_in","girdi":{"x":"1.5","dp":30,"mode":"ROUND_HALF_UP"},"beklenen":{"hata":"ValueError"},"not":"hane sınırı ya da 28 basamak: T1.16: hata"},
+{"fonk":"money","girdi":{"x":"1.5","dp":30,"mode":"ROUND_HALF_UP"},"beklenen":{"hata":"ValueError"},"not":"hane sınırı ya da 28 basamak: T1.16: hata"},
+{"fonk":"round_in","girdi":{"x":"95533426188478241544266.310","dp":7,"mode":"ROUND_HALF_UP"},"beklenen":{"hata":"ValueError"},"not":"hane sınırı ya da 28 basamak: T1.16: hata"},
+{"fonk":"money","girdi":{"x":"95533426188478241544266.310","dp":7,"mode":"ROUND_HALF_UP"},"beklenen":{"hata":"ValueError"},"not":"hane sınırı ya da 28 basamak: T1.16: hata"}
 ]}

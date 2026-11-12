@@ -65,7 +65,7 @@ fn parite_10() {
                 let n = usize::try_from(c.i("n")).unwrap();
                 c.check_f(round_py(c.f("x"), n));
             }
-            "weight" => c.check_f(manual::weight(c.f("sg"), c.f("fg"))),
+            "weight" => c.check_r(manual::weight(c.f("sg"), c.f("fg"))),
             "k_fit" => {
                 let weighted = c.girdi.get("weighted").is_none_or(|w| w.as_bool().unwrap());
                 let lag = opt(c, "lag", manual::LAG_H);
@@ -196,15 +196,16 @@ fn parite_10() {
                 None => Value::Null,
                 Some(s) => json!(s.as_str()),
             }),
-            "few_status" => c.check(&json!(
+            "few_status" => c.check_res(
                 manual::few_status(
                     &pairs(c.v("readings")),
                     c.f("og"),
                     c.f("fg_prior"),
                     opt(c, "lag", manual::LAG_H),
                 )
-                .as_str()
-            )),
+                .map(|s| json!(s.as_str()))
+                .map_err(engine::Error::from),
+            ),
             "forecast_method" => c.check(&json!(
                 manual::forecast_method(
                     c.b("device_sufficient"),

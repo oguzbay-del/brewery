@@ -12,17 +12,22 @@ def rager_ga(sg): return (sg-1.05)/0.2 if sg>1.05 else 0.0
 def rager_util(sg,t): return rager_tab(int(t+0.5))/(1+rager_ga(sg))
 GT=[0,0,2,5,8,11,14,16,18,19,20,21,22,23,23]
 GARETZ_MAX_ITER=10000
+class NoConvergence(ValueError):
+    """Garetz yinelemesi sınırda yakınsamadı (Karar T1.16: sessiz değer yok, hata)."""
 def garetz_ibu(w,a,t,sg,v,bv):
     if t<=0 or w<=0 or a<0: return 0.0
+    if v<=0 or bv<=0: raise ValueError("garetz_ibu: hacimler > 0 olmalı")  # Karar (T1.16): V = 0 için eskiden NaN
     idx=int((int(t)-1)/5)  # C truncation
     idx=min(idx,14)
     r=v/bv; GF=((sg-1)*r+1-1.05)*5+1
+    if GF<=0: raise ValueError("garetz_ibu: gravite çarpanı > 0 olmalı")  # Karar (T1.16): eskiden negatif IBU
     prev,cur=1.0,50.0
     for _ in range(GARETZ_MAX_ITER):  # T1.15 B9: üst sınır spesifikasyonda (§2.3)
-        if abs(prev-cur)<=0.05: break
+        if abs(prev-cur)<=0.05: return cur
         prev=cur
         cur=GT[idx]*a*w*0.749/(v*GF*(r*cur/260+1)*1.02)
-    return cur
+    if abs(prev-cur)<=0.05: return cur
+    raise NoConvergence("garetz_ibu: %d adımda yakınsamadı" % GARETZ_MAX_ITER)  # Karar (T1.16)
 def garetz_util(sg,t): return garetz_ibu(1,1,t,sg,1,1)/74.9
 POSTBOIL_MAX_STEPS=20000
 def postboil(sg,t0,dur):
@@ -44,6 +49,7 @@ def combine(segs):
     for s in segs: tot+=s*rem; rem*=1-s
     return tot
 def hop_alpha(a,hsi,tF,days,sf):
+    if hsi<0: raise ValueError("hsi >= 0 olmalı")  # Karar (T1.16)
     hsi=min(hsi,99); k=-math.log(1-hsi/100)/180
     return a*math.exp(-k*0.5**((68-tF)/27)*days*sf)
 w,a,t,sg,v=1.0,5.0,60,1.050,5.0
@@ -89,25 +95,28 @@ def tin_ibu(w,a,t,sg,v):
     return tin_util(sg,t)*a*w*K/v
 def tin_weight(ibu,v,sg,t,a):
     d=tin_util(sg,t)*a*K
-    return 0.0 if d==0 else ibu*v/d
+    if d==0: raise ValueError("tinseth_weight: hedef ulaşılamaz")  # Karar (T1.16): eskiden 0
+    return ibu*v/d
 # §2.2 Rager
 def rager_ibu(w,a,t,sg,v):
     if t<=0 or w<=0 or a<0 or v==0: return 0.0
     return rager_tab(int(t+0.5))*a*w*K/((1+rager_ga(sg))*v)
 def rager_weight(ibu,v,sg,t,a):
     d=rager_tab(int(t+0.5))*a*K
-    return 0.0 if d==0 else (1+rager_ga(sg))*v*ibu/d
+    if d==0: raise ValueError("rager_weight: hedef ulaşılamaz")  # Karar (T1.16): eskiden 0
+    return (1+rager_ga(sg))*v*ibu/d
 # §2.3 Garetz ters (ikiye bölme; V_boil = V)
 def garetz_weight(ibu,a,t,sg,v):
     lo,hi,w=0.0,1e6,500.0
     for _ in range(200):
-        cur=garetz_ibu(w,a,t,sg,v,v)
+        try: cur=garetz_ibu(w,a,t,sg,v,v)
+        except NoConvergence: cur=math.inf  # yakınsamayan miktar hedefi aşmış sayılır (Rust ile aynı)
         if abs(cur-ibu)<=0.05: break
         if cur<ibu: lo=w
         else: hi=w
         w=(lo+hi)/2
     else:
-        return 0.0  # T1.15 B10: 200 adımda hedefe girilmedi (ulaşılamaz hedef) -> 0, Tinseth/Rager terslerindeki gibi
+        raise ValueError("garetz_weight: hedef ulaşılamaz")  # Karar (T1.16): eskiden 0 (T1.15 B10)
     return w
 # §3.4 whirlpool hop
 def whirlpool_util(sg,t,temp_c): return tin_util(sg,t)*tempf(temp_c)
@@ -218,7 +227,9 @@ def scale_bitterness(cur_ibu,target,hops,recipe,ferms,eq,opts,v_boil=0.0):
         amounts[k]=(ibus[k]/adj)*(t2/r2)*(rc["volume"]+rc["trub_loss"])*1.34/(h["alpha"]*u*100*128)
     return {"status":"ok","amounts":amounts}
 # §6.2 HopIBUAdjust
-def hop_ibu_adjust(w_old,ibu_old,ibu_new): return 0.0 if ibu_old<=0 else w_old/ibu_old*ibu_new
+def hop_ibu_adjust(w_old,ibu_old,ibu_new):
+    if ibu_old<=0: raise ValueError("ibu_old > 0 olmalı")  # Karar (T1.16): eskiden 0
+    return w_old/ibu_old*ibu_new
 # §7 Hop Bitterness aracı (CalcIBU)
 def calc_ibu(hop,sg,v_floz,eq,util_pct,opts):
     w,a,t=hop["amount"],hop["alpha"],hop["time"]
@@ -249,7 +260,9 @@ def tot_whirlpool_time(recipe_time,hops,misc):
         if x["use"]==6: m=max(m,int(x["time"]+0.48))
     return m
 # §10 HopAlphaFunc (ay ve depolama tipi ile)
-def storage_factor(storage): return {0:1.0,1:0.75,2:0.5}.get(storage,1.0)
+def storage_factor(storage):
+    if storage not in (0,1,2): raise ValueError("depolama tipi 0-2 olmalı")  # Karar (T1.16): eskiden 1.0
+    return {0:1.0,1:0.75,2:0.5}[storage]
 def aged_alpha_months(a,hsi,tF,months,storage): return hop_alpha(a,hsi,tF,months*30,storage_factor(storage))
 
 _o=dict(DEFAULT_OPTS)

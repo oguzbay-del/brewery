@@ -1,5 +1,5 @@
 """Bölüm 04 parite vektörleri: maya, mead/şarap, karbonasyon (ADR-0003)."""
-from ortak import Vektor, yukle
+from ortak import Vektor, dene, yukle
 
 
 def uret():
@@ -23,10 +23,10 @@ def uret():
            ref.viability(97, 10, 1000, 8.0), "taban 8")
 
     for g in (1.01, 1.5, 2.0, 5.0, 10.0, 25.0):
-        v.ekle("innoc_rate", {"g": g}, ref.InnocRate(g))
+        v.ekle("innoc_rate", {"g": g}, dene(ref.InnocRate, g))
     for i in (0.5, 5.0, 40.0, 100.0, 200.0, 1000.0):
         for stir in (False, True):
-            v.ekle("growth_rate", {"i": i, "stir": stir}, ref.GrowthRate(i, stir))
+            v.ekle("growth_rate", {"i": i, "stir": stir}, dene(ref.GrowthRate, i, stir))
 
     for rate, vl, sg in [(0.75, 20, 1.060), (0.35, 19, 1.040), (1.5, 20, 1.100),
                          (1.0, 5, 1.000), (0.75, 0, 1.050)]:
@@ -37,12 +37,12 @@ def uret():
                         (120.0, 100.0), (1000.0, 97.0), (150.0, 100.0), (101.0, 100.0)]:
         for stir in (False, True):
             v.ekle("new_starter_l", {"need": need, "avail": avail, "stir": stir},
-                   ref.new_starter_L(need, avail, stir))
+                   dene(ref.new_starter_L, need, avail, stir))
     for need, avail in [(225.0, 100.0), (225.0, 70.0), (100.0, 100.0), (50.0, 100.0),
                         (500.0, 100.0), (300.0, 0.0), (300.0, 0.05)]:
         for stir in (False, True):
             v.ekle("two_stage_tool", {"need": need, "avail": avail, "stir": stir},
-                   ref.two_stage_tool(need, avail, stir))
+                   dene(ref.two_stage_tool, need, avail, stir))
 
     for vol, og in [(0.0, 1.036), (33.8, 1.036), (101.4, 1.040), (200.0, 1.000), (64.0, 1.050)]:
         v.ekle("dme_oz", {"vol_floz": vol, "og": og}, ref.dme_oz(vol, og))
@@ -74,8 +74,22 @@ def uret():
     for method in (0, 1, 2, 7):
         for grams, vl in [(4.0, 19.0), (0.0, 19.0), (10.5, 5.0), (3.0, 0.0)]:
             v.ekle("yan", {"method": method, "grams": grams, "v_l": vl},
-                   ref.yan(method, grams, vl))
+                   dene(ref.yan, method, grams, vl))
     _ek(v, ref)
+    n = "T1.16: hata"
+    v.ekle("growth_rate", {"i": 0.0, "stir": False}, dene(ref.GrowthRate, 0.0, False), "I = 0: log hatası (eskiden 6): " + n)
+    v.ekle("growth_rate", {"i": -1.0, "stir": True}, dene(ref.GrowthRate, -1.0, True), n)
+    v.ekle("innoc_rate", {"g": 0.0}, dene(ref.InnocRate, 0.0), n)
+    v.ekle("new_starter_l", {"need": 100.0, "avail": 0.0, "stir": False}, dene(ref.new_starter_L, 100.0, 0.0, False), "0 hücre: sıfıra bölme (eskiden NaN): " + n)
+    v.ekle("new_starter_l", {"need": 100.0, "avail": -5.0, "stir": False}, dene(ref.new_starter_L, 100.0, -5.0, False), n)
+    v.ekle("yan", {"method": 3, "grams": 5.0, "v_l": 19.0}, dene(ref.yan, 3, 5.0, 19.0), "bilinmeyen yöntem kodu (eskiden 100): " + n)
+    v.ekle("yan_target", {"sg": 1.100, "pct": 100.0, "fac": 7}, dene(ref.MeadYanTarget, 1.100, 100.0, 7), "bilinmeyen azot faktörü (eskiden High): " + n)
+    v.ekle("mead_tot_ferm_o", {"sg": 1.100, "v_gal": 5.0, "pct": 100.0, "fac": 1, "method": 2},
+           dene(ref.MeadTotFermO, 1.100, 5.0, 100.0, 1, 2), "yöntem 2 (DAP) mead programında yok: " + n)
+    v.ekle("v0_ingredient", {"form": 9}, dene(ref.ViabilityV0Ingredient, 9), "bilinmeyen form: " + n)
+    v.ekle("back_agent_og", {"agent": 9}, dene(ref.BackAgentOG, 9), "bilinmeyen ajan (eskiden 15 Brix): " + n)
+    v.ekle("carb_sugar_agent", {"agent": 5, "vols": 2.4, "temp_f": 68.0, "gal": 5.0}, dene(ref.CarbSugarAgent, 5, 2.4, 68.0, 5.0), n)
+    v.ekle("pitch_min_max_tool", {"tool_type": 9}, dene(ref.PitchMinMaxTool, 9), "bilinmeyen starter türü (eskiden null): " + n)
     return v.yaz()
 
 
@@ -98,13 +112,13 @@ def _ek(v, ref):
         v.ekle("yeast_age_recipe", {"days": days}, ref.YeastAgeRecipe(days))
 
     for f in range(4):
-        v.ekle("v0_ingredient", {"form": f}, ref.ViabilityV0Ingredient(f))
+        v.ekle("v0_ingredient", {"form": f}, dene(ref.ViabilityV0Ingredient, f))
     for f in range(3):
-        v.ekle("v0_tool", {"form": f}, ref.ViabilityV0Tool(f))
+        v.ekle("v0_tool", {"form": f}, dene(ref.ViabilityV0Tool, f))
     for form in range(4):
         for wl in (False, True):
             v.ekle("import_age_rate", {"form": form, "white_labs": wl},
-                   ref.ImportAgeRate(form, wl))
+                   dene(ref.ImportAgeRate, form, wl))
     for calc, uv in [(True, 80.0), (False, 80.0)]:
         v.ekle("tool_viability", {"calc": calc, "user_v": uv, "v0": 97.0, "rate": 10.0,
                                   "days": 90.0}, ref.ToolViability(calc, uv, 97.0, 10.0, 90.0))
@@ -117,7 +131,7 @@ def _ek(v, ref):
                                        (False, 0, 0, 7, 100.0, 1.0)]:
         v.ekle("yeast_total_cells", {"use_pkgs": up, "cells_pkg": cp, "new_amount": na,
                                      "form": form, "amount": amt, "cells_ml": cml},
-               ref.YeastTotalCells(up, cp, na, form, amt, cml))
+               dene(ref.YeastTotalCells, up, cp, na, form, amt, cml))
     for dry in (True, False):
         v.ekle("yeast_cells_avail", {"dry": dry, "dry_g": 11.5, "wet_ml": 250.0, "cells_ml": 1.0},
                ref.YeastCellsAvail(dry, 11.5, 250.0, 1.0))
@@ -159,7 +173,7 @@ def _ek(v, ref):
     for rec in (0.5, 0.75, 1.5):
         v.ekle("pitch_min_max_recipe", {"rec": rec}, ref.PitchMinMaxRecipe(rec))
     for tt in (0, 1, 2, 3, 4, -1):
-        v.ekle("pitch_min_max_tool", {"tool_type": tt}, ref.PitchMinMaxTool(tt))
+        v.ekle("pitch_min_max_tool", {"tool_type": tt}, dene(ref.PitchMinMaxTool, tt))
     for lo, hi in [(0.45, 1.05), (1.25, 1.75), (0.6, 1.4), (0.25, 0.75), (0.005, 10.0)]:
         v.ekle("pitch_range", {"lo": lo, "hi": hi}, ref.PitchRange(lo, hi))
     for rd in (75.0, 0.0, 19.0, 20.0, 23.9, 100.0):
@@ -170,7 +184,7 @@ def _ek(v, ref):
         for up in (0, 1):
             for tool in (False, True):
                 v.ekle("is_dry_by_weight", {"form": form, "use_pkgs": up, "tool": tool},
-                       ref.IsDryByWeight(form, up, tool))
+                       dene(ref.IsDryByWeight, form, up, tool))
 
     for dbw, pitch, vl, sg, dr, rr in [(False, 0.75, 20.0, 1.060, 75.0, 75.0),
                                        (True, 0.75, 20.0, 1.060, 75.0, 75.0),
@@ -187,31 +201,31 @@ def _ek(v, ref):
                        (0.0, 1.0), (100.0, 1000.0)]:
         for stir in (False, True):
             v.ekle("cells_starter", {"viable": viable, "starter_l": sl, "stir": stir},
-                   ref.CellsStarter(viable, sl, stir))
+                   dene(ref.CellsStarter, viable, sl, stir))
     for c1, sl in [(221.0, 1.75), (221.0, 0.0), (50.0, 0.5)]:
         for stir in (False, True):
             v.ekle("cells_sec_starter", {"cells1": c1, "sec_l": sl, "stir": stir},
-                   ref.CellsSecStarter(c1, sl, stir))
+                   dene(ref.CellsSecStarter, c1, sl, stir))
 
     for need, avail in [(225.0, 100.0), (225.0, 70.0), (100.0, 100.0), (50.0, 100.0),
                         (500.0, 100.0), (300.0, 0.0), (300.0, 0.05), (4000.0, 50.0)]:
         for stir in (False, True):
             v.ekle("two_stage_recipe", {"need": need, "avail": avail, "stir": stir,
                                         "growth_cap": 4.0},
-                   ref.two_stage_recipe(need, avail, stir, 4.0))
+                   dene(ref.two_stage_recipe, need, avail, stir, 4.0))
     v.ekle("two_stage_recipe", {"need": 4000.0, "avail": 50.0, "stir": False, "growth_cap": 100.0},
-           ref.two_stage_recipe(4000.0, 50.0, False, 100.0), "buyume siniri gevsek")
+           dene(ref.two_stage_recipe, 4000.0, 50.0, False, 100.0), "buyume siniri gevsek")
 
     for n, pkt in [(221.12, 100.0), (50.0, 100.0), (100.0, 100.0), (200.0, 100.0),
                    (201.0, 100.0), (221.0, 0.0), (221.0, -3.0), (0.0, 100.0)]:
-        v.ekle("packs_no_starter", {"n": n, "pkt": pkt}, ref.YeastPacksNoStarter(n, pkt))
+        v.ekle("packs_no_starter", {"n": n, "pkt": pkt}, dene(ref.YeastPacksNoStarter, n, pkt))
         for growth in (4.0, 0.0, -1.0, 1.2):
             for stir in (False, True):
                 v.ekle("packs_starter", {"n": n, "pkt": pkt, "growth": growth, "stir": stir},
-                       ref.YeastPacksStarter(n, pkt, growth, stir))
+                       dene(ref.YeastPacksStarter, n, pkt, growth, stir))
     for r, ps, pk in [(2.0, 100.0, 1), (1.0, 100.0, 1), (0.5, 100.0, 2), (5.0, 75.0, 3)]:
         v.ekle("calc_starter_size", {"r": r, "pkt_size": ps, "pkt": pk},
-               ref.CalcYeastStarterSize(r, ps, pk))
+               dene(ref.CalcYeastStarterSize, r, ps, pk))
 
     for rate, vl in [(75.0, 20.0), (0.0, 20.0), (150.0, 5.0), (75.0, 0.0)]:
         v.ekle("dry_grams_vol", {"dry_rate": rate, "v_l": vl}, ref.DryGramsVol(rate, vl))
@@ -231,12 +245,12 @@ def _ek(v, ref):
     for up in (False, True):
         for form in (0, 1, 2):
             v.ekle("units_code", {"use_pkgs": up, "form": form, "dry_unit": 10, "wet_unit": 15},
-                   ref.YeastUnitsCode(up, form, 10, 15))
+                   dene(ref.YeastUnitsCode, up, form, 10, 15))
     v.ekle("units_code", {"use_pkgs": False, "form": 1, "dry_unit": 9, "wet_unit": 14},
-           ref.YeastUnitsCode(False, 1, 9, 14))
+           dene(ref.YeastUnitsCode, False, 1, 9, 14))
     for tol in (10, 12, 15):
         for yt in range(5):
-            v.ekle("import_tolerance", {"tol": tol, "y_type": yt}, ref.ImportHookTolerance(tol, yt))
+            v.ekle("import_tolerance", {"tol": tol, "y_type": yt}, dene(ref.ImportHookTolerance, tol, yt))
 
     for sg, vl in [(1.100, 19.0), (1.120, 19.0), (1.050, 5.0), (1.110, 0.0), (1.101, 10.0)]:
         v.ekle("mead_yeast_grams", {"sg": sg, "v_l": vl}, ref.MeadYeastGrams(sg, vl))
@@ -248,13 +262,13 @@ def _ek(v, ref):
     for sg, gal, pct in [(1.100, 5.0197, 100.0), (1.080, 5.0, 50.0), (1.120, 3.0, 75.0),
                          (1.000, 5.0, 100.0)]:
         for fac in (0, 1, 2):
-            v.ekle("yan_target", {"sg": sg, "pct": pct, "fac": fac}, ref.MeadYanTarget(sg, pct, fac))
+            v.ekle("yan_target", {"sg": sg, "pct": pct, "fac": fac}, dene(ref.MeadYanTarget, sg, pct, fac))
             for method in (0, 1, 2):
                 a = {"sg": sg, "v_gal": gal, "pct": pct, "fac": fac, "method": method}
-                v.ekle("mead_tot_ferm_o", a, ref.MeadTotFermO(sg, gal, pct, fac, method))
-                v.ekle("mead_tot_ferm_k", a, ref.MeadTotFermK(sg, gal, pct, fac, method))
-                v.ekle("mead_ferm_o", a, ref.MeadFermO(sg, gal, pct, fac, method))
-                v.ekle("mead_ferm_k", a, ref.MeadFermK(sg, gal, pct, fac, method))
+                v.ekle("mead_tot_ferm_o", a, dene(ref.MeadTotFermO, sg, gal, pct, fac, method))
+                v.ekle("mead_tot_ferm_k", a, dene(ref.MeadTotFermK, sg, gal, pct, fac, method))
+                v.ekle("mead_ferm_o", a, dene(ref.MeadFermO, sg, gal, pct, fac, method))
+                v.ekle("mead_ferm_k", a, dene(ref.MeadFermK, sg, gal, pct, fac, method))
     fs = [{"type": 7, "subtype": 2, "pts": 60.0}, {"type": 7, "subtype": 7, "pts": 10.0},
           {"type": 1, "subtype": 0, "pts": 30.0}]
     for ferms, prim in [(fs, 100.0), (fs[:1], 80.0), (fs[1:], 100.0), ([], 50.0), (fs, 0.0)]:
@@ -262,24 +276,24 @@ def _ek(v, ref):
                ref.MeadPctHoney(ferms, prim))
 
     for method in (0, 1, 2, 7):
-        v.ekle("yan_equivalent", {"method": method, "yan": 45.21}, ref.YANEquivalent(method, 45.21))
+        v.ekle("yan_equivalent", {"method": method, "yan": 45.21}, dene(ref.YANEquivalent, method, 45.21))
         for tg, vl in [(21.47, 19.0), (10.74, 19.0), (0.0, 19.0), (4.0, 0.0)]:
             for rec in (False, True):
                 a = {"method": method, "total_g": tg, "v_l": vl, "recipe": rec}
-                v.ekle("mead_yan_added", a, ref.MeadYANAdded(method, tg, vl, rec))
-                v.ekle("mead_yan_equivalent", a, ref.MeadYANEquivalent(method, tg, vl, rec))
+                v.ekle("mead_yan_added", a, dene(ref.MeadYANAdded, method, tg, vl, rec))
+                v.ekle("mead_yan_equivalent", a, dene(ref.MeadYANEquivalent, method, tg, vl, rec))
         for ppm, vl in [(100.0, 19.0), (0.0, 19.0), (60.0, 5.0)]:
             v.ekle("nutrient_needed", {"ppm": ppm, "method": method, "v_l": vl},
-                   ref.NutrientNeeded(ppm, method, vl))
+                   dene(ref.NutrientNeeded, ppm, method, vl))
 
     for agent in range(-1, 8):
-        v.ekle("back_agent_og", {"agent": agent}, ref.BackAgentOG(agent))
+        v.ekle("back_agent_og", {"agent": agent}, dene(ref.BackAgentOG, agent))
     for agent in range(6):
         for vl, sgb, sgt in [(19.0, 0.998, 1.010), (18.93, 1.015, 1.025), (19.0, 1.010, 1.010),
                              (0.0, 1.000, 1.020)]:
             a = {"v_l": vl, "sg_bev": sgb, "sg_target": sgt, "agent": agent}
-            v.ekle("back_agent_vol", a, ref.BackAgentVol(vl, sgb, sgt, agent))
-            v.ekle("back_agent_weight", a, ref.BackAgentWeight(vl, sgb, sgt, agent))
+            v.ekle("back_agent_vol", a, dene(ref.BackAgentVol, vl, sgb, sgt, agent))
+            v.ekle("back_agent_weight", a, dene(ref.BackAgentWeight, vl, sgb, sgt, agent))
     for vl, sgb, sgt, sga in [(19.0, 0.998, 1.010, 1.44319), (19.0, 1.0, 1.02, 1.02),
                               (5.0, 1.015, 1.005, 1.1)]:
         v.ekle("back_agent_vol_sg", {"v_l": vl, "sg_bev": sgb, "sg_target": sgt, "sg_a": sga},
@@ -291,16 +305,16 @@ def _ek(v, ref):
         for vols, tf, gal in [(2.4, 68.0, 5.0197), (2.0, 32.0, 5.0), (1.0, 100.0, 5.0),
                               (2.4, 68.0, 0.0), (3.0, 20.0, 2.5)]:
             v.ekle("carb_sugar_agent", {"agent": agent, "vols": vols, "temp_f": tf, "gal": gal},
-                   ref.CarbSugarAgent(agent, vols, tf, gal))
+                   dene(ref.CarbSugarAgent, agent, vols, tf, gal))
     for ct in (0, 1, 2):
         for agent in (0, 1, 2):
             for rate in (0.0, 100.0, 80.0, 60.0):
                 a = {"c_type": ct, "vols": 2.4, "temp_f": 68.0, "gal": 5.0197,
                      "carb_rate": rate, "agent": agent}
-                v.ekle("carb_amount", a, ref.CarbAmount(ct, 2.4, 68.0, 5.0197, rate, agent))
+                v.ekle("carb_amount", a, dene(ref.CarbAmount, ct, 2.4, 68.0, 5.0197, rate, agent))
     v.ekle("carb_amount", {"c_type": 1, "vols": 2.5, "temp_f": 39.2, "gal": 5.0,
                            "carb_rate": 50.0, "agent": 0},
-           ref.CarbAmount(1, 2.5, 39.2, 5.0, 50.0, 0), "keg: carb_rate yok sayilir")
+           dene(ref.CarbAmount, 1, 2.5, 39.2, 5.0, 50.0, 0), "keg: carb_rate yok sayilir")
     for r in (0.0, 0.5, 1.0, 80.0, 100.0, 150.0, -10.0):
         v.ekle("carb_equiv", {"rate": r}, ref.CarbEquivFunc(r))
 

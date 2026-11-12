@@ -58,7 +58,7 @@ def blend(parts):
 
 def blend_volume_for_target(V1, x1, x2, xt):
     """İki bileşen: hedef değere (ör. ABV) ulaşmak için 2. bileşenden gereken hacim."""
-    if not (min(x1, x2) + 1e-9 < xt < max(x1, x2) - 1e-9): return None   # kesin ve toleranslı (T1.12 C7)
+    if not (min(x1, x2) + 1e-9 < xt < max(x1, x2) - 1e-9): raise ValueError("hedef iki bileşen arasında olmalı")   # kesin ve toleranslı (T1.12 C7); Karar (T1.16): eskiden None
     return V1*(x1 - xt)/(xt - x2)
 
 # ---------------------------------------------------------------- 3. Maya tekrar kullanımı

@@ -110,6 +110,16 @@ pub enum TriggerError {
     InvalidInput,
 }
 
+impl From<TriggerError> for crate::Error {
+    fn from(e: TriggerError) -> Self {
+        match e {
+            TriggerError::EmptySeries => Self::invalid("points", "at least one point is required"),
+            TriggerError::ZeroDivision => Self::invalid("divisor", "must not be 0"),
+            TriggerError::InvalidInput => Self::invalid("input", "not finite or out of range"),
+        }
+    }
+}
+
 // ================================================================ 1. Gravity trigger
 
 /// Slope limit for "FG stable": 0.0005 SG per day (spec §1.4).
@@ -237,6 +247,9 @@ pub fn is_stable(
     min_n: usize,
 ) -> Result<Stability, TriggerError> {
     let t_end = points.last().ok_or(TriggerError::EmptySeries)?.0;
+    if !finite(&[hours]) || !points.iter().all(|&(t, g)| finite(&[t, g])) {
+        return Err(TriggerError::InvalidInput);
+    }
     let p: Vec<(f64, f64)> = points
         .iter()
         .copied()
@@ -263,6 +276,9 @@ pub fn is_stable(
 /// Temperature ramp duration, hours: `|to − from| / rate × 24` (spec §1.5).
 /// Temperatures in °C, `rate_c_per_day` in °C/day.
 pub fn ramp_hours(t_from: f64, t_to: f64, rate_c_per_day: f64) -> Result<f64, TriggerError> {
+    if !finite(&[t_from, t_to, rate_c_per_day]) {
+        return Err(TriggerError::InvalidInput);
+    }
     if rate_c_per_day == 0.0 {
         return Err(TriggerError::ZeroDivision);
     }

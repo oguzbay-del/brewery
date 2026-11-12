@@ -109,6 +109,7 @@ def tilt_cal(points):
     """points: [(SG_tilt, SG_referans)]. 1 nokta: sabit sapma; 2+: doğrusal."""
     if len(points) == 1:
         return 1.0, points[0][1] - points[0][0]
+    if len(points) == 0: raise ValueError("en az bir nokta")  # Karar (T1.16)
     a, b = _linfit([x for x, _ in points], [y for _, y in points])
     return b, a                                         # SG_düz = egim*SG_tilt + sapma
 
@@ -117,6 +118,7 @@ C_WATER, C_GRAIN, C_STEEL = 4.186, 1.59, 0.50          # kJ/(kg·K); tahıl = 0.
 H_VAP = 2257.0                                          # kJ/kg
 
 def heat_time_min(water_L, grain_kg, kettle_kg, T0, T1, power_kW, eff):
+    if power_kW <= 0 or eff <= 0: raise ValueError("güç ve verim > 0 olmalı")  # Karar (T1.16)
     C = water_L*C_WATER + grain_kg*C_GRAIN + kettle_kg*C_STEEL      # kJ/K (su yoğunluğu 1 kabul)
     return C*(T1 - T0)/(power_kW*eff)/60.0
 
@@ -128,16 +130,26 @@ def tau_from_batch(T0, Tc, T, minutes):
     return minutes/math.log((T0 - Tc)/(T - Tc))
 
 def cool_time_immersion(T0, Tc, T, tau, vol_L, vol_ref_L):
+    if vol_ref_L <= 0: raise ValueError("referans hacim > 0 olmalı")  # Karar (T1.16)
     tau_v = tau * vol_L/vol_ref_L                       # τ hacimle doğrusal ölçeklenir (yaklaşık)
     return tau_v*math.log((T0 - Tc)/(T - Tc))
 
-def cool_time_flow(vol_L, flow_L_min): return vol_L/flow_L_min
+def cool_time_flow(vol_L, flow_L_min):
+    if flow_L_min <= 0: raise ValueError("debi > 0 olmalı")  # Karar (T1.16)
+    return vol_L/flow_L_min
 
 # ---------------------------------------------------------------- 4. Ekipmana göre ölçekleme
+def _olcek_girdi(V0, eff1, mode):
+    """Karar (T1.16): V0 > 0; hedef modunda eff1 > 0 (eskiden sıfıra bölme ya da sessiz inf)."""
+    if V0 <= 0: raise ValueError("V0 > 0 olmalı")
+    if mode != "oran" and eff1 <= 0: raise ValueError("hedef modunda eff1 > 0 olmalı")
+
+
 def scale_recipe(ing, V0, V1, eff0, eff1, mode="hedef"):
     """ing: dict ad -> (miktar, tip). tip: 'mash','seker','hop_ibu','hop_aroma','tuz','misc','maya_paket'.
     mode 'oran': hepsi V1/V0. mode 'hedef': mash eff oranıyla; IBU hopları burada yalnız ilk tahmin (V oranı),
     ardından ScaleBitterness (02 §6.1) hedef ekipmanla IBU'yu tam tutturur."""
+    _olcek_girdi(V0, eff1, mode)
     rv = V1/V0; out = {}
     for k, (q, t) in ing.items():
         if mode == "oran": f = rv
@@ -148,6 +160,7 @@ def scale_recipe(ing, V0, V1, eff0, eff1, mode="hedef"):
 
 def round_to(q, step):
     """§4.3 yarım yukarı (T1.12 C15): 1e-9 payı ikili artıkları (0.35/0.1) yarım sayar."""
+    if step <= 0: raise ValueError("adım > 0 olmalı")  # Karar (T1.16)
     return math.floor(q/step + 0.5 + 1e-9)*step
 
 # ---------------------------------------------------------------- 5. İyon dengesi ve sertlik
@@ -170,6 +183,7 @@ HOP_ABS = {"pellet": 0.0070, "yaprak": 0.0130, "cryo": 0.0045}   # L/g  [varsay�
 def kettle_hop_loss(g_by_form): return sum(HOP_ABS[f]*g for f, g in g_by_form.items())
 def dryhop_loss(g_by_form): return sum(HOP_ABS[f]*g for f, g in g_by_form.items())
 def fruit(kg, density=1.05, sediment=0.20):
+    if density <= 0: raise ValueError("yoğunluk > 0 olmalı")  # Karar (T1.16)
     v = kg/density; return v, v*sediment                 # eklenen hacim, tortuda kalan
 
 # ---------------------------------------------------------------- 7. Ölçekleme: çarpan kuralları ve kayıt (T1.14g)
@@ -179,6 +193,7 @@ def scale_factor(tip, V0, V1, eff0, eff1, mode="hedef", per_batch=False, water_r
       mash: r·η0/η1; tuz: su hacimleri oranı (water_ratio; verilmezse r); misc ve per_batch ('parti başına'): 1;
       diğerleri (seker, hop_ibu, hop_aroma, misc, maya_paket): r. Asit, maya paketi ve mash profili bu çarpanla
       değil, 03/04/05 ile yeniden hesaplanır (§4.1 tablosu)."""
+    _olcek_girdi(V0, eff1, mode)
     rv = V1/V0
     if mode == "oran": return rv
     if tip == "mash": return rv*eff0/eff1
@@ -189,6 +204,7 @@ def scale_factor(tip, V0, V1, eff0, eff1, mode="hedef", per_batch=False, water_r
 def yeast_packs(cells_needed_billion, cells_per_pack_billion):
     """§4.1 maya: yeniden hesaplanan hücre ihtiyacından paket sayısı, yukarı yuvarlanır (en az 1 paket).
     Oran 1e-9 toleransla: 2.0000000001 paket 2 sayılır."""
+    if cells_per_pack_billion <= 0: raise ValueError("paket başına hücre > 0 olmalı")  # Karar (T1.16)
     return max(1, math.ceil(cells_needed_billion/cells_per_pack_billion - 1e-9))
 
 def scaling_record(scope, mode, V0, V1, eff0, eff1, recipe_version):

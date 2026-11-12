@@ -12,6 +12,7 @@
 pub mod brewery;
 pub mod brewery_tax;
 pub mod density;
+pub mod error;
 pub mod home;
 pub mod hops;
 pub mod manual;
@@ -20,6 +21,8 @@ pub mod trigger;
 pub mod units;
 pub mod water;
 pub mod yeast;
+
+pub use error::{Error, Result};
 
 /// Returns the engine crate version.
 #[must_use]

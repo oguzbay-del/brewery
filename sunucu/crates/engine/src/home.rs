@@ -16,7 +16,8 @@
 
 use std::collections::BTreeMap;
 
-use crate::units::gravity_units;
+use crate::error::{Error, Result, ensure_finite, ensure_positive, finite_result};
+use crate::units::gravity_units_checked;
 
 /// Sum with the same compensated algorithm as `CPython`'s `sum()` over floats (3.12+),
 /// so ill-conditioned fits match the reference to the last digits.
@@ -171,28 +172,50 @@ pub enum Forecast {
 
 /// §1.4 drop rule in integer gravity units (T1.12 C3): enough of the expected drop is done
 /// unless `Δu(OG − SG_now) < min_drop · Δu(OG − FG_recipe) − 1e-9`. An exact 30 % drop passes.
-#[must_use]
+///
+/// Errors on non-finite input (T1.16, was silently 0 units).
 #[allow(clippy::cast_precision_loss)]
-pub fn drop_enough(og: f64, sg_now: f64, fg_recipe: f64, min_drop: f64) -> bool {
-    let done = (gravity_units(og) - gravity_units(sg_now)) as f64;
-    let expected = (gravity_units(og) - gravity_units(fg_recipe)) as f64;
-    done >= min_drop * expected - 1e-9
+pub fn drop_enough(og: f64, sg_now: f64, fg_recipe: f64, min_drop: f64) -> Result<bool> {
+    ensure_finite("min_drop", min_drop)?;
+    let done = (gravity_units_checked(og)? - gravity_units_checked(sg_now)?) as f64;
+    let expected = (gravity_units_checked(og)? - gravity_units_checked(fg_recipe)?) as f64;
+    Ok(done >= min_drop * expected - 1e-9)
 }
 
 /// §1.5 warning in integer gravity units (T1.12 C3): `|u(FG∞) − u(FG_recipe)| > 1000`
 /// (0.010 SG); exactly 0.010 does not warn.
-#[must_use]
-pub fn fg_warning(fg_inf: f64, fg_recipe: f64) -> bool {
-    (gravity_units(fg_inf) - gravity_units(fg_recipe)).abs() > 1000
+/// Errors on non-finite input.
+pub fn fg_warning(fg_inf: f64, fg_recipe: f64) -> Result<bool> {
+    Ok((gravity_units_checked(fg_inf)? - gravity_units_checked(fg_recipe)?).abs() > 1000)
 }
 
 /// Fermentation forecast from raw `(t_hours, SG)` readings (§1.4–1.5).
 ///
 /// `og`, `fg_recipe` in SG; `eps` is the SG distance to `FG∞` that counts as finished
 /// (spec 0.0005); `min_n` minimum hourly points (spec 12, must be ≥ 3); `min_drop` minimum
-/// share of the expected drop already done (spec 0.30).
-#[must_use]
+/// share of the expected drop already done (spec 0.30). Errors on non-finite input.
 pub fn forecast(
+    points: &[(f64, f64)],
+    og: f64,
+    fg_recipe: f64,
+    eps: f64,
+    min_n: usize,
+    min_drop: f64,
+) -> Result<Forecast> {
+    ensure_finite("og", og)?;
+    ensure_finite("fg_recipe", fg_recipe)?;
+    ensure_positive("eps", eps)?;
+    ensure_finite("min_drop", min_drop)?;
+    for &(t, g) in points {
+        ensure_finite("t", t)?;
+        ensure_finite("sg", g)?;
+    }
+    Ok(forecast_checked(
+        points, og, fg_recipe, eps, min_n, min_drop,
+    ))
+}
+
+fn forecast_checked(
     points: &[(f64, f64)],
     og: f64,
     fg_recipe: f64,
@@ -207,7 +230,7 @@ pub fn forecast(
     let Some(&(t_last, sg_now)) = pts.last() else {
         return Forecast::InsufficientData;
     };
-    if pts.len() < min_n || !drop_enough(og, sg_now, fg_recipe, min_drop) {
+    if pts.len() < min_n || !drop_enough(og, sg_now, fg_recipe, min_drop).unwrap_or(false) {
         return Forecast::InsufficientData;
     }
     let (fg_lo, fg_hi) = (fg_recipe - 0.015, sg_now - 0.0002);
@@ -228,7 +251,7 @@ pub fn forecast(
         k_per_hour: fit.k,
         finish_hour: t_end,
         remaining_hours: t_end - t_last,
-        warning: fg_warning(fit.fg_inf, fg_recipe),
+        warning: fg_warning(fit.fg_inf, fg_recipe).unwrap_or(false),
     })
 }
 
@@ -285,19 +308,6 @@ pub fn peval(co: &[f64], x: f64) -> f64 {
     py_sum(co.iter().enumerate().map(|(i, &c)| c * x.powf(i as f64)))
 }
 
-/// Calibration failure.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum CalibrationError {
-    /// Fewer than `deg + 2` points (§2.1).
-    TooFewPoints,
-    /// Fewer than `deg + 2` distinct angles (T1.12 C4): the system is singular.
-    TooFewDistinctAngles,
-    /// All reference SG values are equal (R² undefined).
-    ConstantGravity,
-    /// A coefficient came out non-finite.
-    Singular,
-}
-
 /// Calibration warning code (T1.12 C4, design, to be verified).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CalibrationWarning {
@@ -342,15 +352,18 @@ pub struct IspindelCal {
 ///
 /// Needs at least `deg + 2` points with at least `deg + 2` distinct angles (spec default
 /// degree 2) and reference SG values that are not all equal (T1.12 C4).
-pub fn ispindel_cal(points: &[(f64, f64)], deg: usize) -> Result<IspindelCal, CalibrationError> {
+pub fn ispindel_cal(points: &[(f64, f64)], deg: usize) -> Result<IspindelCal> {
     if points.len() < deg + 2 {
-        return Err(CalibrationError::TooFewPoints);
+        return Err(Error::invalid("points", "fewer than deg + 2 points"));
     }
     let mut angles: Vec<f64> = points.iter().map(|p| p.0).collect();
     angles.sort_by(f64::total_cmp);
     angles.dedup();
     if angles.len() < deg + 2 {
-        return Err(CalibrationError::TooFewDistinctAngles);
+        return Err(Error::invalid(
+            "points",
+            "fewer than deg + 2 distinct angles",
+        ));
     }
     let xs: Vec<f64> = points.iter().map(|p| p.0).collect();
     let ys: Vec<f64> = points.iter().map(|p| p.1).collect();
@@ -358,11 +371,14 @@ pub fn ispindel_cal(points: &[(f64, f64)], deg: usize) -> Result<IspindelCal, Ca
     let my = py_sum(ys.iter().copied()) / points.len() as f64;
     let den = py_sum(ys.iter().map(|g| (g - my).powi(2)));
     if den == 0.0 {
-        return Err(CalibrationError::ConstantGravity);
+        return Err(Error::invalid(
+            "points",
+            "reference gravities are all equal",
+        ));
     }
     let co = polyfit(&xs, &ys, deg);
     if co.iter().any(|c| !c.is_finite()) {
-        return Err(CalibrationError::Singular);
+        return Err(Error::invalid("points", "calibration system is singular"));
     }
     let res: Vec<f64> = points.iter().map(|&(a, g)| g - peval(&co, a)).collect();
     let r2 = 1.0 - py_sum(res.iter().map(|x| x * x)) / den;
@@ -404,16 +420,24 @@ pub fn ispindel_eval(
 
 /// Tilt correction `SG_flat = slope·SG_tilt + offset` from `(SG_tilt, SG_reference)`
 /// points (§2.2). One point gives a constant offset (slope 1); two or more a linear fit.
-/// Returns `(slope, offset)`. `points` must not be empty.
-#[must_use]
-pub fn tilt_cal(points: &[(f64, f64)]) -> (f64, f64) {
+/// Returns `(slope, offset)`. Errors (T1.16) on empty input, non-finite points, or two or more
+/// points with the same tilt reading (the fit would divide by zero).
+pub fn tilt_cal(points: &[(f64, f64)]) -> Result<(f64, f64)> {
+    if points.is_empty() {
+        return Err(Error::invalid("points", "at least one point is required"));
+    }
+    for &(x, y) in points {
+        ensure_finite("tilt", x)?;
+        ensure_finite("reference", y)?;
+    }
     if points.len() == 1 {
-        return (1.0, points[0].1 - points[0].0);
+        return Ok((1.0, points[0].1 - points[0].0));
     }
     let xs: Vec<f64> = points.iter().map(|p| p.0).collect();
     let ys: Vec<f64> = points.iter().map(|p| p.1).collect();
     let (a, b) = linfit(&xs, &ys);
-    (b, a)
+    finite_result("tilt_cal slope", b)?;
+    Ok((b, a))
 }
 
 // ------------------------------------------------------------------ §3 heating and cooling
@@ -430,8 +454,8 @@ pub const H_VAP: f64 = 2257.0;
 /// Heating time in minutes (§3.1): `C·(T1 − T0) / (P·η) / 60` with
 /// `C = V·c_water + m_grain·c_grain + m_kettle·c_steel` (kJ/K).
 ///
-/// `water_l` L, `grain_kg`/`kettle_kg` kg, `t0`/`t1` °C, `power_kw` kW, `eff` 0–1.
-#[must_use]
+/// `water_l` L, `grain_kg`/`kettle_kg` kg, `t0`/`t1` °C, `power_kw` kW, `eff` 0–1. Errors on
+/// non-finite input and when `power_kw` or `eff` is not positive.
 pub fn heat_time_min(
     water_l: f64,
     grain_kg: f64,
@@ -440,9 +464,20 @@ pub fn heat_time_min(
     t1: f64,
     power_kw: f64,
     eff: f64,
-) -> f64 {
+) -> Result<f64> {
+    for (field, x) in [
+        ("water_l", water_l),
+        ("grain_kg", grain_kg),
+        ("kettle_kg", kettle_kg),
+        ("t0", t0),
+        ("t1", t1),
+    ] {
+        ensure_finite(field, x)?;
+    }
+    ensure_positive("power_kw", power_kw)?;
+    ensure_positive("eff", eff)?;
     let c = water_l * C_WATER + grain_kg * C_GRAIN + kettle_kg * C_STEEL;
-    c * (t1 - t0) / (power_kw * eff) / 60.0
+    Ok(c * (t1 - t0) / (power_kw * eff) / 60.0)
 }
 
 /// Boil-off from heater power (§3.2): `P·η_boil·3600 / 2257`, litres per hour.
@@ -452,24 +487,58 @@ pub fn boiloff_l_per_h(power_kw: f64, eff_boil: f64) -> f64 {
 }
 
 /// Time constant τ (minutes) of an immersion chiller from a past batch (§3.3):
-/// `minutes / ln((T0 − Tc)/(T − Tc))`. Temperatures in °C.
-#[must_use]
-pub fn tau_from_batch(t0: f64, tc: f64, t: f64, minutes: f64) -> f64 {
-    minutes / ((t0 - tc) / (t - tc)).ln()
+/// `minutes / ln((T0 − Tc)/(T − Tc))`. Temperatures in °C. Errors unless the cooling ratio is
+/// finite, positive and not 1 (the target must lie between start and tap-water temperature).
+pub fn tau_from_batch(t0: f64, tc: f64, t: f64, minutes: f64) -> Result<f64> {
+    ensure_finite("minutes", minutes)?;
+    let ln = cooling_ln(t0, tc, t)?;
+    if ln == 0.0 {
+        return Err(Error::invalid("t", "no temperature drop"));
+    }
+    finite_result("tau_from_batch", minutes / ln)
+}
+
+/// `ln((T0 − Tc)/(T − Tc))`; errors when the ratio is not finite and positive.
+fn cooling_ln(t0: f64, tc: f64, t: f64) -> Result<f64> {
+    ensure_finite("t0", t0)?;
+    ensure_finite("tc", tc)?;
+    ensure_finite("t", t)?;
+    let ratio = (t0 - tc) / (t - tc);
+    if !ratio.is_finite() || ratio <= 0.0 {
+        return Err(Error::invalid(
+            "t",
+            "target must lie between start and tap-water temperature",
+        ));
+    }
+    Ok(ratio.ln())
 }
 
 /// Immersion chiller cooling time in minutes (§3.3). τ scales linearly with volume:
-/// `τ_V = τ·V/V_ref`; `t = τ_V·ln((T0 − Tc)/(T − Tc))`. Volumes in L, temperatures °C.
-#[must_use]
-pub fn cool_time_immersion(t0: f64, tc: f64, t: f64, tau: f64, vol_l: f64, vol_ref_l: f64) -> f64 {
+/// `τ_V = τ·V/V_ref`; `t = τ_V·ln((T0 − Tc)/(T − Tc))`. Volumes in L, temperatures °C. Errors
+/// (T1.16, was NaN) when the target is not between start and tap-water temperature, on
+/// non-finite input and `vol_ref_l <= 0`.
+pub fn cool_time_immersion(
+    t0: f64,
+    tc: f64,
+    t: f64,
+    tau: f64,
+    vol_l: f64,
+    vol_ref_l: f64,
+) -> Result<f64> {
+    ensure_finite("tau", tau)?;
+    ensure_finite("vol_l", vol_l)?;
+    ensure_positive("vol_ref_l", vol_ref_l)?;
+    let ln = cooling_ln(t0, tc, t)?;
     let tau_v = tau * vol_l / vol_ref_l;
-    tau_v * ((t0 - tc) / (t - tc)).ln()
+    finite_result("cool_time_immersion", tau_v * ln)
 }
 
 /// Plate or counterflow chiller time in minutes (§3.4): `V / flow`.
-#[must_use]
-pub fn cool_time_flow(vol_l: f64, flow_l_min: f64) -> f64 {
-    vol_l / flow_l_min
+/// Errors on non-finite input and `flow_l_min <= 0`.
+pub fn cool_time_flow(vol_l: f64, flow_l_min: f64) -> Result<f64> {
+    ensure_finite("vol_l", vol_l)?;
+    ensure_positive("flow_l_min", flow_l_min)?;
+    Ok(vol_l / flow_l_min)
 }
 
 // ------------------------------------------------------------------ §4 scaling
@@ -503,8 +572,8 @@ pub enum ScaleMode {
 }
 
 /// First-estimate scaling of ingredient amounts (§4.1–4.2); returns scaled amounts in
-/// input order. `v0`/`v1` are fermenter volumes (L), `eff0`/`eff1` mash efficiencies.
-#[must_use]
+/// input order. `v0`/`v1` are fermenter volumes (L), `eff0`/`eff1` mash efficiencies. Errors on
+/// non-finite input, `v0 <= 0`, and `eff1 <= 0` in target mode.
 pub fn scale_recipe(
     ing: &[(f64, IngredientKind)],
     v0: f64,
@@ -512,25 +581,39 @@ pub fn scale_recipe(
     eff0: f64,
     eff1: f64,
     mode: ScaleMode,
-) -> Vec<f64> {
+) -> Result<Vec<f64>> {
+    check_scale_inputs(v0, v1, eff0, eff1, mode)?;
     let rv = v1 / v0;
     ing.iter()
         .map(|&(q, kind)| {
+            ensure_finite("amount", q)?;
             let f = match (mode, kind) {
                 (ScaleMode::Target, IngredientKind::Mash) => rv * eff0 / eff1,
                 _ => rv,
             };
-            q * f
+            Ok(q * f)
         })
         .collect()
 }
 
+fn check_scale_inputs(v0: f64, v1: f64, eff0: f64, eff1: f64, mode: ScaleMode) -> Result<()> {
+    ensure_positive("v0", v0)?;
+    ensure_finite("v1", v1)?;
+    ensure_finite("eff0", eff0)?;
+    ensure_finite("eff1", eff1)?;
+    if mode == ScaleMode::Target && eff1 <= 0.0 {
+        return Err(Error::invalid("eff1", "must be > 0"));
+    }
+    Ok(())
+}
+
 /// Rounds `q` to a multiple of `step`, half up (§4.3, T1.12 C15):
 /// `⌊q/step + 0.5 + 1e-9⌋ · step`; the 1e-9 share treats binary residues such as
-/// `0.35/0.1 = 3.4999999999999996` as halves.
-#[must_use]
-pub fn round_to(q: f64, step: f64) -> f64 {
-    (q / step + 0.5 + 1e-9).floor() * step
+/// `0.35/0.1 = 3.4999999999999996` as halves. Errors on non-finite input and `step <= 0`.
+pub fn round_to(q: f64, step: f64) -> Result<f64> {
+    ensure_finite("q", q)?;
+    ensure_positive("step", step)?;
+    Ok((q / step + 0.5 + 1e-9).floor() * step)
 }
 
 /// First-estimate factor of one ingredient (spec §4.1–4.2), covering the rules that
@@ -540,8 +623,7 @@ pub fn round_to(q: f64, step: f64) -> f64 {
 /// ignored). [`ScaleMode::Target`]: mash grain `r·η0/η1`; salt by the water-volume ratio
 /// `water_ratio` (falls back to `r`); misc marked "per batch" stays 1; everything else `r`.
 /// Acid, yeast packs ([`yeast_packs`]) and the mash profile are recomputed with 03/04/05, not
-/// scaled by a factor.
-#[must_use]
+/// scaled by a factor. Errors as [`scale_recipe`].
 #[allow(clippy::too_many_arguments)]
 pub fn scale_factor(
     kind: IngredientKind,
@@ -552,25 +634,38 @@ pub fn scale_factor(
     mode: ScaleMode,
     per_batch: bool,
     water_ratio: Option<f64>,
-) -> f64 {
+) -> Result<f64> {
+    check_scale_inputs(v0, v1, eff0, eff1, mode)?;
     let rv = v1 / v0;
     if mode == ScaleMode::Ratio {
-        return rv;
+        return Ok(rv);
     }
-    match (mode, kind) {
+    Ok(match (mode, kind) {
         (ScaleMode::Target, IngredientKind::Mash) => rv * eff0 / eff1,
-        (ScaleMode::Target, IngredientKind::Salt) => water_ratio.unwrap_or(rv),
+        (ScaleMode::Target, IngredientKind::Salt) => match water_ratio {
+            Some(w) => {
+                ensure_finite("water_ratio", w)?;
+                w
+            }
+            None => rv,
+        },
         (ScaleMode::Target, IngredientKind::Misc) if per_batch => 1.0,
         _ => rv,
-    }
+    })
 }
 
 /// Number of yeast packs from the recomputed cell need, rounded up (spec §4.1), at least 1.
 /// The ratio is compared with a 1e-9 tolerance: a ratio of 2.0000000001 counts as 2 packs.
-#[must_use]
+/// Errors on non-finite or negative need and `cells_per_pack_billion <= 0`.
 #[allow(clippy::cast_possible_truncation)]
-pub fn yeast_packs(cells_needed_billion: f64, cells_per_pack_billion: f64) -> i64 {
-    ((cells_needed_billion / cells_per_pack_billion - 1e-9).ceil() as i64).max(1)
+pub fn yeast_packs(cells_needed_billion: f64, cells_per_pack_billion: f64) -> Result<i64> {
+    ensure_finite("cells_needed_billion", cells_needed_billion)?;
+    ensure_positive("cells_per_pack_billion", cells_per_pack_billion)?;
+    let packs = (cells_needed_billion / cells_per_pack_billion - 1e-9).ceil();
+    if packs.abs() > 9.0e15 {
+        return Err(Error::invalid("cells_needed_billion", "out of range"));
+    }
+    Ok((packs as i64).max(1))
 }
 
 /// Where a scaling is applied (spec §4.4).
@@ -606,17 +701,24 @@ pub struct ScalingRecord {
 }
 
 /// Builds the scaling record (spec §4.4): a recipe scaling bumps the recipe version; a batch
-/// scaling leaves recipe and version untouched.
-#[must_use]
+/// scaling leaves recipe and version untouched. Errors on non-finite input, `v0 <= 0` and a
+/// recipe version that would overflow.
 pub fn scaling_record(
     scope: ScaleScope,
     mode: ScaleMode,
     volumes: (f64, f64),
     efficiencies: (f64, f64),
     recipe_version: u32,
-) -> ScalingRecord {
+) -> Result<ScalingRecord> {
+    ensure_positive("v0", volumes.0)?;
+    ensure_finite("v1", volumes.1)?;
+    ensure_finite("eff0", efficiencies.0)?;
+    ensure_finite("eff1", efficiencies.1)?;
     let recipe = scope == ScaleScope::Recipe;
-    ScalingRecord {
+    let version = recipe_version
+        .checked_add(u32::from(recipe))
+        .ok_or(Error::invalid("recipe_version", "overflow"))?;
+    Ok(ScalingRecord {
         scope,
         mode,
         v0: volumes.0,
@@ -624,9 +726,9 @@ pub fn scaling_record(
         eff0: efficiencies.0,
         eff1: efficiencies.1,
         ratio: volumes.1 / volumes.0,
-        recipe_version: recipe_version + u32::from(recipe),
+        recipe_version: version,
         recipe_changed: recipe,
-    }
+    })
 }
 
 // ------------------------------------------------------------------ §5 ion balance
@@ -807,10 +909,13 @@ pub const FRUIT_DENSITY: f64 = 1.05;
 pub const FRUIT_SEDIMENT: f64 = 0.20;
 
 /// Fruit volumes (§6.3): `(added volume L, volume left in sediment L)`.
-#[must_use]
-pub fn fruit(kg: f64, density: f64, sediment: f64) -> (f64, f64) {
+/// Errors on non-finite input and `density <= 0`.
+pub fn fruit(kg: f64, density: f64, sediment: f64) -> Result<(f64, f64)> {
+    ensure_finite("kg", kg)?;
+    ensure_positive("density", density)?;
+    ensure_finite("sediment", sediment)?;
     let v = kg / density;
-    (v, v * sediment)
+    Ok((v, v * sediment))
 }
 
 #[cfg(test)]
@@ -819,8 +924,22 @@ mod tests {
 
     #[test]
     fn heat_time_spec_vector() {
-        let t = heat_time_min(15.0, 0.0, 8.0, 15.0, 72.0, 2.5, 0.90);
+        let t = heat_time_min(15.0, 0.0, 8.0, 15.0, 72.0, 2.5, 0.90).unwrap();
         assert!((t - 28.2).abs() < 0.05);
+    }
+
+    #[test]
+    fn degenerate_inputs_are_errors() {
+        assert!(heat_time_min(15.0, 0.0, 8.0, 15.0, 72.0, 0.0, 0.90).is_err());
+        assert!(heat_time_min(f64::NAN, 0.0, 8.0, 15.0, 72.0, 2.5, 0.90).is_err());
+        // target at or below tap-water temperature
+        assert!(cool_time_immersion(100.0, 20.0, 15.0, 25.0, 20.0, 20.0).is_err());
+        assert!(tau_from_batch(100.0, 15.0, 100.0, 25.0).is_err());
+        assert!(round_to(1.0, 0.0).is_err());
+        assert!(yeast_packs(100.0, 0.0).is_err());
+        assert!(tilt_cal(&[]).is_err());
+        assert!(tilt_cal(&[(1.0, 1.0), (1.0, 1.1)]).is_err());
+        assert!(fruit(1.0, 0.0, 0.2).is_err());
     }
 
     #[test]

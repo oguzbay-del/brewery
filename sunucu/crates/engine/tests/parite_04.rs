@@ -2,7 +2,11 @@
 #![allow(clippy::unwrap_used, clippy::too_many_lines)]
 mod ortak;
 
-use engine::yeast::{self, CarbAmount, MeadFerm, PitchTargets, RecipeYeast, YeastUnit};
+use engine::yeast::{
+    self, BackAgent, CarbAmount, CarbType, MeadFerm, MeadMethod, PitchTargets, PrimingAgent,
+    RecipeYeast, StarterType, StarterYeastForm, YanMethod, YeastForm, YeastNitrogen, YeastType,
+    YeastUnit,
+};
 use serde_json::{Value, json};
 
 fn yeasts(c: &ortak::Case) -> Vec<RecipeYeast> {
@@ -19,14 +23,18 @@ fn yeasts(c: &ortak::Case) -> Vec<RecipeYeast> {
                 viable_cells: f("viable_cells"),
                 new_amount: f("new_amount"),
                 viability_pct: f("viability_pct"),
-                form: i("form"),
-                use_pkgs: i("use_pkgs"),
+                form: YeastForm::from_code(i("form")).unwrap(),
+                use_pkgs: i("use_pkgs") == 1,
                 amount_oz: f("amount_oz"),
                 cells_ml: f("cells_ml"),
                 dry_pitch_rate: f("dry_pitch_rate"),
             }
         })
         .collect()
+}
+
+fn yform(c: &ortak::Case) -> engine::Result<YeastForm> {
+    YeastForm::from_code(c.i("form"))
 }
 
 #[test]
@@ -43,17 +51,19 @@ fn parite_04() {
                 c.f("days"),
                 c.f("floor"),
             )),
-            "innoc_rate" => c.check_f(yeast::innoc_rate(c.f("g"))),
-            "growth_rate" => c.check_f(yeast::growth_rate(c.f("i"), c.b("stir"))),
+            "innoc_rate" => c.check_r(yeast::innoc_rate(c.f("g"))),
+            "growth_rate" => c.check_r(yeast::growth_rate(c.f("i"), c.b("stir"))),
             "cells_needed" => {
                 c.check_f(yeast::cells_needed(c.f("rate"), c.f("volume_l"), c.f("sg")));
             }
             "new_starter_l" => {
-                c.check_f(yeast::new_starter_l(c.f("need"), c.f("avail"), c.b("stir")));
+                c.check_r(yeast::new_starter_l(c.f("need"), c.f("avail"), c.b("stir")));
             }
             "two_stage_tool" => {
-                let (a, b) = yeast::two_stage_tool(c.f("need"), c.f("avail"), c.b("stir"));
-                c.check(&json!([a, b]));
+                c.check_res(
+                    yeast::two_stage_tool(c.f("need"), c.f("avail"), c.b("stir"))
+                        .map(|(a, b)| json!([a, b])),
+                );
             }
             "dme_oz" => c.check_f(yeast::dme_oz(c.f("vol_floz"), c.f("og"))),
             "sugar_g" => c.check_f(yeast::sugar_g(
@@ -69,7 +79,13 @@ fn parite_04() {
             "sorbate_g" => c.check_f(yeast::sorbate_g(c.f("v_gal"))),
             "mead_pitch" => c.check_f(yeast::mead_pitch(c.f("sg"))),
             "is_wine_like_recipe" => c.check(&json!(yeast::is_wine_like_recipe(c.i("r_type")))),
-            "yan" => c.check_f(yeast::yan(c.i("method"), c.f("grams"), c.f("v_l"))),
+            "yan" => c.check_r((|| {
+                Ok(yeast::yan(
+                    YanMethod::from_code(c.i("method"))?,
+                    c.f("grams"),
+                    c.f("v_l"),
+                ))
+            })()),
             "enum_name" => c.check(
                 &yeast::enum_name(c.v("kind").as_str().unwrap(), c.i("code"))
                     .map_or(Value::Null, |n| json!(n)),
@@ -95,9 +111,15 @@ fn parite_04() {
                     .collect();
                 c.check_f(yeast::yeast_age_recipe(&d));
             }
-            "v0_ingredient" => c.check_f(yeast::viability_v0_ingredient(c.i("form"))),
-            "v0_tool" => c.check_f(yeast::viability_v0_tool(c.i("form"))),
-            "import_age_rate" => c.check_f(yeast::import_age_rate(c.i("form"), c.b("white_labs"))),
+            "v0_ingredient" => c.check_r((|| Ok(yeast::viability_v0_ingredient(yform(c)?)))()),
+            "v0_tool" => c.check_r((|| {
+                Ok(yeast::viability_v0_tool(StarterYeastForm::from_code(
+                    c.i("form"),
+                )?))
+            })()),
+            "import_age_rate" => c.check_r((|| {
+                Ok(yeast::import_age_rate(yform(c)?, c.b("white_labs")))
+            })()),
             "tool_viability" => c.check_f(yeast::tool_viability(
                 c.b("calc"),
                 c.f("user_v"),
@@ -106,14 +128,16 @@ fn parite_04() {
                 c.f("days"),
             )),
             "viable_cells" => c.check_f(yeast::viable_cells(c.f("total"), c.f("v"))),
-            "yeast_total_cells" => c.check_f(yeast::yeast_total_cells(
-                c.b("use_pkgs"),
-                c.f("cells_pkg"),
-                c.f("new_amount"),
-                c.i("form"),
-                c.f("amount"),
-                c.f("cells_ml"),
-            )),
+            "yeast_total_cells" => c.check_r((|| {
+                Ok(yeast::yeast_total_cells(
+                    c.b("use_pkgs"),
+                    c.f("cells_pkg"),
+                    c.f("new_amount"),
+                    yform(c)?,
+                    c.f("amount"),
+                    c.f("cells_ml"),
+                ))
+            })()),
             "yeast_cells_avail" => c.check_f(yeast::yeast_cells_avail(
                 c.b("dry"),
                 c.f("dry_g"),
@@ -145,19 +169,24 @@ fn parite_04() {
                 let (a, b) = yeast::pitch_min_max_recipe(c.f("rec"));
                 c.check(&json!([a, b]));
             }
-            "pitch_min_max_tool" => c.check(
-                &yeast::pitch_min_max_tool(c.i("tool_type"), &PitchTargets::default())
-                    .map_or(Value::Null, |(a, b)| json!([a, b])),
-            ),
+            "pitch_min_max_tool" => c.check_res((|| {
+                let (a, b) = yeast::pitch_min_max_tool(
+                    StarterType::from_code(c.i("tool_type"))?,
+                    &PitchTargets::default(),
+                );
+                Ok(json!([a, b]))
+            })()),
             "pitch_range" => c.check(&json!(yeast::pitch_range(c.f("lo"), c.f("hi")))),
             "dry_min_pitch" => c.check_f(yeast::dry_min_pitch_rate(c.f("rec_dry"))),
             "dry_max_pitch" => c.check_f(yeast::dry_max_pitch_rate(c.f("rec_dry"))),
             "dry_pitch_range" => c.check(&json!(yeast::dry_pitch_range(c.f("rec_dry")))),
-            "is_dry_by_weight" => c.check(&json!(yeast::is_dry_by_weight(
-                c.i("form"),
-                c.i("use_pkgs"),
-                c.b("tool")
-            ))),
+            "is_dry_by_weight" => c.check_res((|| {
+                Ok(json!(yeast::is_dry_by_weight(
+                    yform(c)?,
+                    c.i("use_pkgs") == 1,
+                    c.b("tool")
+                )))
+            })()),
             "tot_yeast_cells_needed" => c.check_f(yeast::tot_yeast_cells_needed(
                 c.b("dry_by_weight"),
                 c.f("pitch"),
@@ -167,33 +196,37 @@ fn parite_04() {
                 c.f("rec_dry_rate"),
             )),
             "est_cells_ml" => c.check_f(yeast::est_cells_ml(c.f("n"), c.f("v_ml"))),
-            "cells_starter" => c.check_f(yeast::cells_starter(
+            "cells_starter" => c.check_r(yeast::cells_starter(
                 c.f("viable"),
                 c.f("starter_l"),
                 c.b("stir"),
             )),
-            "cells_sec_starter" => c.check_f(yeast::cells_sec_starter(
+            "cells_sec_starter" => c.check_r(yeast::cells_sec_starter(
                 c.f("cells1"),
                 c.f("sec_l"),
                 c.b("stir"),
             )),
             "two_stage_recipe" => {
-                let (a, b) = yeast::two_stage_recipe(
-                    c.f("need"),
-                    c.f("avail"),
-                    c.b("stir"),
-                    c.f("growth_cap"),
+                c.check_res(
+                    yeast::two_stage_recipe(
+                        c.f("need"),
+                        c.f("avail"),
+                        c.b("stir"),
+                        c.f("growth_cap"),
+                    )
+                    .map(|(a, b)| json!([a, b])),
                 );
-                c.check(&json!([a, b]));
             }
-            "packs_no_starter" => c.check(&json!(yeast::packs_no_starter(c.f("n"), c.f("pkt")))),
-            "packs_starter" => c.check_f(yeast::packs_starter(
+            "packs_no_starter" => {
+                c.check_res(yeast::packs_no_starter(c.f("n"), c.f("pkt")).map(|n| json!(n)));
+            }
+            "packs_starter" => c.check_r(yeast::packs_starter(
                 c.f("n"),
                 c.f("pkt"),
                 c.f("growth"),
                 c.b("stir"),
             )),
-            "calc_starter_size" => c.check_f(yeast::calc_yeast_starter_size(
+            "calc_starter_size" => c.check_r(yeast::calc_yeast_starter_size(
                 c.f("r"),
                 c.f("pkt_size"),
                 c.f("pkt"),
@@ -209,52 +242,68 @@ fn parite_04() {
                 c.f("goferm"),
             )),
             "avg_attenuation" => c.check_f(yeast::avg_attenuation(c.f("lo"), c.f("hi"))),
-            "units_code" => c.check(&match yeast::yeast_units(
-                c.b("use_pkgs"),
-                c.i("form"),
-                c.i("dry_unit"),
-                c.i("wet_unit"),
-            ) {
-                YeastUnit::Pkgs => json!("pkgs"),
-                YeastUnit::Code(k) => json!(k),
-            }),
-            "import_tolerance" => c.check(&json!(yeast::import_hook_tolerance(
-                c.i("tol"),
-                c.i("y_type")
-            ))),
+            "units_code" => c.check_res((|| {
+                Ok(
+                    match yeast::yeast_units(
+                        c.b("use_pkgs"),
+                        yform(c)?,
+                        c.i("dry_unit"),
+                        c.i("wet_unit"),
+                    ) {
+                        YeastUnit::Pkgs => json!("pkgs"),
+                        YeastUnit::Code(k) => json!(k),
+                    },
+                )
+            })()),
+            "import_tolerance" => c.check_res((|| {
+                Ok(json!(yeast::import_hook_tolerance(
+                    c.i("tol"),
+                    YeastType::from_code(c.i("y_type"))?
+                )))
+            })()),
             "mead_yeast_grams" => c.check_f(yeast::mead_yeast_grams(c.f("sg"), c.f("v_l"))),
             "mead_goferm" => c.check_f(yeast::mead_goferm(c.f("g"))),
             "mead_hydrate" => c.check_f(yeast::mead_hydrate(c.f("g"))),
             "mead_hydrate1" => c.check_f(yeast::mead_hydrate1(c.f("g"))),
-            "yan_target" => c.check_f(yeast::mead_yan_target(c.f("sg"), c.f("pct"), c.i("fac"))),
-            "mead_tot_ferm_o" => c.check_f(yeast::mead_tot_ferm_o(
-                c.f("sg"),
-                c.f("v_gal"),
-                c.f("pct"),
-                c.i("fac"),
-                c.i("method"),
-            )),
-            "mead_tot_ferm_k" => c.check_f(yeast::mead_tot_ferm_k(
-                c.f("sg"),
-                c.f("v_gal"),
-                c.f("pct"),
-                c.i("fac"),
-                c.i("method"),
-            )),
-            "mead_ferm_o" => c.check_f(yeast::mead_ferm_o(
-                c.f("sg"),
-                c.f("v_gal"),
-                c.f("pct"),
-                c.i("fac"),
-                c.i("method"),
-            )),
-            "mead_ferm_k" => c.check_f(yeast::mead_ferm_k(
-                c.f("sg"),
-                c.f("v_gal"),
-                c.f("pct"),
-                c.i("fac"),
-                c.i("method"),
-            )),
+            "yan_target" => c.check_r((|| {
+                yeast::mead_yan_target(c.f("sg"), c.f("pct"), YeastNitrogen::from_code(c.i("fac"))?)
+            })()),
+            "mead_tot_ferm_o" => c.check_r((|| {
+                yeast::mead_tot_ferm_o(
+                    c.f("sg"),
+                    c.f("v_gal"),
+                    c.f("pct"),
+                    YeastNitrogen::from_code(c.i("fac"))?,
+                    MeadMethod::from_code(c.i("method"))?,
+                )
+            })()),
+            "mead_tot_ferm_k" => c.check_r((|| {
+                yeast::mead_tot_ferm_k(
+                    c.f("sg"),
+                    c.f("v_gal"),
+                    c.f("pct"),
+                    YeastNitrogen::from_code(c.i("fac"))?,
+                    MeadMethod::from_code(c.i("method"))?,
+                )
+            })()),
+            "mead_ferm_o" => c.check_r((|| {
+                yeast::mead_ferm_o(
+                    c.f("sg"),
+                    c.f("v_gal"),
+                    c.f("pct"),
+                    YeastNitrogen::from_code(c.i("fac"))?,
+                    MeadMethod::from_code(c.i("method"))?,
+                )
+            })()),
+            "mead_ferm_k" => c.check_r((|| {
+                yeast::mead_ferm_k(
+                    c.f("sg"),
+                    c.f("v_gal"),
+                    c.f("pct"),
+                    YeastNitrogen::from_code(c.i("fac"))?,
+                    MeadMethod::from_code(c.i("method"))?,
+                )
+            })()),
             "mead_pct_honey" => {
                 let fs: Vec<MeadFerm> = c
                     .v("ferms")
@@ -269,37 +318,54 @@ fn parite_04() {
                     .collect();
                 c.check_f(yeast::mead_pct_honey(&fs, c.f("primary_pts")));
             }
-            "yan_equivalent" => c.check_f(yeast::yan_equivalent(c.i("method"), c.f("yan"))),
-            "mead_yan_added" => c.check_f(yeast::mead_yan_added(
-                c.i("method"),
-                c.f("total_g"),
-                c.f("v_l"),
-                c.b("recipe"),
-            )),
-            "mead_yan_equivalent" => c.check_f(yeast::mead_yan_equivalent(
-                c.i("method"),
-                c.f("total_g"),
-                c.f("v_l"),
-                c.b("recipe"),
-            )),
-            "nutrient_needed" => c.check_f(yeast::nutrient_needed(
-                c.f("ppm"),
-                c.i("method"),
-                c.f("v_l"),
-            )),
-            "back_agent_og" => c.check_f(yeast::back_agent_og(c.i("agent"))),
-            "back_agent_vol" => c.check_f(yeast::back_agent_vol(
-                c.f("v_l"),
-                c.f("sg_bev"),
-                c.f("sg_target"),
-                c.i("agent"),
-            )),
-            "back_agent_weight" => c.check_f(yeast::back_agent_weight(
-                c.f("v_l"),
-                c.f("sg_bev"),
-                c.f("sg_target"),
-                c.i("agent"),
-            )),
+            "yan_equivalent" => c.check_r((|| {
+                Ok(yeast::yan_equivalent(
+                    YanMethod::from_code(c.i("method"))?,
+                    c.f("yan"),
+                ))
+            })()),
+            "mead_yan_added" => c.check_r((|| {
+                Ok(yeast::mead_yan_added(
+                    YanMethod::from_code(c.i("method"))?,
+                    c.f("total_g"),
+                    c.f("v_l"),
+                    c.b("recipe"),
+                ))
+            })()),
+            "mead_yan_equivalent" => c.check_r((|| {
+                Ok(yeast::mead_yan_equivalent(
+                    YanMethod::from_code(c.i("method"))?,
+                    c.f("total_g"),
+                    c.f("v_l"),
+                    c.b("recipe"),
+                ))
+            })()),
+            "nutrient_needed" => c.check_r((|| {
+                Ok(yeast::nutrient_needed(
+                    c.f("ppm"),
+                    YanMethod::from_code(c.i("method"))?,
+                    c.f("v_l"),
+                ))
+            })()),
+            "back_agent_og" => c.check_r((|| {
+                Ok(yeast::back_agent_og(BackAgent::from_code(c.i("agent"))?))
+            })()),
+            "back_agent_vol" => c.check_r((|| {
+                Ok(yeast::back_agent_vol(
+                    c.f("v_l"),
+                    c.f("sg_bev"),
+                    c.f("sg_target"),
+                    BackAgent::from_code(c.i("agent"))?,
+                ))
+            })()),
+            "back_agent_weight" => c.check_r((|| {
+                Ok(yeast::back_agent_weight(
+                    c.f("v_l"),
+                    c.f("sg_bev"),
+                    c.f("sg_target"),
+                    BackAgent::from_code(c.i("agent"))?,
+                ))
+            })()),
             "back_agent_vol_sg" => c.check_f(yeast::backsweeten_volume_l(
                 c.f("v_l"),
                 c.f("sg_bev"),
@@ -307,23 +373,29 @@ fn parite_04() {
                 c.f("sg_a"),
             )),
             "honey_sg" => c.check_f(yeast::honey_sg(c.f("plato"))),
-            "carb_sugar_agent" => c.check_f(yeast::carb_sugar_agent(
-                c.i("agent"),
-                c.f("vols"),
-                c.f("temp_f"),
-                c.f("gal"),
-            )),
-            "carb_amount" => c.check(&match yeast::carb_amount(
-                c.i("c_type"),
-                c.f("vols"),
-                c.f("temp_f"),
-                c.f("gal"),
-                c.f("carb_rate"),
-                c.i("agent"),
-            ) {
-                CarbAmount::PressurePsi(x) => json!(["psi", x]),
-                CarbAmount::SugarG(x) => json!(["g", x]),
-            }),
+            "carb_sugar_agent" => c.check_r((|| {
+                Ok(yeast::carb_sugar_agent(
+                    PrimingAgent::from_code(c.i("agent"))?,
+                    c.f("vols"),
+                    c.f("temp_f"),
+                    c.f("gal"),
+                ))
+            })()),
+            "carb_amount" => c.check_res((|| {
+                Ok(
+                    match yeast::carb_amount(
+                        CarbType::from_code(c.i("c_type"))?,
+                        c.f("vols"),
+                        c.f("temp_f"),
+                        c.f("gal"),
+                        c.f("carb_rate"),
+                        PrimingAgent::from_code(c.i("agent"))?,
+                    ) {
+                        CarbAmount::PressurePsi(x) => json!(["psi", x]),
+                        CarbAmount::SugarG(x) => json!(["g", x]),
+                    },
+                )
+            })()),
             "carb_equiv" => c.check_f(yeast::carb_equiv(c.f("rate"))),
             "carb_calories" => c.check_f(yeast::carb_calories(c.f("total"), c.f("alc"))),
             "carb_grams" => c.check_f(yeast::carb_grams(c.f("carb_cal"))),
@@ -332,4 +404,17 @@ fn parite_04() {
         }
         true
     });
+}
+
+/// T1.16: invalid codes and degenerate numeric input are errors, not defaults or NaN.
+#[test]
+fn invalid_inputs_are_errors() {
+    assert!(YanMethod::from_code(3).is_err());
+    assert!(YeastNitrogen::from_code(7).is_err());
+    assert!(PrimingAgent::from_code(5).is_err());
+    assert!(yeast::growth_rate(0.0, false).is_err());
+    assert!(yeast::growth_rate(f64::NAN, false).is_err());
+    assert!(yeast::new_starter_l(100.0, 0.0, false).is_err());
+    assert!(yeast::packs_no_starter(f64::NAN, 1.0).is_err());
+    assert!(yeast::innoc_rate(-1.0).is_err());
 }

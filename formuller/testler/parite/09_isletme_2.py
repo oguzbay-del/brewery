@@ -14,7 +14,7 @@ MODLAR = {"ROUND_HALF_UP": ROUND_HALF_UP, "ROUND_HALF_EVEN": ROUND_HALF_EVEN, "R
 def _hata_ile(fn):
     try:
         return fn()
-    except ValueError:
+    except (ValueError, ArithmeticError):  # ArithmeticError: Decimal InvalidOperation (28 basamak taşması)
         return {"hata": "ValueError"}
 
 
@@ -275,4 +275,10 @@ def uret():
         v.ekle("spund_warnings", {"target_vol": tv, "t_c": t, "tank_max_psi": mx,
                                   "fg_range": None if rng is None else list(rng), "wide_u": wu},
                ref.spund_warnings(tv, t, mx, rng, wu), "kod listesi + engellendi")
+    n = "T1.16: hata"
+    for x, dp_ in (("1.5", 13), ("1.5", 30), ("95533426188478241544266.310", 7)):
+        v.ekle("round_in", {"x": x, "dp": dp_, "mode": "ROUND_HALF_UP"},
+               _hata_ile(lambda x=x, dp_=dp_: ref._round_in(D(x), dp_, ROUND_HALF_UP)), "hane sınırı ya da 28 basamak: " + n)
+        v.ekle("money", {"x": x, "dp": dp_, "mode": "ROUND_HALF_UP"},
+               _hata_ile(lambda x=x, dp_=dp_: ref.money(D(x), dp_, ROUND_HALF_UP)), "hane sınırı ya da 28 basamak: " + n)
     return v.yaz()
