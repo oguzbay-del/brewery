@@ -1,11 +1,13 @@
 """Bölüm 02 (hop ve IBU) parite vektörleri: formuller/02-hop-ibu.md, referans formuller/testler/02_hop_ibu.py."""
-from ortak import Vektor, dene, yukle
+from ortak import Vektor, dene, fikstur, yukle
 
 SGLER = (1.000, 1.030, 1.040, 1.050, 1.051, 1.070, 1.100)
 
 
 def uret():
     ref = yukle("02_hop_ibu.py")
+    ref01 = yukle("01_yogunluk_tv.py")      # ortak reçete kurucuları ve geç ekstrakt profili (T1.16 B)
+    fx = fikstur(ref01)
     v = Vektor("02", "formuller/testler/02_hop_ibu.py")
 
     # §2.1 Tinseth: t=0 kenarı (U=0), SG 1.000 ve yüksek SG
@@ -97,22 +99,23 @@ def uret():
 
     # ---- T1.14a: referansa sonradan eklenen fonksiyonlar ----
     opts = dict(ref.DEFAULT_OPTS)
-    opts_off = dict(opts, type_adj=0)
-    opts_x = dict(opts, first_wort_adj=25.0, leaf_adj=-5.0, plug_adj=3.0, pellet_adj=12.0, mash_adj=-50.0)
+    opts_off = dict(opts, type_adj=False)
+    opts_x = dict(opts, first_wort_adj_pct=25.0, leaf_adj_pct=-5.0, plug_adj_pct=3.0, pellet_adj_pct=12.0,
+                  mash_adj_pct=-50.0)
 
     def hop(amount=1.0, alpha=5.0, form=0, use=0, time=60, wtemp=176.0):
-        return {"amount": amount, "alpha": alpha, "form": form, "use": use, "time": time,
-                "whirlpool_temp_f": wtemp}
+        return ref01.hop(amount, alpha, form, use, time, wtemp)
 
-    def rec(**kw):
-        r = {"volume": 640.0, "trub_loss": 0.0, "boil_time": 60, "boil_vol": 768.0, "altitude": 0,
-             "type": 2, "hop_util": 100.0, "whirlpool_carry": False, "whirlpool_time": 0}
-        r.update(kw)
-        return r
+    def rec(ferms=None, hops=None, opts=None, **kw):
+        """Ortak tarif (RecipeInput); eski anahtar adları (volume, trub_loss, type ...) çağrılarda korunur."""
+        ad = {"volume": "volume_floz", "trub_loss": "trub_loss_floz", "boil_time": "boil_time_min",
+              "boil_vol": "boil_vol_floz", "altitude": "altitude_ft", "type": "typ", "hop_util": "hop_util_pct",
+              "whirlpool_time": "whirlpool_time_min"}
+        a = dict(typ=2, volume_floz=640.0, boil_vol_floz=768.0, boil_time_min=60.0)
+        a.update({ad.get(k, k): x for k, x in kw.items()})
+        return ref01.make_recipe(ferms or [], hops=hops, hop_options=opts, **a)
 
-    def ferm(name="f", use=0, type_=0, amount_oz=0.0, yield_pct=0.0, late=0.0, points=0.0, ibu_gal_lb=0.0):
-        return {"name": name, "use": use, "type": type_, "amount_oz": amount_oz, "yield_pct": yield_pct,
-                "late_extract": late, "points": points, "ibu_gal_per_lb": ibu_gal_lb}
+    ferms_a, ferm_late, ferm_hopped = fx.ferms_a, fx.ferm_late, fx.ferm_hopped
 
     # §2.1 / §2.2 tek hop IBU ve ters (ön koşul kenarları dahil)
     for (w, a, t, sg, vg) in ((1.0, 5.0, 60, 1.050, 5.0), (2.0, 12.0, 30, 1.070, 6.0), (1.0, 5.0, 0, 1.05, 5.0),
@@ -173,34 +176,9 @@ def uret():
                                                "extract_recipe": ex, "options": o},
                            ref.hop_adjust(form, use, 90.0, ex, o), on)
 
-    # §5.1 geç ekstrakt SG profili
-    ferms_a = [ferm("pale", 0, 0, 160.0, 80.0, 0, 380.0), ferm("munich", 0, 0, 32.0, 75.0, 0, 70.0)]
-    ferm_late = [ferm("pale", 0, 0, 160.0, 80.0, 0, 380.0),
-                 ferm("dme", 2, 5, 16.0, 95.0, 15, 0.0), ferm("lme", 2, 1, 24.0, 80.0, 5, 0.0),
-                 ferm("honey", 2, 2, 8.0, 75.0, 90, 0.0), ferm("dme2", 2, 4, 8.0, 95.0, 15.05, 0.0),
-                 ferm("amber", 2, 6, 8.0, 95.0, 15, 0.0)]
-    ferm_wp = ferms_a + [ferm("whirl sugar", 3, 2, 8.0, 100.0, 0, 30.0)]
-    # tür 3 (geç ekstrakt sayılmaz) ve use=3 kalemi
-    ferm_misc = ferms_a + [ferm("grain-type", 2, 3, 8.0, 80.0, 20, 25.0), ferm("late-zero", 2, 5, 8.0, 95.0, 0, 20.0)]
-    r_ = rec()
-    for (nm, rc, fs, vb) in (
-        ("geç ekstrakt yok", r_, ferms_a, 0.0),
-        ("çoklu geç ekstrakt, eşit süre ve <0.1 fark birleşmesi", r_, ferm_late, 0.0),
-        ("whirlpool fermentable", r_, ferm_wp, 0.0),
-        ("tür 3 ve süresi 0 olan geç ekstrakt sayılmaz", r_, ferm_misc, 0.0),
-        ("boil_vol parametresi", r_, ferms_a, 900.0),
-        ("boil_vol <= 0 -> alan, alt sınır 0.1", rec(boil_vol=0.0), ferms_a, -1.0),
-        ("boil_time < geç ekleme süresi (min)", rec(boil_time=30), ferm_late, 0.0),
-        ("V=0 -> SG 1", rec(volume=0.0, trub_loss=0.0), ferms_a, 0.0),
-        ("puan <= 0", r_, [], 0.0),
-        ("trub", rec(trub_loss=32.0), ferm_late, 0.0),
-    ):
-        v.ekle("late_extract_sgs", {"recipe": rc, "fermentables": fs, "v_boil": vb},
-               ref.late_extract_sgs(rc, fs, vb), nm)
-
     # §5.2 HopTotalUtil / §5.3 NewHopIBU: profiller, denklemler, carry, rakım, kenarlar
     prof1 = [[1.050, 60.0], [1.050, 0.0]]
-    prof_le = ref.late_extract_sgs(r_, ferm_late)
+    prof_le = ref.late_extract_sgs(rec(ferm_late), 0.0)
     prof_le2 = [[1.040, 60.0], [1.050, 15.0], [1.055, 0.0]]
     prof_whirl = [[1.040, 60.0], [1.052, 0.0]]
     hop_cases = []
@@ -224,15 +202,15 @@ def uret():
                            ref.hop_total_util(h, rc, pr, eq), nm)
                     if eq == 0 or rn == "deniz seviyesi":
                         v.ekle("new_hop_ibu",
-                               {"hop": h, "recipe": rc, "profile": pr, "equation": eq, "options": opts},
-                               ref.new_hop_ibu(h, rc, pr, eq, opts), nm)
+                               {"hop": h, "recipe": rc, "profile": pr, "equation": eq},
+                               ref.new_hop_ibu(h, rc, pr, eq), nm)
     # trub ile hacim, V+T <= 0 (0.01 alt sınırı)
     for rc in (rec(trub_loss=64.0), rec(volume=0.0, trub_loss=0.0), rec(volume=-5.0, trub_loss=0.0)):
-        v.ekle("new_hop_ibu", {"hop": hop(), "recipe": rc, "profile": prof1, "equation": 0, "options": opts},
-               ref.new_hop_ibu(hop(), rc, prof1, 0, opts), "V_ibu kenarı")
+        v.ekle("new_hop_ibu", {"hop": hop(), "recipe": rc, "profile": prof1, "equation": 0},
+               ref.new_hop_ibu(hop(), rc, prof1, 0), "V_ibu kenarı")
     # §12 #12–#15 ve #10, #11 tarif düzeyi doğrulama vakaları
-    v.ekle("new_hop_ibu", {"hop": hop(use=3), "recipe": rec(), "profile": prof1, "equation": 0, "options": opts},
-           ref.new_hop_ibu(hop(use=3), rec(), prof1, 0, opts), "§12 #13")
+    v.ekle("new_hop_ibu", {"hop": hop(use=3), "recipe": rec(), "profile": prof1, "equation": 0},
+           ref.new_hop_ibu(hop(use=3), rec(), prof1, 0), "§12 #13")
 
     # §5.4 hopped extract, hop yüzdesi, tarif toplamı (üç denklem)
     for (a_, g_, vol, tr) in ((16.0, 20.0, 640.0, 0.0), (48.0, 12.5, 640.0, 32.0), (16.0, 20.0, 0.0, 0.0)):
@@ -242,62 +220,54 @@ def uret():
         v.ekle("hop_percent", {"w": w, "tot_hops": tot}, ref.hop_percent(w, tot))
     hops_r = [hop(1.0, 12.0, 0, 0, 60), hop(1.5, 5.5, 1, 0, 15), hop(1.0, 6.0, 0, 3, 90), hop(2.0, 4.0, 2, 4, 15),
               hop(1.0, 9.0, 0, 1, 0), hop(0.5, 14.0, 0, 2, 60), hop(0.1, 50.0, 4, 0, 0)]
-    ferm_hopped = ferm_late + [ferm("hopped LME", 2, 1, 48.0, 78.0, 0, 0.0, ibu_gal_lb=30.0),
-                               ferm("plain LME", 2, 1, 48.0, 78.0, 0, 0.0, ibu_gal_lb=0.0)]
     for eq in (0, 1, 2):
-        for (nm, rc, fs, hs) in (
-            ("karma hoplar, geç ekstrakt, hopped extract", rec(trub_loss=16.0), ferm_hopped, hops_r),
-            ("carry + rakım", rec(altitude=3000, **carry), ferms_a, hops_r),
-            ("Extract tarifi", rec(type=0, hop_util=85.0), ferm_late, hops_r),
-            ("hop yok", rec(), ferm_hopped, []),
+        for (nm, rc) in (
+            ("karma hoplar, geç ekstrakt, hopped extract", rec(ferm_hopped, hops_r, trub_loss=16.0)),
+            ("carry + rakım", rec(ferms_a, hops_r, altitude=3000, **carry)),
+            ("Extract tarifi", rec(ferm_late, hops_r, type=0, hop_util=85.0)),
+            ("hop yok", rec(ferm_hopped, [])),
         ):
-            v.ekle("recipe_ibu", {"hops": hs, "recipe": rc, "fermentables": fs, "equation": eq,
-                                  "options": opts, "v_boil": 0.0},
-                   ref.recipe_ibu(hs, rc, fs, eq, opts, 0.0), nm)
-    v.ekle("recipe_ibu", {"hops": hops_r, "recipe": rec(), "fermentables": ferm_late, "equation": 0,
-                          "options": opts_x, "v_boil": 1000.0},
-           ref.recipe_ibu(hops_r, rec(), ferm_late, 0, opts_x, 1000.0), "özel seçenekler, v_boil")
+            v.ekle("recipe_ibu", {"recipe": rc, "equation": eq, "v_boil": 0.0},
+                   ref.recipe_ibu(rc, eq, 0.0), nm)
+    rc = rec(ferm_late, hops_r, opts=opts_x)
+    v.ekle("recipe_ibu", {"recipe": rc, "equation": 0, "v_boil": 1000.0},
+           ref.recipe_ibu(rc, 0, 1000.0), "özel seçenekler, v_boil")
 
     # §6.1 ScaleBitterness
     for eq in (0, 1, 2):
-        for (nm, rc, fs, hs, tgt) in (
-            ("hedef büyük", rec(trub_loss=16.0), ferm_hopped, hops_r, 60.0),
-            ("hedef küçük", rec(), ferms_a, hops_r, 15.0),
-            ("hedef = mevcut", rec(), ferms_a, hops_r, None),
-            ("mevcut 0", rec(), ferms_a, [hop(use=1)], 30.0),
-            ("hedef 0", rec(), ferms_a, hops_r, 0.0),
-            ("hopped extract hedefi aşıyor", rec(), ferm_hopped, hops_r, 10.0),
-            ("carry + Extract tarifi", rec(type=0, hop_util=90.0, **carry), ferm_late, hops_r, 45.0),
-            ("V=0", rec(volume=0.0), ferms_a, hops_r, 40.0),
+        for (nm, rc, tgt) in (
+            ("hedef büyük", rec(ferm_hopped, hops_r, trub_loss=16.0), 60.0),
+            ("hedef küçük", rec(ferms_a, hops_r), 15.0),
+            ("hedef = mevcut", rec(ferms_a, hops_r), None),
+            ("mevcut 0", rec(ferms_a, [hop(use=1)]), 30.0),
+            ("hedef 0", rec(ferms_a, hops_r), 0.0),
+            ("hopped extract hedefi aşıyor", rec(ferm_hopped, hops_r), 10.0),
+            ("carry + Extract tarifi", rec(ferm_late, hops_r, type=0, hop_util=90.0, **carry), 45.0),
+            ("V=0", rec(ferms_a, hops_r, volume=0.0), 40.0),
         ):
             if nm == "mevcut 0":
                 cur = 0.0
             elif nm == "V=0":
                 cur = 30.0
             else:
-                cur = ref.recipe_ibu(hs, rc, fs, eq, opts, 0.0)
+                cur = ref.recipe_ibu(rc, eq, 0.0)
             tg = cur if tgt is None else tgt
-            v.ekle("scale_bitterness", {"current_ibu": cur, "target": tg, "hops": hs, "recipe": rc,
-                                        "fermentables": fs, "equation": eq, "options": opts, "v_boil": 0.0},
-                   ref.scale_bitterness(cur, tg, hs, rc, fs, eq, opts, 0.0), nm)
+            v.ekle("scale_bitterness", {"current_ibu": cur, "target": tg, "recipe": rc, "equation": eq,
+                                        "v_boil": 0.0},
+                   ref.scale_bitterness(cur, tg, rc, eq, 0.0), nm)
 
     # T1.15 B2: form 4 dry hop dahil ölçekleme (§6.1 adım 3); hedef tutmalı
     hops_f4 = [hop(1.0, 10.0, 0, 0, 60), hop(0.05, 50.0, 4, 1, 0)]
     for eq in (0, 1, 2):
-        for (nm, rc, fs, hs, tgt) in (
-            ("form 4 dry hop: 60 hedefi", rec(), ferms_a, hops_f4, 60.0),
-            ("form 4 dry hop: hedef büyük", rec(trub_loss=16.0), ferm_hopped, hops_r + [hops_f4[1]], 90.0),
-            ("form 4 dry hop + dry hop karışık", rec(), ferms_a, hops_f4 + [hop(use=1)], 40.0),
+        for (nm, rc, tgt) in (
+            ("form 4 dry hop: 60 hedefi", rec(ferms_a, hops_f4), 60.0),
+            ("form 4 dry hop: hedef büyük", rec(ferm_hopped, hops_r + [hops_f4[1]], trub_loss=16.0), 90.0),
+            ("form 4 dry hop + dry hop karışık", rec(ferms_a, hops_f4 + [hop(use=1)]), 40.0),
         ):
-            cur = ref.recipe_ibu(hs, rc, fs, eq, opts, 0.0)
-            v.ekle("scale_bitterness", {"current_ibu": cur, "target": tgt, "hops": hs, "recipe": rc,
-                                        "fermentables": fs, "equation": eq, "options": opts, "v_boil": 0.0},
-                   ref.scale_bitterness(cur, tgt, hs, rc, fs, eq, opts, 0.0), nm)
-
-    # T1.15 B18: use=3 geç ekstrakt (late_extract > 0 olsa da §5.1 ikinci toplamda sayılır)
-    ferm_late3 = ferms_a + [ferm("late whirl dme", 3, 5, 16.0, 95.0, 20, 40.0)]
-    v.ekle("late_extract_sgs", {"recipe": r_, "fermentables": ferm_late3, "v_boil": 0.0},
-           ref.late_extract_sgs(r_, ferm_late3, 0.0), "T1.15 B18: kullanım yeri 3, geç ekstrakt")
+            cur = ref.recipe_ibu(rc, eq, 0.0)
+            v.ekle("scale_bitterness", {"current_ibu": cur, "target": tgt, "recipe": rc, "equation": eq,
+                                        "v_boil": 0.0},
+                   ref.scale_bitterness(cur, tgt, rc, eq, 0.0), nm)
 
     # T1.15 B18: total_hops_phase doğrudan
     for phase in (0, 1, 2, 3, 4):
@@ -331,8 +301,8 @@ def uret():
             v.ekle("hop_rate", {"hops": hops_r, "volume_floz": vol, "phase": phase},
                    ref.hop_rate(hops_r, vol, phase))
     for rt in (0, 10, 25):
-        for (hs, ms) in ((hops_r, []), ([hop(use=4, time=29.52)], [{"use": 6, "time": 33.4}]),
-                         ([hop(use=4, time=29.47)], []), ([], [{"use": 6, "time": 40.0}, {"use": 5, "time": 99.0}]),
+        for (hs, ms) in ((hops_r, []), ([hop(use=4, time=29.52)], [ref01.misc(6, 33.4)]),
+                         ([hop(use=4, time=29.47)], []), ([], [ref01.misc(6, 40.0), ref01.misc(5, 99.0)]),
                          ([], [])):
             v.ekle("total_whirlpool_time", {"recipe_time": rt, "hops": hs, "misc": ms},
                    ref.tot_whirlpool_time(rt, hs, ms))

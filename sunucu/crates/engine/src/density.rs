@@ -5,6 +5,7 @@
 //! Shared conversions (`to_plato`, `to_sg`) live in [`crate::units`].
 
 use crate::error::{Error, Result, ensure_finite, ensure_positive, finite_result};
+use crate::recipe::{Fermentable, GrainType, GrainUse, Mash, RecipeInput, RecipeType};
 use crate::units::{c_to_f, f_to_c, gravity_units_checked, to_plato, to_sg};
 
 /// Both gravities finite.
@@ -381,268 +382,24 @@ impl AdjustExtract {
     }
 }
 
-/// Water to add to lower gravity (US fl oz), §9.4; negative results clamp to 0. `target = 1.000`
-/// divides by zero (no guard, as in the reference).
+/// Water to add to lower gravity from `current` to `target` (SG), §9.4 and spec 05 §8.2
+/// (`GravityAdjWaterVol`); negative results clamp to 0. `volume` and the result share one
+/// unit (fl oz in 01, litres in 05). `target = 1.000` is an error (division by zero).
 #[allow(clippy::float_cmp)]
-pub fn gravity_adjust_water_floz(current: f64, target: f64, volume_floz: f64) -> Result<f64> {
+pub fn gravity_adjust_water(current: f64, target: f64, volume: f64) -> Result<f64> {
     ensure_finite("current", current)?;
     ensure_finite("target", target)?;
-    ensure_finite("volume_floz", volume_floz)?;
+    ensure_finite("volume", volume)?;
     if target == 1.0 {
         return Err(Error::invalid("target", "must differ from 1.000"));
     }
-    Ok((volume_floz * (current - 1.0) * 1000.0 / ((target - 1.0) * 1000.0) - volume_floz).max(0.0))
+    Ok((volume * (current - 1.0) * 1000.0 / ((target - 1.0) * 1000.0) - volume).max(0.0))
 }
 
 // ---------------------------------------------------------------------------------------
 // T1.14e: enums, unit converters and recipe-level calculations (spec §0.2, §1.3-1.7, §2-§5.1,
 // §6.6, §6.8, §7.3, §8). Reference: `formuller/testler/01_yogunluk_tv.py` (appended part).
 // ---------------------------------------------------------------------------------------
-
-/// Fermentable type `F_G_TYPE` (§0.2). Codes 0-8.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GrainType {
-    /// 0, mashable.
-    Grain,
-    /// 1, liquid malt extract, fixed yield.
-    Extract,
-    /// 2, sugar, fixed yield.
-    Sugar,
-    /// 3, adjunct, mashable.
-    Adjunct,
-    /// 4, dry malt extract, fixed yield.
-    DryExtract,
-    /// 5, fruit, fixed yield.
-    Fruit,
-    /// 6, juice, fixed yield.
-    Juice,
-    /// 7, honey, fixed yield.
-    Honey,
-    /// 8, acid, treated like grain (mashable).
-    Acid,
-}
-
-impl GrainType {
-    /// Type from its `F_G_TYPE` code; other codes are an error.
-    pub const fn from_code(code: i64) -> Result<Self> {
-        Ok(match code {
-            0 => Self::Grain,
-            1 => Self::Extract,
-            2 => Self::Sugar,
-            3 => Self::Adjunct,
-            4 => Self::DryExtract,
-            5 => Self::Fruit,
-            6 => Self::Juice,
-            7 => Self::Honey,
-            8 => Self::Acid,
-            _ => return Err(Error::invalid("grain_type", "unknown code")),
-        })
-    }
-
-    /// The `F_G_TYPE` code (0-8).
-    #[must_use]
-    pub const fn code(self) -> i64 {
-        self as i64
-    }
-
-    /// Fixed-yield types `{1, 2, 4, 5, 6, 7}`: the brewhouse efficiency is not applied (§0.2).
-    #[must_use]
-    pub const fn is_fixed_yield(self) -> bool {
-        matches!(
-            self,
-            Self::Extract
-                | Self::Sugar
-                | Self::DryExtract
-                | Self::Fruit
-                | Self::Juice
-                | Self::Honey
-        )
-    }
-}
-
-/// Fermentable use phase `F_G_USE` (§0.2). Codes 0-8; the phase filters compare the codes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum GrainUse {
-    /// 0
-    Mash,
-    /// 1
-    Steep,
-    /// 2
-    Boil,
-    /// 3, after the boil.
-    Whirlpool,
-    /// 4
-    Primary,
-    /// 5
-    Secondary,
-    /// 6
-    Tertiary,
-    /// 7
-    Bottling,
-    /// 8
-    Sparge,
-}
-
-impl GrainUse {
-    /// Use from its `F_G_USE` code; other codes are an error.
-    pub const fn from_code(code: i64) -> Result<Self> {
-        Ok(match code {
-            0 => Self::Mash,
-            1 => Self::Steep,
-            2 => Self::Boil,
-            3 => Self::Whirlpool,
-            4 => Self::Primary,
-            5 => Self::Secondary,
-            6 => Self::Tertiary,
-            7 => Self::Bottling,
-            8 => Self::Sparge,
-            _ => return Err(Error::invalid("grain_use", "unknown code")),
-        })
-    }
-
-    /// The `F_G_USE` code (0-8).
-    #[must_use]
-    pub const fn code(self) -> i64 {
-        self as i64
-    }
-
-    /// Mash or Sparge: the brewhouse efficiency applies to mashable types (§2.1).
-    #[must_use]
-    pub const fn is_mash_or_sparge(self) -> bool {
-        matches!(self, Self::Mash | Self::Sparge)
-    }
-}
-
-/// Recipe type `F_R_TYPE` (§0.2). Codes 0-6.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RecipeType {
-    /// 0
-    Extract,
-    /// 1
-    PartialMash,
-    /// 2
-    AllGrain,
-    /// 3
-    Cider,
-    /// 4
-    Mead,
-    /// 5
-    Wine,
-    /// 6
-    Seltzer,
-}
-
-impl RecipeType {
-    /// Type from its `F_R_TYPE` code; other codes are an error.
-    pub const fn from_code(code: i64) -> Result<Self> {
-        Ok(match code {
-            0 => Self::Extract,
-            1 => Self::PartialMash,
-            2 => Self::AllGrain,
-            3 => Self::Cider,
-            4 => Self::Mead,
-            5 => Self::Wine,
-            6 => Self::Seltzer,
-            _ => return Err(Error::invalid("recipe_type", "unknown code")),
-        })
-    }
-
-    /// The `F_R_TYPE` code (0-6).
-    #[must_use]
-    pub const fn code(self) -> i64 {
-        self as i64
-    }
-}
-
-/// Fermentable (minimal input, §0.2 and §2).
-#[derive(Debug, Clone, PartialEq)]
-pub struct Fermentable {
-    /// Name, used only to order late extracts with equal times (§3.6).
-    pub name: String,
-    /// Amount (oz).
-    pub amount_oz: f64,
-    /// Yield (%, 0-100).
-    pub yield_pct: f64,
-    /// Colour (SRM).
-    pub color_srm: f64,
-    /// Type `F_G_TYPE`.
-    pub kind: GrainType,
-    /// Use phase `F_G_USE`.
-    pub usage: GrainUse,
-    /// `F_G_NOT_FERMENTABLE` (e.g. lactose): the whole point value goes to FG (§2.2).
-    pub not_fermentable: bool,
-    /// `F_G_LATE_EXTRACT` (minutes before the end of the boil); 0 = not a late extract (§3.6).
-    pub late_extract_min: f64,
-    /// `F_G_MAX_IN_BATCH` (% of the grain bill), used by the colour adjustment (§8.3).
-    pub max_in_batch_pct: f64,
-}
-
-/// Yeast (minimal input, §5.1 and §6.8).
-#[derive(Debug, Clone, PartialEq)]
-pub struct Yeast {
-    /// `F_Y_MIN_ATTENUATION` (%).
-    pub min_attenuation: f64,
-    /// `F_Y_MAX_ATTENUATION` (%).
-    pub max_attenuation: f64,
-    /// `F_Y_TOLERANCE`, alcohol tolerance (%ABV).
-    pub tolerance_abv: f64,
-    /// `F_Y_ADD_TO_SECONDARY`: such yeasts are not used for the recipe FG.
-    pub add_to_secondary: bool,
-}
-
-/// One mash step (§3.8, §5.1).
-#[derive(Debug, Clone, PartialEq)]
-pub struct MashStep {
-    /// `F_MS_STEP_TEMP` (°F).
-    pub temp_f: f64,
-    /// `F_MS_INFUSION` (infusion volume, same unit as the caller uses; only its ratio matters).
-    pub infusion: f64,
-}
-
-/// Mash profile (§3.8, §5.1).
-#[derive(Debug, Clone, PartialEq)]
-pub struct Mash {
-    /// `F_MH_GRAIN_WEIGHT` (oz).
-    pub grain_weight: f64,
-    /// `F_MH_BIAB`.
-    pub biab: bool,
-    /// Steps in order.
-    pub steps: Vec<MashStep>,
-}
-
-/// Minimal recipe input for the section 01 calculations. Volumes in US fl oz, temperatures in
-/// °F, efficiencies in %. Options (§10) travel with the recipe.
-#[derive(Debug, Clone, PartialEq)]
-pub struct Recipe {
-    /// `F_R_TYPE`.
-    pub kind: RecipeType,
-    /// `F_R_VOLUME`: batch volume into the fermenter (fl oz).
-    pub volume_floz: f64,
-    /// `F_R_TRUB_LOSS` / `F_E_TRUB_LOSS` (fl oz).
-    pub trub_loss_floz: f64,
-    /// `F_E_PRE_TRUB_LOSS`: volume before trub loss, used by Extract recipes (fl oz).
-    pub pre_trub_loss_floz: f64,
-    /// `F_R_BOIL_VOL`: boil volume (fl oz).
-    pub boil_vol_floz: f64,
-    /// `F_R_BOIL_TIME` (minutes).
-    pub boil_time_min: f64,
-    /// `F_R_EFFICIENCY`: brewhouse efficiency (%).
-    pub efficiency: f64,
-    /// `O_STEEP_EFFICIENCY` (%, default 15).
-    pub steep_efficiency: f64,
-    /// `O_MASH_FG_ADJUST`.
-    pub mash_fg_adjust: bool,
-    /// `O_MASH_FG_ADJ_TEMP` (°F, default 153.5).
-    pub mash_fg_adj_temp: f64,
-    /// `O_MASH_FG_ADJ_SLOPE` (% attenuation per °F, default -1.25).
-    pub mash_fg_adj_slope: f64,
-    /// Fermentables.
-    pub fermentables: Vec<Fermentable>,
-    /// Yeasts.
-    pub yeasts: Vec<Yeast>,
-    /// Mash profile.
-    pub mash: Mash,
-}
 
 /// Fermentable field summed by [`total_grain_use_field`] (§3.9).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -908,11 +665,11 @@ pub fn grain_fg_points(g: &Fermentable, eff: f64, atten: f64, steep_eff: f64) ->
 /// Sum of OG points for fermentables with `use <= phase` or Sparge (§3.1). `phase` is an
 /// `F_G_USE` phase.
 #[must_use]
-pub fn og_points_phase(r: &Recipe, phase: GrainUse) -> f64 {
+pub fn og_points_phase(r: &RecipeInput, phase: GrainUse) -> f64 {
     let mut total = 0.0;
     for g in &r.fermentables {
         if g.usage.code() <= phase.code() || g.usage == GrainUse::Sparge {
-            total += grain_og_points(g, r.efficiency, r.steep_efficiency);
+            total += grain_og_points(g, r.efficiency_pct, r.options.steep_efficiency_pct);
         }
     }
     total
@@ -921,7 +678,7 @@ pub fn og_points_phase(r: &Recipe, phase: GrainUse) -> f64 {
 /// OG estimate (SG) for `volume_floz` (fl oz) up to `phase`, §3.2; 1.0 when the volume is not
 /// positive.
 #[must_use]
-pub fn estimate_og(r: &Recipe, volume_floz: f64, phase: GrainUse) -> f64 {
+pub fn estimate_og(r: &RecipeInput, volume_floz: f64, phase: GrainUse) -> f64 {
     if volume_floz <= 0.0 {
         return 1.0;
     }
@@ -929,9 +686,9 @@ pub fn estimate_og(r: &Recipe, volume_floz: f64, phase: GrainUse) -> f64 {
 }
 
 /// Volume used for OG and FG: the pre-trub volume for Extract recipes, else the batch volume.
-fn og_volume(r: &Recipe) -> f64 {
+fn og_volume(r: &RecipeInput) -> f64 {
     if r.kind == RecipeType::Extract {
-        r.pre_trub_loss_floz
+        r.equipment.pre_trub_loss_floz
     } else {
         r.volume_floz
     }
@@ -939,25 +696,33 @@ fn og_volume(r: &Recipe) -> f64 {
 
 /// Recipe OG (SG), §3.3: phases up to Primary plus Sparge.
 #[must_use]
-pub fn recipe_og(r: &Recipe) -> f64 {
+pub fn recipe_og(r: &RecipeInput) -> f64 {
     estimate_og(r, og_volume(r), GrainUse::Primary)
 }
 
 /// Virtual OG (SG), §3.4: like [`recipe_og`] but Secondary and Tertiary count too.
 #[must_use]
-pub fn recipe_virtual_og(r: &Recipe) -> f64 {
+pub fn recipe_virtual_og(r: &RecipeInput) -> f64 {
     estimate_og(r, og_volume(r), GrainUse::Tertiary)
 }
 
 /// Estimated post-mash gravity (SG), §3.5: Mash + Sparge points diluted from batch volume to
 /// the boil volume.
 #[must_use]
-pub fn est_post_mash_og(r: &Recipe) -> f64 {
-    let mut p0 = (estimate_og(r, r.volume_floz, GrainUse::Mash) - 1.0) * 1000.0;
+pub fn est_post_mash_og(r: &RecipeInput) -> f64 {
+    let og_mash = estimate_og(r, r.volume_floz, GrainUse::Mash);
     if r.boil_vol_floz > 0.0 {
-        p0 = p0 * (r.trub_loss_floz + r.volume_floz) / r.boil_vol_floz;
+        // The single implementation of the dilution formula is `mash::preboil_sg` (spec 05 §5.10).
+        crate::mash::preboil_sg(
+            og_mash,
+            r.volume_floz,
+            r.equipment.trub_loss_floz,
+            r.boil_vol_floz,
+        )
+        .unwrap_or(og_mash)
+    } else {
+        og_mash
     }
-    1.0 + p0 / 1000.0
 }
 
 /// One entry of the late-extract SG profile (§3.6).
@@ -984,9 +749,10 @@ fn push_profile_point(profile: &mut Vec<LateExtractPoint>, sg: f64, time_min: f6
 /// start gravity at `boil_time_min`; each late extract (fixed-yield type, `late_extract_min > 0`,
 /// use Mash, Steep, Boil or Sparge) follows in decreasing time (ties by name), then the
 /// Whirlpool fermentables at time 0. An entry less than 0.1 min from the previous one updates
-/// the previous entry's SG instead of adding a new one.
+/// the previous entry's SG instead of adding a new one; the final entry is always at time 0.
+/// This is the only implementation, also used by `hops` (spec 01 §3.6, spec 02 §5.1).
 #[must_use]
-pub fn late_extract_profile(r: &Recipe, boil_vol_floz: f64) -> Vec<LateExtractPoint> {
+pub fn late_extract_profile(r: &RecipeInput, boil_vol_floz: f64) -> Vec<LateExtractPoint> {
     let mut boil_vol = if boil_vol_floz > 0.0 {
         boil_vol_floz
     } else {
@@ -995,7 +761,7 @@ pub fn late_extract_profile(r: &Recipe, boil_vol_floz: f64) -> Vec<LateExtractPo
     if boil_vol <= 0.1 {
         boil_vol = 0.1;
     }
-    let ratio = (r.volume_floz + r.trub_loss_floz) / boil_vol;
+    let ratio = (r.volume_floz + r.equipment.trub_loss_floz) / boil_vol;
     let sg_of = |points: f64| -> f64 {
         if r.volume_floz <= 0.0 {
             1.0
@@ -1014,7 +780,7 @@ pub fn late_extract_profile(r: &Recipe, boil_vol_floz: f64) -> Vec<LateExtractPo
     let mut points = 0.0;
     for g in &r.fermentables {
         if in_boil_phase(g) && !is_late(g) {
-            points += grain_og_points(g, r.efficiency, r.steep_efficiency);
+            points += grain_og_points(g, r.efficiency_pct, r.options.steep_efficiency_pct);
         }
     }
     let mut profile = vec![LateExtractPoint {
@@ -1033,7 +799,7 @@ pub fn late_extract_profile(r: &Recipe, boil_vol_floz: f64) -> Vec<LateExtractPo
             .then_with(|| a.name.cmp(&b.name))
     });
     for g in lates {
-        points += grain_og_points(g, r.efficiency, r.steep_efficiency);
+        points += grain_og_points(g, r.efficiency_pct, r.options.steep_efficiency_pct);
         push_profile_point(
             &mut profile,
             sg_of(points),
@@ -1042,16 +808,28 @@ pub fn late_extract_profile(r: &Recipe, boil_vol_floz: f64) -> Vec<LateExtractPo
     }
     for g in &r.fermentables {
         if g.usage == GrainUse::Whirlpool {
-            points += grain_og_points(g, r.efficiency, r.steep_efficiency);
+            points += grain_og_points(g, r.efficiency_pct, r.options.steep_efficiency_pct);
         }
     }
-    push_profile_point(&mut profile, sg_of(points), 0.0);
+    // The last entry always sits at time 0 (spec 02 §5.1): an earlier entry less than 0.1 min
+    // away is replaced by it (Karar T1.16 B).
+    let sg_end = sg_of(points);
+    match profile.last_mut() {
+        Some(last) if last.time_min.abs() < 0.1 => {
+            last.sg = sg_end;
+            last.time_min = 0.0;
+        }
+        _ => profile.push(LateExtractPoint {
+            sg: sg_end,
+            time_min: 0.0,
+        }),
+    }
     profile
 }
 
 /// Pre-boil (boil start) gravity (SG), §3.6: first entry of [`late_extract_profile`].
 #[must_use]
-pub fn recipe_og_boil(r: &Recipe, boil_vol_floz: f64) -> f64 {
+pub fn recipe_og_boil(r: &RecipeInput, boil_vol_floz: f64) -> f64 {
     late_extract_profile(r, boil_vol_floz)[0].sg
 }
 
@@ -1061,7 +839,7 @@ pub fn recipe_og_boil(r: &Recipe, boil_vol_floz: f64) -> f64 {
 ///
 /// # Errors
 /// `og_target` not finite or `<= 1.000`.
-pub fn scale_gravity(r: &Recipe, og_target: f64) -> Result<Recipe> {
+pub fn scale_gravity(r: &RecipeInput, og_target: f64) -> Result<RecipeInput> {
     ensure_finite("og_target", og_target)?;
     let p_old = (recipe_og(r) - 1.0) * 1000.0;
     let p_new = (og_target - 1.0) * 1000.0;
@@ -1085,14 +863,14 @@ pub fn scale_gravity(r: &Recipe, og_target: f64) -> Result<Recipe> {
 #[allow(clippy::float_cmp)] // spec: equality of the two weights is a plain comparison
 pub fn scale_mash_from_grain_weight(mash: &Mash, grain_weight_new: f64) -> Mash {
     let mut out = mash.clone();
-    let old = mash.grain_weight;
-    out.grain_weight = grain_weight_new;
+    let old = mash.grain_weight_oz;
+    out.grain_weight_oz = grain_weight_new;
     if grain_weight_new <= 0.0 || old <= 0.0 || grain_weight_new == old || out.biab {
         return out;
     }
     for step in &mut out.steps {
-        if step.infusion > 0.0 {
-            step.infusion = grain_weight_new * (step.infusion / old);
+        if step.infusion_floz > 0.0 {
+            step.infusion_floz = grain_weight_new * (step.infusion_floz / old);
         }
     }
     out
@@ -1100,7 +878,7 @@ pub fn scale_mash_from_grain_weight(mash: &Mash, grain_weight_new: f64) -> Mash 
 
 /// Sum of `field` over the fermentables with the given use (§3.9).
 #[must_use]
-pub fn total_grain_use_field(r: &Recipe, usage: GrainUse, field: GrainField) -> f64 {
+pub fn total_grain_use_field(r: &RecipeInput, usage: GrainUse, field: GrainField) -> f64 {
     let mut total = 0.0;
     for g in &r.fermentables {
         if g.usage == usage {
@@ -1120,7 +898,7 @@ pub fn total_grain_use_field(r: &Recipe, usage: GrainUse, field: GrainField) -> 
 /// fl oz (`<= 0` → 0.01). Only Partial Mash and All Grain recipes; others give 0. `mash_only`
 /// counts Mash, Steep and Sparge fermentables and does not subtract the fixed-yield points.
 #[must_use]
-pub fn efficiency(r: &Recipe, og: f64, volume_floz: f64, mash_only: bool) -> f64 {
+pub fn efficiency(r: &RecipeInput, og: f64, volume_floz: f64, mash_only: bool) -> f64 {
     let volume = if volume_floz <= 0.0 {
         0.01
     } else {
@@ -1173,12 +951,12 @@ pub fn avg_attenuation(min: f64, max: f64) -> f64 {
 /// Attenuation (%) and alcohol tolerance (%ABV) used by the recipe FG, §5.1 step 1: the first
 /// yeast not added to secondary, else 73 % and 10 %.
 #[must_use]
-pub fn yeast_attenuation(r: &Recipe) -> (f64, f64) {
+pub fn yeast_attenuation(r: &RecipeInput) -> (f64, f64) {
     for y in &r.yeasts {
         if !y.add_to_secondary {
             return (
-                avg_attenuation(y.min_attenuation, y.max_attenuation),
-                y.tolerance_abv,
+                avg_attenuation(y.min_attenuation_pct, y.max_attenuation_pct),
+                y.tolerance_abv_pct,
             );
         }
     }
@@ -1191,11 +969,11 @@ pub fn yeast_attenuation(r: &Recipe) -> (f64, f64) {
 /// With the option on, the chosen temperature is clamped to 144-160 °F and
 /// `atten += slope x (T - Tref)`; no steps means `T = Tref` (no change).
 #[must_use]
-pub fn mash_adjusted_attenuation(r: &Recipe, atten: f64) -> f64 {
+pub fn mash_adjusted_attenuation(r: &RecipeInput, atten: f64) -> f64 {
     if r.kind != RecipeType::AllGrain {
         return atten;
     }
-    let tref = r.mash_fg_adj_temp;
+    let tref = r.options.mash_fg_adj_temp_f;
     let mut best = tref;
     let mut best_diff = 40.0;
     let mut prev = 0.0;
@@ -1211,9 +989,9 @@ pub fn mash_adjusted_attenuation(r: &Recipe, atten: f64) -> f64 {
             prev = t;
         }
     }
-    if r.mash_fg_adjust {
+    if r.options.mash_fg_adjust {
         best = best.clamp(144.0, 160.0);
-        return atten + r.mash_fg_adj_slope * (best - tref);
+        return atten + r.options.mash_fg_adj_slope * (best - tref);
     }
     atten
 }
@@ -1221,12 +999,12 @@ pub fn mash_adjusted_attenuation(r: &Recipe, atten: f64) -> f64 {
 /// Recipe FG (SG), §5.1: FG points of all fermentables (no phase filter), then limited by the
 /// yeast alcohol tolerance via [`fg_from_tolerance`] when the ABV (from [`recipe_og`]) exceeds it.
 #[must_use]
-pub fn recipe_fg(r: &Recipe) -> f64 {
+pub fn recipe_fg(r: &RecipeInput) -> f64 {
     let (atten, tolerance) = yeast_attenuation(r);
     let atten = mash_adjusted_attenuation(r, atten);
     let mut points = 0.0;
     for g in &r.fermentables {
-        points += grain_fg_points(g, r.efficiency, atten, r.steep_efficiency);
+        points += grain_fg_points(g, r.efficiency_pct, atten, r.options.steep_efficiency_pct);
     }
     let volume = og_volume(r);
     let mut fg = if volume <= 0.0 {
@@ -1289,12 +1067,12 @@ pub fn carb_calories(total_kcal: f64, alc_kcal: f64) -> f64 {
 /// Recipe colour (SRM), §8.1 Morey: all fermentables (no phase filter), volume
 /// `(volume + trub loss) / 128` gallons; 0 when that volume is not positive.
 #[must_use]
-pub fn recipe_color(r: &Recipe) -> f64 {
+pub fn recipe_color(r: &RecipeInput) -> f64 {
     let mut mcu_total = 0.0;
     for g in &r.fermentables {
         mcu_total += (g.amount_oz / 16.0) * g.color_srm;
     }
-    let volume_gal = (r.volume_floz + r.trub_loss_floz) / 128.0;
+    let volume_gal = (r.volume_floz + r.equipment.trub_loss_floz) / 128.0;
     if volume_gal <= 0.0 {
         return 0.0;
     }
@@ -1303,7 +1081,7 @@ pub fn recipe_color(r: &Recipe) -> f64 {
 
 /// [`recipe_color`] for recipes that come from callers: errors on non-finite or negative
 /// amounts/colours (the reference would return a complex number or NaN).
-pub fn recipe_color_checked(r: &Recipe) -> Result<f64> {
+pub fn recipe_color_checked(r: &RecipeInput) -> Result<f64> {
     let mut mcu_total = 0.0;
     for g in &r.fermentables {
         ensure_finite("amount_oz", g.amount_oz)?;
@@ -1311,8 +1089,8 @@ pub fn recipe_color_checked(r: &Recipe) -> Result<f64> {
         mcu_total += (g.amount_oz / 16.0) * g.color_srm;
     }
     ensure_finite("volume_floz", r.volume_floz)?;
-    ensure_finite("trub_loss_floz", r.trub_loss_floz)?;
-    let volume_gal = (r.volume_floz + r.trub_loss_floz) / 128.0;
+    ensure_finite("trub_loss_floz", r.equipment.trub_loss_floz)?;
+    let volume_gal = (r.volume_floz + r.equipment.trub_loss_floz) / 128.0;
     if volume_gal <= 0.0 {
         return Ok(0.0);
     }
@@ -1326,7 +1104,7 @@ pub fn mcu_from_srm(srm: f64) -> f64 {
 }
 
 /// Total fermentable amount (oz), the assumed `F_R_TOT_GRAINS` (§11 item 5).
-fn total_grains_oz(r: &Recipe) -> f64 {
+fn total_grains_oz(r: &RecipeInput) -> f64 {
     let mut total = 0.0;
     for g in &r.fermentables {
         total += g.amount_oz;
@@ -1350,7 +1128,7 @@ pub struct ColorFlexibility {
 /// `max_in_batch + 5` %; lightening skips fermentables with zero amount darker than the target.
 #[must_use]
 #[allow(clippy::float_cmp)] // spec: `lo == hi` means no range
-pub fn color_flexibility(r: &Recipe, target: f64) -> ColorFlexibility {
+pub fn color_flexibility(r: &RecipeInput, target: f64) -> ColorFlexibility {
     let current = recipe_color(r);
     let total = total_grains_oz(r);
     if total <= 0.0 || r.volume_floz <= 0.0 {
@@ -1421,16 +1199,16 @@ fn clamp_range(x: f64, lo: f64, hi: f64) -> f64 {
 /// compensation applies only to fermentables outside the colour-giver group.
 #[must_use]
 #[allow(clippy::float_cmp)] // spec: `ΔP != 0`
-pub fn iterate_color(r: &Recipe, target: f64) -> (Recipe, f64) {
+pub fn iterate_color(r: &RecipeInput, target: f64) -> (RecipeInput, f64) {
     let mut out = r.clone();
     let og0 = recipe_og(&out);
     let current = recipe_color(&out);
     let flex = color_flexibility(&out, target);
-    let volume_gal = (out.volume_floz + out.trub_loss_floz) / 128.0;
+    let volume_gal = (out.volume_floz + out.equipment.trub_loss_floz) / 128.0;
     let mcu_now = mcu_from_srm(current) * volume_gal;
     let delta = mcu_from_srm(target) * volume_gal - mcu_now;
     let weight = total_grains_oz(&out);
-    let (kind, eff) = (out.kind, out.efficiency);
+    let (kind, eff) = (out.kind, out.efficiency_pct);
 
     let mut delta_points = 0.0;
     let mut base_weight = 0.0;
@@ -1485,7 +1263,7 @@ pub fn iterate_color(r: &Recipe, target: f64) -> (Recipe, f64) {
 /// fails, the colour moves less than 0.005 or comes within 0.049 of the target. Returns the
 /// adjusted recipe and whether `|colour - target| < 0.049`.
 #[must_use]
-pub fn adjust_color(r: &Recipe, target: f64) -> (Recipe, bool) {
+pub fn adjust_color(r: &RecipeInput, target: f64) -> (RecipeInput, bool) {
     let mut current = r.clone();
     for _ in 0..40 {
         if !color_flexibility(&current, target).ok {
@@ -1508,7 +1286,7 @@ pub fn adjust_color(r: &Recipe, target: f64) -> (Recipe, bool) {
 /// Reachable colour range (SRM), §8.3 `GetColorAdjRange`: the colours after adjusting to 1.0
 /// and to 150.0 SRM, as `(min, max)`; adjustment is possible when they differ.
 #[must_use]
-pub fn color_adj_range(r: &Recipe) -> (f64, f64) {
+pub fn color_adj_range(r: &RecipeInput) -> (f64, f64) {
     let low = recipe_color(&adjust_color(r, 1.0).0);
     let high = recipe_color(&adjust_color(r, 150.0).0);
     (low.min(high), low.max(high))
@@ -1517,7 +1295,7 @@ pub fn color_adj_range(r: &Recipe) -> (f64, f64) {
 /// Estimated mash efficiency (%), §4.2 `RecipeEstMashEfficiency`: OG = [`est_post_mash_og`],
 /// volume = the recipe boil volume (fl oz), `mash_only`.
 #[must_use]
-pub fn recipe_est_mash_efficiency(r: &Recipe) -> f64 {
+pub fn recipe_est_mash_efficiency(r: &RecipeInput) -> f64 {
     efficiency(r, est_post_mash_og(r), r.boil_vol_floz, true)
 }
 
@@ -1525,7 +1303,7 @@ pub fn recipe_est_mash_efficiency(r: &Recipe) -> f64 {
 /// measured boil volume (fl oz), `mash_only`.
 #[must_use]
 pub fn recipe_act_mash_efficiency(
-    r: &Recipe,
+    r: &RecipeInput,
     og_mash_measured: f64,
     boil_vol_measured: f64,
 ) -> f64 {
@@ -1535,7 +1313,7 @@ pub fn recipe_act_mash_efficiency(
 /// Measured brewhouse efficiency (%), §4.2 `RecipeActualEfficiency`: measured OG (SG) and
 /// measured volume (fl oz), all phases.
 #[must_use]
-pub fn recipe_actual_efficiency(r: &Recipe, og_measured: f64, volume_measured: f64) -> f64 {
+pub fn recipe_actual_efficiency(r: &RecipeInput, og_measured: f64, volume_measured: f64) -> f64 {
     efficiency(r, og_measured, volume_measured, false)
 }
 
@@ -1554,7 +1332,7 @@ pub enum ColorAdjustStatus {
 /// the reachable range (ends included). Returns the status, the recipe and the success flag
 /// of [`adjust_color`] (false unless `Adjusted`).
 #[must_use]
-pub fn do_adjust_color(r: &Recipe, target: f64) -> (ColorAdjustStatus, Recipe, bool) {
+pub fn do_adjust_color(r: &RecipeInput, target: f64) -> (ColorAdjustStatus, RecipeInput, bool) {
     if r.kind.code() >= 3 {
         return (ColorAdjustStatus::NotApplicable, r.clone(), false);
     }

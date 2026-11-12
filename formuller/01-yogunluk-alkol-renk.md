@@ -211,6 +211,7 @@ eğer F_R_BOIL_VOL > 0:
 OG_mash = 1 + P0/1000
 ```
 Mantık: Fermentör hacmine göre hesaplanan puanlar, kaynatma sonu hacmine (parti + trub kaybı) ve oradan kaynatma öncesi hacme seyreltilir.
+**Karar (T1.16 B):** seyreltme formülü tek yerde yazılır: 05 §5.10 (`mash::preboil_sg`, `1 + (OG − 1)·(V_parti + V_trub)/V_kaynatma`); `density::est_post_mash_og` onu çağırır (`F_R_BOIL_VOL ≤ 0` ise seyreltme yapılmaz, OG_mash = EstimateOG).
 
 ### 3.6 Kaynatma öncesi gravite ve geç özüt profili — `GetLateExtractSGs` / `RecipeOGBoilFunc` → `F_R_OG_BOIL`
 Girdi: `Vb` = kaynatma hacmi (`F_R_BOIL_VOL`; ≤0 ise alan değeri, o da ≤0.1 ise 0.1).
@@ -224,6 +225,7 @@ SG[0] = 1 + P·r/(F_R_VOLUME/128)/1000   (F_R_VOLUME ≤ 0 ise 1.0);  t[0] = F_R
 - `RecipeOGBoilFunc` yalnız `SG[0]`'ı döndürür: **kaynatma başlangıç gravitesi**.
 - Profilin devamı, şerbetçiotu kullanımı (IBU) için kullanılır: geç özütler `F_G_LATE_EXTRACT` (dk) azalan sırada (eşitlikte isme göre) eklenir. Her birinde `P += (A/16)·PPG` (verimsiz) ve `SG[k] = 1 + P·r/(V/128)/1000`, `t[k] = min(late_time, boil_time)`. Zamanı bir öncekiyle 0.1 dk'dan az farklı olan kayıt yeni girdi açmaz, önceki girdinin SG'sini günceller. Son girdi Whirlpool (kullanım 3) fermentable'larını da ekler ve `t = 0` alır.
 - Dizi kapasitesi 128 girdidir (yığın tamponu).
+- **Karar (T1.16 B): tek uygulama.** Aynı profil 02 §5.1'de de kullanılır (`density::late_extract_profile`; `hops` onu çağırır, kendi kopyası yoktur). Önceki iki tanım üç noktada ayrışıyordu; 01'inki seçildi: (1) geç ekstrakt yalnız kazan kullanımlarında (0, 1, 2, 8) sayılır, kazan dışı kullanımdaki (Primary, Secondary, Bottling) geç ekstrakt profile girmez; (2) kullanımı Whirlpool (3) olan fermentable geç ekstrakt sayılmaz, `t = 0` girdisine eklenir; (3) son girdi her zaman `t = 0`'dır: öncesindeki girdi 0.1 dk'dan yakınsa onun yerine geçer (SG güncellenir, zaman 0 olur). Fermentable puanı `GetOGPoints` ile (§2.1) hesaplanır; 02 artık dışarıdan `points` almaz.
 
 ### 3.7 Gravite ölçekleme (OG hedefine göre) — `ScaleGravity(recipe, OG_hedef)` / `DoAdjustGravity`
 ```
@@ -551,7 +553,8 @@ oz = ΔP·(V/128)·16 / PPG ,   PPG = 44 (Tip 0, DME) | 36 (Tip 1, LME)
 ```
 
 ### 9.4 Gravite düşürme (su ile seyreltme) — `GravityAdjWaterVol` → `F_GT_WATER_VOL`
-- `V_su = V·(Mevcut − 1)/(Hedef − 1) − V`, negatifse 0 (fl oz). Hedef = 1.000 için koruma yoktur (sıfıra bölme).
+- `V_su = V·(Mevcut − 1)/(Hedef − 1) − V`, negatifse 0 (fl oz). Hedef = 1.000 için koruma yoktur (sıfıra bölme; motorda hata).
+- **Karar (T1.16 B):** 05 §8.2 aynı formüldür; tek uygulama `density::gravity_adjust_water` (hacim birimi çağıranındır: 01'de fl oz, 05'te L), `mash` kendi kopyasını taşımaz.
 
 ### 9.5 Seyreltme aracı — `DilutionFinalGravityFunc`, `DilutionTotVolFunc`
 ```
@@ -561,7 +564,7 @@ Tip 0 (su):           SG = 1 + (SG0 − 1)·V0/Vt
 Tip 1 (wort/bira):    SG = 1 + (SG0 − 1)·V0/Vt + (SGa − 1)·Va/Vt
 ```
 - Vt = 0 için koruma yoktur.
-- Uygulama burada tekrarlanmaz: aynı hesap 05 §8.1'dedir (`mash::dilution`, metrik birim). 01 referansında karşılığı yoktur (ADR-0003 madde 4: kopyalanmaz). 01'den çağrı bağlantısı T1.16'da (ortak model) kurulur.
+- Uygulama burada tekrarlanmaz: aynı hesap 05 §8.1'dedir (`mash::dilution`, metrik birim). 01 referansında karşılığı yoktur (ADR-0003 madde 4: kopyalanmaz). Karar (T1.16 B): tek uygulama `mash::dilution`; 01'in seyreltme aracı onu çağırır (birim dönüşümü çağıranda).
 
 ---
 

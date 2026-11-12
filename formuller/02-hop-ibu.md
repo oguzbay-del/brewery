@@ -220,21 +220,7 @@ Not: `O_WHIRLPOOL_UTIL` (varsayılan 50.0, "Whirlpool utilization compared to a 
 ### 5.1 Kaynatma boyunca gravity profili (`GetLateExtractSGs(tarif, V_boil)`)
 Amaç, geç eklenen ekstraktları hesaba katan, zamana göre parçalı sabit bir SG listesi üretmektir. Liste `[(SG_k, t_k)]` biçimindedir; t azalan sırada gider ve son elemanın `t = 0` olduğu garanti edilir.
 
-1. Hacimler:
-   - `V_boil = F_R_BOIL_VOL`. Fonksiyona verilen değer ≤ 0 ise alandan okunur, en az 0.1 fl oz.
-   - `V = F_R_VOLUME` (fermentöre giden parti).
-   - `T = F_R_TRUB_LOSS`.
-   - `r = (V + T) / V_boil`
-2. Taban puanlar `P`: kazandaki fermentable'ların (`F_G_USE` ∈ {0, 1, 2, 8}) `GetOGPoints(F_R_EFFICIENCY)` toplamı. Fermentable modülündeki toplam gravity puanı · galon büyüklüğü **[belirsiz]**. **Geç ekstraktlar hariç tutulur.** Geç ekstrakt: tipi ∈ {1, 2, 4, 5, 6, 7} (ekstrakt/şeker/kuru ekstrakt vb. **[belirsiz]**) ve `F_G_LATE_EXTRACT` (geç ekstrakt kaynatma süresi, dk) > 0 olan kalemler.
-3. Gravity hesabı: `SG(P) = 1 + P · r / (V/128) / 1000`. V ≤ 0 ise SG = 1.
-   - Sonuç pratikte **kaynatma öncesi (pre-boil) gravity'ye** karşılık gelir. Kaynatma ortalaması ya da OG değildir.
-4. İlk eleman: `(SG(P), F_R_BOIL_TIME)`.
-5. Geç ekstraktlar, geç ekleme süresine göre **azalan**, eşitlikte ada göre sıralanır. Her biri için:
-   - `P += (F_G_AMOUNT/16) · (F_G_YIELD · 46 / 100)` (lb · ppg; verim çarpanı yok)
-   - `t = min(F_R_BOIL_TIME, F_G_LATE_EXTRACT)`
-   - Önceki elemanın zamanıyla fark < 0.1 dk ise önceki elemanın SG'si güncellenir. Değilse yeni `(SG(P), t)` eklenir.
-6. Son eleman: kaynatma sonrası (use = 3, whirlpool) fermentable'ların puanları da eklenir ve `(SG(P), 0)` yazılır. P ≤ 0 ise SG = 1.
-   - Bu "son SG" yalnızca whirlpool hopları ve kaynatma hoplarının whirlpool katkısı için kullanılır. Bu da kaynatma hacmine göre ölçeklenmiş bir değerdir; kaynatma sonu konsantrasyonu değildir.
+**Karar (T1.16 B): tek uygulama.** Profil 01 §3.6'da tanımlıdır ve motorda tek fonksiyondur (`density::late_extract_profile`); `hops` onu çağırır. Önceki iki tanım (burada ve 01'de) üç noktada ayrışıyordu, 01'inki seçildi: kazan dışı kullanımdaki geç ekstrakt profile girmez, kullanımı Whirlpool olan geç ekstrakt `t = 0` girdisine eklenir, son girdi her zaman `t = 0`'dır. Fermentable puanı 01 §2.1 `GetOGPoints` ile (`F_R_EFFICIENCY` ve `O_STEEP_EFFICIENCY` reçeteden); 02 dışarıdan `points` almaz. Geç ekstrakt: tipi ∈ {1, 2, 4, 5, 6, 7} ve `F_G_LATE_EXTRACT` > 0. `SG(P) = 1 + P · r / (V/128) / 1000`, `r = (V + T) / V_boil`; V ≤ 0 ise SG = 1.
 
 Kaynak: `GetLateExtractSGs` (ek decompile), `OGPointsPhase`.
 
@@ -355,7 +341,7 @@ Araçta **olmayanlar:** rakım düzeltmesi, geç ekstrakt segmentleri, whirlpool
 - `RecipeBoilHopRate` = faz 0 (boil + FWH).
 - `RecipeWhirlpoolHopRate` = faz 4.
 - Diğer iki çağıran (0x845222, 0x84528e) muhtemelen dry hop (1) ve/veya toplam **[belirsiz]**.
-- Dönüşümler: oz → g ×28.349523125; fl oz → L ×29.57352956/1000.
+- Dönüşümler: oz → g ×28.349525 (= 0.4535924/16 × 1000, 04 ile tek sabit; **Karar (T1.16 B):** önceki 28.349523125 bırakıldı, fark 6.6e-8 göreli); fl oz → L ×29.57352956/1000. Sabitler motorda `units`'tedir.
 
 ## 9. Toplam whirlpool süresi (`TotWhirlpoolTime`)
 - `max(F_R_WHIRLPOOL_TIME, max_i int(t_i + 0.48))`. Burada i, use = 4 olan hoplar ve use = 6 (Whirlpool) olan misc kalemleridir.
@@ -386,7 +372,7 @@ Araçta **olmayanlar:** rakım düzeltmesi, geç ekstrakt segmentleri, whirlpool
 K = 100/1.34
 
 def recipe_ibu(recipe, equip, opts):
-    prof = late_extract_sg_profile(recipe)            # §5.1 -> [(sg,t)], son t=0
+    prof = late_extract_sg_profile(recipe)            # 01 §3.6 (tek uygulama) -> [(sg,t)], son t=0
     Tb   = 100 - recipe.altitude_ft*0.3048*0.00324    # °C
     V    = max(recipe.volume_floz + recipe.trub_floz, 0.01) / 128   # gal
     ibu  = 0

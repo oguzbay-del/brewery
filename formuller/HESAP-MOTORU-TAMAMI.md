@@ -237,6 +237,7 @@ eğer F_R_BOIL_VOL > 0:
 OG_mash = 1 + P0/1000
 ```
 Mantık: Fermentör hacmine göre hesaplanan puanlar, kaynatma sonu hacmine (parti + trub kaybı) ve oradan kaynatma öncesi hacme seyreltilir.
+**Karar (T1.16 B):** seyreltme formülü tek yerde yazılır: 05 §5.10 (`mash::preboil_sg`, `1 + (OG − 1)·(V_parti + V_trub)/V_kaynatma`); `density::est_post_mash_og` onu çağırır (`F_R_BOIL_VOL ≤ 0` ise seyreltme yapılmaz, OG_mash = EstimateOG).
 
 ### 3.6 Kaynatma öncesi gravite ve geç özüt profili — `GetLateExtractSGs` / `RecipeOGBoilFunc` → `F_R_OG_BOIL`
 Girdi: `Vb` = kaynatma hacmi (`F_R_BOIL_VOL`; ≤0 ise alan değeri, o da ≤0.1 ise 0.1).
@@ -250,6 +251,7 @@ SG[0] = 1 + P·r/(F_R_VOLUME/128)/1000   (F_R_VOLUME ≤ 0 ise 1.0);  t[0] = F_R
 - `RecipeOGBoilFunc` yalnız `SG[0]`'ı döndürür: **kaynatma başlangıç gravitesi**.
 - Profilin devamı, şerbetçiotu kullanımı (IBU) için kullanılır: geç özütler `F_G_LATE_EXTRACT` (dk) azalan sırada (eşitlikte isme göre) eklenir. Her birinde `P += (A/16)·PPG` (verimsiz) ve `SG[k] = 1 + P·r/(V/128)/1000`, `t[k] = min(late_time, boil_time)`. Zamanı bir öncekiyle 0.1 dk'dan az farklı olan kayıt yeni girdi açmaz, önceki girdinin SG'sini günceller. Son girdi Whirlpool (kullanım 3) fermentable'larını da ekler ve `t = 0` alır.
 - Dizi kapasitesi 128 girdidir (yığın tamponu).
+- **Karar (T1.16 B): tek uygulama.** Aynı profil 02 §5.1'de de kullanılır (`density::late_extract_profile`; `hops` onu çağırır, kendi kopyası yoktur). Önceki iki tanım üç noktada ayrışıyordu; 01'inki seçildi: (1) geç ekstrakt yalnız kazan kullanımlarında (0, 1, 2, 8) sayılır, kazan dışı kullanımdaki (Primary, Secondary, Bottling) geç ekstrakt profile girmez; (2) kullanımı Whirlpool (3) olan fermentable geç ekstrakt sayılmaz, `t = 0` girdisine eklenir; (3) son girdi her zaman `t = 0`'dır: öncesindeki girdi 0.1 dk'dan yakınsa onun yerine geçer (SG güncellenir, zaman 0 olur). Fermentable puanı `GetOGPoints` ile (§2.1) hesaplanır; 02 artık dışarıdan `points` almaz.
 
 ### 3.7 Gravite ölçekleme (OG hedefine göre) — `ScaleGravity(recipe, OG_hedef)` / `DoAdjustGravity`
 ```
@@ -569,7 +571,8 @@ oz = ΔP·(V/128)·16 / PPG ,   PPG = 44 (Tip 0, DME) | 36 (Tip 1, LME)
 ```
 
 ### 9.4 Gravite düşürme (su ile seyreltme) — `GravityAdjWaterVol` → `F_GT_WATER_VOL`
-- `V_su = V·(Mevcut − 1)/(Hedef − 1) − V`, negatifse 0 (fl oz). Hedef = 1.000 için koruma yoktur (sıfıra bölme).
+- `V_su = V·(Mevcut − 1)/(Hedef − 1) − V`, negatifse 0 (fl oz). Hedef = 1.000 için koruma yoktur (sıfıra bölme; motorda hata).
+- **Karar (T1.16 B):** 05 §8.2 aynı formüldür; tek uygulama `density::gravity_adjust_water` (hacim birimi çağıranındır: 01'de fl oz, 05'te L), `mash` kendi kopyasını taşımaz.
 
 ### 9.5 Seyreltme aracı — `DilutionFinalGravityFunc`, `DilutionTotVolFunc`
 ```
@@ -888,21 +891,7 @@ Not: `O_WHIRLPOOL_UTIL` (varsayılan 50.0, "Whirlpool utilization compared to a 
 ### 5.1 Kaynatma boyunca gravity profili (`GetLateExtractSGs(tarif, V_boil)`)
 Amaç, geç eklenen ekstraktları hesaba katan, zamana göre parçalı sabit bir SG listesi üretmektir. Liste `[(SG_k, t_k)]` biçimindedir; t azalan sırada gider ve son elemanın `t = 0` olduğu garanti edilir.
 
-1. Hacimler:
-   - `V_boil = F_R_BOIL_VOL`. Fonksiyona verilen değer ≤ 0 ise alandan okunur, en az 0.1 fl oz.
-   - `V = F_R_VOLUME` (fermentöre giden parti).
-   - `T = F_R_TRUB_LOSS`.
-   - `r = (V + T) / V_boil`
-2. Taban puanlar `P`: kazandaki fermentable'ların (`F_G_USE` ∈ {0, 1, 2, 8}) `GetOGPoints(F_R_EFFICIENCY)` toplamı. Fermentable modülündeki toplam gravity puanı · galon büyüklüğü **[belirsiz]**. **Geç ekstraktlar hariç tutulur.** Geç ekstrakt: tipi ∈ {1, 2, 4, 5, 6, 7} (ekstrakt/şeker/kuru ekstrakt vb. **[belirsiz]**) ve `F_G_LATE_EXTRACT` (geç ekstrakt kaynatma süresi, dk) > 0 olan kalemler.
-3. Gravity hesabı: `SG(P) = 1 + P · r / (V/128) / 1000`. V ≤ 0 ise SG = 1.
-   - Sonuç pratikte **kaynatma öncesi (pre-boil) gravity'ye** karşılık gelir. Kaynatma ortalaması ya da OG değildir.
-4. İlk eleman: `(SG(P), F_R_BOIL_TIME)`.
-5. Geç ekstraktlar, geç ekleme süresine göre **azalan**, eşitlikte ada göre sıralanır. Her biri için:
-   - `P += (F_G_AMOUNT/16) · (F_G_YIELD · 46 / 100)` (lb · ppg; verim çarpanı yok)
-   - `t = min(F_R_BOIL_TIME, F_G_LATE_EXTRACT)`
-   - Önceki elemanın zamanıyla fark < 0.1 dk ise önceki elemanın SG'si güncellenir. Değilse yeni `(SG(P), t)` eklenir.
-6. Son eleman: kaynatma sonrası (use = 3, whirlpool) fermentable'ların puanları da eklenir ve `(SG(P), 0)` yazılır. P ≤ 0 ise SG = 1.
-   - Bu "son SG" yalnızca whirlpool hopları ve kaynatma hoplarının whirlpool katkısı için kullanılır. Bu da kaynatma hacmine göre ölçeklenmiş bir değerdir; kaynatma sonu konsantrasyonu değildir.
+**Karar (T1.16 B): tek uygulama.** Profil 01 §3.6'da tanımlıdır ve motorda tek fonksiyondur (`density::late_extract_profile`); `hops` onu çağırır. Önceki iki tanım (burada ve 01'de) üç noktada ayrışıyordu, 01'inki seçildi: kazan dışı kullanımdaki geç ekstrakt profile girmez, kullanımı Whirlpool olan geç ekstrakt `t = 0` girdisine eklenir, son girdi her zaman `t = 0`'dır. Fermentable puanı 01 §2.1 `GetOGPoints` ile (`F_R_EFFICIENCY` ve `O_STEEP_EFFICIENCY` reçeteden); 02 dışarıdan `points` almaz. Geç ekstrakt: tipi ∈ {1, 2, 4, 5, 6, 7} ve `F_G_LATE_EXTRACT` > 0. `SG(P) = 1 + P · r / (V/128) / 1000`, `r = (V + T) / V_boil`; V ≤ 0 ise SG = 1.
 
 Kaynak: `GetLateExtractSGs` (ek decompile), `OGPointsPhase`.
 
@@ -1023,7 +1012,7 @@ Araçta **olmayanlar:** rakım düzeltmesi, geç ekstrakt segmentleri, whirlpool
 - `RecipeBoilHopRate` = faz 0 (boil + FWH).
 - `RecipeWhirlpoolHopRate` = faz 4.
 - Diğer iki çağıran (0x845222, 0x84528e) muhtemelen dry hop (1) ve/veya toplam **[belirsiz]**.
-- Dönüşümler: oz → g ×28.349523125; fl oz → L ×29.57352956/1000.
+- Dönüşümler: oz → g ×28.349525 (= 0.4535924/16 × 1000, 04 ile tek sabit; **Karar (T1.16 B):** önceki 28.349523125 bırakıldı, fark 6.6e-8 göreli); fl oz → L ×29.57352956/1000. Sabitler motorda `units`'tedir.
 
 ## 9. Toplam whirlpool süresi (`TotWhirlpoolTime`)
 - `max(F_R_WHIRLPOOL_TIME, max_i int(t_i + 0.48))`. Burada i, use = 4 olan hoplar ve use = 6 (Whirlpool) olan misc kalemleridir.
@@ -1054,7 +1043,7 @@ Araçta **olmayanlar:** rakım düzeltmesi, geç ekstrakt segmentleri, whirlpool
 K = 100/1.34
 
 def recipe_ibu(recipe, equip, opts):
-    prof = late_extract_sg_profile(recipe)            # §5.1 -> [(sg,t)], son t=0
+    prof = late_extract_sg_profile(recipe)            # 01 §3.6 (tek uygulama) -> [(sg,t)], son t=0
     Tb   = 100 - recipe.altitude_ft*0.3048*0.00324    # °C
     V    = max(recipe.volume_floz + recipe.trub_floz, 0.01) / 128   # gal
     ibu  = 0
@@ -1777,7 +1766,7 @@ BeerSmith alanları US birimlerinde saklar. Dönüşümler `BConvertVolume`, `BC
 | hacim 0xE | US gal | |
 | hacim 0xF | ml | |
 | hacim 0x10 | L | |
-| ağırlık 9 | oz | 1 lb = 0.4535924 kg, 1 oz = 28.349525 g |
+| ağırlık 9 | oz | 1 lb = 0.4535924 kg, 1 oz = 28.349525 g (motorda tek sabit `units::OZ_G`; 02 §8 de bunu kullanır, T1.16 B) |
 | ağırlık 10 | g | |
 | ağırlık 7 | kg | |
 | sıcaklık (base) | °F | Karbonasyon fonksiyonları °F ile çalışır |
@@ -2524,7 +2513,7 @@ Kenar: döngü üst sınırı 50 adım; eşit batch sayısı en fazla 10.
 - `PrimaryWaterAdd`: (F_R_TYPE ≤ 2 veya kaynatma malzemesi varsa) `V = V_batch − V_postboil − V_primarygrains − V_topup_ferm`; aksi halde post-boil terimi 0.
 
 ### 5.10 Pre-boil gravite tahmini — `GetEstPostMashOG` (ilişkili)
-- `SG_preboil = 1 + (OG − 1) × (V_batch + V_trub) / V_preboil` (V_preboil > 0 ise). Soğuma ve top-up'ı dikkate almaz.
+- `SG_preboil = 1 + (OG − 1) × (V_batch + V_trub) / V_preboil` (V_preboil > 0 ise). Soğuma ve top-up'ı dikkate almaz. Tek uygulama: `mash::preboil_sg`; 01 §3.5 onu çağırır (T1.16 B).
 
 ### 5.11 Hacim zinciri — akış şeması
 
@@ -2613,7 +2602,7 @@ Bu araç reçete motorundan **ayrıdır** ve soğuma kaybını farklı tabanda h
 - Yayımlanmış ad: gravite puanı kütle dengesi (standart karışım formülü).
 
 ### 8.2 Hedef graviteye seyreltmek için su — `GravityAdjWaterVol`
-- `V_water = V × (SG − 1) / (SG_target − 1) − V`, negatifse 0.
+- `V_water = V × (SG − 1) / (SG_target − 1) − V`, negatifse 0. Tek uygulama: 01 §9.4 (`density::gravity_adjust_water`, birimsiz hacim); 05 kopya taşımaz (T1.16 B).
 
 ---
 

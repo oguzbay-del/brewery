@@ -4,39 +4,13 @@
 //! degrees Fahrenheit, litres where stated. Every function documents its units.
 //! Ported one to one from `formuller/testler/04_maya_karb_tv.py` (ADR-0003).
 
+use crate::density::brix_to_sg;
 use crate::error::{Error, Result, ensure_finite, ensure_positive, finite_result};
-use crate::units::{GAL_L, to_plato, to_sg};
+use crate::recipe::{RecipeType, Yeast as RecipeYeast, YeastForm, code_enum};
+use crate::units::{OZ_G, to_plato, to_sg};
 
 /// Stir plate growth bonus, percent (spec §1.2).
 const STIR: f64 = 45.0;
-/// Millilitres per US fluid ounce.
-const FLOZ_ML: f64 = 29.573_529_56;
-/// Grams per ounce (`0.4535924 / 16 × 1000`).
-pub const OZ_G: f64 = 0.453_592_4 / 16.0 * 1000.0;
-
-/// Litres to US fluid ounces.
-#[must_use]
-pub fn l_to_floz(litres: f64) -> f64 {
-    litres * 1000.0 / FLOZ_ML
-}
-
-/// US fluid ounces to litres.
-#[must_use]
-pub fn floz_to_l(floz: f64) -> f64 {
-    floz * FLOZ_ML / 1000.0
-}
-
-/// Litres to US gallons.
-#[must_use]
-pub fn gal_from_l(litres: f64) -> f64 {
-    litres * 1000.0 / FLOZ_ML / 128.0
-}
-
-/// Brix to SG, keeping the BeerSmith quirk of 258.2 in the correction term (spec §2.8).
-#[must_use]
-pub fn brix_to_sg(brix: f64) -> f64 {
-    brix / (258.6 - (brix / 258.2) * 227.1) + 1.0
-}
 
 /// Cell viability, percent, after `days` (spec §1.4).
 ///
@@ -224,9 +198,6 @@ pub fn yan(method: YanMethod, grams: f64, v_l: f64) -> f64 {
     if v_l == 0.0 { r } else { r * grams / v_l }
 }
 
-/// Re-exported for callers converting gallons: litres per US gallon.
-pub const LITRES_PER_GAL: f64 = GAL_L;
-
 /// Backsweetening honey volume, litres (spec §2.8): `v_l` of `sg_now`, to `sg_target`,
 /// honey at `sg_honey`.
 #[must_use]
@@ -251,44 +222,6 @@ pub fn honey_sg(plato: f64) -> f64 {
 // gained in this task (enums, defaults, yeast counts and packs, mead, carbonation).
 // ---------------------------------------------------------------------------
 
-macro_rules! code_enum {
-    ($(#[$m:meta])* $name:ident { $($var:ident = $code:literal => $label:literal),+ $(,)? }) => {
-        $(#[$m])*
-        #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-        pub enum $name { $($var),+ }
-
-        impl $name {
-            /// Every variant in code order.
-            pub const ALL: &'static [Self] = &[$(Self::$var),+];
-
-            /// Variant for a stored code; a code that is not listed is an error.
-            pub fn from_code(code: i64) -> Result<Self> {
-                match code {
-                    $($code => Ok(Self::$var),)+
-                    _ => Err(Error::invalid(stringify!($name), "unknown code")),
-                }
-            }
-
-            /// Stored code.
-            #[must_use]
-            pub fn code(self) -> i64 {
-                match self { $(Self::$var => $code),+ }
-            }
-
-            /// English display name of the specification.
-            #[must_use]
-            pub fn name(self) -> &'static str {
-                match self { $(Self::$var => $label),+ }
-            }
-        }
-    };
-}
-
-code_enum! {
-    /// `F_Y_FORM` of an ingredient (spec §1.1). Culture behaves like slurry for viability.
-    YeastForm { Liquid = 0 => "Liquid", Dry = 1 => "Dry", Slant = 2 => "Slant",
-                Culture = 3 => "Culture" }
-}
 code_enum! {
     /// `F_YC_YEAST_FORM` of the starter tool (spec §1.1).
     StarterYeastForm { Liquid = 0 => "Liquid", Dry = 1 => "Dry", Slurry = 2 => "Slurry" }
@@ -302,13 +235,6 @@ code_enum! {
     /// `F_Y_TYPE` (spec §1.1).
     YeastType { Ale = 0 => "Ale", Lager = 1 => "Lager", Wine = 2 => "Wine",
                 Champagne = 3 => "Champagne", Wheat = 4 => "Wheat" }
-}
-code_enum! {
-    /// `F_R_TYPE` (spec §1.1). Code 7 is accepted as a wine type by the reference code but
-    /// is not listed; see [`is_wine_like_recipe`].
-    RecipeType { Extract = 0 => "Extract", PartialMash = 1 => "Partial Mash",
-                 AllGrain = 2 => "All Grain", Cider = 3 => "Cider", Mead = 4 => "Mead",
-                 Wine = 5 => "Wine", Seltzer = 6 => "Seltzer" }
 }
 code_enum! {
     /// `F_R_ALE_TYPE` (spec §1.1).
@@ -585,33 +511,8 @@ pub fn yeast_cells_avail(dry: bool, dry_g: f64, wet_ml: f64, cells_ml: f64) -> f
 
 // --- §1.6 recipe totals ---
 
-/// One yeast ingredient of a recipe, the fields the recipe totals read.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct RecipeYeast {
-    /// Added to secondary fermentation (skipped by every total).
-    pub secondary: bool,
-    /// `F_Y_TOT_CELLS`, billions.
-    pub tot_cells: f64,
-    /// `F_Y_VIABLE_CELLS`, billions.
-    pub viable_cells: f64,
-    /// `F_Y_NEW_AMOUNT`, packs.
-    pub new_amount: f64,
-    /// `F_Y_VIABILITY_PCT`.
-    pub viability_pct: f64,
-    /// `F_Y_FORM`.
-    pub form: YeastForm,
-    /// `F_Y_USE_PKGS` (code 1 = package mode).
-    pub use_pkgs: bool,
-    /// Amount in volume/weight mode, ounces.
-    pub amount_oz: f64,
-    /// `F_Y_CELLS_ML`.
-    pub cells_ml: f64,
-    /// `F_Y_DRY_PITCH_RATE`, g/hL.
-    pub dry_pitch_rate: f64,
-}
-
 fn primary(yeasts: &[RecipeYeast]) -> impl Iterator<Item = &RecipeYeast> {
-    yeasts.iter().filter(|y| !y.secondary)
+    yeasts.iter().filter(|y| !y.add_to_secondary)
 }
 
 /// `YeastCellsNoStarter`, billions: total or viable cells of the primary yeasts.
@@ -620,9 +521,9 @@ pub fn yeast_cells_no_starter(calc_viability: bool, yeasts: &[RecipeYeast]) -> f
     primary(yeasts)
         .map(|y| {
             if calc_viability {
-                y.viable_cells
+                y.viable_cells_billion
             } else {
-                y.tot_cells
+                y.total_cells_billion
             }
         })
         .sum()
@@ -631,7 +532,7 @@ pub fn yeast_cells_no_starter(calc_viability: bool, yeasts: &[RecipeYeast]) -> f
 /// `YeastPackCount`: sum of `new_amount` over the primary yeasts.
 #[must_use]
 pub fn yeast_pack_count(yeasts: &[RecipeYeast]) -> f64 {
-    primary(yeasts).map(|y| y.new_amount).sum()
+    primary(yeasts).map(|y| y.packs).sum()
 }
 
 /// `YeastAvgPackSize`, billions per pack: 0 for an invalid list, 100 when cells ≤ 0 or no packs.
@@ -663,8 +564,8 @@ pub fn yeast_tot_grams(yeasts: &[RecipeYeast]) -> f64 {
     primary(yeasts)
         .filter(|y| y.form == YeastForm::Dry)
         .map(|y| {
-            if y.use_pkgs {
-                y.new_amount * DRY_PKG_G
+            if y.use_packages {
+                y.packs * DRY_PKG_G
             } else {
                 y.amount_oz * OZ_G
             }
@@ -679,9 +580,9 @@ pub fn yeast_first_fields(yeasts: &[RecipeYeast]) -> (i64, i64, f64, f64) {
     primary(yeasts).next().map_or((0, 1, 1.0, 75.0), |y| {
         (
             y.form.code(),
-            i64::from(y.use_pkgs),
-            y.cells_ml,
-            y.dry_pitch_rate,
+            i64::from(y.use_packages),
+            y.cells_per_ml_billion,
+            y.dry_pitch_rate_g_per_hl,
         )
     })
 }
@@ -945,12 +846,6 @@ pub fn yeast_goferm(tot_g: f64, per_g: f64, goferm: f64) -> f64 {
 }
 
 // --- §1.15 other ---
-
-/// `AvgAttenuation`: mean of the minimum and maximum attenuation.
-#[must_use]
-pub fn avg_attenuation(lo: f64, hi: f64) -> f64 {
-    f64::midpoint(lo, hi)
-}
 
 /// Unit shown for a yeast amount: `Pkgs` in package mode, else the dry or wet unit code.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -376,8 +376,8 @@ def dilution(sg0, v0, v_add, wort, sg_add=1.0):             # wort=False su, Tru
     if not wort: return dict(v_tot=v_tot, sg=1 + (sg0-1)*v0/v_tot)
     return dict(v_tot=v_tot, sg=1 + ((sg0-1)*v0 + (sg_add-1)*v_add)/v_tot)
 
-def gravity_adj_water_vol(v, sg, sg_target):                # §8.2
-    return max(v*(sg-1)/(sg_target-1) - v, 0.0)
+def gravity_adj_water_vol(v, sg, sg_target):                # §8.2 (01 §9.4 `gadj_water` ile aynı formül; T1.16 B)
+    return max(v*(sg-1)*1000/((sg_target-1)*1000) - v, 0.0)
 
 # --- §9 misc hacmi (fl oz'a; girdi misc birim kodu) ---
 def misc_to_fluid_oz(amount, units):

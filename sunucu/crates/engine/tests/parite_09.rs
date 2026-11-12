@@ -144,8 +144,13 @@ fn parite_09() {
                 c.v("resmi_kaynak").as_str(),
                 c.v("tarih").as_str()
             ))),
-            "residual_co2" => c.check_f(bt::residual_co2(c.f("t_c"))),
-            "co2_pressure_psi" => c.check_f(bt::co2_pressure_psi(c.f("t_c"), c.f("vol"))),
+            "residual_co2" => c.check_f(engine::yeast::residual_co2(engine::units::c_to_f(
+                c.f("t_c"),
+            ))),
+            "co2_pressure_psi" => c.check_f(engine::yeast::co2_psi(
+                c.f("vol"),
+                engine::units::c_to_f(c.f("t_c")),
+            )),
             "spund" => {
                 let Ok(s) = bt::spund(c.f("target_vol"), c.f("t_c"), c.f("fg_expected")) else {
                     c.check(&json!({ "hata": "ValueError" }));

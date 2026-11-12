@@ -95,32 +95,60 @@ FIXED_TYPES = (1, 2, 4, 5, 6, 7)      # sabit verimli tipler: Extract, Sugar, Dr
 
 
 def ferm(name="", amount_oz=0.0, yield_pct=0.0, color_srm=0.0, typ=0, use=0, not_fermentable=False,
-         late_extract_min=0.0, max_in_batch_pct=100.0):
-    """Asgari fermentable girdisi (§0.2, §2): amount oz, yield %, renk SRM, tip F_G_TYPE, kullanım F_G_USE."""
+         late_extract_min=0.0, max_in_batch_pct=100.0, ibu_gal_per_lb=0.0):
+    """Fermentable girdisi (§0.2, §2): amount oz, yield %, renk SRM, tip F_G_TYPE, kullanım F_G_USE.
+    Alan adları Rust `recipe::Fermentable` ile aynıdır (ADR-0004 madde 1 ve 4); 02 üreticisi de bunu kullanır."""
     return {"name": name, "amount_oz": float(amount_oz), "yield_pct": float(yield_pct),
-            "color_srm": float(color_srm), "type": int(typ), "use": int(use),
+            "color_srm": float(color_srm), "kind": int(typ), "usage": int(use),
             "not_fermentable": bool(not_fermentable), "late_extract_min": float(late_extract_min),
-            "max_in_batch_pct": float(max_in_batch_pct)}
+            "max_in_batch_pct": float(max_in_batch_pct), "ibu_gal_per_lb": float(ibu_gal_per_lb)}
 
 
-def yeast(min_att=73.0, max_att=77.0, tol=10.0, add_to_secondary=False):
-    return {"min_attenuation": float(min_att), "max_attenuation": float(max_att), "tolerance": float(tol),
-            "add_to_secondary": bool(add_to_secondary)}
+def yeast(min_att=73.0, max_att=77.0, tol=10.0, add_to_secondary=False, form=0):
+    """Maya girdisi; Rust `recipe::Yeast` ile aynı alan adları (04'ün toplam alanları sıfır varsayılır)."""
+    return {"min_attenuation_pct": float(min_att), "max_attenuation_pct": float(max_att),
+            "tolerance_abv_pct": float(tol), "add_to_secondary": bool(add_to_secondary), "form": int(form),
+            "total_cells_billion": 0.0, "viable_cells_billion": 0.0, "packs": 0.0, "viability_pct": 0.0,
+            "use_packages": True, "amount_oz": 0.0, "cells_per_ml_billion": 1.0,
+            "dry_pitch_rate_g_per_hl": 75.0}
+
+
+def hop(amount_oz=1.0, alpha_pct=5.0, form=0, usage=0, time_min=60.0, whirlpool_temp_f=176.0):
+    """Hop girdisi; Rust `recipe::Hop` ile aynı alan adları."""
+    return {"amount_oz": float(amount_oz), "alpha_pct": float(alpha_pct), "form": int(form), "usage": int(usage),
+            "time_min": float(time_min), "whirlpool_temp_f": float(whirlpool_temp_f)}
+
+
+def misc(usage=0, time_min=0.0):
+    """Misc girdisi; Rust `recipe::Misc` ile aynı alan adları."""
+    return {"usage": int(usage), "time_min": float(time_min)}
+
+
+DEFAULT_HOP_OPTIONS = {"first_wort_adj_pct": 10.0, "type_adj": True, "leaf_adj_pct": 0.0, "plug_adj_pct": 2.0,
+                       "pellet_adj_pct": 10.0, "mash_adj_pct": -80.0}
 
 
 def make_recipe(ferms, typ=2, volume_floz=704.0, trub_loss_floz=0.0, pre_trub_loss_floz=0.0, boil_vol_floz=0.0,
                 boil_time_min=60.0, efficiency=72.0, yeasts=None, mash_temps=(), grain_weight_oz=0.0, biab=False,
-                steep_efficiency=15.0, mash_fg_adjust=True, mash_fg_adj_temp=153.5, mash_fg_adj_slope=-1.25):
-    """Asgari reçete girdisi. Hacimler fl oz, sıcaklıklar °F, verim %, F_R_TYPE = typ (0 Extract .. 6 Seltzer).
-    Seçenekler (§10) reçeteyle birlikte taşınır. Mash adımı infüzyonu = 10 fl oz × adım sırası (örnek veri)."""
-    return {"type": int(typ), "volume_floz": float(volume_floz), "trub_loss_floz": float(trub_loss_floz),
-            "pre_trub_loss_floz": float(pre_trub_loss_floz), "boil_vol_floz": float(boil_vol_floz),
-            "boil_time_min": float(boil_time_min), "efficiency": float(efficiency),
-            "steep_efficiency": float(steep_efficiency), "mash_fg_adjust": bool(mash_fg_adjust),
-            "mash_fg_adj_temp": float(mash_fg_adj_temp), "mash_fg_adj_slope": float(mash_fg_adj_slope),
-            "fermentables": list(ferms), "yeasts": list(yeasts or []),
-            "mash": {"grain_weight": float(grain_weight_oz), "biab": bool(biab),
-                     "steps": [{"temp_f": float(t), "infusion": 10.0 * (i + 1)} for i, t in enumerate(mash_temps)]}}
+                steep_efficiency=15.0, mash_fg_adjust=True, mash_fg_adj_temp=153.5, mash_fg_adj_slope=-1.25,
+                hops=None, miscs=None, altitude_ft=0.0, hop_util_pct=100.0, whirlpool_carry=False,
+                whirlpool_time_min=0.0, hop_options=None):
+    """Ortak reçete girdisi (Rust `recipe::RecipeInput`, ADR-0004 madde 1): alan adları yapıyla aynıdır.
+    Hacimler fl oz, sıcaklıklar °F, verim %, kind = typ (0 Extract .. 6 Seltzer). Seçenekler reçeteyle taşınır.
+    Mash adımı infüzyonu = 10 fl oz × adım sırası (örnek veri), adım türü 0 (infüzyon)."""
+    return {"kind": int(typ), "volume_floz": float(volume_floz), "boil_vol_floz": float(boil_vol_floz),
+            "boil_time_min": float(boil_time_min), "efficiency_pct": float(efficiency),
+            "equipment": {"trub_loss_floz": float(trub_loss_floz), "pre_trub_loss_floz": float(pre_trub_loss_floz),
+                          "altitude_ft": float(altitude_ft), "hop_util_pct": float(hop_util_pct),
+                          "whirlpool_carry": bool(whirlpool_carry), "whirlpool_time_min": float(whirlpool_time_min)},
+            "fermentables": list(ferms), "hops": list(hops or []), "yeasts": list(yeasts or []),
+            "miscs": list(miscs or []),
+            "mash": {"grain_weight_oz": float(grain_weight_oz), "biab": bool(biab),
+                     "steps": [{"kind": 0, "temp_f": float(t), "infusion_floz": 10.0 * (i + 1)}
+                               for i, t in enumerate(mash_temps)]},
+            "options": {"steep_efficiency_pct": float(steep_efficiency), "mash_fg_adjust": bool(mash_fg_adjust),
+                        "mash_fg_adj_temp_f": float(mash_fg_adj_temp), "mash_fg_adj_slope": float(mash_fg_adj_slope),
+                        "hop": dict(hop_options or DEFAULT_HOP_OPTIONS)}}
 
 
 # §12.3 örneği (All Grain, 5.5 gal, %72)
@@ -206,9 +234,9 @@ def bconv_temperature(x, frm, to):
 def og_points(g, eff, steep_eff=15.0):
     """§2.1: puan·galon."""
     lb_ppg = (g["amount_oz"] / 16) * (g["yield_pct"] * 46 / 100)
-    if g["type"] in FIXED_TYPES:
+    if g["kind"] in FIXED_TYPES:
         return lb_ppg
-    if g["use"] in (0, 8):
+    if g["usage"] in (0, 8):
         return lb_ppg * eff / 100
     return lb_ppg * steep_eff / 100
 
@@ -218,8 +246,8 @@ def fg_points(g, eff, atten, steep_eff=15.0):
     p = og_points(g, eff, steep_eff)
     if g["not_fermentable"]:
         return p
-    if g["type"] == 2: f = -0.231
-    elif g["type"] in (5, 6, 7): f = -0.05
+    if g["kind"] == 2: f = -0.231
+    elif g["kind"] in (5, 6, 7): f = -0.05
     else: f = 1 - atten / 100
     return p * f
 
@@ -229,8 +257,8 @@ def og_points_phase(r, phase):
     if phase not in range(9): raise ValueError("aşama kodu 0-8 olmalı")  # Karar (T1.16)
     s = 0.0
     for g in r["fermentables"]:
-        if g["use"] <= phase or g["use"] == 8:
-            s += og_points(g, r["efficiency"], r["steep_efficiency"])
+        if g["usage"] <= phase or g["usage"] == 8:
+            s += og_points(g, r["efficiency_pct"], r["options"]["steep_efficiency_pct"])
     return s
 
 
@@ -242,7 +270,7 @@ def estimate_og(r, v_floz, phase):
 
 def og_volume(r):
     """Extract reçetede (F_R_TYPE 0) Ekipman.F_E_PRE_TRUB_LOSS, aksi halde F_R_VOLUME (fl oz)."""
-    return r["pre_trub_loss_floz"] if r["type"] == 0 else r["volume_floz"]
+    return r["equipment"]["pre_trub_loss_floz"] if r["kind"] == 0 else r["volume_floz"]
 
 
 def recipe_og(r): return estimate_og(r, og_volume(r), 4)               # §3.3
@@ -251,10 +279,11 @@ def recipe_virtual_og(r): return estimate_og(r, og_volume(r), 6)       # §3.4
 
 def est_post_mash_og(r):
     """§3.5."""
-    p0 = (estimate_og(r, r["volume_floz"], 0) - 1) * 1000
+    og = estimate_og(r, r["volume_floz"], 0)
     if r["boil_vol_floz"] > 0:
-        p0 = p0 * (r["trub_loss_floz"] + r["volume_floz"]) / r["boil_vol_floz"]
-    return 1 + p0 / 1000
+        # Tek formül 05 §5.10 (`preboil_sg`): 1 + (OG - 1) (parti + trub) / kaynatma hacmi (T1.16 B)
+        return 1 + (og - 1) * (r["volume_floz"] + r["equipment"]["trub_loss_floz"]) / r["boil_vol_floz"]
+    return og
 
 
 def late_extract_sgs(r, boil_vol_floz=0.0):
@@ -263,31 +292,33 @@ def late_extract_sgs(r, boil_vol_floz=0.0):
     if vb <= 0.1:
         vb = 0.1
     vol = r["volume_floz"]
-    eff, steep = r["efficiency"], r["steep_efficiency"]
-    ratio = (vol + r["trub_loss_floz"]) / vb
+    eff, steep = r["efficiency_pct"], r["options"]["steep_efficiency_pct"]
+    ratio = (vol + r["equipment"]["trub_loss_floz"]) / vb
 
-    def is_late(g): return g["type"] in FIXED_TYPES and g["late_extract_min"] > 0
+    def is_late(g): return g["kind"] in FIXED_TYPES and g["late_extract_min"] > 0
 
     def sg_of(p): return 1.0 if vol <= 0 else 1 + p * ratio / (vol / 128) / 1000
 
     def add(prof, sg, t):
         if prof and abs(t - prof[-1][1]) < 0.1:
             prof[-1][0] = sg
+            if t == 0.0:
+                prof[-1][1] = 0.0  # son girdi her zaman t = 0 (02 §5.1; T1.16 B)
         else:
             prof.append([sg, t])
 
     p = 0.0
     for g in r["fermentables"]:
-        if g["use"] in (0, 1, 2, 8) and not is_late(g):
+        if g["usage"] in (0, 1, 2, 8) and not is_late(g):
             p += og_points(g, eff, steep)
     prof = [[sg_of(p), r["boil_time_min"]]]
-    lates = [g for g in r["fermentables"] if g["use"] in (0, 1, 2, 8) and is_late(g)]
+    lates = [g for g in r["fermentables"] if g["usage"] in (0, 1, 2, 8) and is_late(g)]
     lates.sort(key=lambda g: (-g["late_extract_min"], g["name"]))
     for g in lates:
         p += og_points(g, eff, steep)
         add(prof, sg_of(p), min(g["late_extract_min"], r["boil_time_min"]))
     for g in r["fermentables"]:
-        if g["use"] == 3:
+        if g["usage"] == 3:
             p += og_points(g, eff, steep)
     add(prof, sg_of(p), 0.0)
     return prof
@@ -313,14 +344,14 @@ def scale_gravity(r, og_target):
 def scale_mash_from_grain_weight(mash, w_new):
     """§3.8."""
     m = copy.deepcopy(mash)
-    w_old = m["grain_weight"]
-    m["grain_weight"] = w_new
+    w_old = m["grain_weight_oz"]
+    m["grain_weight_oz"] = w_new
     if w_new <= 0 or w_old <= 0 or w_new == w_old:
         return m
     if not m["biab"]:
         for s in m["steps"]:
-            if s["infusion"] > 0:
-                s["infusion"] = w_new * (s["infusion"] / w_old)
+            if s["infusion_floz"] > 0:
+                s["infusion_floz"] = w_new * (s["infusion_floz"] / w_old)
     return m
 
 
@@ -328,7 +359,7 @@ def total_grain_use_field(r, use, field):
     """§3.9: field = fermentable sözlüğündeki anahtar (ör. "amount_oz")."""
     s = 0.0
     for g in r["fermentables"]:
-        if g["use"] == use:
+        if g["usage"] == use:
             s += g[field]
     return s
 
@@ -338,14 +369,14 @@ def get_efficiency(r, og, v_floz, mash_only):
     v = 0.01 if v_floz <= 0 else v_floz
     if og <= 0:
         og = recipe_og(r)
-    if r["type"] not in (1, 2):
+    if r["kind"] not in (1, 2):
         return 0.0
     uses = (0, 1, 8) if mash_only else (0, 1, 2, 3, 4, 8)
     s = m = 0.0
     for g in r["fermentables"]:
-        if g["use"] in uses:
+        if g["usage"] in uses:
             x = (g["amount_oz"] / 16) * (g["yield_pct"] * 46 / 100)
-            if g["type"] in FIXED_TYPES: s += x
+            if g["kind"] in FIXED_TYPES: s += x
             else: m += x
     mg = m / (v / 128)
     pm = (og - 1) * 1000
@@ -364,15 +395,15 @@ def yeast_attenuation(r):
     """§5.1 adım 1: (atten %, tol %ABV); ilk F_Y_ADD_TO_SECONDARY == 0 maya, yoksa (73, 10)."""
     for y in r["yeasts"]:
         if not y["add_to_secondary"]:
-            return avg_attenuation(y["min_attenuation"], y["max_attenuation"]), y["tolerance"]
+            return avg_attenuation(y["min_attenuation_pct"], y["max_attenuation_pct"]), y["tolerance_abv_pct"]
     return 73.0, 10.0
 
 
 def mash_adjusted_attenuation(r, atten):
     """§5.1 adım 2 (yalnız All Grain)."""
-    if r["type"] != 2:
+    if r["kind"] != 2:
         return atten
-    tref = r["mash_fg_adj_temp"]
+    tref = r["options"]["mash_fg_adj_temp_f"]
     best, best_diff, prev = tref, 40.0, 0.0
     for s in r["mash"]["steps"]:
         t = s["temp_f"]
@@ -381,9 +412,9 @@ def mash_adjusted_attenuation(r, atten):
             if prev < tref and prev >= 139 and t > tref:
                 continue
             best, best_diff, prev = t, d, t
-    if r["mash_fg_adjust"]:
+    if r["options"]["mash_fg_adjust"]:
         best = min(max(best, 144.0), 160.0)
-        atten = atten + r["mash_fg_adj_slope"] * (best - tref)
+        atten = atten + r["options"]["mash_fg_adj_slope"] * (best - tref)
     return atten
 
 
@@ -392,7 +423,7 @@ def recipe_fg(r):
     atten = mash_adjusted_attenuation(r, atten)
     fgp = 0.0
     for g in r["fermentables"]:
-        fgp += fg_points(g, r["efficiency"], atten, r["steep_efficiency"])
+        fgp += fg_points(g, r["efficiency_pct"], atten, r["options"]["steep_efficiency_pct"])
     v = og_volume(r)
     fgv = 1.0 if v <= 0 else 1 + fgp / (v / 128) / 1000
     og_ = recipe_og(r)
@@ -420,7 +451,7 @@ def recipe_color(r):
     mcu_total = 0.0
     for g in r["fermentables"]:
         mcu_total += (g["amount_oz"] / 16) * g["color_srm"]
-    v_gal = (r["volume_floz"] + r["trub_loss_floz"]) / 128
+    v_gal = (r["volume_floz"] + r["equipment"]["trub_loss_floz"]) / 128
     if v_gal <= 0:
         return 0.0
     return morey(mcu_total, v_gal)
@@ -464,7 +495,7 @@ def color_flexibility(r, target):
 
 def _grav_eq(rtype, eff, g, amount):
     y = g["yield_pct"] / 100
-    if g["type"] in FIXED_TYPES: return y * amount / 16
+    if g["kind"] in FIXED_TYPES: return y * amount / 16
     if rtype == 0: return y * amount * 15 / 1600
     return y * amount * eff / 1600
 
@@ -475,11 +506,11 @@ def iterate_color(r, tt):
     og0 = recipe_og(r)
     cur = recipe_color(r)
     lo, hi, _ = color_flexibility(r, tt)
-    vg = (r["volume_floz"] + r["trub_loss_floz"]) / 128
+    vg = (r["volume_floz"] + r["equipment"]["trub_loss_floz"]) / 128
     mc = mcu_from_srm(cur) * vg
     delta = mcu_from_srm(tt) * vg - mc
     w = total_grains_oz(r)
-    rtype, eff = r["type"], r["efficiency"]
+    rtype, eff = r["kind"], r["efficiency_pct"]
     dp, wb, base = 0.0, 0.0, []
     for g in r["fermentables"]:
         c, a = g["color_srm"], g["amount_oz"]
@@ -503,7 +534,7 @@ def iterate_color(r, tt):
                     continue
                 new = 0.0 if e <= dp else a * (1 - a * (dp / e) / wb)
                 amax = (g["max_in_batch_pct"] + 15) / 100 * w
-                if rtype == 1 and g["type"] == 0:
+                if rtype == 1 and g["kind"] == 0:
                     amax = max(amax, 0.25 * w)
                 g["amount_oz"] = min(max(new, 0.0), amax)
     scaled = scale_gravity(r, og0)
@@ -607,7 +638,7 @@ def recipe_actual_efficiency(r, og_measured, volume_measured):
 def do_adjust_color(r, target):
     """§8.3 DoAdjustColor ön koşulları: (durum, reçete, başarı). Tip >= 3 -> 'not_applicable';
     hedef [min, max] dışında -> 'out_of_range' (uçlar içeride); aksi 'adjusted'. [seçim: uçlar dahil]"""
-    if r["type"] >= 3:
+    if r["kind"] >= 3:
         return "not_applicable", r, False
     lo, hi = color_adj_range(r)
     if target < lo or target > hi:

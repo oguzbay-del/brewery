@@ -467,7 +467,7 @@
 {"fonk":"mash_grain_weight","girdi":{"grains":[[9,0,1.0]]},"beklenen":{"hata":"ValueError"}},
 {"fonk":"total_grain_use","girdi":{"items":[[2,1.0]],"use":9},"beklenen":{"hata":"ValueError"}},
 {"fonk":"wn_total_water","girdi":{"brew_type":7,"v_boil":28.958,"topup":0.0,"v_sparge":19.966,"v_mash":15.0,"topup_kettle":0.0},"beklenen":{"hata":"ValueError"}},
-{"fonk":"gravity_adj_water_vol","girdi":{"v":20.0,"sg":1.06,"sg_target":1.05},"beklenen":4.0},
+{"fonk":"gravity_adj_water_vol","girdi":{"v":20.0,"sg":1.06,"sg_target":1.05},"beklenen":4.0000000000000036},
 {"fonk":"gravity_adj_water_vol","girdi":{"v":20.0,"sg":1.04,"sg_target":1.05},"beklenen":0.0},
 {"fonk":"gravity_adj_water_vol","girdi":{"v":20.0,"sg":1.05,"sg_target":1.05},"beklenen":0.0},
 {"fonk":"gravity_adj_water_vol","girdi":{"v":25.0,"sg":1.075,"sg_target":1.045},"beklenen":16.666666666666707},

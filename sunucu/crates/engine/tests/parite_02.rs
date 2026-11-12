@@ -2,106 +2,35 @@
 #![allow(clippy::expect_used, clippy::too_many_lines)]
 mod ortak;
 
-use engine::density::{GrainType, GrainUse, RecipeType};
-use engine::hops::{
-    self, Fermentable, Hop, HopEquation, HopForm, HopOptions, HopUse, MiscItem, Recipe,
-    ScaleStatus, StorageType,
+use engine::density::LateExtractPoint;
+use engine::hops::{self, HopEquation, ScaleStatus, StorageType};
+use engine::recipe::{
+    Equipment, Hop, HopForm, HopOptions, HopUse, Mash, Misc, Options, RecipeInput, RecipeType,
 };
+use engine::units;
+use ortak::{hop, hop_options as opts, hops, recipe_input as recipe};
 use serde_json::Value;
-
-fn num(v: &Value, k: &str) -> f64 {
-    v.get(k)
-        .and_then(Value::as_f64)
-        .unwrap_or_else(|| panic!("missing number `{k}` in {v}"))
-}
-
-fn int(v: &Value, k: &str) -> i64 {
-    v.get(k)
-        .and_then(Value::as_i64)
-        .unwrap_or_else(|| panic!("missing integer `{k}` in {v}"))
-}
 
 fn eq(c: &ortak::Case) -> engine::Result<HopEquation> {
     HopEquation::from_code(c.i("equation"))
 }
 
-fn hop(v: &Value) -> Hop {
-    Hop {
-        amount: num(v, "amount"),
-        alpha: num(v, "alpha"),
-        form: HopForm::from_code(int(v, "form")).expect("hop form"),
-        usage: HopUse::from_code(int(v, "use")).expect("hop use"),
-        time: num(v, "time"),
-        whirlpool_temp_f: num(v, "whirlpool_temp_f"),
-    }
-}
-
-fn hops(v: &Value) -> Vec<Hop> {
-    v.as_array()
-        .expect("hops is an array")
-        .iter()
-        .map(hop)
-        .collect()
-}
-
-fn opts(v: &Value) -> HopOptions {
-    HopOptions {
-        first_wort_adj: num(v, "first_wort_adj"),
-        type_adj: int(v, "type_adj") != 0,
-        leaf_adj: num(v, "leaf_adj"),
-        plug_adj: num(v, "plug_adj"),
-        pellet_adj: num(v, "pellet_adj"),
-        mash_adj: num(v, "mash_adj"),
-    }
-}
-
-fn recipe(v: &Value) -> Recipe {
-    Recipe {
-        volume: num(v, "volume"),
-        trub_loss: num(v, "trub_loss"),
-        boil_time: num(v, "boil_time"),
-        boil_vol: num(v, "boil_vol"),
-        altitude: num(v, "altitude"),
-        recipe_type: RecipeType::from_code(int(v, "type")).expect("recipe type"),
-        hop_util: num(v, "hop_util"),
-        whirlpool_carry: v["whirlpool_carry"].as_bool().expect("bool"),
-        whirlpool_time: num(v, "whirlpool_time"),
-    }
-}
-
-fn ferms(v: &Value) -> Vec<Fermentable> {
-    v.as_array()
-        .expect("fermentables is an array")
-        .iter()
-        .map(|g| Fermentable {
-            name: g["name"].as_str().expect("name").to_owned(),
-            usage: GrainUse::from_code(int(g, "use")).expect("grain use"),
-            kind: GrainType::from_code(int(g, "type")).expect("grain type"),
-            amount_oz: num(g, "amount_oz"),
-            yield_pct: num(g, "yield_pct"),
-            late_extract: num(g, "late_extract"),
-            points: num(g, "points"),
-            ibu_gal_per_lb: num(g, "ibu_gal_per_lb"),
-        })
-        .collect()
-}
-
-fn profile(v: &Value) -> Vec<(f64, f64)> {
+fn profile(v: &Value) -> Vec<LateExtractPoint> {
     v.as_array()
         .expect("profile is an array")
         .iter()
-        .map(|p| (p[0].as_f64().expect("sg"), p[1].as_f64().expect("t")))
+        .map(|p| LateExtractPoint {
+            sg: p[0].as_f64().expect("sg"),
+            time_min: p[1].as_f64().expect("t"),
+        })
         .collect()
 }
 
-fn misc(v: &Value) -> Vec<MiscItem> {
+fn misc(v: &Value) -> Vec<Misc> {
     v.as_array()
         .expect("misc is an array")
         .iter()
-        .map(|x| MiscItem {
-            usage: int(x, "use"),
-            time: num(x, "time"),
-        })
+        .map(ortak::misc)
         .collect()
 }
 
@@ -128,7 +57,7 @@ fn parite_02() {
                 c.f("t0"),
                 c.f("dur"),
             )),
-            "boil_temp_c" => c.check_f(hops::boil_temp_c(c.f("alt_ft"))),
+            "boil_temp_c" => c.check_f(units::boil_temp_c(c.f("alt_ft"))),
             "combine_utilizations" => {
                 let segs: Vec<f64> = c
                     .v("segs")
@@ -194,7 +123,7 @@ fn parite_02() {
                 c.f("t"),
                 c.f("temp_c"),
             )),
-            "boil_temp_f" => c.check_f(hops::boil_temp_f(c.f("alt_ft"))),
+            "boil_temp_f" => c.check_f(units::boil_temp_f(c.f("alt_ft"))),
             "resolve_equation" => {
                 let global = HopEquation::from_code(c.i("global_equation")).expect("equation");
                 let r = hops::resolve_equation(c.i("equation"), global);
@@ -218,18 +147,6 @@ fn parite_02() {
                     &opts(c.v("options")),
                 ))
             })()),
-            "late_extract_sgs" => {
-                let prof = hops::late_extract_sgs(
-                    &recipe(c.v("recipe")),
-                    &ferms(c.v("fermentables")),
-                    c.f("v_boil"),
-                );
-                let json: Vec<Value> = prof
-                    .iter()
-                    .map(|&(sg, t)| serde_json::json!([sg, t]))
-                    .collect();
-                c.check(&Value::Array(json));
-            }
             "hop_total_utilization" => c.check_r(hops::hop_total_utilization(
                 &hop(c.v("hop")),
                 &recipe(c.v("recipe")),
@@ -241,7 +158,6 @@ fn parite_02() {
                 &recipe(c.v("recipe")),
                 &profile(c.v("profile")),
                 eq(c).expect("equation"),
-                &opts(c.v("options")),
             )),
             "hopped_extract_ibu" => c.check_f(hops::hopped_extract_ibu(
                 c.f("amount_oz"),
@@ -251,22 +167,16 @@ fn parite_02() {
             )),
             "hop_percent" => c.check_f(hops::hop_percent(c.f("w"), c.f("tot_hops"))),
             "recipe_ibu" => c.check_r(hops::recipe_ibu(
-                &hops(c.v("hops")),
                 &recipe(c.v("recipe")),
-                &ferms(c.v("fermentables")),
                 eq(c).expect("equation"),
-                &opts(c.v("options")),
                 c.f("v_boil"),
             )),
             "scale_bitterness" => {
                 let Ok(r) = hops::scale_bitterness(
                     c.f("current_ibu"),
                     c.f("target"),
-                    &hops(c.v("hops")),
                     &recipe(c.v("recipe")),
-                    &ferms(c.v("fermentables")),
                     eq(c).expect("equation"),
-                    &opts(c.v("options")),
                     c.f("v_boil"),
                 ) else {
                     c.check_hata();
@@ -357,43 +267,54 @@ fn post_boil_is_finite_for_long_durations() {
 /// T1.15 B2: scaling with an isomerised-extract dry hop lands on the target (60 IBU).
 #[test]
 fn scale_bitterness_with_form4_dry_hop_hits_target() {
-    let h = |amount: f64, alpha: f64, form: HopForm, usage: HopUse, time: f64| Hop {
-        amount,
-        alpha,
+    let h = |amount_oz: f64, alpha_pct: f64, form: HopForm, usage: HopUse, time_min: f64| Hop {
+        amount_oz,
+        alpha_pct,
         form,
         usage,
-        time,
+        time_min,
         whirlpool_temp_f: 176.0,
     };
-    let hs = vec![
-        h(1.0, 10.0, HopForm::Pellet, HopUse::Boil, 60.0),
-        h(0.05, 50.0, HopForm::IsomerizedExtract, HopUse::DryHop, 0.0),
-    ];
-    let rc = Recipe {
-        volume: 640.0,
-        trub_loss: 0.0,
-        boil_time: 60.0,
-        boil_vol: 768.0,
-        altitude: 0.0,
-        recipe_type: RecipeType::AllGrain,
-        hop_util: 100.0,
-        whirlpool_carry: false,
-        whirlpool_time: 0.0,
+    let rc = RecipeInput {
+        kind: RecipeType::AllGrain,
+        volume_floz: 640.0,
+        boil_vol_floz: 768.0,
+        boil_time_min: 60.0,
+        efficiency_pct: 72.0,
+        equipment: Equipment {
+            trub_loss_floz: 0.0,
+            pre_trub_loss_floz: 0.0,
+            altitude_ft: 0.0,
+            hop_util_pct: 100.0,
+            whirlpool_carry: false,
+            whirlpool_time_min: 0.0,
+        },
+        fermentables: vec![],
+        hops: vec![
+            h(1.0, 10.0, HopForm::Pellet, HopUse::Boil, 60.0),
+            h(0.05, 50.0, HopForm::IsomerizedExtract, HopUse::DryHop, 0.0),
+        ],
+        yeasts: vec![],
+        miscs: vec![],
+        mash: Mash {
+            grain_weight_oz: 0.0,
+            biab: false,
+            steps: vec![],
+        },
+        options: Options {
+            hop: HopOptions::default(),
+            ..Options::default()
+        },
     };
-    let o = HopOptions::default();
     let t = HopEquation::Tinseth;
-    let cur = hops::recipe_ibu(&hs, &rc, &[], t, &o, 0.0).expect("ibu");
-    let r = hops::scale_bitterness(cur, 60.0, &hs, &rc, &[], t, &o, 0.0).expect("scale");
+    let cur = hops::recipe_ibu(&rc, t, 0.0).expect("ibu");
+    let r = hops::scale_bitterness(cur, 60.0, &rc, t, 0.0).expect("scale");
     assert!(matches!(r.status, ScaleStatus::Ok));
-    let scaled: Vec<Hop> = hs
-        .iter()
-        .zip(&r.amounts)
-        .map(|(x, &amount)| Hop {
-            amount,
-            ..x.clone()
-        })
-        .collect();
-    let got = hops::recipe_ibu(&scaled, &rc, &[], t, &o, 0.0).expect("ibu");
+    let mut scaled = rc.clone();
+    for (x, &amount_oz) in scaled.hops.iter_mut().zip(&r.amounts) {
+        x.amount_oz = amount_oz;
+    }
+    let got = hops::recipe_ibu(&scaled, t, 0.0).expect("ibu");
     assert!((got - 60.0).abs() < 1e-9, "got {got}");
 }
 

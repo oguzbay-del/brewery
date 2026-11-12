@@ -1,5 +1,5 @@
 """Bölüm 01 parite vektörleri: yoğunluk, alkol, renk, ölçüm araçları (formuller/01-yogunluk-alkol-renk.md)."""
-from ortak import Vektor, dene, yukle
+from ortak import Vektor, dene, fikstur, yukle
 
 # (og, fg) çiftleri: tipik, spesifikasyon örnekleri, og == fg, og < fg (OE kırpması)
 CIFTLER = [
@@ -104,12 +104,13 @@ def uret():
     # §9.4 seyreltme
     for g, t, vol in ((1.060, 1.050, 640.0), (1.080, 1.040, 704.0), (1.040, 1.050, 640.0), (1.050, 1.050, 640.0),
                       (1.100, 1.030, 1280.0), (1.050, 1.020, 0.0)):
-        v.ekle("gravity_adjust_water_floz", {"current": g, "target": t, "volume_floz": vol},
+        v.ekle("gravity_adjust_water", {"current": g, "target": t, "volume": vol},
                ref.gadj_water(g, t, vol))
-    v.ekle("gravity_adjust_water_floz", {"current": 1.050, "target": 1.0, "volume_floz": 640.0},
+    v.ekle("gravity_adjust_water", {"current": 1.050, "target": 1.0, "volume": 640.0},
            dene(ref.gadj_water, 1.050, 1.0, 640.0), "hedef 1.000: sıfıra bölme (T1.16)")
 
     _uret_tam(v, ref)
+    _gec_ekstrakt(v, ref)
     return v.yaz()
 
 
@@ -311,7 +312,7 @@ def _uret_tam(v, ref):
             v.ekle("scale_gravity", {"recipe": r, "og_target": hedef},
                    {"hata": "ValueError"} if s is None else [g["amount_oz"] for g in s["fermentables"]],
                    n + " [miktarlar oz] ya da hata")
-        for w in (100.0, 232.0, 0.0, -1.0, r["mash"]["grain_weight"]):
+        for w in (100.0, 232.0, 0.0, -1.0, r["mash"]["grain_weight_oz"]):
             m = ref.scale_mash_from_grain_weight(r["mash"], w)
             v.ekle("scale_mash_from_grain_weight", {"mash": r["mash"], "grain_weight_new": w}, m, n)
         for use in range(9):
@@ -338,8 +339,8 @@ def _uret_tam(v, ref):
     # tol = 0, birden çok birincil maya) yukarıdaki reçete döngüsüyle sınanır.
     # §3.8: infüzyonu <= 0 olan adımlar (make_recipe hep pozitif üretir)
     for infs in ([0.0, 20.0, 30.0], [-5.0, 15.0], [40.0]):
-        m = {"grain_weight": 100.0, "biab": False,
-             "steps": [{"temp_f": 150.0 + i, "infusion": x} for i, x in enumerate(infs)]}
+        m = {"grain_weight_oz": 100.0, "biab": False,
+             "steps": [{"kind": 0, "temp_f": 150.0 + i, "infusion_floz": x} for i, x in enumerate(infs)]}
         for w in (150.0, 60.0):
             v.ekle("scale_mash_from_grain_weight", {"mash": m, "grain_weight_new": w},
                    ref.scale_mash_from_grain_weight(m, w), "infüzyon <= 0 adımları")
@@ -399,3 +400,28 @@ def _uret_tam(v, ref):
         v.ekle("adjust_color", {"recipe": r, "target": 10.0},
                [ref.recipe_color(ref.adjust_color(r, 10.0)[0]), ref.adjust_color(r, 10.0)[1],
                 [g["amount_oz"] for g in ref.adjust_color(r, 10.0)[0]["fermentables"]]], "ok = false")
+
+
+def _gec_ekstrakt(v, ref):
+    """§3.6 geç ekstrakt profili: 02 §5.1 ile tek uygulama; aynı fikstürler 02'nin tarif IBU vakalarında da
+    kullanılır (T1.16 B)."""
+    fx = fikstur(ref)
+    mk = ref.make_recipe
+    for (nm, rc, vb) in (
+        ("geç ekstrakt yok", mk(fx.ferms_a, boil_vol_floz=768), 0.0),
+        ("çoklu geç ekstrakt, eşit süre ve <0.1 fark birleşmesi", mk(fx.ferm_late, boil_vol_floz=768), 0.0),
+        ("whirlpool fermentable", mk(fx.ferm_wp, boil_vol_floz=768), 0.0),
+        ("tür 3 ve süresi 0 olan geç ekstrakt sayılmaz", mk(fx.ferm_misc, boil_vol_floz=768), 0.0),
+        ("boil_vol parametresi", mk(fx.ferms_a, boil_vol_floz=768), 900.0),
+        ("boil_vol <= 0 -> alan, alt sınır 0.1", mk(fx.ferms_a, boil_vol_floz=0.0), -1.0),
+        ("boil_time < geç ekleme süresi (min)", mk(fx.ferm_late, boil_vol_floz=768, boil_time_min=30), 0.0),
+        ("V=0 -> SG 1", mk(fx.ferms_a, boil_vol_floz=768, volume_floz=0.0), 0.0),
+        ("puan <= 0", mk([], boil_vol_floz=768), 0.0),
+        ("trub", mk(fx.ferm_late, boil_vol_floz=768, trub_loss_floz=32.0), 0.0),
+        ("Whirlpool kullanımlı geç ekstrakt t=0'da sayılır (T1.16 B)", mk(fx.ferm_late3, boil_vol_floz=768), 0.0),
+        ("kazan dışı geç ekstrakt profile girmez (T1.16 B)", mk(fx.ferm_late_dis, boil_vol_floz=768), 0.0),
+        ("0.1 dk'dan yakın geç ekstrakt: son girdi t=0 (T1.16 B)", mk(fx.ferm_late_son, boil_vol_floz=768), 0.0),
+    ):
+        v.ekle("late_extract_profile", {"recipe": rc, "boil_vol_floz": vb}, ref.late_extract_sgs(rc, vb),
+               nm + " [[sg, dk]]")
+        v.ekle("recipe_og_boil", {"recipe": rc, "boil_vol_floz": vb}, ref.recipe_og_boil(rc, vb), nm)

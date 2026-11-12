@@ -2,10 +2,10 @@
 #![allow(clippy::unwrap_used)] // vector shapes are fixed by the generator; a panic is the right failure
 mod ortak;
 
-use engine::density::{GrainType, GrainUse, RecipeType};
-use engine::mash::{
-    self, MiscFluidUnit, SpargeParams, StepInput, StepKind, StepResult, ThicknessStep, Tun,
-};
+use engine::density;
+use engine::mash::{self, MiscFluidUnit, SpargeParams, StepInput, StepResult, ThicknessStep, Tun};
+use engine::recipe::{GrainType, GrainUse, RecipeType, StepKind};
+use engine::units;
 use ortak::Case;
 use serde_json::{Value, json};
 
@@ -428,10 +428,10 @@ fn extra(c: &Case) -> bool {
             );
             c.check_res(r.map(|r| json!({"v_tot": r.v_tot, "sg": r.sg})));
         }
-        "gravity_adj_water_vol" => c.check_r(mash::gravity_adj_water_vol(
-            c.f("v"),
+        "gravity_adj_water_vol" => c.check_r(density::gravity_adjust_water(
             c.f("sg"),
             c.f("sg_target"),
+            c.f("v"),
         )),
         "misc_to_fluid_oz" => c.check_r((|| {
             mash::misc_to_fluid_oz(c.f("amount"), MiscFluidUnit::from_code(c.i("units"))?)
@@ -447,8 +447,8 @@ fn parite_05() {
         match c.fonk.as_str() {
             "constant" => {
                 let v = match c.v("name").as_str().unwrap() {
-                    "FLOZ_L" => mash::FLOZ_L,
-                    "LB_KG" => mash::LB_KG,
+                    "FLOZ_L" => units::FLOZ_L,
+                    "LB_KG" => units::LB_KG,
                     "OZ_KG" => mash::OZ_KG,
                     "GRAIN_VOL" => mash::GRAIN_VOL,
                     "C_MALT" => mash::C_MALT,
@@ -491,7 +491,7 @@ fn parite_05() {
                 tun(c),
                 opt(c, "tb").unwrap_or(100.0),
             )),
-            "boil_temp_c" => c.check_f(mash::boil_temp_c(c.f("alt_ft"))),
+            "boil_temp_c" => c.check_f(units::boil_temp_c(c.f("alt_ft"))),
             "equip_boil_vol" => c.check_f(mash::equip_boil_vol(
                 c.f("batch"),
                 c.f("topup"),
@@ -527,7 +527,7 @@ fn invalid_inputs_are_errors() {
     assert!(StepKind::from_code(3).is_err());
     assert!(MiscFluidUnit::from_code(13).is_err());
     assert!(mash::dilution(1.050, 0.0, 0.0, false, 1.0).is_err());
-    assert!(mash::gravity_adj_water_vol(20.0, 1.050, 1.000).is_err());
+    assert!(density::gravity_adjust_water(1.050, 1.000, 20.0).is_err());
     assert!(mash::wn_cool_loss(20.0, 0.0, 100.0).is_err());
     assert!(mash::preboil_sg(1.050, 20.0, 1.0, 0.0).is_err());
     assert!(mash::dilution(f64::NAN, 10.0, 1.0, false, 1.0).is_err());

@@ -80,3 +80,35 @@ class Vektor:
         gecici.write_text(bas + ",\n".join(satirlar) + "\n]}\n", encoding="utf-8")
         os.replace(gecici, yol)
         return yol, len(self.vakalar)
+
+
+def fikstur(ref01):
+    """01 ve 02 üreticilerinin paylaştığı reçete fikstürleri (ADR-0004 madde 1 ve 4, T1.16 B).
+
+    Alan adları Rust `recipe::RecipeInput` ve alt yapılarıyla aynıdır; kurucular 01 referansındadır
+    (`ferm`, `hop`, `make_recipe`). Aynı fermentable listeleri hem 01'in geç ekstrakt profilini hem
+    02'nin tarif düzeyindeki IBU hesabını sınar; böylece iki bölümün aynı reçetede tutarlılığı sınanır."""
+    f = ref01.ferm
+    pale = f("pale", 160, 80, 2, 0, 0)
+    ferms_a = [pale, f("munich", 32, 75, 9, 0, 0)]
+    ferm_late = [pale, f("dme", 16, 95, 4, 5, 2, late_extract_min=15), f("lme", 24, 80, 8, 1, 2, late_extract_min=5),
+                 f("honey", 8, 75, 2, 2, 2, late_extract_min=90),
+                 f("dme2", 8, 95, 4, 4, 2, late_extract_min=15.05), f("amber", 8, 95, 4, 6, 2, late_extract_min=15)]
+    return type("Fikstur", (), {
+        "ferms_a": ferms_a,
+        "ferm_late": ferm_late,
+        # use = 3 (Whirlpool) fermentable
+        "ferm_wp": ferms_a + [f("whirl sugar", 8, 100, 0, 2, 3)],
+        # tür 3 ve süresi 0 olan geç ekstrakt sayılmaz
+        "ferm_misc": ferms_a + [f("grain-type", 8, 80, 3, 3, 2, late_extract_min=20),
+                                f("late-zero", 8, 95, 4, 5, 2, late_extract_min=0)],
+        # T1.16 B: kullanım yeri Whirlpool olan geç ekstrakt zaman 0'da sayılır (önceden 02'de t = geç süre)
+        "ferm_late3": ferms_a + [f("late whirl dme", 16, 95, 4, 5, 3, late_extract_min=20)],
+        # T1.16 B: kazan dışı (Primary/Bottling) geç ekstrakt profile girmez
+        "ferm_late_dis": ferms_a + [f("primary dme", 16, 95, 4, 4, 4, late_extract_min=10),
+                                    f("bottling sugar", 8, 100, 0, 2, 7, late_extract_min=30)],
+        # son girdiye 0.1 dk'dan yakın geç ekstrakt: son girdi t = 0 kalır
+        "ferm_late_son": ferms_a + [f("dme son", 16, 95, 4, 4, 2, late_extract_min=0.05)],
+        "ferm_hopped": ferm_late + [f("hopped LME", 48, 78, 8, 1, 2, ibu_gal_per_lb=30.0),
+                                    f("plain LME", 48, 78, 8, 1, 2, ibu_gal_per_lb=0.0)],
+    })()

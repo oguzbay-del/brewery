@@ -6,8 +6,81 @@
 /// Continuous-quantity tolerance (slopes, ratios): `formuller/00-OKU-BENI.md`.
 pub const TOL: f64 = 1e-9;
 
+/// Millilitres per US fluid ounce.
+pub const FLOZ_ML: f64 = 29.573_529_56;
+
+/// Litres per US fluid ounce.
+pub const FLOZ_L: f64 = FLOZ_ML / 1000.0;
+
 /// One US gallon in litres (`128 fl oz × 29.57352956 mL`).
-pub const GAL_L: f64 = 128.0 * 29.573_529_56 / 1000.0;
+pub const GAL_L: f64 = 128.0 * FLOZ_ML / 1000.0;
+
+/// Kilograms per pound (BeerSmith: `0.4535924`).
+pub const LB_KG: f64 = 0.453_592_4;
+
+/// Grams per ounce (`LB_KG / 16 × 1000` = 28.349525, BeerSmith's constant; spec 04 §0 and, since
+/// T1.16 B, spec 02 §8 as well).
+pub const OZ_G: f64 = LB_KG / 16.0 * 1000.0;
+
+/// CO₂ in g/L per volume of gas (`44.01 / 22.414`, ideal gas, 0 °C, 1 atm); one constant for
+/// sections 09, 10 and 11.
+pub const CO2_G_PER_VOL: f64 = 44.01 / 22.414;
+
+/// g CO₂ per g fermented extract (Balling, spec 11 §3.2).
+pub const BALLING_CO2: f64 = 0.9565 / 2.0665;
+
+/// Litres to US fluid ounces.
+#[must_use]
+pub fn l_to_floz(litres: f64) -> f64 {
+    litres * 1000.0 / FLOZ_ML
+}
+
+/// US fluid ounces to litres.
+#[must_use]
+pub fn floz_to_l(floz: f64) -> f64 {
+    floz * FLOZ_ML / 1000.0
+}
+
+/// Litres to US gallons.
+#[must_use]
+pub fn gal_from_l(litres: f64) -> f64 {
+    litres * 1000.0 / FLOZ_ML / 128.0
+}
+
+/// Boiling point in °C at an altitude: `100 − alt · 0.3048 · 0.00324` (spec 02 §3.2, 05 §6.1).
+/// `alt_ft` in feet.
+#[must_use]
+pub fn boil_temp_c(alt_ft: f64) -> f64 {
+    100.0 - alt_ft * 0.3048 * 0.00324
+}
+
+/// Boiling point in °F at an altitude (spec 02 §3.2 `BoilTemp`); `alt_ft` in feet.
+#[must_use]
+pub fn boil_temp_f(alt_ft: f64) -> f64 {
+    c_to_f(boil_temp_c(alt_ft))
+}
+
+/// Sum with the same compensated algorithm as `CPython`'s `sum()` over floats (3.12+),
+/// so ill-conditioned fits match the reference to the last digits.
+#[must_use]
+#[allow(clippy::float_cmp)]
+pub fn py_sum(values: impl IntoIterator<Item = f64>) -> f64 {
+    let mut sum = 0.0_f64;
+    let mut comp = 0.0_f64;
+    for x in values {
+        let t = sum + x;
+        if sum.abs() >= x.abs() {
+            comp += (sum - t) + x;
+        } else {
+            comp += (x - t) + sum;
+        }
+        sum = t;
+    }
+    if comp != 0.0 && comp.is_finite() {
+        sum += comp;
+    }
+    sum
+}
 
 /// Specific gravity to degrees Plato (BeerSmith cubic).
 #[must_use]

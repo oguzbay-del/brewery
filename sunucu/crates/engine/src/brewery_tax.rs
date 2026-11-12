@@ -12,7 +12,8 @@ use std::fmt;
 use rust_decimal::{Decimal, RoundingStrategy};
 
 use crate::error::Error;
-use crate::units::{gravity_units, round_py, to_plato, to_sg};
+use crate::units::{BALLING_CO2, CO2_G_PER_VOL, c_to_f, gravity_units, round_py, to_plato, to_sg};
+use crate::yeast;
 
 // ---------------------------------------------------------------------------------------------
 // Constants
@@ -34,10 +35,6 @@ pub const KCAL_PROTEIN: f64 = 4.0;
 pub const ETOH_DENS: f64 = 0.78924;
 /// Water density, g/mL at 20 °C.
 pub const WATER_DENS: f64 = 0.9982;
-/// CO₂ in g/L per volume of gas (`44.01 / 22.414`, ideal gas, 0 °C, 1 atm); one constant for 09, 10, 11.
-pub const CO2_G_PER_VOL: f64 = 44.01 / 22.414;
-/// g CO₂ per g fermented extract (Balling).
-pub const BALLING_CO2: f64 = 0.9565 / 2.0665;
 
 /// Hectolitres per US beer barrel (31 US gal), exact finite decimal (T1.12 D1: factors are finite
 /// decimals in the rate table and are applied by multiplication, never derived by division).
@@ -594,22 +591,6 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
 // 3. Spunding
 // ---------------------------------------------------------------------------------------------
 
-/// Residual CO₂ (volumes) at fermentation temperature `t_c` (°C), 04 §3.2.
-#[must_use]
-pub fn residual_co2(t_c: f64) -> f64 {
-    let t = (t_c * 9.0 / 5.0 + 32.0).max(32.0);
-    3.0378 - 0.050_062 * t + 0.000_265_55 * t * t
-}
-
-/// Equilibrium CO₂ pressure (psi) for `vol` volumes at `t_c` (°C), 04 §3.5, never negative.
-#[must_use]
-pub fn co2_pressure_psi(t_c: f64, vol: f64) -> f64 {
-    let t = (t_c * 9.0 / 5.0 + 32.0).max(32.0);
-    (-16.6999 - 0.010_105_9 * t + 0.001_165_12 * t * t + 0.173_354 * t * vol + 4.24267 * vol
-        - 0.068_422_6 * vol * vol)
-        .max(0.0)
-}
-
 /// Spunding plan.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Spund {
@@ -637,15 +618,15 @@ pub fn spund(target_vol: f64, t_c: f64, fg_expected: f64) -> Result<Spund, TaxEr
     {
         return Err(TaxError::InvalidInput);
     }
-    let need_vol = target_vol - residual_co2(t_c);
+    let need_vol = target_vol - yeast::residual_co2(c_to_f(t_c));
     let need_g = need_vol.max(0.0) * CO2_G_PER_VOL;
     let dre_g_per_l = need_g / BALLING_CO2;
     let fermented_re_p = dre_g_per_l / (10.0 * fg_expected);
     let apparent_drop_p = fermented_re_p / 0.8192;
     let close_p = to_plato(fg_expected) + apparent_drop_p;
-    let psi = co2_pressure_psi(t_c, target_vol);
+    let psi = yeast::co2_psi(target_vol, c_to_f(t_c));
     Ok(Spund {
-        residual_vol: round_py(residual_co2(t_c), 2),
+        residual_vol: round_py(yeast::residual_co2(c_to_f(t_c)), 2),
         needed_g_per_l: round_py(need_g, 2),
         closing_sg: round_py(to_sg(close_p), 4),
         points_before: round_py((to_sg(close_p) - fg_expected) * 1000.0, 1),
@@ -871,7 +852,7 @@ pub fn spund_warnings(
     wide_u: i64,
 ) -> SpundWarnings {
     let mut warnings = Vec::new();
-    let psi = co2_pressure_psi(t_c, target_vol);
+    let psi = yeast::co2_psi(target_vol, c_to_f(t_c));
     let blocked = tank_max_psi.is_some_and(|m| psi > m + PSI_TOL);
     if blocked {
         warnings.push(SpundWarning::TankPressureExceeded);

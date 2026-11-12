@@ -17,27 +17,7 @@
 use std::collections::BTreeMap;
 
 use crate::error::{Error, Result, ensure_finite, ensure_positive, finite_result};
-use crate::units::gravity_units_checked;
-
-/// Sum with the same compensated algorithm as `CPython`'s `sum()` over floats (3.12+),
-/// so ill-conditioned fits match the reference to the last digits.
-pub(crate) fn py_sum(values: impl IntoIterator<Item = f64>) -> f64 {
-    let mut sum = 0.0_f64;
-    let mut comp = 0.0_f64;
-    for x in values {
-        let t = sum + x;
-        if sum.abs() >= x.abs() {
-            comp += (sum - t) + x;
-        } else {
-            comp += (x - t) + sum;
-        }
-        sum = t;
-    }
-    if comp != 0.0 && comp.is_finite() {
-        sum += comp;
-    }
-    sum
-}
+use crate::units::{gravity_units_checked, py_sum};
 
 // ------------------------------------------------------------------ §1 fermentation forecast
 
@@ -872,7 +852,7 @@ pub fn caco3_to(x: f64) -> HardnessUnits {
 
 /// Hop form for absorption (§6.1).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum HopForm {
+pub enum AbsorptionHopForm {
     /// Pellet (`pellet`).
     Pellet,
     /// Whole leaf (`yaprak`).
@@ -883,23 +863,23 @@ pub enum HopForm {
 
 /// Default wort absorption in L/g by hop form (§6.1) [to be verified].
 #[must_use]
-pub fn hop_absorption(form: HopForm) -> f64 {
+pub fn hop_absorption(form: AbsorptionHopForm) -> f64 {
     match form {
-        HopForm::Pellet => 0.0070,
-        HopForm::Leaf => 0.0130,
-        HopForm::Cryo => 0.0045,
+        AbsorptionHopForm::Pellet => 0.0070,
+        AbsorptionHopForm::Leaf => 0.0130,
+        AbsorptionHopForm::Cryo => 0.0045,
     }
 }
 
 /// Kettle volume lost to hops in litres (§6.2): `Σ grams·absorption`.
 #[must_use]
-pub fn kettle_hop_loss(g_by_form: &[(HopForm, f64)]) -> f64 {
+pub fn kettle_hop_loss(g_by_form: &[(AbsorptionHopForm, f64)]) -> f64 {
     py_sum(g_by_form.iter().map(|&(f, g)| hop_absorption(f) * g))
 }
 
 /// Fermenter volume lost to dry hops in litres (§6.2): `Σ grams·absorption`.
 #[must_use]
-pub fn dryhop_loss(g_by_form: &[(HopForm, f64)]) -> f64 {
+pub fn dryhop_loss(g_by_form: &[(AbsorptionHopForm, f64)]) -> f64 {
     py_sum(g_by_form.iter().map(|&(f, g)| hop_absorption(f) * g))
 }
 

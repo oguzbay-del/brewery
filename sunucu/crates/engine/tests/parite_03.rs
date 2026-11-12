@@ -7,7 +7,7 @@
 
 mod ortak;
 
-use engine::density::GrainType;
+use engine::recipe::GrainType;
 use engine::water::{self, Acid, MashModel, MiscUnit, Salt};
 use ortak::Case;
 use serde_json::{Value, json};
@@ -222,7 +222,7 @@ fn parite_03() {
                 c.b("ignore"),
             ))),
             "agent_volume" => c.check_f(water::agent_volume(
-                engine::density::RecipeType::from_code(c.i("rtype")).expect("recipe type"),
+                engine::recipe::RecipeType::from_code(c.i("rtype")).expect("recipe type"),
                 u8::try_from(c.i("use")).expect("use code"),
                 c.f("mash_tot"),
                 c.f("sparge"),

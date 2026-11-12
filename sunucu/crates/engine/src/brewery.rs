@@ -10,7 +10,7 @@
 use rust_decimal::{Decimal, RoundingStrategy};
 
 use crate::error::{Error, Result, ensure_finite, finite_result};
-use crate::home::py_sum;
+use crate::units::py_sum;
 use crate::units::to_sg;
 
 /// Specific gravity from °Plato (spec 08 §2.1, same polynomial as 01 §1.2).

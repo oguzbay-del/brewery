@@ -17,7 +17,7 @@ BeerSmith alanları US birimlerinde saklar. Dönüşümler `BConvertVolume`, `BC
 | hacim 0xE | US gal | |
 | hacim 0xF | ml | |
 | hacim 0x10 | L | |
-| ağırlık 9 | oz | 1 lb = 0.4535924 kg, 1 oz = 28.349525 g |
+| ağırlık 9 | oz | 1 lb = 0.4535924 kg, 1 oz = 28.349525 g (motorda tek sabit `units::OZ_G`; 02 §8 de bunu kullanır, T1.16 B) |
 | ağırlık 10 | g | |
 | ağırlık 7 | kg | |
 | sıcaklık (base) | °F | Karbonasyon fonksiyonları °F ile çalışır |

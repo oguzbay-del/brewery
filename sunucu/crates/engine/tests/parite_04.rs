@@ -2,10 +2,12 @@
 #![allow(clippy::unwrap_used, clippy::too_many_lines)]
 mod ortak;
 
+use engine::density;
+use engine::recipe::{Yeast as RecipeYeast, YeastForm};
+use engine::units;
 use engine::yeast::{
     self, BackAgent, CarbAmount, CarbType, MeadFerm, MeadMethod, PitchTargets, PrimingAgent,
-    RecipeYeast, StarterType, StarterYeastForm, YanMethod, YeastForm, YeastNitrogen, YeastType,
-    YeastUnit,
+    StarterType, StarterYeastForm, YanMethod, YeastNitrogen, YeastType, YeastUnit,
 };
 use serde_json::{Value, json};
 
@@ -18,16 +20,19 @@ fn yeasts(c: &ortak::Case) -> Vec<RecipeYeast> {
             let f = |k: &str| y[k].as_f64().unwrap();
             let i = |k: &str| y[k].as_i64().unwrap();
             RecipeYeast {
-                secondary: y["secondary"].as_bool().unwrap(),
-                tot_cells: f("tot_cells"),
-                viable_cells: f("viable_cells"),
-                new_amount: f("new_amount"),
+                min_attenuation_pct: 0.0,
+                max_attenuation_pct: 0.0,
+                tolerance_abv_pct: 0.0,
+                add_to_secondary: y["secondary"].as_bool().unwrap(),
+                total_cells_billion: f("tot_cells"),
+                viable_cells_billion: f("viable_cells"),
+                packs: f("new_amount"),
                 viability_pct: f("viability_pct"),
                 form: YeastForm::from_code(i("form")).unwrap(),
-                use_pkgs: i("use_pkgs") == 1,
+                use_packages: i("use_pkgs") == 1,
                 amount_oz: f("amount_oz"),
-                cells_ml: f("cells_ml"),
-                dry_pitch_rate: f("dry_pitch_rate"),
+                cells_per_ml_billion: f("cells_ml"),
+                dry_pitch_rate_g_per_hl: f("dry_pitch_rate"),
             }
         })
         .collect()
@@ -41,10 +46,10 @@ fn yform(c: &ortak::Case) -> engine::Result<YeastForm> {
 fn parite_04() {
     ortak::run("04", |c| {
         match c.fonk.as_str() {
-            "l_to_floz" => c.check_f(yeast::l_to_floz(c.f("litres"))),
-            "gal_from_l" => c.check_f(yeast::gal_from_l(c.f("litres"))),
-            "floz_to_l" => c.check_f(yeast::floz_to_l(c.f("floz"))),
-            "brix_to_sg" => c.check_f(yeast::brix_to_sg(c.f("brix"))),
+            "l_to_floz" => c.check_f(units::l_to_floz(c.f("litres"))),
+            "gal_from_l" => c.check_f(units::gal_from_l(c.f("litres"))),
+            "floz_to_l" => c.check_f(units::floz_to_l(c.f("floz"))),
+            "brix_to_sg" => c.check_f(density::brix_to_sg(c.f("brix"))),
             "viability" => c.check_f(yeast::viability(
                 c.f("v0"),
                 c.f("rate"),
@@ -241,7 +246,7 @@ fn parite_04() {
                 c.f("per_g"),
                 c.f("goferm"),
             )),
-            "avg_attenuation" => c.check_f(yeast::avg_attenuation(c.f("lo"), c.f("hi"))),
+            "avg_attenuation" => c.check_f(density::avg_attenuation(c.f("lo"), c.f("hi"))),
             "units_code" => c.check_res((|| {
                 Ok(
                     match yeast::yeast_units(

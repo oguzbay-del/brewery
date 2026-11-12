@@ -7,7 +7,7 @@
 //! (`yeast::residual_co2`, `yeast::co2_psi`) take °F; this module converts with
 //! `units::c_to_f`.
 
-use crate::units::{TOL, c_to_f, gravity_units, round_py, to_plato};
+use crate::units::{BALLING_CO2, CO2_G_PER_VOL, TOL, c_to_f, gravity_units, round_py, to_plato};
 use crate::yeast;
 
 /// Lowest temperature, °C, for which the 04 §3.5 polynomial is reliable (spec §5, T1.12 D6).
@@ -589,11 +589,6 @@ pub fn keg_priming(p: &KegParams) -> Result<KegPriming, TriggerError> {
 
 // ================================================================ 3. Cask
 
-/// Balling: 0.9565 g CO2 per 2.0665 g extract (spec §3.2).
-pub const CO2_PER_EXTRACT: f64 = 0.9565 / 2.0665;
-/// Grams of CO2 per litre per volume: 44.01 / 22.414 = 1.9635.
-pub const G_PER_VOL: f64 = 44.01 / VM;
-
 /// CO2 from remaining extract when racking at `sg_rack` with reference `fg_ref`,
 /// volumes (spec §3.2); 0 when `u(sg_rack) ≤ u(fg_ref)`.
 #[must_use]
@@ -603,7 +598,7 @@ pub fn co2_from_remaining(sg_rack: f64, fg_ref: f64) -> f64 {
     }
     let d_ae = to_plato(sg_rack) - to_plato(fg_ref);
     let d_re_g_l = 0.8192 * d_ae * 10.0 * sg_rack;
-    d_re_g_l * CO2_PER_EXTRACT / G_PER_VOL
+    d_re_g_l * BALLING_CO2 / CO2_G_PER_VOL
 }
 
 /// Result of [`cask_priming`] (rounded like the reference).

@@ -2,103 +2,14 @@
 #![allow(clippy::expect_used, clippy::too_many_lines)] // one long fonk-to-call table
 mod ortak;
 
+use ortak::{fermentable as grain, mash, mash_json, recipe_input as recipe};
+
 use engine::density as d;
+use engine::recipe::{GrainUse, RecipeInput};
 use engine::units;
 use serde_json::{Value, json};
 
-fn num(v: &Value, key: &str) -> f64 {
-    v[key]
-        .as_f64()
-        .unwrap_or_else(|| panic!("missing number `{key}` in {v}"))
-}
-
-fn flag(v: &Value, key: &str) -> bool {
-    v[key]
-        .as_bool()
-        .unwrap_or_else(|| panic!("missing bool `{key}` in {v}"))
-}
-
-fn code(v: &Value, key: &str) -> i64 {
-    v[key]
-        .as_i64()
-        .unwrap_or_else(|| panic!("missing integer `{key}` in {v}"))
-}
-
-fn grain(v: &Value) -> d::Fermentable {
-    d::Fermentable {
-        name: v["name"].as_str().expect("name").to_owned(),
-        amount_oz: num(v, "amount_oz"),
-        yield_pct: num(v, "yield_pct"),
-        color_srm: num(v, "color_srm"),
-        kind: d::GrainType::from_code(code(v, "type")).expect("grain type"),
-        usage: d::GrainUse::from_code(code(v, "use")).expect("grain use"),
-        not_fermentable: flag(v, "not_fermentable"),
-        late_extract_min: num(v, "late_extract_min"),
-        max_in_batch_pct: num(v, "max_in_batch_pct"),
-    }
-}
-
-fn mash(v: &Value) -> d::Mash {
-    d::Mash {
-        grain_weight: num(v, "grain_weight"),
-        biab: flag(v, "biab"),
-        steps: v["steps"]
-            .as_array()
-            .expect("steps")
-            .iter()
-            .map(|s| d::MashStep {
-                temp_f: num(s, "temp_f"),
-                infusion: num(s, "infusion"),
-            })
-            .collect(),
-    }
-}
-
-fn mash_json(m: &d::Mash) -> Value {
-    json!({
-        "grain_weight": m.grain_weight,
-        "biab": m.biab,
-        "steps": m.steps.iter()
-            .map(|s| json!({"temp_f": s.temp_f, "infusion": s.infusion}))
-            .collect::<Vec<_>>(),
-    })
-}
-
-fn recipe(v: &Value) -> d::Recipe {
-    d::Recipe {
-        kind: d::RecipeType::from_code(code(v, "type")).expect("recipe type"),
-        volume_floz: num(v, "volume_floz"),
-        trub_loss_floz: num(v, "trub_loss_floz"),
-        pre_trub_loss_floz: num(v, "pre_trub_loss_floz"),
-        boil_vol_floz: num(v, "boil_vol_floz"),
-        boil_time_min: num(v, "boil_time_min"),
-        efficiency: num(v, "efficiency"),
-        steep_efficiency: num(v, "steep_efficiency"),
-        mash_fg_adjust: flag(v, "mash_fg_adjust"),
-        mash_fg_adj_temp: num(v, "mash_fg_adj_temp"),
-        mash_fg_adj_slope: num(v, "mash_fg_adj_slope"),
-        fermentables: v["fermentables"]
-            .as_array()
-            .expect("fermentables")
-            .iter()
-            .map(grain)
-            .collect(),
-        yeasts: v["yeasts"]
-            .as_array()
-            .expect("yeasts")
-            .iter()
-            .map(|y| d::Yeast {
-                min_attenuation: num(y, "min_attenuation"),
-                max_attenuation: num(y, "max_attenuation"),
-                tolerance_abv: num(y, "tolerance"),
-                add_to_secondary: flag(y, "add_to_secondary"),
-            })
-            .collect(),
-        mash: mash(&v["mash"]),
-    }
-}
-
-fn amounts(r: &d::Recipe) -> Vec<f64> {
+fn amounts(r: &RecipeInput) -> Vec<f64> {
     r.fermentables.iter().map(|g| g.amount_oz).collect()
 }
 
@@ -220,10 +131,10 @@ fn parite_01() {
                     d::AdjustExtract::from_code(c.i("kind"))?,
                 )
             })()),
-            "gravity_adjust_water_floz" => c.check_r(d::gravity_adjust_water_floz(
+            "gravity_adjust_water" => c.check_r(d::gravity_adjust_water(
                 c.f("current"),
                 c.f("target"),
-                c.f("volume_floz"),
+                c.f("volume"),
             )),
             "convert_hydrometer" => c.check_r((|| {
                 d::convert_hydrometer(c.f("x"), hydro_unit(c, "from")?, hydro_unit(c, "to")?)
@@ -257,7 +168,7 @@ fn parite_01() {
                 c.check_r((|| {
                     Ok(d::og_points_phase(
                         &recipe(c.v("recipe")),
-                        d::GrainUse::from_code(c.i("phase"))?,
+                        GrainUse::from_code(c.i("phase"))?,
                     ))
                 })());
             }
@@ -265,7 +176,7 @@ fn parite_01() {
                 Ok(d::estimate_og(
                     &recipe(c.v("recipe")),
                     c.f("volume_floz"),
-                    d::GrainUse::from_code(c.i("phase"))?,
+                    GrainUse::from_code(c.i("phase"))?,
                 ))
             })()),
             "recipe_og" => c.check_f(d::recipe_og(&recipe(c.v("recipe")))),
@@ -291,7 +202,7 @@ fn parite_01() {
             }
             "total_grain_use_field" => c.check_f(d::total_grain_use_field(
                 &recipe(c.v("recipe")),
-                d::GrainUse::from_code(c.i("use")).expect("grain use"),
+                GrainUse::from_code(c.i("use")).expect("grain use"),
                 field(c.v("field").as_str().expect("field name")),
             )),
             "efficiency" => c.check_f(d::efficiency(

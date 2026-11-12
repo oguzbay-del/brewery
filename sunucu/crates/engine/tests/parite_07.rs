@@ -8,7 +8,9 @@
 
 mod ortak;
 
-use engine::home::{self, BalanceClass, Forecast, HopForm, IngredientKind, Ions, ScaleMode};
+use engine::home::{
+    self, AbsorptionHopForm, BalanceClass, Forecast, IngredientKind, Ions, ScaleMode,
+};
 use serde_json::{Map, Value, json};
 
 fn num(v: &Value) -> f64 {
@@ -48,15 +50,15 @@ fn kind(s: &str) -> IngredientKind {
     }
 }
 
-fn hop_losses(v: &Value) -> Vec<(HopForm, f64)> {
+fn hop_losses(v: &Value) -> Vec<(AbsorptionHopForm, f64)> {
     v.as_object()
         .expect("object")
         .iter()
         .map(|(k, g)| {
             let form = match k.as_str() {
-                "pellet" => HopForm::Pellet,
-                "yaprak" => HopForm::Leaf,
-                "cryo" => HopForm::Cryo,
+                "pellet" => AbsorptionHopForm::Pellet,
+                "yaprak" => AbsorptionHopForm::Leaf,
+                "cryo" => AbsorptionHopForm::Cryo,
                 other => panic!("unknown hop form {other}"),
             };
             (form, num(g))

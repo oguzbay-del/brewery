@@ -17,6 +17,7 @@ pub mod home;
 pub mod hops;
 pub mod manual;
 pub mod mash;
+pub mod recipe;
 pub mod trigger;
 pub mod units;
 pub mod water;

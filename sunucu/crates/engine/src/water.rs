@@ -24,8 +24,8 @@
     clippy::needless_range_loop
 )]
 
-use crate::density::{GrainType, RecipeType};
 use crate::error::{Error, Result, ensure_finite, ensure_positive, finite_result};
+use crate::recipe::{GrainType, RecipeType};
 use crate::units::GAL_L;
 
 /// Acid code `F_R_ACID` (spec §0.2 and §6.1): 0 none, 1 lactic, 2 phosphoric, 3 acid malt,
@@ -689,7 +689,7 @@ pub fn adjusted_ph_liquid(
 /// spec [belirsiz]), 6 tsp and 7 tbsp (0.8 g/mL). Errors on a non-finite amount.
 pub fn to_grams(amount: f64, units: MiscUnit) -> Result<f64> {
     ensure_finite("amount", amount)?;
-    let lb_g = crate::mash::LB_KG * 1000.0;
+    let lb_g = crate::units::LB_KG * 1000.0;
     Ok(match units {
         MiscUnit::Mg => amount / 1000.0,
         MiscUnit::G | MiscUnit::Ml => amount,

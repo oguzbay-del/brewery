@@ -5,14 +5,10 @@
 //! specific heats in cal/g°C, gravities as SG. Conversion from BeerSmith's internal units is
 //! the API layer's job (ADR-0003).
 
-use crate::density::{GrainType, GrainUse, RecipeType};
 use crate::error::{Error, Result, ensure_finite};
-use crate::units::round_py;
+use crate::recipe::{GrainType, GrainUse, RecipeType, StepKind};
+use crate::units::{FLOZ_L, LB_KG, round_py};
 
-/// One US fluid ounce in litres (`O_GRAIN_VOL`-style internal conversion, spec §0.1).
-pub const FLOZ_L: f64 = 29.573_529_56 / 1000.0;
-/// One pound in kilograms.
-pub const LB_KG: f64 = 0.453_592_4;
 /// One ounce in kilograms.
 pub const OZ_KG: f64 = LB_KG / 16.0;
 /// Volume occupied by grain, `O_GRAIN_VOL` (L/kg, spec §1.1).
@@ -126,14 +122,6 @@ pub fn decoct_vol(t2: f64, vw: f64, t1: f64, w: f64, tun: Tun, tb: f64) -> f64 {
     let me = tun_eff(tun.mass_kg, vm, tun.volume_l);
     let f = (t2 - t1) / (tb - t1) * (tun.specific_heat * me + C_MALT * w + vw) / (C_MALT * w + vw);
     vm * f.min(1.0)
-}
-
-/// Boiling point of water at altitude (spec §6.1, `BoilTemp`).
-///
-/// `alt_ft` feet above sea level; returns °C.
-#[must_use]
-pub fn boil_temp_c(alt_ft: f64) -> f64 {
-    100.0 - alt_ft * 0.3048 * 0.00324
 }
 
 /// Pre-boil volume from the equipment chain (spec §5.2, `F_E_BOIL_VOL`).
@@ -340,29 +328,6 @@ pub const THICKNESS_CONST: f64 = 1.043_192_807_606_429;
 pub const MASH_FG_ADJ_TEMP_F: f64 = 153.5;
 /// Steep water per grain, `O_ADV_STEEP_WATER_GRAIN` (qt/lb, spec §0.2).
 pub const STEEP_QT_PER_LB: f64 = 4.0;
-
-/// Mash step type, `F_MS_TYPE` (spec §0.4).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StepKind {
-    /// 0: add water.
-    Infusion,
-    /// 1: pull and boil part of the mash.
-    Decoction,
-    /// 2: direct heating (no temperature calculation).
-    Temperature,
-}
-
-impl StepKind {
-    /// Maps the spec's numeric code (0, 1, 2); anything else is an error.
-    pub const fn from_code(code: i64) -> Result<StepKind> {
-        match code {
-            0 => Ok(StepKind::Infusion),
-            1 => Ok(StepKind::Decoction),
-            2 => Ok(StepKind::Temperature),
-            _ => Err(Error::invalid("step_kind", "unknown code")),
-        }
-    }
-}
 
 /// A mash step as entered by the user (spec §2.5).
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -1141,19 +1106,6 @@ pub fn dilution(sg0: f64, v0: f64, v_add: f64, wort: bool, sg_add: f64) -> Resul
         1.0 + (sg0 - 1.0) * v0 / v_tot
     };
     Ok(Dilution { v_tot, sg })
-}
-
-/// Water to dilute `v` L from `sg` to `sg_target` (spec §8.2, `GravityAdjWaterVol`); 0 if
-/// negative. Litres. Errors on non-finite input and `sg_target = 1.000` (division by zero).
-#[allow(clippy::float_cmp)]
-pub fn gravity_adj_water_vol(v: f64, sg: f64, sg_target: f64) -> Result<f64> {
-    ensure_finite("v", v)?;
-    ensure_finite("sg", sg)?;
-    ensure_finite("sg_target", sg_target)?;
-    if sg_target == 1.0 {
-        return Err(Error::invalid("sg_target", "must differ from 1.000"));
-    }
-    Ok((v * (sg - 1.0) / (sg_target - 1.0) - v).max(0.0))
 }
 
 /// Volume of a misc ingredient in US fluid ounces (spec §9, `BSMisc::ToFluidOz`).

@@ -10,68 +10,12 @@
 //!
 //! Every function mirrors `formuller/testler/02_hop_ibu.py` (the parity reference).
 
-use crate::density::{GrainType, GrainUse, RecipeType};
+use crate::density::{LateExtractPoint, late_extract_profile};
 use crate::error::{Error, Result, ensure_finite, finite_result};
-use crate::units::{c_to_f, f_to_c};
-
-/// Hop form `F_H_FORM` (spec §0). Codes: 0 pellet, 1 plug, 2 leaf, 3 CO2 extract,
-/// 4 isomerised extract (amounts of forms 3 and 4 are fl oz).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum HopForm {
-    /// Code 0.
-    Pellet,
-    /// Code 1.
-    Plug,
-    /// Code 2.
-    Leaf,
-    /// Code 3.
-    Co2Extract,
-    /// Code 4.
-    IsomerizedExtract,
-}
-
-impl HopForm {
-    /// From the BeerSmith code (0-4); other codes are an error.
-    pub const fn from_code(code: i64) -> Result<Self> {
-        match code {
-            0 => Ok(Self::Pellet),
-            1 => Ok(Self::Plug),
-            2 => Ok(Self::Leaf),
-            3 => Ok(Self::Co2Extract),
-            4 => Ok(Self::IsomerizedExtract),
-            _ => Err(Error::invalid("hop_form", "unknown code")),
-        }
-    }
-}
-
-/// Hop usage `F_H_USE` (spec §0). Codes: 0 boil, 1 dry hop, 2 mash, 3 first wort, 4 whirlpool.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum HopUse {
-    /// Code 0.
-    Boil,
-    /// Code 1.
-    DryHop,
-    /// Code 2.
-    Mash,
-    /// Code 3.
-    FirstWort,
-    /// Code 4.
-    Whirlpool,
-}
-
-impl HopUse {
-    /// From the BeerSmith code (0-4); other codes are an error.
-    pub const fn from_code(code: i64) -> Result<Self> {
-        match code {
-            0 => Ok(Self::Boil),
-            1 => Ok(Self::DryHop),
-            2 => Ok(Self::Mash),
-            3 => Ok(Self::FirstWort),
-            4 => Ok(Self::Whirlpool),
-            _ => Err(Error::invalid("hop_use", "unknown code")),
-        }
-    }
-}
+use crate::recipe::{
+    GrainType, Hop, HopForm, HopOptions, HopUse, Misc, MiscUse, RecipeInput, RecipeType,
+};
+use crate::units::{FLOZ_L, OZ_G, boil_temp_f, f_to_c};
 
 /// IBU equation (spec §1). Codes: 0 Tinseth, 1 Rager, 2 Garetz.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -293,13 +237,6 @@ pub fn post_boil_utilization(sg: f64, t0: f64, dur: f64) -> f64 {
     sum
 }
 
-/// Boiling point in °C at an altitude: `100 − alt · 0.3048 · 0.00324` (spec §3.2).
-/// `alt_ft` in feet.
-#[must_use]
-pub fn boil_temp_c(alt_ft: f64) -> f64 {
-    100.0 - alt_ft * 0.3048 * 0.00324
-}
-
 /// Probabilistic combination of segment utilisations
 /// `Σ s_k · Π_{j<k} (1 − s_j) = 1 − Π (1 − s_k)` (spec §5.2). Ratios 0..1.
 #[must_use]
@@ -342,91 +279,6 @@ pub fn aged_alpha(alpha: f64, hsi: f64, temp_f: f64, days: f64, storage: f64) ->
 // ---------------------------------------------------------------------------------------
 // T1.14a: single-hop IBU, recipe-level engine, tools (spec §2–§10, previously unported).
 // ---------------------------------------------------------------------------------------
-
-/// Hop addition (spec §0, §1). `amount` in oz (fl oz for forms 3 and 4), `alpha` in %,
-/// `form` 0 pellet / 1 plug / 2 leaf / 3 CO2 extract / 4 isomerised extract, `usage`
-/// 0 boil / 1 dry hop / 2 mash / 3 first wort / 4 whirlpool, `time` in minutes,
-/// `whirlpool_temp_f` in °F (used for `usage = 4`).
-#[derive(Debug, Clone, PartialEq)]
-pub struct Hop {
-    pub amount: f64,
-    pub alpha: f64,
-    pub form: HopForm,
-    pub usage: HopUse,
-    pub time: f64,
-    pub whirlpool_temp_f: f64,
-}
-
-/// Hop correction options (spec §4); defaults are BeerSmith's (`Default`).
-#[derive(Debug, Clone, PartialEq)]
-pub struct HopOptions {
-    /// `O_HOP_FIRST_WORT_ADJ` in % (default +10).
-    pub first_wort_adj: f64,
-    /// `O_HOP_TYPE_ADJ`: true applies the per-form corrections (default 1).
-    pub type_adj: bool,
-    /// `O_HOP_LEAF_ADJ` in % (default 0).
-    pub leaf_adj: f64,
-    /// `O_HOP_PLUG_ADJ` in % (default +2).
-    pub plug_adj: f64,
-    /// `O_HOP_PELLET_ADJ` in % (default +10).
-    pub pellet_adj: f64,
-    /// `O_HOP_MASH_ADJ` in % (default −80).
-    pub mash_adj: f64,
-}
-
-impl Default for HopOptions {
-    fn default() -> Self {
-        Self {
-            first_wort_adj: 10.0,
-            type_adj: true,
-            leaf_adj: 0.0,
-            plug_adj: 2.0,
-            pellet_adj: 10.0,
-            mash_adj: -80.0,
-        }
-    }
-}
-
-/// Recipe and equipment fields used by the hop engine (spec §5). Volumes in fl oz,
-/// `altitude` in ft, times in minutes, `hop_util` in % (`F_E_HOP_UTIL`),
-/// `recipe_type` 0 = Extract, `whirlpool_carry` = `F_E_WHIRLPOOL_CARRY` ≠ 0,
-/// `whirlpool_time` = `F_E_WHIRLPOOL_TIME`.
-#[derive(Debug, Clone, PartialEq)]
-#[allow(clippy::struct_excessive_bools)]
-pub struct Recipe {
-    pub volume: f64,
-    pub trub_loss: f64,
-    pub boil_time: f64,
-    pub boil_vol: f64,
-    pub altitude: f64,
-    pub recipe_type: RecipeType,
-    pub hop_util: f64,
-    pub whirlpool_carry: bool,
-    pub whirlpool_time: f64,
-}
-
-/// Fermentable as seen by the hop engine (spec §5.1, §5.4). `usage` is `F_G_USE`,
-/// `kind` is `F_G_TYPE`, `late_extract` the late-extract boil minutes, `points` the
-/// `GetOGPoints` result (supplied by the fermentable module), `amount_oz` in oz,
-/// `yield_pct` in %, `ibu_gal_per_lb` the hopped-extract rating.
-#[derive(Debug, Clone, PartialEq)]
-pub struct Fermentable {
-    pub name: String,
-    pub usage: GrainUse,
-    pub kind: GrainType,
-    pub amount_oz: f64,
-    pub yield_pct: f64,
-    pub late_extract: f64,
-    pub points: f64,
-    pub ibu_gal_per_lb: f64,
-}
-
-/// Misc item for the whirlpool-time rule (spec §9): `usage` 6 = whirlpool, `time` minutes.
-#[derive(Debug, Clone, PartialEq)]
-pub struct MiscItem {
-    pub usage: i64,
-    pub time: f64,
-}
 
 /// Outcome of `scale_bitterness` (spec §6.1).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -577,12 +429,6 @@ pub fn whirlpool_ibu(w: f64, a: f64, t: f64, sg: f64, v: f64, temp_c: f64) -> Re
     )
 }
 
-/// Boiling point in °F at an altitude (spec §3.2 `BoilTemp`); `alt_ft` in feet.
-#[must_use]
-pub fn boil_temp_f(alt_ft: f64) -> f64 {
-    c_to_f(boil_temp_c(alt_ft))
-}
-
 /// Hop equation selection (spec §1): the per-recipe setting is a code where any value outside
 /// 0..=2 is BeerSmith's "use the global setting" sentinel (spec-defined, not an error); the
 /// global setting itself is a typed [`HopEquation`].
@@ -632,135 +478,63 @@ pub fn hop_adjustments(
     }
     let mut m = 1.0;
     if usage == HopUse::FirstWort && !extract_recipe {
-        m *= (100.0 + opts.first_wort_adj) / 100.0;
+        m *= (100.0 + opts.first_wort_adj_pct) / 100.0;
     }
     if opts.type_adj {
         match form {
-            HopForm::Leaf => m *= (100.0 + opts.leaf_adj) / 100.0,
-            HopForm::Plug => m *= (100.0 + opts.plug_adj) / 100.0,
-            HopForm::Pellet => m *= (100.0 + opts.pellet_adj) / 100.0,
+            HopForm::Leaf => m *= (100.0 + opts.leaf_adj_pct) / 100.0,
+            HopForm::Plug => m *= (100.0 + opts.plug_adj_pct) / 100.0,
+            HopForm::Pellet => m *= (100.0 + opts.pellet_adj_pct) / 100.0,
             _ => {}
         }
     }
     if usage == HopUse::Mash && !extract_recipe {
-        m *= (100.0 + opts.mash_adj) / 100.0;
+        m *= (100.0 + opts.mash_adj_pct) / 100.0;
     }
     util_pct / 100.0 * m
 }
 
-fn is_late_extract(g: &Fermentable) -> bool {
-    matches!(
-        g.kind,
-        GrainType::Extract
-            | GrainType::Sugar
-            | GrainType::DryExtract
-            | GrainType::Fruit
-            | GrainType::Juice
-            | GrainType::Honey
-    ) && g.late_extract > 0.0
-}
-
-fn sg_from_points(p: f64, v: f64, r: f64) -> f64 {
-    if v <= 0.0 {
-        1.0
-    } else {
-        1.0 + p * r / (v / 128.0) / 1000.0
-    }
-}
-
-/// Boil gravity profile `GetLateExtractSGs` (spec §5.1): list of `(SG, minutes)`, minutes
-/// descending, last element at 0. `v_boil` in fl oz (≤ 0 reads `recipe.boil_vol`; at least
-/// 0.1). Late-extract points are `oz/16 · yield · 46/100`.
-#[must_use]
-pub fn late_extract_sgs(recipe: &Recipe, ferms: &[Fermentable], v_boil: f64) -> Vec<(f64, f64)> {
-    let vb = (if v_boil > 0.0 {
-        v_boil
-    } else {
-        recipe.boil_vol
-    })
-    .max(0.1);
-    let v = recipe.volume;
-    let r = (v + recipe.trub_loss) / vb;
-    let mut p: f64 = ferms
-        .iter()
-        .filter(|g| {
-            matches!(
-                g.usage,
-                GrainUse::Mash | GrainUse::Steep | GrainUse::Boil | GrainUse::Sparge
-            ) && !is_late_extract(g)
-        })
-        .map(|g| g.points)
-        .sum();
-    let mut prof = vec![(sg_from_points(p, v, r), recipe.boil_time)];
-    let mut late: Vec<&Fermentable> = ferms.iter().filter(|g| is_late_extract(g)).collect();
-    late.sort_by(|a, b| {
-        b.late_extract
-            .total_cmp(&a.late_extract)
-            .then_with(|| a.name.cmp(&b.name))
-    });
-    for g in late {
-        p += g.amount_oz / 16.0 * (g.yield_pct * 46.0 / 100.0);
-        let t = recipe.boil_time.min(g.late_extract);
-        let sg = sg_from_points(p, v, r);
-        match prof.last_mut() {
-            Some(last) if (last.1 - t).abs() < 0.1 => last.0 = sg,
-            _ => prof.push((sg, t)),
-        }
-    }
-    p += ferms
-        .iter()
-        .filter(|g| g.usage == GrainUse::Whirlpool && !is_late_extract(g))
-        .map(|g| g.points)
-        .sum::<f64>();
-    prof.push((
-        if p <= 0.0 {
-            1.0
-        } else {
-            sg_from_points(p, v, r)
-        },
-        0.0,
-    ));
-    prof
-}
-
 /// Total utilisation of one hop `HopTotalUtil` (spec §5.2). `profile` comes from
-/// [`late_extract_sgs`]; `equation` 0..=2. Ratio 0..1.
+/// [`late_extract_profile`] (spec 01 §3.6, the single implementation); ratio 0..1.
 #[allow(clippy::float_cmp)]
 pub fn hop_total_utilization(
     hop: &Hop,
-    recipe: &Recipe,
-    profile: &[(f64, f64)],
+    recipe: &RecipeInput,
+    profile: &[LateExtractPoint],
     equation: HopEquation,
 ) -> Result<f64> {
     if hop.form == HopForm::IsomerizedExtract {
         return Ok(1.0);
     }
-    if hop.amount <= 0.0 || hop.usage == HopUse::DryHop {
+    if hop.amount_oz <= 0.0 || hop.usage == HopUse::DryHop {
         return Ok(0.0);
     }
     let (Some(first), Some(last)) = (profile.first(), profile.last()) else {
         return Ok(0.0);
     };
-    let th = hop.time;
+    let th = hop.time_min;
     if hop.usage == HopUse::Whirlpool {
         return Ok(
-            tinseth_utilization(last.0, th) * temperature_factor(f_to_c(hop.whirlpool_temp_f))
+            tinseth_utilization(last.sg, th) * temperature_factor(f_to_c(hop.whirlpool_temp_f))
         );
     }
-    let tbf = boil_temp_f(recipe.altitude);
+    let tbf = boil_temp_f(recipe.equipment.altitude_ft);
     let mut segs: Vec<f64> = Vec::new();
-    if first.1 < th {
+    if first.time_min < th {
         segs.push(
-            hop_utilization(first.0, th, equation, false, tbf)?
-                - hop_utilization(first.0, first.1, equation, false, tbf)?,
+            hop_utilization(first.sg, th, equation, false, tbf)?
+                - hop_utilization(first.sg, first.time_min, equation, false, tbf)?,
         );
     }
     let mut i = 0;
-    while let Some(&(sg, t_i)) = profile.get(i) {
+    while let Some(&LateExtractPoint { sg, time_min: t_i }) = profile.get(i) {
         if t_i == 0.0 {
             break;
         }
-        let Some(&(_, t_next)) = profile.get(i + 1) else {
+        let Some(&LateExtractPoint {
+            time_min: t_next, ..
+        }) = profile.get(i + 1)
+        else {
             break;
         };
         if t_next <= th {
@@ -772,23 +546,27 @@ pub fn hop_total_utilization(
         }
         i += 1;
     }
-    if recipe.whirlpool_carry {
-        segs.push(post_boil_utilization(last.0, th, recipe.whirlpool_time));
+    if recipe.equipment.whirlpool_carry {
+        segs.push(post_boil_utilization(
+            last.sg,
+            th,
+            recipe.equipment.whirlpool_time_min,
+        ));
     }
     Ok(combine_utilizations(&segs))
 }
 
 /// IBU of one hop in a recipe, `NewHopIBU` (spec §5.3):
 /// `F_adj · W · U · A · 100 · 128 / (V_ibu · 1.34)` with `V_ibu = volume + trub` (fl oz,
-/// 0.01 when ≤ 0). Form 4 amounts are fl oz (density 1).
+/// 0.01 when ≤ 0). Form 4 amounts are fl oz (density 1). Hop options come from
+/// `recipe.options.hop`.
 pub fn new_hop_ibu(
     hop: &Hop,
-    recipe: &Recipe,
-    profile: &[(f64, f64)],
+    recipe: &RecipeInput,
+    profile: &[LateExtractPoint],
     equation: HopEquation,
-    opts: &HopOptions,
 ) -> Result<f64> {
-    let mut vibu = recipe.volume + recipe.trub_loss;
+    let mut vibu = recipe.volume_floz + recipe.equipment.trub_loss_floz;
     if vibu <= 0.0 {
         vibu = 0.01;
     }
@@ -796,13 +574,13 @@ pub fn new_hop_ibu(
     let adj = hop_adjustments(
         hop.form,
         hop.usage,
-        recipe.hop_util,
-        recipe.recipe_type == RecipeType::Extract,
-        opts,
+        recipe.equipment.hop_util_pct,
+        recipe.kind == RecipeType::Extract,
+        &recipe.options.hop,
     );
     finite_result(
         "new_hop_ibu",
-        adj * hop.amount * u * hop.alpha * 100.0 * 128.0 / (vibu * 1.34),
+        adj * hop.amount_oz * u * hop.alpha_pct * 100.0 * 128.0 / (vibu * 1.34),
     )
 }
 
@@ -813,38 +591,32 @@ pub fn hopped_extract_ibu(amount_oz: f64, ibu_gal_per_lb: f64, volume: f64, trub
     (amount_oz / 16.0 * ibu_gal_per_lb) / ((volume + trub) / 128.0).max(0.0001)
 }
 
-fn extract_total_ibu(ferms: &[Fermentable], recipe: &Recipe) -> f64 {
+fn extract_total_ibu(recipe: &RecipeInput) -> f64 {
     let mut e = 0.0;
-    for g in ferms {
+    for g in &recipe.fermentables {
         if g.kind == GrainType::Extract && g.ibu_gal_per_lb > 0.0 {
             e += hopped_extract_ibu(
                 g.amount_oz,
                 g.ibu_gal_per_lb,
-                recipe.volume,
-                recipe.trub_loss,
+                recipe.volume_floz,
+                recipe.equipment.trub_loss_floz,
             );
         }
     }
     e
 }
 
-/// Recipe IBU `NewGetEstIBU` (spec §5.4): sum of hop IBUs plus hopped extracts.
-/// `equation` 0 Tinseth / 1 Rager / 2 Garetz (the `RecipeIBU*` variants), `v_boil` fl oz.
-pub fn recipe_ibu(
-    hops: &[Hop],
-    recipe: &Recipe,
-    ferms: &[Fermentable],
-    equation: HopEquation,
-    opts: &HopOptions,
-    v_boil: f64,
-) -> Result<f64> {
+/// Recipe IBU `NewGetEstIBU` (spec §5.4): sum of hop IBUs plus hopped extracts of
+/// `recipe.hops` and `recipe.fermentables`. `equation` 0 Tinseth / 1 Rager / 2 Garetz (the
+/// `RecipeIBU*` variants), `v_boil` fl oz.
+pub fn recipe_ibu(recipe: &RecipeInput, equation: HopEquation, v_boil: f64) -> Result<f64> {
     ensure_finite("v_boil", v_boil)?;
-    let profile = late_extract_sgs(recipe, ferms, v_boil);
+    let profile = late_extract_profile(recipe, v_boil);
     let mut tot = 0.0;
-    for h in hops {
-        tot += new_hop_ibu(h, recipe, &profile, equation, opts)?;
+    for h in &recipe.hops {
+        tot += new_hop_ibu(h, recipe, &profile, equation)?;
     }
-    finite_result("recipe_ibu", tot + extract_total_ibu(ferms, recipe))
+    finite_result("recipe_ibu", tot + extract_total_ibu(recipe))
 }
 
 /// Hop share `W · 100 / total` in % (spec §5.4); 0 when the total is ≤ 0 (choice).
@@ -864,11 +636,8 @@ pub fn hop_percent(w: f64, tot_hops: f64) -> f64 {
 pub fn scale_bitterness(
     current_ibu: f64,
     target: f64,
-    hops: &[Hop],
-    recipe: &Recipe,
-    ferms: &[Fermentable],
+    recipe: &RecipeInput,
     equation: HopEquation,
-    opts: &HopOptions,
     v_boil: f64,
 ) -> Result<ScaleResult> {
     finite_all(&[
@@ -876,7 +645,8 @@ pub fn scale_bitterness(
         ("target", target),
         ("v_boil", v_boil),
     ])?;
-    let mut amounts: Vec<f64> = hops.iter().map(|h| h.amount).collect();
+    let hops = &recipe.hops;
+    let mut amounts: Vec<f64> = hops.iter().map(|h| h.amount_oz).collect();
     if (target - current_ibu).abs() < 1e-9 {
         return Ok(ScaleResult {
             status: ScaleStatus::Unchanged,
@@ -890,20 +660,20 @@ pub fn scale_bitterness(
         });
     }
     let mut rc = recipe.clone();
-    if rc.volume == 0.0 {
-        rc.volume = 0.0001;
+    if rc.volume_floz == 0.0 {
+        rc.volume_floz = 0.0001;
     }
-    let profile = late_extract_sgs(&rc, ferms, v_boil);
+    let profile = late_extract_profile(&rc, v_boil);
     let mut ibus: Vec<f64> = Vec::with_capacity(hops.len());
     for h in hops {
         if h.usage == HopUse::DryHop && h.form != HopForm::IsomerizedExtract {
             ibus.push(0.0);
             continue;
         }
-        let i = new_hop_ibu(h, &rc, &profile, equation, opts)?;
+        let i = new_hop_ibu(h, &rc, &profile, equation)?;
         ibus.push(if i < 1e-9 { 0.0 } else { i });
     }
-    let e = extract_total_ibu(ferms, &rc);
+    let e = extract_total_ibu(&rc);
     let r2 = if e < current_ibu {
         current_ibu - e
     } else {
@@ -915,18 +685,19 @@ pub fn scale_bitterness(
             continue;
         }
         let u = hop_total_utilization(h, &rc, &profile, equation)?;
-        if h.alpha * u <= 0.0 {
+        if h.alpha_pct * u <= 0.0 {
             continue;
         }
         let adj = hop_adjustments(
             h.form,
             h.usage,
-            rc.hop_util,
-            rc.recipe_type == RecipeType::Extract,
-            opts,
+            rc.equipment.hop_util_pct,
+            rc.kind == RecipeType::Extract,
+            &rc.options.hop,
         );
-        amounts[k] = (ibus[k] / adj) * (t2 / r2) * (rc.volume + rc.trub_loss) * 1.34
-            / (h.alpha * u * 100.0 * 128.0);
+        amounts[k] =
+            (ibus[k] / adj) * (t2 / r2) * (rc.volume_floz + rc.equipment.trub_loss_floz) * 1.34
+                / (h.alpha_pct * u * 100.0 * 128.0);
     }
     if amounts.iter().any(|a| !a.is_finite()) {
         return Err(Error::invalid("amounts", "scaled amount is not finite"));
@@ -960,7 +731,7 @@ pub fn tool_hop_ibu(
     opts: &HopOptions,
 ) -> Result<f64> {
     finite_all(&[("sg", sg), ("v_floz", v_floz), ("util_pct", util_pct)])?;
-    let (w, a, t) = (hop.amount, hop.alpha, hop.time);
+    let (w, a, t) = (hop.amount_oz, hop.alpha_pct, hop.time_min);
     if hop.form == HopForm::IsomerizedExtract {
         return Ok(if v_floz <= 0.0 {
             0.0
@@ -1012,7 +783,7 @@ pub fn tool_bitterness(
         ibu: contribs.iter().sum(),
         aau: hops
             .iter()
-            .map(|h| hop_aau(h.amount, h.alpha, h.usage, h.time))
+            .map(|h| hop_aau(h.amount_oz, h.alpha_pct, h.usage, h.time_min))
             .sum(),
         contribs,
     })
@@ -1024,7 +795,7 @@ pub fn tool_bitterness(
 pub fn total_hops_phase(hops: &[Hop], phase: HopUse) -> f64 {
     hops.iter()
         .filter(|h| h.usage == phase || (phase == HopUse::Boil && h.usage == HopUse::FirstWort))
-        .map(|h| h.amount)
+        .map(|h| h.amount_oz)
         .sum()
 }
 
@@ -1036,7 +807,7 @@ pub fn hop_rate(hops: &[Hop], volume_floz: f64, phase: HopUse) -> f64 {
     if volume_floz == 0.0 {
         return 0.0;
     }
-    total_hops_phase(hops, phase) * 28.349_523_125 / (volume_floz * 29.573_529_56 / 1000.0)
+    total_hops_phase(hops, phase) * OZ_G / (volume_floz * FLOZ_L)
 }
 
 /// Total whirlpool time in whole minutes, `TotWhirlpoolTime` (spec §9): the larger of
@@ -1044,13 +815,13 @@ pub fn hop_rate(hops: &[Hop], volume_floz: f64, phase: HopUse) -> f64 {
 /// items (usage 6).
 #[must_use]
 #[allow(clippy::cast_possible_truncation)]
-pub fn total_whirlpool_time(recipe_time: i64, hops: &[Hop], misc: &[MiscItem]) -> i64 {
+pub fn total_whirlpool_time(recipe_time: i64, hops: &[Hop], misc: &[Misc]) -> i64 {
     let mut m = recipe_time;
     for h in hops.iter().filter(|h| h.usage == HopUse::Whirlpool) {
-        m = m.max((h.time + 0.48) as i64);
+        m = m.max((h.time_min + 0.48) as i64);
     }
-    for x in misc.iter().filter(|x| x.usage == 6) {
-        m = m.max((x.time + 0.48) as i64);
+    for x in misc.iter().filter(|x| x.usage == MiscUse::Whirlpool) {
+        m = m.max((x.time_min + 0.48) as i64);
     }
     m
 }

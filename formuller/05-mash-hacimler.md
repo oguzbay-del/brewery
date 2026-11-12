@@ -282,7 +282,7 @@ Kenar: döngü üst sınırı 50 adım; eşit batch sayısı en fazla 10.
 - `PrimaryWaterAdd`: (F_R_TYPE ≤ 2 veya kaynatma malzemesi varsa) `V = V_batch − V_postboil − V_primarygrains − V_topup_ferm`; aksi halde post-boil terimi 0.
 
 ### 5.10 Pre-boil gravite tahmini — `GetEstPostMashOG` (ilişkili)
-- `SG_preboil = 1 + (OG − 1) × (V_batch + V_trub) / V_preboil` (V_preboil > 0 ise). Soğuma ve top-up'ı dikkate almaz.
+- `SG_preboil = 1 + (OG − 1) × (V_batch + V_trub) / V_preboil` (V_preboil > 0 ise). Soğuma ve top-up'ı dikkate almaz. Tek uygulama: `mash::preboil_sg`; 01 §3.5 onu çağırır (T1.16 B).
 
 ### 5.11 Hacim zinciri — akış şeması
 
@@ -371,7 +371,7 @@ Bu araç reçete motorundan **ayrıdır** ve soğuma kaybını farklı tabanda h
 - Yayımlanmış ad: gravite puanı kütle dengesi (standart karışım formülü).
 
 ### 8.2 Hedef graviteye seyreltmek için su — `GravityAdjWaterVol`
-- `V_water = V × (SG − 1) / (SG_target − 1) − V`, negatifse 0.
+- `V_water = V × (SG − 1) / (SG_target − 1) − V`, negatifse 0. Tek uygulama: 01 §9.4 (`density::gravity_adjust_water`, birimsiz hacim); 05 kopya taşımaz (T1.16 B).
 
 ---
 
