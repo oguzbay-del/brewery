@@ -47,6 +47,8 @@ def mead_pitch(sg):
     if p<=24: return 0.25
     if p<28: return (p-24)*0.0625+0.25
     return 0.5
+# ESKI (deprecated, B12): tosna() sartname aykiri; Fermaid-K yalniz yontem 1, baska yontemde 0 olmali
+# (bkz. MeadTotFermK). Yalniz asagidaki ilk yazdirma cikisi icin tutuluyor; parite vektorunde ve Rust'ta yok.
 def tosna(sg, V_gal, pct, fac, method):
     k={0:0.75,1:0.9,2:1.25}[fac]
     base=ToPlato(sg)*10*(pct/100)*k*V_gal
@@ -242,6 +244,11 @@ def YeastFirstFields(yeasts):
 
 
 # --- §1.7 hedef pitch ---
+def IsWineLikeRecipe(r_type):
+    """Sartname §1.7: Mead, Sarap, Seltzer ve listede olmayan 7 sarap oneri hizini kullanir; Elma sarabi (3) bira."""
+    return r_type in (4, 5, 6, 7)
+
+
 def RecommendedLiquidPitch(r_type, ale_type, ale=0.75, lager=1.5, mix=1.0, wine=0.5):
     if r_type in (4, 5, 6, 7):
         return wine

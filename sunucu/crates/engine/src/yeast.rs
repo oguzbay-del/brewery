@@ -174,25 +174,6 @@ pub fn mead_pitch(sg: f64) -> f64 {
     }
 }
 
-/// Total TOSNA nutrient, grams (spec §2.4).
-///
-/// `fac` is the yeast nitrogen need (0 low, 1 medium, 2 high; other values are treated as
-/// high), `method` 0 Fermaid-O (/50) or otherwise Fermaid-K (/100), `pct` honey percent.
-#[must_use]
-pub fn tosna(sg: f64, v_gal: f64, pct: f64, fac: i64, method: i64) -> f64 {
-    let k = match fac {
-        0 => 0.75,
-        1 => 0.9,
-        _ => 1.25,
-    };
-    let base = to_plato(sg) * 10.0 * (pct / 100.0) * k * v_gal;
-    if method == 0 {
-        base / 50.0
-    } else {
-        base / 100.0
-    }
-}
-
 /// Yeast assimilable nitrogen, ppm, from `grams` of nutrient in `v_l` litres (spec §2.5).
 ///
 /// `method` 0 = 40, 2 = 212.3, anything else = 100 ppm per g/L. Zero volume returns the

@@ -71,13 +71,6 @@ def uret():
     for sg in (1.000, 1.050, 1.100, 1.101, 1.105, 1.110, 1.120, 1.130, 1.200):
         v.ekle("mead_pitch", {"sg": sg}, ref.mead_pitch(sg))
 
-    for sg, gal, pct, method in [(1.100, 5.0197, 100, 0), (1.100, 5.0197, 100, 1),
-                                 (1.080, 5.0, 50, 0), (1.120, 3.0, 75, 1),
-                                 (1.000, 5.0, 100, 0)]:
-        for fac in (0, 1, 2):
-            v.ekle("tosna", {"sg": sg, "v_gal": gal, "pct": pct, "fac": fac, "method": method},
-                   ref.tosna(sg, gal, pct, fac, method))
-
     for method in (0, 1, 2, 7):
         for grams, vl in [(4.0, 19.0), (0.0, 19.0), (10.5, 5.0), (3.0, 0.0)]:
             v.ekle("yan", {"method": method, "grams": grams, "v_l": vl},
@@ -157,6 +150,8 @@ def _ek(v, ref):
         v.ekle("avg_pack_size", {"cells": cells, "amount_sum": amt, "valid": valid},
                ref.YeastAvgPackSize(cells, amt, valid))
 
+    for rt in range(-1, 10):
+        v.ekle("is_wine_like_recipe", {"r_type": rt}, ref.IsWineLikeRecipe(rt))
     for rt in (0, 1, 2, 3, 4, 5, 6, 7, 8):
         for at in (0, 1, 2, 5):
             v.ekle("recommended_liquid_pitch", {"r_type": rt, "ale_type": at},

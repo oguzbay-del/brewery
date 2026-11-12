@@ -11,6 +11,7 @@ import importlib.util
 import io
 import json
 import math
+import os
 import pathlib
 
 KOK = pathlib.Path(__file__).resolve().parents[1]          # formuller/testler
@@ -63,5 +64,8 @@ class Vektor:
         # Satır başına bir vaka: dosya küçük kalır, fark okunur.
         satirlar = [json.dumps(v, ensure_ascii=False, separators=(",", ":")) for v in self.vakalar]
         bas = '{"bolum":%s,"kaynak":%s,"vakalar":[\n' % (json.dumps(self.bolum), json.dumps(self.kaynak, ensure_ascii=False))
-        yol.write_text(bas + ",\n".join(satirlar) + "\n]}\n", encoding="utf-8")
+        # Atomik yazım: eşzamanlı okuyan test yarım dosya görmesin.
+        gecici = yol.with_suffix(".json.tmp")
+        gecici.write_text(bas + ",\n".join(satirlar) + "\n]}\n", encoding="utf-8")
+        os.replace(gecici, yol)
         return yol, len(self.vakalar)

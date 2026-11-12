@@ -68,13 +68,7 @@ fn parite_04() {
             "kmeta_g" => c.check_f(yeast::kmeta_g(c.f("v_gal"), c.f("target"), c.f("free"))),
             "sorbate_g" => c.check_f(yeast::sorbate_g(c.f("v_gal"))),
             "mead_pitch" => c.check_f(yeast::mead_pitch(c.f("sg"))),
-            "tosna" => c.check_f(yeast::tosna(
-                c.f("sg"),
-                c.f("v_gal"),
-                c.f("pct"),
-                c.i("fac"),
-                c.i("method"),
-            )),
+            "is_wine_like_recipe" => c.check(&json!(yeast::is_wine_like_recipe(c.i("r_type")))),
             "yan" => c.check_f(yeast::yan(c.i("method"), c.f("grams"), c.f("v_l"))),
             "enum_name" => c.check(
                 &yeast::enum_name(c.v("kind").as_str().unwrap(), c.i("code"))
