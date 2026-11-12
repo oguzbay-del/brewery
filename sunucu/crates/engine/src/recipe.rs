@@ -13,7 +13,7 @@ pub const MAX_LIST_LEN: usize = 128;
 
 /// Defines a code enum with `ALL`, `from_code`, `code` and `name` (English spec name).
 macro_rules! code_enum {
-    ($(#[$m:meta])* $name:ident { $($var:ident = $code:literal => $label:literal),+ $(,)? }) => {
+    ($(#[$m:meta])* $name:ident { $($var:ident = $code:literal),+ $(,)? }) => {
         $(#[$m])*
         #[derive(Debug, Clone, Copy, PartialEq, Eq)]
         pub enum $name { $($var),+ }
@@ -35,12 +35,6 @@ macro_rules! code_enum {
             pub fn code(self) -> i64 {
                 match self { $(Self::$var => $code),+ }
             }
-
-            /// English display name of the specification.
-            #[must_use]
-            pub fn name(self) -> &'static str {
-                match self { $(Self::$var => $label),+ }
-            }
         }
     };
 }
@@ -49,20 +43,20 @@ pub(crate) use code_enum;
 code_enum! {
     /// `F_R_TYPE` (spec 01 §0.2, 04 §1.1). Code 7 is accepted as a wine type by the 04
     /// reference code but is not listed; see `yeast::is_wine_like_recipe`.
-    RecipeType { Extract = 0 => "Extract", PartialMash = 1 => "Partial Mash",
-                 AllGrain = 2 => "All Grain", Cider = 3 => "Cider", Mead = 4 => "Mead",
-                 Wine = 5 => "Wine", Seltzer = 6 => "Seltzer" }
+    RecipeType { Extract = 0, PartialMash = 1,
+                 AllGrain = 2, Cider = 3, Mead = 4,
+                 Wine = 5, Seltzer = 6 }
 }
 code_enum! {
     /// `F_Y_FORM` of an ingredient (spec 04 §1.1). Culture behaves like slurry for viability.
-    YeastForm { Liquid = 0 => "Liquid", Dry = 1 => "Dry", Slant = 2 => "Slant",
-                Culture = 3 => "Culture" }
+    YeastForm { Liquid = 0, Dry = 1, Slant = 2,
+                Culture = 3 }
 }
 code_enum! {
     /// Misc usage `F_M_USE` (spec 03 §0 codes 0-5; code 6 whirlpool, spec 02 §9).
-    MiscUse { Boil = 0 => "Boil", Mash = 1 => "Mash", Primary = 2 => "Primary",
-              Secondary = 3 => "Secondary", Bottling = 4 => "Bottling", Sparge = 5 => "Sparge",
-              Whirlpool = 6 => "Whirlpool" }
+    MiscUse { Boil = 0, Mash = 1, Primary = 2,
+              Secondary = 3, Bottling = 4, Sparge = 5,
+              Whirlpool = 6 }
 }
 
 /// Fermentable type `F_G_TYPE` (§0.2). Codes 0-8.
@@ -436,7 +430,7 @@ pub struct Options {
     /// `O_MASH_FG_ADJ_TEMP` (°F, default 153.5).
     pub mash_fg_adj_temp_f: f64,
     /// `O_MASH_FG_ADJ_SLOPE` (% attenuation per °F, default -1.25).
-    pub mash_fg_adj_slope: f64,
+    pub mash_fg_adj_slope_pct_per_f: f64,
     pub hop: HopOptions,
 }
 
@@ -446,7 +440,7 @@ impl Default for Options {
             steep_efficiency_pct: 15.0,
             mash_fg_adjust: true,
             mash_fg_adj_temp_f: 153.5,
-            mash_fg_adj_slope: -1.25,
+            mash_fg_adj_slope_pct_per_f: -1.25,
             hop: HopOptions::default(),
         }
     }
@@ -543,7 +537,7 @@ impl RecipeInput {
         let o = &self.options;
         ensure_non_negative("options.steep_efficiency_pct", o.steep_efficiency_pct)?;
         ensure_finite("options.mash_fg_adj_temp_f", o.mash_fg_adj_temp_f)?;
-        ensure_finite("options.mash_fg_adj_slope", o.mash_fg_adj_slope)?;
+        ensure_finite("options.mash_fg_adj_slope", o.mash_fg_adj_slope_pct_per_f)?;
         let h = &o.hop;
         ensure_finite("options.hop.first_wort_adj_pct", h.first_wort_adj_pct)?;
         ensure_finite("options.hop.leaf_adj_pct", h.leaf_adj_pct)?;
@@ -596,7 +590,7 @@ mod tests {
         r.equipment.trub_loss_floz = -1.0;
         assert!(r.validate().is_err());
         let mut r = sample();
-        r.options.mash_fg_adj_slope = f64::INFINITY;
+        r.options.mash_fg_adj_slope_pct_per_f = f64::INFINITY;
         assert!(r.validate().is_err());
     }
 

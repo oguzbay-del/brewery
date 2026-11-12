@@ -101,7 +101,7 @@ impl MashModel {
 }
 
 /// Misc amount unit (spec §0.1 `ToGrams`): 0 mg, 1 g, 2 oz, 3 lb, 4 kg, 5 mL (taken as grams,
-/// spec [belirsiz]), 6 tsp, 7 tbsp.
+/// spec "belirsiz"), 6 tsp, 7 tbsp.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MiscUnit {
     /// Code 0.
@@ -235,59 +235,109 @@ pub fn salt_ppm(grams: &[(Salt, f64)], vol_l: f64) -> [f64; ION_COUNT] {
 
 /// Alkalinity in ppm `CaCO₃` from bicarbonate in ppm: `HCO₃ · 50 / 61` (spec §4.1).
 #[must_use]
-pub fn alkalinity(hco3: f64) -> f64 {
-    hco3 * 50.0 / 61.0
+pub fn alkalinity(hco3_ppm: f64) -> f64 {
+    hco3_ppm * 50.0 / 61.0
 }
 
 /// Effective (Kolbach) hardness in ppm `CaCO₃`: `Ca/1.4 + Mg/1.7` (spec §4.2).
 #[must_use]
-pub fn hardness(ca: f64, mg: f64) -> f64 {
-    ca / 1.4 + mg / 1.7
+pub fn hardness(ca_ppm: f64, mg_ppm: f64) -> f64 {
+    ca_ppm / 1.4 + mg_ppm / 1.7
 }
 
 /// Residual alkalinity in ppm `CaCO₃`: alkalinity minus effective hardness (spec §4.3).
 #[must_use]
-pub fn residual_alkalinity(ca: f64, mg: f64, hco3: f64) -> f64 {
-    alkalinity(hco3) - hardness(ca, mg)
+pub fn residual_alkalinity(ca_ppm: f64, mg_ppm: f64, hco3_ppm: f64) -> f64 {
+    alkalinity(hco3_ppm) - hardness(ca_ppm, mg_ppm)
 }
 
 /// Sulphate to chloride ratio (spec §4.4); returns 0 when chloride is 0.
 #[must_use]
-pub fn sulfate_chloride_ratio(so4: f64, cl: f64) -> f64 {
-    if cl == 0.0 { 0.0 } else { so4 / cl }
+pub fn sulfate_chloride_ratio(so4_ppm: f64, cl_ppm: f64) -> f64 {
+    if cl_ppm == 0.0 { 0.0 } else { so4_ppm / cl_ppm }
 }
 
-/// Sulphate/chloride balance class label (spec §4.4, `SulfateBalFunc` thresholds).
+/// Sulphate/chloride balance class (spec §4.4, `SulfateBalFunc` thresholds).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SulfateChlorideBalance {
+    /// Ratio outside `0..=18`.
+    OutOfRange,
+    /// Ratio below 0.4.
+    ExtremelyMalty,
+    /// 0.4 up to 0.6.
+    VeryMalty,
+    /// 0.6 up to 0.8.
+    Malty,
+    /// 0.8 up to 1.5.
+    Balanced,
+    /// 1.5 up to 2.01.
+    SlightlyBitter,
+    /// 2.01 up to 6.01.
+    Bitter,
+    /// 6.01 up to 8.01.
+    VeryBitter,
+    /// 8.01 and above.
+    ExtremelyBitter,
+}
+
+/// Sulphate/chloride balance class of a ratio (spec §4.4, `SulfateBalFunc` thresholds).
 #[must_use]
-pub fn sulfate_chloride_label(r: f64) -> &'static str {
+pub fn sulfate_chloride_balance(r: f64) -> SulfateChlorideBalance {
+    use SulfateChlorideBalance as B;
     if !(0.0..=18.0).contains(&r) {
-        "Out of Range"
+        B::OutOfRange
     } else if r < 0.4 {
-        "Extremely Malty"
+        B::ExtremelyMalty
     } else if r < 0.6 {
-        "Very Malty"
+        B::VeryMalty
     } else if r < 0.8 {
-        "Malty"
+        B::Malty
     } else if r < 1.5 {
-        "Balanced"
+        B::Balanced
     } else if r < 2.01 {
-        "Slightly Bitter"
+        B::SlightlyBitter
     } else if r < 6.01 {
-        "Bitter"
+        B::Bitter
     } else if r < 8.01 {
-        "Very Bitter"
+        B::VeryBitter
     } else {
-        "Extremely Bitter"
+        B::ExtremelyBitter
     }
 }
 
-/// Suggested beer colour range `(min, max)` in SRM from RA (spec §4.5), floored at 0.
+/// Beer colour range of [`color_range`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ColorRange {
+    /// Lowest suggested colour, SRM.
+    pub min_srm: f64,
+    /// Highest suggested colour, SRM.
+    pub max_srm: f64,
+}
+
+/// Suggested beer colour range in SRM from RA (spec §4.5), floored at 0.
 #[must_use]
-pub fn color_range(ra: f64) -> (f64, f64) {
-    (
-        f64::max(0.0, 5.2 + 0.082 * ra),
-        f64::max(0.0, (ra + 122.4) / 12.2),
-    )
+pub fn color_range(ra_ppm: f64) -> ColorRange {
+    ColorRange {
+        min_srm: f64::max(0.0, 5.2 + 0.082 * ra_ppm),
+        max_srm: f64::max(0.0, (ra_ppm + 122.4) / 12.2),
+    }
+}
+
+/// Inputs of [`boil_scale`].
+#[derive(Debug, Clone, Copy)]
+pub struct BoilScaleInput {
+    /// Boil volume, L.
+    pub vb_l: f64,
+    /// Post-boil volume, L.
+    pub vp_l: f64,
+    /// Cooling loss, L.
+    pub cool_loss_l: f64,
+    /// Trub loss, L.
+    pub trub_loss_l: f64,
+    /// Fermenter top-up water, L.
+    pub top_up_l: f64,
+    /// Recipe has boil ingredients.
+    pub has_boil_ing: bool,
 }
 
 /// Boil concentration factor `S_boil` (spec §3.4). All volumes in litres: boil volume `vb`,
@@ -295,14 +345,15 @@ pub fn color_range(ra: f64) -> (f64, f64) {
 /// Returns 1 unless `vb > 0`, `vp > 0` and the recipe has boil ingredients (`F_R_HAS_BOIL_ING`).
 /// Errors on non-finite input and when a division would be by zero (`vp = cool_loss`, or
 /// `vp - cool_loss - trub_loss + top_up = 0`).
-pub fn boil_scale(
-    vb: f64,
-    vp: f64,
-    cool_loss: f64,
-    trub_loss: f64,
-    top_up: f64,
-    has_boil_ing: bool,
-) -> Result<f64> {
+pub fn boil_scale(p: &BoilScaleInput) -> Result<f64> {
+    let BoilScaleInput {
+        vb_l: vb,
+        vp_l: vp,
+        cool_loss_l: cool_loss,
+        trub_loss_l: trub_loss,
+        top_up_l: top_up,
+        has_boil_ing,
+    } = *p;
     for (field, x) in [
         ("vb", vb),
         ("vp", vp),
@@ -324,36 +375,54 @@ pub fn boil_scale(
     }
 }
 
-/// Grist acidity function `g(c)` for malt colour `c` in SRM (spec §5.1).
+/// Grist acidity function `g(c)` for malt colour `color_srm` in SRM (spec §5.1).
 ///
 /// BeerSmith form is discontinuous at 14 SRM; with `ours` the smaller of the two lines is used
 /// below 200 SRM (continuous, spec §5.1 "Bizim model"). 42 from 200 SRM on in both.
 #[must_use]
-pub fn grist_g(c: f64, ours: bool) -> f64 {
-    if c >= 200.0 {
+pub fn grist_g(color_srm: f64, ours: bool) -> f64 {
+    if color_srm >= 200.0 {
         42.0
     } else if ours {
-        f64::min(c - 1.9, 0.453 * c + 5.0)
-    } else if c < 14.0 {
-        c - 1.9
+        f64::min(color_srm - 1.9, 0.453 * color_srm + 5.0)
+    } else if color_srm < 14.0 {
+        color_srm - 1.9
     } else {
-        0.453 * c + 5.0
+        0.453 * color_srm + 5.0
+    }
+}
+
+/// Grist pH and the grist sum `S` of [`grist_ph`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct GristPh {
+    /// Grist pH.
+    pub ph: f64,
+    /// Grist sum `S`.
+    pub s: f64,
+}
+
+impl GristPh {
+    fn new(s: f64) -> Self {
+        Self {
+            ph: 5.72 - 0.0337 * s,
+            s,
+        }
     }
 }
 
 /// Grist pH (spec §5.1). `bill` is a list of (weight kg, colour SRM). Returns
-/// `(pH_grist, S)`; an empty or zero-weight bill gives `(7.0, 0.0)`.
+/// the pH and `S`; an empty or zero-weight bill gives pH 7.0 and `S` 0.
 #[must_use]
-pub fn grist_ph(bill: &[(f64, f64)], ours: bool) -> (f64, f64) {
+pub fn grist_ph(bill: &[(f64, f64)], ours: bool) -> GristPh {
     let total: f64 = bill.iter().map(|&(w, _)| w).sum();
     if total <= 0.0 {
-        return (7.0, 0.0);
+        return GristPh { ph: 7.0, s: 0.0 };
     }
     let s: f64 = bill
         .iter()
         .map(|&(w, c)| w / total * grist_g(c, ours))
         .sum();
-    (5.72 - 0.0337 * s, s)
+    GristPh::new(s)
 }
 
 /// Grain types counted in the grist sum (spec §5.1): `F_G_TYPE` 0 Grain and 3 Adjunct.
@@ -365,38 +434,38 @@ pub fn grist_type_counted(grain_type: GrainType) -> bool {
 /// Grist pH with the spec §5.1 grain-type filter. `bill` is a list of (weight kg, colour SRM,
 /// `F_G_TYPE`) for all mash grains: the denominator is the weight of every entry, only types 0
 /// and 3 add to the sum (sugars and extracts contribute 0, like a base malt at pH 5.72).
-/// Returns `(pH_grist, S)`; `W <= 0` gives `(7.0, 0.0)`.
+/// Returns the pH and `S`; `W <= 0` gives pH 7.0 and `S` 0.
 ///
 /// [`grist_ph`] is the same calculation for a bill in which every entry counts.
 #[must_use]
-pub fn grist_ph_typed(bill: &[(f64, f64, GrainType)], ours: bool) -> (f64, f64) {
+pub fn grist_ph_typed(bill: &[(f64, f64, GrainType)], ours: bool) -> GristPh {
     let total: f64 = bill.iter().map(|&(w, _, _)| w).sum();
     if total <= 0.0 {
-        return (7.0, 0.0);
+        return GristPh { ph: 7.0, s: 0.0 };
     }
     let s: f64 = bill
         .iter()
         .filter(|&&(_, _, ty)| grist_type_counted(ty))
         .map(|&(w, c, _)| w / total * grist_g(c, ours))
         .sum();
-    (5.72 - 0.0337 * s, s)
+    GristPh::new(s)
 }
 
-/// RA to pH slope in pH per mEq/L (spec §5.2). `model` 0 = MPH 3, 1 = BW; `t` is the mash
+/// RA to pH slope in pH per mEq/L (spec §5.2). `model` 0 = MPH 3, 1 = BW; `t_l_per_kg` is the mash
 /// thickness in L/kg.
 #[must_use]
-pub fn mash_ra_slope(model: MashModel, t: f64) -> f64 {
+pub fn mash_ra_slope(model: MashModel, t_l_per_kg: f64) -> f64 {
     if model == MashModel::Bw {
-        t * 0.479_306_13 * 0.17 / 1.5
+        t_l_per_kg * 0.479_306_13 * 0.17 / 1.5
     } else {
-        0.037 + 0.014 * t
+        0.037 + 0.014 * t_l_per_kg
     }
 }
 
-/// Estimated mash pH without acid: `pH_grist + RA/50 · slope` (spec §5.3). `ra` in ppm `CaCO₃`.
+/// Estimated mash pH without acid: `pH_grist + RA/50 · slope` (spec §5.3). `ra_ppm` in ppm `CaCO₃`.
 #[must_use]
-pub fn est_mash_ph(grist_ph: f64, ra: f64, slope: f64) -> f64 {
-    grist_ph + ra / 50.0 * slope
+pub fn est_mash_ph(grist_ph: f64, ra_ppm: f64, slope: f64) -> f64 {
+    grist_ph + ra_ppm / 50.0 * slope
 }
 
 /// Acid pK values `[pK1, pK2, pK3]` (spec §6.1); 20 means "no such proton". None, lactic and
@@ -441,18 +510,36 @@ pub fn dissociation_fraction(acid: Acid, model: MashModel, ph_t: f64, ours: bool
     }
 }
 
+/// Inputs of [`acid_per_liter`].
+#[derive(Debug, Clone, Copy)]
+pub struct AcidPerLiterInput {
+    /// Acid demand, mEq/L.
+    pub meq_l: f64,
+    /// Acid.
+    pub acid: Acid,
+    /// Acid strength, %.
+    pub conc_pct: f64,
+    /// Mash pH model.
+    pub model: MashModel,
+    /// Target pH for the dissociation fraction.
+    pub ph_t: f64,
+    /// Use the own model variant.
+    pub ours: bool,
+}
+
 /// Acid needed per litre of mash water for `meq` mEq/L (spec §6.2): mL of solution for liquid
 /// acids, grams of malt for acid malt (code 3). `conc` is percent strength. Code 0 gives 0.
 /// Codes 4 to 8 have no molar mass or density in the spec: error (T1.16, was phosphoric
 /// constants). Also errors on non-finite input and `conc <= 0` (zero division).
-pub fn acid_per_liter(
-    meq: f64,
-    acid: Acid,
-    conc: f64,
-    model: MashModel,
-    ph_t: f64,
-    ours: bool,
-) -> Result<f64> {
+pub fn acid_per_liter(p: &AcidPerLiterInput) -> Result<f64> {
+    let AcidPerLiterInput {
+        meq_l: meq,
+        acid,
+        conc_pct: conc,
+        model,
+        ph_t,
+        ours,
+    } = *p;
     ensure_finite("meq", meq)?;
     ensure_finite("ph_t", ph_t)?;
     if !acid.is_mash_defined() {
@@ -482,21 +569,42 @@ pub fn acid_per_liter(
     )
 }
 
+/// Inputs of [`mash_acid_amount`].
+#[derive(Debug, Clone, Copy)]
+pub struct MashAcidAmountInput {
+    /// Estimated mash pH without acid.
+    pub est_ph: f64,
+    /// Target mash pH.
+    pub target_ph: f64,
+    /// Mash pH model.
+    pub model: MashModel,
+    /// Mash thickness, L/kg.
+    pub t_l_per_kg: f64,
+    /// Mash grain, kg.
+    pub w_kg: f64,
+    /// Acid.
+    pub acid: Acid,
+    /// Acid strength, %.
+    pub conc_pct: f64,
+    /// Use the own model variant.
+    pub ours: bool,
+}
+
 /// Total mash acid amount (spec §6.3): mL for liquid acids, grams for acid malt, for the
 /// whole mash of `w_kg` kg grain at `t` L/kg. Zero when no acid is chosen or the estimate is
 /// already at or below target. Errors (T1.16) on non-finite input, `t <= 0` or `w_kg <= 0`
 /// (spec §5.2: mash thickness or grain weight missing), `conc <= 0` and undefined acids.
-#[allow(clippy::too_many_arguments)]
-pub fn mash_acid_amount(
-    est_ph: f64,
-    target_ph: f64,
-    model: MashModel,
-    t: f64,
-    w_kg: f64,
-    acid: Acid,
-    conc: f64,
-    ours: bool,
-) -> Result<f64> {
+pub fn mash_acid_amount(p: &MashAcidAmountInput) -> Result<f64> {
+    let MashAcidAmountInput {
+        est_ph,
+        target_ph,
+        model,
+        t_l_per_kg: t,
+        w_kg,
+        acid,
+        conc_pct: conc,
+        ours,
+    } = *p;
     ensure_finite("est_ph", est_ph)?;
     ensure_finite("target_ph", target_ph)?;
     let slope = mash_ra_slope_checked(model, t, w_kg)?;
@@ -510,48 +618,62 @@ pub fn mash_acid_amount(
     if acid == Acid::None || dph < 0.0 {
         return Ok(0.0);
     }
-    Ok(acid_per_liter(dph / slope, acid, conc, model, target_ph, ours)? * w_kg * t)
+    Ok(acid_per_liter(&AcidPerLiterInput {
+        meq_l: dph / slope,
+        acid,
+        conc_pct: conc,
+        model,
+        ph_t: target_ph,
+        ours,
+    })? * w_kg
+        * t)
 }
 
-/// RA equivalent in mEq/L (negative) of liquid lactic acid in the mash (spec §5.4a).
-/// `conc` percent, `vol_l` acid volume in litres, `f` dissociation factor, `w_kg` grain, `t` L/kg.
-/// Errors on non-finite input and `w_kg * t = 0`.
-pub fn lactic_acid_ra(conc: f64, vol_l: f64, f: f64, w_kg: f64, t: f64) -> Result<f64> {
-    for (field, x) in [
-        ("conc", conc),
-        ("vol_l", vol_l),
-        ("f", f),
-        ("w_kg", w_kg),
-        ("t", t),
-    ] {
-        ensure_finite(field, x)?;
-    }
-    if w_kg * t == 0.0 {
-        return Err(Error::invalid(
-            "w_kg",
-            "grain weight and thickness must be non-zero",
-        ));
-    }
-    let p = conc / 100.0;
-    let rho = 1.0 + 0.237 * p;
-    Ok(-(p * 1000.0 * rho * vol_l * f) / (0.09009 * w_kg * t))
+/// Adjusted mash pH and total grain of [`adjusted_ph`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AdjustedPh {
+    /// Adjusted mash pH.
+    pub ph: f64,
+    /// Total grain, kg.
+    pub grain_kg: f64,
+}
+
+/// Inputs of [`adjusted_ph`].
+#[derive(Debug, Clone, Copy)]
+pub struct AdjustedPhInput<'a> {
+    /// Grain bill `(weight kg, colour SRM)`.
+    pub bill: &'a [(f64, f64)],
+    /// Acid malt added, g.
+    pub acid_malt_g: f64,
+    /// Acid malt acid content, %.
+    pub acid_pct: f64,
+    /// Mash pH model.
+    pub model: MashModel,
+    /// Residual alkalinity, ppm as `CaCO₃`.
+    pub ra_ppm: f64,
+    /// Mash thickness, L/kg.
+    pub t_l_per_kg: f64,
+    /// Target mash pH.
+    pub target_ph: f64,
+    /// Use the own model variant.
+    pub ours: bool,
 }
 
 /// Adjusted mash pH with `acid_malt_g` grams of acid malt (3 SRM, `pct` percent acid) added to
-/// the bill (spec §5.5). Returns `(pH_adj, total grain kg)`. `ra` in ppm `CaCO₃`. Errors
+/// the bill (spec §5.5). Returns the pH and the total grain in kg. `ra` in ppm `CaCO₃`. Errors
 /// (T1.16) on non-finite input and when the total grain weight or `t` is not positive (the
 /// reference divides by `W * t`).
-#[allow(clippy::too_many_arguments)]
-pub fn adjusted_ph(
-    bill: &[(f64, f64)],
-    acid_malt_g: f64,
-    pct: f64,
-    model: MashModel,
-    ra: f64,
-    t: f64,
-    target_ph: f64,
-    ours: bool,
-) -> Result<(f64, f64)> {
+pub fn adjusted_ph(p: &AdjustedPhInput<'_>) -> Result<AdjustedPh> {
+    let AdjustedPhInput {
+        bill,
+        acid_malt_g,
+        acid_pct: pct,
+        model,
+        ra_ppm: ra,
+        t_l_per_kg: t,
+        target_ph,
+        ours,
+    } = *p;
     for (field, x) in [
         ("acid_malt_g", acid_malt_g),
         ("pct", pct),
@@ -576,27 +698,14 @@ pub fn adjusted_ph(
             "grain weight and thickness must be > 0",
         ));
     }
-    let (gp, _) = grist_ph(&b, ours);
+    let gp = grist_ph(&b, ours).ph;
     let slope = mash_ra_slope(model, t);
     let f = dissociation_fraction(Acid::AcidMalt, model, target_ph, ours);
     let acid_ra = -((pct / 100.0) * 1000.0 * (acid_malt_g / 1000.0) * f) / (w * t * 0.09009);
-    Ok((gp + slope * (ra / 50.0 + acid_ra), w))
-}
-
-/// Iterative acid malt amount (spec §6.4), at most 8 rounds. Returns `(total grams, final
-/// adjusted pH)`. `pct` is the malt's acid percent; the added malt is 3 SRM. Same errors as
-/// [`adjusted_ph`] plus `pct <= 0`.
-pub fn acid_malt_amount(
-    bill: &[(f64, f64)],
-    pct: f64,
-    model: MashModel,
-    ra: f64,
-    t: f64,
-    target_ph: f64,
-    ours: bool,
-) -> Result<(f64, f64)> {
-    let r = acid_malt_amount_checked(bill, pct, model, ra, t, target_ph, ours)?;
-    Ok((r.total_g, r.ph))
+    Ok(AdjustedPh {
+        ph: gp + slope * (ra / 50.0 + acid_ra),
+        grain_kg: w,
+    })
 }
 
 /// Outcome of the iterative acid malt calculation.
@@ -611,39 +720,79 @@ pub struct AcidMaltResult {
     pub converged: bool,
 }
 
-/// [`acid_malt_amount`] with the convergence flag (spec §6.4): `converged` is false when the
-/// 8 rounds ran out and the pH is still not within 0.005 of the target.
-pub fn acid_malt_amount_checked(
-    bill: &[(f64, f64)],
-    pct: f64,
-    model: MashModel,
-    ra: f64,
-    t: f64,
-    target_ph: f64,
-    ours: bool,
-) -> Result<AcidMaltResult> {
+/// Inputs of [`acid_malt_amount`].
+#[derive(Debug, Clone, Copy)]
+pub struct AcidMaltInput<'a> {
+    /// Grain bill `(weight kg, colour SRM)`.
+    pub bill: &'a [(f64, f64)],
+    /// Acid malt acid content, %.
+    pub acid_pct: f64,
+    /// Mash pH model.
+    pub model: MashModel,
+    /// Residual alkalinity, ppm as `CaCO₃`.
+    pub ra_ppm: f64,
+    /// Mash thickness, L/kg.
+    pub t_l_per_kg: f64,
+    /// Target mash pH.
+    pub target_ph: f64,
+    /// Use the own model variant.
+    pub ours: bool,
+}
+
+/// Iterative acid malt amount (spec §6.4), at most 8 rounds. `pct` is the malt's acid percent;
+/// the added malt is 3 SRM. `converged` is false when the 8 rounds ran out and the pH is still
+/// not within 0.005 of the target. Same errors as [`adjusted_ph`] plus `pct <= 0`.
+pub fn acid_malt_amount(p: &AcidMaltInput<'_>) -> Result<AcidMaltResult> {
+    let AcidMaltInput {
+        bill,
+        acid_pct: pct,
+        model,
+        ra_ppm: ra,
+        t_l_per_kg: t,
+        target_ph,
+        ours,
+    } = *p;
     ensure_positive("pct", pct)?;
     let mut total = 0.0;
     let mut ph2 = 0.0;
     let mut converged = false;
     for _ in 0..8 {
-        let (ph, w) = adjusted_ph(bill, total, pct, model, ra, t, target_ph, ours)?;
+        let AdjustedPh { ph, grain_kg: w } = adjusted_ph(&AdjustedPhInput {
+            bill,
+            acid_malt_g: total,
+            acid_pct: pct,
+            model,
+            ra_ppm: ra,
+            t_l_per_kg: t,
+            target_ph,
+            ours,
+        })?;
         let slope = mash_ra_slope(model, t);
         let amt = if ph - target_ph >= 0.0 {
-            acid_per_liter(
-                (ph - target_ph) / slope,
-                Acid::AcidMalt,
-                pct,
+            acid_per_liter(&AcidPerLiterInput {
+                meq_l: (ph - target_ph) / slope,
+                acid: Acid::AcidMalt,
+                conc_pct: pct,
                 model,
-                target_ph,
+                ph_t: target_ph,
                 ours,
-            )? * w
+            })? * w
                 * t
         } else {
             0.0
         };
         total += amt;
-        ph2 = adjusted_ph(bill, total, pct, model, ra, t, target_ph, ours)?.0;
+        ph2 = adjusted_ph(&AdjustedPhInput {
+            bill,
+            acid_malt_g: total,
+            acid_pct: pct,
+            model,
+            ra_ppm: ra,
+            t_l_per_kg: t,
+            target_ph,
+            ours,
+        })?
+        .ph;
         if ph2 - target_ph < 0.005 {
             converged = true;
             break;
@@ -656,23 +805,48 @@ pub fn acid_malt_amount_checked(
     })
 }
 
+/// Inputs of [`adjusted_ph_liquid`].
+#[derive(Debug, Clone, Copy)]
+pub struct AdjustedPhLiquidInput {
+    /// Grist pH.
+    pub grist_ph: f64,
+    /// Residual alkalinity, ppm as `CaCO₃`.
+    pub ra_ppm: f64,
+    /// Mash thickness, L/kg.
+    pub t_l_per_kg: f64,
+    /// Mash pH model.
+    pub model: MashModel,
+    /// Mash grain, kg.
+    pub w_kg: f64,
+    /// Acid.
+    pub acid: Acid,
+    /// Acid strength, %.
+    pub conc_pct: f64,
+    /// Acid volume, L.
+    pub vol_l: f64,
+    /// Target mash pH.
+    pub target_ph: f64,
+    /// Use the own model variant.
+    pub ours: bool,
+}
+
 /// Adjusted mash pH with a liquid acid (spec §5.5): `pH_grist + m · (RA/50 + MiscAcidRA)`.
 /// lactic or phosphoric (other acids add no acid), `conc` percent, `vol_l` acid volume in
 /// litres, `w_kg` mash grain, `t` L/kg, `target_ph` as in [`dissociation_fraction`]. Errors on
 /// non-finite input and `w_kg * t = 0`.
-#[allow(clippy::too_many_arguments)]
-pub fn adjusted_ph_liquid(
-    grist_ph: f64,
-    ra: f64,
-    t: f64,
-    model: MashModel,
-    w_kg: f64,
-    acid: Acid,
-    conc: f64,
-    vol_l: f64,
-    target_ph: f64,
-    ours: bool,
-) -> Result<f64> {
+pub fn adjusted_ph_liquid(p: &AdjustedPhLiquidInput) -> Result<f64> {
+    let AdjustedPhLiquidInput {
+        grist_ph,
+        ra_ppm: ra,
+        t_l_per_kg: t,
+        model,
+        w_kg,
+        acid,
+        conc_pct: conc,
+        vol_l,
+        target_ph,
+        ours,
+    } = *p;
     ensure_finite("grist_ph", grist_ph)?;
     ensure_finite("ra", ra)?;
     ensure_finite("target_ph", target_ph)?;
@@ -682,11 +856,20 @@ pub fn adjusted_ph_liquid(
         1.0
     };
     Ok(grist_ph
-        + mash_ra_slope(model, t) * (ra / 50.0 + misc_acid_ra(acid, conc, vol_l, f, w_kg, t)?))
+        + mash_ra_slope(model, t)
+            * (ra / 50.0
+                + misc_acid_ra(&MiscAcidRaInput {
+                    acid,
+                    conc_pct: conc,
+                    vol_l,
+                    f,
+                    w_kg,
+                    t_l_per_kg: t,
+                })?))
 }
 
 /// Misc unit to grams (spec §0.1 `ToGrams`): 0 mg, 1 g, 2 oz, 3 lb, 4 kg, 5 mL (taken as grams,
-/// spec [belirsiz]), 6 tsp and 7 tbsp (0.8 g/mL). Errors on a non-finite amount.
+/// spec "belirsiz"), 6 tsp and 7 tbsp (0.8 g/mL). Errors on a non-finite amount.
 pub fn to_grams(amount: f64, units: MiscUnit) -> Result<f64> {
     ensure_finite("amount", amount)?;
     let lb_g = crate::units::LB_KG * 1000.0;
@@ -703,15 +886,15 @@ pub fn to_grams(amount: f64, units: MiscUnit) -> Result<f64> {
 
 /// Sparge water volume in litres: total water minus the main mash water `w_kg · t` (spec §6.5).
 #[must_use]
-pub fn sparge_volume_l(total_l: f64, w_kg: f64, t: f64) -> f64 {
-    total_l - w_kg * t
+pub fn sparge_volume_l(total_l: f64, w_kg: f64, t_l_per_kg: f64) -> f64 {
+    total_l - w_kg * t_l_per_kg
 }
 
 /// Sparge acid, model 0 (closed carbonate system charge balance, spec §6.5), mol/L.
-/// `hco3` in ppm, water pH `ph_w`, target pH `ph_t`.
+/// `hco3_ppm` in ppm, water pH `ph_w`, target pH `ph_t`.
 #[must_use]
-pub fn sparge_acid_mph(hco3: f64, ph_w: f64, ph_t: f64) -> f64 {
-    let c = hco3 / 61_016.0;
+pub fn sparge_acid_mph(hco3_ppm: f64, ph_w: f64, ph_t: f64) -> f64 {
+    let c = hco3_ppm / 61_016.0;
     let k1 = 4.4435e-07;
     let k1k2 = 2.073_781_45e-17;
     let k2 = 4.667e-11;
@@ -727,14 +910,14 @@ pub fn sparge_acid_mph(hco3: f64, ph_w: f64, ph_t: f64) -> f64 {
 /// Sparge acid, own model 0: [`sparge_acid_mph`] divided by the acid's dissociation fraction at
 /// the sparge target pH (spec §6.8), mol/L.
 #[must_use]
-pub fn sparge_acid_mph_ours(hco3: f64, ph_w: f64, ph_t: f64, acid: Acid) -> f64 {
-    sparge_acid_mph(hco3, ph_w, ph_t) / acid_fraction(acid, ph_t)
+pub fn sparge_acid_mph_ours(hco3_ppm: f64, ph_w: f64, ph_t: f64, acid: Acid) -> f64 {
+    sparge_acid_mph(hco3_ppm, ph_w, ph_t) / acid_fraction(acid, ph_t)
 }
 
 /// Sparge acid, model 1 (Bru'n Water style alkalinity titration, spec §6.5), mol/L.
 /// Not defined for `ph_w <= 4.3` (water already acidic): returns 0.
 #[must_use]
-pub fn sparge_acid_bw(hco3: f64, ph_w: f64, ph_t: f64, acid: Acid) -> f64 {
+pub fn sparge_acid_bw(hco3_ppm: f64, ph_w: f64, ph_t: f64, acid: Acid) -> f64 {
     if ph_w <= 4.3 {
         return 0.0;
     }
@@ -747,16 +930,8 @@ pub fn sparge_acid_bw(hco3: f64, ph_w: f64, ph_t: f64, acid: Acid) -> f64 {
     let (a0w, a2w) = alpha(ph_w);
     let (a0e, a2e) = alpha(4.3);
     let (a0t, a2t) = alpha(ph_t);
-    let ct = (hco3 * 50.0 / 61.0 / 50.0) / ((a0e - a0w) + (a2w - a2e));
+    let ct = (hco3_ppm * 50.0 / 61.0 / 50.0) / ((a0e - a0w) + (a2w - a2e));
     ct * ((a2w - a2t) + (a0t - a0w)) / acid_fraction(acid, ph_t) / 1000.0
-}
-
-/// Volume in mL of lactic acid solution for `mol_l` mol/L over `v_l` litres (spec §6.5).
-/// `conc` is percent strength, floored at 1.
-#[must_use]
-pub fn lactic_ml(mol_l: f64, v_l: f64, conc: f64) -> f64 {
-    let c = f64::max(conc, 1.0) / 100.0;
-    (1.0 / c) * 0.09009 / (1.0 + 0.237 * c) * mol_l * v_l * 1000.0
 }
 
 /// Calculation warnings (spec §6.8).
@@ -766,21 +941,6 @@ pub enum Warning {
     BwModelUnverified,
     /// Chalk dissolves poorly; effect is overstated without acidic mash.
     ChalkSolubility,
-}
-
-impl Warning {
-    /// User-facing text (Turkish, as in the reference).
-    #[must_use]
-    pub fn message(self) -> &'static str {
-        match self {
-            Warning::BwModelUnverified => {
-                "BW modeli doğrulanacak: MPH'ye göre yaklaşık yarı asit önerir (ölçülmüş mash pH ile kalibre edilene kadar)"
-            }
-            Warning::ChalkSolubility => {
-                "çözünürlük düşük, asitli mash olmadan etkisi abartılı olabilir (tebeşir)"
-            }
-        }
-    }
 }
 
 /// Warnings for the chosen model and salt additions in grams (spec §6.8).
@@ -845,14 +1005,23 @@ fn lstsq(cols: &[&[f64]], b: &[f64]) -> Vec<f64> {
     x
 }
 
+/// Solution of [`nnls`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct Nnls {
+    /// The non-negative solution.
+    pub x: Vec<f64>,
+    /// Residual norm `‖A x − b‖₂`.
+    pub residual_norm: f64,
+}
+
 /// Non-negative least squares, Lawson–Hanson active set method (spec §7.1): minimise
 /// `‖A x − b‖₂` subject to `x ≥ 0`. `a` holds the columns of `A` (each of length `b.len()`).
-/// At most `3n` iterations. Returns `(x, ‖A x − b‖₂)`.
+/// At most `3n` iterations. Returns `x` and `‖A x − b‖₂`.
 ///
 /// The solution `x` is not unique when columns are linearly dependent; `A x` and the residual
 /// norm always are.
 #[must_use]
-pub fn nnls(a: &[Vec<f64>], b: &[f64]) -> (Vec<f64>, f64) {
+pub fn nnls(a: &[Vec<f64>], b: &[f64]) -> Nnls {
     let n = a.len();
     let m = b.len();
     let mut x = vec![0.0; n];
@@ -919,7 +1088,19 @@ pub fn nnls(a: &[Vec<f64>], b: &[f64]) -> (Vec<f64>, f64) {
         }
     }
     let rn = residual(&x).iter().map(|v| v * v).sum::<f64>().sqrt();
-    (x, rn)
+    Nnls {
+        x,
+        residual_norm: rn,
+    }
+}
+
+/// Solution of [`water_match`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SaltMatch {
+    /// Grams per US gallon for every salt in [`Salt::ALL`] order.
+    pub grams_per_gal: [f64; 8],
+    /// Residual norm, ppm.
+    pub residual_norm: f64,
 }
 
 /// Best salt additions to reach a target profile (spec §7.1). `base` and `target` are ion
@@ -933,7 +1114,7 @@ pub fn water_match(
     target: &[f64; ION_COUNT],
     s: f64,
     excluded: &[Salt],
-) -> ([f64; 8], f64) {
+) -> SaltMatch {
     let active: Vec<Salt> = Salt::ALL
         .into_iter()
         .filter(|salt| !excluded.contains(salt))
@@ -943,13 +1124,19 @@ pub fn water_match(
         .map(|salt| salt.contribution().to_vec())
         .collect();
     let b: Vec<f64> = (0..ION_COUNT).map(|i| target[i] - s * base[i]).collect();
-    let (x, rn) = nnls(&cols, &b);
+    let Nnls {
+        x,
+        residual_norm: rn,
+    } = nnls(&cols, &b);
     let mut out = [0.0; 8];
     for (salt, v) in active.iter().zip(x) {
         let pos = Salt::ALL.iter().position(|q| q == salt).unwrap_or(0);
         out[pos] = v;
     }
-    (out, rn)
+    SaltMatch {
+        grams_per_gal: out,
+        residual_norm: rn,
+    }
 }
 
 /// Resulting profile of a [`water_match`] solution (spec §7.3): `s·base + Σ x_k · A_k` in ppm.
@@ -969,17 +1156,42 @@ pub fn best_fit_profile(base: &[f64; ION_COUNT], s: f64, x: &[f64; 8]) -> [f64; 
 
 /// RA to pH slope with the spec §5.2 edge case: `None` (error, "mash thickness or grain weight
 /// missing") when `t <= 0` or `w_kg <= 0` (also non-finite).
-pub fn mash_ra_slope_checked(model: MashModel, t: f64, w_kg: f64) -> Result<f64> {
-    ensure_positive("t", t)?;
+pub fn mash_ra_slope_checked(model: MashModel, t_l_per_kg: f64, w_kg: f64) -> Result<f64> {
+    ensure_positive("t_l_per_kg", t_l_per_kg)?;
     ensure_positive("w_kg", w_kg)?;
-    Ok(mash_ra_slope(model, t))
+    Ok(mash_ra_slope(model, t_l_per_kg))
+}
+
+/// Inputs of [`misc_acid_ra`].
+#[derive(Debug, Clone, Copy)]
+pub struct MiscAcidRaInput {
+    /// Acid.
+    pub acid: Acid,
+    /// Acid strength, %.
+    pub conc_pct: f64,
+    /// Acid volume, L.
+    pub vol_l: f64,
+    /// Dissociation factor.
+    pub f: f64,
+    /// Mash grain, kg.
+    pub w_kg: f64,
+    /// Mash thickness, L/kg.
+    pub t_l_per_kg: f64,
 }
 
 /// RA equivalent in mEq/L (negative) of a liquid mash acid (spec §5.4a): `acid` 1 lactic,
 /// 2 phosphoric (density coefficient 0.365, unlike [`acid_per_liter`]'s 0.375). Other codes
 /// are not scanned by `FilterMashAgents` and contribute 0. Errors on non-finite input and
 /// `w_kg * t = 0`.
-pub fn misc_acid_ra(acid: Acid, conc: f64, vol_l: f64, f: f64, w_kg: f64, t: f64) -> Result<f64> {
+pub fn misc_acid_ra(p: &MiscAcidRaInput) -> Result<f64> {
+    let MiscAcidRaInput {
+        acid,
+        conc_pct: conc,
+        vol_l,
+        f,
+        w_kg,
+        t_l_per_kg: t,
+    } = *p;
     for (field, x) in [
         ("conc", conc),
         ("vol_l", vol_l),
@@ -1004,8 +1216,30 @@ pub fn misc_acid_ra(acid: Acid, conc: f64, vol_l: f64, f: f64, w_kg: f64, t: f64
     Ok(-(p * 1000.0 * rho * vol_l * f) / (mw * w_kg * t))
 }
 
+/// Inputs of [`acid_malt_ra`].
+#[derive(Debug, Clone, Copy)]
+pub struct AcidMaltRaInput {
+    /// Acid malt acid content, %.
+    pub acid_pct: f64,
+    /// Acid malt, kg.
+    pub malt_kg: f64,
+    /// Dissociation factor.
+    pub f: f64,
+    /// Mash grain, kg.
+    pub w_kg: f64,
+    /// Mash thickness, L/kg.
+    pub t_l_per_kg: f64,
+}
+
 /// RA equivalent in mEq/L (negative) of acid malt (spec §5.4b); `w_kg` is total mash grain.
-pub fn acid_malt_ra(pct: f64, malt_kg: f64, f: f64, w_kg: f64, t: f64) -> Result<f64> {
+pub fn acid_malt_ra(p: &AcidMaltRaInput) -> Result<f64> {
+    let AcidMaltRaInput {
+        acid_pct: pct,
+        malt_kg,
+        f,
+        w_kg,
+        t_l_per_kg: t,
+    } = *p;
     for (field, x) in [
         ("pct", pct),
         ("malt_kg", malt_kg),
@@ -1027,8 +1261,8 @@ pub fn acid_malt_ra(pct: f64, malt_kg: f64, f: f64, w_kg: f64, t: f64) -> Result
 /// Sparge acid volume in mL (spec §6.5 "Hacme çevirme"): lactic (1) or phosphoric (2, density
 /// coefficient 0.365); every other code gives 0; a non-positive result is 0.
 #[must_use]
-pub fn sparge_acid_ml(mol_l: f64, v_l: f64, conc: f64, acid: Acid) -> f64 {
-    let c = f64::max(conc, 1.0) / 100.0;
+pub fn sparge_acid_ml(mol_l: f64, v_l: f64, conc_pct: f64, acid: Acid) -> f64 {
+    let c = f64::max(conc_pct, 1.0) / 100.0;
     let ml = match acid {
         Acid::Lactic => 0.09009 / c / (1.0 + 0.237 * c) * mol_l * v_l * 1000.0,
         Acid::Phosphoric => 0.098 / c / (1.0 + 0.49 * c + 0.365 * c * c) * mol_l * v_l * 1000.0,
@@ -1037,22 +1271,45 @@ pub fn sparge_acid_ml(mol_l: f64, v_l: f64, conc: f64, acid: Acid) -> f64 {
     if ml > 0.0 { ml } else { 0.0 }
 }
 
+/// Inputs of [`sparge_acid_amount`].
+#[derive(Debug, Clone, Copy)]
+pub struct SpargeAcidInput {
+    /// Mash pH model.
+    pub model: MashModel,
+    /// Use the own model variant.
+    pub ours: bool,
+    /// Bicarbonate, ppm.
+    pub hco3_ppm: f64,
+    /// Water pH.
+    pub ph_w: f64,
+    /// Target pH for the dissociation fraction.
+    pub ph_t: f64,
+    /// Acid.
+    pub acid: Acid,
+    /// Acid strength, %.
+    pub conc_pct: f64,
+    /// Mash pH difference.
+    pub mash_dph: f64,
+    /// Sparge water, L.
+    pub v_sp_l: f64,
+}
+
 /// Whole sparge acidification (spec §6.5), mL. Zero for acid 0, 3 or other, or when the mash
 /// pH difference `mash_dph` is negative. Model 1 uses [`sparge_acid_bw`] (guarded), model 0
 /// [`sparge_acid_mph`] (own model: [`sparge_acid_mph_ours`]).
 /// Errors on non-finite input or a non-finite result.
-#[allow(clippy::too_many_arguments)]
-pub fn sparge_acid_amount(
-    model: MashModel,
-    ours: bool,
-    hco3: f64,
-    ph_w: f64,
-    ph_t: f64,
-    acid: Acid,
-    conc: f64,
-    mash_dph: f64,
-    v_sp_l: f64,
-) -> Result<f64> {
+pub fn sparge_acid_amount(p: &SpargeAcidInput) -> Result<f64> {
+    let SpargeAcidInput {
+        model,
+        ours,
+        hco3_ppm: hco3,
+        ph_w,
+        ph_t,
+        acid,
+        conc_pct: conc,
+        mash_dph,
+        v_sp_l,
+    } = *p;
     for (field, x) in [
         ("hco3", hco3),
         ("ph_w", ph_w),
@@ -1115,18 +1372,38 @@ pub fn agents_ppm(grams: &[(Salt, f64)], vol_l: f64, ignore: bool) -> [f64; ION_
     }
 }
 
+/// Inputs of [`agent_volume`].
+#[derive(Debug, Clone, Copy)]
+pub struct AgentVolumeInput {
+    /// Recipe type.
+    pub rtype: RecipeType,
+    /// Misc-use code.
+    pub use_: u8,
+    /// Mash tot water.
+    pub mash_tot_water_l: f64,
+    /// Sparge volume, L.
+    pub sparge_vol_l: f64,
+    /// Boil volume, L.
+    pub boil_vol_l: f64,
+    /// Batch volume, L.
+    pub volume_l: f64,
+    /// Final volume, L.
+    pub final_vol_l: f64,
+}
+
 /// Reference volume `F_M_TEMP_VOL` of a water agent (spec §2). `use_` is the misc-use code:
 /// 0 boil, 1 mash, 2 primary, 5 sparge, others fall to `final_vol` (spec-defined).
 #[must_use]
-pub fn agent_volume(
-    rtype: RecipeType,
-    use_: u8,
-    mash_tot_water: f64,
-    sparge_vol: f64,
-    boil_vol: f64,
-    volume: f64,
-    final_vol: f64,
-) -> f64 {
+pub fn agent_volume(p: &AgentVolumeInput) -> f64 {
+    let AgentVolumeInput {
+        rtype,
+        use_,
+        mash_tot_water_l: mash_tot_water,
+        sparge_vol_l: sparge_vol,
+        boil_vol_l: boil_vol,
+        volume_l: volume,
+        final_vol_l: final_vol,
+    } = *p;
     if matches!(rtype, RecipeType::PartialMash | RecipeType::AllGrain) {
         match use_ {
             1 => mash_tot_water,
@@ -1144,15 +1421,31 @@ pub fn agent_volume(
     }
 }
 
+/// Inputs of [`total_water_ion`].
+#[derive(Debug, Clone, Copy)]
+pub struct TotalWaterIonInput<'a> {
+    /// Mash profile, ppm.
+    pub mash: &'a [f64; ION_COUNT],
+    /// Sparge profile, ppm.
+    pub sparge: &'a [f64; ION_COUNT],
+    /// Mash water volume, L.
+    pub vm_l: f64,
+    /// Sparge water volume, L.
+    pub vs_l: f64,
+    /// The recipe has a mash.
+    pub has_mash: bool,
+}
+
 /// Mash + sparge blended profile (spec §3.3 `GetTotalWaterIon`).
 #[must_use]
-pub fn total_water_ion(
-    mash: &[f64; ION_COUNT],
-    sparge: &[f64; ION_COUNT],
-    vm: f64,
-    vs: f64,
-    has_mash: bool,
-) -> [f64; ION_COUNT] {
+pub fn total_water_ion(p: &TotalWaterIonInput<'_>) -> [f64; ION_COUNT] {
+    let TotalWaterIonInput {
+        mash,
+        sparge,
+        vm_l: vm,
+        vs_l: vs,
+        has_mash,
+    } = *p;
     if has_mash && vs > 0.0 {
         let mut out = [0.0; ION_COUNT];
         for (i, o) in out.iter_mut().enumerate() {
@@ -1164,13 +1457,13 @@ pub fn total_water_ion(
     }
 }
 
-/// Kettle top-up dilution factor `k_top` (spec §3.3); 1 when `v_topk` is 0.
+/// Kettle top-up dilution factor `k_top` (spec §3.3); 1 when `v_topk_l` is 0.
 #[must_use]
-pub fn top_up_factor(v_avail: f64, vs: f64, v_topk: f64) -> f64 {
-    if v_topk == 0.0 {
+pub fn top_up_factor(v_avail_l: f64, vs_l: f64, v_topk_l: f64) -> f64 {
+    if v_topk_l == 0.0 {
         1.0
     } else {
-        (v_avail + vs) / (v_avail + vs + v_topk)
+        (v_avail_l + vs_l) / (v_avail_l + vs_l + v_topk_l)
     }
 }
 
@@ -1205,16 +1498,20 @@ pub fn match_scale(mash_recipe: bool, has_boil_ing: bool, s_boil: f64) -> f64 {
     }
 }
 
-/// Salt grams from per-gallon concentrations `x` (spec §7.2): `(mash grams, sparge grams)`.
+/// Salt grams of [`salt_grams`], in [`Salt::ALL`] order.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SaltGrams {
+    /// Mash water additions, g.
+    pub mash_g: [f64; 8],
+    /// Sparge water additions, g.
+    pub sparge_g: [f64; 8],
+}
+
+/// Salt grams from per-gallon concentrations `x` (spec §7.2): mash and sparge grams.
 /// With `combine` and sparge volume > 0 the volumes are added and no sparge addition is made.
 /// The 0.01 g removal threshold of `SetWaterAddition` is the caller's.
 #[must_use]
-pub fn salt_grams(
-    x: &[f64; 8],
-    v_mash_gal: f64,
-    v_sp_gal: f64,
-    combine: bool,
-) -> ([f64; 8], [f64; 8]) {
+pub fn salt_grams(x: &[f64; 8], v_mash_gal: f64, v_sp_gal: f64, combine: bool) -> SaltGrams {
     let vm = if combine && v_sp_gal > 0.0 {
         v_mash_gal + v_sp_gal
     } else {
@@ -1225,24 +1522,28 @@ pub fn salt_grams(
     } else {
         0.0
     };
-    (x.map(|k| k * vm), x.map(|k| k * sp))
+    SaltGrams {
+        mash_g: x.map(|k| k * vm),
+        sparge_g: x.map(|k| k * sp),
+    }
 }
 
 /// Water profile tool mix (spec §7.4): volume-weighted base and dilution water. The spec
 /// leaves `Vb + Vd = 0` undefined; this returns the zero profile.
 #[must_use]
+#[allow(clippy::similar_names)] // base and dilution water (`vb_l`, `vd_l`)
 pub fn profile_mix(
-    vb: f64,
+    vb_l: f64,
     b: &[f64; ION_COUNT],
-    vd: f64,
+    vd_l: f64,
     d: &[f64; ION_COUNT],
 ) -> [f64; ION_COUNT] {
     let mut out = [0.0; ION_COUNT];
-    if vb + vd <= 0.0 {
+    if vb_l + vd_l <= 0.0 {
         return out;
     }
     for (i, o) in out.iter_mut().enumerate() {
-        *o = (vb * b[i] + vd * d[i]) / (vb + vd);
+        *o = (vb_l * b[i] + vd_l * d[i]) / (vb_l + vd_l);
     }
     out
 }

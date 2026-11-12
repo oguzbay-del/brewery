@@ -198,6 +198,8 @@ Reçetede `F_R_RESID_ALK` alanı **mash suyu profilinden** (`F_R_W_*`, yani base
 `F_R_SULFATE_CHLORIDE = SO₄ / Cl` (mash profili). Kaynak: `SulfiteChlorideRatio` (adı yanlış yazılmış), `SulfateBalRatio` (×2).
 **[belirsiz]** Derleyicinin kaldırdığı "ulaşılamaz bloklar" büyük olasılıkla Cl = 0 için bir koruma. Cl = 0 olduğunda 0 döndürmeyi önerilir.
 
+**Karar (T1.16 C): sınıf etiketi motorda değildir.** Motor `water::SulfateChlorideBalance` enum değerini döndürür (`sulfate_chloride_balance`); aşağıdaki İngilizce etiketler gösterimdir. Aynı kural uyarılar için geçerlidir: `water::Warning` kod olarak kalır, metin (aşağıdaki Türkçe cümleler) istemcidedir. Vektör etiketi enum eşlemesiyle karşılaştırır.
+
 Sınıflama (`SulfateBalFunc` ×3, eşikler hepsinde aynı):
 | oran r | etiket |
 |---|---|

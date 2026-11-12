@@ -152,6 +152,8 @@ Varsayılan debi 4 L/dk [doğrulanacak]. Çıkış sıcaklığı hedefe ulaşmı
 
 ## 4. Ekipmana göre ölçekleme
 
+**Karar (T1.16 C) (C12): tek açık giriş `scale_factor`.** Kural tablosunun tamamını (mash, tuz, "parti başına" misc, oran modu) uygulayan işlev `home::scale_factor` olarak açıktır; liste biçimindeki `scale_recipe` Rust'ta yoktur (her malzeme için `scale_factor` çağrısı ve çarpma yeterlidir; referansta kolaylık olarak kalır, yalnız kısmi kuralları vardır). Vektördeki `scale_recipe` vakaları Rust testinde bu şekilde sınanır.
+
 Ölçekleme ekranı bu hesabı kullanır. Mevcut `ScaleGravity` (01 §3.7), `ScaleBitterness` (02 §6.1) ve `ScaleFromGrainWeight` (01 §3.8) üzerine kurulur.
 
 ### 4.1 Mod: "Hedef değerleri koru" [tasarım]

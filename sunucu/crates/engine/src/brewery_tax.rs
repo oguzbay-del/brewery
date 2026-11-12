@@ -7,8 +7,6 @@
 //! (`Decimal("20.0") * Decimal("12")` has scale 1, `max()` keeps the first of two equal values, ...),
 //! because the parity vectors compare the printed string (ADR-0003).
 
-use std::fmt;
-
 use rust_decimal::{Decimal, RoundingStrategy};
 
 use crate::error::Error;
@@ -53,24 +51,39 @@ pub const PSI_TOL: f64 = 1e-9;
 
 /// Real extract from original and apparent extract, °P (`0.1808·OE + 0.8192·AE`).
 #[must_use]
-pub fn real_extract(oe: f64, ae: f64) -> f64 {
-    0.1808 * oe + 0.8192 * ae
+pub fn real_extract(original_extract_p: f64, apparent_extract_p: f64) -> f64 {
+    0.1808 * original_extract_p + 0.8192 * apparent_extract_p
 }
 
 /// Alcohol by weight (g/100 g) from original and real extract, °P.
 #[must_use]
-pub fn abw(oe: f64, re: f64) -> f64 {
-    (oe - re) / (2.0665 - 0.010_665 * oe)
+pub fn abw(original_extract_p: f64, real_extract_p: f64) -> f64 {
+    (original_extract_p - real_extract_p) / (2.0665 - 0.010_665 * original_extract_p)
+}
+
+/// Alcohol values from OG and FG, see [`abv_from`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AlcoholFromGravity {
+    /// ABV, % vol.
+    pub abv_pct: f64,
+    /// ABW, g/100 g.
+    pub abw_pct: f64,
+    /// Real extract, °P.
+    pub real_extract_p: f64,
 }
 
 /// ABV (% vol), ABW (g/100 g) and real extract (°P) from OG and FG (SG).
 #[must_use]
-pub fn abv_from(og: f64, fg: f64) -> (f64, f64, f64) {
+pub fn abv_from(og: f64, fg: f64) -> AlcoholFromGravity {
     let oe = to_plato(og);
     let ae = to_plato(fg);
     let re = real_extract(oe, ae);
     let w = abw(oe, re);
-    (w * fg / 0.79661, w, re)
+    AlcoholFromGravity {
+        abv_pct: w * fg / 0.79661,
+        abw_pct: w,
+        real_extract_p: re,
+    }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -81,7 +94,7 @@ pub fn abv_from(og: f64, fg: f64) -> (f64, f64, f64) {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LabelEnergy {
     /// ABV, % vol, rounded to 2 places.
-    pub abv: f64,
+    pub abv_pct: f64,
     /// Alcohol, g/100 mL, 2 places.
     pub alcohol_g: f64,
     /// Real extract, g/100 mL, 2 places.
@@ -103,20 +116,24 @@ pub struct LabelEnergy {
 /// ABW × SG × 0.9982 is used.
 ///
 /// # Errors
-/// [`TaxError::InvalidInput`] for non-finite input or a non-finite result (T1.16).
+/// [`Error::InvalidInput`] for non-finite input or a non-finite result (T1.16).
 #[allow(clippy::cast_possible_truncation)]
 pub fn label_energy(
     og: f64,
     fg: f64,
     protein_g100ml: f64,
-    abv_measured: Option<f64>,
-) -> Result<LabelEnergy, TaxError> {
-    let inputs = [og, fg, protein_g100ml, abv_measured.unwrap_or(0.0)];
+    abv_measured_pct: Option<f64>,
+) -> Result<LabelEnergy, Error> {
+    let inputs = [og, fg, protein_g100ml, abv_measured_pct.unwrap_or(0.0)];
     if !inputs.iter().all(|x| x.is_finite() && x.abs() <= 1.0e6) {
-        return Err(TaxError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
-    let (mut abv, w, re) = abv_from(og, fg);
-    let alc_g = if let Some(measured) = abv_measured {
+    let AlcoholFromGravity {
+        abv_pct: mut abv,
+        abw_pct: w,
+        real_extract_p: re,
+    } = abv_from(og, fg);
+    let alc_g = if let Some(measured) = abv_measured_pct {
         abv = measured;
         abv * ETOH_DENS
     } else {
@@ -130,10 +147,10 @@ pub fn label_energy(
         .iter()
         .all(|x| x.is_finite())
     {
-        return Err(TaxError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     Ok(LabelEnergy {
-        abv: round_py(abv, 2),
+        abv_pct: round_py(abv, 2),
         alcohol_g: round_py(alc_g, 2),
         real_extract_g: round_py(re_g, 2),
         carbohydrate_g: round_py(carb, 1),
@@ -228,14 +245,14 @@ pub enum Method {
 
 impl Method {
     /// Parses the data-table method name (`hacim`, `saf_alkol`, ...).
-    pub fn parse(name: &str) -> Result<Self, TaxError> {
+    pub fn parse(name: &str) -> Result<Self, Error> {
         match name {
             "hacim" => Ok(Self::Volume),
             "saf_alkol" => Ok(Self::PureAlcohol),
             "hl_plato" => Ok(Self::HlPlato),
             "plato_bandi" => Ok(Self::PlatoBand),
             "kademeli_hacim" => Ok(Self::TieredVolume),
-            other => Err(TaxError::UnknownMethod(other.to_owned())),
+            _ => Err(Error::invalid("method", "unknown method")),
         }
     }
 }
@@ -249,67 +266,6 @@ pub struct Band {
     pub rate: Decimal,
 }
 
-/// Tax engine failure (the Python reference raises `ValueError`).
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TaxError {
-    /// Input rounding rule missing on a row that uses ABV or °P.
-    UndefinedInputRounding,
-    /// No band matched: the last band must be open-ended.
-    NoBand,
-    /// Volume above the last tier (hL left untiered).
-    TierExceeded(Decimal),
-    /// Unknown method name.
-    UnknownMethod(String),
-    /// A required input of the method is missing.
-    MissingInput(&'static str),
-    /// Decimal overflow.
-    Overflow,
-    /// Deduction list holds a kind other than destroyed, returned or lab.
-    BadDeduction,
-    /// Band or tier table not strictly ascending, open end not last, or negative rate (T1.12 D8).
-    InvalidBands,
-    /// Input not finite or outside its valid range (T1.12 D2), e.g. FG <= 0 in [`spund`].
-    InvalidInput,
-}
-
-impl fmt::Display for TaxError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::UndefinedInputRounding => f.write_str("input rounding rule undefined"),
-            Self::NoBand => f.write_str("no band found: last band must be open-ended"),
-            Self::TierExceeded(left) => write!(f, "last tier exceeded: {left} hL untiered"),
-            Self::UnknownMethod(m) => write!(f, "unknown method: {m}"),
-            Self::MissingInput(name) => write!(f, "missing input: {name}"),
-            Self::Overflow => f.write_str("decimal overflow"),
-            Self::BadDeduction => f.write_str("deduction kind must be destroyed, returned or lab"),
-            Self::InvalidBands => {
-                f.write_str("bands must be strictly ascending, open end last, rate >= 0")
-            }
-            Self::InvalidInput => f.write_str("input not finite or out of range"),
-        }
-    }
-}
-
-impl std::error::Error for TaxError {}
-
-impl From<TaxError> for Error {
-    fn from(e: TaxError) -> Self {
-        match e {
-            TaxError::UndefinedInputRounding => {
-                Error::invalid("input_rounding", "rule is undefined")
-            }
-            TaxError::NoBand => Error::invalid("bands", "no band matched"),
-            TaxError::TierExceeded(_) => Error::invalid("volume", "above the last tier"),
-            TaxError::UnknownMethod(_) => Error::invalid("method", "unknown method"),
-            TaxError::MissingInput(field) => Error::invalid(field, "required input is missing"),
-            TaxError::Overflow => Error::invalid("amount", "decimal overflow"),
-            TaxError::BadDeduction => Error::invalid("deduct", "unknown deduction kind"),
-            TaxError::InvalidBands => Error::invalid("bands", "invalid band table"),
-            TaxError::InvalidInput => Error::invalid("input", "not finite or out of range"),
-        }
-    }
-}
-
 /// Largest number of decimals a rounding rule may ask for (T1.16, was unbounded).
 pub const MAX_DP: u32 = 12;
 
@@ -321,9 +277,9 @@ pub struct TaxLine<'a> {
     /// Volume, litres.
     pub volume_l: Decimal,
     /// ABV, % vol (`PureAlcohol`).
-    pub abv: Option<Decimal>,
+    pub abv_pct: Option<Decimal>,
     /// Original extract, °P (`HlPlato`, `PlatoBand`).
-    pub plato: Option<Decimal>,
+    pub plato_p: Option<Decimal>,
     /// Flat rate (`Volume`: per hL; `PureAlcohol` without bands: per LPA; `HlPlato`: per hL and °P).
     pub rate: Option<Decimal>,
     /// Bands (`PureAlcohol` ABV bands, `PlatoBand` °P bands); empty = none.
@@ -331,7 +287,7 @@ pub struct TaxLine<'a> {
     /// Tiers (`TieredVolume`): upper bound in hL and rate per hL.
     pub tiers: &'a [Band],
     /// hL already taxed this year (`TieredVolume`).
-    pub ytd: Decimal,
+    pub ytd_hl: Decimal,
     /// Truncate °P to an integer (`HlPlato`).
     pub plato_trunc: bool,
     /// Relief per LPA (`PureAlcohol`).
@@ -349,12 +305,12 @@ impl TaxLine<'_> {
         Self {
             method,
             volume_l,
-            abv: None,
-            plato: None,
+            abv_pct: None,
+            plato_p: None,
             rate: None,
             bands: &[],
             tiers: &[],
-            ytd: Decimal::ZERO,
+            ytd_hl: Decimal::ZERO,
             plato_trunc: true,
             discount_per_lpa: Decimal::ZERO,
             input: InputRounding::Undefined,
@@ -384,8 +340,11 @@ fn prec28(x: Decimal) -> Decimal {
     x.round_dp_with_strategy(scale, RoundingStrategy::MidpointNearestEven)
 }
 
-fn mul(a: Decimal, b: Decimal) -> Result<Decimal, TaxError> {
-    let mut r = a.checked_mul(b).map(prec28).ok_or(TaxError::Overflow)?;
+fn mul(a: Decimal, b: Decimal) -> Result<Decimal, Error> {
+    let mut r = a
+        .checked_mul(b)
+        .map(prec28)
+        .ok_or(Error::Overflow { what: "amount" })?;
     if r.is_zero() {
         // rust_decimal collapses zero products to scale 0; Python keeps the summed exponent.
         r.rescale((a.scale() + b.scale()).min(28));
@@ -403,30 +362,36 @@ fn with_max_scale(mut r: Decimal, a: Decimal, b: Decimal) -> Decimal {
     r
 }
 
-fn add(a: Decimal, b: Decimal) -> Result<Decimal, TaxError> {
-    let r = a.checked_add(b).map(prec28).ok_or(TaxError::Overflow)?;
+fn add(a: Decimal, b: Decimal) -> Result<Decimal, Error> {
+    let r = a
+        .checked_add(b)
+        .map(prec28)
+        .ok_or(Error::Overflow { what: "amount" })?;
     Ok(with_max_scale(r, a, b))
 }
 
-fn sub(a: Decimal, b: Decimal) -> Result<Decimal, TaxError> {
-    let r = a.checked_sub(b).map(prec28).ok_or(TaxError::Overflow)?;
+fn sub(a: Decimal, b: Decimal) -> Result<Decimal, Error> {
+    let r = a
+        .checked_sub(b)
+        .map(prec28)
+        .ok_or(Error::Overflow { what: "amount" })?;
     Ok(with_max_scale(r, a, b))
 }
 
 /// Validates a band or tier table (T1.12 D8): strictly ascending upper bounds, open end only
 /// last, no negative rate. An empty table is valid (no band); lookup fails later.
-fn check_bands(bands: &[Band]) -> Result<(), TaxError> {
+fn check_bands(bands: &[Band]) -> Result<(), Error> {
     let mut prev: Option<Decimal> = None;
     for (i, b) in bands.iter().enumerate() {
         if b.rate.is_sign_negative() && !b.rate.is_zero() {
-            return Err(TaxError::InvalidBands);
+            return Err(Error::InvalidBands);
         }
         match b.upper {
-            None if i + 1 != bands.len() => return Err(TaxError::InvalidBands),
+            None if i + 1 != bands.len() => return Err(Error::InvalidBands),
             None => {}
             Some(u) => {
                 if prev.is_some_and(|p| u <= p) {
-                    return Err(TaxError::InvalidBands);
+                    return Err(Error::InvalidBands);
                 }
                 prev = Some(u);
             }
@@ -437,12 +402,12 @@ fn check_bands(bands: &[Band]) -> Result<(), TaxError> {
 
 /// Exact `x / 100` with Python's result scale: the ideal scale of the dividend, or more digits when
 /// the quotient needs them (`2000.0 / 100 = 20.0`, `1234.5 / 100 = 12.345`).
-fn div100(x: Decimal) -> Result<Decimal, TaxError> {
+fn div100(x: Decimal) -> Result<Decimal, Error> {
     let scale = x.scale();
     let mut m = x.mantissa();
     let mut s = scale + 2;
     if s > 28 {
-        return Err(TaxError::Overflow);
+        return Err(Error::Overflow { what: "amount" });
     }
     while s > scale && m % 10 == 0 {
         m /= 10;
@@ -454,20 +419,20 @@ fn div100(x: Decimal) -> Result<Decimal, TaxError> {
 /// Python `Decimal.quantize(Decimal(1).scaleb(-dp), rounding=mode)`: exactly `dp` decimal places.
 /// Errors when `dp` exceeds [`MAX_DP`] or the result needs more than 28 digits (the reference
 /// raises `InvalidOperation`).
-fn quantize(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, TaxError> {
+fn quantize(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, Error> {
     if dp > MAX_DP {
-        return Err(TaxError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let mut r = x.round_dp_with_strategy(dp, mode.strategy());
     r.rescale(dp);
     if r.scale() != dp || r.mantissa().unsigned_abs() >= 10_u128.pow(28) {
-        return Err(TaxError::Overflow);
+        return Err(Error::Overflow { what: "amount" });
     }
     Ok(r)
 }
 
 /// Input rounding of ABV or °P (data table): `None` rounding leaves the value unchanged.
-pub fn round_in(x: Decimal, rounding: Option<(u32, RoundMode)>) -> Result<Decimal, TaxError> {
+pub fn round_in(x: Decimal, rounding: Option<(u32, RoundMode)>) -> Result<Decimal, Error> {
     match rounding {
         None => Ok(x),
         Some((dp, mode)) => quantize(x, dp, mode),
@@ -478,7 +443,7 @@ pub fn round_in(x: Decimal, rounding: Option<(u32, RoundMode)>) -> Result<Decima
 ///
 /// `inclusive`: a value equal to the upper bound belongs to that band. An open-ended band
 /// (`upper = None`) matches everything. No match is an error, never a silent zero.
-pub fn band(value: Decimal, bands: &[Band], inclusive: bool) -> Result<Decimal, TaxError> {
+pub fn band(value: Decimal, bands: &[Band], inclusive: bool) -> Result<Decimal, Error> {
     for b in bands {
         match b.upper {
             None => return Ok(b.rate),
@@ -488,23 +453,32 @@ pub fn band(value: Decimal, bands: &[Band], inclusive: bool) -> Result<Decimal, 
             Some(_) => {}
         }
     }
-    Err(TaxError::NoBand)
+    Err(Error::invalid("bands", "no band matched"))
 }
 
-/// Verification status of a country row: `"doğrulandı"` only when an official source and its
-/// date are both given (non-empty); otherwise `"doğrulanacak"`.
+/// Verification status of a country row (the display text is the client's).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RowStatus {
+    /// No official source and date.
+    Unverified,
+    /// An official source and its date are both given.
+    Verified,
+}
+
+/// Verification status of a country row: [`RowStatus::Verified`] only when an official source
+/// and its date are both given (non-empty).
 #[must_use]
-pub fn row_status(official_source: Option<&str>, date: Option<&str>) -> &'static str {
+pub fn row_status(official_source: Option<&str>, date: Option<&str>) -> RowStatus {
     let given = |s: Option<&str>| s.is_some_and(|v| !v.is_empty());
     if given(official_source) && given(date) {
-        "doğrulandı"
+        RowStatus::Verified
     } else {
-        "doğrulanacak"
+        RowStatus::Unverified
     }
 }
 
 /// Money rounding to `dp` places (data table rule; reference default is half up).
-pub fn money(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, TaxError> {
+pub fn money(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, Error> {
     quantize(x, dp, mode)
 }
 
@@ -512,14 +486,16 @@ pub fn money(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, TaxError> 
 /// in the data table's currency (see [`Method`]).
 ///
 /// Methods that use ABV or °P (`PureAlcohol`, `HlPlato`, `PlatoBand`) fail with
-/// [`TaxError::UndefinedInputRounding`] when the rounding rule is [`InputRounding::Undefined`].
-pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
+/// [`Error::InvalidInput`] when the rounding rule is [`InputRounding::Undefined`].
+pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, Error> {
     let uses_input = matches!(
         p.method,
         Method::PureAlcohol | Method::HlPlato | Method::PlatoBand
     );
     let rounding = match p.input {
-        InputRounding::Undefined if uses_input => return Err(TaxError::UndefinedInputRounding),
+        InputRounding::Undefined if uses_input => {
+            return Err(Error::invalid("input_rounding", "rule is undefined"));
+        }
         InputRounding::Places { dp, mode } => Some((dp, mode)),
         _ => None,
     };
@@ -532,15 +508,20 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
     let hl = div100(p.volume_l)?;
     match p.method {
         Method::Volume => {
-            let rate = p.rate.ok_or(TaxError::MissingInput("rate"))?;
+            let rate = p
+                .rate
+                .ok_or(Error::invalid("rate", "required input is missing"))?;
             Ok(max_py(mul(rate, hl)?, Decimal::ZERO))
         }
         Method::PureAlcohol => {
-            let abv = p.abv.ok_or(TaxError::MissingInput("abv"))?;
+            let abv = p
+                .abv_pct
+                .ok_or(Error::invalid("abv", "required input is missing"))?;
             let a = round_in(abv, rounding)?;
             let lpa = div100(mul(p.volume_l, a)?)?;
             let rate = if p.bands.is_empty() {
-                p.rate.ok_or(TaxError::MissingInput("rate"))?
+                p.rate
+                    .ok_or(Error::invalid("rate", "required input is missing"))?
             } else {
                 band(a, p.bands, p.inclusive.unwrap_or(false))?
             };
@@ -548,8 +529,12 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
             Ok(max_py(mul(lpa, net)?, Decimal::ZERO))
         }
         Method::HlPlato => {
-            let plato = p.plato.ok_or(TaxError::MissingInput("plato"))?;
-            let rate = p.rate.ok_or(TaxError::MissingInput("rate"))?;
+            let plato = p
+                .plato_p
+                .ok_or(Error::invalid("plato", "required input is missing"))?;
+            let rate = p
+                .rate
+                .ok_or(Error::invalid("rate", "required input is missing"))?;
             let mut pl = round_in(plato, rounding)?;
             if p.plato_trunc {
                 pl = quantize(pl, 0, RoundMode::Floor)?;
@@ -557,14 +542,16 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
             Ok(max_py(mul(mul(rate, hl)?, pl)?, Decimal::ZERO))
         }
         Method::PlatoBand => {
-            let plato = p.plato.ok_or(TaxError::MissingInput("plato"))?;
+            let plato = p
+                .plato_p
+                .ok_or(Error::invalid("plato", "required input is missing"))?;
             let pl = round_in(plato, rounding)?;
             let rate = band(pl, p.bands, p.inclusive.unwrap_or(true))?;
             mul(rate, hl)
         }
         Method::TieredVolume => {
             let mut tax = Decimal::ZERO;
-            let mut start = p.ytd;
+            let mut start = p.ytd_hl;
             let mut left = hl;
             for t in p.tiers {
                 if left <= Decimal::ZERO {
@@ -580,7 +567,7 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
                 left = sub(left, take)?;
             }
             if left > Decimal::ZERO {
-                return Err(TaxError::TierExceeded(left));
+                return Err(Error::invalid("volume", "above the last tier"));
             }
             Ok(tax)
         }
@@ -595,7 +582,7 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Spund {
     /// Residual CO₂, volumes, 2 places.
-    pub residual_vol: f64,
+    pub residual_co2_vol: f64,
     /// CO₂ to be produced, g/L, 2 places.
     pub needed_g_per_l: f64,
     /// Gravity at which to close the tank (SG), 4 places.
@@ -608,25 +595,26 @@ pub struct Spund {
     pub setting_bar: f64,
 }
 
-/// Spunding: closing gravity and valve pressure for `target_vol` volumes CO₂ at `t_c` (°C) with
+/// Spunding: closing gravity and valve pressure for `target_co2_vol` volumes CO₂ at `t_c` (°C) with
 /// expected final gravity `fg_expected` (SG).
 ///
 /// # Errors
-/// [`TaxError::InvalidInput`] when an input is not finite or `fg_expected <= 0` (T1.12 D2).
-pub fn spund(target_vol: f64, t_c: f64, fg_expected: f64) -> Result<Spund, TaxError> {
-    if !(target_vol.is_finite() && t_c.is_finite() && fg_expected.is_finite()) || fg_expected <= 0.0
+/// [`Error::InvalidInput`] when an input is not finite or `fg_expected <= 0` (T1.12 D2).
+pub fn spund(target_co2_vol: f64, t_c: f64, fg_expected: f64) -> Result<Spund, Error> {
+    if !(target_co2_vol.is_finite() && t_c.is_finite() && fg_expected.is_finite())
+        || fg_expected <= 0.0
     {
-        return Err(TaxError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
-    let need_vol = target_vol - yeast::residual_co2(c_to_f(t_c));
+    let need_vol = target_co2_vol - yeast::residual_co2(c_to_f(t_c));
     let need_g = need_vol.max(0.0) * CO2_G_PER_VOL;
     let dre_g_per_l = need_g / BALLING_CO2;
     let fermented_re_p = dre_g_per_l / (10.0 * fg_expected);
     let apparent_drop_p = fermented_re_p / 0.8192;
     let close_p = to_plato(fg_expected) + apparent_drop_p;
-    let psi = yeast::co2_psi(target_vol, c_to_f(t_c));
+    let psi = yeast::co2_psi(target_co2_vol, c_to_f(t_c));
     Ok(Spund {
-        residual_vol: round_py(yeast::residual_co2(c_to_f(t_c)), 2),
+        residual_co2_vol: round_py(yeast::residual_co2(c_to_f(t_c)), 2),
         needed_g_per_l: round_py(need_g, 2),
         closing_sg: round_py(to_sg(close_p), 4),
         points_before: round_py((to_sg(close_p) - fg_expected) * 1000.0, 1),
@@ -662,8 +650,8 @@ impl LabelDeclaration {
 /// Declaration rule by ABV (spec §1.3) [to be verified]: above 1.2 % vol energy is optional,
 /// otherwise the country template decides. Compared as `Decimal`; 1.2 itself is not above.
 #[must_use]
-pub fn label_declaration(abv: Decimal) -> LabelDeclaration {
-    if abv > Decimal::new(12, 1) {
+pub fn label_declaration(abv_pct: Decimal) -> LabelDeclaration {
+    if abv_pct > Decimal::new(12, 1) {
         LabelDeclaration::EnergyOptional
     } else {
         LabelDeclaration::CountryTemplate
@@ -731,22 +719,37 @@ pub struct VolumeEvent {
     /// Event kind.
     pub kind: VolumeEventKind,
     /// Litres.
-    pub litres: Decimal,
+    pub volume_l: Decimal,
 }
 
 /// Result of [`taxable_volume`], litres.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TaxableVolume {
     /// Taxable volume after the deductions, never negative.
-    pub taxable: Decimal,
+    pub taxable_l: Decimal,
     /// Sum of events of the trigger kind.
-    pub taxed: Decimal,
+    pub taxed_l: Decimal,
     /// Destroyed volume (own line).
-    pub destroyed: Decimal,
+    pub destroyed_l: Decimal,
     /// Returned volume (own line).
-    pub returned: Decimal,
+    pub returned_l: Decimal,
     /// Laboratory volume (own line).
-    pub lab: Decimal,
+    pub lab_l: Decimal,
+}
+
+/// Inputs of [`taxable_volume`].
+#[derive(Debug, Clone, Copy)]
+pub struct TaxableVolumeInput<'a> {
+    /// Volume events.
+    pub events: &'a [VolumeEvent],
+    /// Which event kind triggers the tax.
+    pub trigger: TaxTrigger,
+    /// First day of the period, ISO date.
+    pub start: &'a str,
+    /// Last day of the period, ISO date.
+    pub end: &'a str,
+    /// Event kinds subtracted from the taxable volume.
+    pub deduct: &'a [VolumeEventKind],
 }
 
 /// Taxable volume of a period (spec §2.1): events of the trigger kind within
@@ -755,21 +758,22 @@ pub struct TaxableVolume {
 /// kinds are ignored; the result is clamped at zero.
 ///
 /// # Errors
-/// [`TaxError::BadDeduction`] when `deduct` holds a kind other than destroyed, returned or lab;
-/// [`TaxError::Overflow`] on decimal overflow.
-pub fn taxable_volume(
-    events: &[VolumeEvent],
-    trigger: TaxTrigger,
-    start: &str,
-    end: &str,
-    deduct: &[VolumeEventKind],
-) -> Result<TaxableVolume, TaxError> {
+/// [`Error::InvalidInput`] when `deduct` holds a kind other than destroyed, returned or lab;
+/// [`Error::Overflow`] on decimal overflow.
+pub fn taxable_volume(p: &TaxableVolumeInput<'_>) -> Result<TaxableVolume, Error> {
     use VolumeEventKind as K;
+    let TaxableVolumeInput {
+        events,
+        trigger,
+        start,
+        end,
+        deduct,
+    } = *p;
     if deduct
         .iter()
         .any(|k| !matches!(k, K::Destroyed | K::Returned | K::Lab))
     {
-        return Err(TaxError::BadDeduction);
+        return Err(Error::invalid("deduct", "unknown deduction kind"));
     }
     let (mut taxed, mut destroyed, mut returned, mut lab) =
         (Decimal::ZERO, Decimal::ZERO, Decimal::ZERO, Decimal::ZERO);
@@ -778,12 +782,12 @@ pub fn taxable_volume(
             continue;
         }
         if e.kind.is_trigger(trigger) {
-            taxed = add(taxed, e.litres)?;
+            taxed = add(taxed, e.volume_l)?;
         } else {
             match e.kind {
-                K::Destroyed => destroyed = add(destroyed, e.litres)?,
-                K::Returned => returned = add(returned, e.litres)?,
-                K::Lab => lab = add(lab, e.litres)?,
+                K::Destroyed => destroyed = add(destroyed, e.volume_l)?,
+                K::Returned => returned = add(returned, e.volume_l)?,
+                K::Lab => lab = add(lab, e.volume_l)?,
                 _ => {}
             }
         }
@@ -799,11 +803,11 @@ pub fn taxable_volume(
         }
     }
     Ok(TaxableVolume {
-        taxable: max_py(net, Decimal::ZERO),
-        taxed,
-        destroyed,
-        returned,
-        lab,
+        taxable_l: max_py(net, Decimal::ZERO),
+        taxed_l: taxed,
+        destroyed_l: destroyed,
+        returned_l: returned,
+        lab_l: lab,
     })
 }
 
@@ -840,17 +844,33 @@ pub struct SpundWarnings {
     pub blocked: bool,
 }
 
+/// Inputs of [`spund_warnings`].
+#[derive(Debug, Clone, Copy)]
+pub struct SpundWarningsInput {
+    /// Target carbonation, volumes of CO2.
+    pub target_co2_vol: f64,
+    /// Temperature, °C.
+    pub t_c: f64,
+    /// Tank working pressure, psi; `None` for no check.
+    pub tank_max_psi: Option<f64>,
+    /// FG confidence interval `(low, high)`, SG; `None` for no check.
+    pub fg_range: Option<(f64, f64)>,
+    /// Width limit in gravity units.
+    pub wide_u: i64,
+}
+
 /// Spunding warnings (spec §3.4). `tank_max_psi`: tank working pressure (`None`: no check);
 /// `fg_range`: FG confidence interval `(low, high)` from 07 §1 (`None`: no check), width
 /// compared in gravity units against `wide_u`.
 #[must_use]
-pub fn spund_warnings(
-    target_vol: f64,
-    t_c: f64,
-    tank_max_psi: Option<f64>,
-    fg_range: Option<(f64, f64)>,
-    wide_u: i64,
-) -> SpundWarnings {
+pub fn spund_warnings(p: &SpundWarningsInput) -> SpundWarnings {
+    let SpundWarningsInput {
+        target_co2_vol: target_vol,
+        t_c,
+        tank_max_psi,
+        fg_range,
+        wide_u,
+    } = *p;
     let mut warnings = Vec::new();
     let psi = yeast::co2_psi(target_vol, c_to_f(t_c));
     let blocked = tank_max_psi.is_some_and(|m| psi > m + PSI_TOL);
@@ -880,19 +900,31 @@ mod tests {
 
     #[test]
     fn spund_rejects_non_finite_and_zero_fg() {
-        assert_eq!(spund(2.5, 12.0, f64::NAN), Err(TaxError::InvalidInput));
+        assert_eq!(
+            spund(2.5, 12.0, f64::NAN),
+            Err(Error::invalid("input", "not finite or out of range"))
+        );
         assert_eq!(
             spund(f64::INFINITY, 12.0, 1.01),
-            Err(TaxError::InvalidInput)
+            Err(Error::invalid("input", "not finite or out of range"))
         );
-        assert_eq!(spund(2.5, f64::NAN, 1.01), Err(TaxError::InvalidInput));
-        assert_eq!(spund(2.5, 12.0, 0.0), Err(TaxError::InvalidInput));
+        assert_eq!(
+            spund(2.5, f64::NAN, 1.01),
+            Err(Error::invalid("input", "not finite or out of range"))
+        );
+        assert_eq!(
+            spund(2.5, 12.0, 0.0),
+            Err(Error::invalid("input", "not finite or out of range"))
+        );
         assert!(spund(2.5, 12.0, 1.01).is_ok());
     }
 
     #[test]
     fn row_status_needs_source_and_date() {
-        assert_eq!(row_status(None, None), "doğrulanacak");
-        assert_eq!(row_status(Some("gov.uk"), Some("2026-10-31")), "doğrulandı");
+        assert_eq!(row_status(None, None), RowStatus::Unverified);
+        assert_eq!(
+            row_status(Some("gov.uk"), Some("2026-10-31")),
+            RowStatus::Verified
+        );
     }
 }

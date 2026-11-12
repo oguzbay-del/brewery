@@ -131,6 +131,8 @@ Cider (3) bira gibi ele alınır ve şarap oranını almaz [kesin].
 
 `PitchRange` metni "min-max" biçiminde, 2 ondalık.
 
+**Karar (T1.16 C): gösterim motorda değildir.** `PitchRange` ve `DryPitchRange` metin biçimleri ile `enum_name` görünen adları motorda yoktur: motor sayıları (`pitch_min_max_*`, `dry_min/max_pitch_rate`) ve kodları (`from_code`) verir; metni istemci kurar. Vektördeki `pitch_range`, `dry_pitch_range` vakaları sayısal sonuçlardan biçimlenerek, `enum_name` vakaları kodun geçerli olup olmadığıyla (null ↔ `Err`) sınanır.
+
 **Kuru maya (g/hL)** – `DryMinPitchRate`, `DryMaxPitchRate`:
 ```
 min = max(5, floor(rec_dry/4)) ;  max = 2·rec_dry

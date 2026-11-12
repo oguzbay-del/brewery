@@ -70,12 +70,17 @@ def batch_sparge(i, S, absorb, W, tun_vol, pct, mash_water, even, drain):
     return (0.0 if n < i else S/n), False
 
 def sparge_plan(**kw):
+    # Karar (T1.16 C): yuvarlama ve etiket gösterimdir; motor tam hacim ve eylem kodu verir.
     out=[]
     for i in range(50):
         v,f = batch_sparge(i, **kw)
         if not f and v <= 0: break
-        out.append((i, round(v,3), 'DRAIN(ilk süzme)' if f else 'EKLE'))
+        out.append((i, v, 'drain' if f else 'add'))
     return out
+
+def sparge_plan_display(**kw):
+    # Gösterim yardımcısı (motor dışı): 3 ondalık ve Türkçe etiket.
+    return [(i, round(v,3), 'DRAIN(ilk süzme)' if a == 'drain' else 'EKLE') for i, v, a in sparge_plan(**kw)]
 
 def parti(OG, vol, f1):
     k = 0.5**(3*f1/100)
@@ -97,11 +102,11 @@ sparge = bv + absorb + 0 + 1 - 0 - mash
 print("TV7 absorb",r(absorb)," mash",mash," sparge",r(sparge)," toplam su", r(mash+sparge+0+0), " mash tun hacmi", r(mash+GRAIN_VOL*5))
 biab = bv + 1 - 0 + ABS_BIAB*5
 print("TV8 BIAB toplam su",r(biab)," strike",r(strike_temp(biab,66,5,20)))
-print("TV9 batch even:", sparge_plan(S=sparge,absorb=absorb,W=5,tun_vol=40,pct=95,mash_water=mash,even=1,drain=0))
-print("TV9 batch fill:", sparge_plan(S=sparge,absorb=absorb,W=5,tun_vol=40,pct=95,mash_water=mash,even=0,drain=0))
-print("TV9 drain+even:", sparge_plan(S=sparge,absorb=absorb,W=5,tun_vol=40,pct=95,mash_water=mash,even=1,drain=1))
-print("TV9 kucuk tun 25L even:", sparge_plan(S=sparge,absorb=absorb,W=5,tun_vol=25,pct=95,mash_water=mash,even=1,drain=0))
-print("TV9 kucuk tun 25L fill:", sparge_plan(S=sparge,absorb=absorb,W=5,tun_vol=25,pct=95,mash_water=mash,even=0,drain=0))
+print("TV9 batch even:", sparge_plan_display(S=sparge,absorb=absorb,W=5,tun_vol=40,pct=95,mash_water=mash,even=1,drain=0))
+print("TV9 batch fill:", sparge_plan_display(S=sparge,absorb=absorb,W=5,tun_vol=40,pct=95,mash_water=mash,even=0,drain=0))
+print("TV9 drain+even:", sparge_plan_display(S=sparge,absorb=absorb,W=5,tun_vol=40,pct=95,mash_water=mash,even=1,drain=1))
+print("TV9 kucuk tun 25L even:", sparge_plan_display(S=sparge,absorb=absorb,W=5,tun_vol=25,pct=95,mash_water=mash,even=1,drain=0))
+print("TV9 kucuk tun 25L fill:", sparge_plan_display(S=sparge,absorb=absorb,W=5,tun_vol=25,pct=95,mash_water=mash,even=0,drain=0))
 print("TV10 parti 60/40:", {k:r(v) for k,v in parti(1.060,40,60).items()})
 print("TV11 dilution:", r(1+(1.060-1)*20/25), r(1+(0.060*20+0.040*5)/25))
 print("TV12 preboil SG:", round(1+50*(23+1)/bv/1000,4))

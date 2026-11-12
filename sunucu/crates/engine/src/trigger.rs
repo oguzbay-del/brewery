@@ -7,6 +7,7 @@
 //! (`yeast::residual_co2`, `yeast::co2_psi`) take °F; this module converts with
 //! `units::c_to_f`.
 
+use crate::Error;
 use crate::units::{BALLING_CO2, CO2_G_PER_VOL, TOL, c_to_f, gravity_units, round_py, to_plato};
 use crate::yeast;
 
@@ -67,12 +68,12 @@ pub enum PrimingWarning {
         /// Which volumes.
         point: PolyPoint,
         /// Volumes.
-        vol: f64,
+        co2_vol: f64,
     },
     /// Total CO2 exceeds what 10 volumes hold: peak volumes saturate (`tepe_vol_doymus`).
     PeakVolumeSaturated {
         /// Search limit, volumes.
-        limit_vol: f64,
+        limit_co2_vol: f64,
     },
     /// Peak gauge pressure above the keg limit (`tepe_basinci_siniri_asildi`).
     PeakAboveLimit {
@@ -99,27 +100,6 @@ impl PrimingWarning {
     }
 }
 
-/// Errors mirroring the exceptions of the Python reference.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TriggerError {
-    /// Python `IndexError`: an empty series where at least one point is required.
-    EmptySeries,
-    /// Python `ZeroDivisionError`: a divisor (rate, rate constant, dry matter) is zero.
-    ZeroDivision,
-    /// Python `ValueError`: input not finite or out of range (T1.12 D2, D9).
-    InvalidInput,
-}
-
-impl From<TriggerError> for crate::Error {
-    fn from(e: TriggerError) -> Self {
-        match e {
-            TriggerError::EmptySeries => Self::invalid("points", "at least one point is required"),
-            TriggerError::ZeroDivision => Self::invalid("divisor", "must not be 0"),
-            TriggerError::InvalidInput => Self::invalid("input", "not finite or out of range"),
-        }
-    }
-}
-
 // ================================================================ 1. Gravity trigger
 
 /// Slope limit for "FG stable": 0.0005 SG per day (spec §1.4).
@@ -130,19 +110,19 @@ pub const STABLE_PER_DAY: f64 = 0.0005;
 /// (at least 1). Returns the time of the first point of that run, `None` if never.
 ///
 /// # Errors
-/// [`TriggerError::InvalidInput`] for `consecutive = 0` or non-finite or out-of-range input
+/// [`Error::InvalidInput`] for `consecutive = 0` or non-finite or out-of-range input
 /// (T1.12 D9, D2).
 pub fn trigger_index(
     points: &[(f64, f64)],
     fg_ref: f64,
     delta: f64,
     consecutive: usize,
-) -> Result<Option<f64>, TriggerError> {
+) -> Result<Option<f64>, Error> {
     if consecutive == 0
         || !finite(&[fg_ref, delta])
         || !points.iter().all(|&(t, g)| finite(&[t, g]))
     {
-        return Err(TriggerError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let limit = gravity_units(fg_ref) + gravity_units(delta);
     let mut run = 0_usize;
@@ -170,17 +150,33 @@ pub enum TriggerForecast {
     Unreachable,
 }
 
+/// Inputs of [`predicted_trigger`].
+#[derive(Debug, Clone, Copy)]
+pub struct PredictedTriggerInput {
+    /// Asymptotic final gravity, SG.
+    pub fg_inf: f64,
+    /// Amplitude `A`, SG.
+    pub a_sg: f64,
+    /// Rate `k`, 1/hour.
+    pub k_per_h: f64,
+    /// Reference final gravity, SG.
+    pub fg_ref: f64,
+    /// Offset above the reference, SG.
+    pub delta: f64,
+}
+
 /// Trigger time for `SG(t) = fg_inf + a·e^(−k·t)` reaching `fg_ref + delta` (spec §1.3).
 /// SG inputs, `a` in SG, `k` in 1/hour; result in hours.
-pub fn predicted_trigger(
-    fg_inf: f64,
-    a: f64,
-    k: f64,
-    fg_ref: f64,
-    delta: f64,
-) -> Result<TriggerForecast, TriggerError> {
+pub fn predicted_trigger(p: &PredictedTriggerInput) -> Result<TriggerForecast, Error> {
+    let PredictedTriggerInput {
+        fg_inf,
+        a_sg: a,
+        k_per_h: k,
+        fg_ref,
+        delta,
+    } = *p;
     if !finite(&[fg_inf, a, k, fg_ref, delta]) {
-        return Err(TriggerError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let target_u = gravity_units(fg_ref) + gravity_units(delta) - gravity_units(fg_inf);
     if target_u <= 0 {
@@ -190,10 +186,10 @@ pub fn predicted_trigger(
         return Ok(TriggerForecast::AlreadyPast);
     }
     if k < 0.0 {
-        return Err(TriggerError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     if k == 0.0 {
-        return Err(TriggerError::ZeroDivision);
+        return Err(Error::DivisionByZero { field: "divisor" });
     }
     #[allow(clippy::cast_precision_loss)]
     let target = target_u as f64 / 100_000.0;
@@ -209,24 +205,34 @@ pub enum FgSource {
     Forecast,
 }
 
+/// Reference FG and its source, see [`fg_reference`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FgReference {
+    /// Reference FG (SG).
+    pub fg: f64,
+    /// Where it comes from.
+    pub source: FgSource,
+}
+
 /// Reference FG (spec §1.1): the forecast `fg_inf` replaces the recipe FG when `shown`
 /// and it deviates by more than `delta − 1 point` in either direction (integer units).
 #[must_use]
-pub fn fg_reference(
-    fg_recipe: f64,
-    fg_inf: Option<f64>,
-    shown: bool,
-    delta: f64,
-) -> (f64, FgSource) {
+pub fn fg_reference(fg_recipe: f64, fg_inf: Option<f64>, shown: bool, delta: f64) -> FgReference {
     if let (true, Some(inf)) = (shown, fg_inf) {
         let margin = gravity_units(delta) - 100;
         let recipe_u = gravity_units(fg_recipe);
         let inf_u = gravity_units(inf);
         if inf_u > recipe_u + margin || inf_u < recipe_u - margin {
-            return (inf, FgSource::Forecast);
+            return FgReference {
+                fg: inf,
+                source: FgSource::Forecast,
+            };
         }
     }
-    (fg_recipe, FgSource::Recipe)
+    FgReference {
+        fg: fg_recipe,
+        source: FgSource::Recipe,
+    }
 }
 
 /// Result of the "FG stable" check (spec §1.4).
@@ -241,14 +247,13 @@ pub enum Stability {
 /// FG stable when the least-squares slope over the last `hours` hours satisfies
 /// `|slope × 24| ≤ 0.0005 + 1e-9` (spec §1.4). Points are `(t_hours, SG)`; at least
 /// `min_n` points in the window are needed.
-pub fn is_stable(
-    points: &[(f64, f64)],
-    hours: f64,
-    min_n: usize,
-) -> Result<Stability, TriggerError> {
-    let t_end = points.last().ok_or(TriggerError::EmptySeries)?.0;
+pub fn is_stable(points: &[(f64, f64)], hours: f64, min_n: usize) -> Result<Stability, Error> {
+    let t_end = points
+        .last()
+        .ok_or(Error::EmptyInput { field: "points" })?
+        .0;
     if !finite(&[hours]) || !points.iter().all(|&(t, g)| finite(&[t, g])) {
-        return Err(TriggerError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let p: Vec<(f64, f64)> = points
         .iter()
@@ -275,14 +280,14 @@ pub fn is_stable(
 
 /// Temperature ramp duration, hours: `|to − from| / rate × 24` (spec §1.5).
 /// Temperatures in °C, `rate_c_per_day` in °C/day.
-pub fn ramp_hours(t_from: f64, t_to: f64, rate_c_per_day: f64) -> Result<f64, TriggerError> {
-    if !finite(&[t_from, t_to, rate_c_per_day]) {
-        return Err(TriggerError::InvalidInput);
+pub fn ramp_hours(t_from_c: f64, t_to_c: f64, rate_c_per_day: f64) -> Result<f64, Error> {
+    if !finite(&[t_from_c, t_to_c, rate_c_per_day]) {
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     if rate_c_per_day == 0.0 {
-        return Err(TriggerError::ZeroDivision);
+        return Err(Error::DivisionByZero { field: "divisor" });
     }
-    Ok((t_to - t_from).abs() / rate_c_per_day * 24.0)
+    Ok((t_to_c - t_from_c).abs() / rate_c_per_day * 24.0)
 }
 
 /// Lagering weeks (spec §1.5): OG converted to integer points (0.01-point units,
@@ -290,20 +295,20 @@ pub fn ramp_hours(t_from: f64, t_to: f64, rate_c_per_day: f64) -> Result<f64, Tr
 /// clamped to `[lo, hi]` weeks. Defaults in the spec: 8, 2, 12.
 ///
 /// # Errors
-/// [`TriggerError::InvalidInput`] for non-finite `og` or `pts_per_week` outside `0..=10^6`;
-/// [`TriggerError::ZeroDivision`] for `pts_per_week = 0` (T1.12 D9, D2).
-pub fn lager_weeks(og: f64, pts_per_week: i64, lo: i64, hi: i64) -> Result<i64, TriggerError> {
+/// [`Error::InvalidInput`] for non-finite `og` or `pts_per_week` outside `0..=10^6`;
+/// [`Error::DivisionByZero`] for `pts_per_week = 0` (T1.12 D9, D2).
+pub fn lager_weeks(og: f64, pts_per_week: i64, lo_weeks: i64, hi_weeks: i64) -> Result<i64, Error> {
     if !finite(&[og]) || !(0..=1_000_000).contains(&pts_per_week) {
-        return Err(TriggerError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     #[allow(clippy::cast_possible_truncation)]
     let pts = ((og - 1.0) * 100_000.0).round_ties_even() as i64;
     let d = pts_per_week * 100;
     if d == 0 {
-        return Err(TriggerError::ZeroDivision);
+        return Err(Error::DivisionByZero { field: "divisor" });
     }
     let w = -(-pts).div_euclid(d); // ceil(pts / d) for d > 0
-    Ok(hi.min(lo.max(w)))
+    Ok(hi_weeks.min(lo_weeks.max(w)))
 }
 
 // ================================================================ 2. Keg priming
@@ -353,62 +358,74 @@ pub fn residual_vol(t_c: f64) -> f64 {
     yeast::residual_co2(c_to_f(t_c))
 }
 
-/// Keg pressure, psi, to hold `vols` volumes at `t_c` °C (section 04 §3.5).
+/// Keg pressure, psi, to hold `co2_vol` volumes at `t_c` °C (section 04 §3.5).
 #[must_use]
-pub fn co2_psi_c(vols: f64, t_c: f64) -> f64 {
-    yeast::co2_psi(vols, c_to_f(t_c))
+pub fn co2_psi_c(co2_vol: f64, t_c: f64) -> f64 {
+    yeast::co2_psi(co2_vol, c_to_f(t_c))
 }
 
 /// Sugar mass, g, for `mol` mol CO2 (spec §2.3). `dry` is the dry-matter fraction
-/// (0–1); `None` means unknown and 1.0 is used (callers add [`WARN_DRY_UNKNOWN`]).
-pub fn sugar_from_mol(mol: f64, sugar: Sugar, dry: Option<f64>) -> Result<f64, TriggerError> {
+/// (0–1); `None` means unknown and 1.0 is used (callers add `WARN_DRY_UNKNOWN`).
+pub fn sugar_from_mol(mol: f64, sugar: Sugar, dry: Option<f64>) -> Result<f64, Error> {
     let d = dry.unwrap_or(1.0);
     if d == 0.0 {
-        return Err(TriggerError::ZeroDivision);
+        return Err(Error::DivisionByZero { field: "divisor" });
     }
     Ok(mol / sugar.co2_per_mol() * sugar.molar_mass() / d)
 }
 
 /// CO2 needed in the beer itself, mol: `max(0, target − residual(t_res)) × v_beer / 22.414`.
 #[must_use]
-pub fn bottle_mol(vol_t: f64, t_res_c: f64, v_beer_l: f64) -> f64 {
-    (vol_t - residual_vol(t_res_c)).max(0.0) * v_beer_l / VM
+pub fn bottle_mol(co2_vol: f64, t_res_c: f64, v_beer_l: f64) -> f64 {
+    (co2_vol - residual_vol(t_res_c)).max(0.0) * v_beer_l / VM
 }
 
-/// Absolute CO2 partial pressure, Pa, for `vol` volumes at `t_c` °C (gauge table + 1 atm).
+/// Absolute CO2 partial pressure, Pa, for `co2_vol` volumes at `t_c` °C (gauge table + 1 atm).
 #[must_use]
-pub fn p_abs_pa(vol: f64, t_c: f64) -> f64 {
-    co2_psi_c(vol, t_c) * 6894.757 + P_ATM
+pub fn p_abs_pa(co2_vol: f64, t_c: f64) -> f64 {
+    co2_psi_c(co2_vol, t_c) * 6894.757 + P_ATM
 }
 
-/// CO2 in a `v_head_l` litre headspace in equilibrium with beer holding `vol` volumes
+/// CO2 in a `v_head_l` litre headspace in equilibrium with beer holding `co2_vol` volumes
 /// at `t_c` °C, mol (spec §2.2).
 #[must_use]
-pub fn head_gas_mol(vol: f64, t_c: f64, v_head_l: f64) -> f64 {
-    p_abs_pa(vol, t_c) * v_head_l / 1000.0 / (R * (t_c + 273.15))
+pub fn head_gas_mol(co2_vol: f64, t_c: f64, v_head_l: f64) -> f64 {
+    p_abs_pa(co2_vol, t_c) * v_head_l / 1000.0 / (R * (t_c + 273.15))
 }
 
-/// Headspace CO2 at conditioning temperature (older definition), `(mol, P_abs Pa)`.
+/// Headspace CO2 amount and pressure of [`head_mol`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HeadspaceCo2 {
+    /// CO2 amount, mol.
+    pub mol: f64,
+    /// Absolute pressure, Pa.
+    pub p_abs_pa: f64,
+}
+
+/// Headspace CO2 at conditioning temperature (older definition): amount in mol and `P_abs` in Pa.
 /// A purged keg starts with 1 atm CO2, which is subtracted.
 #[must_use]
-pub fn head_mol(vol_t: f64, t_cond_c: f64, v_head_l: f64, purged: bool) -> (f64, f64) {
-    let n = head_gas_mol(vol_t, t_cond_c, v_head_l);
+pub fn head_mol(co2_vol: f64, t_cond_c: f64, v_head_l: f64, purged: bool) -> HeadspaceCo2 {
+    let n = head_gas_mol(co2_vol, t_cond_c, v_head_l);
     let n0 = if purged {
         P_ATM * v_head_l / 1000.0 / (R * (t_cond_c + 273.15))
     } else {
         0.0
     };
-    ((n - n0).max(0.0), p_abs_pa(vol_t, t_cond_c))
+    HeadspaceCo2 {
+        mol: (n - n0).max(0.0),
+        p_abs_pa: p_abs_pa(co2_vol, t_cond_c),
+    }
 }
 
-/// Beer volumes after the total CO2 `n_total` (mol, beer plus headspace) equilibrates
+/// Beer volumes after the total CO2 `n_total_mol` (mol, beer plus headspace) equilibrates
 /// at `t_c` °C; bisection on `[0, 10]` with 100 steps (spec §2.2).
 #[must_use]
-pub fn equilibrium_vol(n_total: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> f64 {
+pub fn equilibrium_vol(n_total_mol: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> f64 {
     let (mut lo, mut hi) = (0.0_f64, EQ_VOL_MAX);
     for _ in 0..100 {
         let mid = f64::midpoint(lo, hi);
-        if total_co2(mid, t_c, v_beer_l, v_head_l) < n_total {
+        if total_co2(mid, t_c, v_beer_l, v_head_l) < n_total_mol {
             lo = mid;
         } else {
             hi = mid;
@@ -422,11 +439,11 @@ fn total_co2(vol: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> f64 {
     vol * v_beer_l / VM + head_gas_mol(vol, t_c, v_head_l)
 }
 
-/// True when `n_total` exceeds what 10 volumes hold, so [`equilibrium_vol`] saturates at 10
+/// True when `n_total_mol` exceeds what 10 volumes hold, so [`equilibrium_vol`] saturates at 10
 /// (T1.12 D6).
 #[must_use]
-pub fn equilibrium_saturated(n_total: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> bool {
-    total_co2(EQ_VOL_MAX, t_c, v_beer_l, v_head_l) < n_total
+pub fn equilibrium_saturated(n_total_mol: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> bool {
+    total_co2(EQ_VOL_MAX, t_c, v_beer_l, v_head_l) < n_total_mol
 }
 
 /// Keg priming mode (spec §2.4).
@@ -442,15 +459,15 @@ pub enum KegMode {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct KegParams {
     /// Target CO2, volumes.
-    pub vol_t: f64,
+    pub co2_vol: f64,
     /// Fermentation (max) temperature for residual CO2.
-    pub t_res: f64,
+    pub t_res_c: f64,
     /// Conditioning temperature.
-    pub t_cond: f64,
+    pub t_cond_c: f64,
     /// Beer volume.
-    pub v_beer: f64,
+    pub beer_l: f64,
     /// Headspace volume.
-    pub v_head: f64,
+    pub head_l: f64,
     /// Priming sugar.
     pub sugar: Sugar,
     /// Keg flushed with CO2 (otherwise air).
@@ -460,7 +477,7 @@ pub struct KegParams {
     /// Fraction of the full amount in partial mode (spec: 1/3).
     pub part: f64,
     /// Serving temperature.
-    pub t_serv: f64,
+    pub t_serv_c: f64,
     /// Dry-matter fraction of the sugar product; `None` unknown.
     pub dry: Option<f64>,
     /// Keg working/safety pressure; `None` no check.
@@ -479,7 +496,7 @@ pub struct KegPriming {
     /// Pressure to hold the target at serving temperature, bar (2 decimals).
     pub serving_bar: f64,
     /// Beer volumes at conditioning temperature (2 decimals).
-    pub peak_vol: f64,
+    pub peak_co2_vol: f64,
     /// CO2 (partial) gauge pressure at conditioning temperature, bar (2 decimals).
     pub peak_bar: f64,
     /// Peak gauge pressure including air in an unpurged keg, bar (2 decimals).
@@ -495,65 +512,68 @@ pub struct KegPriming {
 /// temperature from the same total CO2 and a warning when it exceeds `limit_bar`.
 ///
 /// # Errors
-/// [`TriggerError::InvalidInput`] for non-finite or out-of-range input (negative volumes,
-/// `part` outside `(0, 1]`, dry matter outside `[0, 1]`); [`TriggerError::ZeroDivision`]
+/// [`Error::InvalidInput`] for non-finite or out-of-range input (negative volumes,
+/// `part` outside `(0, 1]`, dry matter outside `[0, 1]`); [`Error::DivisionByZero`]
 /// for dry matter 0.
-pub fn keg_priming(p: &KegParams) -> Result<KegPriming, TriggerError> {
+pub fn keg_priming(p: &KegParams) -> Result<KegPriming, Error> {
     if !finite(&[
-        p.vol_t, p.t_res, p.t_cond, p.v_beer, p.v_head, p.part, p.t_serv,
-    ]) || p.vol_t < 0.0
-        || p.v_beer < 0.0
-        || p.v_head < 0.0
+        p.co2_vol, p.t_res_c, p.t_cond_c, p.beer_l, p.head_l, p.part, p.t_serv_c,
+    ]) || p.co2_vol < 0.0
+        || p.beer_l < 0.0
+        || p.head_l < 0.0
         || !(p.part > 0.0 && p.part <= 1.0)
         || p.limit_bar.is_some_and(|l| !finite(&[l]))
         || p.dry
             .is_some_and(|d| !finite(&[d]) || !(0.0..=1.0).contains(&d))
     {
-        return Err(TriggerError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
-    let nb = bottle_mol(p.vol_t, p.t_res, p.v_beer);
+    let nb = bottle_mol(p.co2_vol, p.t_res_c, p.beer_l);
     let n0 = if p.purged {
-        P_ATM * p.v_head / 1000.0 / (R * (p.t_cond + 273.15))
+        P_ATM * p.head_l / 1000.0 / (R * (p.t_cond_c + 273.15))
     } else {
         0.0
     };
-    let nh = (head_gas_mol(p.vol_t, p.t_serv, p.v_head) - n0).max(0.0);
+    let nh = (head_gas_mol(p.co2_vol, p.t_serv_c, p.head_l) - n0).max(0.0);
     let factor = if p.mode == KegMode::Full { 1.0 } else { p.part };
     let n_sugar_co2 = (nb + nh) * factor;
     let full = sugar_from_mol(nb + nh, p.sugar, p.dry)?;
     let bottle_same = sugar_from_mol(nb, p.sugar, p.dry)?;
 
-    let n_total = residual_vol(p.t_res) * p.v_beer / VM + n_sugar_co2 + n0;
-    let v_peak = equilibrium_vol(n_total, p.t_cond, p.v_beer, p.v_head);
-    let p_peak = (p_abs_pa(v_peak, p.t_cond) - P_ATM) / 1e5;
-    let air = if p.purged || p.v_head <= 0.0 {
+    let n_total = residual_vol(p.t_res_c) * p.beer_l / VM + n_sugar_co2 + n0;
+    let v_peak = equilibrium_vol(n_total, p.t_cond_c, p.beer_l, p.head_l);
+    let p_peak = (p_abs_pa(v_peak, p.t_cond_c) - P_ATM) / 1e5;
+    let air = if p.purged || p.head_l <= 0.0 {
         0.0
     } else {
         P_ATM / 1e5
     };
     let p_peak_total = p_peak + air;
-    let p_serv = (p_abs_pa(p.vol_t, p.t_serv) - P_ATM) / 1e5;
+    let p_serv = (p_abs_pa(p.co2_vol, p.t_serv_c) - P_ATM) / 1e5;
 
     let mut warnings = Vec::new();
     if p.dry.is_none() {
         warnings.push(PrimingWarning::DryMatterUnknown);
     }
     for (point, t_c) in [
-        (PolyPoint::Conditioning, p.t_cond),
-        (PolyPoint::Serving, p.t_serv),
+        (PolyPoint::Conditioning, p.t_cond_c),
+        (PolyPoint::Serving, p.t_serv_c),
     ] {
         if t_c < POLY_T_MIN_C {
             warnings.push(PrimingWarning::PolynomialBelowTemperature { point, t_c });
         }
     }
-    for (point, vol) in [(PolyPoint::Target, p.vol_t), (PolyPoint::Peak, v_peak)] {
+    for (point, vol) in [(PolyPoint::Target, p.co2_vol), (PolyPoint::Peak, v_peak)] {
         if vol > POLY_VOL_MAX + TOL {
-            warnings.push(PrimingWarning::PolynomialAboveVolume { point, vol });
+            warnings.push(PrimingWarning::PolynomialAboveVolume {
+                point,
+                co2_vol: vol,
+            });
         }
     }
-    if equilibrium_saturated(n_total, p.t_cond, p.v_beer, p.v_head) {
+    if equilibrium_saturated(n_total, p.t_cond_c, p.beer_l, p.head_l) {
         warnings.push(PrimingWarning::PeakVolumeSaturated {
-            limit_vol: EQ_VOL_MAX,
+            limit_co2_vol: EQ_VOL_MAX,
         });
     }
     if let Some(limit) = p.limit_bar
@@ -562,7 +582,7 @@ pub fn keg_priming(p: &KegParams) -> Result<KegPriming, TriggerError> {
         warnings.push(PrimingWarning::PeakAboveLimit {
             peak_bar: p_peak_total,
             limit_bar: limit,
-            t_cond_c: p.t_cond,
+            t_cond_c: p.t_cond_c,
         });
     }
     Ok(KegPriming {
@@ -578,12 +598,12 @@ pub fn keg_priming(p: &KegParams) -> Result<KegPriming, TriggerError> {
         head_share_pct: (bottle_same > 0.0)
             .then(|| round_py(100.0 * (full / bottle_same - 1.0), 1)),
         serving_bar: round_py(p_serv, 2),
-        peak_vol: round_py(v_peak, 2),
+        peak_co2_vol: round_py(v_peak, 2),
         peak_bar: round_py(p_peak, 2),
         peak_total_gauge_bar: round_py(p_peak_total, 2),
         warnings,
         co2_topup_bar: (p.mode == KegMode::Partial)
-            .then(|| round_py(co2_psi_c(p.vol_t, p.t_serv) * 0.068_947_6, 2)),
+            .then(|| round_py(co2_psi_c(p.co2_vol, p.t_serv_c) * 0.068_947_6, 2)),
     })
 }
 
@@ -605,11 +625,11 @@ pub fn co2_from_remaining(sg_rack: f64, fg_ref: f64) -> f64 {
 #[derive(Debug, Clone, PartialEq)]
 pub struct CaskPriming {
     /// Residual CO2 at fermentation temperature, volumes (2 decimals).
-    pub residual_vol: f64,
+    pub residual_co2_vol: f64,
     /// CO2 from remaining extract, volumes (2 decimals).
-    pub from_extract_vol: f64,
+    pub from_extract_co2_vol: f64,
     /// Missing CO2, volumes (2 decimals); negative means excess.
-    pub missing_vol: f64,
+    pub missing_co2_vol: f64,
     /// Priming sugar, g (1 decimal).
     pub sugar_g: f64,
     /// Priming sugar, g/L (2 decimals).
@@ -620,39 +640,59 @@ pub struct CaskPriming {
     pub warnings: Vec<PrimingWarning>,
 }
 
+/// Inputs of [`cask_priming`].
+#[derive(Debug, Clone, Copy)]
+pub struct CaskPrimingInput {
+    /// Batch volume, L.
+    pub volume_l: f64,
+    /// Target carbonation, volumes of CO2.
+    pub co2_vol: f64,
+    /// Maximum fermentation temperature, °C.
+    pub t_res_c: f64,
+    /// Gravity at racking, SG.
+    pub sg_rack: f64,
+    /// Reference final gravity, SG.
+    pub fg_ref: f64,
+    /// Priming sugar.
+    pub sugar: Sugar,
+    /// Dry-matter fraction of the sugar product; `None` when unknown.
+    pub dry: Option<f64>,
+}
+
 /// Cask priming (spec §3.3). `v_l` litres, `vol_t` target volumes, `t_res_c` max
 /// fermentation temperature °C, gravities as SG. Spec default sugar is invert.
 /// `v_l = 0` is a `ZeroDivision` error, as in the reference (`g / V`).
 ///
 /// # Errors
-/// [`TriggerError::InvalidInput`] for non-finite or out-of-range input (negative volume,
+/// [`Error::InvalidInput`] for non-finite or out-of-range input (negative volume,
 /// dry matter outside `[0, 1]`).
-pub fn cask_priming(
-    v_l: f64,
-    vol_t: f64,
-    t_res_c: f64,
-    sg_rack: f64,
-    fg_ref: f64,
-    sugar: Sugar,
-    dry: Option<f64>,
-) -> Result<CaskPriming, TriggerError> {
+pub fn cask_priming(p: &CaskPrimingInput) -> Result<CaskPriming, Error> {
+    let CaskPrimingInput {
+        volume_l: v_l,
+        co2_vol: vol_t,
+        t_res_c,
+        sg_rack,
+        fg_ref,
+        sugar,
+        dry,
+    } = *p;
     if !finite(&[v_l, vol_t, t_res_c, sg_rack, fg_ref])
         || v_l < 0.0
         || dry.is_some_and(|d| !finite(&[d]) || !(0.0..=1.0).contains(&d))
     {
-        return Err(TriggerError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let res = residual_vol(t_res_c);
     let from_x = co2_from_remaining(sg_rack, fg_ref);
     let need = vol_t - res - from_x;
     let g = sugar_from_mol(need.max(0.0) * v_l / VM, sugar, dry)?;
     if v_l == 0.0 {
-        return Err(TriggerError::ZeroDivision); // g / V in the reference
+        return Err(Error::DivisionByZero { field: "divisor" }); // g / V in the reference
     }
     Ok(CaskPriming {
-        residual_vol: round_py(res, 2),
-        from_extract_vol: round_py(from_x, 2),
-        missing_vol: round_py(need, 2),
+        residual_co2_vol: round_py(res, 2),
+        from_extract_co2_vol: round_py(from_x, 2),
+        missing_co2_vol: round_py(need, 2),
         sugar_g: round_py(g, 1),
         g_per_l: round_py(g / v_l, 2),
         excess: need < 0.0,

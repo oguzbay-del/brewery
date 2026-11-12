@@ -54,7 +54,7 @@ fn dec_json(x: Decimal) -> Value {
     json!({ "ondalik": x.to_string() })
 }
 
-fn check_result(c: &Case, r: &Result<Decimal, bt::TaxError>) {
+fn check_result(c: &Case, r: &Result<Decimal, engine::Error>) {
     match *r {
         Ok(x) => c.check(&dec_json(x)),
         Err(_) => c.check(&json!({ "hata": "ValueError" })),
@@ -69,13 +69,13 @@ fn run_tax_line(c: &Case) {
     let bands_v = bands(c, "bands");
     let tiers_v = bands(c, "tiers");
     let mut p = bt::TaxLine::new(method, dec(c, "volume_l"));
-    p.abv = opt_dec(c, "abv");
-    p.plato = opt_dec(c, "plato");
+    p.abv_pct = opt_dec(c, "abv");
+    p.plato_p = opt_dec(c, "plato");
     p.rate = opt_dec(c, "rate");
     p.bands = &bands_v;
     p.tiers = &tiers_v;
     if let Some(y) = opt_dec(c, "ytd") {
-        p.ytd = y;
+        p.ytd_hl = y;
     }
     if let Some(t) = c.girdi.get("plato_trunc") {
         p.plato_trunc = t.as_bool().unwrap();
@@ -104,26 +104,24 @@ fn parite_09() {
             "real_extract" => c.check_f(bt::real_extract(c.f("oe"), c.f("ae"))),
             "abw" => c.check_f(bt::abw(c.f("oe"), c.f("re"))),
             "abv_from" => {
-                let (abv, w, re) = bt::abv_from(c.f("og"), c.f("fg"));
+                let a = bt::abv_from(c.f("og"), c.f("fg"));
+                let (abv, w, re) = (a.abv_pct, a.abw_pct, a.real_extract_p);
                 c.check(&json!([abv, w, re]));
             }
             "label_energy" => {
                 let abv_measured = c.v("abv_measured").as_f64();
                 let e = bt::label_energy(c.f("og"), c.f("fg"), c.f("protein_g100ml"), abv_measured);
-                c.check_res(
-                    e.map(|e| {
-                        json!({
-                            "ABV": e.abv,
-                            "alkol_g": e.alcohol_g,
-                            "gercek_ekstrakt_g": e.real_extract_g,
-                            "karbonhidrat_g": e.carbohydrate_g,
-                            "protein_g": e.protein_g,
-                            "kJ": e.kj,
-                            "kcal": e.kcal,
-                        })
+                c.check_res(e.map(|e| {
+                    json!({
+                        "ABV": e.abv_pct,
+                        "alkol_g": e.alcohol_g,
+                        "gercek_ekstrakt_g": e.real_extract_g,
+                        "karbonhidrat_g": e.carbohydrate_g,
+                        "protein_g": e.protein_g,
+                        "kJ": e.kj,
+                        "kcal": e.kcal,
                     })
-                    .map_err(engine::Error::from),
-                );
+                }));
             }
             "tax_line" => run_tax_line(c),
             "round_in" => {
@@ -140,10 +138,13 @@ fn parite_09() {
                 check_result(c, &r);
             }
             "money" => check_result(c, &bt::money(dec(c, "x"), dp(c), mode(c, "mode"))),
-            "row_status" => c.check(&json!(bt::row_status(
+            "row_status" => c.check(&json!(match bt::row_status(
                 c.v("resmi_kaynak").as_str(),
                 c.v("tarih").as_str()
-            ))),
+            ) {
+                bt::RowStatus::Verified => "doğrulandı",
+                bt::RowStatus::Unverified => "doğrulanacak",
+            })),
             "residual_co2" => c.check_f(engine::yeast::residual_co2(engine::units::c_to_f(
                 c.f("t_c"),
             ))),
@@ -157,7 +158,7 @@ fn parite_09() {
                     return true;
                 };
                 c.check(&json!({
-                    "kalinti_vol": s.residual_vol,
+                    "kalinti_vol": s.residual_co2_vol,
                     "gereken_g_L": s.needed_g_per_l,
                     "kapama_SG": s.closing_sg,
                     "puan_once": s.points_before,
@@ -172,13 +173,13 @@ fn parite_09() {
                     .v("fg_range")
                     .as_array()
                     .map(|r| (r[0].as_f64().unwrap(), r[1].as_f64().unwrap()));
-                let w = bt::spund_warnings(
-                    c.f("target_vol"),
-                    c.f("t_c"),
-                    c.v("tank_max_psi").as_f64(),
-                    range,
-                    c.i("wide_u"),
-                );
+                let w = bt::spund_warnings(&bt::SpundWarningsInput {
+                    target_co2_vol: c.f("target_vol"),
+                    t_c: c.f("t_c"),
+                    tank_max_psi: c.v("tank_max_psi").as_f64(),
+                    fg_range: range,
+                    wide_u: c.i("wide_u"),
+                });
                 let codes: Vec<&str> = w.warnings.iter().map(|x| x.as_str()).collect();
                 c.check(&json!({"uyari": codes, "engellendi": w.blocked}));
             }
@@ -204,7 +205,7 @@ fn taxable_volume_case(c: &Case) {
         events.push(bt::VolumeEvent {
             date: e[0].as_str().unwrap().to_owned(),
             kind,
-            litres: dec_str(&e[2]),
+            volume_l: dec_str(&e[2]),
         });
     }
     let deduct: Vec<bt::VolumeEventKind> = c
@@ -214,16 +215,10 @@ fn taxable_volume_case(c: &Case) {
         .iter()
         .map(|k| bt::VolumeEventKind::parse(k.as_str().unwrap()).unwrap())
         .collect();
-    match bt::taxable_volume(
-        &events,
-        trigger,
-        c.v("start").as_str().unwrap(),
-        c.v("end").as_str().unwrap(),
-        &deduct,
-    ) {
+    match bt::taxable_volume(&bt::TaxableVolumeInput { events: &events, trigger, start: c.v("start").as_str().unwrap(), end: c.v("end").as_str().unwrap(), deduct: &deduct }) {
         Ok(r) => c.check(&json!({
-            "vergilenecek": dec_json(r.taxable), "vergilenen": dec_json(r.taxed),
-            "imha": dec_json(r.destroyed), "iade": dec_json(r.returned), "lab": dec_json(r.lab),
+            "vergilenecek": dec_json(r.taxable_l), "vergilenen": dec_json(r.taxed_l),
+            "imha": dec_json(r.destroyed_l), "iade": dec_json(r.returned_l), "lab": dec_json(r.lab_l),
         })),
         Err(_) => error(),
     }
@@ -237,6 +232,6 @@ fn invalid_inputs_are_errors() {
     let one = Decimal::from(1);
     assert!(bt::money(one, 13, bt::RoundMode::HalfUp).is_err());
     assert!(bt::round_in(one, Some((30, bt::RoundMode::HalfUp))).is_err());
-    let e: engine::Error = bt::TaxError::NoBand.into();
+    let e = engine::Error::invalid("bands", "no band matched");
     assert!(matches!(e, engine::Error::InvalidInput { .. }));
 }

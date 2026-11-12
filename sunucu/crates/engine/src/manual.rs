@@ -8,6 +8,7 @@
 //! reference). Tinseth utilisation and the temperature factor are the section 02
 //! functions ([`hops::tinseth_utilization`], [`hops::temperature_factor`]).
 
+use crate::Error;
 use crate::hops;
 use crate::units::{self, gravity_units, round_py};
 
@@ -46,35 +47,6 @@ const INPUT_LIMIT: f64 = 1e6;
 
 fn finite(x: f64) -> bool {
     x.is_finite() && x.abs() <= INPUT_LIMIT
-}
-
-/// Errors where the Python reference raises.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ManualError {
-    /// `ValueError`: invalid volumes in [`partial_boil`].
-    InvalidVolume,
-    /// `IndexError`: [`few_forecast`] needs at least one reading.
-    NoReadings,
-    /// `OverflowError`: forecast range is unbounded (a fit gave no finite end time).
-    Unbounded,
-    /// `ValueError`: input not finite or out of range (T1.12 D2, D3), or a cooling model that
-    /// cannot end (ambient at or above the stop temperature, `dt <= 0`, `tau <= 0`).
-    InvalidInput,
-}
-
-impl From<ManualError> for crate::Error {
-    fn from(e: ManualError) -> Self {
-        match e {
-            ManualError::InvalidVolume => Self::invalid("volume", "invalid volumes"),
-            ManualError::NoReadings => {
-                Self::invalid("readings", "at least one reading is required")
-            }
-            ManualError::Unbounded => Self::Unreachable {
-                what: "forecast end time",
-            },
-            ManualError::InvalidInput => Self::invalid("input", "not finite or out of range"),
-        }
-    }
 }
 
 /// Extract kind (spec §2.1).
@@ -126,6 +98,30 @@ fn weight_u(sg: f64, fg: f64) -> f64 {
     ((gravity_units(sg) - gravity_units(fg)) as f64 / W_U as f64).min(1.0)
 }
 
+/// Decay rate fit of [`k_fit`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct KFit {
+    /// Fitted rate, 1/hour.
+    pub k_per_h: f64,
+    /// Rate of each reading, 1/hour.
+    pub k_each_per_h: Vec<f64>,
+}
+
+/// Inputs of [`k_fit`].
+#[derive(Debug, Clone, Copy)]
+pub struct KFitInput<'a> {
+    /// Readings `(hours, SG)`.
+    pub readings: &'a [(f64, f64)],
+    /// Original gravity, SG.
+    pub og: f64,
+    /// Final gravity, SG.
+    pub fg: f64,
+    /// Lag phase, hours.
+    pub lag_h: f64,
+    /// Weight readings by their distance from FG.
+    pub weighted: bool,
+}
+
 /// Decay rate fit with FG fixed and OG known at t = 0 (spec §1.3).
 ///
 /// `y = ln((SG−FG)/(OG−FG)) = −k (t − lag)`, weighted least squares through the origin:
@@ -133,13 +129,14 @@ fn weight_u(sg: f64, fg: f64) -> f64 {
 /// `SG − FG ≤ 0.0005` are skipped. Returns `(k per hour, per-reading k)`, or `None`
 /// when no reading is usable.
 #[must_use]
-pub fn k_fit(
-    readings: &[(f64, f64)],
-    og: f64,
-    fg: f64,
-    lag: f64,
-    weighted: bool,
-) -> Option<(f64, Vec<f64>)> {
+pub fn k_fit(p: &KFitInput<'_>) -> Option<KFit> {
+    let KFitInput {
+        readings,
+        og,
+        fg,
+        lag_h: lag,
+        weighted,
+    } = *p;
     let (mut xs, mut ys, mut ws) = (Vec::new(), Vec::new(), Vec::new());
     for &(t, sg) in readings {
         let x = t - lag;
@@ -162,13 +159,16 @@ pub fn k_fit(
         .sum();
     let k = -swxy / sxx;
     let k_each = xs.iter().zip(&ys).map(|(x, y)| -y / x).collect();
-    Some((k, k_each))
+    Some(KFit {
+        k_per_h: k,
+        k_each_per_h: k_each,
+    })
 }
 
 /// Hour at which the gravity is within [`EPS`] of FG: `lag + ln((OG−FG)/ε)/k` (spec §1.3).
 #[must_use]
-pub fn t_end(og: f64, fg: f64, k: f64, lag: f64) -> f64 {
-    lag + ((og - fg) / EPS).ln() / k
+pub fn t_end(og: f64, fg: f64, k_per_h: f64, lag_h: f64) -> f64 {
+    lag_h + ((og - fg) / EPS).ln() / k_per_h
 }
 
 /// Why [`few_forecast`] shows no estimate (spec §1.4).
@@ -204,9 +204,9 @@ pub enum FewForecast {
     /// Estimate (spec §1.6).
     Estimate {
         /// Decay rate per hour, rounded to 4 decimals.
-        k_per_hour: f64,
+        k_per_h: f64,
         /// Finish hour for the prior FG, rounded to 1 decimal.
-        finish_hour: f64,
+        finish_h: f64,
         /// Finish range in whole days since pitching (floor of earliest, ceil of latest).
         range_days: (i64, i64),
         /// Days remaining from the last reading (floor, ceil), at least 0.
@@ -226,28 +226,46 @@ fn ceil_i(x: f64) -> i64 {
     x.ceil() as i64
 }
 
+/// Inputs of [`few_forecast`].
+#[derive(Debug, Clone, Copy)]
+pub struct FewForecastInput<'a> {
+    /// Readings `(hours, SG)`.
+    pub readings: &'a [(f64, f64)],
+    /// Original gravity, SG.
+    pub og: f64,
+    /// Prior final gravity, SG.
+    pub fg_prior: f64,
+    /// Lag phase, hours.
+    pub lag_h: f64,
+    /// Uncertainty of the prior FG, SG.
+    pub sigma_sg: f64,
+}
+
 /// Fermentation forecast from few manual readings (spec §1.3–§1.6).
 ///
 /// `readings` are `(hours since pitching, SG)`, any order; `og` and `fg_prior` are SG;
 /// `lag` and `sigma` default to [`LAG_H`] and [`SIGMA_FG`].
 ///
 /// # Errors
-/// [`ManualError::NoReadings`] for an empty list; [`ManualError::Unbounded`] when no
+/// [`Error::EmptyInput`] for an empty list; [`Error::Unreachable`] when no
 /// finite upper end time exists.
-pub fn few_forecast(
-    readings: &[(f64, f64)],
-    og: f64,
-    fg_prior: f64,
-    lag: f64,
-    sigma: f64,
-) -> Result<FewForecast, ManualError> {
+pub fn few_forecast(p: &FewForecastInput<'_>) -> Result<FewForecast, Error> {
+    let FewForecastInput {
+        readings,
+        og,
+        fg_prior,
+        lag_h: lag,
+        sigma_sg: sigma,
+    } = *p;
     let mut readings = readings.to_vec();
     readings.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.total_cmp(&b.1)));
-    let &(t_now, sg_now) = readings.last().ok_or(ManualError::NoReadings)?;
+    let &(t_now, sg_now) = readings
+        .last()
+        .ok_or(Error::EmptyInput { field: "readings" })?;
     if ![og, fg_prior, lag, sigma].into_iter().all(finite)
         || !readings.iter().all(|&(t, g)| finite(t) && finite(g))
     {
-        return Err(ManualError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let post: Vec<(f64, f64)> = readings.iter().copied().filter(|&(t, _)| t > lag).collect();
     // Stall rule (§1.5): last two readings ≥ 48 h apart and ≤ 0.001 difference.
@@ -276,7 +294,18 @@ pub fn few_forecast(
     if gravity_units(sg_now) <= gravity_units(fg_prior) + EPS_U {
         return Ok(FewForecast::TargetReached);
     }
-    let Some((k, k_each)) = k_fit(&post, og, fg_prior, lag, true).filter(|(k, _)| *k > 0.0) else {
+    let Some(KFit {
+        k_per_h: k,
+        k_each_per_h: k_each,
+    }) = k_fit(&KFitInput {
+        readings: &post,
+        og,
+        fg: fg_prior,
+        lag_h: lag,
+        weighted: true,
+    })
+    .filter(|f| f.k_per_h > 0.0)
+    else {
         return Ok(FewForecast::Insufficient(Insufficient::NonPositiveK));
     };
     let ends: Vec<f64> = [fg_prior - sigma, fg_prior, fg_prior + sigma]
@@ -285,8 +314,14 @@ pub fn few_forecast(
             if gravity_units(sg_now) - gravity_units(fg) <= EPS_U {
                 return t_now; // this FG is already reached
             }
-            match k_fit(&post, og, fg, lag, true) {
-                Some((kk, _)) if kk > 0.0 => t_end(og, fg, kk, lag),
+            match k_fit(&KFitInput {
+                readings: &post,
+                og,
+                fg,
+                lag_h: lag,
+                weighted: true,
+            }) {
+                Some(KFit { k_per_h: kk, .. }) if kk > 0.0 => t_end(og, fg, kk, lag),
                 _ => f64::INFINITY,
             }
         })
@@ -301,11 +336,13 @@ pub fn few_forecast(
     let lo = ends.iter().copied().fold(f64::INFINITY, f64::min);
     let hi = ends.iter().copied().fold(f64::NEG_INFINITY, f64::max);
     if !lo.is_finite() || !hi.is_finite() {
-        return Err(ManualError::Unbounded);
+        return Err(Error::Unreachable {
+            what: "forecast end time",
+        });
     }
     Ok(FewForecast::Estimate {
-        k_per_hour: round_py(k, 4),
-        finish_hour: round_py(ends[1], 1),
+        k_per_h: round_py(k, 4),
+        finish_h: round_py(ends[1], 1),
         range_days: (floor_i(lo / 24.0), ceil_i(hi / 24.0)),
         remaining_days: (
             floor_i(((lo - t_now) / 24.0).max(0.0)),
@@ -365,53 +402,90 @@ pub struct PartialBoil {
 
 /// Partial boil: kettle gravity and top-up water (spec §2.5).
 ///
-/// `og_final` SG after topping up, `v_final` litres in the fermenter, `v_kettle_post`
-/// litres in the kettle at end of boil, `loss` litres left in the kettle (trub, hop
+/// `og_final` SG after topping up, `v_final_l` litres in the fermenter, `v_kettle_post_l`
+/// litres in the kettle at end of boil, `loss_l` litres left in the kettle (trub, hop
 /// absorption). Volume sent to the fermenter is `v_kettle_post − loss`.
 ///
 /// # Errors
-/// [`ManualError::InvalidVolume`] unless `0 < v_out ≤ v_final`.
+/// [`Error::InvalidInput`] unless `0 < v_out ≤ v_final`.
 pub fn partial_boil(
     og_final: f64,
-    v_final: f64,
-    v_kettle_post: f64,
-    loss: f64,
-) -> Result<PartialBoil, ManualError> {
-    let v_out = v_kettle_post - loss;
-    if v_out <= 0.0 || v_final < v_out {
-        return Err(ManualError::InvalidVolume);
+    v_final_l: f64,
+    v_kettle_post_l: f64,
+    loss_l: f64,
+) -> Result<PartialBoil, Error> {
+    let v_out = v_kettle_post_l - loss_l;
+    if v_out <= 0.0 || v_final_l < v_out {
+        return Err(Error::invalid("volume", "invalid volumes"));
     }
-    let pts_k = (og_final - 1.0) * 1000.0 * v_final / v_out;
+    let pts_k = (og_final - 1.0) * 1000.0 * v_final_l / v_out;
     Ok(PartialBoil {
         kettle_sg: round_py(1.0 + pts_k / 1000.0, 4),
-        topup_l: round_py(v_final - v_out, 2),
+        topup_l: round_py(v_final_l - v_out, 2),
     })
 }
 
 /// IBU of a partial boil (spec §2.5): Tinseth utilisation at the kettle gravity, mg/L in
 /// the final volume. `hop_list` entries are `(grams, alpha-acid fraction, minutes)`;
-/// `v_final` litres.
+/// `v_final_l` litres.
 #[must_use]
-pub fn partial_boil_ibu(hop_list: &[(f64, f64, f64)], sg_kettle: f64, v_final: f64) -> f64 {
+pub fn partial_boil_ibu(hop_list: &[(f64, f64, f64)], sg_kettle: f64, v_final_l: f64) -> f64 {
     hop_list
         .iter()
-        .map(|&(g, aa, t)| hops::tinseth_utilization(sg_kettle, t) * aa * g * 1000.0 / v_final)
+        .map(|&(g, aa, t)| hops::tinseth_utilization(sg_kettle, t) * aa * g * 1000.0 / v_final_l)
         .sum()
+}
+
+/// Inputs of [`topoff_temp`].
+#[derive(Debug, Clone, Copy)]
+pub struct TopoffInput {
+    /// Wort volume, L.
+    pub v_wort_l: f64,
+    /// Wort temperature, °C.
+    pub t_wort_c: f64,
+    /// Water volume to add, L.
+    pub v_water_l: f64,
+    /// Target mix temperature, °C.
+    pub t_target_c: f64,
+    /// Wort-to-water heat capacity ratio.
+    pub c_ratio: f64,
 }
 
 /// Temperature (°C) of the water to add so the mix reaches `t_target` (spec §2.6).
 /// Volumes in litres, temperatures in °C; `c_ratio` is the wort-to-water heat capacity
 /// ratio (≈ 1).
 #[must_use]
-pub fn topoff_temp(v_wort: f64, t_wort: f64, v_water: f64, t_target: f64, c_ratio: f64) -> f64 {
+pub fn topoff_temp(p: &TopoffInput) -> f64 {
+    let TopoffInput {
+        v_wort_l: v_wort,
+        t_wort_c: t_wort,
+        v_water_l: v_water,
+        t_target_c: t_target,
+        c_ratio,
+    } = *p;
     (t_target * (v_wort * c_ratio + v_water) - v_wort * c_ratio * t_wort) / v_water
 }
 
 /// Cooling time constant (hours) of a cube of `v_l` litres, scaled from the 20 L value
-/// `tau20` by the cube root of volume (spec §3.2).
+/// `tau20_h` by the cube root of volume (spec §3.2).
 #[must_use]
-pub fn tau_h(v_l: f64, tau20: f64) -> f64 {
-    tau20 * (v_l / 20.0).powf(1.0 / 3.0)
+pub fn tau_h(v_l: f64, tau20_h: f64) -> f64 {
+    tau20_h * (v_l / 20.0).powf(1.0 / 3.0)
+}
+
+/// Inputs of [`t_eq_min`].
+#[derive(Debug, Clone, Copy)]
+pub struct TEqInput {
+    /// Start temperature, °C.
+    pub t0_c: f64,
+    /// Ambient temperature, °C.
+    pub t_amb_c: f64,
+    /// Cooling time constant, hours.
+    pub tau_h: f64,
+    /// Integration step, minutes.
+    pub dt_min: f64,
+    /// Stop temperature, °C.
+    pub t_stop_c: f64,
 }
 
 /// Equivalent boil minutes of a no-chill cube (spec §3.2).
@@ -421,20 +495,21 @@ pub fn tau_h(v_l: f64, tau20: f64) -> f64 {
 /// is the time constant in hours.
 ///
 /// # Errors
-/// [`ManualError::InvalidInput`] when an input is not finite, `t_amb ≥ t_stop`, `dt ≤ 0`,
+/// [`Error::InvalidInput`] when an input is not finite, `t_amb ≥ t_stop`, `dt ≤ 0`,
 /// `tau_hours ≤ 0`, or the cube is still above `t_stop` after 30 days ([`T_EQ_MAX_MIN`]).
-pub fn t_eq_min(
-    t0: f64,
-    t_amb: f64,
-    tau_hours: f64,
-    dt: f64,
-    t_stop: f64,
-) -> Result<f64, ManualError> {
+pub fn t_eq_min(p: &TEqInput) -> Result<f64, Error> {
+    let TEqInput {
+        t0_c: t0,
+        t_amb_c: t_amb,
+        tau_h: tau_hours,
+        dt_min: dt,
+        t_stop_c: t_stop,
+    } = *p;
     if ![t0, t_amb, tau_hours, dt, t_stop].into_iter().all(finite) {
-        return Err(ManualError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     if t_amb >= t_stop || dt <= 0.0 || tau_hours <= 0.0 {
-        return Err(ManualError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let tau = tau_hours * 60.0;
     let (mut t, mut s) = (0.0_f64, 0.0_f64);
@@ -444,7 +519,7 @@ pub fn t_eq_min(
             return Ok(s);
         }
         if t >= T_EQ_MAX_MIN {
-            return Err(ManualError::InvalidInput);
+            return Err(Error::invalid("input", "not finite or out of range"));
         }
         s += hops::temperature_factor(temp) * dt;
         t += dt;
@@ -459,53 +534,74 @@ pub enum NochillMode {
     /// Model: plus the equivalent minutes from [`t_eq_min`] (dt 0.5 min, stop 40 °C).
     Model {
         /// Wort temperature at the start of the cube stand, °C.
-        t0: f64,
+        t0_c: f64,
         /// Ambient temperature, °C.
-        t_amb: f64,
+        t_amb_c: f64,
         /// Cube volume in litres; `None` or 0 uses the batch volume.
-        v_cube: Option<f64>,
+        v_cube_l: Option<f64>,
     },
+}
+
+/// Result of [`nochill_ibu`] (rounded to 1 decimal like the reference).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct NochillIbu {
+    /// IBU without the extra standing time.
+    pub base_ibu: f64,
+    /// IBU with the no-chill extra time.
+    pub nochill_ibu: f64,
+    /// Extra standing time, minutes.
+    pub extra_min: f64,
 }
 
 /// No-chill IBU: `(base IBU, no-chill IBU, extra minutes)`, each rounded to 1 decimal
 /// (spec §3).
 ///
 /// `hop_list` entries are `(grams, alpha-acid fraction, minutes)`, `sg` the boil
-/// gravity, `v` litres.
+/// gravity, `v_l` litres.
 ///
 /// # Errors
-/// [`ManualError::InvalidInput`] for non-finite `sg`, `v ≤ 0`, or a cooling model that cannot
+/// [`Error::InvalidInput`] for non-finite `sg`, `v ≤ 0`, or a cooling model that cannot
 /// end (see [`t_eq_min`]).
 pub fn nochill_ibu(
     hop_list: &[(f64, f64, f64)],
     sg: f64,
-    v: f64,
+    v_l: f64,
     mode: NochillMode,
-) -> Result<(f64, f64, f64), ManualError> {
-    if !finite(sg) || !finite(v) || v <= 0.0 {
-        return Err(ManualError::InvalidInput);
+) -> Result<NochillIbu, Error> {
+    if !finite(sg) || !finite(v_l) || v_l <= 0.0 {
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
     let extra = match mode {
         NochillMode::Rule => 20.0,
-        NochillMode::Model { t0, t_amb, v_cube } => {
-            let vc = v_cube.filter(|x| *x != 0.0).unwrap_or(v);
+        NochillMode::Model {
+            t0_c: t0,
+            t_amb_c: t_amb,
+            v_cube_l: v_cube,
+        } => {
+            let vc = v_cube.filter(|x| *x != 0.0).unwrap_or(v_l);
             if !finite(vc) || vc <= 0.0 {
-                return Err(ManualError::InvalidInput);
+                return Err(Error::invalid("input", "not finite or out of range"));
             }
-            t_eq_min(t0, t_amb, tau_h(vc, TAU_20L_H), 0.5, TSTOP_C)?
+            t_eq_min(&TEqInput {
+                t0_c: t0,
+                t_amb_c: t_amb,
+                tau_h: tau_h(vc, TAU_20L_H),
+                dt_min: 0.5,
+                t_stop_c: TSTOP_C,
+            })?
         }
     };
     let ibu = |add: f64| -> f64 {
         hop_list
             .iter()
-            .map(|&(g, aa, t)| hops::tinseth_utilization(sg, t + add) * aa * g * 1000.0 / v)
+            .map(|&(g, aa, t)| hops::tinseth_utilization(sg, t + add) * aa * g * 1000.0 / v_l)
             .sum()
     };
-    Ok((
-        round_py(ibu(0.0), 1),
-        round_py(ibu(extra), 1),
-        round_py(extra, 1),
-    ))
+    Ok(NochillIbu {
+        base_ibu: round_py(ibu(0.0), 1),
+        nochill_ibu: round_py(ibu(extra), 1),
+        extra_min: round_py(extra, 1),
+    })
 }
 
 // ------------------------------------------------------------------ method choice, display and stall rules
@@ -672,19 +768,19 @@ impl FewStatus {
 /// lag, 30 % drop, target reached, positive `k`, in that order.
 ///
 /// # Errors
-/// [`ManualError::InvalidInput`] for non-finite or out-of-range input (T1.16).
+/// [`Error::InvalidInput`] for non-finite or out-of-range input (T1.16).
 pub fn few_status(
     readings: &[(f64, f64)],
     og: f64,
     fg_prior: f64,
-    lag: f64,
-) -> Result<FewStatus, ManualError> {
-    if ![og, fg_prior, lag].into_iter().all(finite)
+    lag_h: f64,
+) -> Result<FewStatus, Error> {
+    if ![og, fg_prior, lag_h].into_iter().all(finite)
         || !readings.iter().all(|&(t, g)| finite(t) && finite(g))
     {
-        return Err(ManualError::InvalidInput);
+        return Err(Error::invalid("input", "not finite or out of range"));
     }
-    Ok(few_status_checked(readings, og, fg_prior, lag))
+    Ok(few_status_checked(readings, og, fg_prior, lag_h))
 }
 
 fn few_status_checked(readings: &[(f64, f64)], og: f64, fg_prior: f64, lag: f64) -> FewStatus {
@@ -710,8 +806,14 @@ fn few_status_checked(readings: &[(f64, f64)], og: f64, fg_prior: f64, lag: f64)
     if gravity_units(sg_now) <= gravity_units(fg_prior) + EPS_U {
         return FewStatus::TargetReached;
     }
-    match k_fit(&post, og, fg_prior, lag, true) {
-        Some((k, _)) if k > 0.0 => FewStatus::Show,
+    match k_fit(&KFitInput {
+        readings: &post,
+        og,
+        fg: fg_prior,
+        lag_h: lag,
+        weighted: true,
+    }) {
+        Some(KFit { k_per_h: k, .. }) if k > 0.0 => FewStatus::Show,
         _ => FewStatus::NonPositiveK,
     }
 }

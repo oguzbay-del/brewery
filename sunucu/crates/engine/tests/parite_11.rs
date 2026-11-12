@@ -10,7 +10,7 @@ mod ortak;
 
 use engine::trigger::{
     self, CaskPriming, FermentationType, FgSource, KegMode, KegParams, KegPriming, PrimingWarning,
-    Stability, Sugar, TriggerError, TriggerForecast,
+    Stability, Sugar, TriggerForecast,
 };
 use engine::{units, yeast};
 use serde_json::{Value, json};
@@ -40,11 +40,11 @@ fn sugar(c: &ortak::Case) -> Sugar {
     }
 }
 
-fn err_json(e: TriggerError) -> Value {
+fn err_json(e: engine::Error) -> Value {
     match e {
-        TriggerError::EmptySeries => json!({"hata": "IndexError"}),
-        TriggerError::ZeroDivision => json!({"hata": "ZeroDivisionError"}),
-        TriggerError::InvalidInput => json!({"hata": "ValueError"}),
+        engine::Error::EmptyInput { .. } => json!({"hata": "IndexError"}),
+        engine::Error::DivisionByZero { .. } => json!({"hata": "ZeroDivisionError"}),
+        _ => json!({"hata": "ValueError"}),
     }
 }
 
@@ -56,10 +56,15 @@ fn warnings_json(w: &[PrimingWarning]) -> Value {
                 PrimingWarning::PolynomialBelowTemperature { point, t_c } => {
                     json!({"kod": x.code(), "nokta": point.as_str(), "T_C": t_c})
                 }
-                PrimingWarning::PolynomialAboveVolume { point, vol } => {
+                PrimingWarning::PolynomialAboveVolume {
+                    point,
+                    co2_vol: vol,
+                } => {
                     json!({"kod": x.code(), "nokta": point.as_str(), "vol": vol})
                 }
-                PrimingWarning::PeakVolumeSaturated { limit_vol } => {
+                PrimingWarning::PeakVolumeSaturated {
+                    limit_co2_vol: limit_vol,
+                } => {
                     json!({"kod": x.code(), "sinir_vol": limit_vol})
                 }
                 PrimingWarning::PeakAboveLimit {
@@ -73,7 +78,7 @@ fn warnings_json(w: &[PrimingWarning]) -> Value {
     )
 }
 
-fn result_json<T>(r: Result<T, TriggerError>, ok: impl FnOnce(T) -> Value) -> Value {
+fn result_json<T>(r: Result<T, engine::Error>, ok: impl FnOnce(T) -> Value) -> Value {
     match r {
         Ok(v) => ok(v),
         Err(e) => err_json(e),
@@ -86,7 +91,7 @@ fn keg_json(k: &KegPriming) -> Value {
         "sise_esdegeri_g": k.bottle_equivalent_g,
         "kafa_payi_%": k.head_share_pct,
         "servis_basinci_bar": k.serving_bar,
-        "tepe_vol": k.peak_vol,
+        "tepe_vol": k.peak_co2_vol,
         "tepe_basinci_bar": k.peak_bar,
         "tepe_toplam_gosterge_bar": k.peak_total_gauge_bar,
         "uyarilar": warnings_json(&k.warnings),
@@ -99,9 +104,9 @@ fn keg_json(k: &KegPriming) -> Value {
 
 fn cask_json(k: &CaskPriming) -> Value {
     json!({
-        "kalinti_vol": k.residual_vol,
-        "ekstrakttan_vol": k.from_extract_vol,
-        "eksik_vol": k.missing_vol,
+        "kalinti_vol": k.residual_co2_vol,
+        "ekstrakttan_vol": k.from_extract_co2_vol,
+        "eksik_vol": k.missing_co2_vol,
         "seker_g": k.sugar_g,
         "g_L": k.g_per_l,
         "fazla": k.excess,
@@ -126,13 +131,13 @@ fn parite_11() {
             }
             "predicted_trigger" => {
                 let out = result_json(
-                    trigger::predicted_trigger(
-                        c.f("fg_inf"),
-                        c.f("a"),
-                        c.f("k"),
-                        c.f("fg_ref"),
-                        c.f("delta"),
-                    ),
+                    trigger::predicted_trigger(&trigger::PredictedTriggerInput {
+                        fg_inf: c.f("fg_inf"),
+                        a_sg: c.f("a"),
+                        k_per_h: c.f("k"),
+                        fg_ref: c.f("fg_ref"),
+                        delta: c.f("delta"),
+                    }),
                     |f| match f {
                         TriggerForecast::At(t) => json!(["tetik", t]),
                         TriggerForecast::AlreadyPast => json!(["gecmis", 0.0]),
@@ -142,17 +147,17 @@ fn parite_11() {
                 c.check(&out);
             }
             "fg_reference" => {
-                let (fg, src) = trigger::fg_reference(
+                let r = trigger::fg_reference(
                     c.f("fg_recipe"),
                     opt(c, "fg_inf"),
                     c.b("shown"),
                     c.f("delta"),
                 );
-                let s = match src {
+                let s = match r.source {
                     FgSource::Recipe => "tarif",
                     FgSource::Forecast => "tahmin",
                 };
-                c.check(&json!([fg, s]));
+                c.check(&json!([r.fg, s]));
             }
             "is_stable" => {
                 let min_n = usize::try_from(c.i("min_n")).unwrap();
@@ -199,9 +204,9 @@ fn parite_11() {
                 c.check_f(trigger::head_gas_mol(c.f("vol"), c.f("t_c"), c.f("v_head")));
             }
             "head_mol" => {
-                let (n, p) =
+                let h =
                     trigger::head_mol(c.f("vol_t"), c.f("t_cond"), c.f("v_head"), c.b("purged"));
-                c.check(&json!([n, p]));
+                c.check(&json!([h.mol, h.p_abs_pa]));
             }
             "equilibrium_vol" => c.check_f(trigger::equilibrium_vol(
                 c.f("n_total"),
@@ -216,16 +221,16 @@ fn parite_11() {
                     other => panic!("unknown mode {other}"),
                 };
                 let p = KegParams {
-                    vol_t: c.f("vol_t"),
-                    t_res: c.f("T_res"),
-                    t_cond: c.f("T_cond"),
-                    v_beer: c.f("V_beer"),
-                    v_head: c.f("V_head"),
+                    co2_vol: c.f("vol_t"),
+                    t_res_c: c.f("T_res"),
+                    t_cond_c: c.f("T_cond"),
+                    beer_l: c.f("V_beer"),
+                    head_l: c.f("V_head"),
                     sugar: sugar(c),
                     purged: c.b("purged"),
                     mode,
                     part: c.f("part"),
-                    t_serv: c.f("T_serv"),
+                    t_serv_c: c.f("T_serv"),
                     dry: opt(c, "dry"),
                     limit_bar: opt(c, "limit_bar"),
                 };
@@ -236,15 +241,15 @@ fn parite_11() {
             }
             "cask_priming" => {
                 let out = result_json(
-                    trigger::cask_priming(
-                        c.f("v"),
-                        c.f("vol_t"),
-                        c.f("t_res"),
-                        c.f("sg_rack"),
-                        c.f("fg_ref"),
-                        sugar(c),
-                        opt(c, "dry"),
-                    ),
+                    trigger::cask_priming(&trigger::CaskPrimingInput {
+                        volume_l: c.f("v"),
+                        co2_vol: c.f("vol_t"),
+                        t_res_c: c.f("t_res"),
+                        sg_rack: c.f("sg_rack"),
+                        fg_ref: c.f("fg_ref"),
+                        sugar: sugar(c),
+                        dry: opt(c, "dry"),
+                    }),
                     |k| cask_json(&k),
                 );
                 c.check(&out);

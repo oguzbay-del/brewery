@@ -9,6 +9,8 @@
 //! integration tests in `tests/parite_NN.rs` against `formuller/testler/vektorler/NN.json`
 //! (ADR-0003).
 
+#![allow(clippy::many_single_char_names)] // formula bodies keep the spec symbols (w, a, t, v, ...)
+
 pub mod brewery;
 pub mod brewery_tax;
 pub mod density;

@@ -1314,6 +1314,8 @@ Reçetede `F_R_RESID_ALK` alanı **mash suyu profilinden** (`F_R_W_*`, yani base
 `F_R_SULFATE_CHLORIDE = SO₄ / Cl` (mash profili). Kaynak: `SulfiteChlorideRatio` (adı yanlış yazılmış), `SulfateBalRatio` (×2).
 **[belirsiz]** Derleyicinin kaldırdığı "ulaşılamaz bloklar" büyük olasılıkla Cl = 0 için bir koruma. Cl = 0 olduğunda 0 döndürmeyi önerilir.
 
+**Karar (T1.16 C): sınıf etiketi motorda değildir.** Motor `water::SulfateChlorideBalance` enum değerini döndürür (`sulfate_chloride_balance`); aşağıdaki İngilizce etiketler gösterimdir. Aynı kural uyarılar için geçerlidir: `water::Warning` kod olarak kalır, metin (aşağıdaki Türkçe cümleler) istemcidedir. Vektör etiketi enum eşlemesiyle karşılaştırır.
+
 Sınıflama (`SulfateBalFunc` ×3, eşikler hepsinde aynı):
 | oran r | etiket |
 |---|---|
@@ -1879,6 +1881,8 @@ Cider (3) bira gibi ele alınır ve şarap oranını almaz [kesin].
 | 3 Mead/Wine | O_Y_WINE_PITCH (0.5) | ±0.25 → 0.25–0.75 |
 
 `PitchRange` metni "min-max" biçiminde, 2 ondalık.
+
+**Karar (T1.16 C): gösterim motorda değildir.** `PitchRange` ve `DryPitchRange` metin biçimleri ile `enum_name` görünen adları motorda yoktur: motor sayıları (`pitch_min_max_*`, `dry_min/max_pitch_rate`) ve kodları (`from_code`) verir; metni istemci kurar. Vektördeki `pitch_range`, `dry_pitch_range` vakaları sayısal sonuçlardan biçimlenerek, `enum_name` vakaları kodun geçerli olup olmadığıyla (null ↔ `Err`) sınanır.
 
 **Kuru maya (g/hL)** – `DryMinPitchRate`, `DryMaxPitchRate`:
 ```
@@ -2449,6 +2453,8 @@ Tanımlar (hepsi aynı hacim biriminde):
 - **M** (ilk süzmede çıkacak wort) = `F_MH_TOT_WATER − A_t`
 - **R** (ilk süzmeden önce tun'a eklenebilecek boşluk) = `Cap − M`
 - E = F_MH_BATCH_EVEN, D = F_MH_BATCH_DRAIN
+
+**Karar (T1.16 C): gösterim motorda değildir.** `sparge_plan` yuvarlanmamış hacim (L) ve eylem kodu (`drain` | `add`) döndürür; 3 ondalığa yuvarlama ve "DRAIN(ilk süzme)" / "EKLE" etiketleri gösterim katmanının işidir (referansta ayrı `sparge_plan_display`). Vektör tam değerleri ve eylem kodunu karşılaştırır (`[i, hacim, "drain"|"add"]`). Rust: `mash::SpargeStep { index, volume_l, action: SpargeAction }`, `batch_sparge` adlı alanlı `BatchSpargeSize { volume_l, drain }` döndürür.
 
 Adım i (i = 0 "ilk süzmeden önce ekleme / ilk süzme", i ≥ 1 sparge batch'leri):
 

@@ -43,14 +43,14 @@ fn parite_02() {
             "rager_table" => c.check_f(hops::rager_table(c.i("n"))),
             "rager_gravity_adjustment" => c.check_f(hops::rager_gravity_adjustment(c.f("sg"))),
             "rager_utilization" => c.check_f(hops::rager_utilization(c.f("sg"), c.f("t"))),
-            "garetz_ibu" => c.check_r(hops::garetz_ibu(
-                c.f("w"),
-                c.f("a"),
-                c.f("t"),
-                c.f("sg"),
-                c.f("v"),
-                c.f("bv"),
-            )),
+            "garetz_ibu" => c.check_r(hops::garetz_ibu(&hops::GaretzIbuInput {
+                w_oz: c.f("w"),
+                a_pct: c.f("a"),
+                t_min: c.f("t"),
+                sg: c.f("sg"),
+                v_gal: c.f("v"),
+                bv_gal: c.f("bv"),
+            })),
             "garetz_utilization" => c.check_r(hops::garetz_utilization(c.f("sg"), c.f("t"))),
             "post_boil_utilization" => c.check_f(hops::post_boil_utilization(
                 c.f("sg"),
@@ -68,56 +68,56 @@ fn parite_02() {
                     .collect();
                 c.check_f(hops::combine_utilizations(&segs));
             }
-            "aged_alpha" => c.check_r(hops::aged_alpha(
-                c.f("alpha"),
-                c.f("hsi"),
-                c.f("temp_f"),
-                c.f("days"),
-                c.f("storage"),
-            )),
-            "tinseth_ibu" => c.check_r(hops::tinseth_ibu(
-                c.f("w"),
-                c.f("a"),
-                c.f("t"),
-                c.f("sg"),
-                c.f("v"),
-            )),
-            "rager_ibu" => c.check_r(hops::rager_ibu(
-                c.f("w"),
-                c.f("a"),
-                c.f("t"),
-                c.f("sg"),
-                c.f("v"),
-            )),
-            "tinseth_weight" => c.check_r(hops::tinseth_weight(
-                c.f("ibu"),
-                c.f("v"),
-                c.f("sg"),
-                c.f("t"),
-                c.f("a"),
-            )),
-            "rager_weight" => c.check_r(hops::rager_weight(
-                c.f("ibu"),
-                c.f("v"),
-                c.f("sg"),
-                c.f("t"),
-                c.f("a"),
-            )),
-            "garetz_weight" => c.check_r(hops::garetz_weight(
-                c.f("ibu"),
-                c.f("a"),
-                c.f("t"),
-                c.f("sg"),
-                c.f("v"),
-            )),
-            "whirlpool_ibu" => c.check_r(hops::whirlpool_ibu(
-                c.f("w"),
-                c.f("a"),
-                c.f("t"),
-                c.f("sg"),
-                c.f("v"),
-                c.f("temp_c"),
-            )),
+            "aged_alpha" => c.check_r(hops::aged_alpha(&hops::AgedAlphaInput {
+                alpha_pct: c.f("alpha"),
+                hsi_pct: c.f("hsi"),
+                temp_f: c.f("temp_f"),
+                days: c.f("days"),
+                storage: c.f("storage"),
+            })),
+            "tinseth_ibu" => c.check_r(hops::tinseth_ibu(&hops::HopIbuInput {
+                w_oz: c.f("w"),
+                a_pct: c.f("a"),
+                t_min: c.f("t"),
+                sg: c.f("sg"),
+                v_gal: c.f("v"),
+            })),
+            "rager_ibu" => c.check_r(hops::rager_ibu(&hops::HopIbuInput {
+                w_oz: c.f("w"),
+                a_pct: c.f("a"),
+                t_min: c.f("t"),
+                sg: c.f("sg"),
+                v_gal: c.f("v"),
+            })),
+            "tinseth_weight" => c.check_r(hops::tinseth_weight(&hops::HopWeightInput {
+                ibu: c.f("ibu"),
+                v_gal: c.f("v"),
+                sg: c.f("sg"),
+                t_min: c.f("t"),
+                a_pct: c.f("a"),
+            })),
+            "rager_weight" => c.check_r(hops::rager_weight(&hops::HopWeightInput {
+                ibu: c.f("ibu"),
+                v_gal: c.f("v"),
+                sg: c.f("sg"),
+                t_min: c.f("t"),
+                a_pct: c.f("a"),
+            })),
+            "garetz_weight" => c.check_r(hops::garetz_weight(&hops::HopWeightInput {
+                ibu: c.f("ibu"),
+                a_pct: c.f("a"),
+                t_min: c.f("t"),
+                sg: c.f("sg"),
+                v_gal: c.f("v"),
+            })),
+            "whirlpool_ibu" => c.check_r(hops::whirlpool_ibu(&hops::WhirlpoolIbuInput {
+                w_oz: c.f("w"),
+                a_pct: c.f("a"),
+                t_min: c.f("t"),
+                sg: c.f("sg"),
+                v_gal: c.f("v"),
+                temp_c: c.f("temp_c"),
+            })),
             "whirlpool_utilization" => c.check_f(hops::whirlpool_utilization(
                 c.f("sg"),
                 c.f("t"),
@@ -130,22 +130,22 @@ fn parite_02() {
                 c.check(&serde_json::json!(r as i64));
             }
             "hop_util" => c.check_r((|| {
-                hops::hop_utilization(
-                    c.f("sg"),
-                    c.f("t"),
-                    eq(c)?,
-                    c.b("whirlpool_mu"),
-                    c.f("temp_f"),
-                )
+                hops::hop_utilization(&hops::HopUtilizationInput {
+                    sg: c.f("sg"),
+                    t_min: c.f("t"),
+                    equation: eq(c)?,
+                    whirlpool_mu: c.b("whirlpool_mu"),
+                    temp_f: c.f("temp_f"),
+                })
             })()),
             "hop_adjustments" => c.check_r((|| {
-                Ok(hops::hop_adjustments(
-                    HopForm::from_code(c.i("form"))?,
-                    HopUse::from_code(c.i("use"))?,
-                    c.f("util_pct"),
-                    c.b("extract_recipe"),
-                    &opts(c.v("options")),
-                ))
+                Ok(hops::hop_adjustments(&hops::HopAdjustmentsInput {
+                    form: HopForm::from_code(c.i("form"))?,
+                    usage: HopUse::from_code(c.i("use"))?,
+                    util_pct: c.f("util_pct"),
+                    extract_recipe: c.b("extract_recipe"),
+                    opts: &opts(c.v("options")),
+                }))
             })()),
             "hop_total_utilization" => c.check_r(hops::hop_total_utilization(
                 &hop(c.v("hop")),
@@ -172,13 +172,13 @@ fn parite_02() {
                 c.f("v_boil"),
             )),
             "scale_bitterness" => {
-                let Ok(r) = hops::scale_bitterness(
-                    c.f("current_ibu"),
-                    c.f("target"),
-                    &recipe(c.v("recipe")),
-                    eq(c).expect("equation"),
-                    c.f("v_boil"),
-                ) else {
+                let Ok(r) = hops::scale_bitterness(&hops::ScaleBitternessInput {
+                    current_ibu: c.f("current_ibu"),
+                    target_ibu: c.f("target"),
+                    recipe: &recipe(c.v("recipe")),
+                    equation: eq(c).expect("equation"),
+                    v_boil_floz: c.f("v_boil"),
+                }) else {
                     c.check_hata();
                     return true;
                 };
@@ -187,34 +187,36 @@ fn parite_02() {
                     ScaleStatus::Unchanged => "unchanged",
                     ScaleStatus::Failed => "failed",
                 };
-                c.check(&serde_json::json!({"status": status, "amounts": r.amounts}));
+                c.check(&serde_json::json!({"status": status, "amounts": r.amounts_oz}));
             }
             "hop_ibu_adjust" => c.check_r(hops::hop_ibu_adjust(
                 c.f("w_old"),
                 c.f("ibu_old"),
                 c.f("ibu_new"),
             )),
-            "tool_hop_ibu" => c.check_r(hops::tool_hop_ibu(
-                &hop(c.v("hop")),
-                c.f("sg"),
-                c.f("v_floz"),
-                eq(c).expect("equation"),
-                c.f("util_pct"),
-                &opts(c.v("options")),
-            )),
+            "tool_hop_ibu" => c.check_r(hops::tool_hop_ibu(&hops::ToolHopIbuInput {
+                hop: &hop(c.v("hop")),
+                sg: c.f("sg"),
+                v_floz: c.f("v_floz"),
+                equation: eq(c).expect("equation"),
+                util_pct: c.f("util_pct"),
+                opts: &opts(c.v("options")),
+            })),
             "tool_bitterness" => {
-                let Ok(r) = hops::tool_bitterness(
-                    &hops(c.v("hops")),
-                    c.f("sg"),
-                    c.f("v_floz"),
-                    eq(c).expect("equation"),
-                    c.f("util_pct"),
-                    &opts(c.v("options")),
-                ) else {
+                let Ok(r) = hops::tool_bitterness(&hops::ToolBitternessInput {
+                    hops: &hops(c.v("hops")),
+                    sg: c.f("sg"),
+                    v_floz: c.f("v_floz"),
+                    equation: eq(c).expect("equation"),
+                    util_pct: c.f("util_pct"),
+                    opts: &opts(c.v("options")),
+                }) else {
                     c.check_hata();
                     return true;
                 };
-                c.check(&serde_json::json!({"ibu": r.ibu, "aau": r.aau, "contribs": r.contribs}));
+                c.check(
+                    &serde_json::json!({"ibu": r.ibu, "aau": r.aau, "contribs": r.contribs_ibu}),
+                );
             }
             "aau" => c.check_f(hops::hop_aau(
                 c.f("w"),
@@ -239,13 +241,13 @@ fn parite_02() {
                 &misc(c.v("misc")),
             ))),
             "aged_alpha_months" => c.check_r((|| {
-                hops::aged_alpha_months(
-                    c.f("alpha"),
-                    c.f("hsi"),
-                    c.f("temp_f"),
-                    c.f("months"),
-                    StorageType::from_code(c.i("storage_type"))?,
-                )
+                hops::aged_alpha_months(&hops::AgedAlphaMonthsInput {
+                    alpha_pct: c.f("alpha"),
+                    hsi_pct: c.f("hsi"),
+                    temp_f: c.f("temp_f"),
+                    months: c.f("months"),
+                    storage_type: StorageType::from_code(c.i("storage_type"))?,
+                })
             })()),
             _ => return false,
         }
@@ -308,10 +310,17 @@ fn scale_bitterness_with_form4_dry_hop_hits_target() {
     };
     let t = HopEquation::Tinseth;
     let cur = hops::recipe_ibu(&rc, t, 0.0).expect("ibu");
-    let r = hops::scale_bitterness(cur, 60.0, &rc, t, 0.0).expect("scale");
+    let r = hops::scale_bitterness(&hops::ScaleBitternessInput {
+        current_ibu: cur,
+        target_ibu: 60.0,
+        recipe: &rc,
+        equation: t,
+        v_boil_floz: 0.0,
+    })
+    .expect("scale");
     assert!(matches!(r.status, ScaleStatus::Ok));
     let mut scaled = rc.clone();
-    for (x, &amount_oz) in scaled.hops.iter_mut().zip(&r.amounts) {
+    for (x, &amount_oz) in scaled.hops.iter_mut().zip(&r.amounts_oz) {
         x.amount_oz = amount_oz;
     }
     let got = hops::recipe_ibu(&scaled, t, 0.0).expect("ibu");
@@ -322,10 +331,48 @@ fn scale_bitterness_with_form4_dry_hop_hits_target() {
 #[test]
 fn invalid_inputs_are_errors() {
     use engine::Error;
-    assert!(hops::garetz_ibu(f64::NAN, 5.0, 60.0, 1.05, 5.0, 5.0).is_err());
-    assert!(hops::garetz_ibu(1.0, 5.0, 60.0, 1.05, 0.0, 5.0).is_err());
-    assert!(hops::tinseth_ibu(1.0, f64::INFINITY, 60.0, 1.05, 5.0).is_err());
-    assert!(hops::aged_alpha(5.0, 30.0, f64::NAN, 180.0, 1.0).is_err());
+    assert!(
+        hops::garetz_ibu(&hops::GaretzIbuInput {
+            w_oz: f64::NAN,
+            a_pct: 5.0,
+            t_min: 60.0,
+            sg: 1.05,
+            v_gal: 5.0,
+            bv_gal: 5.0
+        })
+        .is_err()
+    );
+    assert!(
+        hops::garetz_ibu(&hops::GaretzIbuInput {
+            w_oz: 1.0,
+            a_pct: 5.0,
+            t_min: 60.0,
+            sg: 1.05,
+            v_gal: 0.0,
+            bv_gal: 5.0
+        })
+        .is_err()
+    );
+    assert!(
+        hops::tinseth_ibu(&hops::HopIbuInput {
+            w_oz: 1.0,
+            a_pct: f64::INFINITY,
+            t_min: 60.0,
+            sg: 1.05,
+            v_gal: 5.0
+        })
+        .is_err()
+    );
+    assert!(
+        hops::aged_alpha(&hops::AgedAlphaInput {
+            alpha_pct: 5.0,
+            hsi_pct: 30.0,
+            temp_f: f64::NAN,
+            days: 180.0,
+            storage: 1.0
+        })
+        .is_err()
+    );
     assert!(HopEquation::from_code(3).is_err());
     assert!(HopForm::from_code(5).is_err());
     assert!(HopUse::from_code(-1).is_err());
@@ -336,7 +383,14 @@ fn invalid_inputs_are_errors() {
     );
     // 1e9 oz never converges within the cap.
     assert!(matches!(
-        hops::garetz_ibu(1e9, 20.0, 60.0, 1.05, 5.0, 5.0),
+        hops::garetz_ibu(&hops::GaretzIbuInput {
+            w_oz: 1e9,
+            a_pct: 20.0,
+            t_min: 60.0,
+            sg: 1.05,
+            v_gal: 5.0,
+            bv_gal: 5.0
+        }),
         Err(Error::NoConvergence { .. })
     ));
 }

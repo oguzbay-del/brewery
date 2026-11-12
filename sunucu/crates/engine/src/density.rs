@@ -144,15 +144,27 @@ pub fn uk_tax_abv(og: f64, fg: f64) -> Result<f64> {
     Ok(k * (du as f64 / 100.0))
 }
 
+/// ABV and ABW of [`abv_abw_unclamped`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct AbvAbw {
+    /// ABV, % vol.
+    pub abv_pct: f64,
+    /// ABW, g/100 g.
+    pub abw_pct: f64,
+}
+
 /// Three-parameter `CalcABV(OG, FG, &abw)` (§6.3): no `OE = max(OE, AE)` clamp. Returns
-/// `(abv, abw)` in %; both are negative when `og < fg`.
-pub fn abv_abw_unclamped(og: f64, fg: f64) -> Result<(f64, f64)> {
+/// ABV and ABW in %; both are negative when `og < fg`.
+pub fn abv_abw_unclamped(og: f64, fg: f64) -> Result<AbvAbw> {
     pair(og, fg)?;
     let oe = to_plato(og);
     let ae = to_plato(fg);
     let re = 0.1808 * oe + 0.8192 * ae;
     let abw = (oe - re) / (2.0665 - 0.010_665 * oe);
-    Ok((finite_result("abv", fg / 0.79661 * abw)?, abw))
+    Ok(AbvAbw {
+        abv_pct: finite_result("abv", fg / 0.79661 * abw)?,
+        abw_pct: abw,
+    })
 }
 
 /// Morey colour (SRM), §8.1: `1.4922 * (mcu_sum / volume_gal)^0.6859`, where `mcu_sum` is
@@ -188,20 +200,20 @@ pub fn hydrometer_correction(sg: f64, temp_f: f64, calib_f: f64) -> Result<f64> 
 
 /// Refractometer, unfermented wort (SG), §9.2 type 0: `ToSG((brix - zero) / wcf)`.
 /// Defaults in the reference: `zero = 0.0`, `wcf = 1.02`.
-pub fn refractometer_unfermented(brix: f64, zero: f64, wcf: f64) -> Result<f64> {
+pub fn refractometer_unfermented(brix: f64, zero_brix: f64, wcf: f64) -> Result<f64> {
     ensure_finite("brix", brix)?;
-    ensure_finite("zero", zero)?;
+    ensure_finite("zero_brix", zero_brix)?;
     ensure_positive("wcf", wcf)?;
-    finite_result("refractometer_unfermented", to_sg((brix - zero) / wcf))
+    finite_result("refractometer_unfermented", to_sg((brix - zero_brix) / wcf))
 }
 
 /// Refractometer, fermenting wort with known OG (returns FG in SG), §9.2 type 1
 /// (Terrill cubic as implemented by BeerSmith: no WCF, OB in °Plato).
-pub fn refractometer_fermenting(og: f64, brix: f64, zero: f64) -> Result<f64> {
+pub fn refractometer_fermenting(og: f64, brix: f64, zero_brix: f64) -> Result<f64> {
     ensure_finite("og", og)?;
     ensure_finite("brix", brix)?;
-    ensure_finite("zero", zero)?;
-    Ok(refractometer_fermenting_raw(og, brix, zero))
+    ensure_finite("zero_brix", zero_brix)?;
+    Ok(refractometer_fermenting_raw(og, brix, zero_brix))
 }
 
 fn refractometer_fermenting_raw(og: f64, brix: f64, zero: f64) -> f64 {
@@ -219,27 +231,27 @@ pub struct FinishedBeer {
     /// Original gravity (SG).
     pub og: f64,
     /// Alcohol by weight (%).
-    pub abw_percent: f64,
+    pub abw_pct: f64,
     /// Real extract (°P).
-    pub re: f64,
+    pub real_extract_p: f64,
     /// Original extract (°P).
-    pub oe: f64,
+    pub original_extract_p: f64,
 }
 
 /// Refractometer on finished beer with hydrometer FG (SG): original gravity, §9.2 type 2.
-pub fn refractometer_finished(fg: f64, brix: f64, zero: f64) -> Result<FinishedBeer> {
+pub fn refractometer_finished(fg: f64, brix: f64, zero_brix: f64) -> Result<FinishedBeer> {
     ensure_finite("fg", fg)?;
     ensure_finite("brix", brix)?;
-    ensure_finite("zero", zero)?;
-    let ri = brix_to_ri(brix - zero);
+    ensure_finite("zero_brix", zero_brix)?;
+    let ri = brix_to_ri(brix - zero_brix);
     let abw = (1017.5596 - 277.4 * fg + ri * (937.8135 * ri - 1805.1288)) / 100.0;
     let re = 194.5935 + 129.8 * fg + ri * (410.8815 * ri - 790.8732);
     let oe = (re + 2.0665 * abw * 100.0) / (1.0 + 0.010_665 * abw * 100.0);
     Ok(FinishedBeer {
         og: finite_result("refractometer_finished", to_sg(oe))?,
-        abw_percent: abw * 100.0,
-        re,
-        oe,
+        abw_pct: abw * 100.0,
+        real_extract_p: re,
+        original_extract_p: oe,
     })
 }
 
@@ -291,9 +303,9 @@ pub fn refractometer_abv(
     kind: RefractometerType,
     gravity: f64,
     brix: f64,
-    zero: f64,
+    zero_brix: f64,
 ) -> Result<f64> {
-    refractometer_pair(kind, gravity, brix, zero)?.map_or(Ok(0.0), |(og, fg)| abv(og, fg))
+    refractometer_pair(kind, gravity, brix, zero_brix)?.map_or(Ok(0.0), |(og, fg)| abv(og, fg))
 }
 
 /// `RefractometerABW` (§9.2): 0 for type 0; types 1 and 2 use the clamped [`abw`].
@@ -301,38 +313,38 @@ pub fn refractometer_abw(
     kind: RefractometerType,
     gravity: f64,
     brix: f64,
-    zero: f64,
+    zero_brix: f64,
 ) -> Result<f64> {
-    refractometer_pair(kind, gravity, brix, zero)?.map_or(Ok(0.0), |(og, fg)| abw(og, fg))
+    refractometer_pair(kind, gravity, brix, zero_brix)?.map_or(Ok(0.0), |(og, fg)| abw(og, fg))
 }
 
 /// Intermediate ABV of the finished-beer reading (§9.2 type 2): `ABW * FG / 0.794` (not
 /// 0.79661). `ABW` is the refractometer ABW in %.
-pub fn refractometer_finished_abv(fg: f64, brix: f64, zero: f64) -> Result<f64> {
-    Ok(refractometer_finished(fg, brix, zero)?.abw_percent * fg / 0.794)
+pub fn refractometer_finished_abv(fg: f64, brix: f64, zero_brix: f64) -> Result<f64> {
+    Ok(refractometer_finished(fg, brix, zero_brix)?.abw_pct * fg / 0.794)
 }
 
 /// FG (SG) limited by yeast alcohol tolerance, §5.2: bisection between `fg` and 1.18 until
-/// `|ABV - tol| < 0.04` (at most 50 iterations, then the last midpoint). `tol` is in %ABV.
+/// `|ABV - tol| < 0.04` (at most 50 iterations, then the last midpoint). `tol_abv_pct` is in %ABV.
 ///
 /// The loop is bounded by the reference itself (50 iterations, last midpoint) so it always
 /// terminates; inputs must be finite.
 #[allow(clippy::manual_midpoint)] // keep `(hi + lo) / 2` for bit parity with the reference
-pub fn fg_from_tolerance(og: f64, fg: f64, tol: f64) -> Result<f64> {
+pub fn fg_from_tolerance(og: f64, fg: f64, tol_abv_pct: f64) -> Result<f64> {
     pair(og, fg)?;
-    ensure_finite("tol", tol)?;
+    ensure_finite("tol_abv_pct", tol_abv_pct)?;
     let mut hi = 1.18;
     let mut lo = fg;
     let mut mid = (hi + lo) / 2.0;
     for _ in 0..50 {
         mid = (hi + lo) / 2.0;
         let a = abv_raw(og, mid);
-        if (a - tol).abs() < 0.04 {
+        if (a - tol_abv_pct).abs() < 0.04 {
             return Ok(mid);
         }
-        if a > tol {
+        if a > tol_abv_pct {
             lo = mid;
-        } else if a < tol {
+        } else if a < tol_abv_pct {
             hi = mid;
         }
     }
@@ -628,34 +640,34 @@ pub fn grain_yield_convert(x: f64, from: HydrometerUnit) -> Result<f64> {
 
 // --- §2 fermentable points -------------------------------------------------------------
 
-/// OG points of one fermentable (point·gallon), §2.1. `eff` = brewhouse efficiency (%),
-/// `steep_eff` = `O_STEEP_EFFICIENCY` (%). Fixed-yield types ignore the efficiency; mashable
-/// types in Mash or Sparge use `eff`, in any other phase `steep_eff`.
+/// OG points of one fermentable (point·gallon), §2.1. `eff_pct` = brewhouse efficiency (%),
+/// `steep_eff_pct` = `O_STEEP_EFFICIENCY` (%). Fixed-yield types ignore the efficiency; mashable
+/// types in Mash or Sparge use `eff_pct`, in any other phase `steep_eff_pct`.
 #[must_use]
-pub fn grain_og_points(g: &Fermentable, eff: f64, steep_eff: f64) -> f64 {
+pub fn grain_og_points(g: &Fermentable, eff_pct: f64, steep_eff_pct: f64) -> f64 {
     let lb_ppg = (g.amount_oz / 16.0) * (g.yield_pct * 46.0 / 100.0);
     if g.kind.is_fixed_yield() {
         lb_ppg
     } else if g.usage.is_mash_or_sparge() {
-        lb_ppg * eff / 100.0
+        lb_ppg * eff_pct / 100.0
     } else {
-        lb_ppg * steep_eff / 100.0
+        lb_ppg * steep_eff_pct / 100.0
     }
 }
 
-/// FG points of one fermentable (point·gallon left after fermentation), §2.2. `atten` is the
+/// FG points of one fermentable (point·gallon left after fermentation), §2.2. `atten_pct` is the
 /// apparent attenuation (%). Sugar leaves -0.231 of its points, fruit, juice and honey -0.05,
 /// the rest `1 - atten/100`; a not-fermentable fermentable (lactose) keeps all its points.
 #[must_use]
-pub fn grain_fg_points(g: &Fermentable, eff: f64, atten: f64, steep_eff: f64) -> f64 {
-    let points = grain_og_points(g, eff, steep_eff);
+pub fn grain_fg_points(g: &Fermentable, eff_pct: f64, atten_pct: f64, steep_eff_pct: f64) -> f64 {
+    let points = grain_og_points(g, eff_pct, steep_eff_pct);
     if g.not_fermentable {
         return points;
     }
     let factor = match g.kind {
         GrainType::Sugar => -0.231,
         GrainType::Fruit | GrainType::Juice | GrainType::Honey => -0.05,
-        _ => 1.0 - atten / 100.0,
+        _ => 1.0 - atten_pct / 100.0,
     };
     points * factor
 }
@@ -861,16 +873,16 @@ pub fn scale_gravity(r: &RecipeInput, og_target: f64) -> Result<RecipeInput> {
 /// its water/grain ratio.
 #[must_use]
 #[allow(clippy::float_cmp)] // spec: equality of the two weights is a plain comparison
-pub fn scale_mash_from_grain_weight(mash: &Mash, grain_weight_new: f64) -> Mash {
+pub fn scale_mash_from_grain_weight(mash: &Mash, grain_weight_new_oz: f64) -> Mash {
     let mut out = mash.clone();
     let old = mash.grain_weight_oz;
-    out.grain_weight_oz = grain_weight_new;
-    if grain_weight_new <= 0.0 || old <= 0.0 || grain_weight_new == old || out.biab {
+    out.grain_weight_oz = grain_weight_new_oz;
+    if grain_weight_new_oz <= 0.0 || old <= 0.0 || grain_weight_new_oz == old || out.biab {
         return out;
     }
     for step in &mut out.steps {
         if step.infusion_floz > 0.0 {
-            step.infusion_floz = grain_weight_new * (step.infusion_floz / old);
+            step.infusion_floz = grain_weight_new_oz * (step.infusion_floz / old);
         }
     }
     out
@@ -944,23 +956,35 @@ pub fn efficiency(r: &RecipeInput, og: f64, volume_floz: f64, mash_only: bool) -
 /// Average yeast attenuation (%), §6.8: `(min + max) / 2`.
 #[must_use]
 #[allow(clippy::manual_midpoint)] // keep `(min + max) / 2` for bit parity with the reference
-pub fn avg_attenuation(min: f64, max: f64) -> f64 {
-    (min + max) / 2.0
+pub fn avg_attenuation(min_pct: f64, max_pct: f64) -> f64 {
+    (min_pct + max_pct) / 2.0
+}
+
+/// Attenuation and alcohol tolerance of [`yeast_attenuation`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct YeastAttenuation {
+    /// Average attenuation, %.
+    pub attenuation_pct: f64,
+    /// Alcohol tolerance, %ABV.
+    pub tolerance_abv_pct: f64,
 }
 
 /// Attenuation (%) and alcohol tolerance (%ABV) used by the recipe FG, §5.1 step 1: the first
 /// yeast not added to secondary, else 73 % and 10 %.
 #[must_use]
-pub fn yeast_attenuation(r: &RecipeInput) -> (f64, f64) {
+pub fn yeast_attenuation(r: &RecipeInput) -> YeastAttenuation {
     for y in &r.yeasts {
         if !y.add_to_secondary {
-            return (
-                avg_attenuation(y.min_attenuation_pct, y.max_attenuation_pct),
-                y.tolerance_abv_pct,
-            );
+            return YeastAttenuation {
+                attenuation_pct: avg_attenuation(y.min_attenuation_pct, y.max_attenuation_pct),
+                tolerance_abv_pct: y.tolerance_abv_pct,
+            };
         }
     }
-    (73.0, 10.0)
+    YeastAttenuation {
+        attenuation_pct: 73.0,
+        tolerance_abv_pct: 10.0,
+    }
 }
 
 /// Attenuation (%) after the mash temperature adjustment, §5.1 step 2 (All Grain only).
@@ -969,9 +993,9 @@ pub fn yeast_attenuation(r: &RecipeInput) -> (f64, f64) {
 /// With the option on, the chosen temperature is clamped to 144-160 °F and
 /// `atten += slope x (T - Tref)`; no steps means `T = Tref` (no change).
 #[must_use]
-pub fn mash_adjusted_attenuation(r: &RecipeInput, atten: f64) -> f64 {
+pub fn mash_adjusted_attenuation(r: &RecipeInput, atten_pct: f64) -> f64 {
     if r.kind != RecipeType::AllGrain {
-        return atten;
+        return atten_pct;
     }
     let tref = r.options.mash_fg_adj_temp_f;
     let mut best = tref;
@@ -991,16 +1015,19 @@ pub fn mash_adjusted_attenuation(r: &RecipeInput, atten: f64) -> f64 {
     }
     if r.options.mash_fg_adjust {
         best = best.clamp(144.0, 160.0);
-        return atten + r.options.mash_fg_adj_slope * (best - tref);
+        return atten_pct + r.options.mash_fg_adj_slope_pct_per_f * (best - tref);
     }
-    atten
+    atten_pct
 }
 
 /// Recipe FG (SG), §5.1: FG points of all fermentables (no phase filter), then limited by the
 /// yeast alcohol tolerance via [`fg_from_tolerance`] when the ABV (from [`recipe_og`]) exceeds it.
 #[must_use]
 pub fn recipe_fg(r: &RecipeInput) -> f64 {
-    let (atten, tolerance) = yeast_attenuation(r);
+    let YeastAttenuation {
+        attenuation_pct: atten,
+        tolerance_abv_pct: tolerance,
+    } = yeast_attenuation(r);
     let atten = mash_adjusted_attenuation(r, atten);
     let mut points = 0.0;
     for g in &r.fermentables {
@@ -1116,9 +1143,9 @@ fn total_grains_oz(r: &RecipeInput) -> f64 {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ColorFlexibility {
     /// Lowest reachable colour (SRM).
-    pub lo: f64,
+    pub lo_srm: f64,
     /// Highest reachable colour (SRM).
-    pub hi: f64,
+    pub hi_srm: f64,
     /// False when no adjustment is possible.
     pub ok: bool,
 }
@@ -1128,13 +1155,13 @@ pub struct ColorFlexibility {
 /// `max_in_batch + 5` %; lightening skips fermentables with zero amount darker than the target.
 #[must_use]
 #[allow(clippy::float_cmp)] // spec: `lo == hi` means no range
-pub fn color_flexibility(r: &RecipeInput, target: f64) -> ColorFlexibility {
+pub fn color_flexibility(r: &RecipeInput, target_srm: f64) -> ColorFlexibility {
     let current = recipe_color(r);
     let total = total_grains_oz(r);
     if total <= 0.0 || r.volume_floz <= 0.0 {
         return ColorFlexibility {
-            lo: current,
-            hi: current,
+            lo_srm: current,
+            hi_srm: current,
             ok: false,
         };
     }
@@ -1142,11 +1169,11 @@ pub fn color_flexibility(r: &RecipeInput, target: f64) -> ColorFlexibility {
     let mut hi = current;
     for g in &r.fermentables {
         let share = g.amount_oz / total;
-        if target > current {
-            if g.color_srm >= target && share * 100.0 >= g.max_in_batch_pct + 5.0 {
+        if target_srm > current {
+            if g.color_srm >= target_srm && share * 100.0 >= g.max_in_batch_pct + 5.0 {
                 continue;
             }
-        } else if g.amount_oz == 0.0 && g.color_srm > target {
+        } else if g.amount_oz == 0.0 && g.color_srm > target_srm {
             continue;
         }
         let s = (2.0 * share).min(1.0);
@@ -1159,14 +1186,14 @@ pub fn color_flexibility(r: &RecipeInput, target: f64) -> ColorFlexibility {
     }
     if lo > hi {
         return ColorFlexibility {
-            lo: 0.0,
-            hi: 0.0,
+            lo_srm: 0.0,
+            hi_srm: 0.0,
             ok: false,
         };
     }
     ColorFlexibility {
-        lo,
-        hi,
+        lo_srm: lo,
+        hi_srm: hi,
         ok: lo != hi,
     }
 }
@@ -1190,7 +1217,16 @@ fn clamp_range(x: f64, lo: f64, hi: f64) -> f64 {
     x.max(lo).min(hi)
 }
 
-/// One colour iteration towards `target` SRM (§8.3 `IterateColor`): colour-giving fermentables
+/// Result of [`iterate_color`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct ColorIteration {
+    /// The rescaled recipe.
+    pub recipe: RecipeInput,
+    /// Its colour, SRM.
+    pub color_srm: f64,
+}
+
+/// One colour iteration towards `target_srm` SRM (§8.3 `IterateColor`): colour-giving fermentables
 /// are rescaled by the needed MCU change, base fermentables compensate the gravity change, then
 /// the recipe is scaled back to its former OG. Returns the new recipe and its colour (SRM).
 ///
@@ -1199,14 +1235,14 @@ fn clamp_range(x: f64, lo: f64, hi: f64) -> f64 {
 /// compensation applies only to fermentables outside the colour-giver group.
 #[must_use]
 #[allow(clippy::float_cmp)] // spec: `ΔP != 0`
-pub fn iterate_color(r: &RecipeInput, target: f64) -> (RecipeInput, f64) {
+pub fn iterate_color(r: &RecipeInput, target_srm: f64) -> ColorIteration {
     let mut out = r.clone();
     let og0 = recipe_og(&out);
     let current = recipe_color(&out);
-    let flex = color_flexibility(&out, target);
+    let flex = color_flexibility(&out, target_srm);
     let volume_gal = (out.volume_floz + out.equipment.trub_loss_floz) / 128.0;
     let mcu_now = mcu_from_srm(current) * volume_gal;
-    let delta = mcu_from_srm(target) * volume_gal - mcu_now;
+    let delta = mcu_from_srm(target_srm) * volume_gal - mcu_now;
     let weight = total_grains_oz(&out);
     let (kind, eff) = (out.kind, out.efficiency_pct);
 
@@ -1216,7 +1252,7 @@ pub fn iterate_color(r: &RecipeInput, target: f64) -> (RecipeInput, f64) {
     for (i, g) in out.fermentables.iter_mut().enumerate() {
         let (colour, amount) = (g.color_srm, g.amount_oz);
         let mcu = amount * colour / 16.0;
-        if (target <= colour && flex.lo < colour) || flex.hi <= colour {
+        if (target_srm <= colour && flex.lo_srm < colour) || flex.hi_srm <= colour {
             if colour > 0.0 && mcu_now > 0.0 {
                 let amax = (g.max_in_batch_pct + 15.0) / 100.0 * weight;
                 let new = (mcu + (mcu / mcu_now) * delta) * 16.0 / colour;
@@ -1233,7 +1269,10 @@ pub fn iterate_color(r: &RecipeInput, target: f64) -> (RecipeInput, f64) {
         for i in base {
             let g = &mut out.fermentables[i];
             let (colour, amount) = (g.color_srm, g.amount_oz);
-            if colour < flex.hi && (colour <= target || colour <= flex.lo) && g.yield_pct != 0.0 {
+            if colour < flex.hi_srm
+                && (colour <= target_srm || colour <= flex.lo_srm)
+                && g.yield_pct != 0.0
+            {
                 let equivalent = gravity_equivalent(kind, eff, g, amount);
                 if equivalent <= 0.0 {
                     continue;
@@ -1254,42 +1293,70 @@ pub fn iterate_color(r: &RecipeInput, target: f64) -> (RecipeInput, f64) {
     if let Ok(scaled) = scale_gravity(&out, og0) {
         out = scaled;
     }
-    let colour = recipe_color(&out);
-    (out, colour)
+    let color_srm = recipe_color(&out);
+    ColorIteration {
+        recipe: out,
+        color_srm,
+    }
 }
 
-/// Colour adjustment towards `target` SRM (§8.3 `AdjustColor`, without the IBU preservation of
+/// Result of [`adjust_color`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct ColorAdjustment {
+    /// The adjusted recipe.
+    pub recipe: RecipeInput,
+    /// Whether `|colour - target| < 0.049`.
+    pub success: bool,
+}
+
+/// Colour adjustment towards `target_srm` SRM (§8.3 `AdjustColor`, without the IBU preservation of
 /// section 02): at most 40 iterations of [`iterate_color`], stopping when the flexibility check
 /// fails, the colour moves less than 0.005 or comes within 0.049 of the target. Returns the
 /// adjusted recipe and whether `|colour - target| < 0.049`.
 #[must_use]
-pub fn adjust_color(r: &RecipeInput, target: f64) -> (RecipeInput, bool) {
+pub fn adjust_color(r: &RecipeInput, target_srm: f64) -> ColorAdjustment {
     let mut current = r.clone();
     for _ in 0..40 {
-        if !color_flexibility(&current, target).ok {
+        if !color_flexibility(&current, target_srm).ok {
             break;
         }
         let previous = recipe_color(&current);
-        let (next, colour) = iterate_color(&current, target);
-        current = next;
+        let next = iterate_color(&current, target_srm);
+        let colour = next.color_srm;
+        current = next.recipe;
         if (colour - previous).abs() < 0.005 {
             break;
         }
-        if (colour - target).abs() < 0.049 {
+        if (colour - target_srm).abs() < 0.049 {
             break;
         }
     }
-    let success = (recipe_color(&current) - target).abs() < 0.049;
-    (current, success)
+    let success = (recipe_color(&current) - target_srm).abs() < 0.049;
+    ColorAdjustment {
+        recipe: current,
+        success,
+    }
+}
+
+/// Reachable colour range of [`color_adj_range`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ColorRange {
+    /// Lowest reachable colour, SRM.
+    pub lo_srm: f64,
+    /// Highest reachable colour, SRM.
+    pub hi_srm: f64,
 }
 
 /// Reachable colour range (SRM), §8.3 `GetColorAdjRange`: the colours after adjusting to 1.0
 /// and to 150.0 SRM, as `(min, max)`; adjustment is possible when they differ.
 #[must_use]
-pub fn color_adj_range(r: &RecipeInput) -> (f64, f64) {
-    let low = recipe_color(&adjust_color(r, 1.0).0);
-    let high = recipe_color(&adjust_color(r, 150.0).0);
-    (low.min(high), low.max(high))
+pub fn color_adj_range(r: &RecipeInput) -> ColorRange {
+    let low = recipe_color(&adjust_color(r, 1.0).recipe);
+    let high = recipe_color(&adjust_color(r, 150.0).recipe);
+    ColorRange {
+        lo_srm: low.min(high),
+        hi_srm: low.max(high),
+    }
 }
 
 /// Estimated mash efficiency (%), §4.2 `RecipeEstMashEfficiency`: OG = [`est_post_mash_og`],
@@ -1305,16 +1372,20 @@ pub fn recipe_est_mash_efficiency(r: &RecipeInput) -> f64 {
 pub fn recipe_act_mash_efficiency(
     r: &RecipeInput,
     og_mash_measured: f64,
-    boil_vol_measured: f64,
+    boil_vol_measured_floz: f64,
 ) -> f64 {
-    efficiency(r, og_mash_measured, boil_vol_measured, true)
+    efficiency(r, og_mash_measured, boil_vol_measured_floz, true)
 }
 
 /// Measured brewhouse efficiency (%), §4.2 `RecipeActualEfficiency`: measured OG (SG) and
 /// measured volume (fl oz), all phases.
 #[must_use]
-pub fn recipe_actual_efficiency(r: &RecipeInput, og_measured: f64, volume_measured: f64) -> f64 {
-    efficiency(r, og_measured, volume_measured, false)
+pub fn recipe_actual_efficiency(
+    r: &RecipeInput,
+    og_measured: f64,
+    volume_measured_floz: f64,
+) -> f64 {
+    efficiency(r, og_measured, volume_measured_floz, false)
 }
 
 /// Outcome of [`do_adjust_color`].
@@ -1328,18 +1399,38 @@ pub enum ColorAdjustStatus {
     Adjusted,
 }
 
+/// Result of [`do_adjust_color`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct ColorAdjustOutcome {
+    /// What happened.
+    pub status: ColorAdjustStatus,
+    /// The recipe (unchanged unless `Adjusted`).
+    pub recipe: RecipeInput,
+    /// Success flag of [`adjust_color`] (false unless `Adjusted`).
+    pub success: bool,
+}
+
 /// `DoAdjustColor` preconditions (§8.3): beer types only (`F_R_TYPE < 3`) and a target inside
 /// the reachable range (ends included). Returns the status, the recipe and the success flag
 /// of [`adjust_color`] (false unless `Adjusted`).
 #[must_use]
-pub fn do_adjust_color(r: &RecipeInput, target: f64) -> (ColorAdjustStatus, RecipeInput, bool) {
+pub fn do_adjust_color(r: &RecipeInput, target_srm: f64) -> ColorAdjustOutcome {
+    let unchanged = |status| ColorAdjustOutcome {
+        status,
+        recipe: r.clone(),
+        success: false,
+    };
     if r.kind.code() >= 3 {
-        return (ColorAdjustStatus::NotApplicable, r.clone(), false);
+        return unchanged(ColorAdjustStatus::NotApplicable);
     }
-    let (low, high) = color_adj_range(r);
-    if target < low || target > high {
-        return (ColorAdjustStatus::OutOfRange, r.clone(), false);
+    let range = color_adj_range(r);
+    if target_srm < range.lo_srm || target_srm > range.hi_srm {
+        return unchanged(ColorAdjustStatus::OutOfRange);
     }
-    let (adjusted, ok) = adjust_color(r, target);
-    (ColorAdjustStatus::Adjusted, adjusted, ok)
+    let adjusted = adjust_color(r, target_srm);
+    ColorAdjustOutcome {
+        status: ColorAdjustStatus::Adjusted,
+        recipe: adjusted.recipe,
+        success: adjusted.success,
+    }
 }

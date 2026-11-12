@@ -13,12 +13,6 @@ use crate::error::{Error, Result, ensure_finite, finite_result};
 use crate::units::py_sum;
 use crate::units::to_sg;
 
-/// Specific gravity from °Plato (spec 08 §2.1, same polynomial as 01 §1.2).
-#[must_use]
-pub fn plato_to_sg(p: f64) -> f64 {
-    to_sg(p)
-}
-
 /// Money line: 2 decimals, half up (spec 08 §1, T1.12 C6).
 fn money(x: Decimal) -> Decimal {
     x.round_dp_with_strategy(2, RoundingStrategy::MidpointAwayFromZero)
@@ -114,10 +108,10 @@ pub fn energy_cost_electric(kwh: Decimal, price_kwh: Decimal) -> Decimal {
 
 /// Electric energy for a heat demand: `kJ / η / 3600` in kWh (spec 08 §1.3).
 /// Errors on non-finite input and `eff = 0`.
-pub fn kwh_from_heat(kj: f64, eff: f64) -> Result<f64> {
-    ensure_finite("kj", kj)?;
+pub fn kwh_from_heat(heat_kj: f64, eff: f64) -> Result<f64> {
+    ensure_finite("heat_kj", heat_kj)?;
     ensure_nonzero("eff", eff)?;
-    Ok(kj / eff / 3600.0)
+    Ok(heat_kj / eff / 3600.0)
 }
 
 /// Rejects non-finite values and zero (a divisor).
@@ -135,12 +129,12 @@ pub const GAS_HU_KJ_M3: f64 = 34_500.0;
 
 /// Gas volume in m³ for a heat demand: `kJ / (η · Hu)` (spec 08 §1.3).
 /// Errors on non-finite input and `eff · hu = 0`.
-pub fn gas_m3_from_heat(kj: f64, eff: f64, hu_kj_m3: f64) -> Result<f64> {
-    ensure_finite("kj", kj)?;
+pub fn gas_m3_from_heat(heat_kj: f64, eff: f64, hu_kj_m3: f64) -> Result<f64> {
+    ensure_finite("heat_kj", heat_kj)?;
     ensure_finite("eff", eff)?;
     ensure_finite("hu_kj_m3", hu_kj_m3)?;
     ensure_nonzero("eff * hu_kj_m3", eff * hu_kj_m3)?;
-    Ok(kj / (eff * hu_kj_m3))
+    Ok(heat_kj / (eff * hu_kj_m3))
 }
 
 /// Batch cost breakdown (spec 08 §1.4, T1.12 C6): lines rounded to 2 decimals half up,
@@ -162,17 +156,37 @@ pub struct BatchCost {
     pub per_litre: Decimal,
 }
 
+/// Inputs of [`batch_cost`].
+#[derive(Debug, Clone, Copy)]
+pub struct BatchCostInput {
+    /// Ingredient cost, currency.
+    pub ingredient_cost: Decimal,
+    /// Water volume, L.
+    pub water_l: Decimal,
+    /// Water price per m³, currency.
+    pub water_price_m3: Decimal,
+    /// Energy cost, currency.
+    pub energy_cost: Decimal,
+    /// Packaging units used.
+    pub pack_units: Decimal,
+    /// Cost per packaging unit, currency.
+    pub pack_unit_cost: Decimal,
+    /// Packaged volume, L.
+    pub packaged_l: Decimal,
+}
+
 /// Batch cost (spec 08 §1.3–1.4): water in L at a per-m³ price, packaging units, packaged
 /// volume in L. Errors when `packaged_l ≤ 0` (the reference raises).
-pub fn batch_cost(
-    ingredient_cost: Decimal,
-    water_l: Decimal,
-    water_price_m3: Decimal,
-    energy_cost: Decimal,
-    pack_units: Decimal,
-    pack_unit_cost: Decimal,
-    packaged_l: Decimal,
-) -> Result<BatchCost> {
+pub fn batch_cost(p: &BatchCostInput) -> Result<BatchCost> {
+    let BatchCostInput {
+        ingredient_cost,
+        water_l,
+        water_price_m3,
+        energy_cost,
+        pack_units,
+        pack_unit_cost,
+        packaged_l,
+    } = *p;
     if packaged_l <= Decimal::ZERO {
         return Err(Error::invalid("packaged_l", "must be > 0"));
     }
@@ -203,24 +217,24 @@ pub fn batch_cost(
 /// One blend component: volume (L), ABV (%), IBU, SRM, CO₂ (volumes), extract (°P).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct BlendPart {
-    pub v: f64,
-    pub abv: f64,
+    pub volume_l: f64,
+    pub abv_pct: f64,
     pub ibu: f64,
     pub srm: f64,
-    pub co2: f64,
-    pub p: f64,
+    pub co2_vol: f64,
+    pub wort_p: f64,
 }
 
 /// Blend result, unrounded (T1.12 C9). An empty or zero-volume blend yields NaN (the
 /// reference raises; error type: T1.16).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Blend {
-    pub v: f64,
-    pub abv: f64,
+    pub volume_l: f64,
+    pub abv_pct: f64,
     pub ibu: f64,
     pub srm: f64,
-    pub co2: f64,
-    pub p: f64,
+    pub co2_vol: f64,
+    pub wort_p: f64,
 }
 
 /// Blend of components (spec 08 §2.1): volume-weighted ABV, IBU, SRM, CO₂; mass-weighted °P.
@@ -228,39 +242,39 @@ pub struct Blend {
 pub fn blend(parts: &[BlendPart]) -> Result<Blend> {
     for q in parts {
         for (field, x) in [
-            ("v", q.v),
-            ("abv", q.abv),
+            ("v", q.volume_l),
+            ("abv", q.abv_pct),
             ("ibu", q.ibu),
             ("srm", q.srm),
-            ("co2", q.co2),
-            ("p", q.p),
+            ("co2", q.co2_vol),
+            ("p", q.wort_p),
         ] {
             ensure_finite(field, x)?;
         }
     }
     // Compensated sums like CPython's `sum` (T1.12 C1).
-    let v = py_sum(parts.iter().map(|p| p.v));
+    let v = py_sum(parts.iter().map(|p| p.volume_l));
     ensure_nonzero("total volume", v)?;
-    let wavg = |f: fn(&BlendPart) -> f64| py_sum(parts.iter().map(|p| p.v * f(p))) / v;
-    let m: Vec<f64> = parts.iter().map(|p| p.v * plato_to_sg(p.p)).collect();
+    let wavg = |f: fn(&BlendPart) -> f64| py_sum(parts.iter().map(|p| p.volume_l * f(p))) / v;
+    let m: Vec<f64> = parts.iter().map(|p| p.volume_l * to_sg(p.wort_p)).collect();
     let mass = py_sum(m.iter().copied());
     ensure_nonzero("total mass", mass)?;
-    let p = py_sum(m.iter().zip(parts).map(|(mi, q)| mi * q.p)) / mass;
+    let p = py_sum(m.iter().zip(parts).map(|(mi, q)| mi * q.wort_p)) / mass;
     Ok(Blend {
-        v,
-        abv: wavg(|q| q.abv),
+        volume_l: v,
+        abv_pct: wavg(|q| q.abv_pct),
         ibu: wavg(|q| q.ibu),
         srm: wavg(|q| q.srm),
-        co2: wavg(|q| q.co2),
-        p,
+        co2_vol: wavg(|q| q.co2_vol),
+        wort_p: p,
     })
 }
 
 /// Volume of the second component for a target value (spec 08 §2.2); an error (T1.16, was
 /// `None`) unless the target lies strictly between `x1` and `x2`, with a 1e-9 margin at both
 /// ends (T1.12 C7), or an input is non-finite.
-pub fn blend_volume_for_target(v1: f64, x1: f64, x2: f64, xt: f64) -> Result<f64> {
-    for (field, x) in [("v1", v1), ("x1", x1), ("x2", x2), ("xt", xt)] {
+pub fn blend_volume_for_target(v1_l: f64, x1: f64, x2: f64, xt: f64) -> Result<f64> {
+    for (field, x) in [("v1_l", v1_l), ("x1", x1), ("x2", x2), ("xt", xt)] {
         ensure_finite(field, x)?;
     }
     if !(x1.min(x2) + 1e-9 < xt && xt < x1.max(x2) - 1e-9) {
@@ -268,18 +282,18 @@ pub fn blend_volume_for_target(v1: f64, x1: f64, x2: f64, xt: f64) -> Result<f64
             what: "blend target",
         });
     }
-    Ok(v1 * (x1 - xt) / (xt - x2))
+    Ok(v1_l * (x1 - xt) / (xt - x2))
 }
 
 // -------------------------------------------------------------- 3. Yeast reuse
 
 /// Cells needed in billions: `pitch rate (M cells/mL/°P) · V (L) · °P` (spec 08 §3.1).
 /// Errors on non-finite input.
-pub fn cells_needed_billion(pitch_m_ml_p: f64, v_l: f64, p: f64) -> Result<f64> {
+pub fn cells_needed_billion(pitch_m_ml_p: f64, v_l: f64, wort_p: f64) -> Result<f64> {
     ensure_finite("pitch_m_ml_p", pitch_m_ml_p)?;
     ensure_finite("v_l", v_l)?;
-    ensure_finite("p", p)?;
-    Ok(pitch_m_ml_p * v_l * p)
+    ensure_finite("wort_p", wort_p)?;
+    Ok(pitch_m_ml_p * v_l * wort_p)
 }
 
 /// Neubauer count in cells/mL: `counted / squares · 25 · 10⁴ · dilution` (spec 08 §3.2).
@@ -304,20 +318,20 @@ pub fn viability_stain(unstained: f64, stained: f64) -> Result<f64> {
 pub const SLURRY_DEFAULT_DENSITY: f64 = 1.0e9;
 
 /// Slurry volume in mL: `N · 10⁹ / (density · viability)` (spec 08 §3.3). A missing or zero
-/// measured density falls back to `default_density`. Errors on non-finite input and a zero
+/// measured density falls back to `default_density_cells_ml`. Errors on non-finite input and a zero
 /// density or viability.
 pub fn slurry_volume_ml(
     cells_billion: f64,
     density_cells_ml: Option<f64>,
     viability: f64,
-    default_density: f64,
+    default_density_cells_ml: f64,
 ) -> Result<f64> {
     ensure_finite("cells_billion", cells_billion)?;
     ensure_finite("viability", viability)?;
-    ensure_finite("default_density", default_density)?;
+    ensure_finite("default_density_cells_ml", default_density_cells_ml)?;
     let d = match density_cells_ml {
         Some(x) if x != 0.0 => x,
-        _ => default_density,
+        _ => default_density_cells_ml,
     };
     ensure_finite("density", d)?;
     ensure_nonzero("density * viability", d * viability)?;
@@ -328,24 +342,24 @@ pub fn slurry_volume_ml(
 
 /// Extract in the kettle, kg: `V · (0.96 if hot) · SG(°P) · °P / 100` (spec 08 §4.1).
 /// Errors on non-finite input.
-pub fn extract_kg(v_l: f64, p: f64, hot: bool) -> Result<f64> {
+pub fn extract_kg(v_l: f64, wort_p: f64, hot: bool) -> Result<f64> {
     ensure_finite("v_l", v_l)?;
-    ensure_finite("p", p)?;
+    ensure_finite("wort_p", wort_p)?;
     let v = v_l * if hot { CONTRACTION } else { 1.0 };
-    finite_result("extract_kg", v * plato_to_sg(p) * p / 100.0)
+    finite_result("extract_kg", v * to_sg(wort_p) * wort_p / 100.0)
 }
 
 /// Brewhouse yield (Sudhausausbeute) in %: `100 · extract / malt` (spec 08 §4.2).
 /// Errors on non-finite input and `malt_kg = 0`.
-pub fn brewhouse_yield(v_l: f64, p: f64, malt_kg: f64, hot: bool) -> Result<f64> {
+pub fn brewhouse_yield(v_l: f64, wort_p: f64, malt_kg: f64, hot: bool) -> Result<f64> {
     ensure_nonzero("malt_kg", malt_kg)?;
-    Ok(100.0 * extract_kg(v_l, p, hot)? / malt_kg)
+    Ok(100.0 * extract_kg(v_l, wort_p, hot)? / malt_kg)
 }
 
 /// Laboratory extract as-is, %: `(FGDB − coarse/fine diff) · (1 − moisture/100)` (spec 08 §4.2, §5.1).
 #[must_use]
-pub fn lab_extract_as_is(fgdb: f64, moisture: f64, fc_diff: f64) -> f64 {
-    (fgdb - fc_diff) * (1.0 - moisture / 100.0)
+pub fn lab_extract_as_is(fgdb_pct: f64, moisture_pct: f64, fc_diff_pct: f64) -> f64 {
+    (fgdb_pct - fc_diff_pct) * (1.0 - moisture_pct / 100.0)
 }
 
 /// Maximum first-wort °P at full conversion (spec 08 §4.3, Braukaiser). Errors on non-finite
@@ -384,11 +398,11 @@ pub fn conversion_eff(fw_measured_p: f64, fw_max_p: f64) -> Result<f64> {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MaltAnalysis {
     /// Fine grind, as-is extract %.
-    pub fgai: f64,
+    pub fgai_pct: f64,
     /// Coarse grind, dry basis %.
-    pub cgdb: f64,
+    pub cgdb_pct: f64,
     /// Coarse grind, as-is % (the recipe yield).
-    pub cgai_yield: f64,
+    pub cgai_yield_pct: f64,
     /// Potential SG with sucrose 46.21 PPG.
     pub potential: f64,
     /// Potential SG with the BeerSmith constant 0.046.
@@ -399,15 +413,15 @@ pub struct MaltAnalysis {
 
 /// Malt analysis → extract potential (spec 08 §5.1–5.2).
 #[must_use]
-pub fn malt_from_analysis(fgdb: f64, moisture: f64, fc_diff: f64) -> MaltAnalysis {
-    let fgai = fgdb * (1.0 - moisture / 100.0);
-    let cgdb = fgdb - fc_diff;
-    let cgai = cgdb * (1.0 - moisture / 100.0);
+pub fn malt_from_analysis(fgdb_pct: f64, moisture_pct: f64, fc_diff_pct: f64) -> MaltAnalysis {
+    let fgai = fgdb_pct * (1.0 - moisture_pct / 100.0);
+    let cgdb = fgdb_pct - fc_diff_pct;
+    let cgai = cgdb * (1.0 - moisture_pct / 100.0);
     let yield_pct = cgai;
     MaltAnalysis {
-        fgai,
-        cgdb,
-        cgai_yield: cgai,
+        fgai_pct: fgai,
+        cgdb_pct: cgdb,
+        cgai_yield_pct: cgai,
         potential: 1.0 + yield_pct * 0.04621 / 100.0,
         potential_bs: 1.0 + yield_pct * 0.046 / 100.0,
         ppg: yield_pct * 0.4621,
@@ -463,16 +477,32 @@ impl YeastWarning {
     }
 }
 
+/// Inputs of [`yeast_reuse_warnings`].
+#[derive(Debug, Clone, Copy)]
+pub struct YeastReuseInput {
+    /// Generation of the harvested yeast.
+    pub generation: f64,
+    /// Days since harvest.
+    pub harvest_age_days: f64,
+    /// Measured viability as a fraction (0-1), `None` when not measured.
+    pub viability: Option<f64>,
+    /// Maximum generation before a warning.
+    pub max_generation: f64,
+    /// True when the culture history differs from the recipe.
+    pub history_differs: bool,
+}
+
 /// Yeast reuse warnings in table order (spec §3.4). `viability` is a fraction (0–1) or
 /// `None` when not measured (no viability warning then).
 #[must_use]
-pub fn yeast_reuse_warnings(
-    generation: f64,
-    days_since_harvest: f64,
-    viability: Option<f64>,
-    max_generation: f64,
-    history_differs: bool,
-) -> Vec<YeastWarning> {
+pub fn yeast_reuse_warnings(p: &YeastReuseInput) -> Vec<YeastWarning> {
+    let YeastReuseInput {
+        generation,
+        harvest_age_days: days_since_harvest,
+        viability,
+        max_generation,
+        history_differs,
+    } = *p;
     let mut out = Vec::new();
     if generation > max_generation {
         out.push(YeastWarning::GenerationLimit);
@@ -497,7 +527,7 @@ pub const DIASTATIC_MIN_L: f64 = 35.0;
 #[derive(Debug, Clone, PartialEq)]
 pub struct DiastaticCheck {
     /// Weight-averaged diastatic power, °L.
-    pub average: f64,
+    pub average_lintner: f64,
     /// True when the grain bill may not convert itself (average below the threshold).
     pub low_diastatic_power: bool,
 }
@@ -507,17 +537,17 @@ pub struct DiastaticCheck {
 /// `(kg, diastatic power °L)` for every grain (0 when a grain has none). An empty or
 /// zero-weight bill gives average 0 and no warning.
 #[must_use]
-pub fn diastatic_check(grains: &[(f64, f64)], threshold: f64) -> DiastaticCheck {
+pub fn diastatic_check(grains: &[(f64, f64)], threshold_lintner: f64) -> DiastaticCheck {
     let w = py_sum(grains.iter().map(|g| g.0));
     if w <= 0.0 {
         return DiastaticCheck {
-            average: 0.0,
+            average_lintner: 0.0,
             low_diastatic_power: false,
         };
     }
     let average = py_sum(grains.iter().map(|g| g.0 * g.1)) / w;
     DiastaticCheck {
-        average,
-        low_diastatic_power: average < threshold - 1e-9,
+        average_lintner: average,
+        low_diastatic_power: average < threshold_lintner - 1e-9,
     }
 }

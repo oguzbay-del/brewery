@@ -145,40 +145,43 @@ fn parite_03() {
                 c.check_f(water::sulfate_chloride_ratio(c.f("so4"), c.f("cl")));
             }
             "color_range" => {
-                let (lo, hi) = water::color_range(c.f("ra"));
+                let r = water::color_range(c.f("ra"));
+                let (lo, hi) = (r.min_srm, r.max_srm);
                 c.check(&json!([lo, hi]));
             }
-            "boil_scale" => c.check_r(water::boil_scale(
-                c.f("vb"),
-                c.f("vp"),
-                c.f("cool_loss"),
-                c.f("trub_loss"),
-                c.f("top_up"),
-                c.b("has_boil_ing"),
-            )),
+            "boil_scale" => c.check_r(water::boil_scale(&water::BoilScaleInput {
+                vb_l: c.f("vb"),
+                vp_l: c.f("vp"),
+                cool_loss_l: c.f("cool_loss"),
+                trub_loss_l: c.f("trub_loss"),
+                top_up_l: c.f("top_up"),
+                has_boil_ing: c.b("has_boil_ing"),
+            })),
             "sulfate_chloride_label" => {
-                c.check(&json!(water::sulfate_chloride_label(c.f("ratio"))));
+                c.check(&json!(balance_label(water::sulfate_chloride_balance(
+                    c.f("ratio")
+                ))));
             }
             "mash_ra_slope_checked" => c.check_r(water::mash_ra_slope_checked(
                 model(c),
                 c.f("t"),
                 c.f("w_kg"),
             )),
-            "misc_acid_ra" => c.check_r(water::misc_acid_ra(
-                acid(c),
-                c.f("conc"),
-                c.f("vol_l"),
-                c.f("f"),
-                c.f("w_kg"),
-                c.f("t"),
-            )),
-            "acid_malt_ra" => c.check_r(water::acid_malt_ra(
-                c.f("pct"),
-                c.f("malt_kg"),
-                c.f("f"),
-                c.f("w_kg"),
-                c.f("t"),
-            )),
+            "misc_acid_ra" => c.check_r(water::misc_acid_ra(&water::MiscAcidRaInput {
+                acid: acid(c),
+                conc_pct: c.f("conc"),
+                vol_l: c.f("vol_l"),
+                f: c.f("f"),
+                w_kg: c.f("w_kg"),
+                t_l_per_kg: c.f("t"),
+            })),
+            "acid_malt_ra" => c.check_r(water::acid_malt_ra(&water::AcidMaltRaInput {
+                acid_pct: c.f("pct"),
+                malt_kg: c.f("malt_kg"),
+                f: c.f("f"),
+                w_kg: c.f("w_kg"),
+                t_l_per_kg: c.f("t"),
+            })),
             "sparge_acid_ml" => check_sparge(
                 c,
                 Ok(water::sparge_acid_ml(
@@ -190,17 +193,17 @@ fn parite_03() {
             ),
             "sparge_acid_amount" => check_sparge(
                 c,
-                water::sparge_acid_amount(
-                    model(c),
-                    c.b("ours"),
-                    c.f("hco3"),
-                    c.f("ph_w"),
-                    c.f("ph_t"),
-                    acid(c),
-                    c.f("conc"),
-                    c.f("mash_dph"),
-                    c.f("v_sp_l"),
-                ),
+                water::sparge_acid_amount(&water::SpargeAcidInput {
+                    model: model(c),
+                    ours: c.b("ours"),
+                    hco3_ppm: c.f("hco3"),
+                    ph_w: c.f("ph_w"),
+                    ph_t: c.f("ph_t"),
+                    acid: acid(c),
+                    conc_pct: c.f("conc"),
+                    mash_dph: c.f("mash_dph"),
+                    v_sp_l: c.f("v_sp_l"),
+                }),
             ),
             "base_profile" => c.check(&json!(water::base_profile(&waters(c.v("waters"))))),
             "water_ph" => {
@@ -221,22 +224,24 @@ fn parite_03() {
                 c.f("vol_l"),
                 c.b("ignore"),
             ))),
-            "agent_volume" => c.check_f(water::agent_volume(
-                engine::recipe::RecipeType::from_code(c.i("rtype")).expect("recipe type"),
-                u8::try_from(c.i("use")).expect("use code"),
-                c.f("mash_tot"),
-                c.f("sparge"),
-                c.f("boil"),
-                c.f("volume"),
-                c.f("final"),
-            )),
-            "total_water_ion" => c.check(&json!(water::total_water_ion(
-                &ions(c.v("mash")),
-                &ions(c.v("sparge")),
-                c.f("vm"),
-                c.f("vs"),
-                c.b("has_mash"),
-            ))),
+            "agent_volume" => c.check_f(water::agent_volume(&water::AgentVolumeInput {
+                rtype: engine::recipe::RecipeType::from_code(c.i("rtype")).expect("recipe type"),
+                use_: u8::try_from(c.i("use")).expect("use code"),
+                mash_tot_water_l: c.f("mash_tot"),
+                sparge_vol_l: c.f("sparge"),
+                boil_vol_l: c.f("boil"),
+                volume_l: c.f("volume"),
+                final_vol_l: c.f("final"),
+            })),
+            "total_water_ion" => {
+                c.check(&json!(water::total_water_ion(&water::TotalWaterIonInput {
+                    mash: &ions(c.v("mash")),
+                    sparge: &ions(c.v("sparge")),
+                    vm_l: c.f("vm"),
+                    vs_l: c.f("vs"),
+                    has_mash: c.b("has_mash")
+                })));
+            }
             "top_up_factor" => c.check_f(water::top_up_factor(
                 c.f("v_avail"),
                 c.f("vs"),
@@ -258,13 +263,13 @@ fn parite_03() {
                 c.f("s_boil"),
             )),
             "salt_grams" => {
-                let (m, sp) = water::salt_grams(
+                let g = water::salt_grams(
                     &eight(c.v("x")),
                     c.f("v_mash_gal"),
                     c.f("v_sp_gal"),
                     c.b("combine"),
                 );
-                c.check(&json!([m, sp]));
+                c.check(&json!([g.mash_g, g.sparge_g]));
             }
             "profile_mix" => c.check(&json!(water::profile_mix(
                 c.f("vb"),
@@ -275,7 +280,8 @@ fn parite_03() {
             "wp_grams" => c.check(&json!(water::wp_grams(&eight(c.v("x")), c.f("vb_gal")))),
             "grist_g" => c.check_f(water::grist_g(c.f("c"), c.b("ours"))),
             "grist_ph" => {
-                let (ph, s) = water::grist_ph(&bill(c), c.b("ours"));
+                let g = water::grist_ph(&bill(c), c.b("ours"));
+                let (ph, s) = (g.ph, g.s);
                 c.check(&json!([ph, s]));
             }
             "mash_ra_slope" => c.check_f(water::mash_ra_slope(model(c), c.f("t"))),
@@ -292,55 +298,56 @@ fn parite_03() {
                 c.f("ph_t"),
                 c.b("ours"),
             )),
-            "acid_per_liter" => c.check_r(water::acid_per_liter(
-                c.f("meq"),
-                acid(c),
-                c.f("conc"),
-                model(c),
-                c.f("ph_t"),
-                c.b("ours"),
-            )),
-            "mash_acid_amount" => c.check_r(water::mash_acid_amount(
-                c.f("est_ph"),
-                c.f("target_ph"),
-                model(c),
-                c.f("t"),
-                c.f("w_kg"),
-                acid(c),
-                c.f("conc"),
-                c.b("ours"),
-            )),
-            "lactic_acid_ra" => c.check_r(water::lactic_acid_ra(
-                c.f("conc"),
-                c.f("vol_l"),
-                c.f("f"),
-                c.f("w_kg"),
-                c.f("t"),
-            )),
+            "acid_per_liter" => c.check_r(water::acid_per_liter(&water::AcidPerLiterInput {
+                meq_l: c.f("meq"),
+                acid: acid(c),
+                conc_pct: c.f("conc"),
+                model: model(c),
+                ph_t: c.f("ph_t"),
+                ours: c.b("ours"),
+            })),
+            "mash_acid_amount" => c.check_r(water::mash_acid_amount(&water::MashAcidAmountInput {
+                est_ph: c.f("est_ph"),
+                target_ph: c.f("target_ph"),
+                model: model(c),
+                t_l_per_kg: c.f("t"),
+                w_kg: c.f("w_kg"),
+                acid: acid(c),
+                conc_pct: c.f("conc"),
+                ours: c.b("ours"),
+            })),
+            "lactic_acid_ra" => c.check_r(water::misc_acid_ra(&water::MiscAcidRaInput {
+                acid: water::Acid::Lactic,
+                conc_pct: c.f("conc"),
+                vol_l: c.f("vol_l"),
+                f: c.f("f"),
+                w_kg: c.f("w_kg"),
+                t_l_per_kg: c.f("t"),
+            })),
             "adjusted_ph" => {
-                let r = water::adjusted_ph(
-                    &bill(c),
-                    c.f("acid_malt_g"),
-                    c.f("pct"),
-                    model(c),
-                    c.f("ra"),
-                    c.f("t"),
-                    c.f("target_ph"),
-                    c.b("ours"),
-                );
-                c.check_res(r.map(|(ph, w)| json!([ph, w])));
+                let r = water::adjusted_ph(&water::AdjustedPhInput {
+                    bill: &bill(c),
+                    acid_malt_g: c.f("acid_malt_g"),
+                    acid_pct: c.f("pct"),
+                    model: model(c),
+                    ra_ppm: c.f("ra"),
+                    t_l_per_kg: c.f("t"),
+                    target_ph: c.f("target_ph"),
+                    ours: c.b("ours"),
+                });
+                c.check_res(r.map(|a| json!([a.ph, a.grain_kg])));
             }
             "acid_malt_amount" => {
-                let r = water::acid_malt_amount(
-                    &bill(c),
-                    c.f("pct"),
-                    model(c),
-                    c.f("ra"),
-                    c.f("t"),
-                    c.f("target_ph"),
-                    c.b("ours"),
-                );
-                c.check_res(r.map(|(g, ph)| json!([g, ph])));
+                let r = water::acid_malt_amount(&water::AcidMaltInput {
+                    bill: &bill(c),
+                    acid_pct: c.f("pct"),
+                    model: model(c),
+                    ra_ppm: c.f("ra"),
+                    t_l_per_kg: c.f("t"),
+                    target_ph: c.f("target_ph"),
+                    ours: c.b("ours"),
+                });
+                c.check_res(r.map(|a| json!([a.total_g, a.ph])));
             }
             "sparge_acid_mph" => check_sparge(
                 c,
@@ -370,37 +377,45 @@ fn parite_03() {
             ),
             "lactic_ml" => check_sparge(
                 c,
-                Ok(water::lactic_ml(c.f("mol_l"), c.f("v_l"), c.f("conc"))),
+                Ok(water::sparge_acid_ml(
+                    c.f("mol_l"),
+                    c.f("v_l"),
+                    c.f("conc"),
+                    water::Acid::Lactic,
+                )),
             ),
             "grist_ph_typed" => {
-                let (ph, sum) = water::grist_ph_typed(&typed_bill(c), c.b("ours"));
+                let g = water::grist_ph_typed(&typed_bill(c), c.b("ours"));
+                let (ph, sum) = (g.ph, g.s);
                 c.check(&json!([ph, sum]));
             }
             "to_grams" => c.check_r((|| {
                 water::to_grams(c.f("amount"), MiscUnit::from_code(c.i("units"))?)
             })()),
-            "adjusted_ph_liquid" => c.check_r(water::adjusted_ph_liquid(
-                c.f("grist_ph"),
-                c.f("ra"),
-                c.f("t"),
-                model(c),
-                c.f("w_kg"),
-                acid(c),
-                c.f("conc"),
-                c.f("vol_l"),
-                c.f("target_ph"),
-                c.b("ours"),
-            )),
+            "adjusted_ph_liquid" => {
+                c.check_r(water::adjusted_ph_liquid(&water::AdjustedPhLiquidInput {
+                    grist_ph: c.f("grist_ph"),
+                    ra_ppm: c.f("ra"),
+                    t_l_per_kg: c.f("t"),
+                    model: model(c),
+                    w_kg: c.f("w_kg"),
+                    acid: acid(c),
+                    conc_pct: c.f("conc"),
+                    vol_l: c.f("vol_l"),
+                    target_ph: c.f("target_ph"),
+                    ours: c.b("ours"),
+                }));
+            }
             "acid_malt_amount_checked" => {
-                let r = water::acid_malt_amount_checked(
-                    &bill(c),
-                    c.f("pct"),
-                    model(c),
-                    c.f("ra"),
-                    c.f("t"),
-                    c.f("target_ph"),
-                    c.b("ours"),
-                );
+                let r = water::acid_malt_amount(&water::AcidMaltInput {
+                    bill: &bill(c),
+                    acid_pct: c.f("pct"),
+                    model: model(c),
+                    ra_ppm: c.f("ra"),
+                    t_l_per_kg: c.f("t"),
+                    target_ph: c.f("target_ph"),
+                    ours: c.b("ours"),
+                });
                 c.check_res(r.map(|r| json!([r.total_g, r.ph, r.converged])));
             }
             "sparge_volume_l" => {
@@ -413,7 +428,7 @@ fn parite_03() {
             "warnings" => {
                 let w: Vec<&str> = water::warnings(model(c), &salts(c.v("salt_grams")))
                     .into_iter()
-                    .map(water::Warning::message)
+                    .map(warning_text)
                     .collect();
                 c.check(&json!(w));
             }
@@ -425,7 +440,8 @@ fn parite_03() {
                     .iter()
                     .map(nums)
                     .collect();
-                let (x, rnorm) = water::nnls(&cols, &nums(c.v("b")));
+                let n = water::nnls(&cols, &nums(c.v("b")));
+                let (x, rnorm) = (n.x, n.residual_norm);
                 c.check(&json!({"x": x, "rnorm": rnorm}));
             }
             "water_match" => {
@@ -438,7 +454,8 @@ fn parite_03() {
                     .iter()
                     .map(|k| Salt::from_key(k.as_str().expect("key")).expect("known salt"))
                     .collect();
-                let (x, rnorm) = water::water_match(&base, &ions(c.v("target")), s, &excluded);
+                let m = water::water_match(&base, &ions(c.v("target")), s, &excluded);
+                let (x, rnorm) = (m.grams_per_gal, m.residual_norm);
                 let profile = water::best_fit_profile(&base, s, &x);
                 assert_kkt(c, &base, s, &excluded, &x);
                 c.check(&json!({"profile": profile, "rnorm": rnorm}));
@@ -456,9 +473,56 @@ fn invalid_inputs_are_errors() {
     assert!(MashModel::from_code(2).is_err());
     assert!(MiscUnit::from_code(8).is_err());
     assert!(water::to_grams(f64::NAN, MiscUnit::G).is_err());
-    assert!(water::boil_scale(f64::INFINITY, 24.0, 1.0, 1.0, 0.0, true).is_err());
     assert!(
-        water::mash_acid_amount(5.8, 5.4, MashModel::Bw, 0.0, 5.0, Acid::Lactic, 88.0, false)
-            .is_err()
+        water::boil_scale(&water::BoilScaleInput {
+            vb_l: f64::INFINITY,
+            vp_l: 24.0,
+            cool_loss_l: 1.0,
+            trub_loss_l: 1.0,
+            top_up_l: 0.0,
+            has_boil_ing: true
+        })
+        .is_err()
     );
+    assert!(
+        water::mash_acid_amount(&water::MashAcidAmountInput {
+            est_ph: 5.8,
+            target_ph: 5.4,
+            model: MashModel::Bw,
+            t_l_per_kg: 0.0,
+            w_kg: 5.0,
+            acid: Acid::Lactic,
+            conc_pct: 88.0,
+            ours: false
+        })
+        .is_err()
+    );
+}
+
+/// Display text of the reference (not part of the engine, ADR-0004 madde 7).
+fn warning_text(w: water::Warning) -> &'static str {
+    match w {
+        water::Warning::BwModelUnverified => {
+            "BW modeli doğrulanacak: MPH'ye göre yaklaşık yarı asit önerir (ölçülmüş mash pH ile kalibre edilene kadar)"
+        }
+        water::Warning::ChalkSolubility => {
+            "çözünürlük düşük, asitli mash olmadan etkisi abartılı olabilir (tebeşir)"
+        }
+    }
+}
+
+/// Display text of the reference (not part of the engine, ADR-0004 madde 7).
+fn balance_label(b: water::SulfateChlorideBalance) -> &'static str {
+    use water::SulfateChlorideBalance as B;
+    match b {
+        B::OutOfRange => "Out of Range",
+        B::ExtremelyMalty => "Extremely Malty",
+        B::VeryMalty => "Very Malty",
+        B::Malty => "Malty",
+        B::Balanced => "Balanced",
+        B::SlightlyBitter => "Slightly Bitter",
+        B::Bitter => "Bitter",
+        B::VeryBitter => "Very Bitter",
+        B::ExtremelyBitter => "Extremely Bitter",
+    }
 }

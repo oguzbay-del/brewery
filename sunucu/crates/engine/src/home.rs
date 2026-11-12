@@ -68,9 +68,18 @@ pub struct DecayFit {
     /// Scale `A` (SG).
     pub a: f64,
     /// Rate `k` (1/hour).
-    pub k: f64,
+    pub k_per_h: f64,
     /// Residual sum of squares of the fit (SG²).
     pub rss: f64,
+}
+
+/// Result of [`fit_decay`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct DecayFitResult {
+    /// The best fit.
+    pub fit: DecayFit,
+    /// Table `(FG∞, RSS)` of all valid grid points.
+    pub table: Vec<(f64, f64)>,
 }
 
 /// Grid-search fit of `SG(t) = FG∞ + A·e^(−k·t)` (§1.3).
@@ -85,7 +94,7 @@ pub fn fit_decay(
     fg_lo: f64,
     fg_hi: f64,
     steps: usize,
-) -> Option<(DecayFit, Vec<(f64, f64)>)> {
+) -> Option<DecayFitResult> {
     let ts: Vec<f64> = pts.iter().map(|p| p.0).collect();
     let mut best: Option<DecayFit> = None;
     let mut table = Vec::new();
@@ -115,12 +124,12 @@ pub fn fit_decay(
             best = Some(DecayFit {
                 fg_inf: f,
                 a: amp,
-                k,
+                k_per_h: k,
                 rss,
             });
         }
     }
-    best.map(|b| (b, table))
+    best.map(|fit| DecayFitResult { fit, table })
 }
 
 /// Forecast values (§1.5), unrounded (T1.12 C9): rounding is a presentation concern.
@@ -129,13 +138,13 @@ pub struct ForecastResult {
     /// Final gravity `FG∞` (SG).
     pub fg: f64,
     /// Approximate 95 % profile interval `(low, high)` of `FG∞` (SG).
-    pub range: (f64, f64),
+    pub range_sg: (f64, f64),
     /// Rate `k` (1/hour).
-    pub k_per_hour: f64,
+    pub k_per_h: f64,
     /// Finish time since batch start (hours): when `SG − FG∞ ≤ eps`.
-    pub finish_hour: f64,
+    pub finish_h: f64,
     /// Remaining time from the last point (hours).
-    pub remaining_hours: f64,
+    pub remaining_h: f64,
     /// `|u(FG∞) − u(FG_recipe)| > 1000` ([`fg_warning`]): finishing differently than expected.
     pub warning: bool,
 }
@@ -169,19 +178,37 @@ pub fn fg_warning(fg_inf: f64, fg_recipe: f64) -> Result<bool> {
     Ok((gravity_units_checked(fg_inf)? - gravity_units_checked(fg_recipe)?).abs() > 1000)
 }
 
+/// Inputs of [`forecast`].
+#[derive(Debug, Clone, Copy)]
+pub struct ForecastInput<'a> {
+    /// Readings `(t_hours, SG)`.
+    pub points: &'a [(f64, f64)],
+    /// Original gravity, SG.
+    pub og: f64,
+    /// Recipe final gravity, SG.
+    pub fg_recipe: f64,
+    /// SG distance to the asymptote that counts as finished.
+    pub eps_sg: f64,
+    /// Minimum number of hourly points.
+    pub min_points: usize,
+    /// Minimum share of the expected drop already done.
+    pub min_drop: f64,
+}
+
 /// Fermentation forecast from raw `(t_hours, SG)` readings (§1.4–1.5).
 ///
 /// `og`, `fg_recipe` in SG; `eps` is the SG distance to `FG∞` that counts as finished
 /// (spec 0.0005); `min_n` minimum hourly points (spec 12, must be ≥ 3); `min_drop` minimum
 /// share of the expected drop already done (spec 0.30). Errors on non-finite input.
-pub fn forecast(
-    points: &[(f64, f64)],
-    og: f64,
-    fg_recipe: f64,
-    eps: f64,
-    min_n: usize,
-    min_drop: f64,
-) -> Result<Forecast> {
+pub fn forecast(p: &ForecastInput<'_>) -> Result<Forecast> {
+    let ForecastInput {
+        points,
+        og,
+        fg_recipe,
+        eps_sg: eps,
+        min_points: min_n,
+        min_drop,
+    } = *p;
     ensure_finite("og", og)?;
     ensure_finite("fg_recipe", fg_recipe)?;
     ensure_positive("eps", eps)?;
@@ -214,7 +241,7 @@ fn forecast_checked(
         return Forecast::InsufficientData;
     }
     let (fg_lo, fg_hi) = (fg_recipe - 0.015, sg_now - 0.0002);
-    let Some((fit, table)) = fit_decay(&pts, fg_lo, fg_hi, 400) else {
+    let Some(DecayFitResult { fit, table }) = fit_decay(&pts, fg_lo, fg_hi, 400) else {
         return Forecast::InsufficientData;
     };
     #[allow(clippy::cast_precision_loss)]
@@ -224,13 +251,13 @@ fn forecast_checked(
     let (lo, hi) = ok.fold((f64::INFINITY, f64::NEG_INFINITY), |(lo, hi), x| {
         (lo.min(x), hi.max(x))
     });
-    let t_end = (fit.a / eps).ln() / fit.k;
+    let t_end = (fit.a / eps).ln() / fit.k_per_h;
     Forecast::Ready(ForecastResult {
         fg: fit.fg_inf,
-        range: (lo, hi),
-        k_per_hour: fit.k,
-        finish_hour: t_end,
-        remaining_hours: t_end - t_last,
+        range_sg: (lo, hi),
+        k_per_h: fit.k_per_h,
+        finish_h: t_end,
+        remaining_h: t_end - t_last,
         warning: fg_warning(fit.fg_inf, fg_recipe).unwrap_or(false),
     })
 }
@@ -319,11 +346,11 @@ pub struct IspindelCal {
     /// Coefficient of determination R².
     pub r2: f64,
     /// Largest absolute residual (SG); above 0.002 the UI warns "check the points".
-    pub max_residual: f64,
+    pub max_residual_sg: f64,
     /// Smallest calibration angle, degrees.
-    pub angle_min: f64,
+    pub angle_min_deg: f64,
     /// Largest calibration angle, degrees.
-    pub angle_max: f64,
+    pub angle_max_deg: f64,
     /// Warnings found at calibration time.
     pub warnings: Vec<CalibrationWarning>,
 }
@@ -371,38 +398,56 @@ pub fn ispindel_cal(points: &[(f64, f64)], deg: usize) -> Result<IspindelCal> {
     Ok(IspindelCal {
         coefficients: co,
         r2,
-        max_residual,
-        angle_min,
-        angle_max,
+        max_residual_sg: max_residual,
+        angle_min_deg: angle_min,
+        angle_max_deg: angle_max,
         warnings,
     })
 }
 
-/// SG at `angle` from calibration coefficients, with an extrapolation warning when the
+/// SG and warnings of [`ispindel_eval`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct IspindelReading {
+    /// SG at the angle.
+    pub sg: f64,
+    /// Extrapolation warnings.
+    pub warnings: Vec<CalibrationWarning>,
+}
+
+/// SG at `angle_deg` from calibration coefficients, with an extrapolation warning when the
 /// angle is outside `[angle_min − 1e-9, angle_max + 1e-9]` (T1.12 C4).
 #[must_use]
 pub fn ispindel_eval(
     co: &[f64],
-    angle_min: f64,
-    angle_max: f64,
-    angle: f64,
-) -> (f64, Vec<CalibrationWarning>) {
-    let outside = angle < angle_min - 1e-9 || angle > angle_max + 1e-9;
-    (
-        peval(co, angle),
-        if outside {
+    angle_min_deg: f64,
+    angle_max_deg: f64,
+    angle_deg: f64,
+) -> IspindelReading {
+    let outside = angle_deg < angle_min_deg - 1e-9 || angle_deg > angle_max_deg + 1e-9;
+    IspindelReading {
+        sg: peval(co, angle_deg),
+        warnings: if outside {
             vec![CalibrationWarning::AngleOutsideRange]
         } else {
             Vec::new()
         },
-    )
+    }
+}
+
+/// Linear tilt correction of [`tilt_cal`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TiltCorrection {
+    /// Slope of `SG_flat = slope·SG_tilt + offset`.
+    pub slope: f64,
+    /// Offset, SG.
+    pub offset_sg: f64,
 }
 
 /// Tilt correction `SG_flat = slope·SG_tilt + offset` from `(SG_tilt, SG_reference)`
 /// points (§2.2). One point gives a constant offset (slope 1); two or more a linear fit.
 /// Returns `(slope, offset)`. Errors (T1.16) on empty input, non-finite points, or two or more
 /// points with the same tilt reading (the fit would divide by zero).
-pub fn tilt_cal(points: &[(f64, f64)]) -> Result<(f64, f64)> {
+pub fn tilt_cal(points: &[(f64, f64)]) -> Result<TiltCorrection> {
     if points.is_empty() {
         return Err(Error::invalid("points", "at least one point is required"));
     }
@@ -411,13 +456,19 @@ pub fn tilt_cal(points: &[(f64, f64)]) -> Result<(f64, f64)> {
         ensure_finite("reference", y)?;
     }
     if points.len() == 1 {
-        return Ok((1.0, points[0].1 - points[0].0));
+        return Ok(TiltCorrection {
+            slope: 1.0,
+            offset_sg: points[0].1 - points[0].0,
+        });
     }
     let xs: Vec<f64> = points.iter().map(|p| p.0).collect();
     let ys: Vec<f64> = points.iter().map(|p| p.1).collect();
     let (a, b) = linfit(&xs, &ys);
     finite_result("tilt_cal slope", b)?;
-    Ok((b, a))
+    Ok(TiltCorrection {
+        slope: b,
+        offset_sg: a,
+    })
 }
 
 // ------------------------------------------------------------------ §3 heating and cooling
@@ -431,20 +482,40 @@ pub const C_STEEL: f64 = 0.50;
 /// Heat of vaporisation of water, kJ/kg (§3.2).
 pub const H_VAP: f64 = 2257.0;
 
+/// Inputs of [`heat_time_min`].
+#[derive(Debug, Clone, Copy)]
+pub struct HeatTimeInput {
+    /// Water volume, L.
+    pub water_l: f64,
+    /// Grain mass, kg.
+    pub grain_kg: f64,
+    /// Kettle mass, kg.
+    pub kettle_kg: f64,
+    /// Start temperature, °C.
+    pub t0_c: f64,
+    /// Target temperature, °C.
+    pub t1_c: f64,
+    /// Heating power, kW.
+    pub power_kw: f64,
+    /// Efficiency, ratio 0-1.
+    pub eff: f64,
+}
+
 /// Heating time in minutes (§3.1): `C·(T1 − T0) / (P·η) / 60` with
 /// `C = V·c_water + m_grain·c_grain + m_kettle·c_steel` (kJ/K).
 ///
 /// `water_l` L, `grain_kg`/`kettle_kg` kg, `t0`/`t1` °C, `power_kw` kW, `eff` 0–1. Errors on
 /// non-finite input and when `power_kw` or `eff` is not positive.
-pub fn heat_time_min(
-    water_l: f64,
-    grain_kg: f64,
-    kettle_kg: f64,
-    t0: f64,
-    t1: f64,
-    power_kw: f64,
-    eff: f64,
-) -> Result<f64> {
+pub fn heat_time_min(p: &HeatTimeInput) -> Result<f64> {
+    let HeatTimeInput {
+        water_l,
+        grain_kg,
+        kettle_kg,
+        t0_c: t0,
+        t1_c: t1,
+        power_kw,
+        eff,
+    } = *p;
     for (field, x) in [
         ("water_l", water_l),
         ("grain_kg", grain_kg),
@@ -469,11 +540,11 @@ pub fn boiloff_l_per_h(power_kw: f64, eff_boil: f64) -> f64 {
 /// Time constant τ (minutes) of an immersion chiller from a past batch (§3.3):
 /// `minutes / ln((T0 − Tc)/(T − Tc))`. Temperatures in °C. Errors unless the cooling ratio is
 /// finite, positive and not 1 (the target must lie between start and tap-water temperature).
-pub fn tau_from_batch(t0: f64, tc: f64, t: f64, minutes: f64) -> Result<f64> {
+pub fn tau_from_batch(t0_c: f64, tap_c: f64, target_c: f64, minutes: f64) -> Result<f64> {
     ensure_finite("minutes", minutes)?;
-    let ln = cooling_ln(t0, tc, t)?;
+    let ln = cooling_ln(t0_c, tap_c, target_c)?;
     if ln == 0.0 {
-        return Err(Error::invalid("t", "no temperature drop"));
+        return Err(Error::invalid("target_c", "no temperature drop"));
     }
     finite_result("tau_from_batch", minutes / ln)
 }
@@ -493,18 +564,36 @@ fn cooling_ln(t0: f64, tc: f64, t: f64) -> Result<f64> {
     Ok(ratio.ln())
 }
 
+/// Inputs of [`cool_time_immersion`].
+#[derive(Debug, Clone, Copy)]
+pub struct CoolImmersionInput {
+    /// Start temperature, °C.
+    pub t0_c: f64,
+    /// Tap-water temperature, °C.
+    pub tap_c: f64,
+    /// Target temperature, °C.
+    pub target_c: f64,
+    /// Cooling time constant for the reference volume, minutes.
+    pub tau_min: f64,
+    /// Volume, L.
+    pub vol_l: f64,
+    /// Reference volume of the time constant, L.
+    pub vol_ref_l: f64,
+}
+
 /// Immersion chiller cooling time in minutes (§3.3). τ scales linearly with volume:
 /// `τ_V = τ·V/V_ref`; `t = τ_V·ln((T0 − Tc)/(T − Tc))`. Volumes in L, temperatures °C. Errors
 /// (T1.16, was NaN) when the target is not between start and tap-water temperature, on
 /// non-finite input and `vol_ref_l <= 0`.
-pub fn cool_time_immersion(
-    t0: f64,
-    tc: f64,
-    t: f64,
-    tau: f64,
-    vol_l: f64,
-    vol_ref_l: f64,
-) -> Result<f64> {
+pub fn cool_time_immersion(p: &CoolImmersionInput) -> Result<f64> {
+    let CoolImmersionInput {
+        t0_c: t0,
+        tap_c: tc,
+        target_c: t,
+        tau_min: tau,
+        vol_l,
+        vol_ref_l,
+    } = *p;
     ensure_finite("tau", tau)?;
     ensure_finite("vol_l", vol_l)?;
     ensure_positive("vol_ref_l", vol_ref_l)?;
@@ -551,31 +640,6 @@ pub enum ScaleMode {
     Ratio,
 }
 
-/// First-estimate scaling of ingredient amounts (§4.1–4.2); returns scaled amounts in
-/// input order. `v0`/`v1` are fermenter volumes (L), `eff0`/`eff1` mash efficiencies. Errors on
-/// non-finite input, `v0 <= 0`, and `eff1 <= 0` in target mode.
-pub fn scale_recipe(
-    ing: &[(f64, IngredientKind)],
-    v0: f64,
-    v1: f64,
-    eff0: f64,
-    eff1: f64,
-    mode: ScaleMode,
-) -> Result<Vec<f64>> {
-    check_scale_inputs(v0, v1, eff0, eff1, mode)?;
-    let rv = v1 / v0;
-    ing.iter()
-        .map(|&(q, kind)| {
-            ensure_finite("amount", q)?;
-            let f = match (mode, kind) {
-                (ScaleMode::Target, IngredientKind::Mash) => rv * eff0 / eff1,
-                _ => rv,
-            };
-            Ok(q * f)
-        })
-        .collect()
-}
-
 fn check_scale_inputs(v0: f64, v1: f64, eff0: f64, eff1: f64, mode: ScaleMode) -> Result<()> {
     ensure_positive("v0", v0)?;
     ensure_finite("v1", v1)?;
@@ -596,25 +660,45 @@ pub fn round_to(q: f64, step: f64) -> Result<f64> {
     Ok((q / step + 0.5 + 1e-9).floor() * step)
 }
 
-/// First-estimate factor of one ingredient (spec §4.1–4.2), covering the rules that
-/// [`scale_recipe`] leaves out.
+/// Inputs of [`scale_factor`].
+#[derive(Debug, Clone, Copy)]
+pub struct ScaleFactorInput {
+    /// Ingredient kind.
+    pub kind: IngredientKind,
+    /// Source fermenter volume, L.
+    pub v0_l: f64,
+    /// Target fermenter volume, L.
+    pub v1_l: f64,
+    /// Source mash efficiency, ratio.
+    pub eff0: f64,
+    /// Target mash efficiency, ratio.
+    pub eff1: f64,
+    /// Scaling mode.
+    pub mode: ScaleMode,
+    /// Misc item marked "per batch".
+    pub per_batch: bool,
+    /// Water-volume ratio for salts; `None` falls back to the volume ratio.
+    pub water_ratio: Option<f64>,
+}
+
+/// First-estimate factor of one ingredient (spec §4.1–4.2).
 ///
 /// [`ScaleMode::Ratio`]: everything by `r = v1 / v0` (`per_batch` and `water_ratio` are
 /// ignored). [`ScaleMode::Target`]: mash grain `r·η0/η1`; salt by the water-volume ratio
 /// `water_ratio` (falls back to `r`); misc marked "per batch" stays 1; everything else `r`.
 /// Acid, yeast packs ([`yeast_packs`]) and the mash profile are recomputed with 03/04/05, not
-/// scaled by a factor. Errors as [`scale_recipe`].
-#[allow(clippy::too_many_arguments)]
-pub fn scale_factor(
-    kind: IngredientKind,
-    v0: f64,
-    v1: f64,
-    eff0: f64,
-    eff1: f64,
-    mode: ScaleMode,
-    per_batch: bool,
-    water_ratio: Option<f64>,
-) -> Result<f64> {
+/// scaled by a factor. Errors on non-finite input, `v0 <= 0`, and `eff1 <= 0` in target mode.
+pub fn scale_factor(p: &ScaleFactorInput) -> Result<f64> {
+    let ScaleFactorInput {
+        kind,
+        v0_l: v0,
+        v1_l: v1,
+        eff0,
+        eff1,
+        mode,
+        per_batch,
+        water_ratio,
+    } = *p;
     check_scale_inputs(v0, v1, eff0, eff1, mode)?;
     let rv = v1 / v0;
     if mode == ScaleMode::Ratio {
@@ -665,9 +749,9 @@ pub struct ScalingRecord {
     /// Mode.
     pub mode: ScaleMode,
     /// Source fermenter volume, L.
-    pub v0: f64,
+    pub v0_l: f64,
     /// Target fermenter volume, L.
-    pub v1: f64,
+    pub v1_l: f64,
     /// Source mash efficiency.
     pub eff0: f64,
     /// Target mash efficiency.
@@ -680,16 +764,32 @@ pub struct ScalingRecord {
     pub recipe_changed: bool,
 }
 
+/// Inputs of [`scaling_record`].
+#[derive(Debug, Clone, Copy)]
+pub struct ScalingRecordInput {
+    /// Where the scaling is applied.
+    pub scope: ScaleScope,
+    /// Scaling mode.
+    pub mode: ScaleMode,
+    /// Source and target fermenter volumes, L.
+    pub volumes_l: (f64, f64),
+    /// Source and target mash efficiencies, ratio.
+    pub efficiencies: (f64, f64),
+    /// Recipe version before the scaling.
+    pub recipe_version: u32,
+}
+
 /// Builds the scaling record (spec §4.4): a recipe scaling bumps the recipe version; a batch
 /// scaling leaves recipe and version untouched. Errors on non-finite input, `v0 <= 0` and a
 /// recipe version that would overflow.
-pub fn scaling_record(
-    scope: ScaleScope,
-    mode: ScaleMode,
-    volumes: (f64, f64),
-    efficiencies: (f64, f64),
-    recipe_version: u32,
-) -> Result<ScalingRecord> {
+pub fn scaling_record(p: &ScalingRecordInput) -> Result<ScalingRecord> {
+    let ScalingRecordInput {
+        scope,
+        mode,
+        volumes_l: volumes,
+        efficiencies,
+        recipe_version,
+    } = *p;
     ensure_positive("v0", volumes.0)?;
     ensure_finite("v1", volumes.1)?;
     ensure_finite("eff0", efficiencies.0)?;
@@ -701,8 +801,8 @@ pub fn scaling_record(
     Ok(ScalingRecord {
         scope,
         mode,
-        v0: volumes.0,
-        v1: volumes.1,
+        v0_l: volumes.0,
+        v1_l: volumes.1,
         eff0: efficiencies.0,
         eff1: efficiencies.1,
         ratio: volumes.1 / volumes.0,
@@ -738,23 +838,23 @@ pub const EQW_CACO3: f64 = 50.04;
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Ions {
     /// Calcium.
-    pub ca: f64,
+    pub ca_ppm: f64,
     /// Magnesium.
-    pub mg: f64,
+    pub mg_ppm: f64,
     /// Sodium.
-    pub na: f64,
+    pub na_ppm: f64,
     /// Potassium.
-    pub k: f64,
+    pub k_ppm: f64,
     /// Sulfate.
-    pub so4: f64,
+    pub so4_ppm: f64,
     /// Chloride.
-    pub cl: f64,
+    pub cl_ppm: f64,
     /// Bicarbonate.
-    pub hco3: f64,
+    pub hco3_ppm: f64,
     /// Carbonate.
-    pub co3: f64,
+    pub co3_ppm: f64,
     /// Nitrate.
-    pub no3: f64,
+    pub no3_ppm: f64,
 }
 
 /// Ion balance class (§5.2).
@@ -784,9 +884,9 @@ impl BalanceClass {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct IonBalance {
     /// Σ cations, mEq/L.
-    pub cations: f64,
+    pub cations_meq_l: f64,
     /// Σ anions, mEq/L.
-    pub anions: f64,
+    pub anions_meq_l: f64,
     /// `100·(Σcat − Σan)/(Σcat + Σan)`, percent.
     pub balance_pct: f64,
     /// Class from `|balance|`.
@@ -797,8 +897,12 @@ pub struct IonBalance {
 /// error type: T1.16).
 #[must_use]
 pub fn ion_balance(w: &Ions) -> IonBalance {
-    let c = w.ca / EQW_CA + w.mg / EQW_MG + w.na / EQW_NA + w.k / EQW_K;
-    let a = w.so4 / EQW_SO4 + w.cl / EQW_CL + w.hco3 / EQW_HCO3 + w.co3 / EQW_CO3 + w.no3 / EQW_NO3;
+    let c = w.ca_ppm / EQW_CA + w.mg_ppm / EQW_MG + w.na_ppm / EQW_NA + w.k_ppm / EQW_K;
+    let a = w.so4_ppm / EQW_SO4
+        + w.cl_ppm / EQW_CL
+        + w.hco3_ppm / EQW_HCO3
+        + w.co3_ppm / EQW_CO3
+        + w.no3_ppm / EQW_NO3;
     let b = 100.0 * (c - a) / (c + a);
     let class = if b.abs() <= 5.0 + 1e-9 {
         BalanceClass::Good
@@ -808,8 +912,8 @@ pub fn ion_balance(w: &Ions) -> IonBalance {
         BalanceClass::Check
     };
     IonBalance {
-        cations: c,
-        anions: a,
+        cations_meq_l: c,
+        anions_meq_l: a,
         balance_pct: b,
         class,
     }
@@ -817,14 +921,14 @@ pub fn ion_balance(w: &Ions) -> IonBalance {
 
 /// Total hardness as mg/L `CaCO₃` (§5.3): `Ca·50.04/20.039 + Mg·50.04/12.153`.
 #[must_use]
-pub fn hardness_caco3(ca: f64, mg: f64) -> f64 {
-    ca * EQW_CACO3 / EQW_CA + mg * EQW_CACO3 / EQW_MG
+pub fn hardness_caco3(ca_ppm: f64, mg_ppm: f64) -> f64 {
+    ca_ppm * EQW_CACO3 / EQW_CA + mg_ppm * EQW_CACO3 / EQW_MG
 }
 
 /// Alkalinity as mg/L `CaCO₃` from HCO₃ mg/L (§5.3, valid for pH < 8.3).
 #[must_use]
-pub fn alk_caco3_from_hco3(hco3: f64) -> f64 {
-    hco3 * EQW_CACO3 / EQW_HCO3
+pub fn alk_caco3_from_hco3(hco3_ppm: f64) -> f64 {
+    hco3_ppm * EQW_CACO3 / EQW_HCO3
 }
 
 /// A `CaCO₃` amount in other hardness units (§5.3).
@@ -840,11 +944,11 @@ pub struct HardnessUnits {
 
 /// Converts mg/L `CaCO₃` to °dH, °fH and mEq/L (§5.3).
 #[must_use]
-pub fn caco3_to(x: f64) -> HardnessUnits {
+pub fn caco3_to(caco3_ppm: f64) -> HardnessUnits {
     HardnessUnits {
-        dh: x / 17.848,
-        fh: x / 10.009,
-        meq_per_l: x / EQW_CACO3,
+        dh: caco3_ppm / 17.848,
+        fh: caco3_ppm / 10.009,
+        meq_per_l: caco3_ppm / EQW_CACO3,
     }
 }
 
@@ -888,14 +992,26 @@ pub const FRUIT_DENSITY: f64 = 1.05;
 /// Default fruit sediment share of the added volume (§6.3) [to be verified].
 pub const FRUIT_SEDIMENT: f64 = 0.20;
 
-/// Fruit volumes (§6.3): `(added volume L, volume left in sediment L)`.
+/// Fruit volumes of [`fruit`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FruitVolumes {
+    /// Added volume, L.
+    pub added_l: f64,
+    /// Volume left in the sediment, L.
+    pub sediment_l: f64,
+}
+
+/// Fruit volumes (§6.3): added volume and volume left in sediment, both in L.
 /// Errors on non-finite input and `density <= 0`.
-pub fn fruit(kg: f64, density: f64, sediment: f64) -> Result<(f64, f64)> {
+pub fn fruit(kg: f64, density_kg_per_l: f64, sediment: f64) -> Result<FruitVolumes> {
     ensure_finite("kg", kg)?;
-    ensure_positive("density", density)?;
+    ensure_positive("density_kg_per_l", density_kg_per_l)?;
     ensure_finite("sediment", sediment)?;
-    let v = kg / density;
-    Ok((v, v * sediment))
+    let v = kg / density_kg_per_l;
+    Ok(FruitVolumes {
+        added_l: v,
+        sediment_l: v * sediment,
+    })
 }
 
 #[cfg(test)]
@@ -904,16 +1020,57 @@ mod tests {
 
     #[test]
     fn heat_time_spec_vector() {
-        let t = heat_time_min(15.0, 0.0, 8.0, 15.0, 72.0, 2.5, 0.90).unwrap();
+        let t = heat_time_min(&HeatTimeInput {
+            water_l: 15.0,
+            grain_kg: 0.0,
+            kettle_kg: 8.0,
+            t0_c: 15.0,
+            t1_c: 72.0,
+            power_kw: 2.5,
+            eff: 0.90,
+        })
+        .unwrap();
         assert!((t - 28.2).abs() < 0.05);
     }
 
     #[test]
     fn degenerate_inputs_are_errors() {
-        assert!(heat_time_min(15.0, 0.0, 8.0, 15.0, 72.0, 0.0, 0.90).is_err());
-        assert!(heat_time_min(f64::NAN, 0.0, 8.0, 15.0, 72.0, 2.5, 0.90).is_err());
+        assert!(
+            heat_time_min(&HeatTimeInput {
+                water_l: 15.0,
+                grain_kg: 0.0,
+                kettle_kg: 8.0,
+                t0_c: 15.0,
+                t1_c: 72.0,
+                power_kw: 0.0,
+                eff: 0.90
+            })
+            .is_err()
+        );
+        assert!(
+            heat_time_min(&HeatTimeInput {
+                water_l: f64::NAN,
+                grain_kg: 0.0,
+                kettle_kg: 8.0,
+                t0_c: 15.0,
+                t1_c: 72.0,
+                power_kw: 2.5,
+                eff: 0.90
+            })
+            .is_err()
+        );
         // target at or below tap-water temperature
-        assert!(cool_time_immersion(100.0, 20.0, 15.0, 25.0, 20.0, 20.0).is_err());
+        assert!(
+            cool_time_immersion(&CoolImmersionInput {
+                t0_c: 100.0,
+                tap_c: 20.0,
+                target_c: 15.0,
+                tau_min: 25.0,
+                vol_l: 20.0,
+                vol_ref_l: 20.0
+            })
+            .is_err()
+        );
         assert!(tau_from_batch(100.0, 15.0, 100.0, 25.0).is_err());
         assert!(round_to(1.0, 0.0).is_err());
         assert!(yeast_packs(100.0, 0.0).is_err());

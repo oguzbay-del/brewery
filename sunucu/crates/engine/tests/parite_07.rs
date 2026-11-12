@@ -76,11 +76,11 @@ fn parite_07() {
             }
             "fit_decay" => {
                 let steps = usize::try_from(c.i("steps")).unwrap();
-                let (fit, table) =
+                let home::DecayFitResult { fit, table } =
                     home::fit_decay(&pairs(c.v("pts")), c.f("fg_lo"), c.f("fg_hi"), steps)
                         .expect("fit");
                 c.check(&json!({
-                    "f": fit.fg_inf, "a": fit.a, "k": fit.k, "rss": fit.rss,
+                    "f": fit.fg_inf, "a": fit.a, "k": fit.k_per_h, "rss": fit.rss,
                     "n_table": table.len(),
                     "table_ilk": [table[0].0, table[0].1],
                     "table_son": [table[table.len() - 1].0, table[table.len() - 1].1],
@@ -93,19 +93,19 @@ fn parite_07() {
                     .get("min_n")
                     .map_or(12, |v| usize::try_from(v.as_i64().unwrap()).unwrap());
                 let min_drop = g.get("min_drop").map_or(0.30, num);
-                let out = home::forecast(
-                    &pairs(c.v("points")),
-                    c.f("og"),
-                    c.f("fg_recipe"),
-                    eps,
-                    min_n,
+                let out = home::forecast(&home::ForecastInput {
+                    points: &pairs(c.v("points")),
+                    og: c.f("og"),
+                    fg_recipe: c.f("fg_recipe"),
+                    eps_sg: eps,
+                    min_points: min_n,
                     min_drop,
-                );
+                });
                 let v = match out.expect("finite input") {
                     Forecast::InsufficientData => json!({"durum": "veri yetersiz"}),
                     Forecast::Ready(r) => json!({
-                        "FG": r.fg, "aralik": [r.range.0, r.range.1], "k_saat": r.k_per_hour,
-                        "bitis_saat": r.finish_hour, "kalan_saat": r.remaining_hours,
+                        "FG": r.fg, "aralik": [r.range_sg.0, r.range_sg.1], "k_saat": r.k_per_h,
+                        "bitis_saat": r.finish_h, "kalan_saat": r.remaining_h,
                         "uyari": r.warning,
                     }),
                 };
@@ -119,7 +119,7 @@ fn parite_07() {
                 c.check_res(home::fg_warning(c.f("fg_inf"), c.f("fg_recipe")).map(|b| json!(b)));
             }
             "ispindel_eval" => {
-                let (sg, w) = home::ispindel_eval(
+                let home::IspindelReading { sg, warnings: w } = home::ispindel_eval(
                     &floats(c.v("co")),
                     c.f("a_min"),
                     c.f("a_max"),
@@ -140,7 +140,7 @@ fn parite_07() {
                     Ok(r) => {
                         let codes: Vec<&str> = r.warnings.iter().map(|x| x.as_str()).collect();
                         json!({
-                            "co": r.coefficients, "r2": r.r2, "max_res": r.max_residual,
+                            "co": r.coefficients, "r2": r.r2, "max_res": r.max_residual_sg,
                             "uyari": codes,
                         })
                     }
@@ -150,19 +150,18 @@ fn parite_07() {
             }
             "tilt_cal" => {
                 c.check_res(
-                    home::tilt_cal(&pairs(c.v("points")))
-                        .map(|(slope, offset)| json!([slope, offset])),
+                    home::tilt_cal(&pairs(c.v("points"))).map(|t| json!([t.slope, t.offset_sg])),
                 );
             }
-            "heat_time_min" => c.check_r(home::heat_time_min(
-                c.f("water_l"),
-                c.f("grain_kg"),
-                c.f("kettle_kg"),
-                c.f("t0"),
-                c.f("t1"),
-                c.f("power_kw"),
-                c.f("eff"),
-            )),
+            "heat_time_min" => c.check_r(home::heat_time_min(&home::HeatTimeInput {
+                water_l: c.f("water_l"),
+                grain_kg: c.f("grain_kg"),
+                kettle_kg: c.f("kettle_kg"),
+                t0_c: c.f("t0"),
+                t1_c: c.f("t1"),
+                power_kw: c.f("power_kw"),
+                eff: c.f("eff"),
+            })),
             "boiloff_l_per_h" => {
                 c.check_f(home::boiloff_l_per_h(c.f("power_kw"), c.f("eff_boil")));
             }
@@ -172,14 +171,16 @@ fn parite_07() {
                 c.f("t"),
                 c.f("minutes"),
             )),
-            "cool_time_immersion" => c.check_r(home::cool_time_immersion(
-                c.f("t0"),
-                c.f("tc"),
-                c.f("t"),
-                c.f("tau"),
-                c.f("vol_l"),
-                c.f("vol_ref_l"),
-            )),
+            "cool_time_immersion" => {
+                c.check_r(home::cool_time_immersion(&home::CoolImmersionInput {
+                    t0_c: c.f("t0"),
+                    tap_c: c.f("tc"),
+                    target_c: c.f("t"),
+                    tau_min: c.f("tau"),
+                    vol_l: c.f("vol_l"),
+                    vol_ref_l: c.f("vol_ref_l"),
+                }));
+            }
             "cool_time_flow" => c.check_r(home::cool_time_flow(c.f("vol_l"), c.f("flow_l_min"))),
             "scale_recipe" => {
                 let obj = c.v("ing").as_object().expect("ing object");
@@ -193,14 +194,27 @@ fn parite_07() {
                 } else {
                     ScaleMode::Target
                 };
-                let out = home::scale_recipe(
-                    &items,
-                    c.f("v0"),
-                    c.f("v1"),
-                    c.f("eff0"),
-                    c.f("eff1"),
-                    mode,
-                );
+                // The list form is the single-ingredient factor applied to each amount.
+                let factor = |kind: IngredientKind| {
+                    home::scale_factor(&home::ScaleFactorInput {
+                        kind,
+                        v0_l: c.f("v0"),
+                        v1_l: c.f("v1"),
+                        eff0: c.f("eff0"),
+                        eff1: c.f("eff1"),
+                        mode,
+                        per_batch: false,
+                        water_ratio: None,
+                    })
+                };
+                let out: engine::Result<Vec<f64>> = if items.is_empty() {
+                    factor(IngredientKind::Misc).map(|_| Vec::new())
+                } else {
+                    items
+                        .iter()
+                        .map(|&(q, k)| factor(k).map(|f| q * f))
+                        .collect()
+                };
                 c.check_res(out.map(|out| {
                     let map: Map<String, Value> = names
                         .into_iter()
@@ -216,16 +230,16 @@ fn parite_07() {
                 } else {
                     ScaleMode::Target
                 };
-                c.check_r(home::scale_factor(
-                    kind(c.v("tip").as_str().unwrap()),
-                    c.f("v0"),
-                    c.f("v1"),
-                    c.f("eff0"),
-                    c.f("eff1"),
+                c.check_r(home::scale_factor(&home::ScaleFactorInput {
+                    kind: kind(c.v("tip").as_str().unwrap()),
+                    v0_l: c.f("v0"),
+                    v1_l: c.f("v1"),
+                    eff0: c.f("eff0"),
+                    eff1: c.f("eff1"),
                     mode,
-                    c.b("per_batch"),
-                    c.v("water_ratio").as_f64(),
-                ));
+                    per_batch: c.b("per_batch"),
+                    water_ratio: c.v("water_ratio").as_f64(),
+                }));
             }
             "yeast_packs" => c.check_res(
                 home::yeast_packs(c.f("cells_needed_billion"), c.f("cells_per_pack_billion"))
@@ -246,18 +260,18 @@ fn parite_07() {
                     c.check(&json!({"hata": "ValueError"}));
                     return true;
                 };
-                let Ok(r) = home::scaling_record(
+                let Ok(r) = home::scaling_record(&home::ScalingRecordInput {
                     scope,
                     mode,
-                    (c.f("v0"), c.f("v1")),
-                    (c.f("eff0"), c.f("eff1")),
-                    u32::try_from(c.i("recipe_version")).unwrap(),
-                ) else {
+                    volumes_l: (c.f("v0"), c.f("v1")),
+                    efficiencies: (c.f("eff0"), c.f("eff1")),
+                    recipe_version: u32::try_from(c.i("recipe_version")).unwrap(),
+                }) else {
                     c.check_hata();
                     return true;
                 };
                 c.check(&json!({
-                    "kapsam": c.v("scope"), "mod": c.v("mode"), "v0": r.v0, "v1": r.v1,
+                    "kapsam": c.v("scope"), "mod": c.v("mode"), "v0": r.v0_l, "v1": r.v1_l,
                     "eff0": r.eff0, "eff1": r.eff1, "oran": r.ratio,
                     "tarif_surumu": r.recipe_version, "tarif_degisti": r.recipe_changed,
                 }));
@@ -266,19 +280,19 @@ fn parite_07() {
             "ion_balance" => {
                 let w = c.v("p");
                 let r = home::ion_balance(&Ions {
-                    ca: ion(w, "Ca"),
-                    mg: ion(w, "Mg"),
-                    na: ion(w, "Na"),
-                    k: ion(w, "K"),
-                    so4: ion(w, "SO4"),
-                    cl: ion(w, "Cl"),
-                    hco3: ion(w, "HCO3"),
-                    co3: ion(w, "CO3"),
-                    no3: ion(w, "NO3"),
+                    ca_ppm: ion(w, "Ca"),
+                    mg_ppm: ion(w, "Mg"),
+                    na_ppm: ion(w, "Na"),
+                    k_ppm: ion(w, "K"),
+                    so4_ppm: ion(w, "SO4"),
+                    cl_ppm: ion(w, "Cl"),
+                    hco3_ppm: ion(w, "HCO3"),
+                    co3_ppm: ion(w, "CO3"),
+                    no3_ppm: ion(w, "NO3"),
                 });
                 let class: BalanceClass = r.class;
                 c.check(&json!({
-                    "cation": r.cations, "anion": r.anions,
+                    "cation": r.cations_meq_l, "anion": r.anions_meq_l,
                     "balance_pct": r.balance_pct, "class": class.as_str(),
                 }));
             }
@@ -293,7 +307,7 @@ fn parite_07() {
             "fruit" => {
                 c.check_res(
                     home::fruit(c.f("kg"), c.f("density"), c.f("sediment"))
-                        .map(|(v, s)| json!([v, s])),
+                        .map(|f| json!([f.added_l, f.sediment_l])),
                 );
             }
             _ => return false,

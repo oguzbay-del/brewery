@@ -219,6 +219,8 @@ Tanımlar (hepsi aynı hacim biriminde):
 - **R** (ilk süzmeden önce tun'a eklenebilecek boşluk) = `Cap − M`
 - E = F_MH_BATCH_EVEN, D = F_MH_BATCH_DRAIN
 
+**Karar (T1.16 C): gösterim motorda değildir.** `sparge_plan` yuvarlanmamış hacim (L) ve eylem kodu (`drain` | `add`) döndürür; 3 ondalığa yuvarlama ve "DRAIN(ilk süzme)" / "EKLE" etiketleri gösterim katmanının işidir (referansta ayrı `sparge_plan_display`). Vektör tam değerleri ve eylem kodunu karşılaştırır (`[i, hacim, "drain"|"add"]`). Rust: `mash::SpargeStep { index, volume_l, action: SpargeAction }`, `batch_sparge` adlı alanlı `BatchSpargeSize { volume_l, drain }` döndürür.
+
 Adım i (i = 0 "ilk süzmeden önce ekleme / ilk süzme", i ≥ 1 sparge batch'leri):
 
 **(a) "Boşalt" durumu:** i = 0 ve **değil** (R > 0 ve D = 0) → sonuç = M, `drain = true` (metin: "mash tun'u boşalt"). D = 1 ise i = 0 daima budur.

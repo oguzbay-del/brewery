@@ -37,12 +37,12 @@ fn num(v: &Value) -> f64 {
 
 fn part(v: &Value) -> b::BlendPart {
     b::BlendPart {
-        v: num(&v["V"]),
-        abv: num(&v["ABV"]),
+        volume_l: num(&v["V"]),
+        abv_pct: num(&v["ABV"]),
         ibu: num(&v["IBU"]),
         srm: num(&v["SRM"]),
-        co2: num(&v["CO2"]),
-        p: num(&v["P"]),
+        co2_vol: num(&v["CO2"]),
+        wort_p: num(&v["P"]),
     }
 }
 
@@ -50,7 +50,7 @@ fn part(v: &Value) -> b::BlendPart {
 fn parite_08() {
     ortak::run("08", |c| {
         match c.fonk.as_str() {
-            "plato_to_sg" => c.check_f(b::plato_to_sg(c.f("p"))),
+            "plato_to_sg" => c.check_f(engine::units::to_sg(c.f("p"))),
             "fifo_consume" => {
                 let lots: Vec<b::Lot> = c
                     .v("lots")
@@ -99,15 +99,15 @@ fn parite_08() {
                 c.check_r(b::gas_m3_from_heat(c.f("kj"), c.f("eff"), c.f("hu_kj_m3")));
             }
             "batch_cost" => {
-                let r = b::batch_cost(
-                    dec(c, "ingredient_cost"),
-                    dec(c, "water_l"),
-                    dec(c, "water_price_m3"),
-                    dec(c, "energy_cost"),
-                    dec(c, "pack_units"),
-                    dec(c, "pack_unit_cost"),
-                    dec(c, "packaged_l"),
-                );
+                let r = b::batch_cost(&b::BatchCostInput {
+                    ingredient_cost: dec(c, "ingredient_cost"),
+                    water_l: dec(c, "water_l"),
+                    water_price_m3: dec(c, "water_price_m3"),
+                    energy_cost: dec(c, "energy_cost"),
+                    pack_units: dec(c, "pack_units"),
+                    pack_unit_cost: dec(c, "pack_unit_cost"),
+                    packaged_l: dec(c, "packaged_l"),
+                });
                 let Ok(r) = r else {
                     c.check_hata();
                     return true;
@@ -130,7 +130,7 @@ fn parite_08() {
                     .collect();
                 c.check_res(b::blend(&parts).map(|r| {
                     json!({
-                        "V": r.v, "ABV": r.abv, "IBU": r.ibu, "SRM": r.srm, "CO2": r.co2, "P": r.p
+                        "V": r.volume_l, "ABV": r.abv_pct, "IBU": r.ibu, "SRM": r.srm, "CO2": r.co2_vol, "P": r.wort_p
                     })
                 }));
             }
@@ -184,7 +184,7 @@ fn parite_08() {
             "malt_from_analysis" => {
                 let r = b::malt_from_analysis(c.f("fgdb"), c.f("moisture"), c.f("fc_diff"));
                 c.check(&json!({
-                    "FGAI": r.fgai, "CGDB": r.cgdb, "CGAI_yield": r.cgai_yield,
+                    "FGAI": r.fgai_pct, "CGDB": r.cgdb_pct, "CGAI_yield": r.cgai_yield_pct,
                     "potansiyel": r.potential, "potansiyel_BS": r.potential_bs, "PPG": r.ppg
                 }));
             }
@@ -193,13 +193,13 @@ fn parite_08() {
                 c.check(&json!({"EBC": r.ebc, "SRM": r.srm, "°L": r.lovibond}));
             }
             "yeast_reuse_warnings" => {
-                let w = b::yeast_reuse_warnings(
-                    c.f("generation"),
-                    c.f("days_since_harvest"),
-                    c.v("viability").as_f64(),
-                    c.f("max_generation"),
-                    c.b("history_differs"),
-                );
+                let w = b::yeast_reuse_warnings(&b::YeastReuseInput {
+                    generation: c.f("generation"),
+                    harvest_age_days: c.f("days_since_harvest"),
+                    viability: c.v("viability").as_f64(),
+                    max_generation: c.f("max_generation"),
+                    history_differs: c.b("history_differs"),
+                });
                 let codes: Vec<&str> = w.iter().map(|x| x.as_str()).collect();
                 c.check(&json!(codes));
             }
@@ -217,7 +217,7 @@ fn parite_08() {
                 } else {
                     vec![]
                 };
-                c.check(&json!({"ortalama": r.average, "uyari": uyari}));
+                c.check(&json!({"ortalama": r.average_lintner, "uyari": uyari}));
             }
             _ => return false,
         }

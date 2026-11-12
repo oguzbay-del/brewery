@@ -45,7 +45,7 @@ w = min(1, (SG − FG) / 0.003)          (tam sayı birimde: min(1, (u(SG) − u
 - Ağırlık, oturtulan FG'ye göre hesaplanır; aralık için FG ± σ ile yeniden oturtmada ağırlıklar da yeniden hesaplanır.
 - Tutarsızlık denetimi (§1.6) tek tek `k` değerlerinin oranına bakar, ağırlıktan etkilenmez.
 - Çözücü gerekmez, her zaman tek sonuç verir.
-- **Karar (T1.12 D2): girdi doğrulaması.** `few_forecast` sonlu olmayan ya da makul büyüklüğü (|x| ≤ 10⁶) aşan okuma, OG, FG, gecikme ve σ için hata verir (Rust `ManualError::InvalidInput`, referans `ValueError`); sessiz yanlış sonuç ve tam sayı taşması yoktur.
+- **Karar (T1.12 D2): girdi doğrulaması.** `few_forecast` sonlu olmayan ya da makul büyüklüğü (|x| ≤ 10⁶) aşan okuma, OG, FG, gecikme ve σ için hata verir (Rust `Error::InvalidInput`, referans `ValueError`); sessiz yanlış sonuç ve tam sayı taşması yoktur.
 - **Karar (T1.12 D12):** `predicted_trigger` (11 §1.3) hedefi tam sayı birimde (`u`) yuvarlayarak kullanır; formül yuvarlamasız yazılsa da referans ve motor tam sayı hedefi esas alır.
 
 ### 1.4 Ne zaman gösterilir [tasarım]
@@ -159,7 +159,7 @@ Ftemp(T) = 2.39·10¹¹ · e^(−9773/(T + 273.15))      T ≥ 100 °C için Fte
 - **Aktivasyon sabiti 02 ile aynı kalır [F1 kararı 6]:** `2.39·10¹¹ · e^(−9773/T)` (02 §3'teki IBU motoru), yayımlanmış Malowicki–Shellhammer sabitiyle (`7.9·10¹¹ · e^(−11858/T)`) farklı sonuç verir (τ = 4 sa, T₀ 95 °C örneğinde bizim sabitle 32.9 dk, Malowicki–Shellhammer sabitiyle 25.3 dk; ±%25 belirsizlik). İki motor tutarlı kalsın diye sabit değiştirilmez; fark burada not olarak durur ve ölçülmüş IBU ile kıyaslanana kadar model varsayılan olmaz (basit kural varsayılandır, §3.1).
 Her katkı `t + t_eş` süresiyle Tinseth'e girer. Bu, Brewtarget'ın mIBU (Hosom) yaklaşımıyla aynı fikir; yalnız soğuma eğrisi küp için yavaş.
 
-- **Karar (T1.12 D3): `t_eş` sınırlı ve başarısızlığı açıktır.** Döngü şu durumlarda sonuç vermez, hata verir (Rust `ManualError::InvalidInput`, referans `ValueError`): girdi sonlu değil ya da makul büyüklükte değil; `T_ortam ≥ T_durma` (40 °C; küp hiç 40 °C'nin altına inmez); `dt ≤ 0`; `τ ≤ 0`; küp hacmi ≤ 0; ya da küp 30 gün (43 200 dk) içinde `T_durma`'nın altına inmez. `nochill_ibu` ayrıca `v ≤ 0` ve sonlu olmayan `SG` için hata verir. Ortam 40 °C ve üstü bu modelde tanımsızdır.
+- **Karar (T1.12 D3): `t_eş` sınırlı ve başarısızlığı açıktır.** Döngü şu durumlarda sonuç vermez, hata verir (Rust `Error::InvalidInput`, referans `ValueError`): girdi sonlu değil ya da makul büyüklükte değil; `T_ortam ≥ T_durma` (40 °C; küp hiç 40 °C'nin altına inmez); `dt ≤ 0`; `τ ≤ 0`; küp hacmi ≤ 0; ya da küp 30 gün (43 200 dk) içinde `T_durma`'nın altına inmez. `nochill_ibu` ayrıca `v ≤ 0` ve sonlu olmayan `SG` için hata verir. Ortam 40 °C ve üstü bu modelde tanımsızdır.
 - `T₀`: küpe dolum sıcaklığı. Varsayılan 95 °C. Whirlpool sonrası doluyorsa whirlpool bitiş sıcaklığı.
 - `T_ortam`: varsayılan 20 °C.
 - Model τ'ya çok duyarlı (τ 3 → 6 saat: 27 → 54 dk). Bu yüzden ilk sürümde varsayılan basit kuraldır. Model, kullanıcı kendi küpünün soğuma süresini girerse veya ölçüm biriktikçe açılır.

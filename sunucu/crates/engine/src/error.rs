@@ -1,7 +1,7 @@
 //! The engine's single public error surface (ADR-0004 madde 3 and 5).
 //!
 //! Wherever the Python reference raises (or its result would be NaN/inf) the engine
-//! returns `Err`. Module-specific error enums convert into [`Error`] with `From`.
+//! returns `Err`. There is no module-specific error type.
 
 use core::fmt;
 
@@ -25,6 +25,24 @@ pub enum Error {
         /// The target that cannot be reached.
         what: &'static str,
     },
+    /// A series or list that must hold at least one element is empty.
+    EmptyInput {
+        /// The empty parameter.
+        field: &'static str,
+    },
+    /// A divisor (rate, rate constant, dry matter) is zero.
+    DivisionByZero {
+        /// The divisor that is zero.
+        field: &'static str,
+    },
+    /// A decimal computation overflowed.
+    Overflow {
+        /// The quantity that overflowed.
+        what: &'static str,
+    },
+    /// A band or tier table is not strictly ascending, its open end is not last, or a rate is
+    /// negative.
+    InvalidBands,
 }
 
 impl Error {
@@ -41,6 +59,12 @@ impl fmt::Display for Error {
             Self::InvalidInput { field, reason } => write!(f, "invalid input `{field}`: {reason}"),
             Self::NoConvergence { what } => write!(f, "{what} did not converge"),
             Self::Unreachable { what } => write!(f, "{what} is unreachable"),
+            Self::EmptyInput { field } => write!(f, "`{field}` must not be empty"),
+            Self::DivisionByZero { field } => write!(f, "`{field}` must not be 0"),
+            Self::Overflow { what } => write!(f, "{what} overflowed"),
+            Self::InvalidBands => {
+                f.write_str("bands must be strictly ascending, open end last, rate >= 0")
+            }
         }
     }
 }

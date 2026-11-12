@@ -371,7 +371,7 @@ pub fn recipe_input(v: &Value) -> RecipeInput {
             steep_efficiency_pct: jnum(o, "steep_efficiency_pct"),
             mash_fg_adjust: jflag(o, "mash_fg_adjust"),
             mash_fg_adj_temp_f: jnum(o, "mash_fg_adj_temp_f"),
-            mash_fg_adj_slope: jnum(o, "mash_fg_adj_slope"),
+            mash_fg_adj_slope_pct_per_f: jnum(o, "mash_fg_adj_slope"),
             hop: hop_options(&o["hop"]),
         },
     }

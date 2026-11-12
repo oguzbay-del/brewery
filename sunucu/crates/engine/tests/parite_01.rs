@@ -78,7 +78,8 @@ fn parite_01() {
             )),
             "abv_abw_unclamped" => {
                 c.check_res(
-                    d::abv_abw_unclamped(c.f("og"), c.f("fg")).map(|(abv, abw)| json!([abv, abw])),
+                    d::abv_abw_unclamped(c.f("og"), c.f("fg"))
+                        .map(|a| json!([a.abv_pct, a.abw_pct])),
                 );
             }
             "refractometer_abv" => c.check_r((|| {
@@ -106,8 +107,9 @@ fn parite_01() {
                 c.f("volume_measured"),
             )),
             "do_adjust_color" => {
-                let (status, r, ok) = d::do_adjust_color(&recipe(c.v("recipe")), c.f("target"));
-                let name = match status {
+                let out = d::do_adjust_color(&recipe(c.v("recipe")), c.f("target"));
+                let (r, ok) = (out.recipe, out.success);
+                let name = match out.status {
                     d::ColorAdjustStatus::NotApplicable => "not_applicable",
                     d::ColorAdjustStatus::OutOfRange => "out_of_range",
                     d::ColorAdjustStatus::Adjusted => "adjusted",
@@ -117,7 +119,7 @@ fn parite_01() {
             "refractometer_finished" => {
                 c.check_res(
                     d::refractometer_finished(c.f("fg"), c.f("brix"), c.f("zero"))
-                        .map(|r| json!([r.og, r.abw_percent, r.re, r.oe])),
+                        .map(|r| json!([r.og, r.abw_pct, r.real_extract_p, r.original_extract_p])),
                 );
             }
             "fg_from_tolerance" => {
@@ -212,8 +214,8 @@ fn parite_01() {
                 c.b("mash_only"),
             )),
             "yeast_attenuation" => {
-                let (atten, tol) = d::yeast_attenuation(&recipe(c.v("recipe")));
-                c.check(&json!([atten, tol]));
+                let a = d::yeast_attenuation(&recipe(c.v("recipe")));
+                c.check(&json!([a.attenuation_pct, a.tolerance_abv_pct]));
             }
             "mash_adjusted_attenuation" => c.check_f(d::mash_adjusted_attenuation(
                 &recipe(c.v("recipe")),
@@ -232,19 +234,23 @@ fn parite_01() {
             "mcu_from_srm" => c.check_f(d::mcu_from_srm(c.f("srm"))),
             "color_flexibility" => {
                 let f = d::color_flexibility(&recipe(c.v("recipe")), c.f("target"));
-                c.check(&json!([f.lo, f.hi, f.ok]));
+                c.check(&json!([f.lo_srm, f.hi_srm, f.ok]));
             }
             "iterate_color" => {
-                let (r, colour) = d::iterate_color(&recipe(c.v("recipe")), c.f("target"));
-                c.check(&json!([colour, amounts(&r)]));
+                let it = d::iterate_color(&recipe(c.v("recipe")), c.f("target"));
+                c.check(&json!([it.color_srm, amounts(&it.recipe)]));
             }
             "adjust_color" => {
-                let (r, ok) = d::adjust_color(&recipe(c.v("recipe")), c.f("target"));
-                c.check(&json!([d::recipe_color(&r), ok, amounts(&r)]));
+                let a = d::adjust_color(&recipe(c.v("recipe")), c.f("target"));
+                c.check(&json!([
+                    d::recipe_color(&a.recipe),
+                    a.success,
+                    amounts(&a.recipe)
+                ]));
             }
             "color_adj_range" => {
-                let (lo, hi) = d::color_adj_range(&recipe(c.v("recipe")));
-                c.check(&json!([lo, hi]));
+                let r = d::color_adj_range(&recipe(c.v("recipe")));
+                c.check(&json!([r.lo_srm, r.hi_srm]));
             }
             _ => return false,
         }
