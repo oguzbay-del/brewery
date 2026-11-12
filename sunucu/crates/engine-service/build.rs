@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let proto_files = [
         "../../../sozlesme/proto/engine/v1/engine.proto",
         "../../../sozlesme/proto/engine/v1/tool.proto",
+        "../../../sozlesme/proto/engine/v1/recipe.proto",
     ];
 
     for file in proto_files {
