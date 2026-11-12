@@ -118,6 +118,10 @@ fn temp_unit(c: &ortak::Case, key: &str) -> d::TemperatureUnit {
     d::TemperatureUnit::from_code(c.i(key)).expect("temperature unit")
 }
 
+fn refr_kind(c: &ortak::Case) -> d::RefractometerType {
+    d::RefractometerType::from_code(c.i("kind")).expect("refractometer type")
+}
+
 fn field(name: &str) -> d::GrainField {
     match name {
         "amount_oz" => d::GrainField::AmountOz,
@@ -161,6 +165,49 @@ fn parite_01() {
                 c.f("brix"),
                 c.f("zero"),
             )),
+            "abv_abw_unclamped" => {
+                let (abv, abw) = d::abv_abw_unclamped(c.f("og"), c.f("fg"));
+                c.check(&json!([abv, abw]));
+            }
+            "refractometer_abv" => c.check_f(d::refractometer_abv(
+                refr_kind(c),
+                c.f("gravity"),
+                c.f("brix"),
+                c.f("zero"),
+            )),
+            "refractometer_abw" => c.check_f(d::refractometer_abw(
+                refr_kind(c),
+                c.f("gravity"),
+                c.f("brix"),
+                c.f("zero"),
+            )),
+            "refractometer_finished_abv" => c.check_f(d::refractometer_finished_abv(
+                c.f("fg"),
+                c.f("brix"),
+                c.f("zero"),
+            )),
+            "recipe_est_mash_efficiency" => {
+                c.check_f(d::recipe_est_mash_efficiency(&recipe(c.v("recipe"))));
+            }
+            "recipe_act_mash_efficiency" => c.check_f(d::recipe_act_mash_efficiency(
+                &recipe(c.v("recipe")),
+                c.f("og_mash_measured"),
+                c.f("boil_vol_measured"),
+            )),
+            "recipe_actual_efficiency" => c.check_f(d::recipe_actual_efficiency(
+                &recipe(c.v("recipe")),
+                c.f("og_measured"),
+                c.f("volume_measured"),
+            )),
+            "do_adjust_color" => {
+                let (status, r, ok) = d::do_adjust_color(&recipe(c.v("recipe")), c.f("target"));
+                let name = match status {
+                    d::ColorAdjustStatus::NotApplicable => "not_applicable",
+                    d::ColorAdjustStatus::OutOfRange => "out_of_range",
+                    d::ColorAdjustStatus::Adjusted => "adjusted",
+                };
+                c.check(&json!([name, d::recipe_color(&r), ok, amounts(&r)]));
+            }
             "refractometer_finished" => {
                 let r = d::refractometer_finished(c.f("fg"), c.f("brix"), c.f("zero"));
                 c.check(&json!([r.og, r.abw_percent, r.re, r.oe]));

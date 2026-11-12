@@ -35,11 +35,18 @@ def uret():
         v.ekle("alcohol_calories", g, ref.alc_cal(og, fg))
         v.ekle("extract_calories", g, ref.ext_cal(og, fg))
         v.ekle("uk_tax_abv", g, ref.uk(og, fg))
-    # UK eşikleri: d = (og-fg)*1000 her eşiğin hemen altı, tam eşik ve hemen üstü
-    for lim in (6.95, 10.45, 17.25, 26.15, 36.05, 46.55, 57.15, 67.95, 78.85, 89.75):
-        for d in (lim - 0.01, lim, lim + 0.01):
-            og, fg = 1.0 + d / 1000.0, 1.0
-            v.ekle("uk_tax_abv", {"og": og, "fg": fg}, ref.uk(og, fg), "eşik komşuluğu d=%.2f" % d)
+    # UK eşikleri (§6.7, T1.12 C1): du = u(og) - u(fg) tam sayı birimde; her eşiğin -1, tam eşik ve +1 birimi,
+    # üç farklı FG tabanında
+    for lim in (695, 1045, 1725, 2615, 3605, 4655, 5715, 6795, 7885, 8975):
+        for fg0 in (1.0, 1.0105, 1.040):
+            for du in (lim - 1, lim, lim + 1):
+                fg = fg0
+                og = fg0 + du / 100000.0
+                v.ekle("uk_tax_abv", {"og": og, "fg": fg}, ref.uk(og, fg), "eşik komşuluğu du=%d fg=%s" % (du, fg0))
+    for og, fg in ((1.00695, 1.0), (1.01045, 1.0), (1.01725, 1.0), (1.02615, 1.0), (1.03605, 1.0), (1.04655, 1.0),
+                   (1.05715, 1.0), (1.06795, 1.0), (1.07885, 1.0), (1.08975, 1.0)):
+        v.ekle("uk_tax_abv", {"og": og, "fg": fg}, ref.uk(og, fg),
+               "ondalıkta tam eşik (eski f64 karşılaştırmasında üst katsayıya düşen çiftler)")
     v.ekle("uk_tax_abv", {"og": 1.0, "fg": 1.0}, ref.uk(1.0, 1.0), "d = 0")
     v.ekle("uk_tax_abv", {"og": 1.100, "fg": 1.005}, ref.uk(1.100, 1.005), "d > 89.75")
 
@@ -65,6 +72,18 @@ def uret():
     for og, fg, tol in ((1.100, 1.010, 10.0), (1.090, 1.005, 8.0), (1.120, 1.010, 12.0), (1.080, 1.016, 7.0),
                         (1.060, 1.012, 5.0), (1.130, 1.020, 9.5), (1.100, 1.050, 10.0)):
         v.ekle("fg_from_tolerance", {"og": og, "fg": fg, "tol": tol}, ref.fg_tol(og, fg, tol))
+
+    # §6.3 üç parametreli CalcABV (kırpmasız) ve §9.2 refraktometre ABV/ABW
+    for og, fg in CIFTLER + [(1.020, 1.060), (1.0, 1.0)]:
+        v.ekle("abv_abw_unclamped", {"og": og, "fg": fg}, list(ref.calc_abv3(og, fg)), "[abv, abw]")
+    for kind, grav, b, z in ((0, 1.050, 12.0, 0.0), (1, 1.050, 6.5, 0.0), (1, 1.080, 9.0, 0.3), (1, 1.040, 12.0, 0.0),
+                             (2, 1.010, 6.5, 0.0), (2, 1.012, 10.0, 0.0), (2, 1.008, 8.0, 0.4), (2, 1.030, 3.0, 0.0)):
+        g = {"kind": kind, "gravity": grav, "brix": b, "zero": z}
+        v.ekle("refractometer_abv", g, ref.refractometer_abv(kind, grav, b, z))
+        v.ekle("refractometer_abw", g, ref.refractometer_abw(kind, grav, b, z))
+    for fg, b, z in ((1.010, 6.5, 0.0), (1.012, 10.0, 0.0), (1.008, 8.0, 0.4), (1.020, 14.0, 0.0)):
+        v.ekle("refractometer_finished_abv", {"fg": fg, "brix": b, "zero": z}, ref.refractometer_finished_abv(fg, b, z),
+               "ABW*FG/0.794")
 
     # §9.3 gravite yükseltme (özüt); kind 0 = DME, 1 = LME
     for g, t, vol, typ in ((1.040, 1.050, 640.0, 0), (1.040, 1.050, 640.0, 1), (1.030, 1.060, 704.0, 0),
@@ -115,7 +134,60 @@ def _tarifler(ref):
                efficiency=0, yeasts=[y(95, 100, 14)], mash_temps=[152])
     bos = mk([f("2-row", 160, 80, 2, 0, 0)], typ=2, volume_floz=0.0, efficiency=72, yeasts=[y()],
              mash_temps=[152])
-    return {"ornek_ag": ref.ORNEK_AG, "ekstrakt": ekstrakt, "kismi": partial, "ag_cok_adim": ag_cok_adim,
+    # --- T1.15 (B1-B5): seçenekleri değiştiren ve dal sınırlarını ayıran reçeteler ---
+    def ag(temps, **kw):
+        return mk([f("2-row", 160, 80, 2, 0, 0), f("Crystal", 16, 72, 60, 0, 0)], typ=2, volume_floz=640,
+                  trub_loss_floz=64, boil_vol_floz=800, efficiency=70, yeasts=[y(68, 76, 12)],
+                  mash_temps=temps, grain_weight_oz=176, **kw)
+
+    extra = {
+        # B1: steep verimi 25, Steep aşamasında tahıl; Tref 150 ve eğim -2 ile adım 148
+        "steep25": mk([f("LME", 96, 78, 8, 1, 2), f("Crystal steep", 24, 72, 40, 0, 1), f("Roast steep", 8, 70, 400, 3, 1)],
+                      typ=0, volume_floz=640, trub_loss_floz=64, pre_trub_loss_floz=704, efficiency=72,
+                      steep_efficiency=25.0, yeasts=[y(70, 78, 11)]),
+        "ag_tref150_egim2": ag([148], mash_fg_adj_temp=150.0, mash_fg_adj_slope=-2.0),
+        "ag_egim_sifir_adim": ag([], mash_fg_adj_temp=150.0, mash_fg_adj_slope=-0.5, steep_efficiency=30.0),
+        # B2: kırpma ve prev/pencere sınırları (düzeltme açık)
+        "ag_alt_kirpma": ag([135]), "ag_ust_kirpma": ag([165]),
+        "ag_prev_139": ag([139, 156]), "ag_prev_1389": ag([138.9, 156]), "ag_prev_122": ag([122, 156]),
+        "ag_pencere_alt_40": ag([113.5]), "ag_pencere_alt_399": ag([113.6]),
+        "ag_pencere_ust_40": ag([193.5]), "ag_pencere_ust_399": ag([193.4]),
+        "ag_tref140_adimsiz": ag([], mash_fg_adj_temp=140.0),
+        # B3: tolerans; Secondary'de şeker olduğundan sanal OG != F_R_OG, sınır %4
+        "ag_tol_sanal": mk([f("2-row", 160, 80, 2, 0, 0), f("Sugar sec", 48, 100, 0, 2, 5), f("Honey tert", 16, 75, 2, 7, 6)],
+                           typ=2, volume_floz=704, trub_loss_floz=64, efficiency=75, yeasts=[y(75, 85, 4)],
+                           mash_temps=[152], grain_weight_oz=160),
+        "ag_tol_sifir": mk([f("2-row", 200, 80, 2, 0, 0), f("Sugar", 16, 100, 0, 2, 2)], typ=2, volume_floz=640,
+                           efficiency=78, yeasts=[y(80, 90, 0)], mash_temps=[152], grain_weight_oz=200),
+        "ag_iki_birincil": mk([f("2-row", 200, 80, 2, 0, 0), f("Sugar", 16, 100, 0, 2, 2)], typ=2, volume_floz=640,
+                              efficiency=78, yeasts=[y(60, 70, 5), y(85, 95, 14)], mash_temps=[152], grain_weight_oz=216),
+        "ag_ikinci_birincil_tol": mk([f("2-row", 200, 80, 2, 0, 0)], typ=2, volume_floz=640, efficiency=78,
+                                     yeasts=[y(70, 74, 14, add_to_secondary=True), y(80, 90, 6), y(60, 62, 3)],
+                                     mash_temps=[152], grain_weight_oz=200),
+        # B4: geç özüt: kaynatma süresinden uzun, 0.1 dk eşiği, Whirlpool ve Primary geç özüt
+        "gec_uzun": mk([f("Pale", 160, 80, 3, 0, 0), f("DME late75", 32, 95, 4, 4, 2, late_extract_min=75),
+                        f("DME late15", 24, 95, 4, 4, 2, late_extract_min=15)],
+                       typ=2, volume_floz=704, trub_loss_floz=64, boil_vol_floz=800, efficiency=72,
+                       mash_temps=[152], grain_weight_oz=160, yeasts=[y()]),
+        "gec_eslesen_005": mk([f("Pale", 160, 80, 3, 0, 0), f("DME a", 24, 95, 4, 4, 2, late_extract_min=15.0),
+                               f("DME b", 16, 95, 4, 4, 2, late_extract_min=15.05)],
+                              typ=2, volume_floz=704, trub_loss_floz=64, boil_vol_floz=800, efficiency=72, yeasts=[y()]),
+        "gec_ayri_02": mk([f("Pale", 160, 80, 3, 0, 0), f("DME a", 24, 95, 4, 4, 2, late_extract_min=15.0),
+                           f("DME b", 16, 95, 4, 4, 2, late_extract_min=15.2)],
+                          typ=2, volume_floz=704, trub_loss_floz=64, boil_vol_floz=800, efficiency=72, yeasts=[y()]),
+        "gec_whirlpool_primary": mk([f("Pale", 160, 80, 3, 0, 0), f("Honey wp", 16, 75, 2, 7, 3, late_extract_min=10),
+                                     f("DME prim", 16, 95, 4, 4, 4, late_extract_min=10),
+                                     f("DME boil", 16, 95, 4, 4, 2, late_extract_min=20)],
+                                    typ=2, volume_floz=704, trub_loss_floz=64, boil_vol_floz=800, efficiency=72,
+                                    yeasts=[y()]),
+        "gec_ad_sirasi": mk([f("Pale", 160, 80, 3, 0, 0), f("Zeta", 24, 95, 4, 4, 2, late_extract_min=15),
+                             f("Alpha", 16, 75, 2, 7, 2, late_extract_min=15)],
+                            typ=2, volume_floz=704, trub_loss_floz=64, boil_vol_floz=800, efficiency=72, yeasts=[y()]),
+        # B5: BIAB
+        "ag_biab": mk([f("2-row", 160, 80, 2, 0, 0)], typ=2, volume_floz=704, efficiency=72, yeasts=[y()],
+                      mash_temps=[152, 168], grain_weight_oz=160, biab=True),
+    }
+    return {"ornek_ag": ref.ORNEK_AG, **extra, "ekstrakt": ekstrakt, "kismi": partial, "ag_cok_adim": ag_cok_adim,
             "ag_atlama": ag_atlama, "ag_kapali": ag_kapali, "ag_yok": ag_yok, "cider": cider, "bos": bos}
 
 
@@ -131,7 +203,28 @@ def _renk_tarifleri(ref):
     pm = mk([f("Pale", 64, 80, 3, 0, 0), f("Crystal", 16, 72, 60, 0, 0), f("DME", 48, 95, 4, 4, 2),
              f("Chocolate", 6, 70, 350, 0, 0)],
             typ=1, volume_floz=640, trub_loss_floz=64, efficiency=65)
-    return {"renk_ornek": ref.ORNEK_RENK, "pale": pale, "ekstrakt": ext, "kismi": pm}
+    # T1.15 (A3, B5): MaxInBatch + 5/15 sınırları, Partial Mash %25 tabanı, verimi 0 ya da hacimsiz reçete,
+    # miktarı 0 olan koyu malzeme
+    dusuk_max = mk([f("2-row", 160, 80, 2, 0, 0, max_in_batch_pct=100), f("Crystal", 16, 72, 60, 0, 0, max_in_batch_pct=5),
+                    f("Chocolate", 4, 70, 350, 0, 0, max_in_batch_pct=10), f("Roast", 4, 70, 500, 0, 0, max_in_batch_pct=5)],
+                   typ=2, volume_floz=640, trub_loss_floz=64, efficiency=75)
+    kismi_taban = mk([f("Pale", 64, 80, 3, 0, 0, max_in_batch_pct=5), f("Pilsner", 40, 80, 2, 0, 0, max_in_batch_pct=5),
+                      f("DME", 24, 95, 4, 4, 2), f("Black", 2, 70, 500, 0, 0, max_in_batch_pct=100)],
+                     typ=1, volume_floz=640, trub_loss_floz=64, efficiency=65)
+    verim0 = mk([f("2-row", 160, 80, 2, 0, 0), f("Crystal", 16, 72, 60, 0, 0), f("Black", 4, 70, 500, 0, 0)],
+                typ=2, volume_floz=640, trub_loss_floz=64, efficiency=0)
+    sifir_miktar = mk([f("2-row", 160, 80, 2, 0, 0), f("Crystal", 16, 72, 60, 0, 0), f("Black none", 0, 70, 500, 0, 0)],
+                      typ=2, volume_floz=640, trub_loss_floz=64, efficiency=72)
+    verim0_ozut = mk([f("2-row", 160, 80, 2, 0, 0), f("Pale", 40, 80, 3, 0, 0), f("Dark DME", 48, 95, 40, 4, 2),
+                      f("Crystal 12", 16, 72, 12, 0, 0)], typ=2, volume_floz=640, trub_loss_floz=64, efficiency=0)
+    sifir_koyu = mk([f("2-row", 160, 80, 2, 0, 0), f("Munich 12", 16, 78, 12, 0, 0), f("Crystal 20", 8, 72, 20, 0, 0),
+                     f("Black none", 0, 70, 500, 0, 0)], typ=2, volume_floz=640, trub_loss_floz=64, efficiency=72)
+    sifir_koyu2 = mk([f("2-row", 30, 80, 2, 0, 0), f("Munich 12", 10, 78, 12, 0, 0), f("Black none", 0, 70, 500, 0, 0)],
+                     typ=2, volume_floz=640, trub_loss_floz=64, efficiency=72)
+    hacimsiz = mk([f("2-row", 160, 80, 2, 0, 0), f("Crystal", 16, 72, 60, 0, 0)], typ=2, volume_floz=0.0, efficiency=72)
+    return {"renk_ornek": ref.ORNEK_RENK, "pale": pale, "ekstrakt": ext, "kismi": pm, "dusuk_max": dusuk_max,
+            "kismi_taban": kismi_taban, "verim0": verim0, "sifir_miktar": sifir_miktar, "hacimsiz": hacimsiz,
+            "verim0_ozut": verim0_ozut, "sifir_koyu": sifir_koyu, "sifir_koyu2": sifir_koyu2}
 
 
 def _uret_tam(v, ref):
@@ -165,6 +258,12 @@ def _uret_tam(v, ref):
                 v.ekle("grain_og_points", {"grain": g, "eff": 72.0, "steep_eff": 15.0}, ref.og_points(g, 72.0, 15.0))
                 v.ekle("grain_fg_points", {"grain": g, "eff": 72.0, "atten": 76.875, "steep_eff": 15.0},
                        ref.fg_points(g, 72.0, 76.875, 15.0))
+    for typ in (0, 1, 3, 8):   # steep verimi 25 ve 40
+        for use in (0, 1, 2):
+            g = ref.ferm("x", 24, 72, 5, typ, use)
+            v.ekle("grain_og_points", {"grain": g, "eff": 65.0, "steep_eff": 25.0}, ref.og_points(g, 65.0, 25.0))
+            v.ekle("grain_fg_points", {"grain": g, "eff": 65.0, "atten": 70.0, "steep_eff": 40.0},
+                   ref.fg_points(g, 65.0, 70.0, 40.0))
     g = ref.ferm("x", 16, 100, 0, 2, 7)
     v.ekle("grain_fg_points", {"grain": g, "eff": 70.0, "atten": 100.0, "steep_eff": 20.0}, ref.fg_points(g, 70.0, 100.0, 20.0))
 
@@ -201,16 +300,26 @@ def _uret_tam(v, ref):
                 for mo in (False, True):
                     v.ekle("efficiency", {"recipe": r, "og": og_, "volume_floz": vol, "mash_only": mo},
                            ref.get_efficiency(r, og_, vol, mo), n)
+        v.ekle("recipe_est_mash_efficiency", {"recipe": r}, ref.recipe_est_mash_efficiency(r), n)
+        v.ekle("recipe_act_mash_efficiency", {"recipe": r, "og_mash_measured": 1.045, "boil_vol_measured": 800.0},
+               ref.recipe_act_mash_efficiency(r, 1.045, 800.0), n)
+        v.ekle("recipe_actual_efficiency", {"recipe": r, "og_measured": 1.050, "volume_measured": 704.0},
+               ref.recipe_actual_efficiency(r, 1.050, 704.0), n)
         v.ekle("yeast_attenuation", {"recipe": r}, list(ref.yeast_attenuation(r)), n + " [atten, tol]")
         for att_ in (73.0, 75.0, 60.0):
             v.ekle("mash_adjusted_attenuation", {"recipe": r, "atten": att_}, ref.mash_adjusted_attenuation(r, att_), n)
         v.ekle("recipe_fg", {"recipe": r}, ref.recipe_fg(r), n)
         v.ekle("recipe_color", {"recipe": r}, ref.recipe_color(r), n)
 
-    # §5.1 tolerans dalı: tol < ABV olan bir vaka açıkça bulunsun
-    r = tarifler["ag_cok_adim"]
-    fg_ = ref.recipe_fg(r)
-    v.ekle("recipe_fg", {"recipe": r}, fg_, "tarif=ag_cok_adim; tolerans 5 % ABV sınırı devrede")
+    # §5.1 tolerans dalı: ag_tol_sanal, ag_tol_sifir, ag_iki_birincil, ag_ikinci_birincil_tol (sanal OG != F_R_OG,
+    # tol = 0, birden çok birincil maya) yukarıdaki reçete döngüsüyle sınanır.
+    # §3.8: infüzyonu <= 0 olan adımlar (make_recipe hep pozitif üretir)
+    for infs in ([0.0, 20.0, 30.0], [-5.0, 15.0], [40.0]):
+        m = {"grain_weight": 100.0, "biab": False,
+             "steps": [{"temp_f": 150.0 + i, "infusion": x} for i, x in enumerate(infs)]}
+        for w in (150.0, 60.0):
+            v.ekle("scale_mash_from_grain_weight", {"mash": m, "grain_weight_new": w},
+                   ref.scale_mash_from_grain_weight(m, w), "infüzyon <= 0 adımları")
 
     # --- §6.6, §6.8 ---
     for mn, mx in ((73.0, 77.0), (60.0, 70.0), (0.0, 0.0), (80.0, 80.0)):
@@ -248,6 +357,19 @@ def _uret_tam(v, ref):
                    n + " [renk, başarı, miktarlar oz]")
         mn, mx = ref.color_adj_range(r)
         v.ekle("color_adj_range", {"recipe": r}, [mn, mx], n + " [min, max]")
+        for hedef in (mn - 0.5, mn + 0.01, (mn + mx) / 2, mx - 0.01, mx + 0.5, 150.0):
+            st, ar, basari = ref.do_adjust_color(r, hedef)
+            v.ekle("do_adjust_color", {"recipe": r, "target": hedef},
+                   [st, ref.recipe_color(ar), basari, [g["amount_oz"] for g in ar["fermentables"]]],
+                   n + " [durum, renk, başarı, miktarlar oz]")
+    # §8.3 DoAdjustColor: bira tipi olmayan reçeteler (F_R_TYPE >= 3)
+    for typ in (2, 3, 4, 5, 6):
+        r = ref.make_recipe([ref.ferm("2-row", 160, 80, 2, 0, 0), ref.ferm("Crystal", 16, 72, 60, 0, 0)],
+                            typ=typ, volume_floz=640, trub_loss_floz=64, efficiency=72)
+        st, ar, basari = ref.do_adjust_color(r, 15.0)
+        v.ekle("do_adjust_color", {"recipe": r, "target": 15.0},
+               [st, ref.recipe_color(ar), basari, [g["amount_oz"] for g in ar["fermentables"]]],
+               "tip=%d [durum, renk, başarı, miktarlar oz]" % typ)
     # kapsam dışı: boş reçete ve hacimsiz reçete
     for r in (tarifler["bos"], ref.make_recipe([], volume_floz=640)):
         v.ekle("color_flexibility", {"recipe": r, "target": 10.0}, list(ref.color_flexibility(r, 10.0)), "ok = false")

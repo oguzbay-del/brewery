@@ -4,7 +4,7 @@
 //! are BeerSmith's: SG, °Plato, °Brix, °F, SRM, US fl oz, US gallons, percent (0-100).
 //! Shared conversions (`to_plato`, `to_sg`) live in [`crate::units`].
 
-use crate::units::{c_to_f, f_to_c, to_plato, to_sg};
+use crate::units::{c_to_f, f_to_c, gravity_units, to_plato, to_sg};
 
 /// Brix to SG (§1.4): `b / (258.6 - b/258.2 * 227.1) + 1`.
 #[must_use]
@@ -84,30 +84,43 @@ pub fn extract_calories(og: f64, fg: f64) -> f64 {
     3550.0 * fg * ((0.1808 * og + 0.8192 * fg) - 1.0004)
 }
 
-/// UK tax ABV (%) from measured OG and FG (SG), §6.7. Table step applies when `d > threshold`,
-/// with `d = (OG - FG) * 1000`.
+/// UK tax ABV (%) from measured OG and FG (SG), §6.7 (T1.12 C1). Thresholds are compared in
+/// integer gravity units (`du = u(OG) - u(FG)`, 1 unit = 0.00001 SG) with strict `>`, so a
+/// difference exactly on a threshold keeps the lower factor; the result is `k * du / 100`.
 #[must_use]
+#[allow(clippy::cast_precision_loss)] // du is far below 2^53
 pub fn uk_tax_abv(og: f64, fg: f64) -> f64 {
-    const STEPS: [(f64, f64); 10] = [
-        (6.95, 0.126),
-        (10.45, 0.127),
-        (17.25, 0.128),
-        (26.15, 0.129),
-        (36.05, 0.130),
-        (46.55, 0.131),
-        (57.15, 0.132),
-        (67.95, 0.133),
-        (78.85, 0.134),
-        (89.75, 0.135),
+    const STEPS: [(i64, f64); 10] = [
+        (695, 0.126),
+        (1045, 0.127),
+        (1725, 0.128),
+        (2615, 0.129),
+        (3605, 0.130),
+        (4655, 0.131),
+        (5715, 0.132),
+        (6795, 0.133),
+        (7885, 0.134),
+        (8975, 0.135),
     ];
-    let d = (og - fg) * 1000.0;
+    let du = gravity_units(og) - gravity_units(fg);
     let mut k = 0.125;
     for (limit, factor) in STEPS {
-        if d > limit {
+        if du > limit {
             k = factor;
         }
     }
-    k * d
+    k * (du as f64 / 100.0)
+}
+
+/// Three-parameter `CalcABV(OG, FG, &abw)` (§6.3): no `OE = max(OE, AE)` clamp. Returns
+/// `(abv, abw)` in %; both are negative when `og < fg`.
+#[must_use]
+pub fn abv_abw_unclamped(og: f64, fg: f64) -> (f64, f64) {
+    let oe = to_plato(og);
+    let ae = to_plato(fg);
+    let re = 0.1808 * oe + 0.8192 * ae;
+    let abw = (oe - re) / (2.0665 - 0.010_665 * oe);
+    (fg / 0.79661 * abw, abw)
 }
 
 /// Morey colour (SRM), §8.1: `1.4922 * (mcu_sum / volume_gal)^0.6859`, where `mcu_sum` is
@@ -173,6 +186,69 @@ pub fn refractometer_finished(fg: f64, brix: f64, zero: f64) -> FinishedBeer {
         re,
         oe,
     }
+}
+
+/// Refractometer reading kind (§9.2): 0 unfermented, 1 fermenting (OG known), 2 finished
+/// beer (hydrometer FG known).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RefractometerType {
+    /// Type 0: unfermented wort.
+    Unfermented,
+    /// Type 1: fermenting wort, `gravity` is the OG.
+    Fermenting,
+    /// Type 2: finished beer, `gravity` is the hydrometer FG.
+    Finished,
+}
+
+impl RefractometerType {
+    /// From the reading-type code (0, 1, 2).
+    #[must_use]
+    pub const fn from_code(code: i64) -> Option<Self> {
+        match code {
+            0 => Some(Self::Unfermented),
+            1 => Some(Self::Fermenting),
+            2 => Some(Self::Finished),
+            _ => None,
+        }
+    }
+}
+
+/// `(og, fg)` pair of a refractometer reading, `None` for type 0.
+fn refractometer_pair(
+    kind: RefractometerType,
+    gravity: f64,
+    brix: f64,
+    zero: f64,
+) -> Option<(f64, f64)> {
+    match kind {
+        RefractometerType::Unfermented => None,
+        RefractometerType::Fermenting => {
+            Some((gravity, refractometer_fermenting(gravity, brix, zero)))
+        }
+        RefractometerType::Finished => {
+            Some((refractometer_finished(gravity, brix, zero).og, gravity))
+        }
+    }
+}
+
+/// `RefractometerABV` (§9.2): 0 for type 0; types 1 and 2 use the clamped [`abv`]. `gravity`
+/// is `F_RT_GRAVITY` (OG for type 1, hydrometer FG for type 2).
+#[must_use]
+pub fn refractometer_abv(kind: RefractometerType, gravity: f64, brix: f64, zero: f64) -> f64 {
+    refractometer_pair(kind, gravity, brix, zero).map_or(0.0, |(og, fg)| abv(og, fg))
+}
+
+/// `RefractometerABW` (§9.2): 0 for type 0; types 1 and 2 use the clamped [`abw`].
+#[must_use]
+pub fn refractometer_abw(kind: RefractometerType, gravity: f64, brix: f64, zero: f64) -> f64 {
+    refractometer_pair(kind, gravity, brix, zero).map_or(0.0, |(og, fg)| abw(og, fg))
+}
+
+/// Intermediate ABV of the finished-beer reading (§9.2 type 2): `ABW * FG / 0.794` (not
+/// 0.79661). `ABW` is the refractometer ABW in %.
+#[must_use]
+pub fn refractometer_finished_abv(fg: f64, brix: f64, zero: f64) -> f64 {
+    refractometer_finished(fg, brix, zero).abw_percent * fg / 0.794
 }
 
 /// FG (SG) limited by yeast alcohol tolerance, §5.2: bisection between `fg` and 1.18 until
@@ -1324,4 +1400,56 @@ pub fn color_adj_range(r: &Recipe) -> (f64, f64) {
     let low = recipe_color(&adjust_color(r, 1.0).0);
     let high = recipe_color(&adjust_color(r, 150.0).0);
     (low.min(high), low.max(high))
+}
+
+/// Estimated mash efficiency (%), §4.2 `RecipeEstMashEfficiency`: OG = [`est_post_mash_og`],
+/// volume = the recipe boil volume (fl oz), `mash_only`.
+#[must_use]
+pub fn recipe_est_mash_efficiency(r: &Recipe) -> f64 {
+    efficiency(r, est_post_mash_og(r), r.boil_vol_floz, true)
+}
+
+/// Measured mash efficiency (%), §4.2 `RecipeActMashEfficiency`: measured mash OG (SG) and
+/// measured boil volume (fl oz), `mash_only`.
+#[must_use]
+pub fn recipe_act_mash_efficiency(
+    r: &Recipe,
+    og_mash_measured: f64,
+    boil_vol_measured: f64,
+) -> f64 {
+    efficiency(r, og_mash_measured, boil_vol_measured, true)
+}
+
+/// Measured brewhouse efficiency (%), §4.2 `RecipeActualEfficiency`: measured OG (SG) and
+/// measured volume (fl oz), all phases.
+#[must_use]
+pub fn recipe_actual_efficiency(r: &Recipe, og_measured: f64, volume_measured: f64) -> f64 {
+    efficiency(r, og_measured, volume_measured, false)
+}
+
+/// Outcome of [`do_adjust_color`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ColorAdjustStatus {
+    /// Recipe type is 3 or higher (cider, mead, ...): nothing is adjusted.
+    NotApplicable,
+    /// Target outside the reachable range [`color_adj_range`]: warning, recipe unchanged.
+    OutOfRange,
+    /// [`adjust_color`] ran.
+    Adjusted,
+}
+
+/// `DoAdjustColor` preconditions (§8.3): beer types only (`F_R_TYPE < 3`) and a target inside
+/// the reachable range (ends included). Returns the status, the recipe and the success flag
+/// of [`adjust_color`] (false unless `Adjusted`).
+#[must_use]
+pub fn do_adjust_color(r: &Recipe, target: f64) -> (ColorAdjustStatus, Recipe, bool) {
+    if r.kind.code() >= 3 {
+        return (ColorAdjustStatus::NotApplicable, r.clone(), false);
+    }
+    let (low, high) = color_adj_range(r);
+    if target < low || target > high {
+        return (ColorAdjustStatus::OutOfRange, r.clone(), false);
+    }
+    let (adjusted, ok) = adjust_color(r, target);
+    (ColorAdjustStatus::Adjusted, adjusted, ok)
 }

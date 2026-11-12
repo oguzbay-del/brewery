@@ -18,10 +18,11 @@ def RA(og,fg):
 def alc_cal(og,fg): return 1881.22*fg*(og-fg)/(1.775-og)
 def ext_cal(og,fg): return 3550.0*fg*((0.1808*og+0.8192*fg)-1.0004)
 def uk(og,fg):
-    d=(og-fg)*1000; f=0.125
-    for lim,ff in [(6.95,.126),(10.45,.127),(17.25,.128),(26.15,.129),(36.05,.13),(46.55,.131),(57.15,.132),(67.95,.133),(78.85,.134),(89.75,.135)]:
-        if d>lim: f=ff
-    return f*d
+    # §6.7 (T1.12 C1): eşikler tam sayı gravite biriminde (1 birim = 0.00001 SG), kesin ">"
+    du=round(og*100000)-round(fg*100000); f=0.125
+    for lim,ff in [(695,.126),(1045,.127),(1725,.128),(2615,.129),(3605,.13),(4655,.131),(5715,.132),(6795,.133),(7885,.134),(8975,.135)]:
+        if du>lim: f=ff
+    return f*(du/100)
 def morey(lb_srm_sum, gal): return 1.4922*(lb_srm_sum/gal)**0.6859
 def hydro(sg,T_F,Tc_F):
     t=(T_F-32)*5/9; tc=(Tc_F-32)*5/9
@@ -538,3 +539,95 @@ print("T1.14e: OG=%.4f FG=%.4f att=%.3f SRM=%.3f Eff=%.2f%% (satır içi sayıla
          recipe_color(ORNEK_RENK), get_efficiency(ORNEK_VERIM, 1.050, 704, False)))
 print("T1.14e: SRM8.819->EBC %.3f, 30L->SRM %.3f, 1050->°P %.4f, 77F->C %.2f"
       % (bconv_color(8.819, 29, 30), bconv_color(30, 47, 29), bconv_hydrometer(1050, 3, 4), bconv_temperature(77, 2, 1)))
+
+
+# ======================================================================================
+# T1.15: eksik spesifikasyon kalemleri (§6.3 üç parametreli ABV, §9.2 refraktometre ABV/ABW,
+# §4.2 verim sarmalayıcıları, §8.3 DoAdjustColor ön koşulları) ve §12 çapası. Yalnız ekleme.
+# ======================================================================================
+def calc_abv3(og, fg):
+    """§6.3 üç parametreli CalcABV(OG, FG, &abw): OE = max(OE, AE) kırpması YOK. (abv, abw) döner."""
+    oe = ToPlato(og); ae = ToPlato(fg)
+    re = 0.1808 * oe + 0.8192 * ae
+    abw = (oe - re) / (2.0665 - 0.010665 * oe)
+    return fg / 0.79661 * abw, abw
+
+
+def refr_corrected(kind, gravity, brix, zero=0.0, wcf=1.02):
+    """§9.2: kind 0 -> (None); 1 -> (OG=gravity, FG=düzeltilmiş); 2 -> (OG=düzeltilmiş, FG=gravity)."""
+    if kind == 1:
+        return gravity, refr1(gravity, brix, zero)
+    if kind == 2:
+        return refr2(gravity, brix, zero)[0], gravity
+    return None
+
+
+def refractometer_abv(kind, gravity, brix, zero=0.0, wcf=1.02):
+    """§9.2 RefractometerABV: tip 0 -> 0; tip 1 ve 2 -> CalcABV (kırpmalı, 0.79661)."""
+    c = refr_corrected(kind, gravity, brix, zero, wcf)
+    return 0.0 if c is None else ABV(c[0], c[1])
+
+
+def refractometer_abw(kind, gravity, brix, zero=0.0, wcf=1.02):
+    """§9.2 RefractometerABW: tip 0 -> 0; tip 1 ve 2 -> CalcABW (kırpmalı)."""
+    c = refr_corrected(kind, gravity, brix, zero, wcf)
+    return 0.0 if c is None else ABW(c[0], c[1])
+
+
+def refractometer_finished_abv(fg, brix, zero=0.0):
+    """§9.2 tip 2 ara değeri: ABV ~ ABW*FG/0.794 (0.79661 değil). ABW yüzde."""
+    return refr2(fg, brix, zero)[1] * fg / 0.794
+
+
+def recipe_est_mash_efficiency(r):
+    """§4.2: tahmini mash verimi: OG = F_R_OG_MASH (§3.5), hacim = F_R_BOIL_VOL, mash_only."""
+    return get_efficiency(r, est_post_mash_og(r), r["boil_vol_floz"], True)
+
+
+def recipe_act_mash_efficiency(r, og_mash_measured, boil_vol_measured):
+    """§4.2: ölçülen mash verimi."""
+    return get_efficiency(r, og_mash_measured, boil_vol_measured, True)
+
+
+def recipe_actual_efficiency(r, og_measured, volume_measured):
+    """§4.2: ölçülen brewhouse verimi."""
+    return get_efficiency(r, og_measured, volume_measured, False)
+
+
+def do_adjust_color(r, target):
+    """§8.3 DoAdjustColor ön koşulları: (durum, reçete, başarı). Tip >= 3 -> 'not_applicable';
+    hedef [min, max] dışında -> 'out_of_range' (uçlar içeride); aksi 'adjusted'. [seçim: uçlar dahil]"""
+    if r["type"] >= 3:
+        return "not_applicable", r, False
+    lo, hi = color_adj_range(r)
+    if target < lo or target > hi:
+        return "out_of_range", r, False
+    nr, ok = adjust_color(r, target)
+    return "adjusted", nr, ok
+
+
+# --- §12 çapası: spesifikasyondaki yuvarlanmış değerler referansla uyuşmalı (A7) ---
+def _r(x, n): return round(x, n)
+assert _r(ToPlato(1.050), 4) == 12.3876 and _r(ToSG(12.0), 5) == 1.04838 and _r(BrixToSG(12.0), 5) == 1.04838
+assert _r(SGToBrix(1.050), 4) == 12.3870 and _r(BrixToRI(10.0), 6) == 1.347871 and _r(RIToBrix(BrixToRI(10.0)), 4) == 10.0
+assert _r(bconv_color(morey(80, 6), 29, 30), 3) == 17.374 and _r(bconv_color(8.819, 29, 30), 3) == 17.373
+for _og, _fg, _abw, _abv, _aa, _ra, _re, _ka, _ke, _kt, _uk in (
+        (1.050, 1.010, 4.162, 5.276, 79.33, 64.99, 4.337, 104.8, 60.4, 165.2, 5.200),
+        (1.065, 1.012, 5.543, 7.042, 80.71, 66.11, 5.389, 142.1, 76.1, 218.2, 6.943),
+        (1.080, 1.016, 6.717, 8.566, 78.90, 64.64, 6.836, 176.0, 98.0, 274.0, 8.448)):
+    assert (_r(ABW(_og, _fg), 3), _r(ABV(_og, _fg), 3), _r(AA(_og, _fg), 2), _r(RA(_og, _fg), 2),
+            _r(RE(_og, _fg), 3)) == (_abw, _abv, _aa, _ra, _re), (_og, _fg)
+    assert (_r(alc_cal(_og, _fg), 1), _r(ext_cal(_og, _fg), 1), _r(cal_total(_og, _fg), 1)) == (_ka, _ke, _kt)
+    assert _r(uk(_og, _fg), 3) == _uk
+assert _r(recipe_og(ORNEK_AG), 4) == 1.0609 and _r(recipe_fg(ORNEK_AG), 4) == 1.0102
+assert _r(ABV(recipe_og(ORNEK_AG), recipe_fg(ORNEK_AG)), 3) == 6.717
+assert _r(fg_tol(1.100, 1.010, 10), 4) == 1.0259 and _r(ABV(1.100, fg_tol(1.100, 1.010, 10)), 3) == 10.016
+assert _r(recipe_color(ORNEK_RENK), 3) == 8.819 and _r(morey(80, 6), 3) == 8.819
+assert _r(hydro(1.050, 77, 60), 5) == 1.05200 and _r(refr0(12.0), 5) == 1.04739
+assert _r(refr1(1.050, 6.5), 5) == 1.01061 and _r(ABV(1.050, refr1(1.050, 6.5)), 3) == 5.196
+_o, _w, _re, _oe = refr2(1.010, 6.5)
+assert (_r(_o, 5), _r(_w, 3), _r(_re, 3), _r(_oe, 3)) == (1.05137, 4.257, 4.491, 12.711)
+assert (_r(gadj_oz(1.040, 1.050, 640, 0), 3), _r(gadj_oz(1.040, 1.050, 640, 1), 3)) == (18.182, 22.222)
+assert _r(gadj_water(1.060, 1.050, 640), 6) == 128.0
+assert _r(get_efficiency(ORNEK_VERIM, 1.050, 704, False), 2) == 62.23
+assert abs(calc_abv3(1.050, 1.010)[0] - ABV(1.050, 1.010)) < 1e-12 and calc_abv3(1.010, 1.020)[0] < 0

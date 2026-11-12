@@ -275,6 +275,7 @@ Verim = Pm / M_g × 100
 | `RecipeActMashEfficiency` | `F_R_OG_MASH_MEASURED` | `F_R_BOIL_VOL_MEASURED` | true | Ölçülen mash verimi |
 | `RecipeActualEfficiency` | `F_R_OG_MEASURED` | `F_R_VOLUME_MEASURED` | false | Ölçülen brewhouse verimi |
 
+Referans ve Rust'ta üç sarmalayıcı da vardır (`recipe_est_mash_efficiency(r)`, `recipe_act_mash_efficiency(r, og_mash_measured, boil_vol_measured)`, `recipe_actual_efficiency(r, og_measured, volume_measured)`); ölçülen değerler reçete modelinde olmadığından çağıran verir. Tahmini mash verimi `F_R_OG_MASH` için §3.5 `est_post_mash_og(r)`'yi kullanır.
 ---
 
 ## 5. Final gravite (FG)
@@ -301,9 +302,11 @@ O_MASH_FG_ADJUST ≠ 0 ise:
 - Anlamı: Tref'e en yakın adım (±40 °F içinde) "sakkarifikasyon sıcaklığı" kabul edilir. Tref'in altında ve ≥139 °F'ta bir adım zaten seçildiyse sonraki daha sıcak adımlar (ör. mash-out) yok sayılır.
 - Ayarlar: `O_MASH_FG_ADJ_TEMP` = **153.5** (°F), `O_MASH_FG_ADJ_SLOPE` = **−1.25** (% attenuasyon / °F), `O_MASH_FG_ADJUST` = **1** (açık).
 - Örnek: 148 °F adımı → atten += −1.25 × (148 − 153.5) = **+6.875** puan.
-- Mash nesnesi ya da adım listesi geçersizse best = Tref kalır ve düzeltme 0 olur.
+- Mash nesnesi ya da adım listesi geçersizse best = Tref kalır; kırpma yine uygulanır, yani düzeltme yalnız `Tref` 144–160 °F içindeyse 0'dır (Tref = 140, adım yok → best = 144, atten −1.25·4 = −5 değişir). Referans bu sırayı izler.
 - Bu yöntemin yayımlanmış bir kaynağı bilinmiyor; BeerSmith'e özgü doğrusal bir model **[tahmin]**.
 - **[belirsiz]**: Atlama koşulu `prev` değişkeninin önceki değerine bakar (decompile ve makine kodu bunu gösteriyor). Tasarım niyeti tam olarak anlaşılamadı ama davranış yukarıdaki gibidir.
+
+- Trub kaybı: §3.5/§3.6 `Ekipman.F_E_TRUB_LOSS`, §3.6/§8.1 `F_R_TRUB_LOSS` der; referans ve Rust tek alan taşır (reçetenin ekipman kopyası ile aynı değer kabul edildi **[seçim]**).
 
 **Adım 3: FG puanları.**
 ```
@@ -352,7 +355,7 @@ Ortak tanımlar: `OE = ToPlato(OG)`, `AE = ToPlato(FG)`. Aksi belirtilmedikçe `
 ### 6.3 Hacimce alkol — `CalcABV(OG, FG)`
 - `ABV(%) = ABW × FG / 0.79661`
 - Bilinen formül: Balling ABW'sinden yoğunluk oranıyla ABV'ye geçiş. 0.79661 etanolün özgül ağırlığıdır. Yaygın "(OG−FG)×131.25" basit formülü **kullanılmıyor**.
-- `CalcABV(OG, FG, &abw)` (3 parametreli sürüm) aynıdır ama **OE = max(OE, AE) kırpması yapmaz** ve ABW'yi de döndürür.
+- `CalcABV(OG, FG, &abw)` (3 parametreli sürüm) aynıdır ama **OE = max(OE, AE) kırpması yapmaz** ve ABW'yi de döndürür: `OE = ToPlato(OG)`, `AE = ToPlato(FG)`, `RE = 0.1808·OE + 0.8192·AE`, `ABW = (OE − RE)/(2.0665 − 0.010665·OE)`, `ABV = ABW × FG / 0.79661`. OG < FG iken ABW ve ABV negatif çıkar (kırpmalı sürümde 0). Referans: `calc_abv3`, Rust: `abv_abw_unclamped`.
 
 | Fonksiyon | OG | FG |
 |---|---|---|
@@ -361,7 +364,7 @@ Ortak tanımlar: `OE = ToPlato(OG)`, `AE = ToPlato(FG)`. Aksi belirtilmedikçe `
 | `AttenuationABV` / `AttenuationABW` (araç) | `F_AT_START_GRAVITY` | `F_AT_FINAL_GRAVITY` |
 
 ### 6.4 Görünür attenuasyon — `ApparentAttenuation(OG, FG)`
-- `AA(%) = (OE − AE)/OE × 100` (OE = max(OE, AE)). OE = 0 için koruma yoktur (OG = 1.000 → sıfıra bölme).
+- `AA(%) = (OE − AE)/OE × 100` (OE = max(OE, AE)). OE = 0 için koruma yoktur. `ToPlato(1.000) = −0.003` olduğundan payda sıfırı SG ≈ 1.0000117'de bulur (OG = 1.000'de sonsuz değil, anlamsız bir sonuç: `AA(1.0000117, 1.0) ≈ 11893.6 %`); SG < 1.0000117 için Plato negatiftir. Hata sözleşmesi (OG ≤ FG ya da OG ≈ 1) çağıran katmanda belirlenir (T1.16, C2).
 - `EstApparentAttenFunc`: (`F_R_VIRTUAL_OG`, `F_R_FG`); `ApparentAttenFunc`: ölçülen OG/FG; `AttenuationApparent`: araç alanları.
 
 ### 6.5 Gerçek attenuasyon — `RealAttenuation(OG, FG)`
@@ -372,21 +375,23 @@ Ortak tanımlar: `OE = ToPlato(OG)`, `AE = ToPlato(FG)`. Aksi belirtilmedikçe `
 - `OriginalExtract` = ToPlato(F_AT_START_GRAVITY), `ApparentExtract` = ToPlato(F_AT_FINAL_GRAVITY), `CalcRealExtract` = RealExtract(start, final).
 
 ### 6.7 İngiltere vergi ABV'si — `UKTaxABVFunc`
-Girdi: ölçülen OG ve FG. `d = (OG − FG) × 1000`. `ABV = d × k`, k aşağıdaki tablodan (eşik **aşılırsa**, yani `d > eşik`):
+Girdi: ölçülen OG ve FG. Eşikler **tam sayı gravite biriminde** karşılaştırılır (`00-OKU-BENI.md`, kayan nokta kuralı): `u(SG) = round(SG × 100000)` (yarımda çifte), `du = u(OG) − u(FG)` (1 birim = 0.01 puan), `d = du / 100` (puan). `ABV = d × k`; k aşağıdaki tablodan, eşik **aşılırsa** (`du > eşik × 100`, kesin `>`):
 
-| d > | k |
-|---|---|
-| (varsayılan) | 0.125 |
-| 6.95 | 0.126 |
-| 10.45 | 0.127 |
-| 17.25 | 0.128 |
-| 26.15 | 0.129 |
-| 36.05 | 0.130 |
-| 46.55 | 0.131 |
-| 57.15 | 0.132 |
-| 67.95 | 0.133 |
-| 78.85 | 0.134 |
-| 89.75 | 0.135 |
+| d > | du > | k |
+|---|---|---|
+| (varsayılan) | | 0.125 |
+| 6.95 | 695 | 0.126 |
+| 10.45 | 1045 | 0.127 |
+| 17.25 | 1725 | 0.128 |
+| 26.15 | 2615 | 0.129 |
+| 36.05 | 3605 | 0.130 |
+| 46.55 | 4655 | 0.131 |
+| 57.15 | 5715 | 0.132 |
+| 67.95 | 6795 | 0.133 |
+| 78.85 | 7885 | 0.134 |
+| 89.75 | 8975 | 0.135 |
+
+**Karar (T1.12 C1):** BeerSmith `d = (OG − FG) × 1000` değerini f64 olarak `d > 6.95` vb. ile karşılaştırır. Ondalıkta tam eşik olan farklarda (ör. OG 1.00695, FG 1.000: `d = 6.950000000000012`) ikili hata yüzünden bir üst katsayı seçilir; T1.12 denemesinde tam eşik olan 1210 (OG, FG) çiftinin 583'ünde böyle oldu. Bu bir vergi rakamı olduğundan BeerSmith'in f64 davranışı **bilerek bırakıldı**: eşik tam sayı birimde, kesin `>` ile karşılaştırılır ve tam eşikte alt katsayı kalır (HMRC tablosunun yazılış biçimi). Etkisi yalnız eşiğin birkaç birimi içindedir; Aşama 5 altın testinde BeerSmith ekranıyla farklı çıkabilecek yer burasıdır.
 
 Bilinen yöntem: HM Revenue & Customs (UK Excise Notice 226) gravite kaybı tablosu **[tahmin: adı]**.
 
@@ -437,6 +442,7 @@ SRM = 1.4922 × MCU^0.6859
 Bu kısım sezgisel (heuristik) bir arama algoritmasıdır. Birebir yeniden üretmek zordur; aşağıda davranış özetlenmiştir.
 
 **DoAdjustColor**: Yalnız bira tiplerinde (`F_R_TYPE < 3`) çalışır; diğer tiplerde renk ikonu seçici açılır. Kullanıcıdan `F_R_DESIRED_COLOR` alınır. Önce `GetColorAdjRange` ile ulaşılabilir aralık bulunur; hedef bu aralığın dışındaysa uyarı verir. İçindeyse `AdjustColor(hedef)` çalıştırılır.
+Ön koşullar referansta ve Rust'ta `do_adjust_color` ile sarılıdır: `F_R_TYPE ≥ 3` → `not_applicable` (reçete değişmez); hedef `[min, max]` dışında (uçlar dahil içeride) → `out_of_range` (reçete değişmez); aksi halde `adjusted` ve `AdjustColor` sonucu. Ham `adjust_color` bu korumaları taşımaz **[seçim: uçlar aralığa dahil]**.
 
 **GetColorAdjRange**: Reçetenin kopyası üzerinde `AdjustColor(1.0 SRM)` ve `AdjustColor(150.0 SRM)` çalıştırılır. Ortaya çıkan renkler [min, max] aralığıdır. min ≠ max ise ayar mümkündür.
 
@@ -481,6 +487,7 @@ dönüş: yeni F_R_COLOR
 ```
 - **[belirsiz / olası hata]**: Döngü 1'deki "%25 alt sınırı" koşulu `F_G_TYPE` yerine kaydın nesne tipini (`GetType()`) 0 ile karşılaştırıyor; bu yüzden pratikte hiç uygulanmıyor. Döngü 2'de doğru alan kullanılıyor.
 - Extract reçetede sabit **15** kullanılıyor (`O_STEEP_EFFICIENCY` okunmuyor).
+- **[seçim]** Referansın spesifikasyonun sustuğu yerlerdeki seçimleri (her biri için `parite/01_yogunluk.py`'de vaka var): döngü 1'de `c > 0` yanında `Mc > 0` koşulu aranır; döngü 2'de gravite eşdeğeri `e ≤ 0` olan baz malzeme atlanır (`e ≤ ΔP` ise A = 0 kuralı yalnız `e > 0` için); döngü 2 yalnız döngü 1'de "baz" sayılanlar üzerinde döner; "koyu" = rengi hedefin üstünde olan; `F_R_TOT_GRAINS` tüm miktarların toplamıdır (§11.5).
 
 **GetColorFlexibility(recipe, hedef) → (lo, hi, ok)** **[yaklaşık]**:
 - `F_R_TOT_GRAINS ≤ 0` veya `F_R_VOLUME ≤ 0` ise ok = false, lo = hi = mevcut renk.
@@ -527,13 +534,14 @@ RE   = 194.5935 + 129.8·FG + RI·(410.8815·RI − 790.8732)          # °P
 OE   = (RE + 2.0665·ABW%) / (1 + 0.010665·ABW%)                    # Balling ters çözüm
 OG   = ToSG(OE)
 ```
-- Ara değerler de hesaplanır ama dönmez: ABV ≈ ABW·FG/0.794, AA, RA ve kaloriler (OG = max(OG, FG) ile).
+- Ara değerler de hesaplanır ama dönmez: ABV ≈ ABW·FG/**0.794** (0.79661 değil), AA, RA ve kaloriler (OG = max(OG, FG) ile). Referans/Rust'ta yalnız ABV ara değeri `refractometer_finished_abv` olarak açıktır; AA, RA ve kaloriler §6 / §7 fonksiyonlarıyla aynı girdiden hesaplanır.
 - Bilinen formül: RI–FG'den ABW ve RE bağıntıları **Louis K. Bonham** ("The Use of Handheld Refractometers by Homebrewers", Zymurgy) ile uyumlu **[tahmin]**.
 
 **ABV/ABW** — `RefractometerABV` / `RefractometerABW`:
 - Tip 0 → 0.
 - Tip 1 → CalcABV/CalcABW(OG = F_RT_GRAVITY, FG = düzeltilmiş).
 - Tip 2 → CalcABV/CalcABW(OG = düzeltilmiş, FG = F_RT_GRAVITY).
+- İki çağrı (2 parametreli, kırpmalı `CalcABV`/`CalcABW`) referansta `refractometer_abv` / `refractometer_abw` (tip, `F_RT_GRAVITY`, okuma, sıfır) olarak vardır; tip 1 WCF kullanmaz, tip 0 için WCF gerekmez (sonuç 0).
 
 ### 9.3 Gravite yükseltme (özüt ekleme) — `GravityAdjustFunc` → `F_GT_WEIGHT`
 ```
@@ -553,6 +561,7 @@ Tip 0 (su):           SG = 1 + (SG0 − 1)·V0/Vt
 Tip 1 (wort/bira):    SG = 1 + (SG0 − 1)·V0/Vt + (SGa − 1)·Va/Vt
 ```
 - Vt = 0 için koruma yoktur.
+- Uygulama burada tekrarlanmaz: aynı hesap 05 §8.1'dedir (`mash::dilution`, metrik birim). 01 referansında karşılığı yoktur (ADR-0003 madde 4: kopyalanmaz). 01'den çağrı bağlantısı T1.16'da (ortak model) kurulur.
 
 ---
 
@@ -599,7 +608,8 @@ Değerler bu belgedeki formüllerle Python'da hesaplanmıştır (double hassasiy
 | SG→Brix(1.050) | 12.3870 °Bx |
 | Brix→RI(10.0) | 1.347871 |
 | RI→Brix(1.347871) | 10.0000 |
-| SRM 8.819 → EBC | 17.374 |
+| SRM 8.81906 (yuvarlanmamış, §12.5) → EBC | 17.374 |
+| SRM 8.819 (yuvarlanmış) → EBC | 17.373 |
 
 ### 12.2 Alkol / attenuasyon / kalori
 | OG | FG | ABW % | ABV % | AA % | RA % | RE °P | kcal alk | kcal ekst | kcal toplam | UK vergi ABV % |
