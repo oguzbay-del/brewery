@@ -13,8 +13,10 @@ use std::path::PathBuf;
 
 use serde_json::Value;
 
-/// Relative tolerance for floating-point results: `|a − b| ≤ 1e-9 · max(1, |b|)`.
-pub const REL_TOL: f64 = 1e-9;
+/// Floating-point tolerance: `|a − b| ≤ ABS_TOL + REL_TOL · |b|` (ADR-0003 madde 3).
+pub const REL_TOL: f64 = 1e-11;
+/// Absolute floor, only meaningful around zero.
+pub const ABS_TOL: f64 = 1e-12;
 
 /// One case of a vector file.
 #[derive(Debug)]
@@ -92,6 +94,13 @@ impl Case {
 
 /// Loads `formuller/testler/vektorler/<bolum>.json`.
 pub fn load(bolum: &str) -> Vec<Case> {
+    // Self-check: decimal text must parse to the nearest f64 (`float_roundtrip`), as Python does.
+    let probe: f64 = serde_json::from_str("9.395656388205701").expect("number");
+    assert_eq!(
+        probe.to_bits(),
+        9.395_656_388_205_701_f64.to_bits(),
+        "serde_json float_roundtrip is off"
+    );
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../../../formuller/testler/vektorler")
         .join(format!("{bolum}.json"));
@@ -121,7 +130,7 @@ pub fn load(bolum: &str) -> Vec<Case> {
 }
 
 fn close(a: f64, b: f64) -> bool {
-    (a - b).abs() <= REL_TOL * b.abs().max(1.0)
+    (a - b).abs() <= ABS_TOL + REL_TOL * b.abs()
 }
 
 fn check_value(label: &str, actual: &Value, expected: &Value) {
