@@ -142,7 +142,10 @@ fn parite_09() {
             "residual_co2" => c.check_f(bt::residual_co2(c.f("t_c"))),
             "co2_pressure_psi" => c.check_f(bt::co2_pressure_psi(c.f("t_c"), c.f("vol"))),
             "spund" => {
-                let s = bt::spund(c.f("target_vol"), c.f("t_c"), c.f("fg_expected"));
+                let Ok(s) = bt::spund(c.f("target_vol"), c.f("t_c"), c.f("fg_expected")) else {
+                    c.check(&json!({ "hata": "ValueError" }));
+                    return true;
+                };
                 c.check(&json!({
                     "kalinti_vol": s.residual_vol,
                     "gereken_g_L": s.needed_g_per_l,

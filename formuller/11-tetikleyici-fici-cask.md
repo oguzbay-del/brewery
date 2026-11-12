@@ -192,3 +192,7 @@ gün = 3 × 2^((12 − T_mahzen) / 10)
 - **Doğrulanacak:** Δ varsayılanları, lager soğutma hızı, lagering kuralı, kısmi priming oranı (1/3), cask hedef vol, isinglass oranı, cask kondisyon süresi.
 - Cask değerleri İngiltere'deki bir veya iki üreticiyle ve Cask Marque yönergeleriyle kontrol edilecek.
 - 04 §3.5 basınç polinomunun 0 °C altında ve 3.5 vol üstünde güvenilirliği bilinmiyor; fıçı hesabında bu aralık dışı uyarı verir.
+
+**Karar (T1.12 D6, D7, D13, D2, D9):**
+- **Uyarılar kod + sayısal alandır; metin istemcide üretilir** (ADR-0004, Rust `PrimingWarning`, referans sözlük `{"kod": …}`; değerler yuvarlanmaz): `kuru_madde_bilinmiyor`; `polinom_sicaklik_alti {nokta: kondisyon|servis, T_C}` (T < 0 °C); `polinom_vol_ustu {nokta: hedef|tepe, vol}` (vol > 3.5 + 1e-9); `tepe_vol_doymus {sinir_vol: 10}` (toplam CO₂ 10 vol'un tuttuğundan fazla: `equilibrium_vol` 10'da doyar, değer güvenilmez); `tepe_basinci_siniri_asildi {tepe_bar, limit_bar, kondisyon_C}` (`tepe_toplam_gosterge_bar > limit + 1e-9`). Sıra bu listedeki sıradır. Cask yalnız `kuru_madde_bilinmiyor` üretir.
+- **Doğrulama:** `trigger_index` `consecutive ≥ 1` ister (0 hata); `lager_weeks` `pts_per_week` < 0 ya da > 10⁶ için hata, 0 için `ZeroDivision`; sonlu olmayan ya da |x| > 10⁶ girdi, negatif hacim, kuru madde [0, 1] dışı, `part` (0, 1] dışı, `k < 0` hata verir (Rust `TriggerError::InvalidInput`, referans `ValueError`).

@@ -11,6 +11,10 @@ def r(x, n=3): return round(x, n)
 def u(sg): return round(sg * 100000)
 TOL = 1e-9
 
+def _fin(*xs, lim=1e6):
+    """Karar (T1.12 D2): girdiler sonlu ve makul büyüklükte olmalı (NaN/sonsuz/taşma → ValueError)."""
+    return all(math.isfinite(x) and abs(x) <= lim for x in xs)
+
 # ---- 04'ten ortak fonksiyonlar (BeerSmith kalıntı CO2, fıçı basıncı; °F girdili)
 def F(c): return c * 9 / 5 + 32
 def residual_vol(T_C):
@@ -27,6 +31,8 @@ STABLE_PER_DAY = 0.0005   # [tasarım]
 def trigger_index(points, fg_ref, delta, consecutive=3):
     """points: saatlik medyan [(t_saat, SG)]. SG ≤ FG_ref + Δ art arda 'consecutive' noktada sağlanınca
     tetiklenir; dönen değer, şartın ilk sağlandığı noktanın zamanı."""
+    if consecutive < 1 or not _fin(fg_ref, delta) or not all(_fin(t, g) for t, g in points):
+        raise ValueError("consecutive ≥ 1 ve girdiler sonlu olmalı")      # T1.12 D9, D2
     run = 0
     for i, (t, g) in enumerate(points):
         run = run + 1 if u(g) <= u(fg_ref) + u(delta) else 0
@@ -37,9 +43,11 @@ def predicted_trigger(fg_inf, A, k, fg_ref, delta):
     """07 §1 modeliyle tetik zamanı: SG(t) = FGinf + A e^(-kt) = FG_ref + Δ.
     Dönüş (durum, saat): ("tetik", t) | ("gecmis", 0.0) eşik zaten t=0'da sağlanıyor | ("erisilemez", None)
     eğri asimptotu (FG∞) eşiğin üstünde veya eşitinde, eşiğe hiç inilmez."""
+    if not _fin(fg_inf, A, k, fg_ref, delta): raise ValueError("girdiler sonlu olmalı")      # T1.12 D2
     target_u = u(fg_ref) + u(delta) - u(fg_inf)
     if target_u <= 0: return ("erisilemez", None)
     if u(A) <= target_u: return ("gecmis", 0.0)
+    if k < 0: raise ValueError("k < 0")                                                      # k = 0: ZeroDivisionError
     return ("tetik", math.log(A / (target_u / 100000)) / k)
 
 def fg_reference(fg_recipe, fg_inf=None, shown=False, delta=0.004):
@@ -68,6 +76,8 @@ def ramp_hours(T_from, T_to, rate_C_per_day):
 def lager_weeks(og, pts_per_week=8, lo=2, hi=12):
     """Kaba kural: her 8 OG puanı için 1 hafta, YUKARI yuvarlanır [doğrulanacak]. Önce tam sayı puana çevrilir
     (round, ikili kayan nokta hatası: (1.048-1)*1000 = 48.00000000000004), sonra tam sayı bölmeyle tavan alınır."""
+    if not _fin(og) or pts_per_week < 0 or pts_per_week > 1e6:      # T1.12 D9: pts_per_week = 0 ZeroDivisionError kalır
+        raise ValueError("og sonlu, 0 ≤ pts_per_week ≤ 10⁶ olmalı")
     pts = round((og - 1) * 100000)                         # 0.01 puan birimi
     w = -(-pts // (pts_per_week * 100))                    # ceil(pts / (8·100))
     return min(hi, max(lo, w))
@@ -77,7 +87,11 @@ R = 8.314462618; P_ATM = 101325.0; VM = 22.414      # L/mol (0 °C, 1 atm)
 M_DEX_MONO = 198.17; M_SUC = 342.30; M_INVERT = 360.31   # g/mol; CO2 verimi: 2, 4, 4 mol
 SUGARS = {"dekstroz": (M_DEX_MONO, 2), "sakaroz": (M_SUC, 4), "invert": (M_INVERT, 4)}
 
-UYARI_KURU = "kuru madde bilinmiyor: 1.0 varsayıldı (şurup ve bloklarda şeker miktarı eksik çıkabilir)"
+# Karar (T1.12 D7): uyarılar kod + sayısal alanlardır, metin istemcide üretilir (ADR-0004).
+UYARI_KURU = {"kod": "kuru_madde_bilinmiyor"}      # 1.0 varsayıldı (şurup ve bloklarda şeker miktarı eksik çıkabilir)
+POLY_T_MIN_C = 0.0     # Karar (T1.12 D6): 04 §3.5 polinomu 0 °C altında ve
+POLY_VOL_MAX = 3.5     # 3.5 vol üstünde güvenilir değil
+EQ_VOL_MAX = 10.0      # equilibrium_vol arama aralığı [0, 10]
 
 def sugar_from_mol(mol, kind, dry=None):
     """dry = ürünün kuru madde oranı (0–1), malzeme veritabanından gelir. None (bilinmiyor): 1.0 ile hesaplanır,
@@ -100,6 +114,12 @@ def head_mol(vol_t, T_cond, V_head, purged=True):
     n0 = P_ATM * V_head / 1000 / (R * (T_cond + 273.15)) if purged else 0.0
     return max(0.0, n - n0), p_abs_Pa(vol_t, T_cond)
 
+def _total_co2(vol, T_C, V_beer, V_head): return vol * V_beer / VM + head_gas_mol(vol, T_C, V_head)
+
+def equilibrium_saturated(n_total, T_C, V_beer, V_head):
+    """T1.12 D6: toplam CO2, arama aralığının üst ucundaki (10 vol) toplamı aşıyorsa equilibrium_vol 10.0'da doyar."""
+    return _total_co2(EQ_VOL_MAX, T_C, V_beer, V_head) < n_total
+
 def equilibrium_vol(n_total, T_C, V_beer, V_head):
     """Fıçıdaki toplam CO2 (mol, biradaki + boşluktaki, süpürme gazı dahil) T_C'de dengeye gelince biradaki vol.
     Bisection; toplam(v) = v·V_beer/22.414 + CO2 mol(boşluk, v) artan."""
@@ -116,6 +136,10 @@ def keg_priming(vol_t, T_res, T_cond, V_beer, V_head, kind="dekstroz", purged=Tr
     (F1 karar 2): şeker CO2'si = biradaki (hedef − kalıntı) + servis dengesindeki boşluk CO2'si − başlangıç gazı.
     Kondisyon sıcaklığındaki (T_cond) tepe basıncı aynı toplam CO2'den ayrıca hesaplanır; limit_bar (fıçı çalışma/güvenlik
     basıncı, bar gösterge) verilir ve tepe toplam gösterge basıncı onu aşarsa uyarı çıkar."""
+    if not _fin(vol_t, T_res, T_cond, V_beer, V_head, part, T_serv) or vol_t < 0 or V_beer < 0 or V_head < 0 \
+            or not 0 < part <= 1 or (limit_bar is not None and not _fin(limit_bar)) \
+            or (dry is not None and not (_fin(dry) and 0 <= dry <= 1)):
+        raise ValueError("fıçı girdisi sonlu ve aralıkta olmalı")                                  # T1.12 D2
     nb = bottle_mol(vol_t, T_res, V_beer)
     n0 = P_ATM * V_head / 1000 / (R * (T_cond + 273.15)) if purged else 0.0
     nh = max(0.0, head_gas_mol(vol_t, T_serv, V_head) - n0)            # servis dengesi
@@ -130,9 +154,16 @@ def keg_priming(vol_t, T_res, T_cond, V_beer, V_head, kind="dekstroz", purged=Tr
     p_peak_total = p_peak + air
     p_serv = (p_abs_Pa(vol_t, T_serv) - P_ATM) / 1e5
     warn = []
-    if dry is None: warn.append(UYARI_KURU)
-    if limit_bar is not None and p_peak_total > limit_bar:
-        warn.append("tepe basıncı fıçı sınırını aşıyor: %.2f bar > %.2f bar (kondisyon %.0f °C)" % (p_peak_total, limit_bar, T_cond))
+    if dry is None: warn.append(dict(UYARI_KURU))
+    for nokta, T in (("kondisyon", T_cond), ("servis", T_serv)):
+        if T < POLY_T_MIN_C: warn.append({"kod": "polinom_sicaklik_alti", "nokta": nokta, "T_C": T})
+    for nokta, vv in (("hedef", vol_t), ("tepe", v_peak)):
+        if vv > POLY_VOL_MAX + TOL: warn.append({"kod": "polinom_vol_ustu", "nokta": nokta, "vol": vv})
+    if equilibrium_saturated(n_total, T_cond, V_beer, V_head):
+        warn.append({"kod": "tepe_vol_doymus", "sinir_vol": EQ_VOL_MAX})
+    if limit_bar is not None and p_peak_total > limit_bar + TOL:
+        warn.append({"kod": "tepe_basinci_siniri_asildi", "tepe_bar": p_peak_total, "limit_bar": limit_bar,
+                     "kondisyon_C": T_cond})
     out = {"seker_g": r(full if mode == "tam" else full * part, 1), "sise_esdegeri_g": r(bottle_same, 1),
            "kafa_payi_%": r(100 * (full / bottle_same - 1), 1) if bottle_same > 0 else None,
            "servis_basinci_bar": r(p_serv, 2), "tepe_vol": r(v_peak, 2), "tepe_basinci_bar": r(p_peak, 2),
@@ -153,12 +184,14 @@ def co2_from_remaining(sg_rack, fg_ref):
     return dRE_gL * CO2_PER_EXTRACT / G_PER_VOL
 
 def cask_priming(V, vol_t, T_res, sg_rack, fg_ref, kind="invert", dry=None):
+    if not _fin(V, vol_t, T_res, sg_rack, fg_ref) or V < 0 or (dry is not None and not (_fin(dry) and 0 <= dry <= 1)):
+        raise ValueError("cask girdisi sonlu ve aralıkta olmalı")                                  # T1.12 D2
     res = residual_vol(T_res); fromx = co2_from_remaining(sg_rack, fg_ref)
     need = vol_t - res - fromx
     g = sugar_from_mol(max(0.0, need) * V / VM, kind, dry)
     return {"kalinti_vol": r(res, 2), "ekstrakttan_vol": r(fromx, 2), "eksik_vol": r(need, 2),
             "seker_g": r(g, 1), "g_L": r(g / V, 2), "fazla": need < 0,
-            "uyarilar": [UYARI_KURU] if dry is None else []}
+            "uyarilar": [dict(UYARI_KURU)] if dry is None else []}
 
 def finings_mL(V, rate_mL_per_L=2.0): return V * rate_mL_per_L     # [doğrulanacak]
 

@@ -4,6 +4,14 @@ import math
 from ortak import Vektor, yukle
 
 
+def _hata(f):
+    """Python istisnasını {"hata": ad} olarak yazar (ValueError, ZeroDivisionError, IndexError)."""
+    try:
+        return f()
+    except (ValueError, ZeroDivisionError, IndexError) as e:
+        return {"hata": type(e).__name__}
+
+
 def uret():
     ref = yukle("11_tetikleyici_fici_cask_tv.py")
     v = Vektor("11", "formuller/testler/11_tetikleyici_fici_cask_tv.py")
@@ -24,7 +32,7 @@ def uret():
     def ti(points, fg_ref, delta, consecutive=3, not_=None):
         girdi = {"points": points, "fg_ref": fg_ref, "delta": delta, "consecutive": consecutive}
         v.ekle("trigger_index", girdi,
-               ref.trigger_index([tuple(p) for p in points], fg_ref, delta, consecutive), not_)
+               _hata(lambda: ref.trigger_index([tuple(p) for p in points], fg_ref, delta, consecutive)), not_)
 
     curve = [[h, 1.012 + 0.036 * math.exp(-0.03 * h)] for h in range(12, 200)]
     ti(curve, 1.012, 0.004, 3, "T1a")
@@ -41,23 +49,27 @@ def uret():
     ti([[0, 1.014], [1, 1.014], [2, 1.014]], 1.013, 0.001, 3, "1.014 = 1.013 + 0.001")
     ti([[0, 1.014], [1, 1.014]], 1.013, 0.001, 2)
     ti([], 1.012, 0.004, 3, "boş")
+    ti(curve, 1.012, 0.004, 0, "T1.12 D9: consecutive = 0 hata")
+    ti([[0, 1.0], [1, 1e9]], 1.012, 0.004, 1, "T1.12 D2: makul olmayan SG hata")
+    ti([[0, 1.0]], 1.012, 1e9, 1, "T1.12 D2: makul olmayan Δ hata")
     ti([[0, 1.010]], 1.012, 0.004, 3, "tek nokta, 3 gerekir")
     ti([[0, 1.010]], 1.012, 0.004, 1, "elle okuma")
     ti([[3, 1.0], [1, 1.0], [2, 1.0]], 1.0, 0.0, 3, "sırasız zamanlar, ilk sağlanan nokta")
 
     def pt(fg_inf, A, k, fg_ref, delta, not_=None):
         girdi = {"fg_inf": fg_inf, "a": A, "k": k, "fg_ref": fg_ref, "delta": delta}
-        try:
-            d, t = ref.predicted_trigger(fg_inf, A, k, fg_ref, delta)
-            beklenen = [d, t]
-        except ZeroDivisionError:
-            beklenen = {"hata": "ZeroDivisionError"}
+        beklenen = _hata(lambda: list(ref.predicted_trigger(fg_inf, A, k, fg_ref, delta)))
         v.ekle("predicted_trigger", girdi, beklenen, not_)
 
     pt(1.012, 0.036, 0.03, 1.012, 0.004, "T1b")
     pt(1.013, 0.037, 0.03, 1.010, 0.002, "T1j erişilemez")
     pt(1.012, 0.003, 0.03, 1.012, 0.004, "T1k geçmiş")
     pt(1.012, 0.00001, 0.03, 1.012, 0.00001, "A = hedef: geçmiş")
+    pt(1.012, 0.036, 0.0, 1.012, 0.004, "k = 0: ZeroDivisionError")
+    pt(1.012, 0.036, -0.03, 1.012, 0.004, "k < 0: ValueError")
+    pt(1.012, 0.036, 1e9, 1.012, 0.004, "k çok büyük: sonlu, ~0 saat")
+    pt(1.012, 1e9, 0.03, 1.012, 0.004, "T1.12 D2: makul olmayan A")
+    pt(1e9, 0.036, 0.03, 1.012, 0.004, "T1.12 D2: makul olmayan FG∞")
     pt(1.012, 0.00002, 0.03, 1.012, 0.00001, "A = hedef + 1 birim")
     pt(1.012, 0.00001, 0.03, 1.012, 0.0, "hedef 0: erişilemez")
     pt(1.01201, 0.03, 0.03, 1.012, 0.0, "FG∞ eşiğin 1 birim üstünde")
@@ -132,10 +144,7 @@ def uret():
     rh(15, 2, 0.0, "hız 0")
 
     def lw(og, ppw=8, lo=2, hi=12, not_=None):
-        try:
-            beklenen = ref.lager_weeks(og, ppw, lo, hi)
-        except ZeroDivisionError:
-            beklenen = {"hata": "ZeroDivisionError"}
+        beklenen = _hata(lambda: ref.lager_weeks(og, ppw, lo, hi))
         v.ekle("lager_weeks", {"og": og, "pts_per_week": ppw, "lo": lo, "hi": hi}, beklenen, not_)
 
     for og in [1.048, 1.072, 1.050, 1.056, 1.080, 1.0485, 1.040, 1.032, 1.033, 1.030, 1.016, 1.017,
@@ -145,6 +154,10 @@ def uret():
     lw(1.048, 10, 2, 12)
     lw(1.048, 8, 3, 4)
     lw(1.048, 0, 2, 12, "bölen 0")
+    lw(1.048, -8, 2, 12, "T1.12 D9: negatif pts_per_week hata")
+    lw(0.9969, -8, 2, 12, "T1.12 D9: negatif, Python // ile Rust div_euclid ayrışırdı")
+    lw(1.048, 10 ** 9, 2, 12, "T1.12 D2: taşma sınırı")
+    lw(1e9, 8, 2, 12, "T1.12 D2: makul olmayan OG")
 
     # ---- 2. Fıçıda priming
     for kind in ["dekstroz", "sakaroz", "invert"]:
@@ -176,11 +189,7 @@ def uret():
     def kp(not_=None, **kw):
         a = dict(D)
         a.update(kw)
-        try:
-            beklenen = ref.keg_priming(**a)
-        except ZeroDivisionError:
-            beklenen = {"hata": "ZeroDivisionError"}
-        v.ekle("keg_priming", a, beklenen, not_)
+        v.ekle("keg_priming", a, _hata(lambda: ref.keg_priming(**a)), not_)
 
     kp("T2a", V_head=0, dry=1.0)
     kp("T2b", dry=1.0)
@@ -202,6 +211,20 @@ def uret():
     kp("20 L Corny", V_beer=20, V_head=3, T_res=18, T_cond=15, T_serv=3.0, kind="sakaroz", dry=1.0, mode="kismi")
     kp("sıcaklık sınırı altı", T_serv=-5.0, dry=1.0)
     kp("yüksek vol", vol_t=3.5, T_cond=22, dry=1.0, purged=False, limit_bar=3.0)
+    # T1.12 D6: aralık dışı uyarı kodları, doyma; D13: sınır toleransı; D2: geçersiz girdi
+    kp("hedef 0 °C altı kondisyon", T_cond=-2.0, T_serv=-1.0, dry=1.0)
+    kp("0 °C sınırı: uyarı yok", T_cond=0.0, T_serv=0.0, dry=1.0)
+    kp("hedef 3.6 vol", vol_t=3.6, T_cond=10, T_serv=4.0, dry=1.0)
+    kp("hedef tam 3.5 vol: hedef uyarısı yok", vol_t=3.5, T_cond=4, T_serv=4.0, dry=1.0)
+    kp("hedef 12 vol: tepe doyar", vol_t=12.0, T_cond=20, T_serv=4.0, dry=1.0, limit_bar=2.0)
+    kp("büyük boşluk, hedef 9 vol", vol_t=9.0, V_head=8, T_cond=25, dry=1.0)
+    kp("tepe basıncı sınıra tam eşit", T_cond=25, purged=False, dry=1.0,
+       limit_bar=ref.keg_priming(**dict(D, T_cond=25, purged=False, dry=1.0))["tepe_toplam_gosterge_bar"])
+    kp("T1.12 D2: negatif boşluk", V_head=-1.0, dry=1.0)
+    kp("T1.12 D2: negatif kuru madde", dry=-0.5)
+    kp("T1.12 D2: kuru madde > 1", dry=1.5)
+    kp("T1.12 D2: part 0", mode="kismi", part=0.0, dry=1.0)
+    kp("T1.12 D2: makul olmayan hacim", V_beer=1e9, dry=1.0)
 
     # ---- 3. Cask
     for sg, fg in [(1.012, 1.010), (1.011, 1.010), (1.010, 1.010), (1.00999, 1.010), (1.01001, 1.010), (1.020, 1.010),
@@ -209,10 +232,7 @@ def uret():
         v.ekle("co2_from_remaining", {"sg_rack": sg, "fg_ref": fg}, ref.co2_from_remaining(sg, fg))
 
     def cp(V, vol_t, T_res, sg_rack, fg_ref, kind="invert", dry=None, not_=None):
-        try:
-            beklenen = ref.cask_priming(V, vol_t, T_res, sg_rack, fg_ref, kind, dry)
-        except ZeroDivisionError:
-            beklenen = {"hata": "ZeroDivisionError"}
+        beklenen = _hata(lambda: ref.cask_priming(V, vol_t, T_res, sg_rack, fg_ref, kind, dry))
         v.ekle("cask_priming", {"v": V, "vol_t": vol_t, "t_res": T_res, "sg_rack": sg_rack, "fg_ref": fg_ref,
                                 "kind": kind, "dry": dry}, beklenen, not_)
 
@@ -228,6 +248,11 @@ def uret():
     cp(20.0, 1.1, 40, 1.010, 1.010, dry=1.0, not_="kalıntı polinomu yüksek T")
     cp(40.9, 1.1, 19, 1.010, 1.010, dry=0.0, not_="kuru madde 0")
     cp(0.0, 1.1, 19, 1.010, 1.010, dry=1.0, not_="hacim 0")
+    cp(-5.0, 1.1, 19, 1.010, 1.010, dry=1.0, not_="T1.12 D2: negatif hacim")
+    cp(40.9, 1.1, 19, 1.010, 1.010, dry=-0.1, not_="T1.12 D2: negatif kuru madde")
+    cp(40.9, 1.1, 19, 1e9, 1.010, dry=1.0, not_="T1.12 D2: makul olmayan SG")
+    cp(40.9, 1.1, 19, 1.0105, 1.010, dry=1.0, not_="eksik_vol = 0'a yakın: yarım birim")
+    cp(40.9, 0.89, 19, 1.010, 1.010, dry=1.0, not_="eksik_vol ~ 0")
 
     for V, rate in [(40.9, 2.0), (20.0, 2.0), (40.9, 1.5), (0.0, 2.0), (22.7, 0.0)]:
         v.ekle("finings_ml", {"v": V, "rate": rate}, ref.finings_mL(V, rate))

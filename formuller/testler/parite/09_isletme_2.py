@@ -75,7 +75,8 @@ def uret():
     B24 = [["10.0", "16.88"], ["14.0", "25.32"], [None, "33.76"]]
     V = "2000.0"
     HL_BBL = ref.HL_PER_BBL
-    TIERS = [[str(60000 * HL_BBL), str(D("3.50") / HL_BBL)], [None, str(D("16.0") / HL_BBL)]]
+    # T1.12 D1: oranlar sonlu ondalık (hL başına), bölmeyle türetilmez; 3.50 $/bbl ≈ 2.9826, 16 $/bbl ≈ 13.6347 $/hL
+    TIERS = [[str(60000 * HL_BBL), "2.9826"], [None, "13.6347"]]
     TIERS_SIMPLE = [["100", "3.0"], [None, "16.0"]]
     TIERS3 = [["100", "3.0"], ["1000", "5.0"], [None, "7.5"]]
 
@@ -98,6 +99,28 @@ def uret():
     tax("saf_alkol", V, abv="5.0", rate="21.78")                                  # hata: kural tanımsız
     tax("saf_alkol", V, abv="5.0", rate="21.78", input_dp=None)
 
+    # T1.12 D8: bant/kademe tablosu doğrulaması (hepsi hata)
+    tax("plato_bandi", V, plato="9", bands=[["14.0", "25.32"], ["10.0", "16.88"], [None, "33.76"]], input_dp=None)
+    tax("plato_bandi", V, plato="9", bands=[["10.0", "16.88"], ["10.0", "25.32"], [None, "33.76"]], input_dp=None)
+    tax("plato_bandi", V, plato="9", bands=[[None, "16.88"], ["14.0", "25.32"]], input_dp=None)
+    tax("plato_bandi", V, plato="9", bands=[["10.0", "-1"], [None, "33.76"]], input_dp=None)
+    tax("saf_alkol", V, abv="5.0", bands=[["8.5", "21.78"], ["3.5", "9.27"], [None, "29.54"]], input_dp=None)
+    tax("saf_alkol", V, abv="5.0", bands=[["3.5", "9.27"], [None, "-29.54"]], input_dp=None)
+    tax("kademeli_hacim", "20000", tiers=[["1000", "5.0"], ["100", "3.0"], [None, "7.5"]])
+    tax("kademeli_hacim", V, tiers=[["100", "3.0"], [None, "5.0"], ["1000", "7.5"]])
+    tax("kademeli_hacim", V, tiers=[["100", "-3.0"], [None, "5.0"]])
+    tax("kademeli_hacim", V, tiers=[["100", "3.0"], ["100", "5.0"], [None, "7.5"]])
+    # T1.12 D4/D5: sıfır işlenenli toplama/çıkarma ölçeği, eksi sıfır
+    tax("saf_alkol", V, abv="5.0", rate="4", discount_per_lpa="0.00", input_dp=None)
+    tax("kademeli_hacim", V, tiers=[["100.0", "3.0"], [None, "5.0"]], ytd="100.00")
+    tax("kademeli_hacim", "0.0", tiers=TIERS_SIMPLE, ytd="0.00")
+    tax("hl_plato", "0", plato="-12.6", rate="2", input_dp=None)
+    tax("hl_plato", V, plato="0", rate="-2", input_dp=None)
+    tax("plato_bandi", "0", plato="9", bands=[["10.0", "-0.0"], [None, "33.76"]], input_dp=None)
+    # T1.12 D1: 28 basamaklı oran yerine sonlu ondalık çarpanlar (≤ 15 anlamlı basamak)
+    tax("plato_bandi", "10.3", plato="9", bands=[["10.0", "0.613559668677778"], [None, "1"]], input_dp=None)
+    tax("kademeli_hacim", "8744557284130", tiers=[[None, "2.9825876956412"]])
+    tax("hacim", "1234.5", rate=str(ref.HL_PER_BBL))
     # hacim
     tax("hacim", "2000", rate="1249")
     tax("hacim", "1234.5", rate="12.49")
@@ -204,6 +227,9 @@ def uret():
         v.ekle("residual_co2", {"t_c": t}, ref.residual_co2(t))
     for t, vol in ((12.0, 2.5), (18.0, 2.6), (0.0, 2.4), (-3.0, 2.0), (20.0, 3.0), (4.0, 0.0), (0.0, 0.5), (25.0, 1.0)):
         v.ekle("co2_pressure_psi", {"t_c": t, "vol": vol}, ref.co2_pressure_psi(t, vol))
+    # T1.12 D2: FG <= 0 hata (NaN/sonsuz JSON'a yazılamaz; Rust birim testinde)
+    for tv, t, fg in ((2.5, 12.0, 0.0), (2.5, 12.0, -1.0)):
+        v.ekle("spund", {"target_vol": tv, "t_c": t, "fg_expected": fg}, _hata_ile(lambda: ref.spund(tv, t, fg)))
     for tv, t, fg in ((2.5, 12.0, 1.010), (2.6, 18.0, 1.012), (2.2, 20.0, 1.008), (2.8, 10.0, 1.014),
                       (3.0, 4.0, 1.016), (1.0, 25.0, 1.010), (0.8, 25.0, 1.010),   # son ikisi: hedef kalıntının altında
                       (2.5, 15.0, 1.004), (2.4, 0.0, 1.012)):
@@ -242,7 +268,10 @@ def uret():
                                (2.5, 12.0, 25.0, (1.010, 1.012), 200), (2.5, 12.0, 25.0, (1.010, 1.01201), 200),
                                (3.0, 4.0, 10.0, (1.008, 1.016), 200), (2.6, 18.0, 27.1, None, 200),
                                (2.6, 18.0, 27.0, (1.012, 1.013), 50), (0.0, 12.0, 0.0, None, 200),
-                               (2.5, 12.0, None, (1.014, 1.010), 200)):
+                               (2.5, 12.0, None, (1.014, 1.010), 200),
+                               # T1.12 D13: sınır eşitliği ve ~1e-12 üstü (tolerans içinde: engellenmez)
+                               (2.6, 18.0, 27.076251107200008, None, 200), (2.6, 18.0, 27.076251107200008 - 1e-12, None, 200),
+                               (2.6, 18.0, 27.076251107200008 - 1e-8, None, 200)):
         v.ekle("spund_warnings", {"target_vol": tv, "t_c": t, "tank_max_psi": mx,
                                   "fg_range": None if rng is None else list(rng), "wide_u": wu},
                ref.spund_warnings(tv, t, mx, rng, wu), "kod listesi + engellendi")

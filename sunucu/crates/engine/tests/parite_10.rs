@@ -50,7 +50,7 @@ fn opt(c: &ortak::Case, name: &str, default: f64) -> f64 {
 
 fn error_name(e: ManualError) -> &'static str {
     match e {
-        ManualError::InvalidVolume => "ValueError",
+        ManualError::InvalidVolume | ManualError::InvalidInput => "ValueError",
         ManualError::NoReadings => "IndexError",
         ManualError::Unbounded => "OverflowError",
     }
@@ -164,13 +164,16 @@ fn parite_10() {
             "tinseth_util" => c.check_f(hops::tinseth_utilization(c.f("sg"), c.f("t"))),
             "ftemp" => c.check_f(hops::temperature_factor(c.f("tc"))),
             "tau_h" => c.check_f(manual::tau_h(c.f("v_l"), c.f("tau20"))),
-            "t_eq_min" => c.check_f(manual::t_eq_min(
+            "t_eq_min" => match manual::t_eq_min(
                 c.f("t0"),
                 c.f("t_amb"),
                 c.f("tau_hours"),
                 c.f("dt"),
                 c.f("t_stop"),
-            )),
+            ) {
+                Ok(x) => c.check_f(x),
+                Err(e) => c.check(&json!({ "hata": error_name(e) })),
+            },
             "nochill_ibu" => {
                 let mode = if c.v("mode").as_str() == Some("kural") {
                     NochillMode::Rule
@@ -181,9 +184,10 @@ fn parite_10() {
                         v_cube: c.girdi.get("v_cube").map(num),
                     }
                 };
-                let (base, nc, extra) =
-                    manual::nochill_ibu(&triples(c.v("hops")), c.f("sg"), c.f("v"), mode);
-                c.check(&json!([base, nc, extra]));
+                match manual::nochill_ibu(&triples(c.v("hops")), c.f("sg"), c.f("v"), mode) {
+                    Ok((base, nc, extra)) => c.check(&json!([base, nc, extra])),
+                    Err(e) => c.check(&json!({ "hata": error_name(e) })),
+                }
             }
             "stall_check" => c.check(&match manual::stall_check(
                 &pairs(c.v("readings")),

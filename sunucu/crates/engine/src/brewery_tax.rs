@@ -38,11 +38,15 @@ pub const CO2_G_PER_VOL: f64 = 44.01 / 22.414;
 /// g CO₂ per g fermented extract (Balling).
 pub const BALLING_CO2: f64 = 0.9565 / 2.0665;
 
-/// Hectolitres per US beer barrel (31 US gal), exact.
+/// Hectolitres per US beer barrel (31 US gal), exact finite decimal (T1.12 D1: factors are finite
+/// decimals in the rate table and are applied by multiplication, never derived by division).
 #[must_use]
 pub fn hl_per_bbl() -> Decimal {
-    Decimal::new(117_348, 5)
+    Decimal::new(117_347_765, 8)
 }
+
+/// Absolute tolerance of the pressure limit comparison, psi (T1.12 D13).
+pub const PSI_TOL: f64 = 1e-9;
 
 // ---------------------------------------------------------------------------------------------
 // Density helpers in °P as the 09 reference writes them (01 `density` works in SG and
@@ -252,6 +256,10 @@ pub enum TaxError {
     Overflow,
     /// Deduction list holds a kind other than destroyed, returned or lab.
     BadDeduction,
+    /// Band or tier table not strictly ascending, open end not last, or negative rate (T1.12 D8).
+    InvalidBands,
+    /// Input not finite or outside its valid range (T1.12 D2), e.g. FG <= 0 in [`spund`].
+    InvalidInput,
 }
 
 impl fmt::Display for TaxError {
@@ -264,6 +272,10 @@ impl fmt::Display for TaxError {
             Self::MissingInput(name) => write!(f, "missing input: {name}"),
             Self::Overflow => f.write_str("decimal overflow"),
             Self::BadDeduction => f.write_str("deduction kind must be destroyed, returned or lab"),
+            Self::InvalidBands => {
+                f.write_str("bands must be strictly ascending, open end last, rate >= 0")
+            }
+            Self::InvalidInput => f.write_str("input not finite or out of range"),
         }
     }
 }
@@ -350,20 +362,46 @@ fn mul(a: Decimal, b: Decimal) -> Result<Decimal, TaxError> {
     Ok(r)
 }
 
-fn add(a: Decimal, b: Decimal) -> Result<Decimal, TaxError> {
-    let mut r = a.checked_add(b).map(prec28).ok_or(TaxError::Overflow)?;
-    if r.is_zero() {
-        r.rescale(a.scale().max(b.scale()));
+/// Python's sum and difference keep the larger scale; `rust_decimal` drops it for zero operands
+/// (T1.12 D4).
+fn with_max_scale(mut r: Decimal, a: Decimal, b: Decimal) -> Decimal {
+    let want = a.scale().max(b.scale());
+    if r.scale() < want {
+        r.rescale(want);
     }
-    Ok(r)
+    r
+}
+
+fn add(a: Decimal, b: Decimal) -> Result<Decimal, TaxError> {
+    let r = a.checked_add(b).map(prec28).ok_or(TaxError::Overflow)?;
+    Ok(with_max_scale(r, a, b))
 }
 
 fn sub(a: Decimal, b: Decimal) -> Result<Decimal, TaxError> {
-    let mut r = a.checked_sub(b).map(prec28).ok_or(TaxError::Overflow)?;
-    if r.is_zero() {
-        r.rescale(a.scale().max(b.scale()));
+    let r = a.checked_sub(b).map(prec28).ok_or(TaxError::Overflow)?;
+    Ok(with_max_scale(r, a, b))
+}
+
+/// Validates a band or tier table (T1.12 D8): strictly ascending upper bounds, open end only
+/// last, no negative rate. An empty table is valid (no band); lookup fails later.
+fn check_bands(bands: &[Band]) -> Result<(), TaxError> {
+    let mut prev: Option<Decimal> = None;
+    for (i, b) in bands.iter().enumerate() {
+        if b.rate.is_sign_negative() && !b.rate.is_zero() {
+            return Err(TaxError::InvalidBands);
+        }
+        match b.upper {
+            None if i + 1 != bands.len() => return Err(TaxError::InvalidBands),
+            None => {}
+            Some(u) => {
+                if prev.is_some_and(|p| u <= p) {
+                    return Err(TaxError::InvalidBands);
+                }
+                prev = Some(u);
+            }
+        }
     }
-    Ok(r)
+    Ok(())
 }
 
 /// Exact `x / 100` with Python's result scale: the ideal scale of the dividend, or more digits when
@@ -448,6 +486,12 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, TaxError> {
         InputRounding::Places { dp, mode } => Some((dp, mode)),
         _ => None,
     };
+    match p.method {
+        Method::PureAlcohol if !p.bands.is_empty() => check_bands(p.bands)?,
+        Method::PlatoBand => check_bands(p.bands)?,
+        Method::TieredVolume => check_bands(p.tiers)?,
+        _ => {}
+    }
     let hl = div100(p.volume_l)?;
     match p.method {
         Method::Volume => {
@@ -545,8 +589,14 @@ pub struct Spund {
 
 /// Spunding: closing gravity and valve pressure for `target_vol` volumes CO₂ at `t_c` (°C) with
 /// expected final gravity `fg_expected` (SG).
-#[must_use]
-pub fn spund(target_vol: f64, t_c: f64, fg_expected: f64) -> Spund {
+///
+/// # Errors
+/// [`TaxError::InvalidInput`] when an input is not finite or `fg_expected <= 0` (T1.12 D2).
+pub fn spund(target_vol: f64, t_c: f64, fg_expected: f64) -> Result<Spund, TaxError> {
+    if !(target_vol.is_finite() && t_c.is_finite() && fg_expected.is_finite()) || fg_expected <= 0.0
+    {
+        return Err(TaxError::InvalidInput);
+    }
     let need_vol = target_vol - residual_co2(t_c);
     let need_g = need_vol.max(0.0) * CO2_G_PER_VOL;
     let dre_g_per_l = need_g / BALLING_CO2;
@@ -554,14 +604,14 @@ pub fn spund(target_vol: f64, t_c: f64, fg_expected: f64) -> Spund {
     let apparent_drop_p = fermented_re_p / 0.8192;
     let close_p = to_plato(fg_expected) + apparent_drop_p;
     let psi = co2_pressure_psi(t_c, target_vol);
-    Spund {
+    Ok(Spund {
         residual_vol: round_py(residual_co2(t_c), 2),
         needed_g_per_l: round_py(need_g, 2),
         closing_sg: round_py(to_sg(close_p), 4),
         points_before: round_py((to_sg(close_p) - fg_expected) * 1000.0, 1),
         setting_psi: round_py(psi, 1),
         setting_bar: round_py(psi * 0.068_947_6, 2),
-    }
+    })
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -700,7 +750,6 @@ pub fn taxable_volume(
     {
         return Err(TaxError::BadDeduction);
     }
-    let add = |a: Decimal, b: Decimal| a.checked_add(b).ok_or(TaxError::Overflow);
     let (mut taxed, mut destroyed, mut returned, mut lab) =
         (Decimal::ZERO, Decimal::ZERO, Decimal::ZERO, Decimal::ZERO);
     for e in events {
@@ -725,7 +774,7 @@ pub fn taxable_volume(
         (K::Lab, lab),
     ] {
         if deduct.contains(&kind) {
-            net = net.checked_sub(amount).ok_or(TaxError::Overflow)?;
+            net = sub(net, amount)?;
         }
     }
     Ok(TaxableVolume {
@@ -783,7 +832,7 @@ pub fn spund_warnings(
 ) -> SpundWarnings {
     let mut warnings = Vec::new();
     let psi = co2_pressure_psi(t_c, target_vol);
-    let blocked = tank_max_psi.is_some_and(|m| psi > m);
+    let blocked = tank_max_psi.is_some_and(|m| psi > m + PSI_TOL);
     if blocked {
         warnings.push(SpundWarning::TankPressureExceeded);
     }
@@ -806,6 +855,18 @@ mod tests {
         assert_eq!(div100(d("2000.0")).unwrap().to_string(), "20.0");
         assert_eq!(div100(d("2000")).unwrap().to_string(), "20");
         assert_eq!(div100(d("1234.5")).unwrap().to_string(), "12.345");
+    }
+
+    #[test]
+    fn spund_rejects_non_finite_and_zero_fg() {
+        assert_eq!(spund(2.5, 12.0, f64::NAN), Err(TaxError::InvalidInput));
+        assert_eq!(
+            spund(f64::INFINITY, 12.0, 1.01),
+            Err(TaxError::InvalidInput)
+        );
+        assert_eq!(spund(2.5, f64::NAN, 1.01), Err(TaxError::InvalidInput));
+        assert_eq!(spund(2.5, 12.0, 0.0), Err(TaxError::InvalidInput));
+        assert!(spund(2.5, 12.0, 1.01).is_ok());
     }
 
     #[test]

@@ -36,7 +36,9 @@ def label_energy(og, fg, protein_g100mL=0.40, abv_measured=None):
 # ---------------------------------------------------------------- 2. Vergi motoru (yöntemler veri, oranlar veri)
 # Para ve vergi hesabı ondalık tiple (Decimal); bant/eşik karşılaştırmaları da ondalık. (Karşılaştırma ilkesi:
 # 00-OKU-BENI.md › Önemli genel notlar.) Girdi (ABV, °P) yuvarlama kuralı ve bant sınırı türü veri tablosundadır.
-HL_PER_BBL = D("1.17348")    # 31 US gal [kesin]
+HL_PER_BBL = D("1.17347765")   # 31 US gal [kesin]; 8 ondalık, çarpımla uygulanır (T1.12 D1)
+# Karar (T1.12 D1): oranlar ve birim çarpanları oran tablosunda SONLU ondalık (≤ 15 anlamlı basamak) tutulur ve
+# çarpımla uygulanır; bölmeyle türetilmez (3.50/HL_PER_BBL sonsuz ondalıktır, Decimal 28 basamakta keser).
 
 def d(x): return x if isinstance(x, D) else D(str(x))
 
@@ -48,6 +50,18 @@ def _round_in(x, dp, mode):
     """Girdi yuvarlaması (veri tablosu): dp = ondalık hane sayısı (None: yuvarlama yok), mode = decimal yuvarlama modu."""
     x = d(x)
     return x if dp is None else x.quantize(D(1).scaleb(-dp), rounding=mode)
+
+def _check_bands(bands):
+    """Karar (T1.12 D8): bant/kademe tablosu kesin artan üst sınır, açık uç (None) yalnız sonda, oran ≥ 0; aksi hâlde
+    ValueError (sessiz yanlış vergi yok). Boş liste burada geçerlidir (bant yok); bulunamama sorgu anında hata verir."""
+    prev = None
+    for i, (upper, rate) in enumerate(bands):
+        if d(rate) < 0: raise ValueError("bant oranı negatif olamaz")
+        if upper is None:
+            if i != len(bands) - 1: raise ValueError("açık uçlu bant yalnız sonda olabilir")
+        else:
+            if prev is not None and d(upper) <= prev: raise ValueError("bant üst sınırları kesin artan olmalı")
+            prev = d(upper)
 
 def _band(value, bands, inclusive):
     """bands = [(üst, oran)] artan; inclusive: değer == üst ise o banda girer. Bant yoksa hata (sessiz 0 yok)."""
@@ -64,7 +78,11 @@ def money(x, dp=2, mode=ROUND_HALF_UP):
     """Para yuvarlaması (veri tablosundaki kurala göre; varsayılan: yarım yukarı)."""
     return d(x).quantize(D(1).scaleb(-dp), rounding=mode)
 
-def tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=None, ytd=0,
+def tax_line(*a, **k):
+    """Karar (T1.12 D5): sonuç eksi sıfır içermez (`+ 0`)."""
+    return _tax_line(*a, **k) + D(0)
+
+def _tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=None, ytd=0,
              plato_trunc=True, discount_per_lpa=0, input_dp=TANIMSIZ, input_mode=ROUND_HALF_UP, inclusive=None):
     """Dönüş: Decimal (yuvarlanmamış), her zaman ≥ 0. method:
       'hacim'        : oran × hL (rate = para birimi / hL; litre başına oran × 100 olarak girilir)
@@ -86,6 +104,7 @@ def tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=Non
     if method == "saf_alkol":
         a = _round_in(abv, input_dp, input_mode)
         lpa = d(V_L) * a / 100
+        if bands: _check_bands(bands)
         rt = _band(a, bands, False if inclusive is None else inclusive) if bands else d(rate)
         return max(lpa * max(rt - d(discount_per_lpa), D(0)), D(0))      # indirim oranı aşamaz, negatif vergi yok
     if method == "hl_plato":
@@ -94,8 +113,10 @@ def tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=Non
         return max(d(rate) * hl * p, D(0))
     if method == "plato_bandi":
         p = _round_in(plato, input_dp, input_mode)
+        _check_bands(bands)
         return _band(p, bands, True if inclusive is None else inclusive) * hl
     if method == "kademeli_hacim":
+        _check_bands(tiers)
         tax, start, left = D(0), d(ytd), hl
         for upper, rt in tiers:
             if left <= 0: break
@@ -118,6 +139,9 @@ def co2_pressure_psi(T_C, vol):                            # 04 §3.5
     return max(-16.6999 - 0.0101059*T + 0.00116512*T*T + 0.173354*T*vol + 4.24267*vol - 0.0684226*vol*vol, 0.0)
 
 def spund(target_vol, T_C, fg_expected):
+    """Karar (T1.12 D2): girdiler sonlu olmalı ve FG > 0; aksi hâlde ValueError (Rust: TaxError::InvalidInput)."""
+    if not all(math.isfinite(x) for x in (target_vol, T_C, fg_expected)) or fg_expected <= 0:
+        raise ValueError("spunding girdisi sonlu olmalı, FG > 0")
     need_vol = target_vol - residual_co2(T_C)
     need_g = max(need_vol, 0)*CO2_G_PER_VOL
     sg = fg_expected
@@ -161,6 +185,7 @@ def taxable_volume(events, trigger, start, end, deduct=()):
     return {"vergilenecek": max(net, D(0)), "vergilenen": taxed,
             "imha": other["imha"], "iade": other["iade"], "lab": other["lab"]}
 
+PSI_TOL = 1e-9            # Karar (T1.12 D13): basınç sınırı karşılaştırması mutlak tolerans, 00-OKU-BENI
 SPUND_WIDE_U = 200        # [tasarım, doğrulanacak] FG güven aralığı genişliği eşiği: 0.002 SG (200 birim)
 def spund_warnings(target_vol, T_C, tank_max_psi=None, fg_range=None, wide_u=SPUND_WIDE_U):
     """§3.4 uyarı kodları. tank_max_psi: tank kaydındaki çalışma basıncı (None: denetim yok); ayar basıncı onu aşarsa
@@ -168,7 +193,7 @@ def spund_warnings(target_vol, T_C, tank_max_psi=None, fg_range=None, wide_u=SPU
     "erken_kapama_riski" (1–2 puan erken kapatma). Dönüş: {"uyari": [...], "engellendi": bool}."""
     out = []
     psi = co2_pressure_psi(T_C, target_vol)
-    blocked = tank_max_psi is not None and psi > tank_max_psi
+    blocked = tank_max_psi is not None and psi > tank_max_psi + PSI_TOL
     if blocked: out.append("tank_basinc_asildi")
     if fg_range is not None and _u_sg(fg_range[1]) - _u_sg(fg_range[0]) > wide_u: out.append("erken_kapama_riski")
     return {"uyari": out, "engellendi": blocked}
@@ -192,7 +217,7 @@ if __name__ == "__main__":
     print("TV2.3 hL·°P, 0.787 PB (12.6 °P kesilir -> 12):", pr(tax_line("hl_plato", V, plato=12.6, rate=0.787, input_dp=None)))
     b4 = [(10.0, 16.88), (14.0, 25.32), (None, 33.76)]
     print("TV2.4 Plato bandı [(10.0,16.88),(14.0,25.32),(None,33.76)] PB/hL:", pr(tax_line("plato_bandi", V, plato=P, bands=b4, input_dp=None)))
-    tiers = [(60000*HL_PER_BBL, D("3.50")/HL_PER_BBL), (None, D("16.0")/HL_PER_BBL)]
+    tiers = [(60000*HL_PER_BBL, D("2.9826")), (None, D("13.6347"))]   # $3.50 ve $16 /bbl → hL başına sonlu ondalık
     print("TV2.5 kademeli (60 000 bbl @3.50, sonra @16 /bbl), 20 hL, ytd 0:", pr(tax_line("kademeli_hacim", V, tiers=tiers)))
     print("TV2.6 aynı, eşiği aşan: ytd = 60000 bbl − 10 hL:", pr(tax_line("kademeli_hacim", V, tiers=tiers, ytd=60000*HL_PER_BBL - 10)))
     print("TV2.7 hacim, 12.49 PB/L = 1249 PB/hL (örnek):", pr(tax_line("hacim", V, rate=1249.0)))

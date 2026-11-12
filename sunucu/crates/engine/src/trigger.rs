@@ -10,9 +10,94 @@
 use crate::units::{TOL, c_to_f, gravity_units, round_py, to_plato};
 use crate::yeast;
 
-/// Warning text when a sugar product's dry-matter fraction is unknown (spec §2.3).
-pub const WARN_DRY_UNKNOWN: &str =
-    "kuru madde bilinmiyor: 1.0 varsayıldı (şurup ve bloklarda şeker miktarı eksik çıkabilir)";
+/// Lowest temperature, °C, for which the 04 §3.5 polynomial is reliable (spec §5, T1.12 D6).
+pub const POLY_T_MIN_C: f64 = 0.0;
+/// Highest CO2 volumes for which the 04 §3.5 polynomial is reliable (spec §5, T1.12 D6).
+pub const POLY_VOL_MAX: f64 = 3.5;
+/// Upper end of the [`equilibrium_vol`] search interval, volumes.
+pub const EQ_VOL_MAX: f64 = 10.0;
+/// Largest magnitude accepted for inputs (T1.12 D2).
+const INPUT_LIMIT: f64 = 1e6;
+
+fn finite(xs: &[f64]) -> bool {
+    xs.iter().all(|x| x.is_finite() && x.abs() <= INPUT_LIMIT)
+}
+
+/// Where a range warning applies (T1.12 D6).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PolyPoint {
+    /// Conditioning temperature.
+    Conditioning,
+    /// Serving temperature.
+    Serving,
+    /// Target volumes.
+    Target,
+    /// Peak volumes at conditioning temperature.
+    Peak,
+}
+
+impl PolyPoint {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Conditioning => "kondisyon",
+            Self::Serving => "servis",
+            Self::Target => "hedef",
+            Self::Peak => "tepe",
+        }
+    }
+}
+
+/// Priming warning as a code with numeric fields; the client builds the text and units
+/// (T1.12 D7, ADR-0004). Values are not rounded.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PrimingWarning {
+    /// Sugar dry matter unknown: 1.0 assumed (spec §2.3); `kuru_madde_bilinmiyor`.
+    DryMatterUnknown,
+    /// Temperature below the polynomial range (`polinom_sicaklik_alti`).
+    PolynomialBelowTemperature {
+        /// Which temperature.
+        point: PolyPoint,
+        /// Temperature, °C.
+        t_c: f64,
+    },
+    /// Volumes above the polynomial range (`polinom_vol_ustu`).
+    PolynomialAboveVolume {
+        /// Which volumes.
+        point: PolyPoint,
+        /// Volumes.
+        vol: f64,
+    },
+    /// Total CO2 exceeds what 10 volumes hold: peak volumes saturate (`tepe_vol_doymus`).
+    PeakVolumeSaturated {
+        /// Search limit, volumes.
+        limit_vol: f64,
+    },
+    /// Peak gauge pressure above the keg limit (`tepe_basinci_siniri_asildi`).
+    PeakAboveLimit {
+        /// Peak gauge pressure including air, bar.
+        peak_bar: f64,
+        /// Keg limit, bar.
+        limit_bar: f64,
+        /// Conditioning temperature, °C.
+        t_cond_c: f64,
+    },
+}
+
+impl PrimingWarning {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn code(self) -> &'static str {
+        match self {
+            Self::DryMatterUnknown => "kuru_madde_bilinmiyor",
+            Self::PolynomialBelowTemperature { .. } => "polinom_sicaklik_alti",
+            Self::PolynomialAboveVolume { .. } => "polinom_vol_ustu",
+            Self::PeakVolumeSaturated { .. } => "tepe_vol_doymus",
+            Self::PeakAboveLimit { .. } => "tepe_basinci_siniri_asildi",
+        }
+    }
+}
 
 /// Errors mirroring the exceptions of the Python reference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,6 +106,8 @@ pub enum TriggerError {
     EmptySeries,
     /// Python `ZeroDivisionError`: a divisor (rate, rate constant, dry matter) is zero.
     ZeroDivision,
+    /// Python `ValueError`: input not finite or out of range (T1.12 D2, D9).
+    InvalidInput,
 }
 
 // ================================================================ 1. Gravity trigger
@@ -31,14 +118,22 @@ pub const STABLE_PER_DAY: f64 = 0.0005;
 /// First trigger time (spec §1.2): hourly medians `(t_hours, SG)`; the condition
 /// `u(SG) ≤ u(fg_ref) + u(delta)` must hold at `consecutive` consecutive points
 /// (at least 1). Returns the time of the first point of that run, `None` if never.
-#[must_use]
+///
+/// # Errors
+/// [`TriggerError::InvalidInput`] for `consecutive = 0` or non-finite or out-of-range input
+/// (T1.12 D9, D2).
 pub fn trigger_index(
     points: &[(f64, f64)],
     fg_ref: f64,
     delta: f64,
     consecutive: usize,
-) -> Option<f64> {
-    let consecutive = consecutive.max(1);
+) -> Result<Option<f64>, TriggerError> {
+    if consecutive == 0
+        || !finite(&[fg_ref, delta])
+        || !points.iter().all(|&(t, g)| finite(&[t, g]))
+    {
+        return Err(TriggerError::InvalidInput);
+    }
     let limit = gravity_units(fg_ref) + gravity_units(delta);
     let mut run = 0_usize;
     for (i, &(_, g)) in points.iter().enumerate() {
@@ -48,10 +143,10 @@ pub fn trigger_index(
             0
         };
         if run >= consecutive {
-            return Some(points[i + 1 - consecutive].0);
+            return Ok(Some(points[i + 1 - consecutive].0));
         }
     }
-    None
+    Ok(None)
 }
 
 /// Predicted trigger from the 07 §1 decay model (spec §1.3).
@@ -74,12 +169,18 @@ pub fn predicted_trigger(
     fg_ref: f64,
     delta: f64,
 ) -> Result<TriggerForecast, TriggerError> {
+    if !finite(&[fg_inf, a, k, fg_ref, delta]) {
+        return Err(TriggerError::InvalidInput);
+    }
     let target_u = gravity_units(fg_ref) + gravity_units(delta) - gravity_units(fg_inf);
     if target_u <= 0 {
         return Ok(TriggerForecast::Unreachable);
     }
     if gravity_units(a) <= target_u {
         return Ok(TriggerForecast::AlreadyPast);
+    }
+    if k < 0.0 {
+        return Err(TriggerError::InvalidInput);
     }
     if k == 0.0 {
         return Err(TriggerError::ZeroDivision);
@@ -171,7 +272,14 @@ pub fn ramp_hours(t_from: f64, t_to: f64, rate_c_per_day: f64) -> Result<f64, Tr
 /// Lagering weeks (spec §1.5): OG converted to integer points (0.01-point units,
 /// `round((OG − 1) × 100000)`), divided by `pts_per_week` points and rounded up,
 /// clamped to `[lo, hi]` weeks. Defaults in the spec: 8, 2, 12.
+///
+/// # Errors
+/// [`TriggerError::InvalidInput`] for non-finite `og` or `pts_per_week` outside `0..=10^6`;
+/// [`TriggerError::ZeroDivision`] for `pts_per_week = 0` (T1.12 D9, D2).
 pub fn lager_weeks(og: f64, pts_per_week: i64, lo: i64, hi: i64) -> Result<i64, TriggerError> {
+    if !finite(&[og]) || !(0..=1_000_000).contains(&pts_per_week) {
+        return Err(TriggerError::InvalidInput);
+    }
     #[allow(clippy::cast_possible_truncation)]
     let pts = ((og - 1.0) * 100_000.0).round_ties_even() as i64;
     let d = pts_per_week * 100;
@@ -281,17 +389,28 @@ pub fn head_mol(vol_t: f64, t_cond_c: f64, v_head_l: f64, purged: bool) -> (f64,
 /// at `t_c` °C; bisection on `[0, 10]` with 100 steps (spec §2.2).
 #[must_use]
 pub fn equilibrium_vol(n_total: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> f64 {
-    let (mut lo, mut hi) = (0.0_f64, 10.0_f64);
+    let (mut lo, mut hi) = (0.0_f64, EQ_VOL_MAX);
     for _ in 0..100 {
         let mid = f64::midpoint(lo, hi);
-        let tot = mid * v_beer_l / VM + head_gas_mol(mid, t_c, v_head_l);
-        if tot < n_total {
+        if total_co2(mid, t_c, v_beer_l, v_head_l) < n_total {
             lo = mid;
         } else {
             hi = mid;
         }
     }
     f64::midpoint(lo, hi)
+}
+
+/// Total CO2, mol, in beer at `vol` volumes plus the headspace.
+fn total_co2(vol: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> f64 {
+    vol * v_beer_l / VM + head_gas_mol(vol, t_c, v_head_l)
+}
+
+/// True when `n_total` exceeds what 10 volumes hold, so [`equilibrium_vol`] saturates at 10
+/// (T1.12 D6).
+#[must_use]
+pub fn equilibrium_saturated(n_total: f64, t_c: f64, v_beer_l: f64, v_head_l: f64) -> bool {
+    total_co2(EQ_VOL_MAX, t_c, v_beer_l, v_head_l) < n_total
 }
 
 /// Keg priming mode (spec §2.4).
@@ -349,8 +468,8 @@ pub struct KegPriming {
     pub peak_bar: f64,
     /// Peak gauge pressure including air in an unpurged keg, bar (2 decimals).
     pub peak_total_gauge_bar: f64,
-    /// Warnings.
-    pub warnings: Vec<String>,
+    /// Warnings as codes with numeric fields.
+    pub warnings: Vec<PrimingWarning>,
     /// CO2 top-up pressure at serving temperature, bar; only in partial mode.
     pub co2_topup_bar: Option<f64>,
 }
@@ -358,7 +477,24 @@ pub struct KegPriming {
 /// Keg priming (spec §2.2–2.4): sugar so that the SERVING-temperature equilibrium gives
 /// the target volumes (total CO2 conserved), plus the peak pressure at conditioning
 /// temperature from the same total CO2 and a warning when it exceeds `limit_bar`.
+///
+/// # Errors
+/// [`TriggerError::InvalidInput`] for non-finite or out-of-range input (negative volumes,
+/// `part` outside `(0, 1]`, dry matter outside `[0, 1]`); [`TriggerError::ZeroDivision`]
+/// for dry matter 0.
 pub fn keg_priming(p: &KegParams) -> Result<KegPriming, TriggerError> {
+    if !finite(&[
+        p.vol_t, p.t_res, p.t_cond, p.v_beer, p.v_head, p.part, p.t_serv,
+    ]) || p.vol_t < 0.0
+        || p.v_beer < 0.0
+        || p.v_head < 0.0
+        || !(p.part > 0.0 && p.part <= 1.0)
+        || p.limit_bar.is_some_and(|l| !finite(&[l]))
+        || p.dry
+            .is_some_and(|d| !finite(&[d]) || !(0.0..=1.0).contains(&d))
+    {
+        return Err(TriggerError::InvalidInput);
+    }
     let nb = bottle_mol(p.vol_t, p.t_res, p.v_beer);
     let n0 = if p.purged {
         P_ATM * p.v_head / 1000.0 / (R * (p.t_cond + 273.15))
@@ -384,15 +520,34 @@ pub fn keg_priming(p: &KegParams) -> Result<KegPriming, TriggerError> {
 
     let mut warnings = Vec::new();
     if p.dry.is_none() {
-        warnings.push(WARN_DRY_UNKNOWN.to_owned());
+        warnings.push(PrimingWarning::DryMatterUnknown);
+    }
+    for (point, t_c) in [
+        (PolyPoint::Conditioning, p.t_cond),
+        (PolyPoint::Serving, p.t_serv),
+    ] {
+        if t_c < POLY_T_MIN_C {
+            warnings.push(PrimingWarning::PolynomialBelowTemperature { point, t_c });
+        }
+    }
+    for (point, vol) in [(PolyPoint::Target, p.vol_t), (PolyPoint::Peak, v_peak)] {
+        if vol > POLY_VOL_MAX + TOL {
+            warnings.push(PrimingWarning::PolynomialAboveVolume { point, vol });
+        }
+    }
+    if equilibrium_saturated(n_total, p.t_cond, p.v_beer, p.v_head) {
+        warnings.push(PrimingWarning::PeakVolumeSaturated {
+            limit_vol: EQ_VOL_MAX,
+        });
     }
     if let Some(limit) = p.limit_bar
-        && p_peak_total > limit
+        && p_peak_total > limit + TOL
     {
-        warnings.push(format!(
-            "tepe basıncı fıçı sınırını aşıyor: {p_peak_total:.2} bar > {limit:.2} bar (kondisyon {:.0} °C)",
-            p.t_cond
-        ));
+        warnings.push(PrimingWarning::PeakAboveLimit {
+            peak_bar: p_peak_total,
+            limit_bar: limit,
+            t_cond_c: p.t_cond,
+        });
     }
     Ok(KegPriming {
         sugar_g: round_py(
@@ -450,13 +605,17 @@ pub struct CaskPriming {
     pub g_per_l: f64,
     /// True when there is excess CO2 (no sugar advised).
     pub excess: bool,
-    /// Warnings.
-    pub warnings: Vec<String>,
+    /// Warnings as codes.
+    pub warnings: Vec<PrimingWarning>,
 }
 
 /// Cask priming (spec §3.3). `v_l` litres, `vol_t` target volumes, `t_res_c` max
 /// fermentation temperature °C, gravities as SG. Spec default sugar is invert.
 /// `v_l = 0` is a `ZeroDivision` error, as in the reference (`g / V`).
+///
+/// # Errors
+/// [`TriggerError::InvalidInput`] for non-finite or out-of-range input (negative volume,
+/// dry matter outside `[0, 1]`).
 pub fn cask_priming(
     v_l: f64,
     vol_t: f64,
@@ -466,6 +625,12 @@ pub fn cask_priming(
     sugar: Sugar,
     dry: Option<f64>,
 ) -> Result<CaskPriming, TriggerError> {
+    if !finite(&[v_l, vol_t, t_res_c, sg_rack, fg_ref])
+        || v_l < 0.0
+        || dry.is_some_and(|d| !finite(&[d]) || !(0.0..=1.0).contains(&d))
+    {
+        return Err(TriggerError::InvalidInput);
+    }
     let res = residual_vol(t_res_c);
     let from_x = co2_from_remaining(sg_rack, fg_ref);
     let need = vol_t - res - from_x;
@@ -481,7 +646,7 @@ pub fn cask_priming(
         g_per_l: round_py(g / v_l, 2),
         excess: need < 0.0,
         warnings: if dry.is_none() {
-            vec![WARN_DRY_UNKNOWN.to_owned()]
+            vec![PrimingWarning::DryMatterUnknown]
         } else {
             Vec::new()
         },

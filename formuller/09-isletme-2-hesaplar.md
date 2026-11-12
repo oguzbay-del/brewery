@@ -84,6 +84,10 @@ Mevzuat raporu bu hesabı kullanır.
 - **Girdi yuvarlama kuralı (veri tablosu, yöntem başına):** ABV ve °P'nin vergi için kaç haneye (`input_dp`) ve hangi yönde (yukarı, aşağı/kesme, en yakın) yuvarlanacağı. **Varsayılan "yuvarlama yok"**: satır bunu açıkça yazar (`input_dp = None`; 10.05 °P, ≤10.0 bandının dışında kalır). **Kuralı tanımsız satırda motor hata verir** (ABV ya da °P kullanan yöntemler: `saf_alkol`, `hl_plato`, `plato_bandi`; `ValueError`, vektör 2.13); sessiz varsayılan yoktur. İngiltere'de ABV'nin bir ondalığa aşağı kesildiğini hatırlıyorum, emin değilim **[doğrulanacak]** (F1 kararı 4).
 - **Satır durumu:** her ülke satırı `doğrulanacak` başlar. Yalnız resmi kaynak (HMRC/gov.uk, BierStG, TTB, Resmi Gazete) ve kaynak tarihi birlikte kaydedilince `doğrulandı` olur; resmi olmayan kaynaklar (haber, hesaplama siteleri) satırı doğrulanmış yapmaz (vektör 2.14). Bu dosyadaki örnek tablonun hiçbir satırı `doğrulandı` değildir.
 - **Bant sınırı türü (veri tablosu):** üst sınırın banda dahil olup olmadığı. Varsayılan: `saf_alkol` dışlayıcı (`ABV < üst`), `plato_bandi` kapsayıcı (`°P ≤ üst`); her satırda açıkça yazılır.
+- **Karar (T1.12 D1): oranlar ve birim çarpanları sonlu ondalıktır.** Oran tablosundaki her oran ve birim çarpanı en çok 15 anlamlı basamaklı sonlu bir ondalıktır ve çarpımla uygulanır; bölmeyle türetilmez (`3.50 / 1.17347765` sonsuz ondalık verir, 28 basamakta kesilir; Python ve Rust son basamakta ayrışır). ABD bira varili = **1.17347765 hL** (31 ABD galonu, kesin). Varil başına oran, tabloya hL başına sonlu ondalık olarak yazılır (ör. $3.50/bbl → 2.9826 $/hL, $16/bbl → 13.6347 $/hL; yuvarlama tablo kaydında belgelenir). Çarpımlar 28 basamağı aşmadığından Rust sonucu Python'la ölçeğiyle birlikte aynıdır.
+- **Karar (T1.12 D8): bant ve kademe tabloları doğrulanır.** Üst sınırlar kesin artan, açık uç (`None`) yalnız sonda, oran ≥ 0 olmalıdır; aksi hâlde motor hata verir (Rust `TaxError::InvalidBands`, referans `ValueError`), sessizce yanlış vergi hesaplamaz. Boş liste "bant yok" demektir (geçerli).
+- **Karar (T1.12 D5): sonuç metni düz gösterimdedir** (bilimsel gösterim yok) ve **eksi sıfır içermez** (`-0.00` yerine `0.00`; referans sonuca `+ 0` uygular). Toplama ve çıkarmada sonucun ölçeği işlenenlerin büyük ölçeğidir (`4 − 0.00 = 4.00`; T1.12 D4).
+- **Karar (T1.12 D2/D13):** `spund` sonlu olmayan girdi ya da FG ≤ 0'da hata verir (`TaxError::InvalidInput`). Tank basınç sınırı karşılaştırması `1e-9` psi mutlak toleranslıdır (`psi > sınır + 1e-9`); sınıra eşit ayar engellenmez.
 - **Uç durumlar:** son bant/kademe açık uçlu olmalıdır (üst sınır `None`); aksi hâlde bant bulunamazsa ya da son kademenin üstünde hacim kalırsa motor hata verir, sessizce 0 vergi hesaplamaz. İndirim oranı oranı aşamaz (`max(oran − indirim, 0)`); satır vergisi hiçbir zaman negatif olmaz.
 
 ### 2.3 Rapor çıktısı [tasarım]
@@ -159,8 +163,8 @@ ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0
 | 2.2 | aynı, bantlar (<3.5: 9.27, <8.5: 21.78, diğer (üst sınır `None`): 29.54), indirim 5.0/LPA | 1 678.00 |
 | 2.3 | 20 hL, 12.6 °P, `hl_plato` 0.787, °P kesilir | 20 · 12 · 0.787 = 188.88 |
 | 2.4 | 20 hL, 12 °P, `plato_bandi` (≤10: 16.88, ≤14: 25.32, diğer (`None`): 33.76) | 506.40 |
-| 2.5 | 20 hL, `kademeli_hacim` (60 000 bbl'a kadar 3.50/bbl, sonra 16/bbl), yıl başı | 59.65 |
-| 2.6 | aynı, bu yıl eşiğe 10 hL kalmış | 10 hL @3.50 + 10 hL @16 /bbl = 166.17 |
+| 2.5 | 20 hL, `kademeli_hacim` (60 000 bbl = 70 408.659 hL'ye kadar 2.9826/hL [≈ $3.50/bbl], sonra 13.6347/hL [≈ $16/bbl]), yıl başı | 59.65 |
+| 2.6 | aynı, bu yıl eşiğe 10 hL kalmış | 10 hL @2.9826 + 10 hL @13.6347 = 166.17 |
 | 2.7 | 20 hL, `hacim` 12.49/L (= 1249 PB/hL) | 24 980.00 |
 | 2.8 | 20 hL, `plato_bandi` (2.4 bantları), 10.0 °P; 10.05 °P (`input_dp = None`); 10.05 °P ve `input_dp` = 1 (yarım yukarı) | 337.60 (kapsayıcı sınır); 506.40; 506.40 |
 | 2.9 | 20 hL, ABV 3.5, `saf_alkol` bantları (2.2), dışlayıcı sınır | 70 LPA × 21.78 = 1 524.60 (ikinci bant) |

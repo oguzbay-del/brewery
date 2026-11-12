@@ -9,8 +9,8 @@
 mod ortak;
 
 use engine::trigger::{
-    self, CaskPriming, FermentationType, FgSource, KegMode, KegParams, KegPriming, Stability,
-    Sugar, TriggerError, TriggerForecast,
+    self, CaskPriming, FermentationType, FgSource, KegMode, KegParams, KegPriming, PrimingWarning,
+    Stability, Sugar, TriggerError, TriggerForecast,
 };
 use engine::{units, yeast};
 use serde_json::{Value, json};
@@ -44,7 +44,33 @@ fn err_json(e: TriggerError) -> Value {
     match e {
         TriggerError::EmptySeries => json!({"hata": "IndexError"}),
         TriggerError::ZeroDivision => json!({"hata": "ZeroDivisionError"}),
+        TriggerError::InvalidInput => json!({"hata": "ValueError"}),
     }
+}
+
+fn warnings_json(w: &[PrimingWarning]) -> Value {
+    Value::Array(
+        w.iter()
+            .map(|x| match *x {
+                PrimingWarning::DryMatterUnknown => json!({"kod": x.code()}),
+                PrimingWarning::PolynomialBelowTemperature { point, t_c } => {
+                    json!({"kod": x.code(), "nokta": point.as_str(), "T_C": t_c})
+                }
+                PrimingWarning::PolynomialAboveVolume { point, vol } => {
+                    json!({"kod": x.code(), "nokta": point.as_str(), "vol": vol})
+                }
+                PrimingWarning::PeakVolumeSaturated { limit_vol } => {
+                    json!({"kod": x.code(), "sinir_vol": limit_vol})
+                }
+                PrimingWarning::PeakAboveLimit {
+                    peak_bar,
+                    limit_bar,
+                    t_cond_c,
+                } => json!({"kod": x.code(), "tepe_bar": peak_bar, "limit_bar": limit_bar,
+                            "kondisyon_C": t_cond_c}),
+            })
+            .collect(),
+    )
 }
 
 fn result_json<T>(r: Result<T, TriggerError>, ok: impl FnOnce(T) -> Value) -> Value {
@@ -63,7 +89,7 @@ fn keg_json(k: &KegPriming) -> Value {
         "tepe_vol": k.peak_vol,
         "tepe_basinci_bar": k.peak_bar,
         "tepe_toplam_gosterge_bar": k.peak_total_gauge_bar,
-        "uyarilar": k.warnings,
+        "uyarilar": warnings_json(&k.warnings),
     });
     if let Some(b) = k.co2_topup_bar {
         v["co2_tamamlama_bar"] = json!(b);
@@ -79,7 +105,7 @@ fn cask_json(k: &CaskPriming) -> Value {
         "seker_g": k.sugar_g,
         "g_L": k.g_per_l,
         "fazla": k.excess,
-        "uyarilar": k.warnings,
+        "uyarilar": warnings_json(&k.warnings),
     })
 }
 
@@ -96,7 +122,7 @@ fn parite_11() {
                 let n = usize::try_from(c.i("consecutive")).unwrap();
                 let t =
                     trigger::trigger_index(&pairs(c.v("points")), c.f("fg_ref"), c.f("delta"), n);
-                c.check(&json!(t));
+                c.check(&result_json(t, |t| json!(t)));
             }
             "predicted_trigger" => {
                 let out = result_json(

@@ -38,9 +38,15 @@ pub const TAU_20L_H: f64 = 5.0;
 /// Temperatures below this (°C) contribute nothing to no-chill isomerisation (spec §3.2).
 pub const TSTOP_C: f64 = 40.0;
 
-/// Upper bound on integration steps in [`t_eq_min`]; guards against an ambient
-/// temperature at or above the stop temperature, where the reference would never end.
-const T_EQ_MAX_STEPS: usize = 100_000_000;
+/// Upper bound on the cooling time integrated by [`t_eq_min`], minutes (30 days; T1.12 D3).
+pub const T_EQ_MAX_MIN: f64 = 43_200.0;
+
+/// Largest magnitude accepted for gravity, time and similar inputs (T1.12 D2).
+const INPUT_LIMIT: f64 = 1e6;
+
+fn finite(x: f64) -> bool {
+    x.is_finite() && x.abs() <= INPUT_LIMIT
+}
 
 /// Errors where the Python reference raises.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,6 +57,9 @@ pub enum ManualError {
     NoReadings,
     /// `OverflowError`: forecast range is unbounded (a fit gave no finite end time).
     Unbounded,
+    /// `ValueError`: input not finite or out of range (T1.12 D2, D3), or a cooling model that
+    /// cannot end (ambient at or above the stop temperature, `dt <= 0`, `tau <= 0`).
+    InvalidInput,
 }
 
 /// Extract kind (spec §2.1).
@@ -211,6 +220,11 @@ pub fn few_forecast(
     let mut readings = readings.to_vec();
     readings.sort_by(|a, b| a.0.total_cmp(&b.0).then(a.1.total_cmp(&b.1)));
     let &(t_now, sg_now) = readings.last().ok_or(ManualError::NoReadings)?;
+    if ![og, fg_prior, lag, sigma].into_iter().all(finite)
+        || !readings.iter().all(|&(t, g)| finite(t) && finite(g))
+    {
+        return Err(ManualError::InvalidInput);
+    }
     let post: Vec<(f64, f64)> = readings.iter().copied().filter(|&(t, _)| t > lag).collect();
     // Stall rule (§1.5): last two readings ≥ 48 h apart and ≤ 0.001 difference.
     if readings.len() >= 2 {
@@ -382,21 +396,35 @@ pub fn tau_h(v_l: f64, tau20: f64) -> f64 {
 /// Riemann sum with step `dt` minutes, stopping once `T < t_stop` (°C). `tau_hours`
 /// is the time constant in hours.
 ///
-/// The reference loops until `T < t_stop`; if `t_amb ≥ t_stop` it never ends. Here the
-/// loop is capped at 10^8 steps in that case.
-#[must_use]
-pub fn t_eq_min(t0: f64, t_amb: f64, tau_hours: f64, dt: f64, t_stop: f64) -> f64 {
+/// # Errors
+/// [`ManualError::InvalidInput`] when an input is not finite, `t_amb ≥ t_stop`, `dt ≤ 0`,
+/// `tau_hours ≤ 0`, or the cube is still above `t_stop` after 30 days ([`T_EQ_MAX_MIN`]).
+pub fn t_eq_min(
+    t0: f64,
+    t_amb: f64,
+    tau_hours: f64,
+    dt: f64,
+    t_stop: f64,
+) -> Result<f64, ManualError> {
+    if ![t0, t_amb, tau_hours, dt, t_stop].into_iter().all(finite) {
+        return Err(ManualError::InvalidInput);
+    }
+    if t_amb >= t_stop || dt <= 0.0 || tau_hours <= 0.0 {
+        return Err(ManualError::InvalidInput);
+    }
     let tau = tau_hours * 60.0;
     let (mut t, mut s) = (0.0_f64, 0.0_f64);
-    for _ in 0..T_EQ_MAX_STEPS {
+    loop {
         let temp = t_amb + (t0 - t_amb) * (-t / tau).exp();
         if temp < t_stop {
-            break;
+            return Ok(s);
+        }
+        if t >= T_EQ_MAX_MIN {
+            return Err(ManualError::InvalidInput);
         }
         s += hops::temperature_factor(temp) * dt;
         t += dt;
     }
-    s
 }
 
 /// No-chill extra-time mode (spec §3.1–§3.2).
@@ -420,18 +448,27 @@ pub enum NochillMode {
 ///
 /// `hop_list` entries are `(grams, alpha-acid fraction, minutes)`, `sg` the boil
 /// gravity, `v` litres.
-#[must_use]
+///
+/// # Errors
+/// [`ManualError::InvalidInput`] for non-finite `sg`, `v ≤ 0`, or a cooling model that cannot
+/// end (see [`t_eq_min`]).
 pub fn nochill_ibu(
     hop_list: &[(f64, f64, f64)],
     sg: f64,
     v: f64,
     mode: NochillMode,
-) -> (f64, f64, f64) {
+) -> Result<(f64, f64, f64), ManualError> {
+    if !finite(sg) || !finite(v) || v <= 0.0 {
+        return Err(ManualError::InvalidInput);
+    }
     let extra = match mode {
         NochillMode::Rule => 20.0,
         NochillMode::Model { t0, t_amb, v_cube } => {
             let vc = v_cube.filter(|x| *x != 0.0).unwrap_or(v);
-            t_eq_min(t0, t_amb, tau_h(vc, TAU_20L_H), 0.5, TSTOP_C)
+            if !finite(vc) || vc <= 0.0 {
+                return Err(ManualError::InvalidInput);
+            }
+            t_eq_min(t0, t_amb, tau_h(vc, TAU_20L_H), 0.5, TSTOP_C)?
         }
     };
     let ibu = |add: f64| -> f64 {
@@ -440,11 +477,11 @@ pub fn nochill_ibu(
             .map(|&(g, aa, t)| hops::tinseth_utilization(sg, t + add) * aa * g * 1000.0 / v)
             .sum()
     };
-    (
+    Ok((
         round_py(ibu(0.0), 1),
         round_py(ibu(extra), 1),
         round_py(extra, 1),
-    )
+    ))
 }
 
 // ------------------------------------------------------------------ method choice, display and stall rules

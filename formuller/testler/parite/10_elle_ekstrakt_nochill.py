@@ -66,6 +66,14 @@ def uret():
     ff([], 1.050, 1.012, not_="boş liste: IndexError")
     ff([(48, 1.030)], 1.050, 1.012)
     ff([(5, 1.050)], 1.050, 1.012, not_="gecikme içinde tek okuma")
+    ff([(48, 1.030), (96, 1.018)], 1.050, 1.012, lag=1e9, not_="lag çok büyük: veri yetersiz")
+    ff([(48, 1.030), (96, 1.018)], 1.050, 1.012, sigma=-0.003, not_="negatif sigma")
+    ff([(48, 1.030), (96, 1.018)], 1.050, 1.012, sigma=0.0, not_="sigma 0")
+    ff([(48, 1.030), (96, 1.018)], 1.050, 1.012, sigma=5e6, not_="sigma çok büyük: ValueError")
+    ff([(48, 1.030), (96, 1e9)], 1.050, 1.012, not_="makul olmayan SG: ValueError")
+    ff([(48, 1.030), (96, 1.018)], 1e9, 1.012, not_="makul olmayan OG: ValueError")
+    ff([(48, 1.030), (96, 1.018)], 1.050, 1.012, lag=-1e9, not_="lag çok küçük")
+    ff([(48, 1.030), (96, 1.0145), (140, 1.0125)], 1.050, 1.012, not_="tutarsızlık oranı ~ sınır")
     # durgunluk eşikleri: 48 sa arayla, fark 100 / 101 birim; 47.9 sa
     ff([(48, 1.020), (96, 1.019)], 1.050, 1.012)
     ff([(48, 1.020), (96, 1.01899)], 1.050, 1.012)
@@ -146,8 +154,8 @@ def uret():
     v.ekle("tau_h", {"v_l": 40, "tau20": 4.4}, ref.tau_h(40, 4.4))
 
     def te(t0, ta, tau, dt=0.5, ts=40.0, not_=None):
-        v.ekle("t_eq_min", {"t0": t0, "t_amb": ta, "tau_hours": tau, "dt": dt, "t_stop": ts},
-               ref.t_eq_min(t0, ta, tau, dt, ts), not_)
+        dene("t_eq_min", {"t0": t0, "t_amb": ta, "tau_hours": tau, "dt": dt, "t_stop": ts},
+             lambda: ref.t_eq_min(t0, ta, tau, dt, ts), not_)
 
     for tau in (3, 4, 6, 5):
         te(95, 20, tau)
@@ -160,6 +168,16 @@ def uret():
     te(35, 20, 5, not_="T0 < 40: sıfır")
     te(40, 20, 5, not_="T0 = 40: kesme sınırı, ilk adım sayılır")
     te(40.0001, 20, 5)
+    # T1.12 D3: bitmeyen ya da geçersiz girdi → hata (hepsi ValueError)
+    te(95, 40, 5, not_="ortam = durma sıcaklığı")
+    te(95, 45, 5, not_="ortam > durma sıcaklığı")
+    te(95, 20, 5, dt=0.0, not_="dt = 0")
+    te(95, 20, 5, dt=-0.5, not_="dt < 0")
+    te(95, 20, 0.0, not_="τ = 0")
+    te(95, 20, -3.0, not_="τ < 0")
+    te(95, 20, 1e9, not_="τ çok büyük: 30 gün sınırı")
+    te(95, 20, 5, ts=15.0, not_="durma sıcaklığı ortamın altında: sınır")
+    te(95, 39.99, 5, not_="ortam durma sıcaklığının hemen altında: uzun ama biter")
 
     hp = [(28, 0.10, 60), (28, 0.10, 0)]
     hp2 = [(30, 0.12, 60), (20, 0.06, 15), (25, 0.09, 5), (40, 0.04, 0)]
@@ -175,8 +193,14 @@ def uret():
             ([], 1.050, 20, "model", {})):
         girdi = {"hops": [list(x) for x in h], "sg": sg, "v": vol, "mode": mode}
         girdi.update(kw)
-        base, nc, extra = ref.nochill_ibu(h, sg, vol, mode, **kw)
-        v.ekle("nochill_ibu", girdi, [base, nc, extra])
+        dene("nochill_ibu", girdi, lambda: list(ref.nochill_ibu(h, sg, vol, mode, **kw)))
+    # T1.12 D2/D3: geçersiz hacim ve ortam sıcaklığı
+    for h, sg, vol, mode, kw in ((hp, 1.050, 0, "kural", {}), (hp, 1.050, -5, "kural", {}),
+                                 (hp, 1.050, 20, "model", {"v_cube": -40}), (hp, 1.050, 20, "model", {"T_amb": 45}),
+                                 (hp, 1.050, 20, "model", {"T_amb": 40})):
+        girdi = {"hops": [list(x) for x in h], "sg": sg, "v": vol, "mode": mode}
+        girdi.update(kw)
+        dene("nochill_ibu", girdi, lambda: list(ref.nochill_ibu(h, sg, vol, mode, **kw)))
 
     # T1.14g: yöntem seçimi, gösterim, durgunluk, basit no-chill kuralı
     okumalar = [

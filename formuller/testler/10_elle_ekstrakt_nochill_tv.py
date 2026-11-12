@@ -41,11 +41,17 @@ def k_fit(readings, og, fg, lag=LAG_H, weighted=True):
 def t_end(og, fg, k, lag=LAG_H):
     return lag + math.log((og - fg) / EPS) / k
 
+def _finite(*xs, lim=1e6):
+    """Karar (T1.12 D2): girdiler sonlu ve makul büyüklükte olmalı (NaN/sonsuz/taşma → ValueError)."""
+    return all(math.isfinite(x) and abs(x) <= lim for x in xs)
+
 def few_forecast(readings, og, fg_prior, lag=LAG_H, sigma=SIGMA_FG):
     """readings: [(t_saat, SG)] elle/kağıt okumalar (t parti başlangıcından). Kurallar §1.3–§1.5."""
     readings = sorted(readings)
     post = [(t, g) for t, g in readings if t > lag]
     sg_now = readings[-1][1]; t_now = readings[-1][0]
+    if not (_finite(og, fg_prior, lag, sigma) and all(_finite(t, g) for t, g in readings)):
+        raise ValueError("girdi sonlu ve makul büyüklükte olmalı")
     # durgunluk kontrolü (§1.5): son iki okuma ≥48 saat arayla ve ≤0.001 fark (tam sayı birimde)
     if len(readings) >= 2:
         (t1, g1), (t2, g2) = readings[-2], readings[-1]
@@ -133,22 +139,32 @@ def tau_h(v_L, tau20=TAU_20L_H): return tau20 * (v_L / 20.0) ** (1 / 3)
 
 TSTOP_C = 40.0         # bu sıcaklığın altı ihmal edilir (F1 karar 6; önceki değer 60 °C)
 
+T_EQ_MAX_MIN = 43200.0   # Karar (T1.12 D3): soğuma süresi üst sınırı 30 gün; aşılırsa ValueError
+
 def t_eq_min(T0, T_amb, tau_hours, dt=0.5, Tstop=TSTOP_C):
     """Küpte soğuma T(t) = Tamb + (T0-Tamb)e^(-t/τ). Eşdeğer kaynatma dakikası = ∫ ftemp(T) dt.
     40 °C altı katkısı ihmal edilir (bilinçli yaklaşım; ftemp(40 °C) = 0.00668; kesme eşdeğer süreyi, kesmesiz
     integrale göre, τ = 5 sa için yaklaşık %4 (T0 95) – %10 (T0 80) azaltır; 60 °C kesmesi %12 – %30 azaltırdı).
     Yöntem: sol Riemann toplamı, adım dt = 0.5 dk."""
+    # Karar (T1.12 D3): girdiler sonlu; ortam < durma sıcaklığı, dt > 0, τ > 0; aksi hâlde ValueError.
+    if not _finite(T0, T_amb, tau_hours, dt, Tstop): raise ValueError("girdi sonlu olmalı")
+    if T_amb >= Tstop or dt <= 0 or tau_hours <= 0: raise ValueError("t_eq_min: ortam < Tstop, dt > 0, τ > 0 olmalı")
     tau = tau_hours * 60; t = 0.0; s = 0.0
     while True:
         T = T_amb + (T0 - T_amb) * math.exp(-t / tau)
         if T < Tstop: break
+        if t >= T_EQ_MAX_MIN: raise ValueError("t_eq_min: soğuma 30 günde bitmedi")
         s += ftemp(T) * dt; t += dt
     return s
 
 def nochill_ibu(hops, sg, v, mode="kural", T0=95.0, T_amb=20.0, v_cube=None):
     """mode 'kural': her katkıya +20 dk. mode 'model': + ∫ftemp(T)dt (eşdeğer dakika)."""
+    if not _finite(sg, v) or v <= 0: raise ValueError("sg sonlu, v > 0 olmalı")
     if mode == "kural": extra = 20.0
-    else: extra = t_eq_min(T0, T_amb, tau_h(v_cube or v))
+    else:
+        vc = v_cube or v
+        if not _finite(vc) or vc <= 0: raise ValueError("küp hacmi sonlu, > 0 olmalı")
+        extra = t_eq_min(T0, T_amb, tau_h(vc))
     base = sum(tinseth_util(sg, t) * aa * g * 1000 / v for g, aa, t in hops)
     nc = sum(tinseth_util(sg, t + extra) * aa * g * 1000 / v for g, aa, t in hops)
     return r(base, 1), r(nc, 1), r(extra, 1)
