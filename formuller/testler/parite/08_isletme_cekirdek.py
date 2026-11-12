@@ -1,5 +1,17 @@
 """Bölüm 08 (işletme çekirdek hesapları) parite vektörleri (ADR-0003)."""
+from decimal import Decimal
+
 from ortak import Vektor, yukle
+
+
+def dd(x):
+    """Girdi: Decimal -> düz metin (ölçek korunur, bilimsel gösterim yok)."""
+    return format(x, "f")
+
+
+def dj(x):
+    """Beklenen: Decimal -> {"ondalik": metin}; Rust sayısal eşitle karşılaştırır (ölçek önemsiz)."""
+    return {"ondalik": format(x, "f")}
 
 
 def uret():
@@ -9,37 +21,61 @@ def uret():
     for p in (0.0, 2.4, 2.8, 12.0, 20.0):
         v.ekle("plato_to_sg", {"p": p}, ref.plato_to_sg(p))
 
-    # 1. Maliyet
-    lots = [["L-A", 3.0, 1.10], ["L-B", 25.0, 1.25]]
+    # 1. Maliyet (T1.12 C2, C6: Decimal; satır başına 2 ondalık yarım yukarı; toplam = satırların toplamı)
+    D = Decimal
+    lots = [["L-A", "3.0", "1.10"], ["L-B", "25.0", "1.25"]]
+    tozlu = [["L-1", "0.1", "1.00"], ["L-2", "0.2", "1.00"], ["L-3", "5.0", "1.00"]]
     for lotlar, qty, not_ in (
-        (lots, 4.5, "iki lota yayılır"),
-        (lots, 2.0, "ilk lot yeter"),
-        (lots, 3.0, "ilk lot tam biter"),
-        (lots, 28.0, "tüm stok, eksik yok"),
-        (lots, 30.0, "eksik 2.0"),
-        ([["L-2411", 0.20, 52.0]], 0.30, "stok yetmez (TV1.2)"),
-        (lots, 0.0, "sıfır ihtiyaç"),
-        (lots, -1.0, "negatif ihtiyaç"),
-        ([], 5.0, "boş stok"),
-        ([["L-0", 0.0, 9.0], ["L-1", 2.0, 1.5]], 1.0, "boş lot atlanır"),
+        (lots, "4.5", "iki lota yayılır; 1.5 x 1.25 = 1.875 -> 1.88"),
+        (lots, "2.0", "ilk lot yeter"),
+        (lots, "3.0", "ilk lot tam biter"),
+        (lots, "28.0", "tüm stok, eksik yok"),
+        (lots, "30.0", "eksik 2.0"),
+        ([["L-2411", "0.20", "52.0"]], "0.30", "stok yetmez (TV1.2)"),
+        (lots, "0.0", "sıfır ihtiyaç"),
+        (lots, "-1.0", "negatif ihtiyaç"),
+        ([], "5.0", "boş stok"),
+        ([["L-0", "0.0", "9.0"], ["L-1", "2.0", "1.5"]], "1.0", "boş lot atlanır"),
+        ([["L-1", "0.1", "1.00"], ["L-2", "0.2", "1.00"]], "0.3", "0.1 + 0.2 tam biter: toz satır ve eksik yok (C2)"),
+        (tozlu, "0.3", "0.1 + 0.2 ihtiyaç: üçüncü lottan satır açılmaz (C2)"),
+        ([["L-1", "0.1", "1.00"], ["L-2", "0.2", "1.00"]], "0.4", "eksik tam 0.1"),
+        ([["L-1", "0.1", "0.05"], ["L-2", "0.1", "0.05"], ["L-3", "0.1", "0.05"]], "0.3", "0.005 satırlar: 0.01 x 3, toplam 0.03"),
+        ([["L-1", "1.0", "1.005"], ["L-2", "1.0", "2.675"], ["L-3", "1.0", "0.125"]], "3", "yarım yukarı: 1.01, 2.68, 0.13"),
+        ([["L-1", "1.0", "0.004"], ["L-2", "1.0", "0.004"], ["L-3", "1.0", "0.004"]], "3", "satırlar 0.00, toplam 0.00"),
     ):
-        rows, cost, miss = ref.fifo_consume(lotlar, qty)
-        v.ekle("fifo_consume", {"lots": lotlar, "qty": qty}, {"rows": rows, "cost": cost, "missing": miss}, not_)
+        rows, cost, miss = ref.fifo_consume([(a, D(b), D(c_)) for a, b, c_ in lotlar], D(qty))
+        v.ekle("fifo_consume", {"lots": lotlar, "qty": qty},
+               {"rows": [[r_[0], dj(r_[1]), dj(r_[2]), dj(r_[3])] for r_ in rows], "cost": dj(cost), "missing": dj(miss)}, not_)
 
-    for inv, qty, ship in ((1.20, 25, 4.0), (1.20, 25, 0.0), (52.0, 0.5, 1.3), (3.75, 100, 12.5)):
-        v.ekle("landed_price", {"invoice_price": inv, "qty": qty, "shipping_share": ship}, ref.landed_price(inv, qty, ship))
-    for kwh, pr in ((4.99, 2.6), (0.0, 2.6), (120.0, 0.18)):
-        v.ekle("energy_cost_electric", {"kwh": kwh, "price_kwh": pr}, ref.energy_cost_electric(kwh, pr))
+    for inv, qty, ship in (("1.20", "25", "4.0"), ("1.20", "25", "0.0"), ("52.0", "0.5", "1.3"), ("3.75", "100", "12.5")):
+        v.ekle("landed_price", {"invoice_price": inv, "qty": qty, "shipping_share": ship},
+               dj(ref.landed_price(D(inv), D(qty), D(ship))))
+    for qty in ("0", "-5"):
+        v.ekle("landed_price", {"invoice_price": "1.0", "qty": qty, "shipping_share": "0"}, {"hata": "ValueError"}, "miktar <= 0")
+    for kwh, pr in (("4.99", "2.6"), ("0.0", "2.6"), ("120.0", "0.18"), ("3.333", "0.1234")):
+        v.ekle("energy_cost_electric", {"kwh": kwh, "price_kwh": pr}, dj(ref.energy_cost_electric(D(kwh), D(pr))))
     kj_strike = (15 * 4.186 + 8 * 0.5) * (72 - 15)
     kj_boil = (28 * 4.186 + 8 * 0.5) * (100 - 76)
     for kj, eff in ((kj_strike + kj_boil, 0.90), (0.0, 0.9), (1000.0, 1.0), (50000.0, 0.45)):
         v.ekle("kwh_from_heat", {"kj": kj, "eff": eff}, ref.kwh_from_heat(kj, eff))
     for kj, eff, hu in ((kj_strike + kj_boil, 0.40, 34500.0), (1000.0, 1.0, 34500.0), (50000.0, 0.8, 36000.0)):
         v.ekle("gas_m3_from_heat", {"kj": kj, "eff": eff, "hu_kj_m3": hu}, ref.gas_m3_from_heat(kj, eff, hu))
-    for a in ((18.40, 35.0, 30.0, 12.9740, 60, 0.35, 20.0), (0.0, 0.0, 0.0, 0.0, 0, 0.0, 10.0),
-              (100.0, 500.0, 1.2, 40.0, 1200, 0.4, 950.0), (7.005, 12.5, 2.333, 1.005, 3, 0.125, 3.0)):
-        arg = dict(zip(("ingredient_cost", "water_l", "water_price_m3", "energy_cost", "pack_units", "pack_unit_cost", "packaged_l"), a))
-        v.ekle("batch_cost", arg, ref.batch_cost(*a))
+    adlar = ("ingredient_cost", "water_l", "water_price_m3", "energy_cost", "pack_units", "pack_unit_cost", "packaged_l")
+    for a in (("18.40", "35.0", "30.0", "12.9740", "60", "0.35", "20.0"), ("0.0", "0.0", "0.0", "0.0", "0", "0.0", "10.0"),
+              ("100.0", "500.0", "1.2", "40.0", "1200", "0.4", "950.0"), ("7.005", "12.5", "2.333", "1.005", "3", "0.125", "3.0"),
+              ("0.004", "1.0", "4.0", "0.004", "1", "0.004", "1.0"),             # kalemler 0.00, toplam 0.00 (C6)
+              ("1.005", "0", "0", "2.675", "0", "0", "7"),                      # yarım yukarı: 1.01 + 2.68
+              ("0.125", "0", "0", "0.375", "0", "0", "3"),                      # 0.13 + 0.38 = 0.51
+              ("1000.00", "35000", "30.0", "0", "0", "0", "100"),               # su 1050.00 (sabit %0.01 hatası görünür)
+              ("0", "123456", "2.3571", "0", "0", "0", "1000"),                 # su 290.99 civarı
+              ("10.00", "0", "0", "0", "1", "0.005", "1.5"),                    # ambalaj 0.005 -> 0.01; litre 6.673
+              ("10.00", "0", "0", "0", "0", "0", "3")):                         # litre 3.333
+        arg = dict(zip(adlar, a))
+        r_ = ref.batch_cost(*[D(x) for x in a])
+        v.ekle("batch_cost", arg, {"malzeme": dj(r_["malzeme"]), "su": dj(r_["su"]), "enerji": dj(r_["enerji"]),
+                                    "ambalaj": dj(r_["ambalaj"]), "toplam": dj(r_["toplam"]), "litre": dj(r_["litre"])})
+    for pl in ("0", "-2"):
+        v.ekle("batch_cost", dict(zip(adlar, ("10", "0", "0", "0", "0", "0", pl))), {"hata": "ValueError"}, "ambalajlanan hacim <= 0")
 
     # 2. Harmanlama
     a = dict(V=960, ABV=5.4, IBU=38, SRM=7.0, CO2=1.0, P=2.8)
@@ -49,7 +85,9 @@ def uret():
     for parts in ([a, b], [a, w], [a], [a, b, c], [c, w]):
         v.ekle("blend", {"parts": parts}, ref.blend(parts))
     for v1, x1, x2, xt in ((960, 5.4, 4.6, 5.2), (960, 5.4, 0.0, 5.0), (500, 20.0, 40.0, 30.0),
-                            (960, 5.4, 4.6, 5.4), (960, 5.4, 4.6, 4.6), (960, 5.4, 4.6, 6.0), (960, 5.4, 4.6, 4.0)):
+                            (960, 5.4, 4.6, 5.4), (960, 5.4, 4.6, 4.6), (960, 5.4, 4.6, 6.0), (960, 5.4, 4.6, 4.0),
+                            (960, 5.4, 4.6, 4.6 + 5e-10), (960, 5.4, 4.6, 5.4 - 5e-10), (960, 5.4, 4.6, 4.6 + 2e-9),
+                            (960, 5.4, 4.6, 5.4 - 2e-9), (960, 4.6, 5.4, 5.0), (500, 20.0, 40.0, 20.0), (500, 20.0, 40.0, 40.0)):
         v.ekle("blend_volume_for_target", {"v1": v1, "x1": x1, "x2": x2, "xt": xt}, ref.blend_volume_for_target(v1, x1, x2, xt),
                "hedef aralık dışı/uçta ise null")
 
@@ -92,14 +130,22 @@ def uret():
     for gen, gun, via, mx, hist in (
             (1, 3, 0.95, 8, False), (8, 14, 0.80, 8, False), (9, 15, 0.79, 8, False), (3, 20, None, 8, False),
             (5, 2, 0.5, 8, True), (6, 14, 0.9, 5, False), (12, 30, 0.1, 8, True), (0, 0, 1.0, 8, False),
-            (2, 14.5, None, 8, False), (4, 7, 0.7999999, 8, False), (4, 7, 230 / 288, 8, False)):
+            (2, 14.5, None, 8, False), (4, 7, 0.7999999, 8, False), (4, 7, 230 / 288, 8, False),
+            (4, 7, 0.80, 8, False), (4, 7, 0.8 - 5e-10, 8, False), (4, 7, 0.8 - 2e-9, 8, False),
+            (4, 14 + 5e-10, None, 8, False), (4, 14 + 2e-9, None, 8, False), (8, 7, None, 8, False), (9, 7, None, 8, False),
+            (9, 7, 0.5, 8, True)):
         v.ekle("yeast_reuse_warnings", {"generation": gen, "days_since_harvest": gun, "viability": via,
                                         "max_generation": mx, "history_differs": hist},
                ref.yeast_reuse_warnings(gen, gun, via, mx, hist), "kod listesi, tablo sırası")
     for gr, thr in (([(4.5, 35.0), (0.5, 0.0)], 35.0), ([(5.0, 40.0)], 35.0), ([(4.0, 30.0), (1.0, 60.0)], 35.0),
                     ([(4.5, 50.0), (0.45, 0.0), (0.3, 0.0)], 35.0), ([(2.0, 100.0), (3.0, 0.0)], 35.0),
                     ([(1.0, 35.0)], 35.0), ([(3.0, 20.0), (3.0, 50.0)], 35.0), ([], 35.0), ([(0.0, 10.0)], 35.0),
-                    ([(5.0, 30.0)], 25.0)):
+                    ([(5.0, 30.0)], 25.0),
+                    # T1.12 C1: telafili toplam ve 1e-9 toleransı
+                    ([(1.1, 35.0), (3.79, 35.0), (3.87, 35.0)], 35.0),
+                    ([(1.0, 35.0 - 5e-10)], 35.0), ([(1.0, 35.0 - 2e-9)], 35.0), ([(1.0, 35.0 + 2e-9)], 35.0),
+                    ([(2.0, 34.0), (2.0, 36.0)], 35.0), ([(0.1, 35.0), (0.2, 35.0), (0.3, 35.0), (0.4, 35.0)], 35.0),
+                    ([(0.7, 35.0), (0.1, 35.0), (2.2, 35.0)], 35.0), ([(1.0, 34.99999)], 35.0)):
         res = ref.diastatic_check(gr, thr)
         v.ekle("diastatic_check", {"grains": [list(g) for g in gr], "threshold": thr}, res,
                "ağırlıklı ortalama < eşik; diastatik gücü olmayan tahıl 0")

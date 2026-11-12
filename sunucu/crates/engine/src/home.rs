@@ -16,11 +16,11 @@
 
 use std::collections::BTreeMap;
 
-use crate::units::round_py;
+use crate::units::gravity_units;
 
 /// Sum with the same compensated algorithm as `CPython`'s `sum()` over floats (3.12+),
 /// so ill-conditioned fits match the reference to the last digits.
-fn py_sum(values: impl IntoIterator<Item = f64>) -> f64 {
+pub(crate) fn py_sum(values: impl IntoIterator<Item = f64>) -> f64 {
     let mut sum = 0.0_f64;
     let mut comp = 0.0_f64;
     for x in values {
@@ -117,7 +117,8 @@ pub fn fit_decay(
         let ys: Vec<f64> = pts.iter().map(|&(_, g)| (g - f).ln()).collect();
         let (a, b) = linfit(&ts, &ys);
         let k = -b;
-        if k <= 0.0 {
+        // T1.12 C5: non-finite or non-positive `k` never yields a grid point.
+        if k.is_nan() || k <= 0.0 {
             continue;
         }
         let amp = a.exp();
@@ -125,6 +126,9 @@ pub fn fit_decay(
             pts.iter()
                 .map(|&(t, g)| (g - (f + amp * (-k * t).exp())).powi(2)),
         );
+        if !rss.is_finite() {
+            continue;
+        }
         table.push((f, rss));
         if best.is_none_or(|b| rss < b.rss) {
             best = Some(DecayFit {
@@ -138,8 +142,7 @@ pub fn fit_decay(
     best.map(|b| (b, table))
 }
 
-/// Forecast values (§1.5). Like the reference they are rounded for display:
-/// FG and range to 4 decimals, `k` to 4, hours to 1.
+/// Forecast values (§1.5), unrounded (T1.12 C9): rounding is a presentation concern.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ForecastResult {
     /// Final gravity `FG∞` (SG).
@@ -152,25 +155,42 @@ pub struct ForecastResult {
     pub finish_hour: f64,
     /// Remaining time from the last point (hours).
     pub remaining_hours: f64,
-    /// `|FG∞ − FG_recipe| > 0.010`: finishing differently than expected.
+    /// `|u(FG∞) − u(FG_recipe)| > 1000` ([`fg_warning`]): finishing differently than expected.
     pub warning: bool,
 }
 
 /// Outcome of [`forecast`].
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Forecast {
-    /// "Veri yetersiz": fewer than `min_n` hourly points, drop below `min_drop`, or no
-    /// valid fit (§1.4).
+    /// "Veri yetersiz": fewer than `min_n` hourly points (or `min_n < 3`), drop below
+    /// `min_drop`, or no valid fit grid point (§1.4, T1.12 C5).
     InsufficientData,
     /// A forecast could be made.
     Ready(ForecastResult),
 }
 
+/// §1.4 drop rule in integer gravity units (T1.12 C3): enough of the expected drop is done
+/// unless `Δu(OG − SG_now) < min_drop · Δu(OG − FG_recipe) − 1e-9`. An exact 30 % drop passes.
+#[must_use]
+#[allow(clippy::cast_precision_loss)]
+pub fn drop_enough(og: f64, sg_now: f64, fg_recipe: f64, min_drop: f64) -> bool {
+    let done = (gravity_units(og) - gravity_units(sg_now)) as f64;
+    let expected = (gravity_units(og) - gravity_units(fg_recipe)) as f64;
+    done >= min_drop * expected - 1e-9
+}
+
+/// §1.5 warning in integer gravity units (T1.12 C3): `|u(FG∞) − u(FG_recipe)| > 1000`
+/// (0.010 SG); exactly 0.010 does not warn.
+#[must_use]
+pub fn fg_warning(fg_inf: f64, fg_recipe: f64) -> bool {
+    (gravity_units(fg_inf) - gravity_units(fg_recipe)).abs() > 1000
+}
+
 /// Fermentation forecast from raw `(t_hours, SG)` readings (§1.4–1.5).
 ///
 /// `og`, `fg_recipe` in SG; `eps` is the SG distance to `FG∞` that counts as finished
-/// (spec 0.0005); `min_n` minimum hourly points (spec 12); `min_drop` minimum share of the
-/// expected drop already done (spec 0.30).
+/// (spec 0.0005); `min_n` minimum hourly points (spec 12, must be ≥ 3); `min_drop` minimum
+/// share of the expected drop already done (spec 0.30).
 #[must_use]
 pub fn forecast(
     points: &[(f64, f64)],
@@ -180,11 +200,14 @@ pub fn forecast(
     min_n: usize,
     min_drop: f64,
 ) -> Forecast {
+    if min_n < 3 {
+        return Forecast::InsufficientData;
+    }
     let pts = hourly_median(points);
     let Some(&(t_last, sg_now)) = pts.last() else {
         return Forecast::InsufficientData;
     };
-    if pts.len() < min_n || (og - sg_now) < min_drop * (og - fg_recipe) {
+    if pts.len() < min_n || !drop_enough(og, sg_now, fg_recipe, min_drop) {
         return Forecast::InsufficientData;
     }
     let (fg_lo, fg_hi) = (fg_recipe - 0.015, sg_now - 0.0002);
@@ -200,12 +223,12 @@ pub fn forecast(
     });
     let t_end = (fit.a / eps).ln() / fit.k;
     Forecast::Ready(ForecastResult {
-        fg: round_py(fit.fg_inf, 4),
-        range: (round_py(lo, 4), round_py(hi, 4)),
-        k_per_hour: round_py(fit.k, 4),
-        finish_hour: round_py(t_end, 1),
-        remaining_hours: round_py(t_end - t_last, 1),
-        warning: (fit.fg_inf - fg_recipe).abs() > 0.010,
+        fg: fit.fg_inf,
+        range: (lo, hi),
+        k_per_hour: fit.k,
+        finish_hour: t_end,
+        remaining_hours: t_end - t_last,
+        warning: fg_warning(fit.fg_inf, fg_recipe),
     })
 }
 
@@ -267,7 +290,36 @@ pub fn peval(co: &[f64], x: f64) -> f64 {
 pub enum CalibrationError {
     /// Fewer than `deg + 2` points (§2.1).
     TooFewPoints,
+    /// Fewer than `deg + 2` distinct angles (T1.12 C4): the system is singular.
+    TooFewDistinctAngles,
+    /// All reference SG values are equal (R² undefined).
+    ConstantGravity,
+    /// A coefficient came out non-finite.
+    Singular,
 }
+
+/// Calibration warning code (T1.12 C4, design, to be verified).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CalibrationWarning {
+    /// Calibration angle span is below 10° (`span < 10 − 1e-9`).
+    NarrowAngleRange,
+    /// The evaluated angle lies outside the calibration angles (extrapolation).
+    AngleOutsideRange,
+}
+
+impl CalibrationWarning {
+    /// Stable code used by the parity vectors.
+    #[must_use]
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::NarrowAngleRange => "aci_araligi_dar",
+            Self::AngleOutsideRange => "aci_aralik_disi",
+        }
+    }
+}
+
+/// Minimum calibration angle span in degrees before [`CalibrationWarning::NarrowAngleRange`].
+pub const MIN_ANGLE_SPAN: f64 = 10.0;
 
 /// iSpindel polynomial calibration result (§2.1).
 #[derive(Debug, Clone, PartialEq)]
@@ -278,28 +330,76 @@ pub struct IspindelCal {
     pub r2: f64,
     /// Largest absolute residual (SG); above 0.002 the UI warns "check the points".
     pub max_residual: f64,
+    /// Smallest calibration angle, degrees.
+    pub angle_min: f64,
+    /// Largest calibration angle, degrees.
+    pub angle_max: f64,
+    /// Warnings found at calibration time.
+    pub warnings: Vec<CalibrationWarning>,
 }
 
 /// iSpindel angle → SG calibration from `(angle °, reference SG)` points (§2.1).
 ///
-/// Needs at least `deg + 2` points (spec default degree 2).
+/// Needs at least `deg + 2` points with at least `deg + 2` distinct angles (spec default
+/// degree 2) and reference SG values that are not all equal (T1.12 C4).
 pub fn ispindel_cal(points: &[(f64, f64)], deg: usize) -> Result<IspindelCal, CalibrationError> {
     if points.len() < deg + 2 {
         return Err(CalibrationError::TooFewPoints);
     }
+    let mut angles: Vec<f64> = points.iter().map(|p| p.0).collect();
+    angles.sort_by(f64::total_cmp);
+    angles.dedup();
+    if angles.len() < deg + 2 {
+        return Err(CalibrationError::TooFewDistinctAngles);
+    }
     let xs: Vec<f64> = points.iter().map(|p| p.0).collect();
     let ys: Vec<f64> = points.iter().map(|p| p.1).collect();
-    let co = polyfit(&xs, &ys, deg);
-    let res: Vec<f64> = points.iter().map(|&(a, g)| g - peval(&co, a)).collect();
     #[allow(clippy::cast_precision_loss)]
     let my = py_sum(ys.iter().copied()) / points.len() as f64;
-    let r2 = 1.0 - py_sum(res.iter().map(|x| x * x)) / py_sum(ys.iter().map(|g| (g - my).powi(2)));
+    let den = py_sum(ys.iter().map(|g| (g - my).powi(2)));
+    if den == 0.0 {
+        return Err(CalibrationError::ConstantGravity);
+    }
+    let co = polyfit(&xs, &ys, deg);
+    if co.iter().any(|c| !c.is_finite()) {
+        return Err(CalibrationError::Singular);
+    }
+    let res: Vec<f64> = points.iter().map(|&(a, g)| g - peval(&co, a)).collect();
+    let r2 = 1.0 - py_sum(res.iter().map(|x| x * x)) / den;
     let max_residual = res.iter().fold(0.0_f64, |m, x| m.max(x.abs()));
+    let (angle_min, angle_max) = (angles[0], angles[angles.len() - 1]);
+    let mut warnings = Vec::new();
+    if angle_max - angle_min < MIN_ANGLE_SPAN - 1e-9 {
+        warnings.push(CalibrationWarning::NarrowAngleRange);
+    }
     Ok(IspindelCal {
         coefficients: co,
         r2,
         max_residual,
+        angle_min,
+        angle_max,
+        warnings,
     })
+}
+
+/// SG at `angle` from calibration coefficients, with an extrapolation warning when the
+/// angle is outside `[angle_min − 1e-9, angle_max + 1e-9]` (T1.12 C4).
+#[must_use]
+pub fn ispindel_eval(
+    co: &[f64],
+    angle_min: f64,
+    angle_max: f64,
+    angle: f64,
+) -> (f64, Vec<CalibrationWarning>) {
+    let outside = angle < angle_min - 1e-9 || angle > angle_max + 1e-9;
+    (
+        peval(co, angle),
+        if outside {
+            vec![CalibrationWarning::AngleOutsideRange]
+        } else {
+            Vec::new()
+        },
+    )
 }
 
 /// Tilt correction `SG_flat = slope·SG_tilt + offset` from `(SG_tilt, SG_reference)`
@@ -425,10 +525,12 @@ pub fn scale_recipe(
         .collect()
 }
 
-/// Rounds `q` to a multiple of `step` (half to even), §4.3.
+/// Rounds `q` to a multiple of `step`, half up (§4.3, T1.12 C15):
+/// `⌊q/step + 0.5 + 1e-9⌋ · step`; the 1e-9 share treats binary residues such as
+/// `0.35/0.1 = 3.4999999999999996` as halves.
 #[must_use]
 pub fn round_to(q: f64, step: f64) -> f64 {
-    (q / step).round_ties_even() * step
+    (q / step + 0.5 + 1e-9).floor() * step
 }
 
 /// First-estimate factor of one ingredient (spec §4.1–4.2), covering the rules that
@@ -596,8 +698,7 @@ impl BalanceClass {
     }
 }
 
-/// Ion balance result (§5.2). Like the reference, sums are rounded for display
-/// (3 decimals) and the percentage to 2 decimals; the class uses the unrounded value.
+/// Ion balance result (§5.2), unrounded (T1.12 C9); the class uses the raw percentage.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct IonBalance {
     /// Σ cations, mEq/L.
@@ -610,23 +711,24 @@ pub struct IonBalance {
     pub class: BalanceClass,
 }
 
-/// Ion balance of a water report (§5.2). All-zero input yields NaN (the reference raises).
+/// Ion balance of a water report (§5.2). All-zero input yields NaN (the reference raises;
+/// error type: T1.16).
 #[must_use]
 pub fn ion_balance(w: &Ions) -> IonBalance {
     let c = w.ca / EQW_CA + w.mg / EQW_MG + w.na / EQW_NA + w.k / EQW_K;
     let a = w.so4 / EQW_SO4 + w.cl / EQW_CL + w.hco3 / EQW_HCO3 + w.co3 / EQW_CO3 + w.no3 / EQW_NO3;
     let b = 100.0 * (c - a) / (c + a);
-    let class = if b.abs() <= 5.0 {
+    let class = if b.abs() <= 5.0 + 1e-9 {
         BalanceClass::Good
-    } else if b.abs() <= 10.0 {
+    } else if b.abs() <= 10.0 + 1e-9 {
         BalanceClass::Acceptable
     } else {
         BalanceClass::Check
     };
     IonBalance {
-        cations: round_py(c, 3),
-        anions: round_py(a, 3),
-        balance_pct: round_py(b, 2),
+        cations: c,
+        anions: a,
+        balance_pct: b,
         class,
     }
 }

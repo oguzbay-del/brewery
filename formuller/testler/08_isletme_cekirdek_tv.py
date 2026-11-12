@@ -2,25 +2,34 @@
 Çalıştır: python3 -I testler/08_isletme_cekirdek_tv.py   (yalnız standart kütüphane)
 Birimler: L, hL, kg, °P, SG; para birimi soyut ("PB")."""
 import math
+from decimal import Decimal, ROUND_HALF_UP
 
 def r(x, n=3): return round(x, n)
+
+def money(x):
+    """Para kalemi: 2 ondalık, yarım yukarı (T1.12 C6)."""
+    return x.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 def plato_to_sg(P):  # 01 §1.2 ile aynı polinom
     return 1 + P / (258.6 - (P / 258.6) * 227.1)
 
 # ---------------------------------------------------------------- 1. Maliyet (FIFO)
+# Stok miktarı ve para Decimal (T1.12 C2, C6): miktar yuvarlanmaz; her maliyet satırı 2 ondalık ROUND_HALF_UP,
+# toplam = yuvarlanmış satırların toplamı; litre = toplam / ambalajlanan L, 3 ondalık ROUND_HALF_UP.
 def fifo_consume(lots, qty):
-    """lots: [(lot, kalan_miktar, birim_fiyat)] kabul sırasında. -> (tüketim satırları, maliyet, eksik)"""
-    rows, cost, need = [], 0.0, qty
+    """lots: [(lot, kalan_miktar, birim_fiyat)] Decimal, kabul sırasında. -> (satırlar, maliyet, eksik)"""
+    rows, cost, need = [], Decimal(0), qty
     for lot, left, price in lots:
         if need <= 0: break
         take = min(left, need)
         if take > 0:
-            rows.append((lot, take, price, take*price)); cost += take*price; need -= take
-    return rows, cost, max(need, 0.0)
+            line = money(take*price)
+            rows.append((lot, take, price, line)); cost += line; need -= take
+    return rows, cost, max(need, Decimal(0))
 
 def landed_price(invoice_price, qty, shipping_share):
-    """Kargo/gümrük payı lot birim fiyatına eklenir."""
+    """Kargo/gümrük payı lot birim fiyatına eklenir (yuvarlanmaz). qty <= 0 hata."""
+    if qty <= 0: raise ValueError("miktar > 0 olmalı")
     return (invoice_price*qty + shipping_share)/qty
 
 def energy_cost_electric(kWh, price_kWh): return kWh*price_kWh
@@ -28,11 +37,13 @@ def kwh_from_heat(kJ, eff): return kJ/eff/3600.0
 def gas_m3_from_heat(kJ, eff, Hu_kJ_m3=34500.0): return kJ/(eff*Hu_kJ_m3)
 
 def batch_cost(ingredient_cost, water_L, water_price_m3, energy_cost, pack_units, pack_unit_cost, packaged_L):
-    water = water_L/1000.0*water_price_m3
+    if packaged_L <= 0: raise ValueError("ambalajlanan hacim > 0 olmalı")
+    water = water_L/Decimal(1000)*water_price_m3
     pack = pack_units*pack_unit_cost
-    total = ingredient_cost + water + energy_cost + pack
-    return {"malzeme": r(ingredient_cost, 2), "su": r(water, 2), "enerji": r(energy_cost, 2), "ambalaj": r(pack, 2),
-            "toplam": r(total, 2), "litre": r(total/packaged_L, 3)}
+    lines = [money(ingredient_cost), money(water), money(energy_cost), money(pack)]
+    total = sum(lines, Decimal(0))
+    return {"malzeme": lines[0], "su": lines[1], "enerji": lines[2], "ambalaj": lines[3],
+            "toplam": total, "litre": (total/packaged_L).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)}
 
 # ---------------------------------------------------------------- 2. Harmanlama
 def blend(parts):
@@ -43,11 +54,11 @@ def blend(parts):
         out[k] = sum(p["V"]*p[k] for p in parts)/V          # hacim ağırlıklı
     m = [p["V"]*plato_to_sg(p["P"]) for p in parts]         # kütle (kg)
     out["P"] = sum(mi*p["P"] for mi, p in zip(m, parts))/sum(m)  # kütle ağırlıklı
-    return {k: r(v, 3) for k, v in out.items()}
+    return out                                              # ham değer (T1.12 C9)
 
 def blend_volume_for_target(V1, x1, x2, xt):
     """İki bileşen: hedef değere (ör. ABV) ulaşmak için 2. bileşenden gereken hacim."""
-    if not (min(x1, x2) < xt < max(x1, x2)): return None
+    if not (min(x1, x2) + 1e-9 < xt < max(x1, x2) - 1e-9): return None   # kesin ve toleranslı (T1.12 C7)
     return V1*(x1 - xt)/(xt - x2)
 
 # ---------------------------------------------------------------- 3. Maya tekrar kullanımı
@@ -96,10 +107,10 @@ def malt_from_analysis(fgdb, moisture, fc_diff):
     yield_pct = cgai                                  # tarif hesaplarında kullanılan "yield" (01 §1.6)
     pot = 1 + yield_pct*0.04621/100.0                 # sakaroz = 46.21 ppg (kesin değer)
     pot_bs = 1 + yield_pct*0.046/100.0                # BeerSmith yuvarlaması (01 §1.6)
-    return {"FGAI": r(fgai, 2), "CGDB": r(cgdb, 2), "CGAI_yield": r(cgai, 2),
-            "potansiyel": r(pot, 4), "potansiyel_BS": r(pot_bs, 4), "PPG": r(yield_pct*0.4621, 2)}
+    return {"FGAI": fgai, "CGDB": cgdb, "CGAI_yield": cgai,         # ham değer (T1.12 C9)
+            "potansiyel": pot, "potansiyel_BS": pot_bs, "PPG": yield_pct*0.4621}
 
-def ebc_from_lab(ebc): return {"EBC": ebc, "SRM": r(ebc/1.97, 2), "°L": r((ebc/1.97 + 0.76)/1.3546, 2)}  # 1.3546: plan kararı (01 §1.5 notu)
+def ebc_from_lab(ebc): return {"EBC": ebc, "SRM": ebc/1.97, "°L": (ebc/1.97 + 0.76)/1.3546}  # 1.3546: plan kararı (01 §1.5 notu)
 
 # ---------------------------------------------------------------- 6. Uyarı kuralları (T1.14g)
 def yeast_reuse_warnings(generation, days_since_harvest, viability=None, max_generation=8, history_differs=False):
@@ -107,8 +118,8 @@ def yeast_reuse_warnings(generation, days_since_harvest, viability=None, max_gen
     uyarısı verilmez). history_differs: farklı stil ya da maya suşu geçmişi (bilgi)."""
     out = []
     if generation > max_generation: out.append("nesil_siniri")                 # "yeni kültür önerilir"
-    if days_since_harvest > 14: out.append("hasat_14_gun")                     # "canlılık düşük olabilir, sayım önerilir"
-    if viability is not None and viability < 0.80: out.append("canlilik_dusuk")  # "starter veya taze maya"
+    if days_since_harvest > 14 + 1e-9: out.append("hasat_14_gun")              # "canlılık düşük olabilir, sayım önerilir"
+    if viability is not None and viability < 0.80 - 1e-9: out.append("canlilik_dusuk")  # "starter veya taze maya"
     if history_differs: out.append("bilgi_gecmis")                             # bilgi: nesil zinciri gösterilir
     return out
 
@@ -119,29 +130,30 @@ def diastatic_check(grains, threshold=DIASTATIC_MIN_L):
     w = sum(kg for kg, _ in grains)
     if w <= 0: return {"ortalama": 0.0, "uyari": []}
     avg = sum(kg*dp for kg, dp in grains)/w
-    return {"ortalama": avg, "uyari": ["dusuk_diastatik_guc"] if avg < threshold else []}
+    return {"ortalama": avg, "uyari": ["dusuk_diastatik_guc"] if avg < threshold - 1e-9 else []}
 
 
 # ================================================================ TEST VEKTÖRLERİ
 if __name__ == "__main__":
     print("== 1 Maliyet")
-    lots = [("L-A", 3.0, 1.10), ("L-B", 25.0, 1.25)]
-    rows, c, miss = fifo_consume(lots, 4.5)
-    print("TV1.1 Pale 4.5 kg FIFO:", rows, "maliyet", r(c, 3), "eksik", miss)
-    rows, c, miss = fifo_consume([("L-2411", 0.20, 52.0)], 0.30)
-    print("TV1.2 Crystal 0.30 kg, stok 0.20:", "maliyet", r(c, 2), "eksik", r(miss, 2))
-    print("TV1.3 kargo payı: 25 kg × 1.20 + 4.00 kargo ->", r(landed_price(1.20, 25, 4.0), 3), "PB/kg")
+    lots = [("L-A", Decimal("3.0"), Decimal("1.10")), ("L-B", Decimal("25.0"), Decimal("1.25"))]
+    rows, c, miss = fifo_consume(lots, Decimal("4.5"))
+    print("TV1.1 Pale 4.5 kg FIFO:", rows, "maliyet", c, "eksik", miss)
+    rows, c, miss = fifo_consume([("L-2411", Decimal("0.20"), Decimal("52.0"))], Decimal("0.30"))
+    print("TV1.2 Crystal 0.30 kg, stok 0.20:", "maliyet", c, "eksik", miss)
+    print("TV1.3 kargo payı: 25 kg × 1.20 + 4.00 kargo ->", r(float(landed_price(Decimal("1.20"), Decimal(25), Decimal("4.0"))), 3), "PB/kg")
     kJ_strike = (15*4.186 + 8*0.5)*(72 - 15)          # 07 §3.1
     kJ_boil_up = (28*4.186 + 8*0.5)*(100 - 76)
     kwh = kwh_from_heat(kJ_strike + kJ_boil_up, 0.90) + 2.5*70/60
     print("TV1.4 enerji: strike + kaynamaya ısınma + 70 dk 2.5 kW kaynatma ->", r(kwh, 2), "kWh")
     print("TV1.5 gaz: yalnız ısınma (strike + kaynamaya), η 0.40:", r(gas_m3_from_heat(kJ_strike + kJ_boil_up, 0.40), 3), "m³")
-    print("TV1.6 parti:", batch_cost(18.40, 35.0, 30.0, energy_cost_electric(kwh, 2.6), 60, 0.35, 20.0))
+    en = energy_cost_electric(Decimal(repr(round(kwh, 2))), Decimal("2.6"))
+    print("TV1.6 parti:", batch_cost(Decimal("18.40"), Decimal(35), Decimal(30), en, Decimal(60), Decimal("0.35"), Decimal(20)))
 
     print("== 2 Harmanlama")
     a = dict(V=960, ABV=5.4, IBU=38, SRM=7.0, CO2=1.0, P=2.8)
     b = dict(V=400, ABV=4.6, IBU=22, SRM=4.0, CO2=1.0, P=2.4)
-    print("TV2.1 960 L + 400 L:", blend([a, b]))
+    print("TV2.1 960 L + 400 L:", {k: r(v, 3) for k, v in blend([a, b]).items()})
     print("TV2.2 %5.4 olan 960 L'yi %5.2'ye: %4.6'dan", r(blend_volume_for_target(960, 5.4, 4.6, 5.2), 1), "L")
     print("TV2.3 suyla %5.4 -> %5.0:", r(blend_volume_for_target(960, 5.4, 0.0, 5.0), 1), "L su")
 
@@ -164,5 +176,5 @@ if __name__ == "__main__":
     print("TV4.3 ilk şıra maks", r(fwmax, 2), "°P; ölçülen 19.6 -> dönüşüm", r(ce*100, 1), "%; süzme", r(sha/lab/ce*100, 1), "%")
 
     print("== 5 Malt analizi")
-    print("TV5.1 FGDB 81.5, nem 4.3, ince/kaba 1.5:", malt_from_analysis(81.5, 4.3, 1.5))
-    print("TV5.2 renk 3.5 EBC:", ebc_from_lab(3.5))
+    print("TV5.1 FGDB 81.5, nem 4.3, ince/kaba 1.5:", {k: r(v, 4 if k.startswith("pot") else 2) for k, v in malt_from_analysis(81.5, 4.3, 1.5).items()})
+    print("TV5.2 renk 3.5 EBC:", {k: r(v, 2) for k, v in ebc_from_lab(3.5).items()})

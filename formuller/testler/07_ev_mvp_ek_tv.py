@@ -36,20 +36,35 @@ def fit_decay(pts, fg_lo, fg_hi, steps=400):
         if best is None or rss < best[3]: best = (f, A, k, rss)
     return best, table
 
+def gu(sg):
+    """Gravite tam sayı birimi: 1 birim = 0.00001 SG (00-OKU-BENI; T1.12 C3)."""
+    return round(sg * 100000)
+
+def drop_enough(og, sg_now, fg_recipe, min_drop=0.30):
+    """§1.4 %30 koşulu tam sayı birimde (T1.12 C3): (u(OG) - u(SG_son)) >= min_drop (u(OG) - u(FG_tarif)) - 1e-9."""
+    return not (gu(og) - gu(sg_now) < min_drop * (gu(og) - gu(fg_recipe)) - 1e-9)
+
+def fg_warning(fg_inf, fg_recipe):
+    """§1.5 uyarı: |u(FG_inf) - u(FG_tarif)| > 1000 (0.010 SG); tam sınır uyarı vermez."""
+    return abs(gu(fg_inf) - gu(fg_recipe)) > 1000
+
 def forecast(points, og, fg_recipe, eps=0.0005, min_n=12, min_drop=0.30):
+    """Ham değerler döner (T1.12 C9). min_n < 3 ve geçerli ızgara noktası yoksa 'veri yetersiz' (C5)."""
+    if min_n < 3: return {"durum": "veri yetersiz"}
     pts = hourly_median(points)
     sg_now = pts[-1][1]
-    if len(pts) < min_n or (og - sg_now) < min_drop * (og - fg_recipe):
+    if len(pts) < min_n or not drop_enough(og, sg_now, fg_recipe, min_drop):
         return {"durum": "veri yetersiz"}
     fg_lo, fg_hi = fg_recipe - 0.015, sg_now - 0.0002
-    (f, A, k, rss), table = fit_decay(pts, fg_lo, fg_hi)
+    best, table = fit_decay(pts, fg_lo, fg_hi)
+    if best is None: return {"durum": "veri yetersiz"}
+    f, A, k, rss = best
     n = len(pts)
     lim = rss * (1 + 4.0/(n - 2))                       # ≈ %95 profil aralığı (F≈4)
     ok = [x for x, s in table if s <= lim]
     t_end = math.log(A/eps)/k                           # SG - FGinf ≤ eps olduğu an
-    warn = abs(f - fg_recipe) > 0.010
-    return {"FG": r(f, 4), "aralik": (r(min(ok), 4), r(max(ok), 4)), "k_saat": r(k, 4),
-            "bitis_saat": r(t_end, 1), "kalan_saat": r(t_end - pts[-1][0], 1), "uyari": warn}
+    return {"FG": f, "aralik": (min(ok), max(ok)), "k_saat": k,
+            "bitis_saat": t_end, "kalan_saat": t_end - pts[-1][0], "uyari": fg_warning(f, fg_recipe)}
 
 # ---------------------------------------------------------------- 2. Cihaz kalibrasyonu
 def polyfit(xs, ys, deg):
@@ -71,13 +86,24 @@ def polyfit(xs, ys, deg):
 def peval(co, x): return sum(c * x**i for i, c in enumerate(co))
 
 def ispindel_cal(points, deg=2):
-    """points: [(açı°, SG_referans)]; en az deg+2 nokta."""
+    """points: [(açı°, SG_referans)]; en az deg+2 FARKLI açı (T1.12 C4). Döner: katsayılar, R², en büyük artık,
+    uyarı kodları (açı aralığı < 10° ise 'aci_araligi_dar')."""
     if len(points) < deg + 2: raise ValueError("en az %d nokta" % (deg + 2))
+    if len({a for a, _ in points}) < deg + 2: raise ValueError("en az %d farklı açı" % (deg + 2))
+    my = sum(g for _, g in points)/len(points)
+    den = sum((g-my)**2 for _, g in points)
+    if den == 0: raise ValueError("referans SG değerleri hep aynı")
     co = polyfit([a for a, _ in points], [g for _, g in points], deg)
     res = [g - peval(co, a) for a, g in points]
-    my = sum(g for _, g in points)/len(points)
-    r2 = 1 - sum(x*x for x in res)/sum((g-my)**2 for _, g in points)
-    return co, r2, max(abs(x) for x in res)
+    r2 = 1 - sum(x*x for x in res)/den
+    span = max(a for a, _ in points) - min(a for a, _ in points)
+    warn = ["aci_araligi_dar"] if span < 10.0 - 1e-9 else []
+    return co, r2, max(abs(x) for x in res), warn
+
+def ispindel_eval(co, a_min, a_max, angle):
+    """SG ve uyarı: açı kalibrasyon aralığının dışındaysa 'aci_aralik_disi' (dışdeğerleme)."""
+    out = angle < a_min - 1e-9 or angle > a_max + 1e-9
+    return {"sg": peval(co, angle), "uyari": ["aci_aralik_disi"] if out else []}
 
 def tilt_cal(points):
     """points: [(SG_tilt, SG_referans)]. 1 nokta: sabit sapma; 2+: doğrusal."""
@@ -120,7 +146,9 @@ def scale_recipe(ing, V0, V1, eff0, eff1, mode="hedef"):
         out[k] = q*f
     return out
 
-def round_to(q, step): return round(q/step)*step
+def round_to(q, step):
+    """§4.3 yarım yukarı (T1.12 C15): 1e-9 payı ikili artıkları (0.35/0.1) yarım sayar."""
+    return math.floor(q/step + 0.5 + 1e-9)*step
 
 # ---------------------------------------------------------------- 5. İyon dengesi ve sertlik
 EQW = {"Ca": 20.039, "Mg": 12.153, "Na": 22.990, "K": 39.098,
@@ -130,8 +158,8 @@ CAT = ("Ca", "Mg", "Na", "K"); AN = ("SO4", "Cl", "HCO3", "CO3", "NO3")
 def ion_balance(p):
     c = sum(p.get(i, 0)/EQW[i] for i in CAT); a = sum(p.get(i, 0)/EQW[i] for i in AN)
     b = 100*(c - a)/(c + a)
-    s = "iyi" if abs(b) <= 5 else ("kabul" if abs(b) <= 10 else "kontrol et")
-    return r(c, 3), r(a, 3), r(b, 2), s
+    s = "iyi" if abs(b) <= 5 + 1e-9 else ("kabul" if abs(b) <= 10 + 1e-9 else "kontrol et")
+    return c, a, b, s                                   # ham değer (T1.12 C9)
 
 def hardness_caco3(Ca, Mg): return Ca*50.04/EQW["Ca"] + Mg*50.04/EQW["Mg"]
 def alk_caco3_from_hco3(hco3): return hco3*50.04/EQW["HCO3"]
@@ -186,13 +214,14 @@ if __name__ == "__main__":
         noise = 0.0004*math.sin(i*1.7) + 0.0002*math.sin(i*0.31)
         pts.append((t, sg + noise))
     act = [p for p in pts if p[0] >= 24]                # aktif fazdan sonrası
-    print("TV1.1 72 saat veri:", forecast([p for p in act if p[0] < 72], og, 1.012))
-    print("TV1.2 30 saat veri:", forecast([p for p in act if p[0] < 30], og, 1.012))
+    def show(d): return {k: ((r(v, 4) if k != "bitis_saat" and k != "kalan_saat" else r(v, 1)) if isinstance(v, float) else (tuple(r(x, 4) for x in v) if isinstance(v, tuple) else v)) for k, v in d.items()}
+    print("TV1.1 72 saat veri:", show(forecast([p for p in act if p[0] < 72], og, 1.012)))
+    print("TV1.2 30 saat veri:", show(forecast([p for p in act if p[0] < 30], og, 1.012)))
     print("TV1.3 gerçek: FG", fg_true, "bitiş saati", r(lag + math.log((og-fg_true)/0.0005)/k_true, 1))
 
     print("== 2 Kalibrasyon")
     cal = [(25.0, 1.000), (38.2, 1.020), (49.0, 1.040), (58.7, 1.060), (66.5, 1.080)]
-    co, r2, mx = ispindel_cal(cal, 2)
+    co, r2, mx, _w = ispindel_cal(cal, 2)
     print("TV2.1 iSpindel katsayılar", [round(c, 8) for c in co], "R²", r(r2, 5), "max hata", r(mx, 4))
     print("TV2.2 açı 45° ->", r(peval(co, 45.0), 4))
     print("TV2.3 Tilt tek nokta (1.0545 vs 1.0520):", tuple(r(x, 4) for x in tilt_cal([(1.0545, 1.0520)])))
@@ -219,7 +248,7 @@ if __name__ == "__main__":
 
     print("== 5 Su")
     w = {"Ca": 38, "Mg": 8, "Na": 18, "SO4": 32, "Cl": 40, "HCO3": 110}
-    print("TV5.1 denge (katyon, anyon, %, sınıf):", ion_balance(w))
+    print("TV5.1 denge (katyon, anyon, %, sınıf):", tuple(r(x, 3) if not isinstance(x, str) else x for x in ion_balance(w)))
     h = hardness_caco3(38, 8); a = alk_caco3_from_hco3(110)
     print("TV5.2 sertlik CaCO3", r(h, 1), {k: r(v, 2) for k, v in caco3_to(h).items()})
     print("TV5.3 alkalinite CaCO3", r(a, 1), {k: r(v, 2) for k, v in caco3_to(a).items()})

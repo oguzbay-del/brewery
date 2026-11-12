@@ -10,6 +10,12 @@
 
 **Birimler:** L, hL, kg, °P, SG. Para birimi soyut (çalışma alanının para birimi). °P → SG dönüşümü 01 §1.2'deki `ToSG`.
 
+**Karar (T1.12 C2, C6): ondalık tip ve yuvarlama.** Stok miktarı ve para `Decimal`dir (referans: Python `decimal`; Rust: `rust_decimal`). Miktar yuvarlanmaz, tam ondalık toplanır ve çıkarılır; 0.1 + 0.2 kg lot ile 0.3 kg ihtiyaç tam biter (toz satır ve hayali eksik oluşmaz). Para: her maliyet kalemi 2 ondalığa **ROUND_HALF_UP** (yarım yukarı) yuvarlanır; toplam = **yuvarlanmış kalemlerin toplamı**; litre maliyeti = toplam / ambalajlanan litre, 3 ondalığa ROUND_HALF_UP. Ambalajlanan hacim ya da miktar ≤ 0 ise hata. Birim fiyat (lot, kargo dahil) yuvarlanmaz. Fiziksel büyüklükler (L, kg, kWh, °P) `f64`.
+
+**Karar (T1.12 C9): ham değer.** Harmanlama, malt analizi ve renk gösterim için yuvarlama yapmaz (özellikle tarife giren verim ve potansiyel); yuvarlama sunumdadır. §6 tablosu gösterim yuvarlamasıyla yazılmıştır.
+
+**Karar (T1.12 C1, C7): sürekli eşikler** `x < eşik − 1e-9` biçiminde (00-OKU-BENI): diastatik güç, canlılık, gün sayısı, harmanlama hedef aralığı.
+
 ---
 
 ## 1. Maliyet
@@ -28,6 +34,7 @@ birim fiyat = (fatura birim fiyatı · miktar + kargo, gümrük, nakliye payı) 
 ### 1.2 FIFO tüketim [endüstri]
 - Malzeme ihtiyacı lotlardan **kabul sırasına göre** düşülür.
 - Parti başlatmada belirli bir lot seçilmişse önce o lot kullanılır. Örnek: Citra L-2411, alfa değeri tarife göre ayarlanmış lot.
+- **Yuvarlama (C2, C6):** her tüketim satırının maliyeti `miktar · birim fiyat` 2 ondalığa ROUND_HALF_UP; toplam maliyet satır maliyetlerinin toplamıdır (ham çarpımların toplamı değil). Örnek: 1.5 kg · 1.25 = 1.875 → satırda 1.88.
 - Stok yetmezse eksik miktar ayrıca raporlanır. Eksik kısmın maliyeti, malzemenin **son alış fiyatıyla** tahmin edilir ve "tahmini" diye işaretlenir.
 - **Plan maliyeti:** parti başlatmada, o anki stokla FIFO'ya göre öngörülür.
 - **Gerçek maliyet:** stok hareket defterindeki gerçek tüketimden hesaplanır. İkisi parti özetinde yan yana gösterilir.
@@ -55,6 +62,7 @@ litre     = toplam / ambalajlanan hacim
 birim     = toplam / ambalaj birimi sayısı
 ```
 
+- **Yuvarlama (C6):** malzeme, su, enerji, ambalaj kalemleri ayrı ayrı 2 ondalığa ROUND_HALF_UP; `toplam` bu dört yuvarlanmış kalemin toplamı; `litre = toplam / ambalajlanan hacim` 3 ondalığa ROUND_HALF_UP. Ambalajlanan hacim ≤ 0 ise hata.
 - Litre maliyeti **ambalajlanan hacme** bölünür. Bu yüzden fire (trub, transfer, dolum kaybı) maliyete doğal olarak yansır.
 - Rapor ayrıca "kayıp maliyeti" gösterir: `(şıra hacmi − ambalajlanan hacim) · şıra litre maliyeti`.
 - İşçilik ve genel gider ERP kapsamında olduğu için **yoktur**. İstenirse "parti başı sabit gider" diye tek bir elle girilen kalem eklenebilir.
@@ -83,6 +91,8 @@ Tank hareketi ekranındaki "Birleştir" işlemi bu hesabı kullanır. Bir partiy
 ```
 V₂ = V₁ · (x₁ − x_hedef) / (x_hedef − x₂)        yalnız x_hedef, x₁ ile x₂ arasındaysa
 ```
+
+**Karar (T1.12 C7):** "arasında" kesin ve toleranslıdır: `en küçük + 1e-9 < x_hedef < en büyük − 1e-9`; uçta ya da dışında sonuç yoktur ("hedef aralık dışı").
 
 - `x` herhangi bir doğrusal değer olabilir: ABV, IBU, renk.
 - Birden fazla değer aynı anda hedeflenirse hepsi iki bileşenle tutmayabilir. Ekran bir değeri hedef seçtirir, diğerlerinin sonucunu gösterir.
@@ -122,6 +132,7 @@ slurry (mL) = N · 10⁹ / (hücre/mL · canlılık)
 - **Sayım yoksa** varsayılan etkin yoğunluk 1.0 × 10⁹ hücre/mL kullanılır. Bu değer maya dışı tortuyu da kapsar [doğrulanacak].
   - Hasat yöntemi ve tortu oranı sonucu birkaç kat değiştirebilir. Ekranda "tahmini, sayım önerilir" uyarısı çıkar.
 - **Canlılık ölçülmemişse** hasattan bu yana geçen süreyle 04 §1.4'teki slurry yaşlanma modelinden tahmin edilir.
+  - **Karar (T1.12 C13):** tahmini canlılığı hesaplayıp işleve veren çağıran katmandır (04 §1.4). Bu bölümdeki uyarı işlevi canlılık verilmediğinde (`None`) canlılık uyarısı üretmez.
 
 ### 3.4 Uyarılar [tasarım]
 
@@ -131,6 +142,8 @@ slurry (mL) = N · 10⁹ / (hücre/mL · canlılık)
 | Hasattan bu yana > 14 gün | "canlılık düşük olabilir, sayım önerilir" |
 | Canlılık < %80 | "starter veya taze maya" |
 | Farklı stil ya da maya suşu geçmişi | bilgi: önceki partiler ve nesil zinciri gösterilir |
+
+Sürekli eşikler tolerans payıyla: hasat günü `> 14 + 1e-9`, canlılık `< 0.80 − 1e-9`. Nesil sayıdır, tam karşılaştırılır.
 
 ---
 
@@ -193,6 +206,7 @@ CGAI = CGDB · (1 − nem/100)                  kaba, olduğu gibi
 ```
 
 ### 5.2 Tarifte kullanılan değer [tasarım]
+- **Karar (T1.12 C9):** FGAI, CGDB, CGAI, potansiyel ve PPG yuvarlanmadan döner; sabitler (0.04621, 0.046, 0.4621) bu yüzden vektörle sabitlenir.
 - Tarif hesaplarındaki "yield" (01 §1.6) **CGAI** kabul edilir. Gerçek öğütmeye en yakın değer budur.
 - Föyde ince–kaba farkı yoksa varsayılan 1.5 puan [doğrulanacak].
 
@@ -210,6 +224,7 @@ PPG           = yield · 0.4621
 ### 5.4 Diğer analiz alanları
 Diastatik güç (°WK veya °L), protein, Kolbach indeksi, β-glukan, friabilite. Hesapta kullanılmazlar, saklanır.
 - **Diastatik güç:** tarif editöründe "bu tahıl faturası kendi kendini dönüştürür mü" kontrolüne girer. Tahıl faturası ağırlıklı ortalama < 35 °L ise uyarı verilir [doğrulanacak eşik].
+  - **Karar (T1.12 C1):** ağırlıklı ortalama (ağırlıklar toplamıyla bölünmüş `Σ kg·°L`; toplamlar Python `sum` ile aynı telafili toplamla) ve uyarı ⇔ `ortalama < 35 − 1e-9`. Tam 35 °L uyarı vermez. Boş ya da sıfır ağırlıklı fatura: ortalama 0, uyarı yok.
 
 ---
 
@@ -219,7 +234,7 @@ Diastatik güç (°WK veya °L), protein, Kolbach indeksi, β-glukan, friabilite
 
 | No | Girdi | Beklenen |
 |---|---|---|
-| 1.1 | Pale 4.5 kg; lotlar L-A 3.0 kg @1.10, L-B 25 kg @1.25 | L-A 3.0 kg (3.300) + L-B 1.5 kg (1.875) = 5.175; eksik 0 |
+| 1.1 | Pale 4.5 kg; lotlar L-A 3.0 kg @1.10, L-B 25 kg @1.25 | L-A 3.0 kg (3.30) + L-B 1.5 kg (1.875 → 1.88) = 5.18; eksik 0 |
 | 1.2 | Crystal 0.30 kg, stok 0.20 kg @52.0 | stoktan 10.40; eksik 0.10 kg (son alış fiyatıyla tahmini) |
 | 1.3 | 25 kg × 1.20 + kargo 4.00 | 1.36 / kg |
 | 1.4 | 15 L 15→72 °C + 28 L 76→100 °C (8 kg kazan, η 0.90) + 70 dk 2.5 kW kaynatma | 4.99 kWh |

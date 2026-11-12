@@ -6,6 +6,8 @@
 
 Birimler: °C, L, kg, g, dakika, saat; yoğunluk SG. Su yoğunluğu 1 kg/L kabul edilir.
 
+**Karar (T1.12 C9): motor ham değer döndürür.** Aşağıdaki işlevler (tahmin, iyon dengesi) gösterim için yuvarlama yapmaz; sınıf ve uyarı kararları da ham değerden verilir. Yuvarlama sunumda yapılır. §7 tablosundaki değerler gösterim yuvarlamasıyla yazılmıştır.
+
 ---
 
 ## 1. Fermantasyon tahmini
@@ -48,6 +50,10 @@ Tahmin yalnız şu üç koşulda gösterilir:
 
 Koşullar sağlanmazsa ekranda "veri yetersiz" yazar, tahmin yapılmaz.
 
+**Karar (T1.12 C3): gravite eşikleri tam sayı birimde.** 00-OKU-BENI kuralı 07'yi de kapsar: `u(SG) = round(SG × 100000)` (yarım çifte, Python `round`). %30 koşulu `u` ile yazılır: veri yetersizdir ⇔ `(u(OG) − u(SG_son)) < min_düşüş · (u(OG) − u(FG_tarif)) − 1e-9` (varsayılan `min_düşüş` 0.30; tam sayı biçimi `10·Δ_son < 3·Δ_tarif`). Tam %30 düşüş "yeterli" sayılır. En az nokta sayısı da tam eşittir (`n < min_n` yetersiz).
+
+**Karar (T1.12 C5):** `min_n < 3` geçersizdir, "veri yetersiz" döner (aralık formülünde `n − 2` sıfır olamaz). Izgarada `SG − FG∞ > 0` ve `k > 0` sağlayan hiç nokta yoksa (düz ya da yükselen SG) sonuç "veri yetersiz"dir. Motor sonlu olmayan bir `k` ya da RSS üreten ızgara noktasını atlar.
+
 Cihazı olmayan partide (yalnız elle veya kağıt okumalar) bunun yerine `10-elle-giris-ekstrakt-nochill.md` §1 kullanılır: FG tariften alınır, 2 okumayla gün aralığında tahmin verilir.
 
 ### 1.5 Çıktılar [tasarım]
@@ -55,6 +61,7 @@ Cihazı olmayan partide (yalnız elle veya kağıt okumalar) bunun yerine `10-el
 - **Belirsizlik aralığı:** `RSS(FG∞) ≤ RSS_min · (1 + 4/(n−2))` koşulunu sağlayan `FG∞` değerlerinin en küçüğü ve en büyüğü. Yaklaşık %95 profil aralığıdır (F≈4).
 - **Bitiş zamanı:** `t_bitiş = ln(A/ε) / k`, `ε = 0.0005`; yani SG'nin FG'ye 0.0005'ten fazla yaklaşmadığı an. Kalan süre `t_bitiş − t_son`.
 - **Uyarı:** `|FG∞ − FG_tarif| > 0.010` ise "beklenenden farklı bitiyor" (takılma ya da enfeksiyon şüphesi). Uyarı kuralları ekranı bunu kullanır.
+- **Karar (T1.12 C3, C9):** uyarı tam sayı birimde ve yuvarlanmamış `FG∞` ile verilir: `|u(FG∞) − u(FG_tarif)| > 1000`. Tam 0.010 fark uyarı vermez. FG, aralık, k, saatler yuvarlanmadan döner.
 
 ### 1.6 Bilinen sınırlar
 - Üstel model, gecikme fazını ve en hızlı fermantasyon anını iyi temsil etmez. Bu yüzden §1.4'teki %30 eşiği var.
@@ -73,6 +80,8 @@ SG = c0 + c1·α + c2·α²        (varsayılan derece 2; 3 seçilebilir)
 ```
 
 - **En az nokta sayısı:** derece + 2 (derece 2 için 4).
+- **Karar (T1.12 C4): farklı açı.** Nokta sayısı değil **farklı açı** sayısı en az derece + 2 olmalıdır; değilse hata. Referans değerleri hep aynıysa (R² paydası sıfır) hata. Yalnız iki farklı açılı noktalar derece 2 için sahte "mükemmel" oturtma verirdi.
+- **Karar (T1.12 C4) [tasarım, doğrulanacak]:** iki uyarı kodu. `aci_araligi_dar`: kalibrasyon açı aralığı (en büyük − en küçük) `< 10° − 1e-9`. `aci_aralik_disi`: SG hesaplanan açı kalibrasyon aralığının dışında (`açı < en küçük − 1e-9` ya da `açı > en büyük + 1e-9`); polinom aralığın dışında dışdeğerlemedir. 10° eşiği ve uyarı metni ölçümle doğrulanacak. Derece 3'ün kötü koşulluluğu (açı merkezleme ya da QR) T1.16'ya bırakıldı.
 - **Gösterilenler:** R² ve en büyük artık. En büyük artık 0.002'yi aşarsa "noktaları kontrol et" uyarısı çıkar.
 - **Referans ölçümler:** önce hidrometre sıcaklık düzeltmesinden (01 §9.1) geçer.
 - Katsayılar cihaz kaydında saklanır. Cihaz firmware'inde polinom varsa o da kullanılabilir; uygulama hangisinin aktif olduğunu gösterir.
@@ -175,6 +184,8 @@ Her şey `r` ile çarpılır; hiçbir hedef korunmaz. Ekipman değişmiyorsa iki
 
 Bölge ayarı imparatorluk birimindeyse yuvarlama adımları o birimde seçilir. Yuvarlamadan sonra OG ve IBU yeniden hesaplanıp ekranda gösterilir.
 
+**Karar (T1.12 C15): yarım yukarı.** `yuvarla(q, adım) = ⌊q/adım + 0.5 + 1e-9⌋ · adım`; tam yarım (0.125, adım 0.25) yukarı gider (0.25), çifte gitmez. 1e-9 payı `0.35/0.1 = 3.4999999999999996` gibi ikili artıkları yarım sayar. Sıfıra yuvarlanan malzeme için "en az bir adım" kuralı açık nokta (karar listesinde).
+
 ### 4.4 Kayıt
 - Tarifte ölçekleme yeni bir sürüm oluşturur.
 - Parti başlatmada ölçekleme yalnız o partiye uygulanır, tarif değişmez.
@@ -209,6 +220,8 @@ denge % = 100 · (Σkatyon − Σanyon) / (Σkatyon + Σanyon)
 | ≤ %5 | iyi | yeşil |
 | %5–10 | kabul edilebilir | sarı |
 | > %10 | kontrol et | sarı uyarı: "raporda eksik iyon olabilir (ör. K, NO₃)" |
+
+**Karar (T1.12 C7, C9):** sınıf ham yüzdeden verilir ve sınırlar sürekli büyüklük kuralıyla yazılır: iyi ⇔ `|denge| ≤ 5 + 1e-9`, kabul ⇔ `|denge| ≤ 10 + 1e-9`, aksi halde kontrol et. Toplamlar ve yüzde yuvarlanmadan döner.
 
 Laboratuvar standartları düşük toplamlarda daha sıkı sınır kullanır. Bu eşikler, demleme için bir girdi kontrolü olarak seçildi [tasarım].
 

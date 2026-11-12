@@ -109,6 +109,23 @@ fn parite_07() {
                 };
                 c.check(&v);
             }
+            "drop_enough" => c.check(&json!(home::drop_enough(
+                c.f("og"),
+                c.f("sg_now"),
+                c.f("fg_recipe"),
+                c.f("min_drop")
+            ))),
+            "fg_warning" => c.check(&json!(home::fg_warning(c.f("fg_inf"), c.f("fg_recipe")))),
+            "ispindel_eval" => {
+                let (sg, w) = home::ispindel_eval(
+                    &floats(c.v("co")),
+                    c.f("a_min"),
+                    c.f("a_max"),
+                    c.f("angle"),
+                );
+                let codes: Vec<&str> = w.iter().map(|x| x.as_str()).collect();
+                c.check(&json!({"sg": sg, "uyari": codes}));
+            }
             "polyfit" => {
                 let deg = usize::try_from(c.i("deg")).unwrap();
                 let co = home::polyfit(&floats(c.v("xs")), &floats(c.v("ys")), deg);
@@ -118,8 +135,14 @@ fn parite_07() {
             "ispindel_cal" => {
                 let deg = usize::try_from(c.i("deg")).unwrap();
                 let v = match home::ispindel_cal(&pairs(c.v("points")), deg) {
-                    Ok(r) => json!({"co": r.coefficients, "r2": r.r2, "max_res": r.max_residual}),
-                    Err(home::CalibrationError::TooFewPoints) => json!({"hata": "ValueError"}),
+                    Ok(r) => {
+                        let codes: Vec<&str> = r.warnings.iter().map(|x| x.as_str()).collect();
+                        json!({
+                            "co": r.coefficients, "r2": r.r2, "max_res": r.max_residual,
+                            "uyari": codes,
+                        })
+                    }
+                    Err(_) => json!({"hata": "ValueError"}),
                 };
                 c.check(&v);
             }

@@ -2,16 +2,25 @@
 //!
 //! Units follow the specification of each function; see the section file.
 //!
-//! Money is `f64` in abstract currency units, as in the Python reference; the report
-//! cost (`batch_cost`) is the candidate for a `rust_decimal` port. Intermediate roundings
-//! of the reference use [`crate::units::round_py`].
+//! Stock quantities and money are [`Decimal`] (T1.12 C2, C6): quantities are never rounded;
+//! every money line is rounded to 2 decimals half up and totals are sums of rounded lines.
+//! Physical quantities (L, kg, kWh, °P) stay `f64`. Results are unrounded (T1.12 C9) except
+//! the money rules above.
 
-use crate::units::round_py;
+use rust_decimal::{Decimal, RoundingStrategy};
+
+use crate::home::py_sum;
+use crate::units::to_sg;
 
 /// Specific gravity from °Plato (spec 08 §2.1, same polynomial as 01 §1.2).
 #[must_use]
 pub fn plato_to_sg(p: f64) -> f64 {
-    1.0 + p / (258.6 - (p / 258.6) * 227.1)
+    to_sg(p)
+}
+
+/// Money line: 2 decimals, half up (spec 08 §1, T1.12 C6).
+fn money(x: Decimal) -> Decimal {
+    x.round_dp_with_strategy(2, RoundingStrategy::MidpointAwayFromZero)
 }
 
 /// Volume contraction factor, hot (about 100 °C) to 20 °C volume (spec 08 §4.1).
@@ -24,9 +33,9 @@ pub const CONTRACTION: f64 = 0.96;
 pub struct Lot {
     pub lot: String,
     /// Remaining quantity (kg or other stock unit).
-    pub left: f64,
+    pub left: Decimal,
     /// Unit price (currency per stock unit).
-    pub price: f64,
+    pub price: Decimal,
 }
 
 /// One consumption row of a FIFO draw.
@@ -34,60 +43,70 @@ pub struct Lot {
 pub struct FifoRow {
     pub lot: String,
     /// Quantity taken from the lot.
-    pub take: f64,
-    pub price: f64,
-    /// `take · price`.
-    pub cost: f64,
+    pub take: Decimal,
+    pub price: Decimal,
+    /// `take · price` rounded to 2 decimals half up.
+    pub cost: Decimal,
 }
 
 /// Result of [`fifo_consume`].
 #[derive(Debug, Clone, PartialEq)]
 pub struct Fifo {
     pub rows: Vec<FifoRow>,
-    /// Total cost of the quantity taken from stock.
-    pub cost: f64,
+    /// Total cost: sum of the rounded row costs.
+    pub cost: Decimal,
     /// Quantity stock could not cover (never negative).
-    pub missing: f64,
+    pub missing: Decimal,
 }
 
 /// FIFO consumption (spec 08 §1.2): draws `qty` from `lots` in order, skipping empty lots.
+/// Quantities are exact; each row cost is rounded half up to 2 decimals.
 #[must_use]
-pub fn fifo_consume(lots: &[Lot], qty: f64) -> Fifo {
+pub fn fifo_consume(lots: &[Lot], qty: Decimal) -> Fifo {
     let mut rows = Vec::new();
-    let mut cost = 0.0;
+    let mut cost = Decimal::ZERO;
     let mut need = qty;
     for l in lots {
-        if need <= 0.0 {
+        if need <= Decimal::ZERO {
             break;
         }
         let take = l.left.min(need);
-        if take > 0.0 {
+        if take > Decimal::ZERO {
+            let line = money(take * l.price);
             rows.push(FifoRow {
                 lot: l.lot.clone(),
                 take,
                 price: l.price,
-                cost: take * l.price,
+                cost: line,
             });
-            cost += take * l.price;
+            cost += line;
             need -= take;
         }
     }
     Fifo {
         rows,
         cost,
-        missing: need.max(0.0),
+        missing: need.max(Decimal::ZERO),
     }
 }
 
-/// Lot unit price with shipping share: `(price · qty + share) / qty` (spec 08 §1.1).
+/// Lot unit price with shipping share: `(price · qty + share) / qty` (spec 08 §1.1), not
+/// rounded. `None` when `qty ≤ 0` (the reference raises; error type: T1.16).
 #[must_use]
-pub fn landed_price(invoice_price: f64, qty: f64, shipping_share: f64) -> f64 {
-    (invoice_price * qty + shipping_share) / qty
+pub fn landed_price(
+    invoice_price: Decimal,
+    qty: Decimal,
+    shipping_share: Decimal,
+) -> Option<Decimal> {
+    if qty <= Decimal::ZERO {
+        return None;
+    }
+    (invoice_price * qty + shipping_share).checked_div(qty)
 }
 
-/// Electricity cost: `kWh · price per kWh` (spec 08 §1.3).
+/// Electricity cost: `kWh · price per kWh` (spec 08 §1.3), not rounded.
 #[must_use]
-pub fn energy_cost_electric(kwh: f64, price_kwh: f64) -> f64 {
+pub fn energy_cost_electric(kwh: Decimal, price_kwh: Decimal) -> Decimal {
     kwh * price_kwh
 }
 
@@ -106,45 +125,59 @@ pub fn gas_m3_from_heat(kj: f64, eff: f64, hu_kj_m3: f64) -> f64 {
     kj / (eff * hu_kj_m3)
 }
 
-/// Batch cost breakdown, rounded as the reference (spec 08 §1.4).
+/// Batch cost breakdown (spec 08 §1.4, T1.12 C6): lines rounded to 2 decimals half up,
+/// `total` is the sum of the rounded lines, `per_litre` is `total / packaged litres` rounded
+/// to 3 decimals half up.
 #[derive(Debug, Clone, PartialEq)]
 pub struct BatchCost {
-    /// Ingredients, 2 decimals.
-    pub ingredients: f64,
-    /// Water, 2 decimals.
-    pub water: f64,
-    /// Energy, 2 decimals.
-    pub energy: f64,
-    /// Packaging, 2 decimals.
-    pub packaging: f64,
-    /// Total, 2 decimals.
-    pub total: f64,
+    /// Ingredients.
+    pub ingredients: Decimal,
+    /// Water.
+    pub water: Decimal,
+    /// Energy.
+    pub energy: Decimal,
+    /// Packaging.
+    pub packaging: Decimal,
+    /// Sum of the four rounded lines.
+    pub total: Decimal,
     /// Cost per packaged litre, 3 decimals.
-    pub per_litre: f64,
+    pub per_litre: Decimal,
 }
 
-/// Batch cost (spec 08 §1.3–1.4): water in L at a per-m³ price, packaging units, packaged volume in L.
+/// Batch cost (spec 08 §1.3–1.4): water in L at a per-m³ price, packaging units, packaged
+/// volume in L. `None` when `packaged_l ≤ 0` (the reference raises; error type: T1.16).
 #[must_use]
 pub fn batch_cost(
-    ingredient_cost: f64,
-    water_l: f64,
-    water_price_m3: f64,
-    energy_cost: f64,
-    pack_units: f64,
-    pack_unit_cost: f64,
-    packaged_l: f64,
-) -> BatchCost {
-    let water = water_l / 1000.0 * water_price_m3;
-    let pack = pack_units * pack_unit_cost;
-    let total = ingredient_cost + water + energy_cost + pack;
-    BatchCost {
-        ingredients: round_py(ingredient_cost, 2),
-        water: round_py(water, 2),
-        energy: round_py(energy_cost, 2),
-        packaging: round_py(pack, 2),
-        total: round_py(total, 2),
-        per_litre: round_py(total / packaged_l, 3),
+    ingredient_cost: Decimal,
+    water_l: Decimal,
+    water_price_m3: Decimal,
+    energy_cost: Decimal,
+    pack_units: Decimal,
+    pack_unit_cost: Decimal,
+    packaged_l: Decimal,
+) -> Option<BatchCost> {
+    if packaged_l <= Decimal::ZERO {
+        return None;
     }
+    let water = water_l / Decimal::from(1000) * water_price_m3;
+    let pack = pack_units * pack_unit_cost;
+    let (ingredients, water, energy, packaging) = (
+        money(ingredient_cost),
+        money(water),
+        money(energy_cost),
+        money(pack),
+    );
+    let total = ingredients + water + energy + packaging;
+    Some(BatchCost {
+        ingredients,
+        water,
+        energy,
+        packaging,
+        total,
+        per_litre: total
+            .checked_div(packaged_l)?
+            .round_dp_with_strategy(3, RoundingStrategy::MidpointAwayFromZero),
+    })
 }
 
 // --------------------------------------------------------------- 2. Blending
@@ -160,7 +193,8 @@ pub struct BlendPart {
     pub p: f64,
 }
 
-/// Blend result; every field rounded to 3 decimals as the reference.
+/// Blend result, unrounded (T1.12 C9). An empty or zero-volume blend yields NaN (the
+/// reference raises; error type: T1.16).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Blend {
     pub v: f64,
@@ -174,25 +208,26 @@ pub struct Blend {
 /// Blend of components (spec 08 §2.1): volume-weighted ABV, IBU, SRM, CO₂; mass-weighted °P.
 #[must_use]
 pub fn blend(parts: &[BlendPart]) -> Blend {
-    let v: f64 = parts.iter().map(|p| p.v).sum();
-    let wavg = |f: fn(&BlendPart) -> f64| parts.iter().map(|p| p.v * f(p)).sum::<f64>() / v;
+    // Compensated sums like CPython's `sum` (T1.12 C1).
+    let v = py_sum(parts.iter().map(|p| p.v));
+    let wavg = |f: fn(&BlendPart) -> f64| py_sum(parts.iter().map(|p| p.v * f(p))) / v;
     let m: Vec<f64> = parts.iter().map(|p| p.v * plato_to_sg(p.p)).collect();
-    let p = m.iter().zip(parts).map(|(mi, q)| mi * q.p).sum::<f64>() / m.iter().sum::<f64>();
+    let p = py_sum(m.iter().zip(parts).map(|(mi, q)| mi * q.p)) / py_sum(m.iter().copied());
     Blend {
-        v: round_py(v, 3),
-        abv: round_py(wavg(|q| q.abv), 3),
-        ibu: round_py(wavg(|q| q.ibu), 3),
-        srm: round_py(wavg(|q| q.srm), 3),
-        co2: round_py(wavg(|q| q.co2), 3),
-        p: round_py(p, 3),
+        v,
+        abv: wavg(|q| q.abv),
+        ibu: wavg(|q| q.ibu),
+        srm: wavg(|q| q.srm),
+        co2: wavg(|q| q.co2),
+        p,
     }
 }
 
 /// Volume of the second component for a target value (spec 08 §2.2); `None` unless the
-/// target lies strictly between `x1` and `x2`.
+/// target lies strictly between `x1` and `x2`, with a 1e-9 margin at both ends (T1.12 C7).
 #[must_use]
 pub fn blend_volume_for_target(v1: f64, x1: f64, x2: f64, xt: f64) -> Option<f64> {
-    if !(x1.min(x2) < xt && xt < x1.max(x2)) {
+    if !(x1.min(x2) + 1e-9 < xt && xt < x1.max(x2) - 1e-9) {
         return None;
     }
     Some(v1 * (x1 - xt) / (xt - x2))
@@ -279,20 +314,20 @@ pub fn conversion_eff(fw_measured_p: f64, fw_max_p: f64) -> f64 {
 
 // ------------------------------------------------------ 5. Malt analysis
 
-/// Malt potential from lab analysis (spec 08 §5.1–5.2); fields rounded as the reference.
+/// Malt potential from lab analysis (spec 08 §5.1–5.2), unrounded (T1.12 C9).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MaltAnalysis {
-    /// Fine grind, as-is extract %, 2 decimals.
+    /// Fine grind, as-is extract %.
     pub fgai: f64,
-    /// Coarse grind, dry basis %, 2 decimals.
+    /// Coarse grind, dry basis %.
     pub cgdb: f64,
-    /// Coarse grind, as-is % (the recipe yield), 2 decimals.
+    /// Coarse grind, as-is % (the recipe yield).
     pub cgai_yield: f64,
-    /// Potential SG with sucrose 46.21 PPG, 4 decimals.
+    /// Potential SG with sucrose 46.21 PPG.
     pub potential: f64,
-    /// Potential SG with the BeerSmith constant 0.046, 4 decimals.
+    /// Potential SG with the BeerSmith constant 0.046.
     pub potential_bs: f64,
-    /// Points per pound per gallon, 2 decimals.
+    /// Points per pound per gallon.
     pub ppg: f64,
 }
 
@@ -304,16 +339,16 @@ pub fn malt_from_analysis(fgdb: f64, moisture: f64, fc_diff: f64) -> MaltAnalysi
     let cgai = cgdb * (1.0 - moisture / 100.0);
     let yield_pct = cgai;
     MaltAnalysis {
-        fgai: round_py(fgai, 2),
-        cgdb: round_py(cgdb, 2),
-        cgai_yield: round_py(cgai, 2),
-        potential: round_py(1.0 + yield_pct * 0.04621 / 100.0, 4),
-        potential_bs: round_py(1.0 + yield_pct * 0.046 / 100.0, 4),
-        ppg: round_py(yield_pct * 0.4621, 2),
+        fgai,
+        cgdb,
+        cgai_yield: cgai,
+        potential: 1.0 + yield_pct * 0.04621 / 100.0,
+        potential_bs: 1.0 + yield_pct * 0.046 / 100.0,
+        ppg: yield_pct * 0.4621,
     }
 }
 
-/// Colour from a lab EBC value (spec 08 §5.3); SRM and °L rounded to 2 decimals.
+/// Colour from a lab EBC value (spec 08 §5.3), unrounded.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LabColor {
     pub ebc: f64,
@@ -326,8 +361,8 @@ pub struct LabColor {
 pub fn ebc_from_lab(ebc: f64) -> LabColor {
     LabColor {
         ebc,
-        srm: round_py(ebc / 1.97, 2),
-        lovibond: round_py((ebc / 1.97 + 0.76) / 1.3546, 2),
+        srm: ebc / 1.97,
+        lovibond: (ebc / 1.97 + 0.76) / 1.3546,
     }
 }
 
@@ -376,10 +411,10 @@ pub fn yeast_reuse_warnings(
     if generation > max_generation {
         out.push(YeastWarning::GenerationLimit);
     }
-    if days_since_harvest > 14.0 {
+    if days_since_harvest > 14.0 + 1e-9 {
         out.push(YeastWarning::HarvestOver14Days);
     }
-    if viability.is_some_and(|v| v < 0.80) {
+    if viability.is_some_and(|v| v < 0.80 - 1e-9) {
         out.push(YeastWarning::LowViability);
     }
     if history_differs {
@@ -401,21 +436,22 @@ pub struct DiastaticCheck {
     pub low_diastatic_power: bool,
 }
 
-/// "Does the grain bill convert itself" check (spec §5.4). `grains` are
+/// "Does the grain bill convert itself" check (spec §5.4); warns when
+/// `average < threshold − 1e-9` (T1.12 C1), weighted with compensated sums. `grains` are
 /// `(kg, diastatic power °L)` for every grain (0 when a grain has none). An empty or
 /// zero-weight bill gives average 0 and no warning.
 #[must_use]
 pub fn diastatic_check(grains: &[(f64, f64)], threshold: f64) -> DiastaticCheck {
-    let w: f64 = grains.iter().map(|g| g.0).sum();
+    let w = py_sum(grains.iter().map(|g| g.0));
     if w <= 0.0 {
         return DiastaticCheck {
             average: 0.0,
             low_diastatic_power: false,
         };
     }
-    let average = grains.iter().map(|g| g.0 * g.1).sum::<f64>() / w;
+    let average = py_sum(grains.iter().map(|g| g.0 * g.1)) / w;
     DiastaticCheck {
         average,
-        low_diastatic_power: average < threshold,
+        low_diastatic_power: average < threshold - 1e-9,
     }
 }
