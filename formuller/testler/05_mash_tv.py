@@ -192,7 +192,8 @@ def recalc_mash(steps, W, T_grain, m_tun=0, c_tun=0, V_tun=0, T_tun=None, deadsp
         out.append(dict(infusion=s["infusion"], tun_addition=tun_add, tot_infusion=v_add,
                         start_vol=v_cum, start_temp=0.0 if i == 0 else t_prev,
                         infusion_temp=itemp, decoction_amt=dec,
-                        above_boiling=(kind == 0 and itemp is not None and itemp > ABOVE_BOILING_C)))
+                        above_boiling=(kind == 0 and itemp is not None and itemp > ABOVE_BOILING_C),
+                        no_water=(kind == DECOCTION and v_cum <= 0.0)))   # §2.4: mash'te su yok -> dekoksiyon hatası
         if kind != DECOCTION: v_cum += v_add
         t_prev = t_step
     return out
@@ -219,7 +220,8 @@ def recalc_biab(steps, W, T_grain, biab_vol, m_tun=0, c_tun=0, V_tun=0, T_tun=No
         out.append(dict(infusion=infusion[k], tun_addition=0.0, tot_infusion=infusion[k],
                         start_vol=start[k], start_temp=0.0 if k == 0 else t_prev,
                         infusion_temp=itemp, decoction_amt=dec,
-                        above_boiling=(kind == 0 and itemp is not None and itemp > ABOVE_BOILING_C)))
+                        above_boiling=(kind == 0 and itemp is not None and itemp > ABOVE_BOILING_C),
+                        no_water=(kind == DECOCTION and start[k] <= 0.0)))   # §2.4
     return out
 
 def tun_deadspace_profile(tun_addition, adj_deadspace, tun_deadspace):  # §2.6 F_MH_TUN_DEADSPACE

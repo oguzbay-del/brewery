@@ -74,6 +74,7 @@ fn result_json(r: &StepResult) -> Value {
         "infusion_temp": opt_json(r.infusion_temp),
         "decoction_amt": r.decoction_amt,
         "above_boiling": r.above_boiling,
+        "no_water": r.no_water,
     })
 }
 

@@ -63,6 +63,57 @@ fn salts(v: &Value) -> Vec<(Salt, f64)> {
         .collect()
 }
 
+fn typed_bill(c: &Case) -> Vec<(f64, f64, u8)> {
+    c.v("bill")
+        .as_array()
+        .expect("bill array")
+        .iter()
+        .map(|p| {
+            let p = p.as_array().expect("triple");
+            (
+                p[0].as_f64().expect("kg"),
+                p[1].as_f64().expect("srm"),
+                u8::try_from(p[2].as_i64().expect("type")).expect("small type"),
+            )
+        })
+        .collect()
+}
+
+/// Strict check for sparge acid outputs (T1.12 B8): relative 1e-12 of the expected value with
+/// an absolute floor of 1e-18 (outputs are mol/L around 1e-6 to 1e-2 or mL), far below the
+/// shared harness tolerance of 1e-12 absolute.
+fn check_sparge(c: &Case, actual: f64) {
+    let e = c.beklenen.as_f64().expect("number");
+    assert!(
+        (actual - e).abs() <= 1e-18 + 1e-12 * e.abs(),
+        "case {} `{}` {}: got {actual:e}, expected {e:e}",
+        c.index,
+        c.fonk,
+        c.girdi
+    );
+}
+
+/// KKT conditions of the salt-matching NNLS: `x >= 0` (excluded salts exactly 0) and, with
+/// `w = A^T (b - A x)`, `w_j ~ 0` where `x_j > 0` and `w_j <= 0` elsewhere (T1.12 B18).
+#[allow(clippy::many_single_char_names)]
+fn assert_kkt(c: &Case, base: &[f64; 6], s: f64, excluded: &[Salt], x: &[f64; 8]) {
+    let target = ions(c.v("target"));
+    let resid = water::best_fit_profile(base, s, x);
+    let r: Vec<f64> = (0..6).map(|i| target[i] - resid[i]).collect();
+    for (k, salt) in Salt::ALL.into_iter().enumerate() {
+        assert!(x[k] >= 0.0, "case {}: negative grams", c.index);
+        let w: f64 = (0..6).map(|i| salt.contribution()[i] * r[i]).sum();
+        let scale = 1.0 + target.iter().fold(0.0_f64, |m, v| m.max(v.abs())) * 500.0;
+        if excluded.contains(&salt) {
+            assert!(x[k] == 0.0, "case {}: excluded salt used", c.index);
+        } else if x[k] > 0.0 {
+            assert!(w.abs() <= 1e-7 * scale, "case {}: KKT active {w}", c.index);
+        } else {
+            assert!(w <= 1e-7 * scale, "case {}: KKT inactive {w}", c.index);
+        }
+    }
+}
+
 fn small(c: &Case, name: &str) -> u8 {
     u8::try_from(c.i(name)).expect("small code")
 }
@@ -119,23 +170,24 @@ fn parite_03() {
                 c.f("w_kg"),
                 c.f("t"),
             )),
-            "sparge_acid_ml" => c.check_f(water::sparge_acid_ml(
-                c.f("mol_l"),
-                c.f("v_l"),
-                c.f("conc"),
-                small(c, "acid"),
-            )),
-            "sparge_acid_amount" => c.check_f(water::sparge_acid_amount(
-                small(c, "model"),
-                c.b("ours"),
-                c.f("hco3"),
-                c.f("ph_w"),
-                c.f("ph_t"),
-                small(c, "acid"),
-                c.f("conc"),
-                c.f("mash_dph"),
-                c.f("v_sp_l"),
-            )),
+            "sparge_acid_ml" => check_sparge(
+                c,
+                water::sparge_acid_ml(c.f("mol_l"), c.f("v_l"), c.f("conc"), small(c, "acid")),
+            ),
+            "sparge_acid_amount" => check_sparge(
+                c,
+                water::sparge_acid_amount(
+                    small(c, "model"),
+                    c.b("ours"),
+                    c.f("hco3"),
+                    c.f("ph_w"),
+                    c.f("ph_t"),
+                    small(c, "acid"),
+                    c.f("conc"),
+                    c.f("mash_dph"),
+                    c.f("v_sp_l"),
+                ),
+            ),
             "base_profile" => c.check(&json!(water::base_profile(&waters(c.v("waters"))))),
             "water_ph" => {
                 let w: Vec<(f64, f64)> = c
@@ -274,26 +326,53 @@ fn parite_03() {
                 );
                 c.check(&json!([g, ph]));
             }
-            "sparge_acid_mph" => {
-                c.check_f(water::sparge_acid_mph(
+            "sparge_acid_mph" => check_sparge(
+                c,
+                water::sparge_acid_mph(c.f("hco3"), c.f("ph_w"), c.f("ph_t")),
+            ),
+            "sparge_acid_mph_ours" => check_sparge(
+                c,
+                water::sparge_acid_mph_ours(
                     c.f("hco3"),
                     c.f("ph_w"),
                     c.f("ph_t"),
-                ));
+                    small(c, "acid"),
+                ),
+            ),
+            "sparge_acid_bw" => check_sparge(
+                c,
+                water::sparge_acid_bw(c.f("hco3"), c.f("ph_w"), c.f("ph_t"), small(c, "acid")),
+            ),
+            "lactic_ml" => check_sparge(c, water::lactic_ml(c.f("mol_l"), c.f("v_l"), c.f("conc"))),
+            "grist_ph_typed" => {
+                let (ph, sum) = water::grist_ph_typed(&typed_bill(c), c.b("ours"));
+                c.check(&json!([ph, sum]));
             }
-            "sparge_acid_mph_ours" => c.check_f(water::sparge_acid_mph_ours(
-                c.f("hco3"),
-                c.f("ph_w"),
-                c.f("ph_t"),
+            "to_grams" => c.check(&json!(water::to_grams(c.f("amount"), small(c, "units")))),
+            "adjusted_ph_liquid" => c.check_f(water::adjusted_ph_liquid(
+                c.f("grist_ph"),
+                c.f("ra"),
+                c.f("t"),
+                small(c, "model"),
+                c.f("w_kg"),
                 small(c, "acid"),
+                c.f("conc"),
+                c.f("vol_l"),
+                c.f("target_ph"),
+                c.b("ours"),
             )),
-            "sparge_acid_bw" => c.check_f(water::sparge_acid_bw(
-                c.f("hco3"),
-                c.f("ph_w"),
-                c.f("ph_t"),
-                small(c, "acid"),
-            )),
-            "lactic_ml" => c.check_f(water::lactic_ml(c.f("mol_l"), c.f("v_l"), c.f("conc"))),
+            "acid_malt_amount_checked" => {
+                let r = water::acid_malt_amount_checked(
+                    &bill(c),
+                    c.f("pct"),
+                    small(c, "model"),
+                    c.f("ra"),
+                    c.f("t"),
+                    c.f("target_ph"),
+                    c.b("ours"),
+                );
+                c.check(&json!([r.total_g, r.ph, r.converged]));
+            }
             "sparge_volume_l" => {
                 c.check_f(water::sparge_volume_l(
                     c.f("total_l"),
@@ -331,6 +410,7 @@ fn parite_03() {
                     .collect();
                 let (x, rnorm) = water::water_match(&base, &ions(c.v("target")), s, &excluded);
                 let profile = water::best_fit_profile(&base, s, &x);
+                assert_kkt(c, &base, s, &excluded, &x);
                 c.check(&json!({"profile": profile, "rnorm": rnorm}));
             }
             _ => return false,

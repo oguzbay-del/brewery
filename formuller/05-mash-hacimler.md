@@ -507,3 +507,7 @@ def parti(OG, vol, f1):
 5. `GetMainMashThickness` sabiti 1.043192807606429, birim dönüşümünden (1.0431755) hafifçe farklı — kod sabitini kullanın.
 6. Recipe hacim alanları (F_R_BOIL_VOL, F_R_TOP_UP, F_R_TRUB_LOSS, F_R_COOL_PCT, F_R_TUN_DEADSPACE, F_R_TUN_ADDITION, F_R_TOP_UP_KETTLE, F_R_TUN_VOL/MASS/HC, F_R_FERMENTER_LOSS, F_R_VOLUME) ekipman alanlarına **alt alan (sub-field) bağlantısıdır** (`InitRecipeSchema`); F_R_BOIL_OFF ← F_E_TOT_BOIL_OFF, F_R_MASH_TOT_WATER ← F_MH_TOT_WATER, F_R_MASH_GRAIN_WEIGHT ← F_MH_GRAIN_WEIGHT.
 7. "Temperature" (2) tipi adımın infüzyonu varsa mash suyuna eklenir ama ısı hesabı yapılmaz (doğrudan ısıtma varsayımı).
+
+## Kararlar (T1.12, T1.15)
+
+- Mash'te su yokken (başlangıç hacmi ≤ 0) yapılan her dekoksiyon adımı, ilk adım da dahil, `no_water` işaretini taşır.

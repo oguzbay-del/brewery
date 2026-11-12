@@ -113,10 +113,11 @@ print("T6 color range", 5.2+0.082*ra, (ra+122.4)/12.2)
 Vb,Vp,cool,trub,top=28.0,24.0,1.0,1.0,0.0
 a_=Vp-cool; b_=a_-trub
 print("T7 boilscale",((Vb/a_)*b_+top)/(b_+top))
-def adj_ph(bill_, acidmalt_g, pct, model, ra, t, bizim=False):
+def adj_ph(bill_, acidmalt_g, pct, model, ra, t, bizim=False, target=5.4):
+    """§5.5 (asit malt). target: hedef pH (§6.4); ayrışma kesri yalnız bizim modelde ona bağlıdır."""
     b=bill_+([(acidmalt_g/1000,3.0)] if acidmalt_g>0 else [])
     W=sum(w for w,c in b); gp,_=gristph(b,bizim); sl=slope(model,t)
-    f=fdiss(3,model,5.4,bizim)
+    f=fdiss(3,model,target,bizim)
     acidra=-((pct/100)*1000*(acidmalt_g/1000)*f)/(W*t*0.09009)
     return gp+sl*(ra/50+acidra), W
 for bizim in (False,True):
@@ -278,3 +279,147 @@ def wp_grams(x, vb_gal):
     """§7.4 tuhaflığı: gramlar yalnız base hacmiyle (x·Vb)."""
     return [xk*vb_gal for xk in x]
 print("T1.14c so4/cl etiket (1.426, 0.3, 19):", so4cl_label(1.426), so4cl_label(0.3), so4cl_label(19))
+
+
+# ---- T1.15: parite betiğinde duran hesaplar referansa taşındı (ADR-0003 madde 1; T1.12 B4, B7, B17, B18)
+# Aşağıdaki fonksiyonlar yukarıdakileri değiştirmez; parite betiği yalnız çağırır.
+LB_G = 453.5924                         # §0.1 lb -> g (05 ile aynı LB_KG)
+GRIST_TYPES = (0, 3)                    # §5.1 F_G_TYPE: Grain, Adjunct
+MASH_ACIDS_DEFINED = (0, 1, 2, 3)       # §6.2: yalnız bu kodların MW ve yoğunluğu tanımlı (T1.15 B13 kararı)
+
+def gristph_typed(bill, bizim=False):
+    """§5.1 tam hali: bill = [(kg, SRM, F_G_TYPE)] (mash tahılları). Payda bütün mash tahıllarıdır;
+    yalnız tip 0 ve 3 toplama girer (şeker vb. S'ye 0 katar). W <= 0 ise (7.0, 0.0)."""
+    W = sum(w for w, c, ty in bill)
+    if W <= 0: return 7.0, 0.0
+    s = sum(w/W*gfun(c, bizim) for w, c, ty in bill if ty in GRIST_TYPES)
+    return 5.72-0.0337*s, s
+
+def to_grams(amount, units):
+    """§0.1 ToGrams: None = tanımsız birim kodu. mL (5) değeri olduğu gibi gram sayar [belirsiz]."""
+    return {0: amount/1000.0, 1: amount, 2: amount*LB_G/16.0, 3: amount*LB_G, 4: amount*1000.0,
+            5: amount, 6: amount*0.8*4.93, 7: amount*0.8*14.78}.get(units)
+
+def est_mash_ph(grist_ph, ra, sl):
+    """§5.3 (T3 ifadesi: gp + ra/50*sl)."""
+    return grist_ph + ra/50*sl
+
+def mash_acid_amount(est, target, model, t, w, acid, conc, bizim):
+    """§6.3 (T3: dph/sl -> acid_per_L * W * t); acid 0 veya dph < 0 ise 0."""
+    dph = est - target
+    if acid == 0 or dph < 0: return 0.0
+    sl = slope(model, t)
+    return acid_per_L(dph/sl, acid, conc, model, target, bizim)*w*t
+
+def lactic_acid_ra(conc, vol_l, f, w_kg, t):
+    """§5.4(a) laktik (T3 kontrolü: acidra = -(p*1000*rho*VL*f)/(0.09009*W*t))."""
+    p_ = conc/100
+    rho = 1+0.237*p_
+    return -(p_*1000*rho*vol_l*f)/(0.09009*w_kg*t)
+
+def adj_ph_liquid(grist_ph, ra, t, model, w_kg, acid, conc, vol_l, target, bizim=False):
+    """§5.5 sıvı asitli ayarlanmış pH: gp + m*(RA/50 + MiscAcidRA). f: §5.4(a) (model 1: 5.4'te, bizim: hedefte)."""
+    f = fdiss(acid, model, target, bizim) if acid in (1, 2) else 1.0
+    return grist_ph + slope(model, t)*(ra/50 + misc_acid_ra(acid, conc, vol_l, f, w_kg, t))
+
+def acid_malt_amount(bill, pct, model, ra, t, target, bizim):
+    """§6.4: en fazla 8 tur. Döner (toplam g, son pH, yakınsadı). yakınsadı = pH_adj - hedef < 0.005 ile durdu."""
+    tot = 0.0
+    ph2 = 0.0
+    ok = False
+    for _ in range(8):
+        ph, w = adj_ph(bill, tot, pct, model, ra, t, bizim, target)
+        sl = slope(model, t)
+        amt = acid_per_L((ph-target)/sl, 3, pct, model, target, bizim)*w*t if ph-target >= 0 else 0
+        tot += amt
+        ph2, _ = adj_ph(bill, tot, pct, model, ra, t, bizim, target)
+        if ph2-target < 0.005:
+            ok = True
+            break
+    return tot, ph2, ok
+
+def sparge_volume_l(total_l, w_kg, t):
+    """§6.5: sparge suyu = toplam su - mash suyu (W*t)."""
+    return total_l - w_kg*t
+
+# §7 NNLS: saf Python Lawson-Hanson (ADR-0003 madde 8); Rust `water::lstsq`/`nnls` ile aynı işlem sırası.
+_EPS = 2.220446049250313e-16
+def _lstsq(cols, b):
+    m = len(b); k = len(cols)
+    a = [list(c) for c in cols]; qtb = list(b)
+    for j in range(k):
+        norm = math.sqrt(sum(a[j][i]*a[j][i] for i in range(j, m)))
+        if norm == 0.0: continue
+        alpha = -norm if a[j][j] > 0.0 else norm
+        v = list(a[j][j:]); v[0] -= alpha
+        vn2 = sum(x*x for x in v)
+        if vn2 == 0.0: continue
+        for c in range(j, k):
+            dot = sum(v[i]*a[c][j+i] for i in range(len(v)))
+            f = 2.0*dot/vn2
+            for i in range(len(v)): a[c][j+i] -= f*v[i]
+        dot = sum(v[i]*qtb[j+i] for i in range(len(v)))
+        f = 2.0*dot/vn2
+        for i in range(len(v)): qtb[j+i] -= f*v[i]
+    x = [0.0]*k
+    for i in range(k-1, -1, -1):
+        s = qtb[i]
+        for c in range(i+1, k): s -= a[c][i]*x[c]
+        d = a[i][i]
+        x[i] = s/d if abs(d) > 1e-300 else 0.0
+    return x
+
+def nnls_lh(cols, b):
+    """Lawson-Hanson NNLS: min ||A x - b||, x >= 0; cols = sütunlar. Döner (x, rnorm)."""
+    n = len(cols); m = len(b)
+    x = [0.0]*n; passive = [False]*n
+    anorm = max((sum(abs(v) for v in c) for c in cols), default=0.0)
+    tol = 10.0*max(m, n)*_EPS*anorm
+    max_iter = 3*n; it = 0
+    while True:
+        r = [b[i]-sum(cols[j][i]*x[j] for j in range(n)) for i in range(m)]
+        w = [sum(cols[j][i]*r[i] for i in range(m)) for j in range(n)]
+        best = -1
+        for j in range(n):
+            if not passive[j] and w[j] > tol and (best < 0 or w[j] > w[best]): best = j
+        if best < 0: break
+        passive[best] = True
+        while True:
+            idx = [j for j in range(n) if passive[j]]
+            s_p = _lstsq([cols[j] for j in idx], b)
+            if all(v > 0.0 for v in s_p):
+                for j in range(n): x[j] = 0.0
+                for j, v in zip(idx, s_p): x[j] = v
+                break
+            alpha = min(x[j]/(x[j]-s) for j, s in zip(idx, s_p) if s <= 0.0)
+            for j, s in zip(idx, s_p): x[j] += alpha*(s-x[j])
+            for j in idx:
+                if x[j] <= tol:
+                    x[j] = 0.0; passive[j] = False
+            it += 1
+            if it > max_iter: break
+        it += 1
+        if it > max_iter: break
+    r = [b[i]-sum(cols[j][i]*x[j] for j in range(n)) for i in range(m)]
+    return x, math.sqrt(sum(v*v for v in r))
+
+def nnls_kkt_ok(cols, b, x, tol=1e-7):
+    """KKT denetimi (T1.12 B18): x >= 0; gradyan w = A^T (b - A x): x_j > 0 ise ~0, x_j = 0 ise <= tol."""
+    n = len(cols); m = len(b)
+    r = [b[i]-sum(cols[j][i]*x[j] for j in range(n)) for i in range(m)]
+    scale = max(1.0, max(abs(v) for v in b))*max(1.0, max(max(abs(v) for v in c) for c in cols))
+    for j in range(n):
+        if x[j] < 0.0: return False
+        w = sum(cols[j][i]*r[i] for i in range(m))
+        if x[j] > 0.0 and abs(w) > tol*scale: return False
+        if x[j] == 0.0 and w > tol*scale: return False
+    return True
+
+def water_match_ref(base, tgt, s, haric):
+    """§7.1: hedef - s*base üzerinde NNLS; beklenen profil = s*base + A x. Döner dict(profile, rnorm, x_salts)."""
+    aktif = [k for k in A if k not in haric]
+    cols = [A[k] for k in aktif]
+    b = [tgt[i]-s*base[i] for i in range(6)]
+    x, rn = nnls_lh(cols, b)
+    prof = [s*base[i]+sum(x[j]*cols[j][i] for j in range(len(cols))) for i in range(6)]
+    return dict(profile=prof, rnorm=rn, x=[x[aktif.index(k)] if k in aktif else 0.0 for k in A], cols=cols, b=b, xa=x)

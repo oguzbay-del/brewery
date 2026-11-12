@@ -394,6 +394,9 @@ pub struct StepResult {
     pub decoction_amt: f64,
     /// Infusion step whose water temperature is above [`ABOVE_BOILING_C`] (spec §2.2).
     pub above_boiling: bool,
+    /// Decoction step with no water in the mash (`start_vol <= 0`): BeerSmith's "Decoction
+    /// Error: Must have some water in mash to Decoct it!" (spec §2.4).
+    pub no_water: bool,
 }
 
 /// Result of [`infusion_temp_checked`].
@@ -587,6 +590,7 @@ pub fn recalc_mash(
             infusion_temp: itemp,
             decoction_amt: dec,
             above_boiling: is_above_boiling(s.kind, itemp),
+            no_water: s.kind == StepKind::Decoction && v_cum <= 0.0,
         });
         if s.kind != StepKind::Decoction {
             v_cum += v_add;
@@ -649,6 +653,7 @@ pub fn recalc_biab(
             infusion_temp: itemp,
             decoction_amt: dec,
             above_boiling: is_above_boiling(s.kind, itemp),
+            no_water: s.kind == StepKind::Decoction && start[k] <= 0.0,
         });
     }
     out

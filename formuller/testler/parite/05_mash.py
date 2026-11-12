@@ -221,6 +221,11 @@ def uret():
     k("recalc_mash", steps=SHOT, W=5.0, T_grain=20.0)
     k("recalc_mash", steps=[dict(type=0, infusion=0.0, t_step=66.0)], W=5.0, T_grain=20.0)
     k("recalc_mash", steps=[], W=5.0, T_grain=20.0)
+    # T1.12 B15: mash'te su yokken dekoksiyon (no_water bayrağı)
+    SNOW = [dict(type=2, infusion=0.0, t_step=55.0), dict(type=1, infusion=0.0, t_step=66.0),
+            dict(type=0, infusion=10.0, t_step=66.0), dict(type=1, infusion=0.0, t_step=72.0)]
+    k("recalc_mash", steps=SNOW, W=5.0, T_grain=20.0)
+    k("recalc_biab", steps=SNOW, W=5.0, T_grain=20.0, biab_vol=20.0)
 
     # §3.2 BIAB adım dağıtımı
     k("recalc_biab", steps=[dict(type=0, infusion=0.0, t_step=66.0)], W=5.0, T_grain=20.0, biab_vol=33.057)

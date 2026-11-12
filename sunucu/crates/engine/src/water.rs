@@ -13,6 +13,10 @@
 //! The reference is `formuller/testler/03_su_ph_tv.py`; where the spec text and the reference
 //! differ, the reference is followed (e.g. phosphoric density coefficient 0.375 in
 //! [`acid_per_liter`], as in the reference).
+//!
+//! Defined mash acid codes are 0, 1, 2 and 3 only ([`mash_acid_defined`]); codes 4 to 8 have a
+//! pK table entry (spec §6.1) but no molar mass or density, so mash amounts for them are
+//! undefined. Rejecting them needs an error type (T1.16).
 
 #![allow(
     clippy::many_single_char_names,
@@ -226,6 +230,32 @@ pub fn grist_ph(bill: &[(f64, f64)], ours: bool) -> (f64, f64) {
     (5.72 - 0.0337 * s, s)
 }
 
+/// Grain types counted in the grist sum (spec §5.1): `F_G_TYPE` 0 Grain and 3 Adjunct.
+#[must_use]
+pub fn grist_type_counted(grain_type: u8) -> bool {
+    grain_type == 0 || grain_type == 3
+}
+
+/// Grist pH with the spec §5.1 grain-type filter. `bill` is a list of (weight kg, colour SRM,
+/// `F_G_TYPE`) for all mash grains: the denominator is the weight of every entry, only types 0
+/// and 3 add to the sum (sugars and extracts contribute 0, like a base malt at pH 5.72).
+/// Returns `(pH_grist, S)`; `W <= 0` gives `(7.0, 0.0)`.
+///
+/// [`grist_ph`] is the same calculation for a bill in which every entry counts.
+#[must_use]
+pub fn grist_ph_typed(bill: &[(f64, f64, u8)], ours: bool) -> (f64, f64) {
+    let total: f64 = bill.iter().map(|&(w, _, _)| w).sum();
+    if total <= 0.0 {
+        return (7.0, 0.0);
+    }
+    let s: f64 = bill
+        .iter()
+        .filter(|&&(_, _, ty)| grist_type_counted(ty))
+        .map(|&(w, c, _)| w / total * grist_g(c, ours))
+        .sum();
+    (5.72 - 0.0337 * s, s)
+}
+
 /// RA to pH slope in pH per mEq/L (spec §5.2). `model` 0 = MPH 3, 1 = BW; `t` is the mash
 /// thickness in L/kg.
 #[must_use]
@@ -285,9 +315,17 @@ pub fn dissociation_fraction(acid: u8, model: u8, ph_t: f64, ours: bool) -> f64 
     }
 }
 
+/// True for the mash acid codes whose molar mass and density the spec defines (§6.2): 0 none,
+/// 1 lactic, 2 phosphoric, 3 acid malt.
+#[must_use]
+pub fn mash_acid_defined(acid: u8) -> bool {
+    acid <= 3
+}
+
 /// Acid needed per litre of mash water for `meq` mEq/L (spec §6.2): mL of solution for liquid
 /// acids, grams of malt for acid malt (code 3). `conc` is percent strength. Code 0 gives 0.
-/// As in the reference, every code other than 1 and 3 uses the phosphoric constants.
+/// As in the reference, every code other than 1 and 3 uses the phosphoric constants, which is
+/// only meaningful for code 2; codes 4 to 8 are undefined (see [`mash_acid_defined`]).
 #[must_use]
 pub fn acid_per_liter(meq: f64, acid: u8, conc: f64, model: u8, ph_t: f64, ours: bool) -> f64 {
     if acid == 0 {
@@ -377,8 +415,37 @@ pub fn acid_malt_amount(
     target_ph: f64,
     ours: bool,
 ) -> (f64, f64) {
+    let r = acid_malt_amount_checked(bill, pct, model, ra, t, target_ph, ours);
+    (r.total_g, r.ph)
+}
+
+/// Outcome of the iterative acid malt calculation.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct AcidMaltResult {
+    /// Total acid malt in grams.
+    pub total_g: f64,
+    /// Adjusted mash pH after the last round.
+    pub ph: f64,
+    /// True when the loop stopped because `pH - target < 0.005`; false when all 8 rounds were
+    /// used without reaching the target.
+    pub converged: bool,
+}
+
+/// [`acid_malt_amount`] with the convergence flag (spec §6.4): `converged` is false when the
+/// 8 rounds ran out and the pH is still not within 0.005 of the target.
+#[must_use]
+pub fn acid_malt_amount_checked(
+    bill: &[(f64, f64)],
+    pct: f64,
+    model: u8,
+    ra: f64,
+    t: f64,
+    target_ph: f64,
+    ours: bool,
+) -> AcidMaltResult {
     let mut total = 0.0;
     let mut ph2 = 0.0;
+    let mut converged = false;
     for _ in 0..8 {
         let (ph, w) = adjusted_ph(bill, total, pct, model, ra, t, target_ph, ours);
         let slope = mash_ra_slope(model, t);
@@ -390,10 +457,57 @@ pub fn acid_malt_amount(
         total += amt;
         ph2 = adjusted_ph(bill, total, pct, model, ra, t, target_ph, ours).0;
         if ph2 - target_ph < 0.005 {
+            converged = true;
             break;
         }
     }
-    (total, ph2)
+    AcidMaltResult {
+        total_g: total,
+        ph: ph2,
+        converged,
+    }
+}
+
+/// Adjusted mash pH with a liquid acid (spec §5.5): `pH_grist + m · (RA/50 + MiscAcidRA)`.
+/// `acid` 1 lactic or 2 phosphoric (other codes add no acid), `conc` percent, `vol_l` acid
+/// volume in litres, `w_kg` mash grain, `t` L/kg, `target_ph` as in [`dissociation_fraction`].
+#[must_use]
+#[allow(clippy::too_many_arguments)]
+pub fn adjusted_ph_liquid(
+    grist_ph: f64,
+    ra: f64,
+    t: f64,
+    model: u8,
+    w_kg: f64,
+    acid: u8,
+    conc: f64,
+    vol_l: f64,
+    target_ph: f64,
+    ours: bool,
+) -> f64 {
+    let f = if acid == 1 || acid == 2 {
+        dissociation_fraction(acid, model, target_ph, ours)
+    } else {
+        1.0
+    };
+    grist_ph + mash_ra_slope(model, t) * (ra / 50.0 + misc_acid_ra(acid, conc, vol_l, f, w_kg, t))
+}
+
+/// Misc unit to grams (spec §0.1 `ToGrams`): 0 mg, 1 g, 2 oz, 3 lb, 4 kg, 5 mL (taken as grams,
+/// spec [belirsiz]), 6 tsp and 7 tbsp (0.8 g/mL). `None` for any other code.
+#[must_use]
+pub fn to_grams(amount: f64, units: u8) -> Option<f64> {
+    let lb_g = crate::mash::LB_KG * 1000.0;
+    match units {
+        0 => Some(amount / 1000.0),
+        1 | 5 => Some(amount),
+        2 => Some(amount * lb_g / 16.0),
+        3 => Some(amount * lb_g),
+        4 => Some(amount * 1000.0),
+        6 => Some(amount * 0.8 * 4.93),
+        7 => Some(amount * 0.8 * 14.78),
+        _ => None,
+    }
 }
 
 /// Sparge water volume in litres: total water minus the main mash water `w_kg · t` (spec §6.5).

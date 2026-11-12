@@ -627,3 +627,10 @@ def acid_frac(pk,ph):
     r=[10**(ph-k) for k in pk]+[0,0]; D=1+r[0]+r[0]*r[1]+r[0]*r[1]*r[2]
     return (r[0]+2*r[0]*r[1]+3*r[0]*r[1]*r[2])/D
 ```
+
+## Kararlar (T1.12, T1.15)
+
+- Tanımlı mash asidi kodları 0–3'tür; 4–8 tanımsızdır (motor bunları reddedecek, ADR-0004; şimdilik `mash_acid_defined`).
+- Sıvı asitle ayarlanmış pH, §5.4(a)'daki ayrışma oranı `f` ile hesaplanır.
+- Asit maltı yinelemesi 8 turda hedefe ulaşmazsa sonuç `converged = false` taşır.
+- `grist_ph` tahıl tipi süzgeci: yalnız tip 0 ve 3 toplama girer, payda bütün mash tahılıdır (`grist_ph_typed`).

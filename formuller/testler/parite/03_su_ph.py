@@ -1,100 +1,16 @@
 """Bölüm 03 (su kimyası, mash pH, NNLS) parite vektörleri (ADR-0003).
 
-Referans: formuller/testler/03_su_ph_tv.py. Referansta fonksiyon olarak bulunmayan hesaplar (S_boil,
-renk aralığı, SO4/Cl, mash asidi miktarı, asit malt yinelemesi, NNLS) referanstaki ifadelerin ve
-fonksiyonların birebir bileşimidir; ifade kaynağı her yerde yazılıdır.
+Referans: formuller/testler/03_su_ph_tv.py. Beklenen değerin hepsi referans dosyasındaki fonksiyonlardan
+gelir (ADR-0003 madde 1; T1.15); bu betikte hesap gövdesi yoktur, yalnız girdi seçimi ve çağrı vardır.
 
-NNLS: scipy yok (CI'da da yok), bu yüzden saf Python Lawson–Hanson burada yazılır (ADR-0003 madde 8).
-scipy varsa sonuçlar onunla da karşılaştırılır.
+NNLS: scipy yok (CI'da da yok), bu yüzden referansta saf Python Lawson–Hanson bulunur (ADR-0003 madde 8).
+scipy varsa sonuçlar onunla da karşılaştırılır; KKT koşulları her çözümde denetlenir.
 """
 import math
 
 from ortak import Vektor, yukle
 
-EPS = 2.220446049250313e-16
-
-
-# ---------------------------------------------------------------- saf Python Lawson–Hanson NNLS
-def _lstsq(cols, b):
-    """En küçük kareler: Householder QR (sütun öncelikli). Rust `water::lstsq` ile aynı işlem sırası."""
-    m = len(b)
-    k = len(cols)
-    a = [list(c) for c in cols]
-    qtb = list(b)
-    for j in range(k):
-        norm = math.sqrt(sum(a[j][i] * a[j][i] for i in range(j, m)))
-        if norm == 0.0:
-            continue
-        alpha = -norm if a[j][j] > 0.0 else norm
-        v = a[j][j:]
-        v = list(v)
-        v[0] -= alpha
-        vn2 = sum(x * x for x in v)
-        if vn2 == 0.0:
-            continue
-        for c in range(j, k):
-            dot = sum(v[i] * a[c][j + i] for i in range(len(v)))
-            f = 2.0 * dot / vn2
-            for i in range(len(v)):
-                a[c][j + i] -= f * v[i]
-        dot = sum(v[i] * qtb[j + i] for i in range(len(v)))
-        f = 2.0 * dot / vn2
-        for i in range(len(v)):
-            qtb[j + i] -= f * v[i]
-    x = [0.0] * k
-    for i in range(k - 1, -1, -1):
-        s = qtb[i]
-        for c in range(i + 1, k):
-            s -= a[c][i] * x[c]
-        d = a[i][i]
-        x[i] = s / d if abs(d) > 1e-300 else 0.0
-    return x
-
-
-def nnls_lh(cols, b):
-    """Lawson–Hanson NNLS: min ||A x - b||, x >= 0. cols: sütun listesi. Döner: (x, rnorm)."""
-    n = len(cols)
-    m = len(b)
-    x = [0.0] * n
-    passive = [False] * n
-    anorm = max((sum(abs(v) for v in c) for c in cols), default=0.0)
-    tol = 10.0 * max(m, n) * EPS * anorm
-    max_iter = 3 * n
-    it = 0
-    while True:
-        r = [b[i] - sum(cols[j][i] * x[j] for j in range(n)) for i in range(m)]
-        w = [sum(cols[j][i] * r[i] for i in range(m)) for j in range(n)]
-        best = -1
-        for j in range(n):
-            if not passive[j] and w[j] > tol and (best < 0 or w[j] > w[best]):
-                best = j
-        if best < 0:
-            break
-        passive[best] = True
-        while True:
-            idx = [j for j in range(n) if passive[j]]
-            s_p = _lstsq([cols[j] for j in idx], b)
-            if all(v > 0.0 for v in s_p):
-                for j in range(n):
-                    x[j] = 0.0
-                for j, v in zip(idx, s_p):
-                    x[j] = v
-                break
-            alpha = min(x[j] / (x[j] - s) for j, s in zip(idx, s_p) if s <= 0.0)
-            for j, s in zip(idx, s_p):
-                x[j] += alpha * (s - x[j])
-            for j in idx:
-                if x[j] <= tol:
-                    x[j] = 0.0
-                    passive[j] = False
-            it += 1
-            if it > max_iter:
-                break
-        it += 1
-        if it > max_iter:
-            break
-    r = [b[i] - sum(cols[j][i] * x[j] for j in range(n)) for i in range(m)]
-    return x, math.sqrt(sum(v * v for v in r))
+# NNLS (saf Python Lawson–Hanson) ve KKT denetimi referansta: 03_su_ph_tv.py (nnls_lh, nnls_kkt_ok).
 
 
 def _scipy_kontrol(cols, b, x, rnorm):
@@ -181,6 +97,24 @@ def uret():
     for b in ([], [(0.0, 20.0)], [(0.0, 3.0), (0.0, 60.0)]):   # W <= 0 koruması (ref.gristph_guarded)
         v.ekle("grist_ph", {"bill": b, "ours": False}, list(ref.gristph_guarded(b, False)), "W <= 0: 7.0")
 
+    # §5.1 tahıl tipi süzgeci: bill = [kg, SRM, tip]; payda bütün mash tahılları, toplam yalnız tip 0 ve 3
+    tbills = [
+        [(4.5, 2.0, 0), (0.3, 60.0, 0), (0.1, 350.0, 0)],                  # hepsi tip 0: filtresiz ile aynı
+        [(4.5, 2.0, 0), (0.5, 2.0, 2)],                                    # şeker S'ye 0 katar
+        [(4.0, 3.0, 0), (1.0, 40.0, 1), (0.5, 5.0, 4)],                    # ekstrakt tipleri sayılmaz
+        [(3.0, 3.0, 0), (1.0, 13.99, 3), (0.5, 60.0, 7), (0.25, 450.0, 3)],  # adjunct sayılır, bal sayılmaz
+        [(2.0, 120.0, 5), (1.0, 8.0, 6)],                                  # hiçbiri sayılmaz: S = 0, pH 5.72
+        [(0.0, 20.0, 2)], [],
+    ]
+    for tb in tbills:
+        for bizim in (False, True):
+            gp, ss = ref.gristph_typed(tb, bizim)
+            v.ekle("grist_ph_typed", {"bill": [list(x) for x in tb], "ours": bizim}, [gp, ss])
+    for units in range(0, 9):
+        for amount in (0.0, 2.5, 100.0):
+            v.ekle("to_grams", {"amount": amount, "units": units}, ref.to_grams(amount, units),
+                   "tanımsız birim kodu: null")
+
     # --- §5.2 eğim
     for model in (0, 1):
         for t in (1.5, 2.0, 2.6, 3.0, 4.0):
@@ -190,7 +124,7 @@ def uret():
     gp0 = ref.gristph(bills[0])[0]
     for gp, ra, t, model in ((gp0, 1.1166, 3.0, 0), (gp0, 1.1166, 3.0, 1), (5.4, 81.354, 2.5, 0), (5.72, -30.0, 4.0, 1)):
         sl = ref.slope(model, t)
-        v.ekle("est_mash_ph", {"grist_ph": gp, "ra": ra, "slope": sl}, gp + ra / 50 * sl)
+        v.ekle("est_mash_ph", {"grist_ph": gp, "ra": ra, "slope": sl}, ref.est_mash_ph(gp, ra, sl))
 
     # --- §6.1 pK ve ayrışma kesri
     for a in range(0, 10):
@@ -213,31 +147,28 @@ def uret():
                     v.ekle("acid_per_liter", {"meq": meq, "acid": a, "conc": conc, "model": model, "ph_t": pht, "ours": bizim},
                            ref.acid_per_L(meq, a, conc, model, pht, bizim))
 
-    # --- §6.3 mash asidi miktarı (referans T3: dph/sl → acid_per_L · W · t; koruma kuralları spesifikasyondan)
-    def mash_acid(est, target, model, t, w, acid, conc, bizim):
-        dph = est - target
-        if acid == 0 or dph < 0:
-            return 0.0
-        sl = ref.slope(model, t)
-        return ref.acid_per_L(dph / sl, acid, conc, model, target, bizim) * w * t
-
+    # --- §6.3 mash asidi miktarı (referans: ref.mash_acid_amount); hedef pH 5.2, 5.4, 5.6 ve 6.0 ile
     est0 = gp0 + 1.1166 / 50 * ref.slope(0, 3.0)
     for est, target, model, t, w, acid, conc, bizim in (
         (est0, 5.4, 0, 3.0, 4.9, 1, 88.0, False), (est0, 5.4, 0, 3.0, 4.9, 1, 88.0, True),
         (est0, 5.4, 1, 3.0, 4.9, 1, 88.0, False), (est0, 5.4, 1, 3.0, 4.9, 1, 88.0, True),
         (est0, 5.4, 0, 3.0, 4.9, 2, 85.0, True), (est0, 5.2, 0, 2.5, 5.5, 3, 3.0, False),
         (est0, 5.4, 0, 3.0, 4.9, 0, 88.0, False), (5.3, 5.4, 0, 3.0, 4.9, 1, 88.0, False),
+        (5.9, 5.2, 0, 3.0, 4.9, 1, 88.0, True), (5.9, 5.6, 0, 3.0, 4.9, 1, 88.0, True),
+        (5.9, 5.2, 1, 2.5, 4.9, 1, 88.0, True), (5.9, 5.6, 1, 2.5, 4.9, 1, 88.0, True),
+        (5.9, 5.2, 1, 2.5, 4.9, 2, 75.0, False), (5.9, 5.6, 1, 2.5, 4.9, 2, 75.0, False),
+        (5.9, 5.2, 0, 3.0, 4.9, 3, 3.0, True), (5.9, 5.6, 0, 3.0, 4.9, 3, 3.0, True),
+        (5.9, 5.6, 1, 3.0, 4.9, 3, 3.0, False), (6.2, 6.0, 0, 3.0, 4.9, 1, 80.0, True),
+        (5.4, 5.4, 0, 3.0, 4.9, 1, 88.0, False),      # dph = 0: sınır
     ):
         v.ekle("mash_acid_amount",
                {"est_ph": est, "target_ph": target, "model": model, "t": t, "w_kg": w, "acid": acid, "conc": conc, "ours": bizim},
-               mash_acid(est, target, model, t, w, acid, conc, bizim))
+               ref.mash_acid_amount(est, target, model, t, w, acid, conc, bizim))
 
     # --- §5.4(a) laktik asidin RA eşdeğeri (referans T3 kontrolü: acidra = -(p·1000·ρ·VL·f)/(0.09009·W·t))
     for conc, vol_l, f, w, t in ((88.0, 0.0035, 1.0, 4.9, 3.0), (88.0, 0.0036, 0.971968, 4.9, 3.0), (80.0, 0.01, 0.9, 2.0, 2.5)):
-        p_ = conc / 100
-        rho = 1 + 0.237 * p_
         v.ekle("lactic_acid_ra", {"conc": conc, "vol_l": vol_l, "f": f, "w_kg": w, "t": t},
-               -(p_ * 1000 * rho * vol_l * f) / (0.09009 * w * t))
+               ref.lactic_acid_ra(conc, vol_l, f, w, t))
 
     # --- §5.4 asitlerin RA eşdeğeri: fosforik dalı (ρ'da 0.365) ve asit malt (T1.14c)
     for acid, conc, vol_l, f, w, t in (
@@ -252,38 +183,60 @@ def uret():
         v.ekle("mash_ra_slope_checked", {"model": model, "t": t, "w_kg": w}, ref.slope_checked(model, t, w),
                "t <= 0 ya da W <= 0: null (hata)")
 
-    # --- §5.5 ayarlanmış pH (referans adj_ph: asit maltlı)
+    # --- §5.5 ayarlanmış pH (referans adj_ph: asit maltlı); hedef pH değişken (T1.12 B4)
     for model in (0, 1):
         for bizim in (False, True):
-            for ag in (0.0, 62.78, 128.88):
-                ph, w = ref.adj_ph(bills[0], ag, 3.0, model, 1.1166, 3.0, bizim)
-                v.ekle("adjusted_ph", {"bill": bills[0], "acid_malt_g": ag, "pct": 3.0, "model": model, "ra": 1.1166,
-                                       "t": 3.0, "target_ph": 5.4, "ours": bizim}, [ph, w])
-    ph, w = ref.adj_ph(bills[3], 80.0, 2.0, 0, 20.0, 2.5, True)
-    v.ekle("adjusted_ph", {"bill": bills[3], "acid_malt_g": 80.0, "pct": 2.0, "model": 0, "ra": 20.0,
-                           "t": 2.5, "target_ph": 5.4, "ours": True}, [ph, w])
+            for target in (5.2, 5.4, 5.6):
+                for ag in (0.0, 62.78, 128.88):
+                    ph, w = ref.adj_ph(bills[0], ag, 3.0, model, 1.1166, 3.0, bizim, target)
+                    v.ekle("adjusted_ph", {"bill": bills[0], "acid_malt_g": ag, "pct": 3.0, "model": model, "ra": 1.1166,
+                                           "t": 3.0, "target_ph": target, "ours": bizim}, [ph, w])
+    for target in (5.2, 5.4, 6.0):
+        ph, w = ref.adj_ph(bills[3], 80.0, 2.0, 0, 20.0, 2.5, True, target)
+        v.ekle("adjusted_ph", {"bill": bills[3], "acid_malt_g": 80.0, "pct": 2.0, "model": 0, "ra": 20.0,
+                               "t": 2.5, "target_ph": target, "ours": True}, [ph, w])
 
-    # --- §6.4 asit malt yinelemesi (referansın üst düzey döngüsü, birebir)
-    def acid_malt(bill, pct, model, ra, t, bizim):
-        tot = 0.0
-        ph2 = 0.0
-        for _ in range(8):
-            ph, w = ref.adj_ph(bill, tot, pct, model, ra, t, bizim)
-            sl = ref.slope(model, t)
-            amt = ref.acid_per_L((ph - 5.4) / sl, 3, pct, model, 5.4, bizim) * w * t if ph - 5.4 >= 0 else 0
-            tot += amt
-            ph2, _ = ref.adj_ph(bill, tot, pct, model, ra, t, bizim)
-            if ph2 - 5.4 < 0.005:
-                break
-        return [tot, ph2]
+    # --- §5.5 sıvı asitli ayarlanmış pH ve T3 geri kontrolü: önerilen asit eklenince pH hedefe oturur
+    # (laktik: iki yoğunluk formülü aynı; fosforik: 0.375 / 0.365 tutarsızlığı yüzünden binde birler düzeyinde sapar)
+    for model, bizim in ((0, False), (0, True), (1, False), (1, True)):
+        for target in (5.2, 5.4, 5.6):
+            est = 5.9
+            for acid, conc in ((1, 88.0), (1, 80.0), (2, 85.0)):
+                t_, w_ = 3.0, 4.9
+                ml = ref.mash_acid_amount(est, target, model, t_, w_, acid, conc, bizim)
+                sl = ref.slope(model, t_)
+                # ra/50*sl = est - gp  => gp ve ra seçimi: gp = 5.6, ra = (est - gp)/sl*50
+                gp = 5.6
+                ra = (est - gp) / sl * 50
+                v.ekle("adjusted_ph_liquid", {"grist_ph": gp, "ra": ra, "t": t_, "model": model, "w_kg": w_, "acid": acid,
+                                              "conc": conc, "vol_l": ml / 1000, "target_ph": target, "ours": bizim},
+                       ref.adj_ph_liquid(gp, ra, t_, model, w_, acid, conc, ml / 1000, target, bizim),
+                       "geri kontrol: laktikte sonuç hedef pH")
+    v.ekle("adjusted_ph_liquid", {"grist_ph": 5.6, "ra": 30.0, "t": 3.0, "model": 0, "w_kg": 4.9, "acid": 0,
+                                  "conc": 88.0, "vol_l": 0.002, "target_ph": 5.4, "ours": False},
+           ref.adj_ph_liquid(5.6, 30.0, 3.0, 0, 4.9, 0, 88.0, 0.002, 5.4, False), "asit 0 / tanımsız: asit katkısı yok")
 
+    # --- §6.4 asit malt yinelemesi (referans: ref.acid_malt_amount, [toplam, son pH]); hedef pH değişken
     for bill, pct, model, ra, t in (
         (bills[0], 3.0, 0, 1.1166, 3.0), (bills[0], 3.0, 1, 1.1166, 3.0), (bills[3], 2.5, 0, 40.0, 2.5),
         (bills[3], 2.5, 1, 40.0, 2.5), (bills[1], 3.0, 0, -20.0, 3.0), (bills[2], 4.0, 0, 60.0, 3.5),
     ):
         for bizim in (False, True):
-            v.ekle("acid_malt_amount", {"bill": bill, "pct": pct, "model": model, "ra": ra, "t": t, "target_ph": 5.4, "ours": bizim},
-                   acid_malt(bill, pct, model, ra, t, bizim))
+            for target in (5.2, 5.4, 5.6):
+                tot, ph2, _ok = ref.acid_malt_amount(bill, pct, model, ra, t, target, bizim)
+                v.ekle("acid_malt_amount", {"bill": bill, "pct": pct, "model": model, "ra": ra, "t": t, "target_ph": target, "ours": bizim},
+                       [tot, ph2])
+    # yakınsama bayrağı (T1.12 B19): [toplam, pH, yakınsadı]; 8 tur dolunca false
+    for bill, pct, model, ra, t, target, bizim in (
+        (bills[0], 3.0, 0, 1.1166, 3.0, 5.4, False), (bills[3], 2.5, 1, 40.0, 2.5, 5.2, True),
+        (bills[0], 0.1, 0, 200.0, 3.0, 5.2, False),     # çok zayıf asit malt: 8 turda yetişmez
+        (bills[0], 0.5, 1, 150.0, 3.0, 5.2, True), (bills[1], 3.0, 0, -20.0, 3.0, 5.4, False),
+        (bills[0], 3.0, 0, 500.0, 3.0, 5.2, False),
+    ):
+        tot, ph2, ok = ref.acid_malt_amount(bill, pct, model, ra, t, target, bizim)
+        v.ekle("acid_malt_amount_checked",
+               {"bill": bill, "pct": pct, "model": model, "ra": ra, "t": t, "target_ph": target, "ours": bizim},
+               [tot, ph2, ok], "yakınsadı = false: 8 tur doldu, pH hedefe girmedi")
 
     # --- §6.5 sparge asidi
     for h in (0.0, 50.0, 150.0, 300.0):
@@ -310,8 +263,24 @@ def uret():
                            {"model": model, "ours": bizim, "hco3": 150.0, "ph_w": phw, "ph_t": pht, "acid": acid, "conc": 88.0,
                             "mash_dph": dph, "v_sp_l": 15.3},
                            ref.sparge_acid_amount(model, bizim, 150.0, phw, pht, acid, 88.0, dph, 15.3))
+    # T1.12 B8/B17: küçük hco3, pH_w hedefe yakın, yoğunluk tabanı (conc < 1), mash dpH = 0 sınırı, tanımsız asit kodları
+    for h in (5.0, 10.0, 25.0):
+        for phw, pht in ((7.5, 5.4), (6.4, 6.0)):
+            v.ekle("sparge_acid_mph", {"hco3": h, "ph_w": phw, "ph_t": pht}, ref.sparge_mpH(h, phw, pht))
+            v.ekle("sparge_acid_mph_ours", {"hco3": h, "ph_w": phw, "ph_t": pht, "acid": 1}, ref.sparge_mpH_bizim(h, phw, pht, 1))
+            for acid in (1, 2):
+                v.ekle("sparge_acid_bw", {"hco3": h, "ph_w": phw, "ph_t": pht, "acid": acid}, ref.sparge_bnw_guarded(h, phw, pht, acid))
+    for model, bizim, acid, conc, dph, vsp in (
+        (0, False, 1, 0.5, 0.2, 15.3), (0, True, 2, 0.5, 0.0, 15.3), (1, False, 1, 88.0, 0.0, 15.3),
+        (0, False, 1, 88.0, 0.2, 0.0), (1, True, 2, 75.0, 0.3, 4.2), (0, True, 1, 50.0, 0.05, 30.0),
+        (0, False, 4, 88.0, 0.2, 15.3), (1, False, 8, 88.0, 0.2, 15.3),
+    ):
+        v.ekle("sparge_acid_amount",
+               {"model": model, "ours": bizim, "hco3": 150.0, "ph_w": 7.5, "ph_t": 5.4, "acid": acid, "conc": conc,
+                "mash_dph": dph, "v_sp_l": vsp},
+               ref.sparge_acid_amount(model, bizim, 150.0, 7.5, 5.4, acid, conc, dph, vsp))
     for vt, w, t in ((30.0, 4.9, 3.0), (25.0, 5.5, 2.6)):
-        v.ekle("sparge_volume_l", {"total_l": vt, "w_kg": w, "t": t}, vt - w * t)
+        v.ekle("sparge_volume_l", {"total_l": vt, "w_kg": w, "t": t}, ref.sparge_volume_l(vt, w, t))
 
     # --- §3 su profilleri (T1.14c)
     wl = [(10.0, [50.0, 10.0, 15.0, 40.0, 30.0, 150.0]), (5.0, [20.0, 2.0, 5.0, 10.0, 8.0, 40.0])]
@@ -362,19 +331,18 @@ def uret():
         ([[1.0, 2.0, 0.0, 1.0], [0.0, 1.0, 3.0, 1.0], [2.0, 0.0, 1.0, 1.0], [1.0, 1.0, 1.0, 0.0]], [5.0, -1.0, 4.0, 2.0]),
     ]
     for cols, b in nn:
-        x, rn = nnls_lh(cols, b)
-        kullanildi_scipy |= _scipy_kontrol(cols, b, x, rn)
+        x, rn = ref.nnls_lh(cols, b)
+        assert ref.nnls_kkt_ok(cols, b, x), (cols, b, x)
+        kullanildi_scipy |=_scipy_kontrol(cols, b, x, rn)
         v.ekle("nnls", {"a_cols": cols, "b": b}, {"x": x, "rnorm": rn})
 
     # tuz eşleştirme: hedef − s·base üzerinde NNLS; beklenen profil = s·base + A·x (gram dağılımı tek değil)
     def eslestir(base, tgt, s, haric):
-        aktif = [k for k in salts if k not in haric]
-        cols = [ref.A[k] for k in aktif]
-        b = [tgt[i] - s * base[i] for i in range(6)]
-        x, rn = nnls_lh(cols, b)
-        _scipy_kontrol(cols, b, x, rn)
-        prof = [s * base[i] + sum(x[j] * cols[j][i] for j in range(len(cols))) for i in range(6)]
-        return {"profile": prof, "rnorm": rn}
+        r = ref.water_match_ref(base, tgt, s, haric)
+        assert ref.nnls_kkt_ok(r["cols"], r["b"], r["xa"]), "NNLS KKT koşulu sağlanmadı"
+        _scipy_kontrol(r["cols"], r["b"], r["xa"], r["rnorm"])
+        # gram dağılımı tek olmayabilir: profil ve ‖r‖ sabitlenir; hariç tuzların 0 olması ve KKT Rust testinde denetlenir
+        return {"profile": r["profile"], "rnorm": r["rnorm"]}
 
     base = [ref.base[k] for k in ions]
     hedef = [100.0, 15.0, 20.0, 250.0, 60.0, 150.0]
