@@ -15,3 +15,17 @@ fn parite_00() {
         true
     });
 }
+
+/// Every vector file must have a `tests/parite_NN.rs` (T1.12 P5).
+#[test]
+fn every_vector_file_has_a_test() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let dir = root.join("../../../formuller/testler/vektorler");
+    for entry in std::fs::read_dir(&dir).unwrap() {
+        let name = entry.unwrap().file_name().into_string().unwrap();
+        if let Some(id) = name.strip_suffix(".json") {
+            let test = root.join(format!("tests/parite_{id}.rs"));
+            assert!(test.exists(), "{name} has no {}", test.display());
+        }
+    }
+}

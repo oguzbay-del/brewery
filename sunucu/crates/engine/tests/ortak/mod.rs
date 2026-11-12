@@ -83,6 +83,12 @@ impl Case {
 
     /// Compares a single number with `beklenen`.
     pub fn check_f(&self, actual: f64) {
+        // NaN/inf would serialise to null and could match a Python None (T1.12 P4).
+        assert!(
+            actual.is_finite(),
+            "{}: non-finite result {actual}",
+            self.label()
+        );
         check_value(&self.label(), &serde_json::json!(actual), &self.beklenen);
     }
 
@@ -136,6 +142,13 @@ fn close(a: f64, b: f64) -> bool {
 fn check_value(label: &str, actual: &Value, expected: &Value) {
     match (actual, expected) {
         (Value::Number(a), Value::Number(e)) => {
+            // Integers (Python int) compare exactly (ADR-0003 madde 3, T1.12 P3).
+            if let (Some(ai), Some(ei), false, false) =
+                (a.as_i64(), e.as_i64(), a.is_f64(), e.is_f64())
+            {
+                assert_eq!(ai, ei, "{label}: got {ai}, expected {ei}");
+                return;
+            }
             let (a, e) = (a.as_f64().unwrap(), e.as_f64().unwrap());
             assert!(close(a, e), "{label}: got {a}, expected {e}");
         }

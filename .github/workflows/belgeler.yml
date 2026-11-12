@@ -35,6 +35,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
+      # Vektörler Python 3.12+ ile üretilir (3.11'de sum() farklı; T1.12 P6).
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
       - name: Plan, konsept ve formül tutarlılığı
         run: python3 -I araclar/tutarlilik.py
       - name: Formül test vektörleri
