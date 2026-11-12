@@ -12,8 +12,8 @@ Motorun yaklaşık 400 açık fonksiyonu var (ADR-0004 biçiminde: girdi yapıs�
 
 1. **Paket ve sürüm:** `demleme.engine.v1`; geriye uyumsuz değişiklik `v2` paketiyle gelir. Alan numarası yeniden kullanılmaz.
 2. **Hizmetler, ekran ihtiyacına göre:** her fonksiyon için uç açılmaz.
-   - `RecipeService.Calculate(RecipeInput) → RecipeSummary`: OG, FG, ABV, IBU, SRM/EBC, verim, hacim zinciri, kalori; tarif ekranının tek çağrısı.
-   - `WaterService` (profil, tuz, asit, mash pH), `MashService` (strike, infüzyon, sparge planı), `YeastService` (pitch, starter, mead besini, karbonasyon), `FermentationService` (tahmin, tetikleyici, kalibrasyon), `BreweryService` (maliyet, harman, vergi, spunding).
+   - `RecipeService.Calculate(CalculateRecipeRequest) → RecipeSummary`: OG, FG, sanal OG, kaynama öncesi gravite, ABV, ABW, IBU, SRM/EBC, mash verimi, 100 mL başına enerji ve karbonhidrat; tarif ekranının tek çağrısı. Hacim zinciri (mash suyu, sparge, kayıplar) motorda ayrı metrik parametrelerle hesaplandığı için `MashService`'tedir (12.11.2026 değişikliği).
+   - `WaterService` (profil, tuz, asit, mash pH), `MashService` (hacim zinciri, strike, infüzyon, sparge planı), `YeastService` (pitch, starter, mead besini, karbonasyon), `FermentationService` (tahmin, tetikleyici, kalibrasyon), `BreweryService` (maliyet, harman, vergi, spunding).
    - `ToolService`: küçük araçlar (dönüştürücüler, refraktometre, hidrometre, seyreltme) tek tek RPC.
 3. **Birimler:** proto metriktir (L, kg, g, °C, dk, SG, SRM, %). BeerSmith iç birimlerine dönüşüm yalnız `engine-service`'teki tek dönüştürücü katmanında yapılır (ADR-0004 madde 4). Alan adları birim eki taşır (`volume_l`, `temp_c`).
 4. **Kodlar:** her enum proto `enum` olur, 0 değeri `*_UNSPECIFIED`; belirtilmemiş değer `INVALID_ARGUMENT` döner.
@@ -24,3 +24,4 @@ Motorun yaklaşık 400 açık fonksiyonu var (ADR-0004 biçiminde: girdi yapıs�
 ## Sonuçlar
 
 - T1.11 uygulaması hizmet hizmet ilerler; ilk parça `ToolService` (küçük, bağımsız), sonra `RecipeService`.
+- `RecipeService` maya alanlarından yalnız attenuasyon, tolerans ve ikincil eklemeyi alır; aşılama hesabı `YeastService`'tedir. Enerji UK etiketine uygun olarak 100 mL başına verilir (motor 12 US fl oz başına hesaplar; dönüşüm `convert` katmanında).

@@ -1,0 +1,236 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+// Recipe screen summary: one call per recipe edit (ADR-0005 item 2). Metric units on the
+// wire; the engine-service converts to the engine's units in one layer (ADR-0005 item 3).
+service RecipeService {
+  // Computes the recipe summary: gravities, alcohol, bitterness, colour, efficiency, calories.
+  rpc Calculate(CalculateRecipeRequest) returns (RecipeSummary);
+}
+
+// Recipe type (`F_R_TYPE`).
+enum RecipeKind {
+  RECIPE_KIND_UNSPECIFIED = 0;
+  RECIPE_KIND_EXTRACT = 1;
+  RECIPE_KIND_PARTIAL_MASH = 2;
+  RECIPE_KIND_ALL_GRAIN = 3;
+  RECIPE_KIND_CIDER = 4;
+  RECIPE_KIND_MEAD = 5;
+  RECIPE_KIND_WINE = 6;
+  RECIPE_KIND_SELTZER = 7;
+}
+
+// Fermentable type (`F_G_TYPE`).
+enum FermentableKind {
+  FERMENTABLE_KIND_UNSPECIFIED = 0;
+  FERMENTABLE_KIND_GRAIN = 1;
+  // Liquid malt extract.
+  FERMENTABLE_KIND_EXTRACT = 2;
+  FERMENTABLE_KIND_SUGAR = 3;
+  FERMENTABLE_KIND_ADJUNCT = 4;
+  FERMENTABLE_KIND_DRY_EXTRACT = 5;
+  FERMENTABLE_KIND_FRUIT = 6;
+  FERMENTABLE_KIND_JUICE = 7;
+  FERMENTABLE_KIND_HONEY = 8;
+  FERMENTABLE_KIND_ACID = 9;
+}
+
+// Fermentable use phase (`F_G_USE`).
+enum FermentableUse {
+  FERMENTABLE_USE_UNSPECIFIED = 0;
+  FERMENTABLE_USE_MASH = 1;
+  FERMENTABLE_USE_STEEP = 2;
+  FERMENTABLE_USE_BOIL = 3;
+  FERMENTABLE_USE_WHIRLPOOL = 4;
+  FERMENTABLE_USE_PRIMARY = 5;
+  FERMENTABLE_USE_SECONDARY = 6;
+  FERMENTABLE_USE_TERTIARY = 7;
+  FERMENTABLE_USE_BOTTLING = 8;
+  FERMENTABLE_USE_SPARGE = 9;
+}
+
+// Hop form (`F_H_FORM`).
+enum HopForm {
+  HOP_FORM_UNSPECIFIED = 0;
+  HOP_FORM_PELLET = 1;
+  HOP_FORM_PLUG = 2;
+  HOP_FORM_LEAF = 3;
+  // Amount in mL.
+  HOP_FORM_CO2_EXTRACT = 4;
+  // Amount in mL.
+  HOP_FORM_ISOMERIZED_EXTRACT = 5;
+}
+
+// Hop use (`F_H_USE`).
+enum HopUse {
+  HOP_USE_UNSPECIFIED = 0;
+  HOP_USE_BOIL = 1;
+  HOP_USE_DRY_HOP = 2;
+  HOP_USE_MASH = 3;
+  HOP_USE_FIRST_WORT = 4;
+  HOP_USE_WHIRLPOOL = 5;
+}
+
+// Misc use (`F_M_USE`).
+enum MiscUse {
+  MISC_USE_UNSPECIFIED = 0;
+  MISC_USE_BOIL = 1;
+  MISC_USE_MASH = 2;
+  MISC_USE_PRIMARY = 3;
+  MISC_USE_SECONDARY = 4;
+  MISC_USE_BOTTLING = 5;
+  MISC_USE_SPARGE = 6;
+  MISC_USE_WHIRLPOOL = 7;
+}
+
+// Mash step type (`F_MS_TYPE`).
+enum MashStepKind {
+  MASH_STEP_KIND_UNSPECIFIED = 0;
+  MASH_STEP_KIND_INFUSION = 1;
+  MASH_STEP_KIND_DECOCTION = 2;
+  MASH_STEP_KIND_TEMPERATURE = 3;
+}
+
+// IBU equation.
+enum IbuEquation {
+  IBU_EQUATION_UNSPECIFIED = 0;
+  IBU_EQUATION_TINSETH = 1;
+  IBU_EQUATION_RAGER = 2;
+  IBU_EQUATION_GARETZ = 3;
+}
+
+message Fermentable {
+  // Used only to order late extracts with equal times.
+  string name = 1;
+  double amount_kg = 2;
+  // Yield, percent (0-100).
+  double yield_pct = 3;
+  double color_srm = 4;
+  FermentableKind kind = 5;
+  FermentableUse usage = 6;
+  // Not fermentable (e.g. lactose): all its points go to FG.
+  bool not_fermentable = 7;
+  // Late extract, minutes before the end of the boil; 0 = not a late extract.
+  double late_extract_min = 8;
+  // Maximum share of the grain bill, percent.
+  double max_in_batch_pct = 9;
+  // Hopped-extract rating, IBU x L / kg (IBU x gal / lb x 8.3454); 0 = not hopped.
+  double ibu_l_per_kg = 10;
+}
+
+message Hop {
+  // Amount, g (mL for CO2 and isomerized extracts).
+  double amount = 1;
+  double alpha_pct = 2;
+  HopForm form = 3;
+  HopUse usage = 4;
+  double time_min = 5;
+  // Whirlpool temperature, degrees C (used for HOP_USE_WHIRLPOOL).
+  double whirlpool_temp_c = 6;
+}
+
+// Yeast fields read by the recipe summary (pitching is YeastService).
+message RecipeYeast {
+  double min_attenuation_pct = 1;
+  double max_attenuation_pct = 2;
+  // Alcohol tolerance, percent ABV; 0 = no limit.
+  double tolerance_abv_pct = 3;
+  // Added in secondary: skipped by the recipe FG.
+  bool add_to_secondary = 4;
+}
+
+message Misc {
+  MiscUse usage = 1;
+  double time_min = 2;
+}
+
+message MashStep {
+  MashStepKind kind = 1;
+  double temp_c = 2;
+  // Infusion water, L.
+  double infusion_l = 3;
+}
+
+message Mash {
+  double grain_weight_kg = 1;
+  bool biab = 2;
+  repeated MashStep steps = 3;
+}
+
+message Equipment {
+  double trub_loss_l = 1;
+  // Volume before trub loss, L (used by extract recipes).
+  double pre_trub_loss_l = 2;
+  double altitude_m = 3;
+  // Hop utilisation, percent (100 = no correction).
+  double hop_util_pct = 4;
+  // Whirlpool carries on after the boil.
+  bool whirlpool_carry = 5;
+  double whirlpool_time_min = 6;
+}
+
+// Options; an unset field takes the engine default.
+message RecipeOptions {
+  // Default 15.
+  optional double steep_efficiency_pct = 1;
+  // Default true.
+  optional bool mash_fg_adjust = 2;
+  // Default 67.5 C (153.5 F).
+  optional double mash_fg_adj_temp_c = 3;
+  // Attenuation change per degree C, percent (default -2.25, i.e. -1.25 per F).
+  optional double mash_fg_adj_slope_pct_per_c = 4;
+  // Default +10.
+  optional double hop_first_wort_adj_pct = 5;
+  // Apply per-form hop corrections (default true).
+  optional bool hop_type_adj = 6;
+  // Default 0.
+  optional double hop_leaf_adj_pct = 7;
+  // Default +2.
+  optional double hop_plug_adj_pct = 8;
+  // Default +10.
+  optional double hop_pellet_adj_pct = 9;
+  // Default -80.
+  optional double hop_mash_adj_pct = 10;
+}
+
+message CalculateRecipeRequest {
+  RecipeKind kind = 1;
+  // Batch volume into the fermenter, L.
+  double batch_volume_l = 2;
+  // Pre-boil volume, L.
+  double boil_volume_l = 3;
+  double boil_time_min = 4;
+  // Brewhouse efficiency, percent.
+  double efficiency_pct = 5;
+  Equipment equipment = 6;
+  repeated Fermentable fermentables = 7;
+  repeated Hop hops = 8;
+  repeated RecipeYeast yeasts = 9;
+  repeated Misc miscs = 10;
+  Mash mash = 11;
+  RecipeOptions options = 12;
+  IbuEquation ibu_equation = 13;
+}
+
+message RecipeSummary {
+  // Original gravity (phases up to primary, plus sparge), SG.
+  double og_sg = 1;
+  // Final gravity, SG.
+  double fg_sg = 2;
+  // OG including secondary and tertiary additions, SG.
+  double virtual_og_sg = 3;
+  // Estimated pre-boil gravity after the mash, SG.
+  double pre_boil_sg = 4;
+  double abv_pct = 5;
+  double abw_pct = 6;
+  double ibu = 7;
+  double color_srm = 8;
+  double color_ebc = 9;
+  // Estimated mash efficiency, percent.
+  double mash_efficiency_pct = 10;
+  // Energy per 100 mL, kcal.
+  double energy_kcal_per_100ml = 11;
+  // Carbohydrates per 100 mL, g.
+  double carbohydrates_g_per_100ml = 12;
+}
