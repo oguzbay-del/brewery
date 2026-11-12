@@ -124,6 +124,7 @@ Parametreler (`Garetz_hop_ibu(W, A, t, SG, V, V_boil)`):
 - Ön koşullar: `t ≤ 0`, `W ≤ 0` veya `A < 0` ise 0. Kodda V = 0 için de 0 dönen bir kontrol var (decompile'da erişilemez görünüyor).
 - **Kullanım oranı biçimi** (`GaretzUtilization(SG, t)`): `Garetz_hop_ibu(1, 1, t, SG, 1, 1) / 74.9`. W = 1 oz, A = %1, V = 1 gal ve oran 1 olduğu için IBU çok küçüktür ve HF ≈ 1 olur. Sonuç yaklaşık `U%/100 / (GF · 1.02)`. **Önemli:** tarif yolunda Garetz'in hopping-rate (HF) etkisi pratikte kaybolur. Araç yolunda (§7) gerçek miktar kullanıldığı için HF etkilidir.
 - Ters (`Garetz_hop_weight`): hedef IBU için W, ikiye bölme (bisection) ile bulunur. Aralık [0, 1e6], başlangıç W = 500, |IBU − hedef| ≤ 0.05 olunca durur. Bu fonksiyon V_boil = V ile çağrılır.
+- **Karar (T1.12 B9, B10):** Sabit nokta yinelemesi en çok **10 000 adım** sürer (normal girdide 100'ün çok altında yakınsar; çok büyük miktarda, ör. 1e5 oz, sınıra dayanır ve sonuç yakınsamamış kalır). Hata bayrağı API şekline bağlı olduğu için T1.16'ya bırakıldı. `Garetz_hop_weight` 200 adımda hedefe girmezse (hedef ulaşılamaz: tablo değeri 0 olan t ≤ 10 dk, A = 0, ya da aralığı aşan hedef) **0** döndürür; Tinseth ve Rager terslerindeki "ulaşılamaz → 0" ile aynıdır. Referans ve Rust aynı kuralı uygular.
 - Yayımlanmış ad: **Mark Garetz, "Using Hops" (1994)**. Yaklaşık uyumlu; tablo ve sabit TF basitleştirilmiş **[tahmin]**.
 - Kaynak: `Garetz_hop_ibu`, `Garetz_hop_weight`, `GaretzUtilization`, global `GaretzUtil`.
 
@@ -167,6 +168,7 @@ Parametreler (`Garetz_hop_ibu(W, A, t, SG, V, V_boil)`):
   sonuç S
   ```
 - Yorum: Tinseth zaman eğrisinin türevi, hopun "kaynama yaşı" τ'dan devam eder ve soğuyan wort'un Arrhenius faktörüyle ağırlıklandırılır. `τ < 5` istisnası nedeniyle 5 dk'dan kısa kaynatılan (ör. alev kesimi = 0 dk) hoplar ilk dakikalarda tam faktör alır. Bu davranış amaçlı görünmüyor ama birebir uygulanmalı.
+- **Karar (T1.12 B1):** Soğuma doğrusu alt sınırsızdır (0 °F'ı 157. dk'da, 0 K'i `e = 670.31/1.344 = 498.74` dk'da geçer; sonrasında üs pozitife döner ve taşar). Kural: `τ ≥ 5` iken `(T_F + 459.67)·5/9 ≤ 0` olunca `f` limit değerini (0) alır ve toplam biter (döngüden çıkılır); ayrıca adım sayısı en çok 20 000 ile sınırlıdır (`D` sonsuz ya da 1e7 olsa da döngü ~4990 adımda biter, sonuç sonludur). `e < 498.74` için sonuç eski formülle birebir aynıdır (referans ve Rust aynı kuralı uygular). Vektörlerde 60..1e7 dk süreleri var.
 - Kayan nokta birikimi nedeniyle adım sayısı 10·D veya 10·D+1 olabilir. Birebir eşleşme için 0.1'i aynı şekilde biriktirin.
 - **Her zaman Tinseth** tabanlıdır (Rager/Garetz seçili olsa bile).
 - Ayar: ekipmanda `F_E_WHIRLPOOL_CARRY` ("Estimate Boil Hop Util in Whirlpool") ≠ 0 ise uygulanır.
@@ -305,7 +307,7 @@ Kaynak: `BSRecipe::NewHopIBU`.
    `W_yeni = (I_i / F_adj_i) · (T'/R') · (V+T) · 1.34 / (A · U_i · 100 · 128)`
    - Pratikte `W_yeni = W_eski · T'/R'`: bütün acılık hopları aynı oranla ölçeklenir. Hopped extract sabit kalır.
    - `A·U` ≤ 0 olan hop atlanır.
-   - Kenar durumu: form 4 dry hop ilk döngüde diziye alınıyor, ikinci döngüde atlanıyor. Bu durumda dizi indeksleri kayar (yazılım hatası) **[belirsiz]**.
+   - Kenar durumu: BeerSmith'te form 4 dry hop ilk döngüde diziye alınıyor, ikinci döngüde atlanıyor ve indeksler kayıyor (yazılım hatası). **Karar (T1.12 B2):** bu kayma taklit edilmez; form 4 dry hop her iki döngüde de normal bir acılık hopu gibi işlenir (`I_i` hesaplanır, ölçeklenir, `F_adj = 1`, `U = 1`). Ölçeklenen tarifin IBU'su hedefe eşit çıkar (vektör: 1 oz %10 pellet 60 dk + 0.05 fl oz %50 form 4 dry hop). Dry hop olan diğer formlar (use = 1, form ≠ 4) iki döngüde de atlanır.
 - Kaynak: `BSRecipe::ScaleBitterness`, `DoAdjustBitterness`.
 
 ### 6.2 Hop başına IBU düzenleme (`HopIBUAdjust`, `TotHopAdjIBU`)
@@ -450,4 +452,4 @@ Test betiği: `/tmp/claude-0/-home-user/9e16fef0-a8b7-5145-928c-0a9718edc1b6/scr
 - `F_E_HOP_UTIL` varsayılan değeri (100 varsayıldı).
 - `O_WHIRLPOOL_UTIL` görünüşte kullanılmıyor. Diğer modüllerde (ör. eski dosya içe aktarma) kullanılıp kullanılmadığı kontrol edilmedi.
 - `PostBoilUtil`'deki `τ < 5` istisnası ve 100 °C süreksizliği kodda böyle. Yazılım hatası olabilir ama birebir uyumluluk için korunmalı.
-- `ScaleBitterness`'taki form 4 dry hop indeks kayması.
+- `ScaleBitterness`'taki form 4 dry hop indeks kayması: taklit edilmiyor, §6.1'de karar var (T1.12 B2).

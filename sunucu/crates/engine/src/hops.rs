@@ -15,8 +15,15 @@ use crate::units::{c_to_f, f_to_c};
 /// IBU conversion constant `K = 100 / 1.34` (spec §0): `IBU = U · alpha% · oz · K / gal`.
 pub const K: f64 = 74.626_865_671_641_78;
 
-/// Safety cap on the Garetz fixed-point iteration (it converges in well under 100 steps).
+/// Cap on the Garetz fixed-point iteration (spec §2.3, T1.15 B9). Normal inputs converge in
+/// well under 100 steps; very large amounts converge slowly and are cut here, exactly like
+/// the reference (the signature has no non-convergence flag, deferred to T1.16).
 const GARETZ_MAX_ITER: usize = 10_000;
+
+/// Cap on the `PostBoilUtil` Riemann steps (spec §3.5, T1.15 B1). The cooling model reaches
+/// 0 K after 498.74 min (about 4990 steps), so the cap only matters for odd inputs such as
+/// negative hop times.
+const POST_BOIL_MAX_STEPS: usize = 20_000;
 
 /// Garetz utilisation table in percent (spec §2.3), indexed by 5-minute step.
 const GARETZ_TABLE: [f64; 15] = [
@@ -124,18 +131,26 @@ pub fn garetz_utilization(sg: f64, t: f64) -> f64 {
 /// Extra utilisation of a boil hop during the whirlpool, `PostBoilUtil` (spec §3.5).
 /// `sg` boil-end gravity, `t0` hop boil time (min), `dur` whirlpool minutes. Left
 /// Riemann sum with step 0.1 min, accumulated exactly like the reference (the `tau < 5`
-/// exception uses absolute hop time).
+/// exception uses absolute hop time). Decision T1.15 B1: once the linear cooling model
+/// reaches 0 K (`e >= 498.74` min) the Arrhenius factor takes its limit 0 and the sum
+/// stops, so the result is finite and the loop bounded for any `dur` (also infinite).
 #[must_use]
 pub fn post_boil_utilization(sg: f64, t0: f64, dur: f64) -> f64 {
     let gravity = 1.65 * 0.000_125_f64.powf(sg - 1.0);
     let mut sum = 0.0;
     let mut tau = t0;
-    while tau < t0 + dur {
-        let temp_f = (tau - t0) * -1.344 + 210.64 + 459.67;
-        let mut f = 2.39e11 * (-9773.0 / (temp_f * (5.0 / 9.0))).exp();
-        if tau < 5.0 {
-            f = 1.0;
+    for _ in 0..POST_BOIL_MAX_STEPS {
+        if tau >= t0 + dur {
+            break;
         }
+        let kelvin = ((tau - t0) * -1.344 + 210.64 + 459.67) * (5.0 / 9.0);
+        let f = if tau < 5.0 {
+            1.0
+        } else if kelvin <= 0.0 {
+            break;
+        } else {
+            2.39e11 * (-9773.0 / kelvin).exp()
+        };
         sum += gravity * 0.04 * (-0.04 * tau).exp() / 4.15 * f * 0.1;
         tau += 0.1;
     }
@@ -334,7 +349,8 @@ pub fn rager_weight(ibu: f64, v: f64, sg: f64, t: f64, a: f64) -> f64 {
 
 /// Garetz inverse by bisection (spec §2.3): ounces for target `ibu` (`a` %, `t` min, `sg`,
 /// `v` gallons, boil volume = `v`). Range [0, 1e6], start 500, stop at `|IBU − target| ≤ 0.05`
-/// (capped at 200 steps, choice).
+/// (capped at 200 steps, choice). Unreachable target (utilisation table 0, `t ≤ 10`): 0, like
+/// the Tinseth and Rager inverses (T1.15 B10).
 #[must_use]
 #[allow(clippy::manual_midpoint)]
 pub fn garetz_weight(ibu: f64, a: f64, t: f64, sg: f64, v: f64) -> f64 {
@@ -342,7 +358,7 @@ pub fn garetz_weight(ibu: f64, a: f64, t: f64, sg: f64, v: f64) -> f64 {
     for _ in 0..200 {
         let cur = garetz_ibu(w, a, t, sg, v, v);
         if (cur - ibu).abs() <= 0.05 {
-            break;
+            return w;
         }
         if cur < ibu {
             lo = w;
@@ -351,7 +367,7 @@ pub fn garetz_weight(ibu: f64, a: f64, t: f64, sg: f64, v: f64) -> f64 {
         }
         w = (lo + hi) / 2.0;
     }
-    w
+    0.0
 }
 
 /// Whirlpool utilisation `U_T(SG, t) · Ftemp(T)` (spec §3.4); `t` steep minutes, `temp_c` °C.
@@ -667,7 +683,7 @@ pub fn scale_bitterness(
     let profile = late_extract_sgs(&rc, ferms, v_boil);
     let mut ibus: Vec<f64> = Vec::with_capacity(hops.len());
     for h in hops {
-        if h.usage == 1 {
+        if h.usage == 1 && h.form != 4 {
             ibus.push(0.0);
             continue;
         }
@@ -682,7 +698,7 @@ pub fn scale_bitterness(
     };
     let t2 = (target - e).max(0.0);
     for (k, h) in hops.iter().enumerate() {
-        if h.usage == 1 || ibus[k] == 0.0 {
+        if (h.usage == 1 && h.form != 4) || ibus[k] == 0.0 {
             continue;
         }
         let u = hop_total_utilization(h, &rc, &profile, equation);

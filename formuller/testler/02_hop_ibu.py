@@ -11,22 +11,30 @@ def rager_tab(n):
 def rager_ga(sg): return (sg-1.05)/0.2 if sg>1.05 else 0.0
 def rager_util(sg,t): return rager_tab(int(t+0.5))/(1+rager_ga(sg))
 GT=[0,0,2,5,8,11,14,16,18,19,20,21,22,23,23]
+GARETZ_MAX_ITER=10000
 def garetz_ibu(w,a,t,sg,v,bv):
     if t<=0 or w<=0 or a<0: return 0.0
     idx=int((int(t)-1)/5)  # C truncation
     idx=min(idx,14)
     r=v/bv; GF=((sg-1)*r+1-1.05)*5+1
     prev,cur=1.0,50.0
-    while abs(prev-cur)>0.05:
+    for _ in range(GARETZ_MAX_ITER):  # T1.15 B9: üst sınır spesifikasyonda (§2.3)
+        if abs(prev-cur)<=0.05: break
         prev=cur
         cur=GT[idx]*a*w*0.749/(v*GF*(r*cur/260+1)*1.02)
     return cur
 def garetz_util(sg,t): return garetz_ibu(1,1,t,sg,1,1)/74.9
+POSTBOIL_MAX_STEPS=20000
 def postboil(sg,t0,dur):
+    # T1.15 B1: sıcaklık 0 K'ye ulaşınca (e >= 498.74 dk) f -> 0 limiti uygulanır, döngü biter;
+    # adım sayısı da POSTBOIL_MAX_STEPS ile sınırlı. 498 dk altında eski sonuçla birebir aynı.
     s=0.0; t=t0
-    while t<t0+dur:
-        f=2.39e11*math.exp(-9773/(((t-t0)*-1.344+210.64+459.67)*(5/9)))
+    for _ in range(POSTBOIL_MAX_STEPS):
+        if not t<t0+dur: break
+        kelvin=((t-t0)*-1.344+210.64+459.67)*(5/9)
         if t<5.0: f=1.0
+        elif kelvin<=0.0: break
+        else: f=2.39e11*math.exp(-9773/kelvin)
         s+=1.65*0.000125**(sg-1)*0.04*math.exp(-0.04*t)/4.15*f*0.1
         t+=0.1
     return s
@@ -98,6 +106,8 @@ def garetz_weight(ibu,a,t,sg,v):
         if cur<ibu: lo=w
         else: hi=w
         w=(lo+hi)/2
+    else:
+        return 0.0  # T1.15 B10: 200 adımda hedefe girilmedi (ulaşılamaz hedef) -> 0, Tinseth/Rager terslerindeki gibi
     return w
 # §3.4 whirlpool hop
 def whirlpool_util(sg,t,temp_c): return tin_util(sg,t)*tempf(temp_c)
@@ -193,7 +203,7 @@ def scale_bitterness(cur_ibu,target,hops,recipe,ferms,eq,opts,v_boil=0.0):
     prof=late_extract_sgs(rc,ferms,v_boil)
     ibus=[]
     for h in hops:
-        if h["use"]==1:
+        if h["use"]==1 and h["form"]!=4:  # T1.15 B2: form 4 dry hop dahil (§6.1 adım 3)
             ibus.append(0.0); continue
         i=new_hop_ibu(h,rc,prof,eq,opts)
         ibus.append(0.0 if i<1e-9 else i)
@@ -201,7 +211,7 @@ def scale_bitterness(cur_ibu,target,hops,recipe,ferms,eq,opts,v_boil=0.0):
     r2=cur_ibu-e if e<cur_ibu else cur_ibu
     t2=max(target-e,0.0)
     for k,h in enumerate(hops):
-        if h["use"]==1 or ibus[k]==0: continue
+        if (h["use"]==1 and h["form"]!=4) or ibus[k]==0: continue
         u=hop_total_util(h,rc,prof,eq)
         if h["alpha"]*u<=0: continue
         adj=hop_adjust(h["form"],h["use"],rc["hop_util"],rc["type"]==0,opts)

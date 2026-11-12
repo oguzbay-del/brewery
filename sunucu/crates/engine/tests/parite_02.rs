@@ -290,6 +290,9 @@ fn parite_02() {
                 c.check(&serde_json::json!({"ibu": r.ibu, "aau": r.aau, "contribs": r.contribs}));
             }
             "aau" => c.check_f(hops::hop_aau(c.f("w"), c.f("a"), c.i("use"), c.f("t"))),
+            "total_hops_phase" => {
+                c.check_f(hops::total_hops_phase(&hops(c.v("hops")), c.i("phase")));
+            }
             "hop_rate" => c.check_f(hops::hop_rate(
                 &hops(c.v("hops")),
                 c.f("volume_floz"),
@@ -311,4 +314,54 @@ fn parite_02() {
         }
         true
     });
+}
+
+/// T1.15 B1: the whirlpool carry is finite and quick for any duration.
+#[test]
+fn post_boil_is_finite_for_long_durations() {
+    for dur in [498.0, 499.0, 600.0, 1e7, 1e300, f64::INFINITY] {
+        let u = hops::post_boil_utilization(1.050, 60.0, dur);
+        assert!(u.is_finite() && (0.0..1.0).contains(&u), "dur {dur}: {u}");
+    }
+    let capped = hops::post_boil_utilization(1.050, 60.0, 499.0);
+    assert!((hops::post_boil_utilization(1.050, 60.0, 1e7) - capped).abs() < 1e-15);
+}
+
+/// T1.15 B2: scaling with an isomerised-extract dry hop lands on the target (60 IBU).
+#[test]
+fn scale_bitterness_with_form4_dry_hop_hits_target() {
+    let h = |amount: f64, alpha: f64, form: i64, usage: i64, time: f64| Hop {
+        amount,
+        alpha,
+        form,
+        usage,
+        time,
+        whirlpool_temp_f: 176.0,
+    };
+    let hs = vec![h(1.0, 10.0, 0, 0, 60.0), h(0.05, 50.0, 4, 1, 0.0)];
+    let rc = Recipe {
+        volume: 640.0,
+        trub_loss: 0.0,
+        boil_time: 60.0,
+        boil_vol: 768.0,
+        altitude: 0.0,
+        recipe_type: 2,
+        hop_util: 100.0,
+        whirlpool_carry: false,
+        whirlpool_time: 0.0,
+    };
+    let o = HopOptions::default();
+    let cur = hops::recipe_ibu(&hs, &rc, &[], 0, &o, 0.0);
+    let r = hops::scale_bitterness(cur, 60.0, &hs, &rc, &[], 0, &o, 0.0);
+    assert!(matches!(r.status, ScaleStatus::Ok));
+    let scaled: Vec<Hop> = hs
+        .iter()
+        .zip(&r.amounts)
+        .map(|(x, &amount)| Hop {
+            amount,
+            ..x.clone()
+        })
+        .collect();
+    let got = hops::recipe_ibu(&scaled, &rc, &[], 0, &o, 0.0);
+    assert!((got - 60.0).abs() < 1e-9, "got {got}");
 }

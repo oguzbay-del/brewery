@@ -33,6 +33,10 @@ def uret():
     for t in (0.5, 1, 5, 6, 10, 11, 15, 20, 30, 45, 60, 70, 75, 90, 120):
         v.ekle("garetz_ibu", {"w": 1.0, "a": 5.0, "t": t, "sg": 1.050, "v": 5.0, "bv": 5.0},
                ref.garetz_ibu(1.0, 5.0, t, 1.050, 5.0, 5.0))
+    # T1.15 B9 / B18: büyük miktar, yavaş yakınsama, 10 000 adım sınırı
+    for w in (1e3, 1e5, 1e6):
+        v.ekle("garetz_ibu", {"w": w, "a": 20.0, "t": 60, "sg": 1.050, "v": 5.0, "bv": 5.0},
+               ref.garetz_ibu(w, 20.0, 60, 1.050, 5.0, 5.0), "T1.15 B9: yavaş yakınsama, adım sınırı")
     for sg in (1.030, 1.040, 1.050, 1.070):
         v.ekle("garetz_ibu", {"w": 2.0, "a": 12.0, "t": 60, "sg": sg, "v": 5.0, "bv": 6.5},
                ref.garetz_ibu(2.0, 12.0, 60, sg, 5.0, 6.5), "v != bv: konsantrasyon faktörü")
@@ -54,6 +58,13 @@ def uret():
             for dur in (0, 5, 20, 30):
                 v.ekle("post_boil_utilization", {"sg": sg, "t0": t0, "dur": dur},
                        ref.postboil(sg, t0, dur))
+
+    # §3.5 T1.15 B1: uzun whirlpool (0 K sınırı 498.74 dk, adım üst sınırı, 1e7 dk)
+    for sg in (1.050,):
+        for t0 in (0, 60):
+            for dur in (60, 120, 157, 300, 498, 499, 500, 600, 2000, 10000, 1e7):
+                v.ekle("post_boil_utilization", {"sg": sg, "t0": t0, "dur": dur},
+                       ref.postboil(sg, t0, dur), "T1.15 B1: uzun süre, sonlu ve sınırlı")
 
     # §3.2 rakım -> kaynama noktası
     for alt in (-500, 0, 1000, 3000, 5000, 8000):
@@ -115,6 +126,13 @@ def uret():
                                 (60.0, 14.0, 90, 1.070, 5.0), (15.0, 4.5, 20, 1.050, 5.0)):
         v.ekle("garetz_weight", {"ibu": ibu, "a": a, "t": t, "sg": sg, "v": vg},
                ref.garetz_weight(ibu, a, t, sg, vg))
+
+    # T1.15 B10: ulaşılamaz hedef (tablo değeri 0, t <= 10 dk) -> 0
+    for (ibu, a, t, sg, vg) in ((30.0, 5.0, 5, 1.050, 5.0), (30.0, 5.0, 10, 1.050, 5.0),
+                                (30.0, 5.0, 0.5, 1.050, 5.0), (30.0, 0.0, 60, 1.050, 5.0),
+                                (1e9, 5.0, 60, 1.050, 5.0)):
+        v.ekle("garetz_weight", {"ibu": ibu, "a": a, "t": t, "sg": sg, "v": vg},
+               ref.garetz_weight(ibu, a, t, sg, vg), "T1.15 B10: ulaşılamaz hedef -> 0")
 
     # §3.4 whirlpool
     for tc in (60.0, 80.0, 90.0, 100.0):
@@ -256,6 +274,28 @@ def uret():
             v.ekle("scale_bitterness", {"current_ibu": cur, "target": tg, "hops": hs, "recipe": rc,
                                         "fermentables": fs, "equation": eq, "options": opts, "v_boil": 0.0},
                    ref.scale_bitterness(cur, tg, hs, rc, fs, eq, opts, 0.0), nm)
+
+    # T1.15 B2: form 4 dry hop dahil ölçekleme (§6.1 adım 3); hedef tutmalı
+    hops_f4 = [hop(1.0, 10.0, 0, 0, 60), hop(0.05, 50.0, 4, 1, 0)]
+    for eq in (0, 1, 2):
+        for (nm, rc, fs, hs, tgt) in (
+            ("form 4 dry hop: 60 hedefi", rec(), ferms_a, hops_f4, 60.0),
+            ("form 4 dry hop: hedef büyük", rec(trub_loss=16.0), ferm_hopped, hops_r + [hops_f4[1]], 90.0),
+            ("form 4 dry hop + dry hop karışık", rec(), ferms_a, hops_f4 + [hop(use=1)], 40.0),
+        ):
+            cur = ref.recipe_ibu(hs, rc, fs, eq, opts, 0.0)
+            v.ekle("scale_bitterness", {"current_ibu": cur, "target": tgt, "hops": hs, "recipe": rc,
+                                        "fermentables": fs, "equation": eq, "options": opts, "v_boil": 0.0},
+                   ref.scale_bitterness(cur, tgt, hs, rc, fs, eq, opts, 0.0), nm)
+
+    # T1.15 B18: use=3 geç ekstrakt (late_extract > 0 olsa da §5.1 ikinci toplamda sayılır)
+    ferm_late3 = ferms_a + [ferm("late whirl dme", 3, 5, 16.0, 95.0, 20, 40.0)]
+    v.ekle("late_extract_sgs", {"recipe": r_, "fermentables": ferm_late3, "v_boil": 0.0},
+           ref.late_extract_sgs(r_, ferm_late3, 0.0), "T1.15 B18: kullanım yeri 3, geç ekstrakt")
+
+    # T1.15 B18: total_hops_phase doğrudan
+    for phase in (0, 1, 2, 3, 4):
+        v.ekle("total_hops_phase", {"hops": hops_r, "phase": phase}, ref.tot_hops_phase(hops_r, phase))
 
     # §6.2 HopIBUAdjust
     for (wo, io, inew) in ((1.0, 20.0, 30.0), (2.5, 12.5, 5.0), (1.0, 0.0, 10.0), (1.0, -3.0, 10.0), (1.0, 20.0, 0.0)):
