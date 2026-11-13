@@ -13,3 +13,4 @@ pub mod recipe;
 pub mod service;
 pub mod status;
 pub mod tool;
+pub mod yeast;
