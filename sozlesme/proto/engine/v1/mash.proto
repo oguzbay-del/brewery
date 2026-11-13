@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+// Mash and volume calculations (ADR-0005 item 2). Metric units; the engine's mash module is
+// metric, so no unit conversion is needed.
+service MashService {
+  // Equipment volume chain from boil-off to bottling (spec 05 §5.11).
+  rpc VolumeChain(VolumeChainRequest) returns (VolumeChainResponse);
+  // Strike water temperature for the first infusion (spec 05 §2.1).
+  rpc StrikeTemp(StrikeTempRequest) returns (StrikeTempResponse);
+  // Batch sparge plan (spec 05 §4.2).
+  rpc SpargePlan(SpargePlanRequest) returns (SpargePlanResponse);
+}
+
+message VolumeChainRequest {
+  // Batch volume into the fermenter, L.
+  double batch_l = 1;
+  // Fermenter top-up water, L.
+  double topup_ferm_l = 2;
+  double trub_l = 3;
+  // Cooling shrinkage, percent (capped at 99).
+  double cool_pct = 4;
+  // Boil-off: L per hour when `boil_off_is_rate`, else total L.
+  double boil_off_l = 5;
+  bool boil_off_is_rate = 6;
+  double boil_time_min = 7;
+  double fermenter_loss_l = 8;
+}
+
+message VolumeChainResponse {
+  double boil_off_l = 1;
+  double preboil_l = 2;
+  double postboil_l = 3;
+  double cool_loss_l = 4;
+  // Cold wort in the kettle (post-boil minus cooling shrinkage), L.
+  double cold_wort_l = 5;
+  double pretrub_l = 6;
+  // Evaporation rate, percent per hour.
+  double evap_pct_per_h = 7;
+  double bottle_l = 8;
+}
+
+// Mash tun thermal data; unset means the tun is ignored.
+message MashTun {
+  double mass_kg = 1;
+  // Specific heat, cal/(g x C).
+  double specific_heat_cal = 2;
+  double volume_l = 3;
+}
+
+message StrikeTempRequest {
+  double water_l = 1;
+  // Target step temperature, C.
+  double step_c = 2;
+  double grain_kg = 3;
+  double grain_c = 4;
+  MashTun tun = 5;
+  // Tun pre-heat temperature, C (default: the grain temperature).
+  optional double tun_c = 6;
+}
+
+message StrikeTempResponse {
+  double strike_c = 1;
+}
+
+message SpargePlanRequest {
+  double sparge_l = 1;
+  // Total grain absorption, L.
+  double absorb_l = 2;
+  double grain_kg = 3;
+  double tun_l = 4;
+  // Batch fill, percent of the tun.
+  double fill_pct = 5;
+  double mash_water_l = 6;
+  // Equal-size batches.
+  bool even = 7;
+  // Drain the mash tun first.
+  bool drain_first = 8;
+}
+
+enum SpargeAction {
+  SPARGE_ACTION_UNSPECIFIED = 0;
+  // Drain the mash tun.
+  SPARGE_ACTION_DRAIN = 1;
+  // Add the water volume.
+  SPARGE_ACTION_ADD = 2;
+}
+
+message SpargeStep {
+  uint32 index = 1;
+  double volume_l = 2;
+  SpargeAction action = 3;
+}
+
+message SpargePlanResponse {
+  repeated SpargeStep steps = 1;
+}

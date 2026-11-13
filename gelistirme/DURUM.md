@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 1 Hesap motoru (Aşama 0 kapandı: ADR-0002)
-**Sıradaki iş:** T1.11 `MashService` (hacim zinciri dahil; ADR-0005), sonra Water, Yeast, Fermentation, Brewery, T1.13 kapı.
+**Sıradaki iş:** T1.11 `MashService` 2. parça (infüzyon, dekoksiyon, toplam su), sonra Water, Yeast, Fermentation, Brewery, T1.13 kapı.
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -27,7 +27,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Son biten işler (Aşama 1)
 
-T1.0 ADR-0003 · T1.1–T1.10 portlar · T1.14 referanssız hesaplar · T1.12 Fable incelemesi (5 rapor) · T1.15 bulgu düzeltmeleri · T1.16 ortak model, hata tipi, adlar (ADR-0004) · T1.11 ToolService, RecipeService (metrik proto, 1e-9 vektör eşitliği). 9970 parite vakası, hepsi eşit.
+T1.0 ADR-0003 · T1.1–T1.10 portlar · T1.14 referanssız hesaplar · T1.12 Fable incelemesi (5 rapor) · T1.15 bulgu düzeltmeleri · T1.16 ortak model, hata tipi, adlar (ADR-0004) · T1.11 ToolService, RecipeService, MashService 1. parça (metrik proto, 1e-9 vektör eşitliği). 9970 parite vakası, hepsi eşit.
 
 ## Aşama 0 (kapandı)
 

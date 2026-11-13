@@ -7,6 +7,7 @@ pub mod proto {
 }
 
 pub mod convert;
+pub mod mash;
 pub mod recipe;
 pub mod service;
 pub mod status;
