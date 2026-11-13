@@ -22,7 +22,7 @@ pub struct RecipeHandler;
 
 /// Maps a proto enum value to the engine code (`N - 1`); UNSPECIFIED (0), negative or unknown
 /// values are `INVALID_ARGUMENT` naming `field`.
-fn engine_code<T>(
+pub(crate) fn engine_code<T>(
     field: &str,
     raw: i32,
     from_code: impl FnOnce(i64) -> engine::Result<T>,

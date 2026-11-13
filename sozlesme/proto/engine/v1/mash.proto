@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package demleme.engine.v1;
 
+import "engine/v1/recipe.proto";
+
 // Mash and volume calculations (ADR-0005 item 2). Metric units; the engine's mash module is
 // metric, so no unit conversion is needed.
 service MashService {
@@ -11,6 +13,17 @@ service MashService {
   rpc StrikeTemp(StrikeTempRequest) returns (StrikeTempResponse);
   // Batch sparge plan (spec 05 §4.2).
   rpc SpargePlan(SpargePlanRequest) returns (SpargePlanResponse);
+  // Whole mash schedule: per-step water, temperatures and decoction volumes (spec 05 §2.5,
+  // BIAB §3.2). The mash screen's single call.
+  rpc MashSchedule(MashScheduleRequest) returns (MashScheduleResponse);
+  // Infusion water temperature for one step (spec 05 §2.2).
+  rpc InfusionTemp(InfusionTempRequest) returns (InfusionTempResponse);
+  // Infusion water amount at a given temperature for one step (spec 05 §2.3).
+  rpc InfusionAmount(InfusionAmountRequest) returns (InfusionAmountResponse);
+  // Mash volume to pull for a decoction step (spec 05 §2.4).
+  rpc DecoctionVolume(DecoctionVolumeRequest) returns (DecoctionVolumeResponse);
+  // Total brewing water (spec 05 §5.8).
+  rpc TotalWater(TotalWaterRequest) returns (TotalWaterResponse);
 }
 
 message VolumeChainRequest {
@@ -95,4 +108,112 @@ message SpargeStep {
 
 message SpargePlanResponse {
   repeated SpargeStep steps = 1;
+}
+
+
+message MashScheduleRequest {
+  // Steps in order; `MashStep.temp_c` is the target step temperature.
+  repeated MashStep steps = 1;
+  double grain_kg = 2;
+  double grain_c = 3;
+  MashTun tun = 4;
+  // Tun pre-heat temperature, C (default: the grain temperature).
+  optional double tun_c = 5;
+  // Tun deadspace, L; added to the first step (ignored for BIAB).
+  double deadspace_l = 6;
+  // Decoction boiling temperature, C (default 100).
+  optional double boil_c = 7;
+  // Brew in a bag: steps are filled backwards from `biab_volume_l` (spec 05 §3.2).
+  bool biab = 8;
+  double biab_volume_l = 9;
+}
+
+message MashStepResult {
+  // Water added in this step, L (BIAB: computed for the first step).
+  double infusion_l = 1;
+  double tun_addition_l = 2;
+  // Infusion plus tun addition, L.
+  double total_infusion_l = 3;
+  // Water already in the mash at the start of the step, L.
+  double start_volume_l = 4;
+  // Mash temperature at the start of the step, C; 0 for the first step.
+  double start_c = 5;
+  // Infusion water temperature, C; unset when not calculated (temperature steps, no water);
+  // 0 for decoction steps after the first.
+  optional double infusion_c = 6;
+  // Mash to pull and boil, L.
+  double decoction_l = 7;
+  // Infusion water above 100 C: add more water (spec 05 §2.2).
+  bool above_boiling = 8;
+  // Decoction with no water in the mash (spec 05 §2.4).
+  bool no_water = 9;
+}
+
+message MashScheduleResponse {
+  repeated MashStepResult steps = 1;
+  // Total mash water, decoction steps excluded (spec 05 §1.5), L.
+  double mash_water_l = 2;
+}
+
+message InfusionTempRequest {
+  // Water to add, L (must be > 0).
+  double added_l = 1;
+  double target_c = 2;
+  // Water already in the mash, L.
+  double mash_water_l = 3;
+  double mash_c = 4;
+  double grain_kg = 5;
+  MashTun tun = 6;
+}
+
+message InfusionTempResponse {
+  double infusion_c = 1;
+  // Above 100 C: add more water (spec 05 §2.2).
+  bool above_boiling = 2;
+}
+
+message InfusionAmountRequest {
+  // Temperature of the water to add, C.
+  double infusion_c = 1;
+  double target_c = 2;
+  double mash_water_l = 3;
+  double mash_c = 4;
+  double grain_kg = 5;
+  MashTun tun = 6;
+}
+
+message InfusionAmountResponse {
+  // 0 unless the target lies strictly between the mash and infusion temperatures.
+  double added_l = 1;
+}
+
+message DecoctionVolumeRequest {
+  double target_c = 1;
+  double mash_water_l = 2;
+  double mash_c = 3;
+  double grain_kg = 4;
+  MashTun tun = 5;
+  // Boiling temperature, C (default 100).
+  optional double boil_c = 6;
+}
+
+message DecoctionVolumeResponse {
+  // Mash (grain and water) to pull, L; at most the whole mash.
+  double decoction_l = 1;
+}
+
+message TotalWaterRequest {
+  RecipeKind kind = 1;
+  // Recipe has boil ingredients (extract-type recipes only).
+  bool has_boil_ingredients = 2;
+  double mash_water_l = 3;
+  double sparge_l = 4;
+  double topup_kettle_l = 5;
+  double topup_fermenter_l = 6;
+  double batch_l = 7;
+  double preboil_l = 8;
+}
+
+message TotalWaterResponse {
+  double total_water_l = 1;
 }
