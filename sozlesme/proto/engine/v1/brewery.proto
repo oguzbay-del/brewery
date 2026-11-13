@@ -1,0 +1,665 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+// Business-mode calculations (ADR-0005 item 2): cost, blending, yeast reuse, professional
+// efficiency, malt analysis, label energy, tax and spunding (specs 08 and 09).
+//
+// Units: metric on the wire. Money, stock quantities, tax rates and every value the tax engine
+// reads travel as decimal text (`"12.34"`, plain notation, `.` separator; never `double`,
+// ADR-0005 item 6) and map to `rust_decimal::Decimal`; an unparsable text is
+// `INVALID_ARGUMENT` naming the field. Decimal results are returned exactly as the engine prints
+// them (scale kept, no exponent, no negative zero; spec 09 §2.2 T1.12 D5). Physical quantities
+// (L, kg, kWh, °P, SG) stay `double` where the engine uses `f64`.
+//
+// Enums: `*_UNSPECIFIED = 0` is rejected with `INVALID_ARGUMENT`; other values are the engine
+// enum's declaration index + 1. Tax rates, bands, tiers and rounding rules are data-table rows
+// passed in the request; no jurisdiction is built into the contract or the service.
+service BreweryService {
+  // Batch cost screen (spec 08 §1.2–1.4): FIFO draw per ingredient, optional water and energy,
+  // packaging, total and cost per packaged litre.
+  // Engine: `brewery::fifo_consume`, `kwh_from_heat`, `gas_m3_from_heat`,
+  // `energy_cost_electric` (also used as `m³ · price` for gas), `batch_cost`.
+  rpc BatchCost(BatchCostRequest) returns (BatchCostResponse);
+  // Lot unit price including its shipping share, at stock acceptance (spec 08 §1.1).
+  // Engine: `brewery::landed_price`.
+  rpc LandedPrice(LandedPriceRequest) returns (LandedPriceResponse);
+  // Blend of tanks or batches (spec 08 §2.1). Engine: `brewery::blend`.
+  rpc Blend(BlendRequest) returns (BlendResponse);
+  // Volume of a second component that brings the blend to a target value (spec 08 §2.2).
+  // Target outside the two values: `FAILED_PRECONDITION` (`Error::Unreachable`).
+  // Engine: `brewery::blend_volume_for_target`.
+  rpc BlendToTarget(BlendToTargetRequest) returns (BlendToTargetResponse);
+  // Harvested-yeast reuse screen (spec 08 §3): cells needed, Neubauer count, stain viability,
+  // slurry volume and reuse warnings. Engine: `brewery::cells_needed_billion`, `hemocytometer`,
+  // `viability_stain`, `slurry_volume_ml`, `yeast_reuse_warnings`.
+  rpc YeastReuse(YeastReuseRequest) returns (YeastReuseResponse);
+  // Professional brewhouse efficiency report (spec 08 §4): extract in the kettle, brewhouse
+  // yield, lab extract, first-wort maximum and conversion efficiency.
+  // Engine: `brewery::extract_kg`, `brewhouse_yield`, `lab_extract_as_is`, `first_wort_max_p`,
+  // `conversion_eff`.
+  rpc BrewhouseEfficiency(BrewhouseEfficiencyRequest) returns (BrewhouseEfficiencyResponse);
+  // Malt lab sheet to recipe potential and colour, at malt stock entry (spec 08 §5.1–5.3).
+  // Engine: `brewery::malt_from_analysis`, `ebc_from_lab`.
+  rpc MaltAnalysis(MaltAnalysisRequest) returns (MaltAnalysisResponse);
+  // "Does the grain bill convert itself" check (spec 08 §5.4). Engine: `brewery::diastatic_check`.
+  rpc DiastaticCheck(DiastaticCheckRequest) returns (DiastaticCheckResponse);
+  // EU 1169/2011 label energy and nutrition per 100 mL, and which declaration applies
+  // (spec 09 §1). Engine: `brewery_tax::label_energy`, `label_declaration`.
+  rpc LabelEnergy(LabelEnergyRequest) returns (LabelEnergyResponse);
+  // Regulatory tax report for one period and one country rate row (spec 09 §2): taxable volume
+  // per product line, tax per line, money rounding and the row's verification status.
+  // Engine: `brewery_tax::taxable_volume`, `tax_line`, `money`, `row_status`.
+  rpc TaxReport(TaxReportRequest) returns (TaxReportResponse);
+  // Spunding plan and warnings for a tank (spec 09 §3): closing gravity, valve setting, tank
+  // pressure block, early-closing risk. Engine: `brewery_tax::spund`, `spund_warnings`.
+  rpc Spunding(SpundingRequest) returns (SpundingResponse);
+}
+
+// ------------------------------------------------------------------------------- 1. Cost
+
+// One stock lot in acceptance order (engine `brewery::Lot`).
+message StockLot {
+  // Lot identifier, echoed in the consumption rows.
+  string lot = 1;
+  // Remaining quantity in the stock unit (kg, L, pieces), decimal text.
+  string remaining = 2;
+  // Unit price per stock unit (landed, see `LandedPrice`), decimal text.
+  string unit_price = 3;
+}
+
+// One ingredient drawn FIFO from its lots.
+message CostIngredient {
+  // Ingredient name, echoed in the response.
+  string name = 1;
+  // Lots in acceptance order (oldest first); empty lots are skipped.
+  repeated StockLot lots = 2;
+  // Quantity the batch uses, stock unit, decimal text.
+  string quantity = 3;
+}
+
+// Water line (spec 08 §1.3); off by default (unset).
+message CostWater {
+  // Total brewing water, L (spec 05 §5.8, plus cooling water if entered), decimal text.
+  string water_l = 1;
+  // Water price per m³, decimal text.
+  string price_per_m3 = 2;
+}
+
+// Energy line (spec 08 §1.3); off by default (unset). Heat demand comes from spec 07 §3.1
+// (strike water, step heating, heating to the boil).
+message CostEnergy {
+  // Total heat demand, kJ.
+  double heat_kj = 1;
+  // Heating efficiency, ratio (0-1].
+  double efficiency = 2;
+  oneof source {
+    CostElectric electric = 3;
+    CostGas gas = 4;
+  }
+}
+
+message CostElectric {
+  // Price per kWh, decimal text.
+  string price_per_kwh = 1;
+  // kWh added to the heat demand (boil element power x boil time, read from the meter or the
+  // equipment profile), decimal text; empty = 0. The engine has no boil-power function.
+  string additional_kwh = 2;
+}
+
+message CostGas {
+  // Price per m³ of gas, decimal text.
+  string price_per_m3 = 1;
+  // Lower heating value, kJ/m³ (default 34 500, `GAS_HU_KJ_M3`, to be verified).
+  optional double heating_value_kj_m3 = 2;
+}
+
+message BatchCostRequest {
+  repeated CostIngredient ingredients = 1;
+  CostWater water = 2;
+  CostEnergy energy = 3;
+  // Packaging units used (bottles, cans, kegs), decimal text.
+  string pack_units = 4;
+  // Cost per packaging unit, decimal text.
+  string pack_unit_cost = 5;
+  // Packaged volume, L, decimal text; must be > 0.
+  string packaged_l = 6;
+}
+
+// One FIFO consumption row (engine `brewery::FifoRow`).
+message FifoRow {
+  string lot = 1;
+  // Quantity taken, stock unit, decimal text (exact, never rounded).
+  string taken = 2;
+  string unit_price = 3;
+  // `taken x unit_price`, rounded to 2 decimals half up.
+  string cost = 4;
+}
+
+message IngredientCost {
+  string name = 1;
+  repeated FifoRow rows = 2;
+  // Sum of the rounded row costs.
+  string cost = 3;
+  // Quantity the stock could not cover, stock unit (0 when covered).
+  string missing = 4;
+}
+
+message BatchCostResponse {
+  repeated IngredientCost ingredients = 1;
+  // Batch cost lines, each rounded to 2 decimals half up (engine `brewery::BatchCost`).
+  string ingredients_cost = 2;
+  string water_cost = 3;
+  string energy_cost = 4;
+  string packaging_cost = 5;
+  // Sum of the four rounded lines.
+  string total_cost = 6;
+  // Cost per packaged litre, 3 decimals half up.
+  string cost_per_l = 7;
+  // Energy used: electric kWh (heat plus additional) or gas m³; unset when energy is off.
+  optional double energy_kwh = 8;
+  optional double gas_m3 = 9;
+}
+
+message LandedPriceRequest {
+  // Invoice unit price, decimal text.
+  string invoice_unit_price = 1;
+  // Quantity received, stock unit, decimal text; must be > 0.
+  string quantity = 2;
+  // Shipping cost allocated to this lot, decimal text.
+  string shipping_share = 3;
+}
+
+message LandedPriceResponse {
+  // `(price x quantity + share) / quantity`, unrounded decimal text.
+  string unit_price = 1;
+}
+
+// --------------------------------------------------------------------------- 2. Blending
+
+// One blend component (engine `brewery::BlendPart`).
+message BlendComponent {
+  // Source tank or batch, echoed by clients for traceability (spec 08 §2.3); not used in the
+  // calculation.
+  string source = 1;
+  double volume_l = 2;
+  double abv_pct = 3;
+  double ibu = 4;
+  double color_srm = 5;
+  // Carbonation, volumes of CO2.
+  double co2_vol = 6;
+  // Extract, degrees Plato.
+  double extract_p = 7;
+}
+
+message BlendRequest {
+  repeated BlendComponent components = 1;
+}
+
+// Blend result, unrounded: volume-weighted ABV, IBU, SRM, CO2; mass-weighted extract.
+message BlendResponse {
+  double volume_l = 1;
+  double abv_pct = 2;
+  double ibu = 3;
+  double color_srm = 4;
+  double co2_vol = 5;
+  double extract_p = 6;
+}
+
+message BlendToTargetRequest {
+  // Volume of the first component, L.
+  double first_volume_l = 1;
+  // Value (ABV %, IBU, SRM, ...) of the first and second component and the target, same unit.
+  double first_value = 2;
+  double second_value = 3;
+  double target_value = 4;
+}
+
+message BlendToTargetResponse {
+  // Volume of the second component to add, L.
+  double second_volume_l = 1;
+}
+
+// ------------------------------------------------------------------------ 3. Yeast reuse
+
+// Neubauer haemocytometer count (spec 08 §3.2).
+message HemocytometerCount {
+  // Cells counted over all counted squares.
+  double total_counted = 1;
+  // Number of large squares counted; must not be 0.
+  double squares_counted = 2;
+  // Dilution factor (10 for a 1:10 dilution).
+  double dilution = 3;
+}
+
+// Methylene-blue (or similar) stain count (spec 08 §3.2).
+message StainCount {
+  double unstained = 1;
+  double stained = 2;
+}
+
+// Reuse warning (engine `brewery::YeastWarning`); codes, the text is the client's.
+enum YeastReuseWarning {
+  YEAST_REUSE_WARNING_UNSPECIFIED = 0;
+  // Generation above the limit: new culture recommended.
+  YEAST_REUSE_WARNING_GENERATION_LIMIT = 1;
+  // More than 14 days since harvest: count recommended.
+  YEAST_REUSE_WARNING_HARVEST_OVER_14_DAYS = 2;
+  // Viability below 80 %: starter or fresh yeast.
+  YEAST_REUSE_WARNING_LOW_VIABILITY = 3;
+  // Different style or strain history: show the generation chain.
+  YEAST_REUSE_WARNING_HISTORY_INFO = 4;
+}
+
+message YeastReuseRequest {
+  // Pitch rate, million cells per mL per degree Plato.
+  double pitch_rate_m_ml_p = 1;
+  // Wort volume to pitch into, L.
+  double wort_volume_l = 2;
+  // Wort extract, degrees Plato.
+  double wort_extract_p = 3;
+  // Slurry density from a count; unset uses `measured_density_cells_ml`, then the default.
+  HemocytometerCount count = 4;
+  // Slurry density entered directly, cells/mL; ignored when `count` is set; 0 = not measured.
+  optional double measured_density_cells_ml = 5;
+  // Default effective slurry density, cells/mL (default 1e9, `SLURRY_DEFAULT_DENSITY`).
+  optional double default_density_cells_ml = 6;
+  // Viability from a stain count; when unset `viability_pct` is used.
+  StainCount stain = 7;
+  // Measured viability, percent (0-100); unset with no stain = not measured: the slurry volume
+  // then assumes 100 % and no viability warning is raised. Converted to the engine's fraction.
+  optional double viability_pct = 8;
+  // Generation of the harvested yeast.
+  double generation = 9;
+  // Days since harvest.
+  double harvest_age_days = 10;
+  // Generation limit (default 8, `YEAST_MAX_GENERATION`).
+  optional double max_generation = 11;
+  // The culture history differs from the recipe (style or strain).
+  bool history_differs = 12;
+}
+
+message YeastReuseResponse {
+  // Cells needed, billions.
+  double cells_needed_billion = 1;
+  // Slurry density used, cells/mL (count, entered or default).
+  double density_cells_ml = 2;
+  // Set when computed from a count (`hemocytometer`).
+  optional double counted_density_cells_ml = 3;
+  // Viability used, percent; unset when not measured.
+  optional double viability_pct = 4;
+  // Slurry volume to pitch, mL.
+  double slurry_volume_ml = 5;
+  // Warnings in table order (spec 08 §3.4).
+  repeated YeastReuseWarning warnings = 6;
+}
+
+// ------------------------------------------------------------ 4. Professional efficiency
+
+// Malt lab sheet values (spec 08 §5.1).
+message MaltLabValues {
+  // Fine grind extract, dry basis, percent (FGDB).
+  double fine_grind_dry_pct = 1;
+  // Moisture, percent.
+  double moisture_pct = 2;
+  // Fine/coarse grind difference, percent points.
+  double fine_coarse_diff_pct = 3;
+}
+
+message BrewhouseEfficiencyRequest {
+  // Kettle-full wort volume, L.
+  double wort_volume_l = 1;
+  // Wort extract, degrees Plato.
+  double wort_extract_p = 2;
+  // True when the volume was measured hot (about 100 C): the 0.96 contraction is applied.
+  bool measured_hot = 3;
+  // Grain bill, kg; must not be 0.
+  double malt_kg = 4;
+  // Weighted lab values of the grain bill; unset = no lab comparison or first-wort check.
+  MaltLabValues lab = 5;
+  // Mash water, L; needed with `lab` for the first-wort maximum.
+  optional double mash_water_l = 6;
+  // Measured first wort after about 10 min recirculation, degrees Plato; with `lab` and
+  // `mash_water_l` gives the conversion efficiency.
+  optional double first_wort_p = 7;
+}
+
+message BrewhouseEfficiencyResponse {
+  // Extract in the kettle, kg.
+  double extract_kg = 1;
+  // Brewhouse yield (Sudhausausbeute), percent.
+  double brewhouse_yield_pct = 2;
+  // Lab extract as-is, percent; set with `lab`.
+  optional double lab_extract_as_is_pct = 3;
+  // Maximum first-wort extract at full conversion, degrees Plato.
+  optional double first_wort_max_p = 4;
+  // Conversion efficiency, ratio (measured / maximum first wort).
+  optional double conversion_efficiency = 5;
+}
+
+// ------------------------------------------------------------------- 5. Malt analysis
+
+message MaltAnalysisRequest {
+  MaltLabValues lab = 1;
+  // Lab colour, EBC; unset = no colour conversion.
+  optional double color_ebc = 2;
+}
+
+message MaltAnalysisResponse {
+  // Fine grind, as-is extract, percent.
+  double fine_grind_as_is_pct = 1;
+  // Coarse grind, dry basis, percent.
+  double coarse_grind_dry_pct = 2;
+  // Coarse grind, as-is, percent: the recipe yield.
+  double yield_pct = 3;
+  // Potential SG with sucrose 46.21 PPG.
+  double potential_sg = 4;
+  // Potential SG with the BeerSmith constant 0.046.
+  double potential_sg_beersmith = 5;
+  // Points per pound per gallon (shown for import/export only).
+  double ppg = 6;
+  // Colour from `color_ebc`: SRM and degrees Lovibond.
+  optional double color_srm = 7;
+  optional double color_lovibond = 8;
+}
+
+message DiastaticGrain {
+  double amount_kg = 1;
+  // Diastatic power, degrees Lintner (0 when the grain has none).
+  double diastatic_power_lintner = 2;
+}
+
+message DiastaticCheckRequest {
+  repeated DiastaticGrain grains = 1;
+  // Threshold, degrees Lintner (default 35, `DIASTATIC_MIN_L`, to be verified).
+  optional double threshold_lintner = 2;
+}
+
+message DiastaticCheckResponse {
+  // Weight-averaged diastatic power, degrees Lintner (0 for an empty bill).
+  double average_lintner = 1;
+  // The grain bill may not convert itself.
+  bool low_diastatic_power = 2;
+}
+
+// ---------------------------------------------------------------------- 6. Label energy
+
+// Which nutrition declaration applies (engine `brewery_tax::LabelDeclaration`, spec 09 §1.3,
+// to be verified).
+enum LabelDeclaration {
+  LABEL_DECLARATION_UNSPECIFIED = 0;
+  // ABV above 1.2 %: nutrition declaration not mandatory, energy may be declared.
+  LABEL_DECLARATION_ENERGY_OPTIONAL = 1;
+  // ABV at most 1.2 %: the country label template decides.
+  LABEL_DECLARATION_COUNTRY_TEMPLATE = 2;
+}
+
+message LabelEnergyRequest {
+  double og_sg = 1;
+  double fg_sg = 2;
+  // Protein, g/100 mL (default 0.40, to be verified).
+  optional double protein_g_100ml = 3;
+  // Measured (declared) ABV, % vol; replaces the estimate from OG and FG.
+  optional double measured_abv_pct = 4;
+}
+
+// Per 100 mL; rounding as on the label (spec 09 §1.3).
+message LabelEnergyResponse {
+  // ABV used, % vol, 2 decimals; `abv_measured` tells its source.
+  double abv_pct = 1;
+  bool abv_measured = 2;
+  // Alcohol, g, 2 decimals.
+  double alcohol_g = 3;
+  // Real extract, g, 2 decimals.
+  double real_extract_g = 4;
+  // Carbohydrate, g, 1 decimal.
+  double carbohydrate_g = 5;
+  // Protein, g, 1 decimal.
+  double protein_g = 6;
+  // Energy, whole kJ and kcal.
+  int64 energy_kj = 7;
+  int64 energy_kcal = 8;
+  // From the rounded `abv_pct` as decimal.
+  LabelDeclaration declaration = 9;
+}
+
+// ------------------------------------------------------------------------------- 7. Tax
+
+// Tax method (engine `brewery_tax::Method`, spec 09 §2.2).
+enum TaxMethod {
+  TAX_METHOD_UNSPECIFIED = 0;
+  // `hacim`: rate x hL.
+  TAX_METHOD_VOLUME = 1;
+  // `saf_alkol`: rate x litres of pure alcohol, optional ABV bands and per-LPA relief.
+  TAX_METHOD_PURE_ALCOHOL = 2;
+  // `hl_plato`: rate x hL x degrees Plato.
+  TAX_METHOD_HL_PLATO = 3;
+  // `plato_bandi`: per-hL rate from the Plato band.
+  TAX_METHOD_PLATO_BAND = 4;
+  // `kademeli_hacim`: tiered by cumulative yearly volume.
+  TAX_METHOD_TIERED_VOLUME = 5;
+}
+
+// Decimal rounding direction (engine `brewery_tax::RoundMode`, Python `decimal` modes).
+enum TaxRoundMode {
+  TAX_ROUND_MODE_UNSPECIFIED = 0;
+  TAX_ROUND_MODE_HALF_UP = 1;
+  TAX_ROUND_MODE_HALF_EVEN = 2;
+  TAX_ROUND_MODE_HALF_DOWN = 3;
+  TAX_ROUND_MODE_UP = 4;
+  // Toward zero (truncate).
+  TAX_ROUND_MODE_DOWN = 5;
+  TAX_ROUND_MODE_CEILING = 6;
+  TAX_ROUND_MODE_FLOOR = 7;
+}
+
+// Input rounding rule for ABV and Plato (engine `brewery_tax::InputRounding`). There is no
+// silent default: an undefined rule fails for methods that read ABV or Plato.
+message TaxInputRounding {
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    // The row does not say (`InputRounding::Undefined`).
+    KIND_UNDEFINED = 1;
+    // Explicitly no rounding.
+    KIND_NO_ROUNDING = 2;
+    // Round to `decimal_places` in `mode`.
+    KIND_PLACES = 3;
+  }
+  Kind kind = 1;
+  // At most 12 (`MAX_DP`); used with KIND_PLACES.
+  uint32 decimal_places = 2;
+  TaxRoundMode mode = 3;
+}
+
+// One band or tier (engine `brewery_tax::Band`).
+message TaxBand {
+  // Upper bound, decimal text (ABV %, degrees Plato or hL); unset = open-ended (last only).
+  optional string upper = 1;
+  // Rate for this band, decimal text.
+  string rate = 2;
+}
+
+// Moment the tax arises (engine `brewery_tax::TaxTrigger`, spec 09 §2.1).
+enum TaxTrigger {
+  TAX_TRIGGER_UNSPECIFIED = 0;
+  TAX_TRIGGER_PACKAGING = 1;
+  // Release from bond.
+  TAX_TRIGGER_RELEASE = 2;
+  TAX_TRIGGER_SALE = 3;
+}
+
+// Kind of a volume event (engine `brewery_tax::VolumeEventKind`).
+enum VolumeEventKind {
+  VOLUME_EVENT_KIND_UNSPECIFIED = 0;
+  VOLUME_EVENT_KIND_PACKAGING = 1;
+  VOLUME_EVENT_KIND_RELEASE = 2;
+  VOLUME_EVENT_KIND_SALE = 3;
+  VOLUME_EVENT_KIND_DESTROYED = 4;
+  VOLUME_EVENT_KIND_RETURNED = 5;
+  // Laboratory sample.
+  VOLUME_EVENT_KIND_LAB = 6;
+}
+
+// Where money rounding applies (spec 09 §2.2 "per line or on the total"; data table).
+enum TaxRoundingScope {
+  TAX_ROUNDING_SCOPE_UNSPECIFIED = 0;
+  // Each line is rounded; the total is the sum of the rounded lines.
+  TAX_ROUNDING_SCOPE_LINE = 1;
+  // Lines stay unrounded; only the total is rounded.
+  TAX_ROUNDING_SCOPE_TOTAL = 2;
+}
+
+// Verification status of a country row (engine `brewery_tax::RowStatus`).
+enum TaxRowStatus {
+  TAX_ROW_STATUS_UNSPECIFIED = 0;
+  TAX_ROW_STATUS_UNVERIFIED = 1;
+  TAX_ROW_STATUS_VERIFIED = 2;
+}
+
+// One country rate row from the data table. Rates are in `currency` per the method's unit
+// (finite decimals, per hL rather than per barrel; spec 09 §2.2 T1.12 D1).
+message TaxRateRow {
+  // Row identifier and ISO 4217 currency, echoed; not used in the calculation.
+  string row_id = 1;
+  string currency = 2;
+  TaxMethod method = 3;
+  // Flat rate, decimal text (VOLUME: per hL; PURE_ALCOHOL without bands: per LPA;
+  // HL_PLATO: per hL and degree Plato).
+  optional string rate = 4;
+  // ABV bands (PURE_ALCOHOL) or Plato bands (PLATO_BAND); empty = none.
+  repeated TaxBand bands = 5;
+  // Tiers by cumulative yearly hL (TIERED_VOLUME).
+  repeated TaxBand tiers = 6;
+  // Band upper bound belongs to the band; unset = method default (PURE_ALCOHOL exclusive,
+  // PLATO_BAND inclusive).
+  optional bool bands_inclusive = 7;
+  // Truncate Plato to an integer (HL_PLATO); unset = true.
+  optional bool plato_truncate = 8;
+  // Relief per LPA (PURE_ALCOHOL), decimal text; empty = 0.
+  string relief_per_lpa = 9;
+  TaxInputRounding input_rounding = 10;
+  TaxTrigger trigger = 11;
+  // Event kinds subtracted from the taxable volume (only DESTROYED, RETURNED, LAB).
+  repeated VolumeEventKind deduct = 12;
+  // Money rounding: decimal places (at most 12), mode and scope.
+  uint32 money_decimal_places = 13;
+  TaxRoundMode money_mode = 14;
+  TaxRoundingScope rounding_scope = 15;
+  // Official source and its date; both non-empty make the row VERIFIED.
+  optional string official_source = 16;
+  optional string source_date = 17;
+}
+
+// One volume event (engine `brewery_tax::VolumeEvent`).
+message VolumeEvent {
+  // ISO date `YYYY-MM-DD`.
+  string date = 1;
+  VolumeEventKind kind = 2;
+  // Litres, decimal text.
+  string volume_l = 3;
+}
+
+message TaxVolumeEvents {
+  repeated VolumeEvent events = 1;
+}
+
+// One report line: a product and package type (spec 09 §2.3).
+message TaxProductLine {
+  // Product and package (keg, bottle, can), echoed.
+  string product = 1;
+  string package = 2;
+  oneof volume {
+    // Events of the period; the service sums the taxable volume with the row's trigger and
+    // deductions (`taxable_volume`).
+    TaxVolumeEvents events = 3;
+    // Taxable volume given directly, L, decimal text.
+    string taxable_l = 4;
+  }
+  // ABV, % vol, decimal text (PURE_ALCOHOL).
+  optional string abv_pct = 5;
+  // The ABV is an estimate, not a lab value: echoed so the report can mark it.
+  bool abv_estimated = 6;
+  // Original extract (Stammwuerze), degrees Plato, decimal text (HL_PLATO, PLATO_BAND).
+  optional string original_extract_p = 7;
+  // hL already taxed this year before this line (TIERED_VOLUME), decimal text; empty = 0.
+  // The service does not carry it from one line to the next.
+  string ytd_hl = 8;
+}
+
+message TaxReportRequest {
+  TaxRateRow row = 1;
+  // Period, inclusive ISO dates.
+  string period_start = 2;
+  string period_end = 3;
+  repeated TaxProductLine lines = 4;
+}
+
+message TaxLineResult {
+  string product = 1;
+  string package = 2;
+  bool abv_estimated = 3;
+  // Volume breakdown, L, decimal text (engine `brewery_tax::TaxableVolume`); with a direct
+  // `taxable_l` only `taxable_l` is set and the others are "0".
+  string taxable_l = 4;
+  string trigger_l = 5;
+  string destroyed_l = 6;
+  string returned_l = 7;
+  string lab_l = 8;
+  // Tax of the line, unrounded, never negative.
+  string tax_unrounded = 9;
+  // Rounded with the row's money rule when the scope is LINE; equals `tax_unrounded` for TOTAL.
+  string tax = 10;
+}
+
+message TaxReportResponse {
+  repeated TaxLineResult lines = 1;
+  // Sum of the line `tax` values; rounded once more when the scope is TOTAL.
+  string total_tax = 2;
+  string currency = 3;
+  TaxRowStatus row_status = 4;
+}
+
+// --------------------------------------------------------------------------- 8. Spunding
+
+// Spunding warning (engine `brewery_tax::SpundWarning`).
+enum SpundingWarning {
+  SPUNDING_WARNING_UNSPECIFIED = 0;
+  // Set pressure above the tank working pressure: blocked.
+  SPUNDING_WARNING_TANK_PRESSURE_EXCEEDED = 1;
+  // Wide FG confidence interval: risk of closing 1-2 points early.
+  SPUNDING_WARNING_EARLY_CLOSING_RISK = 2;
+}
+
+message SpundingRequest {
+  // Target carbonation, volumes of CO2.
+  double target_co2_vol = 1;
+  // Beer temperature, C.
+  double temp_c = 2;
+  // Expected final gravity, SG; must be > 0.
+  double fg_expected_sg = 3;
+  // Tank working pressure, bar gauge; unset = no check. Converted to psi
+  // (`bar / 0.0689476`) for the engine, which compares in psi with a 1e-9 tolerance.
+  optional double tank_max_bar = 4;
+  // FG confidence interval from spec 07 §1, SG; both set or no early-closing check.
+  optional double fg_low_sg = 5;
+  optional double fg_high_sg = 6;
+  // Interval width limit, gravity units (default 200, `SPUND_WIDE_U`, to be verified).
+  optional int64 wide_limit_units = 7;
+}
+
+message SpundingResponse {
+  // Residual CO2 at the temperature, volumes, 2 decimals.
+  double residual_co2_vol = 1;
+  // CO2 still to produce, g/L, 2 decimals.
+  double needed_co2_g_l = 2;
+  // Gravity at which to close the tank, SG, 4 decimals.
+  double closing_sg = 3;
+  // Gravity points before final gravity, 1 decimal.
+  double points_before_fg = 4;
+  // Valve setting, bar, 2 decimals; psi (1 decimal) is kept for US gauges.
+  double setting_bar = 5;
+  double setting_psi = 6;
+  repeated SpundingWarning warnings = 7;
+  // The plan is blocked (setting above the tank limit).
+  bool blocked = 8;
+}

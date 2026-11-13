@@ -1,0 +1,381 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+import "engine/v1/recipe.proto";
+
+// Water chemistry and mash pH (ADR-0005 item 2; spec `formuller/03-su-ph.md`). Metric units on
+// the wire. The engine's `water` module is metric too (ppm, L, kg, g, mL, L/kg), except the salt
+// matching concentrations, which are grams per US gallon (spec §7.1); the engine-service converts
+// litres to gallons there through `engine::units::GAL_L` and the proto stays metric.
+//
+// Model flags shared by the pH RPCs: `model` selects the mash pH model (engine `MashModel`) and
+// `beersmith_compatible` selects the BeerSmith formulas instead of the project's own model
+// (engine flag `ours = !beersmith_compatible`, spec §6.8). Display labels and warning texts are
+// the client's (ADR-0004 item 7).
+service WaterService {
+  // Water screen, one call per edit: base, mash, sparge, mash+sparge, boil and beer ion
+  // profiles; mash-water alkalinity, hardness, RA, SO4/Cl ratio and class, suggested colour
+  // range; optionally grist pH, estimated and acid-adjusted mash pH; warnings (spec §2-§5, §6.8).
+  // Engine: base_profile, water_ph, agent_volume, agents_ppm, total_water_ion, top_up_factor,
+  // boil_scale, boil_ion, beer_ion, alkalinity, hardness, residual_alkalinity,
+  // sulfate_chloride_ratio, sulfate_chloride_balance, color_range, grist_ph_typed,
+  // mash_ra_slope_checked, est_mash_ph, dissociation_fraction, misc_acid_ra, acid_malt_ra,
+  // warnings. The adjusted pH is est_mash_ph(grist pH, RA + 50 x sum of acid RA terms, slope),
+  // i.e. spec §5.5 composed from the engine terms (no engine function sums several acids).
+  rpc CalculateWater(CalculateWaterRequest) returns (CalculateWaterResponse);
+
+  // Acid needed to bring the mash from a starting pH to the target, plus sparge acidification
+  // (spec §6.3-§6.5; also the standalone mash pH tool, §6.7).
+  // Engine: liquid acid mash_acid_amount; acid malt acid_malt_amount (iterative, §6.4); sparge
+  // sparge_volume_l (recipe mode only) and sparge_acid_amount.
+  rpc AdjustAcid(AdjustAcidRequest) returns (AdjustAcidResponse);
+
+  // Best salt additions for a target profile with non-negative least squares (spec §7.1-§7.3).
+  // Engine: base_profile, boil_scale, match_scale, water_match, salt_grams, best_fit_profile.
+  // Volumes are converted from L to US gal for salt_grams; water_match's g/gal is not exposed.
+  rpc MatchProfile(MatchProfileRequest) returns (MatchProfileResponse);
+
+  // Water profile tool: base and dilution water mix, then the best salt additions (spec §7.4).
+  // Engine: profile_mix, water_match (scale 1), wp_grams (base volume L -> US gal),
+  // best_fit_profile.
+  rpc ProfileTool(ProfileToolRequest) returns (ProfileToolResponse);
+
+  // Derived figures of one ion profile, e.g. a water in the ingredient library (spec §4).
+  // Engine: alkalinity, hardness, residual_alkalinity, sulfate_chloride_ratio,
+  // sulfate_chloride_balance, color_range.
+  rpc DescribeProfile(DescribeProfileRequest) returns (DescribeProfileResponse);
+}
+
+// Mash pH model (engine `MashModel`; proto value = engine code + 1).
+enum PhModel {
+  PH_MODEL_UNSPECIFIED = 0;
+  // MPH 3, the default (code 0).
+  PH_MODEL_MPH3 = 1;
+  // Bru'n Water style (code 1); flagged "to be verified" (spec §5.2).
+  PH_MODEL_BW = 2;
+}
+
+// Acid (`F_R_ACID`, engine `Acid`; proto value = engine code + 1, spec §0.2, §6.1).
+// Mash amounts are defined for none, lactic, phosphoric and acid malt only
+// (`Acid::is_mash_defined`); the others are INVALID_ARGUMENT in AdjustAcid.
+enum AcidKind {
+  ACID_KIND_UNSPECIFIED = 0;
+  ACID_KIND_NONE = 1;
+  ACID_KIND_LACTIC = 2;
+  ACID_KIND_PHOSPHORIC = 3;
+  // Acid malt (acidulated malt); amounts in grams, strength is the malt's acid percent.
+  ACID_KIND_ACID_MALT = 4;
+  ACID_KIND_CITRIC = 5;
+  ACID_KIND_ACETIC = 6;
+  ACID_KIND_HYDROCHLORIC = 7;
+  ACID_KIND_SULFURIC = 8;
+  ACID_KIND_TARTARIC = 9;
+}
+
+// Water-treatment salt (engine `Salt`; proto value = position in `Salt::ALL` + 1, which is also
+// the water agent type `F_M_WA_TYPE`, spec §1.1, §3.2).
+enum WaterSalt {
+  WATER_SALT_UNSPECIFIED = 0;
+  // Gypsum, CaSO4 x 2H2O.
+  WATER_SALT_GYPSUM = 1;
+  // Table salt, NaCl.
+  WATER_SALT_TABLE_SALT = 2;
+  // Epsom salt, MgSO4 x 7H2O.
+  WATER_SALT_EPSOM = 3;
+  // Calcium chloride, anhydrous CaCl2.
+  WATER_SALT_CALCIUM_CHLORIDE = 4;
+  // Baking soda, NaHCO3.
+  WATER_SALT_BAKING_SODA = 5;
+  // Chalk, CaCO3.
+  WATER_SALT_CHALK = 6;
+  // Magnesium chloride, MgCl2 x 6H2O.
+  WATER_SALT_MAGNESIUM_CHLORIDE = 7;
+  // Pickling lime, Ca(OH)2.
+  WATER_SALT_PICKLING_LIME = 8;
+}
+
+// Sulphate/chloride balance class (engine `SulfateChlorideBalance`, spec §4.4; proto value =
+// variant order + 1).
+enum SulfateChlorideBalance {
+  SULFATE_CHLORIDE_BALANCE_UNSPECIFIED = 0;
+  // Ratio below 0 or above 18.
+  SULFATE_CHLORIDE_BALANCE_OUT_OF_RANGE = 1;
+  // Below 0.4.
+  SULFATE_CHLORIDE_BALANCE_EXTREMELY_MALTY = 2;
+  // 0.4 up to 0.6.
+  SULFATE_CHLORIDE_BALANCE_VERY_MALTY = 3;
+  // 0.6 up to 0.8.
+  SULFATE_CHLORIDE_BALANCE_MALTY = 4;
+  // 0.8 up to 1.5.
+  SULFATE_CHLORIDE_BALANCE_BALANCED = 5;
+  // 1.5 up to 2.01.
+  SULFATE_CHLORIDE_BALANCE_SLIGHTLY_BITTER = 6;
+  // 2.01 up to 6.01.
+  SULFATE_CHLORIDE_BALANCE_BITTER = 7;
+  // 6.01 up to 8.01.
+  SULFATE_CHLORIDE_BALANCE_VERY_BITTER = 8;
+  // 8.01 to 18.
+  SULFATE_CHLORIDE_BALANCE_EXTREMELY_BITTER = 9;
+}
+
+// Calculation warning (engine `water::Warning`, spec §6.8); texts are the client's.
+enum WaterWarning {
+  WATER_WARNING_UNSPECIFIED = 0;
+  // BW model selected: not validated against measured mash pH (about half the MPH acid).
+  WATER_WARNING_BW_MODEL_UNVERIFIED = 1;
+  // Chalk added: it dissolves poorly, its effect is overstated without an acidic mash.
+  WATER_WARNING_CHALK_SOLUBILITY = 2;
+}
+
+// Ion concentrations, ppm (mg/L). Engine arrays use the order Ca, Mg, Na, SO4, Cl, HCO3.
+message IonProfile {
+  double calcium_ppm = 1;
+  double magnesium_ppm = 2;
+  double sodium_ppm = 3;
+  double sulfate_ppm = 4;
+  double chloride_ppm = 5;
+  double bicarbonate_ppm = 6;
+}
+
+// A source water of the recipe (water ingredient, spec §3.1).
+message SourceWater {
+  // Amount, L; the base profile and water pH are amount-weighted.
+  double amount_l = 1;
+  IonProfile ions = 2;
+  double ph = 3;
+}
+
+// A salt amount, g.
+message SaltAmount {
+  WaterSalt salt = 1;
+  double amount_g = 2;
+}
+
+// A salt added to the recipe (misc of type water agent, spec §2, §3.2).
+message SaltAddition {
+  WaterSalt salt = 1;
+  double amount_g = 2;
+  // Mash, sparge, boil or primary; other uses add to no profile (spec §3.3). Sparge salts held
+  // for the boil (`F_R_HOLD_SPARGE_SALTS`, spec §7.2) are sent as MISC_USE_BOIL.
+  MiscUse usage = 3;
+}
+
+// Recipe volumes the water profiles depend on (spec §2 agent volumes, §3.3, §3.4), L.
+message WaterVolumes {
+  // Total mash water (`F_R_MASH_TOT_WATER`).
+  double mash_water_l = 1;
+  // Sparge water (`F_R_SPARGE_VOL`).
+  double sparge_l = 2;
+  // Wort available from the mash (`F_R_MASH_AVAIL`), for the kettle top-up factor.
+  double mash_available_l = 3;
+  // Water topped up in the kettle (`F_R_TOP_UP_KETTLE`).
+  double kettle_top_up_l = 4;
+  // Pre-boil volume (`F_R_BOIL_VOL`).
+  double boil_l = 5;
+  double post_boil_l = 6;
+  double cool_loss_l = 7;
+  double trub_loss_l = 8;
+  // Water topped up in the fermenter (`F_R_TOP_UP`).
+  double fermenter_top_up_l = 9;
+  // Batch volume into the fermenter (`F_R_VOLUME`); primary salts dissolve in it.
+  double batch_l = 10;
+  // The recipe has boil ingredients (`F_R_HAS_BOIL_ING`); without them `S_boil` is 1.
+  bool has_boil_ingredients = 11;
+}
+
+// A mash grain for the grist pH (spec §5.1). Send every grain used in the mash: all of them
+// count in the total weight, only grain and adjunct kinds in the acidity sum.
+message MashGrain {
+  double amount_kg = 1;
+  double color_srm = 2;
+  FermentableKind kind = 3;
+  // Acid malt (`F_G_IS_ACID_MALT`): counted as an ordinary grain in the grist pH and its acid
+  // added through acid_malt_ra (spec §5.4b).
+  bool acid_malt = 4;
+  // Acid content of the acid malt, percent (`F_G_ACID_PCT`).
+  double acid_pct = 5;
+}
+
+// A liquid acid in the mash (misc, spec §5.4a). Only lactic and phosphoric add acidity, as in
+// BeerSmith's `FilterMashAgents`; sparge acids do not change the mash pH.
+message LiquidAcid {
+  AcidKind acid = 1;
+  // Volume of the solution, mL (engine takes L).
+  double volume_ml = 2;
+  // Strength, percent by weight.
+  double concentration_pct = 3;
+}
+
+// Mash pH inputs of CalculateWater.
+message MashPhInput {
+  repeated MashGrain grains = 1;
+  // Mash thickness (`F_R_MASH_THICKNESS`), L/kg; must be > 0 with grain present (spec §5.2).
+  double mash_thickness_l_per_kg = 2;
+  repeated LiquidAcid acids = 3;
+  // Target mash pH; sets the acid dissociation fraction in the own model (spec §6.8).
+  double target_ph = 4;
+}
+
+// Derived figures of an ion profile (spec §4), ppm as CaCO3 unless stated.
+message ProfileStats {
+  double alkalinity_ppm = 1;
+  // Effective (Kolbach) hardness.
+  double hardness_ppm = 2;
+  double residual_alkalinity_ppm = 3;
+  // SO4/Cl; 0 when chloride is 0.
+  double sulfate_chloride_ratio = 4;
+  SulfateChlorideBalance balance = 5;
+  // Suggested beer colour range from RA (spec §4.5), SRM.
+  double color_min_srm = 6;
+  double color_max_srm = 7;
+}
+
+message CalculateWaterRequest {
+  RecipeKind kind = 1;
+  repeated SourceWater waters = 2;
+  repeated SaltAddition salts = 3;
+  // `F_R_IGNORE_WATER_AGENTS`: salts add nothing to the profiles (warnings still see them).
+  bool ignore_salts = 4;
+  WaterVolumes volumes = 5;
+  PhModel model = 6;
+  bool beersmith_compatible = 7;
+  // Unset: no mash pH figures (e.g. extract recipes).
+  MashPhInput mash_ph = 8;
+}
+
+message MashPhResult {
+  double grist_ph = 1;
+  // RA to pH slope, pH per mEq/L (spec §5.2).
+  double ra_slope = 2;
+  // Estimated mash pH without acid (spec §5.3).
+  double estimated_ph = 3;
+  // Mash pH with the recipe's mash acids and acid malt (spec §5.5).
+  double adjusted_ph = 4;
+  // Total mash grain, kg.
+  double grain_kg = 5;
+}
+
+message CalculateWaterResponse {
+  // Amount-weighted source water (spec §3.1).
+  IonProfile base = 1;
+  // Amount-weighted source water pH; 7 without water.
+  double water_ph = 2;
+  // Base plus mash salts (spec §3.3).
+  IonProfile mash = 3;
+  // Base plus sparge salts.
+  IonProfile sparge = 4;
+  // Mash and sparge blend.
+  IonProfile mash_and_sparge = 5;
+  // Boil input: blend diluted by kettle top-up plus boil salts.
+  IonProfile boil = 6;
+  // Into the fermenter: boil profile concentrated by the boil plus primary salts.
+  IonProfile beer = 7;
+  // Boil concentration factor `S_boil` (spec §3.4).
+  double boil_scale = 8;
+  // Figures of the mash profile (spec §4.3: salts in the sparge and acids do not change RA).
+  ProfileStats mash_stats = 9;
+  // Set when the request has mash pH inputs.
+  MashPhResult mash_ph = 10;
+  repeated WaterWarning warnings = 11;
+}
+
+message AdjustAcidRequest {
+  PhModel model = 1;
+  bool beersmith_compatible = 2;
+  AcidKind acid = 3;
+  // Acid strength, percent by weight; for acid malt the malt's acid percent.
+  double concentration_pct = 4;
+  // Starting mash pH for liquid acids: the estimate without acid (existing acids replaced) or a
+  // measured pH (extra acid on top), spec §6.3. Not used for acid malt, which iterates on the
+  // grain bill (spec §6.4).
+  double mash_ph = 5;
+  double target_ph = 6;
+  // Sparge target pH (own model, spec §6.8; suggested 6.0, to be verified). In
+  // BeerSmith-compatible mode the mash target is used.
+  double sparge_target_ph = 7;
+  // Mash grain, kg.
+  double grain_kg = 8;
+  double mash_thickness_l_per_kg = 9;
+  // Acid malt only: the grain bill without acid malt and the mash-water RA, ppm as CaCO3.
+  // acid_malt_amount takes (kg, SRM) pairs and counts every entry in the grist sum.
+  repeated MashGrain grains = 10;
+  double residual_alkalinity_ppm = 11;
+  // Sparge water: base water bicarbonate (salts excluded) and pH (spec §6.5).
+  double sparge_bicarbonate_ppm = 12;
+  double sparge_water_ph = 13;
+  oneof sparge_volume {
+    // Sparge water volume as entered (mash pH tool, spec §6.7), L.
+    double sparge_l = 14;
+    // Recipe mode: total water (mash plus sparge), L; the sparge volume is total minus
+    // grain_kg x thickness (sparge_volume_l, spec §6.5).
+    double total_water_l = 15;
+  }
+}
+
+message AdjustAcidResponse {
+  // Mash acid: mL of solution for liquid acids, g for acid malt; 0 when already at or below
+  // target.
+  double mash_amount = 1;
+  // Acid malt only: adjusted pH after the last round and whether it reached the target within
+  // 0.005 in 8 rounds (spec §6.4).
+  optional double resulting_ph = 2;
+  optional bool converged = 3;
+  // Sparge acid, mL; 0 for acid malt, other acids or when the mash is below target.
+  double sparge_acid_ml = 4;
+  // Sparge water volume used, L.
+  double sparge_l = 5;
+}
+
+message MatchProfileRequest {
+  RecipeKind kind = 1;
+  // Source waters; the base profile is their amount-weighted mean.
+  repeated SourceWater waters = 2;
+  IonProfile target = 3;
+  // Mash and sparge volumes (mash recipes), batch volume (others), boil scale inputs.
+  WaterVolumes volumes = 4;
+  // Salts left out of the fit (fixed at 0). BeerSmith offers chalk, MgCl2 and lime only.
+  repeated WaterSalt excluded = 5;
+  // `F_R_COMBINE_SALTS`: all salts in the mash water, none in the sparge (spec §7.2).
+  bool combine_salts = 6;
+}
+
+message MatchProfileResponse {
+  // Mash water additions (mash-less recipes: the batch), g. Amounts below 0.01 g are left out
+  // (spec §7.2 `SetWaterAddition`).
+  repeated SaltAmount mash = 1;
+  // Sparge water additions, g; empty when combined or without sparge.
+  repeated SaltAmount sparge = 2;
+  // Resulting profile (spec §7.3).
+  IonProfile best_fit = 3;
+  // Residual norm of the fit, ppm.
+  double residual_ppm = 4;
+}
+
+message ProfileToolRequest {
+  IonProfile base = 1;
+  double base_l = 2;
+  // Dilution water (e.g. RO or distilled).
+  IonProfile dilution = 3;
+  double dilution_l = 4;
+  IonProfile target = 5;
+  repeated WaterSalt excluded = 6;
+}
+
+message ProfileToolResponse {
+  // Volume-weighted mix of base and dilution water; zero when both volumes are 0.
+  IonProfile mix = 1;
+  // Salt additions, g. As in BeerSmith they are scaled by the base volume only, not the mixed
+  // volume (spec §7.4 quirk).
+  repeated SaltAmount additions = 2;
+  IonProfile best_fit = 3;
+  double residual_ppm = 4;
+}
+
+message DescribeProfileRequest {
+  IonProfile ions = 1;
+}
+
+message DescribeProfileResponse {
+  ProfileStats stats = 1;
+}

@@ -1,0 +1,434 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+import "engine/v1/recipe.proto";
+
+// Yeast pitching, starters, mead and wine additions, carbonation (ADR-0005 item 2; spec 04,
+// `formuller/04-maya-mead-karbonasyon.md`). One RPC per screen. Metric units on the wire; the
+// engine's yeast module works in BeerSmith units (US gal, fl oz, oz, F, psi), so the
+// engine-service converts through its single `convert` layer (ADR-0005 item 3). Every RPC calls
+// existing public functions of `engine::yeast` only; the functions are named on each RPC.
+// Cask (fıçı) priming is FermentationService (spec 11), not here.
+service YeastService {
+  // Pitch screen (recipe yeast tab and the starter tool): viability, cells available and
+  // needed, pitch range, packs, dry yeast grams and rehydration, and an optional one- or
+  // two-stage starter plan (spec 04 §1.3-§1.14).
+  // Engine: age_days, yeast_age_recipe, viability_v0_ingredient, import_age_rate, viability,
+  // tool_viability, yeast_total_cells, viable_cells, yeast_cells_no_starter, yeast_pack_count,
+  // yeast_avg_pack_size, yeast_pack_viability, yeast_tot_grams, yeast_first_fields,
+  // recommended_liquid_pitch, pitch_min_max_recipe, pitch_min_max_tool, dry_min_pitch_rate,
+  // dry_max_pitch_rate, is_dry_by_weight, tot_yeast_cells_needed, est_cells_ml,
+  // packs_no_starter, dry_grams_vol, dry_grams_pkg, yeast_packs_dry, yeast_dry5,
+  // yeast_dry_hydrate, yeast_goferm; starter: new_starter_l, two_stage_recipe,
+  // two_stage_tool, cells_starter, cells_sec_starter, packs_starter, dme_oz.
+  rpc PitchPlan(PitchPlanRequest) returns (PitchPlanResponse);
+  // Mead tool: yeast amount, rehydration, TOSNA/TiOSNA nutrient programme and YAN
+  // (spec 04 §2.2-§2.5).
+  // Engine: mead_pitch, mead_yeast_grams, mead_goferm, mead_hydrate, mead_yan_target,
+  // mead_tot_ferm_o, mead_tot_ferm_k, mead_ferm_o, mead_ferm_k, mead_yan_added,
+  // mead_yan_equivalent.
+  rpc MeadNutrients(MeadNutrientsRequest) returns (MeadNutrientsResponse);
+  // Wine tool: recommended free SO2, potassium metabisulfite and sorbate (spec 04 §2.6-§2.7).
+  // Engine: so2_rec, kmeta_g, sorbate_g.
+  rpc WineStabilizers(WineStabilizersRequest) returns (WineStabilizersResponse);
+  // Backsweetening tool (spec 04 §2.8).
+  // Engine: back_agent_og, back_agent_vol, back_agent_weight; with a custom potential
+  // backsweeten_volume_l with honey_sg, and density::brix_to_sg for the weight.
+  rpc Backsweeten(BacksweetenRequest) returns (BacksweetenResponse);
+  // Carbonation tool and the recipe carbonation line: priming sugar by agent, keg pressure,
+  // residual CO2 (spec 04 §3.2-§3.5).
+  // Engine: residual_co2, carb_amount, carb_sugar_agent, co2_psi, carb_equiv.
+  rpc Carbonation(CarbonationRequest) returns (CarbonationResponse);
+}
+
+// ---------------------------------------------------------------------------
+// Enums (proto value = engine code + 1; UNSPECIFIED is INVALID_ARGUMENT, ADR-0005 item 4)
+// ---------------------------------------------------------------------------
+
+// Yeast form of an ingredient (`F_Y_FORM`, engine `recipe::YeastForm`). The starter tool's
+// slurry (`F_YC_YEAST_FORM` 2) is CULTURE: both use the slurry viability (spec 04 §1.1, §1.4).
+enum YeastForm {
+  YEAST_FORM_UNSPECIFIED = 0;
+  YEAST_FORM_LIQUID = 1;
+  YEAST_FORM_DRY = 2;
+  YEAST_FORM_SLANT = 3;
+  YEAST_FORM_CULTURE = 4;
+}
+
+// Recipe fermentation type (`F_R_ALE_TYPE`, engine `yeast::AleType`).
+enum AleType {
+  ALE_TYPE_UNSPECIFIED = 0;
+  ALE_TYPE_ALE = 1;
+  ALE_TYPE_LAGER = 2;
+  ALE_TYPE_HYBRID = 3;
+}
+
+// Starter tool yeast type (`F_YC_TYPE`, engine `yeast::StarterType`).
+enum StarterType {
+  STARTER_TYPE_UNSPECIFIED = 0;
+  STARTER_TYPE_ALE_OR_CIDER = 1;
+  STARTER_TYPE_LAGER = 2;
+  STARTER_TYPE_HYBRID_WHEAT = 3;
+  STARTER_TYPE_MEAD_OR_WINE = 4;
+}
+
+// Mead nutrient method (`F_MT_METHOD`, engine `yeast::MeadMethod`).
+enum MeadMethod {
+  MEAD_METHOD_UNSPECIFIED = 0;
+  // TOSNA 2/3 with Fermaid-O.
+  MEAD_METHOD_TOSNA = 1;
+  // TiOSNA with Fermaid-K.
+  MEAD_METHOD_TIOSNA = 2;
+}
+
+// Yeast nitrogen requirement (`F_MT_YEAST_FACTOR`, engine `yeast::YeastNitrogen`).
+enum YeastNitrogen {
+  YEAST_NITROGEN_UNSPECIFIED = 0;
+  // Factor 0.75.
+  YEAST_NITROGEN_LOW = 1;
+  // Factor 0.90.
+  YEAST_NITROGEN_MEDIUM = 2;
+  // Factor 1.25.
+  YEAST_NITROGEN_HIGH = 3;
+}
+
+// Backsweetening agent (engine `yeast::BackAgent`).
+enum BacksweetenAgent {
+  BACKSWEETEN_AGENT_UNSPECIFIED = 0;
+  // 82.5 Brix.
+  BACKSWEETEN_AGENT_HONEY = 1;
+  // 70 Brix.
+  BACKSWEETEN_AGENT_APPLE_JUICE_CONCENTRATE = 2;
+  // 15 Brix.
+  BACKSWEETEN_AGENT_JUICE = 3;
+  // 75 Brix.
+  BACKSWEETEN_AGENT_DRY_MALT_EXTRACT = 4;
+  // 98 Brix.
+  BACKSWEETEN_AGENT_TABLE_SUGAR = 5;
+  // 15 Brix.
+  BACKSWEETEN_AGENT_OTHER = 6;
+}
+
+// Carbonation method (`F_C_TYPE`, engine `yeast::CarbType`).
+enum CarbonationType {
+  CARBONATION_TYPE_UNSPECIFIED = 0;
+  CARBONATION_TYPE_BOTTLE = 1;
+  // Forced carbonation: keg pressure.
+  CARBONATION_TYPE_KEG = 2;
+  // Keg with a priming agent; same sugar as bottling, no keg factor (spec 04 §3.3).
+  CARBONATION_TYPE_KEG_PRIMING = 3;
+}
+
+// Priming agent (engine `yeast::PrimingAgent`).
+enum PrimingAgent {
+  PRIMING_AGENT_UNSPECIFIED = 0;
+  // Corn sugar (dextrose monohydrate), the baseline.
+  PRIMING_AGENT_CORN_SUGAR = 1;
+  // Dry malt extract, corn sugar x 1.538.
+  PRIMING_AGENT_DME = 2;
+  // Table sugar (sucrose), corn sugar / 1.099.
+  PRIMING_AGENT_TABLE_SUGAR = 3;
+}
+
+// ---------------------------------------------------------------------------
+// PitchPlan
+// ---------------------------------------------------------------------------
+
+// Pitch targets of the user options, million cells per mL per degree Plato; an unset field
+// takes the engine default (`yeast::PitchTargets::default`, spec 04 §1.2).
+message PitchTargets {
+  // Default 0.75.
+  optional double ale_m_ml_p = 1;
+  // Default 1.5.
+  optional double lager_m_ml_p = 2;
+  // Default 1.0.
+  optional double mix_m_ml_p = 3;
+  // Default 0.5.
+  optional double wine_m_ml_p = 4;
+}
+
+// Recipe context: the target comes from `recommended_liquid_pitch` (wine target for mead,
+// wine, seltzer; cider counts as beer) and the range from `pitch_min_max_recipe`.
+message RecipePitchTarget {
+  RecipeKind kind = 1;
+  AleType ale_type = 2;
+}
+
+// One yeast. In the starter tool context send exactly one.
+message PitchYeast {
+  YeastForm form = 1;
+  // Added in secondary: skipped by every total (spec 04 §1.6).
+  bool add_to_secondary = 2;
+  // Package mode (`F_Y_USE_PKGS`); otherwise `amount` is a weight or volume.
+  bool use_packages = 3;
+  // Number of packages (package mode).
+  double packs = 4;
+  // Cells per package, billions (package mode).
+  double cells_per_pack_billion = 5;
+  // Volume/weight mode: grams for DRY, mL for the other forms. Converted to the engine's
+  // ounces for `yeast_tot_grams` (spec 04 §1.5, §1.6).
+  double amount = 6;
+  // Cells per mL, billions, for liquid, slant and culture (default 1.0).
+  optional double cells_per_ml_billion = 7;
+  // The yeast's dry pitch rate (`F_Y_DRY_PITCH_RATE`), g/hL (default 75).
+  optional double dry_pitch_rate_g_per_hl = 8;
+  // Package date and reference day (brew day for a recipe, today for the tool), days since
+  // 1970-01-01. Unset package date means age 0 (`age_days`, spec 04 §1.3).
+  optional int64 package_epoch_day = 9;
+  int64 reference_epoch_day = 10;
+  // Typed viability, percent; when set it is used as is (`tool_viability` with calc off).
+  optional double viability_pct = 11;
+  // New-yeast viability V0, percent (default by form: `viability_v0_ingredient`).
+  optional double initial_viability_pct = 12;
+  // Viability loss, percent per month (default by form: `import_age_rate`).
+  optional double age_rate_pct_per_month = 13;
+  // White Labs liquid yeast: default loss 5 instead of 10 percent per month (spec 04 §1.4).
+  bool white_labs = 14;
+}
+
+// Optional starter (spec 04 §1.9-§1.12, §1.14).
+message StarterOptions {
+  bool stir_plate = 1;
+  // Plan two stages (otherwise one).
+  bool two_stage = 2;
+  // Starter wort gravity, SG (default 1.036).
+  optional double starter_sg = 3;
+  // Starter volumes the brewer will make, L; unset takes the recommended volume. Cells after
+  // the starter are computed for these volumes.
+  optional double stage1_l = 4;
+  optional double stage2_l = 5;
+  // Largest growth per starter (`O_Y_GROWTH_STARTER`, default 4); used by the recipe
+  // two-stage plan and the pack count with a starter.
+  optional double growth_cap = 6;
+}
+
+// Options; an unset field takes the engine default (spec 04 §1.2, §1.13).
+message PitchOptions {
+  PitchTargets targets = 1;
+  // Use viable cells (true) or total cells (`F_R_CALC_VIABILITY`, default true).
+  optional bool use_viable_cells = 2;
+  // Dry cells per gram for package-mode grams, billions (default 18).
+  optional double dry_cells_per_gram_billion = 3;
+  // Rehydration water per gram of dry yeast, mL (default 25).
+  optional double hydrate_ml_per_g = 4;
+  // GoFerm per mL of rehydration water, g (default 0.05).
+  optional double goferm_g_per_ml = 5;
+}
+
+message PitchPlanRequest {
+  // Wort volume pitched, L.
+  double volume_l = 1;
+  // Wort gravity, SG.
+  double og_sg = 2;
+  // The context selects the engine variants (recipe or starter tool, spec 04 §1.7, §1.11).
+  oneof target {
+    RecipePitchTarget recipe = 3;
+    // Starter tool: range from `pitch_min_max_tool`, two stages from `two_stage_tool`.
+    StarterType starter_type = 4;
+  }
+  // Pitch rate, million cells per mL per degree Plato. Default: the recommended rate for a
+  // recipe, 0.75 for the starter tool (`YC_PITCH_RATE`).
+  optional double pitch_rate_m_ml_p = 5;
+  // Dry pitch rate, g/hL (default: the recommended dry rate).
+  optional double dry_rate_g_per_hl = 6;
+  // Recommended dry rate, g/hL. Default: the first primary yeast's rate for a recipe
+  // (`yeast_first_fields`), 75 for the starter tool.
+  optional double rec_dry_rate_g_per_hl = 7;
+  repeated PitchYeast yeasts = 8;
+  // Unset: no starter.
+  StarterOptions starter = 9;
+  PitchOptions options = 10;
+}
+
+message PitchYeastResult {
+  int64 age_days = 1;
+  double viability_pct = 2;
+  double total_cells_billion = 3;
+  double viable_cells_billion = 4;
+}
+
+message StarterPlan {
+  // Recommended single-stage volume, L (`new_starter_l`); 0 when no starter is needed.
+  double recommended_l = 1;
+  // Recommended two-stage volumes, L (`two_stage_recipe` or `two_stage_tool`).
+  double recommended_stage1_l = 2;
+  double recommended_stage2_l = 3;
+  // Volumes used for the cell counts below, L (requested or recommended).
+  double stage1_l = 4;
+  double stage2_l = 5;
+  // DME for each stage, g (`dme_oz`, fl oz in and oz out converted).
+  double stage1_dme_g = 6;
+  double stage2_dme_g = 7;
+  // Cells after each stage, billions (`cells_starter`, `cells_sec_starter`); stage 2 is 0
+  // for a single stage.
+  double stage1_cells_billion = 8;
+  double stage2_cells_billion = 9;
+  // Cells pitched after the starter per mL of wort, million (`est_cells_ml`).
+  double pitched_m_per_ml = 10;
+  // Packages needed with a starter (`packs_starter`; the engine adds 0.1 for display).
+  double packs_needed = 11;
+}
+
+message PitchPlanResponse {
+  // In request order.
+  repeated PitchYeastResult yeasts = 1;
+  // Recipe "Avg Yeast Age", months: the SUM of the primary yeasts' days over 30
+  // (`yeast_age_recipe`, spec 04 §1.3 quirk).
+  double avg_age_months = 2;
+  // Cells of the primary yeasts, billions (`yeast_cells_no_starter`).
+  double cells_available_billion = 3;
+  double pack_count = 4;
+  double avg_pack_size_billion = 5;
+  double pack_viability_pct = 6;
+  // Pitch rate used and its range, million cells per mL per degree Plato.
+  double pitch_rate_m_ml_p = 7;
+  double pitch_min_m_ml_p = 8;
+  double pitch_max_m_ml_p = 9;
+  // Dry rate used and its range, g/hL.
+  double dry_rate_g_per_hl = 10;
+  double dry_min_g_per_hl = 11;
+  double dry_max_g_per_hl = 12;
+  // Dry yeast pitched by weight (`is_dry_by_weight`).
+  bool dry_by_weight = 13;
+  // Cells needed, billions (`tot_yeast_cells_needed`).
+  double cells_needed_billion = 14;
+  // Cells available per mL of wort without a starter, million (`est_cells_ml`).
+  double pitched_m_per_ml = 15;
+  // Packages needed without a starter (`packs_no_starter`).
+  int64 packs_needed = 16;
+  // Dry yeast needed, g (`dry_grams_vol` by weight, `dry_grams_pkg` in package mode); 0 when
+  // the first primary yeast is not dry.
+  double dry_needed_g = 17;
+  // 11.5 g and 5 g packs for `dry_needed_g`, not rounded.
+  double dry_packs_11_5g = 18;
+  double dry_packs_5g = 19;
+  // Dry yeast in the recipe, g (`yeast_tot_grams`), its rehydration water, mL, and GoFerm, g.
+  double dry_in_recipe_g = 20;
+  double rehydrate_water_ml = 21;
+  double goferm_g = 22;
+  // Set when the request had a starter.
+  StarterPlan starter = 23;
+}
+
+// ---------------------------------------------------------------------------
+// MeadNutrients
+// ---------------------------------------------------------------------------
+
+message MeadNutrientsRequest {
+  // Must gravity, SG.
+  double og_sg = 1;
+  // Must volume, L (US gal for the Fermaid totals, converted).
+  double volume_l = 2;
+  // Honey share of the gravity points, percent (default 100).
+  optional double honey_pct = 3;
+  YeastNitrogen nitrogen = 4;
+  MeadMethod method = 5;
+  // Yeast pitched, g (default: the recommended amount, `mead_yeast_grams`).
+  optional double yeast_g = 6;
+}
+
+message MeadNutrientsResponse {
+  // Recommended pitch rate, g/L (`mead_pitch`) and yeast, g (`mead_yeast_grams`).
+  double pitch_rate_g_per_l = 1;
+  double recommended_yeast_g = 2;
+  // For the yeast pitched: GoFerm, g, and rehydration water, mL.
+  double goferm_g = 3;
+  double hydrate_water_ml = 4;
+  // Target YAN, ppm (`mead_yan_target`).
+  double yan_target_ppm = 5;
+  // Nutrient total and one of four equal additions, g (Fermaid-O for TOSNA, Fermaid-K for
+  // TiOSNA). The schedule (24, 48, 72 h and 7 days or 1/3 sugar break) is client text
+  // (spec 04 §2.4).
+  double nutrient_total_g = 6;
+  double nutrient_per_addition_g = 7;
+  // YAN from the total, ppm, and its equivalent (x4 for Fermaid-O), tool version
+  // (`mead_yan_added`, `mead_yan_equivalent` with recipe = false, spec 04 §2.5).
+  double yan_added_ppm = 8;
+  double yan_equivalent_ppm = 9;
+}
+
+// ---------------------------------------------------------------------------
+// WineStabilizers
+// ---------------------------------------------------------------------------
+
+message WineStabilizersRequest {
+  double ph = 1;
+  // Wine volume, L (US gal in the engine, converted).
+  double volume_l = 2;
+  // Measured free SO2, ppm (default 0).
+  optional double free_so2_ppm = 3;
+  // Target free SO2, ppm (default 30, the tool default).
+  optional double target_so2_ppm = 4;
+}
+
+message WineStabilizersResponse {
+  // Recommended free SO2 for the pH, ppm.
+  double recommended_so2_ppm = 1;
+  // Potassium metabisulfite, g; negative when the target is below the measured value (not
+  // clamped, spec 04 §2.6).
+  double kmeta_g = 2;
+  // Potassium sorbate, g.
+  double sorbate_g = 3;
+}
+
+// ---------------------------------------------------------------------------
+// Backsweeten
+// ---------------------------------------------------------------------------
+
+message BacksweetenRequest {
+  // Beverage volume, L.
+  double volume_l = 1;
+  double beverage_sg = 2;
+  double target_sg = 3;
+  BacksweetenAgent agent = 4;
+  // Agent sugar potential, Brix (default: the agent's potential).
+  optional double agent_brix = 5;
+}
+
+message BacksweetenResponse {
+  // Potential used, Brix.
+  double agent_brix = 1;
+  // Agent to add, L, and its weight, kg (the volume uses the Plato formula, the weight the
+  // Brix formula, spec 04 §2.8).
+  double agent_l = 2;
+  double agent_kg = 3;
+}
+
+// ---------------------------------------------------------------------------
+// Carbonation
+// ---------------------------------------------------------------------------
+
+message CarbonationRequest {
+  CarbonationType type = 1;
+  // Target carbonation, volumes of CO2.
+  double co2_volumes = 2;
+  // Highest beer temperature after fermentation (bottling or keg storage), C; F in the
+  // engine, floored at 32 F (spec 04 §3.2).
+  double temp_c = 3;
+  // Beer volume, L (US gal in the engine).
+  double volume_l = 4;
+  // Agent for the priming amount (bottle and keg with priming).
+  PrimingAgent agent = 5;
+  // Priming efficiency relative to corn sugar, percent (`F_C_CARB_RATE`); unset or 0 means
+  // no correction.
+  optional double carb_rate_pct = 6;
+}
+
+message CarbonationResponse {
+  // Residual dissolved CO2 at the temperature, volumes.
+  double residual_co2_volumes = 1;
+  // Priming amount of the chosen agent, g (`carb_amount`, corrected by the carb rate); 0 for
+  // KEG. Negative when the target is below the residual CO2 (not clamped, spec 04 §3.3).
+  double priming_g = 2;
+  // Comparison of the three agents, g (`carb_sugar_agent`, no carb rate correction).
+  double corn_sugar_g = 3;
+  double dme_g = 4;
+  double table_sugar_g = 5;
+  // Forced carbonation gauge pressure, bar (`co2_psi`; psi x 0.0689476), at least 0. Filled
+  // for every type so the keg screen can compare. Bar matches the spunding fields of
+  // BreweryService/FermentationService.
+  double keg_pressure_bar = 6;
+  // "Priming sugar equivalent" factor, 100 / max(carb rate, 1) (`carb_equiv`).
+  double sugar_equiv = 7;
+}

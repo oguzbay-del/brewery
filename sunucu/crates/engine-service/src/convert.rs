@@ -118,6 +118,33 @@ pub fn per_100ml_to_per_12floz(v: f64) -> f64 {
     v * (12.0 * engine::units::FLOZ_ML / 100.0)
 }
 
+/// Bar per pound-force per square inch (1 psi = 6894.757293168 Pa, exact by definition).
+const PSI_BAR: f64 = 0.068_947_572_931_683_6;
+
+/// Pressure, bar to psi.
+#[must_use]
+pub fn bar_to_psi(bar: f64) -> f64 {
+    bar / PSI_BAR
+}
+
+/// Pressure, psi to bar.
+#[must_use]
+pub fn psi_to_bar(psi: f64) -> f64 {
+    psi * PSI_BAR
+}
+
+/// Litres to US gallons.
+#[must_use]
+pub fn l_to_gal(l: f64) -> f64 {
+    l / engine::units::GAL_L
+}
+
+/// US gallons to litres.
+#[must_use]
+pub fn gal_to_l(gal: f64) -> f64 {
+    gal * engine::units::GAL_L
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -156,5 +183,13 @@ mod tests {
         let per_100 = per_12floz_to_per_100ml(150.0);
         assert!((per_100 - 150.0 / 3.548_823_547_2).abs() < 1e-9);
         assert!((per_100ml_to_per_12floz(per_100) - 150.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn pressure_and_gallon_round_trip() {
+        assert!((psi_to_bar(bar_to_psi(1.7)) - 1.7).abs() < 1e-12);
+        assert!((psi_to_bar(14.503_773_773_022) - 1.0).abs() < 1e-9);
+        assert!((gal_to_l(l_to_gal(20.0)) - 20.0).abs() < 1e-12);
+        assert!((gal_to_l(1.0) - 3.785_411_784).abs() < 1e-9);
     }
 }

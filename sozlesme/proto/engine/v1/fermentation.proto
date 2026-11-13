@@ -1,0 +1,542 @@
+syntax = "proto3";
+
+package demleme.engine.v1;
+
+// Fermentation tracking, gravity triggers, device calibration and conditioning
+// (ADR-0005 item 2). Engine modules: `engine::home` (spec 07 §1-2), `engine::trigger`
+// (spec 11), `engine::manual` (spec 10 §1, §3). These modules are metric, so no unit
+// conversion is needed except percent <-> fraction where noted. Gravity is SG, time since
+// pitching (batch start, t = 0) in hours.
+//
+// Enum values follow the engine enum declaration order + 1 (0 = UNSPECIFIED, rejected with
+// INVALID_ARGUMENT). Names carry a fermentation/conditioning prefix because the package is
+// shared with the yeast proto (spec 04 priming and keg pressure live in YeastService).
+service FermentationService {
+  // Fermentation tracking screen: forecast, method choice, reference FG, progress, gravity
+  // trigger and "FG stable" check from one batch's readings. The screen's single call.
+  // Engine: manual::reading_role, home::hourly_median, home::forecast, home::fit_decay
+  // (A for the trigger and the chart curve, same grid as forecast: [FG_recipe - 0.015,
+  // SG_last - 0.0002], 400 steps, spec 07 §1.3), manual::few_forecast,
+  // manual::forecast_method, trigger::default_delta, trigger::fg_reference,
+  // trigger::progress, trigger::trigger_index, trigger::predicted_trigger,
+  // trigger::is_stable, manual::stall_check.
+  rpc TrackFermentation(TrackFermentationRequest) returns (TrackFermentationResponse);
+  // Fermentation profile editor: ramp durations, lagering suggestion and default trigger
+  // offset (spec 11 §1.2, §1.5).
+  // Engine: trigger::ramp_hours, trigger::lager_weeks, trigger::default_delta.
+  rpc FermentationSchedule(FermentationScheduleRequest) returns (FermentationScheduleResponse);
+  // Device screen: iSpindel angle -> SG polynomial calibration (spec 07 §2.1).
+  // Engine: home::ispindel_cal.
+  rpc CalibrateIspindel(CalibrateIspindelRequest) returns (CalibrateIspindelResponse);
+  // iSpindel angles to SG with a stored calibration, for incoming device readings
+  // (spec 07 §2.1, T1.12 C4). Engine: home::ispindel_eval per angle.
+  rpc ConvertIspindelAngles(ConvertIspindelAnglesRequest)
+      returns (ConvertIspindelAnglesResponse);
+  // Device screen: Tilt bias correction from reference (hydrometer) readings
+  // (spec 07 §2.2; manual readings of a device batch, spec 10 §1.1). Engine: home::tilt_cal.
+  rpc CalibrateTilt(CalibrateTiltRequest) returns (CalibrateTiltResponse);
+  // Packaging screen, keg: priming sugar with headspace, serving and peak pressure
+  // (spec 11 §2). Engine: trigger::keg_priming.
+  rpc KegPriming(KegPrimingRequest) returns (KegPrimingResponse);
+  // Packaging screen, cask (UK): priming from remaining extract, finings dose and
+  // conditioning days (spec 11 §3). Engine: trigger::cask_priming, trigger::finings_ml,
+  // trigger::cask_days.
+  rpc CaskConditioning(CaskConditioningRequest) returns (CaskConditioningResponse);
+  // No-chill (cube) IBU correction for the recipe and brew-day screens (spec 10 §3).
+  // Engine: manual::nochill_ibu.
+  rpc NoChillIbu(NoChillIbuRequest) returns (NoChillIbuResponse);
+}
+
+// ------------------------------------------------------------------ shared
+
+// Source label of a gravity reading (`manual::ReadingSource`, spec 10 §1.1).
+enum GravityReadingSource {
+  GRAVITY_READING_SOURCE_UNSPECIFIED = 0;
+  // Device (sensor), already converted to SG (iSpindel via ConvertIspindelAngles, Tilt
+  // after its bias correction).
+  GRAVITY_READING_SOURCE_DEVICE = 1;
+  // Manual hydrometer or refractometer (refractometer already alcohol-corrected to SG,
+  // spec 10 §1.1).
+  GRAVITY_READING_SOURCE_MANUAL = 2;
+  // Paper log.
+  GRAVITY_READING_SOURCE_PAPER = 3;
+}
+
+message GravityReading {
+  // Hours since pitching.
+  double time_h = 1;
+  double sg = 2;
+  GravityReadingSource source = 3;
+}
+
+// A `(t_hours, SG)` point computed by the engine.
+message GravityPoint {
+  double time_h = 1;
+  double sg = 2;
+}
+
+// Fermentation type selecting the default trigger offset (`trigger::FermentationType`).
+enum FermentationKind {
+  FERMENTATION_KIND_UNSPECIFIED = 0;
+  FERMENTATION_KIND_LAGER = 1;
+  FERMENTATION_KIND_ALE = 2;
+}
+
+// ------------------------------------------------------------------ TrackFermentation
+
+message TrackFermentationRequest {
+  // All readings of the batch, any order. Device readings feed the spec 07 model; manual and
+  // paper readings feed the spec 10 model, or are bias-correction points (excluded from the
+  // models) when `has_device` (manual::reading_role, spec 10 §1.1).
+  repeated GravityReading readings = 1;
+  // The batch has a device attached.
+  bool has_device = 2;
+  // Measured original gravity, SG.
+  double og_sg = 3;
+  // Recipe final gravity (attenuation and mash temperature corrected, spec 01), SG.
+  double fg_recipe_sg = 4;
+  // Selects the default trigger offset (lager 0.004, ale 0.002; spec 11 §1.2).
+  FermentationKind kind = 5;
+  // Trigger offset above the reference FG, SG; overrides the default from `kind`.
+  optional double trigger_delta_sg = 6;
+  // Consecutive hourly medians that must meet the trigger on device data (default 3,
+  // spec 11 §1.2). Manual data always uses 1 and sets `needs_confirmation`.
+  optional uint32 trigger_consecutive = 7;
+  // Device forecast: SG distance to FG that counts as finished (default 0.0005, spec 07 §1.5).
+  optional double finish_eps_sg = 8;
+  // Device forecast: minimum hourly points (default 12, spec 07 §1.4).
+  optional uint32 min_points = 9;
+  // Device forecast: minimum share of the expected drop, percent (default 30, spec 07 §1.4).
+  // The engine takes a fraction; the service divides by 100.
+  optional double min_drop_pct = 10;
+  // "FG stable" window, hours (default 48, spec 11 §1.4).
+  optional double stable_window_h = 11;
+  // "FG stable" minimum hourly points in the window (default 24, spec 11 §1.4).
+  optional uint32 stable_min_points = 12;
+  // Manual forecast: lag phase, hours (default 12, spec 10 §1.2).
+  optional double lag_h = 13;
+  // Manual forecast: uncertainty of the prior FG, SG (default 0.003, spec 10 §1.6).
+  optional double fg_sigma_sg = 14;
+}
+
+// Which forecast applies (`manual::ForecastMethod`, spec 10 §1.1).
+enum FermentationForecastMethod {
+  FERMENTATION_FORECAST_METHOD_UNSPECIFIED = 0;
+  // Device data is sufficient (spec 07 §1.4): `device` is the forecast to show.
+  FERMENTATION_FORECAST_METHOD_DEVICE = 1;
+  // Manual readings only: `manual` is the forecast to show.
+  FERMENTATION_FORECAST_METHOD_MANUAL = 2;
+  // No forecast.
+  FERMENTATION_FORECAST_METHOD_NONE = 3;
+}
+
+// Device forecast from the decay model `SG(t) = FG∞ + A·e^(−k·t)` (spec 07 §1.2-1.5).
+// Values are unrounded (T1.12 C9).
+message DeviceForecast {
+  // False: "veri yetersiz" (spec 07 §1.4); the fields below are unset.
+  bool ready = 1;
+  // FG∞, SG.
+  optional double fg_sg = 2;
+  // Approximate 95 % profile interval of FG∞, SG.
+  optional double fg_low_sg = 3;
+  optional double fg_high_sg = 4;
+  // Amplitude A, SG (for the chart curve and the trigger time).
+  optional double a_sg = 5;
+  // Rate k, 1/hour.
+  optional double k_per_h = 6;
+  // Finish time since pitching, hours.
+  optional double finish_h = 7;
+  // Remaining time from the last hourly point, hours.
+  optional double remaining_h = 8;
+  // |FG∞ − FG_recipe| > 0.010: "finishing differently than expected".
+  optional bool fg_warning = 9;
+}
+
+// Outcome of the few-readings forecast (`manual::FewForecast`, spec 10 §1.4-1.6).
+enum ManualForecastStatus {
+  MANUAL_FORECAST_STATUS_UNSPECIFIED = 0;
+  // Stall rule, close to FG: looks finished (`fg_measured_sg`).
+  MANUAL_FORECAST_STATUS_LOOKS_FINISHED = 1;
+  // Stall rule, far above FG: may be stuck (`fg_measured_sg` is the last SG).
+  MANUAL_FORECAST_STATUS_POSSIBLY_STUCK = 2;
+  // Fewer than two readings after the lag phase.
+  MANUAL_FORECAST_STATUS_NEED_TWO_READINGS = 3;
+  // Less than 30 % of the expected drop done.
+  MANUAL_FORECAST_STATUS_DROP_BELOW_30_PERCENT = 4;
+  // The fitted rate is not positive.
+  MANUAL_FORECAST_STATUS_NON_POSITIVE_K = 5;
+  // Within 0.0005 of the target; re-measure after 48 h.
+  MANUAL_FORECAST_STATUS_TARGET_REACHED = 6;
+  // Estimate available (day resolution, "approximately").
+  MANUAL_FORECAST_STATUS_ESTIMATE = 7;
+}
+
+message ManualForecast {
+  ManualForecastStatus status = 1;
+  // Last measured SG (LOOKS_FINISHED, POSSIBLY_STUCK).
+  optional double fg_measured_sg = 2;
+  // ESTIMATE only: rate per hour (4 decimals), finish hour for the prior FG (1 decimal).
+  optional double k_per_h = 3;
+  optional double finish_h = 4;
+  // ESTIMATE only: finish range in whole days since pitching (floor, ceil).
+  optional int64 finish_min_days = 5;
+  optional int64 finish_max_days = 6;
+  // ESTIMATE only: days remaining from the last reading (floor, ceil), at least 0.
+  optional int64 remaining_min_days = 7;
+  optional int64 remaining_max_days = 8;
+  // ESTIMATE only: per-reading rates differ by more than a factor of 2.
+  optional bool inconsistent = 9;
+}
+
+// Source of the reference FG (`trigger::FgSource`, spec 11 §1.1).
+enum FgReferenceSource {
+  FG_REFERENCE_SOURCE_UNSPECIFIED = 0;
+  FG_REFERENCE_SOURCE_RECIPE = 1;
+  // The device forecast FG∞ ("according to the forecast" note).
+  FG_REFERENCE_SOURCE_FORECAST = 2;
+}
+
+// Predicted trigger state (`trigger::TriggerForecast`, spec 11 §1.3).
+enum PredictedTriggerState {
+  PREDICTED_TRIGGER_STATE_UNSPECIFIED = 0;
+  // Trigger after `predicted_at_h` hours since pitching.
+  PREDICTED_TRIGGER_STATE_AT = 1;
+  // Threshold already met at t = 0.
+  PREDICTED_TRIGGER_STATE_ALREADY_PAST = 2;
+  // The curve never reaches the threshold.
+  PREDICTED_TRIGGER_STATE_UNREACHABLE = 3;
+}
+
+// Gravity trigger `SG ≤ FG_ref + Δ` (spec 11 §1.2-1.3).
+message GravityTrigger {
+  // Offset used, SG.
+  double delta_sg = 1;
+  // Threshold `FG_ref + Δ`, SG.
+  double threshold_sg = 2;
+  // Time of the first point of the triggering run, hours; unset when not triggered.
+  optional double triggered_at_h = 3;
+  // Triggered by a single manual reading: "measure again to confirm" (spec 11 §1.2).
+  bool needs_confirmation = 4;
+  // Set only when the device forecast is ready.
+  PredictedTriggerState predicted = 5;
+  // PREDICTED_TRIGGER_STATE_AT only: hours since pitching.
+  optional double predicted_at_h = 6;
+}
+
+// "FG stable" state (spec 11 §1.4).
+enum FgStabilityState {
+  FG_STABILITY_STATE_UNSPECIFIED = 0;
+  // Too few points (device) or fewer than two readings (manual).
+  FG_STABILITY_STATE_INSUFFICIENT = 1;
+  FG_STABILITY_STATE_STABLE = 2;
+  FG_STABILITY_STATE_NOT_STABLE = 3;
+}
+
+message FgStability {
+  FgStabilityState state = 1;
+  // Device: least-squares slope over the window, SG per day (trigger::is_stable).
+  optional double slope_sg_per_day = 2;
+}
+
+message TrackFermentationResponse {
+  FermentationForecastMethod method = 1;
+  // Hourly medians of the device readings (spec 07 §1.1), for the chart.
+  repeated GravityPoint hourly_median = 2;
+  // Set when the batch has device readings.
+  DeviceForecast device = 3;
+  // Set when the batch has model manual/paper readings (no device).
+  ManualForecast manual = 4;
+  // Reference FG, SG, and its source (spec 11 §1.1).
+  double fg_reference_sg = 5;
+  FgReferenceSource fg_reference_source = 6;
+  // Progress `(OG − SG_last) / (OG − FG_ref)`, percent, not clamped; unset when
+  // OG ≤ FG_ref. SG_last is the last hourly median (device) or last model reading (manual).
+  optional double progress_pct = 7;
+  GravityTrigger trigger = 8;
+  FgStability stability = 9;
+}
+
+// ------------------------------------------------------------------ FermentationSchedule
+
+message TemperatureRamp {
+  double from_c = 1;
+  double to_c = 2;
+  // Rate, C per day (default 2, lager cooling; spec 11 §1.5).
+  optional double rate_c_per_day = 3;
+}
+
+message FermentationScheduleRequest {
+  // Original gravity, SG (lagering suggestion).
+  double og_sg = 1;
+  FermentationKind kind = 2;
+  repeated TemperatureRamp ramps = 3;
+  // Lagering rule: OG points per week (default 8), clamp in weeks (default 2-12).
+  optional uint32 lager_points_per_week = 4;
+  optional uint32 lager_min_weeks = 5;
+  optional uint32 lager_max_weeks = 6;
+}
+
+message FermentationScheduleResponse {
+  // Duration of each ramp, hours, in request order.
+  repeated double ramp_h = 1;
+  // Suggested lagering, weeks (computed for any kind; the client shows it for lagers).
+  uint32 lager_weeks = 2;
+  // Default trigger offset for `kind`, SG.
+  double default_delta_sg = 3;
+}
+
+// ------------------------------------------------------------------ device calibration
+
+// Calibration warning (`home::CalibrationWarning`, T1.12 C4).
+enum CalibrationWarning {
+  CALIBRATION_WARNING_UNSPECIFIED = 0;
+  // Calibration angle span below 10 degrees.
+  CALIBRATION_WARNING_NARROW_ANGLE_RANGE = 1;
+  // Angle outside the calibration angles (extrapolation).
+  CALIBRATION_WARNING_ANGLE_OUTSIDE_RANGE = 2;
+}
+
+message IspindelPoint {
+  double angle_deg = 1;
+  // Reference gravity, SG.
+  double sg = 2;
+}
+
+message CalibrateIspindelRequest {
+  // At least `degree + 2` points with `degree + 2` distinct angles.
+  repeated IspindelPoint points = 1;
+  // Polynomial degree (default 2).
+  optional uint32 degree = 2;
+}
+
+message CalibrateIspindelResponse {
+  // Coefficients c0, c1, ... of `SG = Σ c_i·angle^i`, lowest order first.
+  repeated double coefficients = 1;
+  double r2 = 2;
+  // Largest absolute residual, SG; above 0.002 the UI warns "check the points".
+  double max_residual_sg = 3;
+  double angle_min_deg = 4;
+  double angle_max_deg = 5;
+  repeated CalibrationWarning warnings = 6;
+}
+
+message ConvertIspindelAnglesRequest {
+  // From CalibrateIspindelResponse.
+  repeated double coefficients = 1;
+  double angle_min_deg = 2;
+  double angle_max_deg = 3;
+  repeated double angles_deg = 4;
+}
+
+message IspindelSg {
+  double sg = 1;
+  repeated CalibrationWarning warnings = 2;
+}
+
+message ConvertIspindelAnglesResponse {
+  // One per angle, in request order.
+  repeated IspindelSg readings = 1;
+}
+
+message TiltPoint {
+  // Tilt reading, SG.
+  double tilt_sg = 1;
+  // Reference (hydrometer) reading, SG.
+  double reference_sg = 2;
+}
+
+message CalibrateTiltRequest {
+  // One point gives a constant offset; two or more a linear fit (distinct tilt readings).
+  repeated TiltPoint points = 1;
+}
+
+message CalibrateTiltResponse {
+  // `SG_flat = slope·SG_tilt + offset_sg`.
+  double slope = 1;
+  double offset_sg = 2;
+}
+
+// ------------------------------------------------------------------ keg and cask
+
+// Priming sugar of spec 11 §2.3 (`trigger::Sugar`).
+enum ConditioningSugar {
+  CONDITIONING_SUGAR_UNSPECIFIED = 0;
+  // Dextrose monohydrate.
+  CONDITIONING_SUGAR_DEXTROSE = 1;
+  CONDITIONING_SUGAR_SUCROSE = 2;
+  // Invert sugar (cask default in the spec; the client preselects it).
+  CONDITIONING_SUGAR_INVERT = 3;
+}
+
+// Keg priming mode (`trigger::KegMode`, spec 11 §2.4).
+enum KegPrimingMode {
+  KEG_PRIMING_MODE_UNSPECIFIED = 0;
+  // Full natural carbonation.
+  KEG_PRIMING_MODE_FULL = 1;
+  // Partial priming topped up with CO2.
+  KEG_PRIMING_MODE_PARTIAL = 2;
+}
+
+// Where a range warning applies (`trigger::PolyPoint`).
+enum CarbonationPoint {
+  CARBONATION_POINT_UNSPECIFIED = 0;
+  CARBONATION_POINT_CONDITIONING = 1;
+  CARBONATION_POINT_SERVING = 2;
+  CARBONATION_POINT_TARGET = 3;
+  CARBONATION_POINT_PEAK = 4;
+}
+
+// Code of a conditioning warning (`trigger::PrimingWarning`, T1.12 D7).
+enum ConditioningWarningCode {
+  CONDITIONING_WARNING_CODE_UNSPECIFIED = 0;
+  // Dry matter unknown: 1.0 assumed (spec 11 §2.3).
+  CONDITIONING_WARNING_CODE_DRY_MATTER_UNKNOWN = 1;
+  // Temperature below the CO2 polynomial range (`point`, `temp_c`).
+  CONDITIONING_WARNING_CODE_POLYNOMIAL_BELOW_TEMPERATURE = 2;
+  // Volumes above the CO2 polynomial range (`point`, `co2_vol`).
+  CONDITIONING_WARNING_CODE_POLYNOMIAL_ABOVE_VOLUME = 3;
+  // Total CO2 exceeds what 10 volumes hold (`co2_vol` is the limit).
+  CONDITIONING_WARNING_CODE_PEAK_VOLUME_SATURATED = 4;
+  // Peak gauge pressure above the keg limit (`peak_bar`, `limit_bar`, `temp_c`).
+  CONDITIONING_WARNING_CODE_PEAK_ABOVE_LIMIT = 5;
+}
+
+// Warning as a code with numeric fields; the client builds the text (ADR-0004).
+message ConditioningWarning {
+  ConditioningWarningCode code = 1;
+  CarbonationPoint point = 2;
+  optional double temp_c = 3;
+  optional double co2_vol = 4;
+  optional double peak_bar = 5;
+  optional double limit_bar = 6;
+}
+
+message KegPrimingRequest {
+  // Target CO2, volumes.
+  double co2_vol = 1;
+  // Highest fermentation temperature (residual CO2), C.
+  double fermentation_max_c = 2;
+  // Conditioning temperature, C.
+  double conditioning_c = 3;
+  // Serving temperature, C.
+  double serving_c = 4;
+  double beer_l = 5;
+  double headspace_l = 6;
+  ConditioningSugar sugar = 7;
+  // Keg flushed with CO2 (otherwise air).
+  bool purged = 8;
+  KegPrimingMode mode = 9;
+  // Partial mode: fraction (0-1] of the full amount (default 1/3; a fraction, not percent,
+  // so the default stays exact).
+  optional double partial_fraction = 10;
+  // Dry-matter fraction (0-1) of the sugar product; unset = unknown (1.0, with a warning).
+  optional double dry_matter_fraction = 11;
+  // Keg working pressure, bar gauge; unset = no check.
+  optional double keg_limit_bar = 12;
+}
+
+// Pressures bar gauge; values rounded by the engine like the reference.
+message KegPrimingResponse {
+  // Sugar to add, g (1 decimal).
+  double sugar_g = 1;
+  // Sugar for the same beer without headspace, g (1 decimal).
+  double bottle_equivalent_g = 2;
+  // Headspace surcharge, percent; unset when the bottle equivalent is 0.
+  optional double headspace_share_pct = 3;
+  // Pressure holding the target at serving temperature, bar.
+  double serving_bar = 4;
+  // Beer volumes at conditioning temperature.
+  double peak_co2_vol = 5;
+  // CO2 gauge pressure at conditioning temperature, bar.
+  double peak_bar = 6;
+  // Peak gauge pressure including air in an unpurged keg, bar.
+  double peak_total_gauge_bar = 7;
+  // Partial mode only: CO2 top-up pressure at serving temperature, bar.
+  optional double co2_topup_bar = 8;
+  repeated ConditioningWarning warnings = 9;
+}
+
+message CaskConditioningRequest {
+  double volume_l = 1;
+  // Target CO2, volumes (default 1.1, spec 11 §3.1).
+  optional double co2_vol = 2;
+  // Highest fermentation temperature, C.
+  double fermentation_max_c = 3;
+  // Gravity at racking, SG.
+  double rack_sg = 4;
+  // Reference FG (TrackFermentationResponse.fg_reference_sg), SG.
+  double fg_reference_sg = 5;
+  ConditioningSugar sugar = 6;
+  // Dry-matter fraction (0-1); unset = unknown (1.0, with a warning).
+  optional double dry_matter_fraction = 7;
+  // Finings dose, mL per L (default 2, isinglass; spec 11 §3.4).
+  optional double finings_ml_per_l = 8;
+  // Cellar temperature, C (spec 11 §3.5).
+  double cellar_c = 9;
+  // Conditioning base: days at the base temperature (defaults 3 days at 12 C).
+  optional double base_days = 10;
+  optional double base_temp_c = 11;
+}
+
+// Rounded by the engine like the reference.
+message CaskConditioningResponse {
+  // Residual CO2 at fermentation temperature, volumes.
+  double residual_co2_vol = 1;
+  // CO2 from remaining extract, volumes.
+  double from_extract_co2_vol = 2;
+  // Missing CO2, volumes; negative means excess.
+  double missing_co2_vol = 3;
+  double sugar_g = 4;
+  double sugar_g_per_l = 5;
+  // Excess CO2: no sugar advised.
+  bool excess = 6;
+  repeated ConditioningWarning warnings = 7;
+  double finings_ml = 8;
+  // Conditioning time at the cellar temperature, days.
+  double conditioning_days = 9;
+}
+
+// ------------------------------------------------------------------ no-chill
+
+// No-chill extra-time mode (`manual::NochillMode`, spec 10 §3.1-3.2).
+enum NoChillMode {
+  NO_CHILL_MODE_UNSPECIFIED = 0;
+  // Every addition gets +20 minutes (default).
+  NO_CHILL_MODE_RULE = 1;
+  // Cube cooling model (advanced, to be verified).
+  NO_CHILL_MODE_MODEL = 2;
+}
+
+// Boil hop addition for the no-chill correction.
+message NoChillHop {
+  double amount_g = 1;
+  // Alpha acid, percent; the engine takes a fraction (service divides by 100).
+  double alpha_pct = 2;
+  // Boil time, minutes (flame-out = 0).
+  double time_min = 3;
+}
+
+message NoChillIbuRequest {
+  repeated NoChillHop hops = 1;
+  // Boil gravity, SG.
+  double boil_sg = 2;
+  // Batch volume, L.
+  double volume_l = 3;
+  NoChillMode mode = 4;
+  // MODEL only: wort temperature when the cube is filled, C (default 95, spec 10 §3.2).
+  optional double cube_fill_c = 5;
+  // MODEL only: ambient temperature, C (default 20; must be below 40).
+  optional double ambient_c = 6;
+  // MODEL only: cube volume, L; unset uses `volume_l`.
+  optional double cube_l = 7;
+}
+
+// Rounded to 1 decimal by the engine.
+message NoChillIbuResponse {
+  // IBU without the extra standing time.
+  double base_ibu = 1;
+  // IBU with the no-chill extra time.
+  double no_chill_ibu = 2;
+  // Extra standing time, minutes.
+  double extra_min = 3;
+}

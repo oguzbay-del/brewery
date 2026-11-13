@@ -10,6 +10,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         "../../../sozlesme/proto/engine/v1/tool.proto",
         "../../../sozlesme/proto/engine/v1/recipe.proto",
         "../../../sozlesme/proto/engine/v1/mash.proto",
+        "../../../sozlesme/proto/engine/v1/water.proto",
+        "../../../sozlesme/proto/engine/v1/yeast.proto",
+        "../../../sozlesme/proto/engine/v1/fermentation.proto",
+        "../../../sozlesme/proto/engine/v1/brewery.proto",
     ];
 
     for file in proto_files {
