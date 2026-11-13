@@ -1,8 +1,9 @@
 # engine-service
 
 ## Ne yapar
-- `engine` kütüphanesini gRPC ile sunar: `demleme.engine.v1.EngineService` ve standart sağlık servisi.
-- Sözleşme `sozlesme/proto/engine/v1/engine.proto`; `build.rs` onu `protox` ile derler (sistemde protoc gerekmez).
+- `engine` kütüphanesini gRPC ile sunar: `EngineService`, `ToolService`, `RecipeService`, `MashService`, `WaterService`, `YeastService`, `FermentationService`, `BreweryService` (`demleme.engine.v1`, ADR-0005) ve standart sağlık servisi.
+- Birim dönüşümü yalnız `convert.rs`'te; ortak girdi denetimi `check.rs`'te; uçtan uca test `tests/uc_uca.rs`.
+- Sözleşme `sozlesme/proto/engine/v1/*.proto`; `build.rs` onu `protox` ile derler (sistemde protoc gerekmez).
 - Port `PORT` (varsayılan 50051).
 
 ## Neye dokunmaz
