@@ -1271,6 +1271,9 @@ async fn tax_pure_alcohol_matches_vectors_31_and_32() {
     assert_eq!(res.total_tax, "2178.00");
     assert_eq!(res.currency, "GBP");
     assert_eq!(res.row_status, TaxRowStatus::Unverified as i32);
+    // 09 §2.3 report fields: 2000 L x 5 % = 100 LPA at 21.78.
+    assert_eq!(dec_of(l.lpa.as_deref()), dec_of(Some("100")));
+    assert_eq!(dec_of(l.applied_rate.as_deref()), dec_of(Some("21.78")));
 
     // #32: ABV bands with 5.0 per-LPA relief -> "1678.0000".
     let mut r = row(TaxMethod::PureAlcohol);
@@ -1282,6 +1285,15 @@ async fn tax_pure_alcohol_matches_vectors_31_and_32() {
     r.relief_per_lpa = "5.0".into();
     let res = tax(tax_req(r, vec![line])).await.unwrap();
     assert_eq!(res.lines[0].tax_unrounded, "1678.0000");
+    // Second band 21.78 net of 5.0 relief.
+    assert_eq!(
+        dec_of(res.lines[0].applied_rate.as_deref()),
+        dec_of(Some("16.78"))
+    );
+}
+
+fn dec_of(s: Option<&str>) -> rust_decimal::Decimal {
+    s.expect("field set").parse().expect("decimal")
 }
 
 #[tokio::test]
