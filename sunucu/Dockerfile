@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 #
 # One Dockerfile for all server binaries: build with
-#   docker build --build-arg BIN=api|engine-service|worker|ingest|migrate \
+#   docker build --build-arg BIN=api|engine-service|worker|ingest|migrate|fake-oidc \
 #     --build-context proto=../sozlesme/proto sunucu
 # The build context is sunucu/; the gRPC contract (sozlesme/proto) is passed as
 # the named context "proto" because engine-service/build.rs compiles it.
@@ -74,6 +74,7 @@ USER 10001:10001
 ENTRYPOINT ["/usr/local/bin/service"]
 
 FROM runtime-base AS final-api
+FROM runtime-base AS final-fake-oidc
 FROM runtime-base AS final-worker
 FROM runtime-base AS final-ingest
 FROM runtime-base AS final-migrate

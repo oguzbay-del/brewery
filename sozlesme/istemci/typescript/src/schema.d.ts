@@ -38,6 +38,179 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/apple": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Signs in with an Apple ID token. */
+        post: operations["auth_apple_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/email/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mails a sign-in link. Always `202`; whether the address is known never shows. */
+        post: operations["auth_email_start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/email/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Exchanges the mailed token for a session. The token works once. */
+        post: operations["auth_email_verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Signs in with a Google ID token. */
+        post: operations["auth_google_login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/nonce": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Opens a sign-in attempt: a single-use nonce (ADR-0009 rule 1.2). */
+        post: operations["auth_nonce_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/identities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The user's sign-in methods. */
+        get: operations["me_identities_list"];
+        put?: never;
+        /** Links another sign-in method to the account. The session is replaced. */
+        post: operations["me_identities_link"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/identities/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Removes a sign-in method. The last one stays; a sign-in in the last 10 minutes is needed. */
+        delete: operations["me_identities_unlink"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The current session, the user and the user's workspaces. */
+        get: operations["me_session_get"];
+        put?: never;
+        post?: never;
+        /** Signs out of the current session. */
+        delete: operations["me_session_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The user's open sessions. */
+        get: operations["me_sessions_list"];
+        put?: never;
+        post?: never;
+        /** Signs out everywhere, this session included. */
+        delete: operations["me_sessions_revoke_all"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/sessions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Closes one of the user's sessions. */
+        delete: operations["me_session_revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/meta/client-requirements": {
         parameters: {
             query?: never;
@@ -86,6 +259,23 @@ export interface paths {
         get: operations["version_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Opens a workspace; the caller becomes its first member with the administrator role. */
+        post: operations["workspaces_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -253,6 +443,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Sign-in methods of other accounts that use the same verified address (ADR-0009 rule 1.6). */
+        AccountHint: {
+            /** @description Providers (`apple`, `google`, `email`) the other account signs in with. */
+            providers: string[];
+        };
         /** @description A file attached to a batch or tasting note. */
         Attachment: {
             /** @description Caption. */
@@ -313,6 +508,11 @@ export interface components {
             /** @description How to upload the bytes. */
             upload: components["schemas"]["UploadInstructions"];
         };
+        /**
+         * @description The kind of client signing in; decides how the session travels.
+         * @enum {string}
+         */
+        ClientParam: "ios" | "web";
         /** @description Response of `GET /v1/meta/client-requirements`. */
         ClientRequirements: {
             /** @description Lowest supported iOS version, or `null`. */
@@ -337,6 +537,32 @@ export interface components {
             /** @description Presigned `GET` URL. */
             url: string;
         };
+        /** @description Body of `POST /v1/auth/email/start`. */
+        EmailStartRequest: {
+            /** @description Which client asks (for the mail text). */
+            client?: components["schemas"]["ClientParam"];
+            /** @description The address to send the link to. */
+            email: string;
+        };
+        /** @description Response of `POST /v1/auth/email/start`: always the same, whatever the address. */
+        EmailStartResponse: {
+            /**
+             * Format: int64
+             * @description Seconds the link stays valid.
+             */
+            expires_in: number;
+        };
+        /** @description Body of `POST /v1/auth/email/verify`. */
+        EmailVerifyRequest: {
+            /** @description Client kind (default `web`). */
+            client?: components["schemas"]["ClientParam"];
+            /** @description Name shown in the session list. */
+            device_name?: string | null;
+            /** @description Web only: keep the session across browser restarts. */
+            remember?: boolean;
+            /** @description The token from the mailed link. */
+            token: string;
+        };
         /**
          * @description Every error code the API returns. The single list: the `OpenAPI` document and the text
          *     catalog are generated from it (ADR-0008 rule 3.2).
@@ -360,6 +586,54 @@ export interface components {
             status: string;
             /** @description Service version. */
             version: string;
+        };
+        /** @description A sign-in method of the user. */
+        IdentitySummary: {
+            /**
+             * Format: uuid
+             * @description Identity id.
+             */
+            id: string;
+            /** @description The address, for `email` identities. */
+            label?: string | null;
+            /**
+             * Format: date-time
+             * @description When it was linked.
+             */
+            linked_at: string;
+            /** @description `apple`, `google` or `email`. */
+            provider: string;
+        };
+        /** @description Body of `POST /v1/me/identities`. */
+        LinkIdentityRequest: {
+            /** @description Apple and Google: the fresh ID token. */
+            id_token?: string | null;
+            /** @description Apple and Google: the raw nonce from `POST /v1/auth/nonce`. */
+            nonce?: string | null;
+            /** @description `apple`, `google` or `email`. */
+            provider: string;
+            /** @description E-mail: the token from the mailed link. */
+            token?: string | null;
+        };
+        /**
+         * @description Response of `POST /v1/me/identities`: the method and the replacement session (the old
+         *     token stops working; ADR-0009 rule 3.4).
+         */
+        LinkResponse: {
+            /** @description The linked method. */
+            identity: components["schemas"]["IdentitySummary"];
+            /** @description The new session. */
+            session: components["schemas"]["SessionIssued"];
+        };
+        /** @description Response of the sign-in endpoints. */
+        LoginResponse: {
+            account_hint?: components["schemas"]["AccountHint"] | null;
+            /** @description The account was created by this sign-in; the client continues with workspace setup. */
+            is_new_user: boolean;
+            /** @description The new session. */
+            session: components["schemas"]["SessionIssued"];
+            /** @description The user. */
+            user: components["schemas"]["UserSummary"];
         };
         /** @description Body of `POST .../attachments`. */
         NewAttachment: {
@@ -409,6 +683,16 @@ export interface components {
              * @description Exact size in bytes.
              */
             size_bytes: number;
+        };
+        /** @description Response of `POST /v1/auth/nonce`. */
+        NonceResponse: {
+            /**
+             * Format: date-time
+             * @description When it stops being accepted.
+             */
+            expires_at: string;
+            /** @description Single-use random value to hand to the provider (Apple: its SHA-256 in hex). */
+            nonce: string;
         };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_Attachment: {
@@ -464,6 +748,28 @@ export interface components {
                  * @description Record version (`ETag`).
                  */
                 version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_IdentitySummary: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: uuid
+                 * @description Identity id.
+                 */
+                id: string;
+                /** @description The address, for `email` identities. */
+                label?: string | null;
+                /**
+                 * Format: date-time
+                 * @description When it was linked.
+                 */
+                linked_at: string;
+                /** @description `apple`, `google` or `email`. */
+                provider: string;
             }[];
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
@@ -529,6 +835,42 @@ export interface components {
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
         };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_SessionItem: {
+            /** @description The rows of this page. */
+            items: {
+                /** @description Approximate location (country), if known. */
+                approx_location?: string | null;
+                /** @description Client kind. */
+                client: string;
+                /**
+                 * Format: date-time
+                 * @description Sign-in time.
+                 */
+                created_at: string;
+                /** @description This is the session of the request. */
+                current: boolean;
+                /** @description Device name given at sign-in. */
+                device_name: string;
+                /**
+                 * Format: date-time
+                 * @description Absolute end.
+                 */
+                expires_at: string;
+                /**
+                 * Format: uuid
+                 * @description Session id.
+                 */
+                id: string;
+                /**
+                 * Format: date-time
+                 * @description Last activity.
+                 */
+                last_activity_at: string;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
         /** @description RFC 9457 problem details body (`application/problem+json`). */
         ProblemDetails: {
             /** @description Stable code clients branch on. */
@@ -548,6 +890,21 @@ export interface components {
             title: string;
             /** @description Relative address of the problem type (`/errors/<code>`). */
             type: string;
+        };
+        /** @description Body of `POST /v1/auth/apple` and `POST /v1/auth/google`. */
+        ProviderLoginRequest: {
+            /** @description Client kind (default `web`). */
+            client?: components["schemas"]["ClientParam"];
+            /** @description Name shown in the session list (at most 100 characters). */
+            device_name?: string | null;
+            /** @description Name from the first Apple authorization, which Apple sends only to the app. */
+            display_name?: string | null;
+            /** @description The provider's ID token (JWT). */
+            id_token: string;
+            /** @description The raw nonce issued by `POST /v1/auth/nonce`. */
+            nonce: string;
+            /** @description Web only: keep the session across browser restarts. */
+            remember?: boolean;
         };
         /** @description Response of `GET /readyz`. */
         ReadyResponse: {
@@ -621,6 +978,92 @@ export interface components {
             /** @description How to upload the bytes. */
             upload: components["schemas"]["UploadInstructions"];
         };
+        /** @description Details of a session. */
+        SessionDetail: {
+            /** @description Client kind: `ios`, `web` or `shared_device`. */
+            client: string;
+            /**
+             * Format: date-time
+             * @description Sign-in time.
+             */
+            created_at: string;
+            /** @description CSRF token for cookie sessions. */
+            csrf_token?: string | null;
+            /**
+             * Format: date-time
+             * @description Absolute end.
+             */
+            expires_at: string;
+            /**
+             * Format: uuid
+             * @description Session id.
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Time of the last second factor, if any.
+             */
+            step_up_at?: string | null;
+        };
+        /** @description Response of `GET /v1/me/session`. */
+        SessionInfo: {
+            /** @description The current session. */
+            session: components["schemas"]["SessionDetail"];
+            /** @description The user. */
+            user: components["schemas"]["UserSummary"];
+            /** @description Workspaces of the user (none yet right after the first sign-in). */
+            workspaces: components["schemas"]["WorkspaceSummary"][];
+        };
+        /** @description A session that was just issued. */
+        SessionIssued: {
+            /** @description Client kind. */
+            client: string;
+            /** @description CSRF token to send as `X-CSRF-Token` on writes, for `web` sessions. */
+            csrf_token?: string | null;
+            /**
+             * Format: date-time
+             * @description When the session ends at the latest.
+             */
+            expires_at: string;
+            /**
+             * Format: uuid
+             * @description Session id.
+             */
+            id: string;
+            /** @description The bearer token, for `ios` sessions. Shown once. Web sessions use the cookie. */
+            token?: string | null;
+        };
+        /** @description One entry of the session list. */
+        SessionItem: {
+            /** @description Approximate location (country), if known. */
+            approx_location?: string | null;
+            /** @description Client kind. */
+            client: string;
+            /**
+             * Format: date-time
+             * @description Sign-in time.
+             */
+            created_at: string;
+            /** @description This is the session of the request. */
+            current: boolean;
+            /** @description Device name given at sign-in. */
+            device_name: string;
+            /**
+             * Format: date-time
+             * @description Absolute end.
+             */
+            expires_at: string;
+            /**
+             * Format: uuid
+             * @description Session id.
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Last activity.
+             */
+            last_activity_at: string;
+        };
         /** @description What the client does next: one HTTP request to the object store. */
         UploadInstructions: {
             /**
@@ -637,12 +1080,76 @@ export interface components {
             /** @description Presigned URL (signature in the query string). */
             url: string;
         };
+        /** @description The signed-in user. */
+        UserSummary: {
+            /** @description Verified contact address, if any. */
+            contact_email?: string | null;
+            /** @description Display name (may be empty). */
+            display_name: string;
+            /**
+             * Format: uuid
+             * @description User id.
+             */
+            id: string;
+        };
         /** @description Response of `GET /v1/version`. */
         VersionResponse: {
             /** @description API version (the `api` crate version). */
             api: string;
             /** @description Calculation engine version; `null` until the engine is wired in. */
             engine?: string | null;
+        };
+        /** @description Body of `POST /v1/workspaces`. */
+        WorkspaceCreateRequest: {
+            /** @description ISO 3166-1 alpha-2 country, upper case. */
+            country: string;
+            /** @description `home` or `business`. */
+            mode: string;
+            /** @description Name (1 to 200 characters). */
+            name: string;
+            /** @description Data region: `us` or `uk`. */
+            region: string;
+            /** @description IANA time zone name. */
+            time_zone: string;
+        };
+        /** @description A workspace. */
+        WorkspaceResponse: {
+            /** @description Country. */
+            country: string;
+            /**
+             * Format: date-time
+             * @description Creation time.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Workspace id.
+             */
+            id: string;
+            /** @description `home` or `business`. */
+            mode: string;
+            /** @description Name. */
+            name: string;
+            /** @description `us` or `uk`. */
+            region: string;
+            /** @description Time zone. */
+            time_zone: string;
+        };
+        /** @description A workspace the user belongs to. */
+        WorkspaceSummary: {
+            /**
+             * Format: uuid
+             * @description Workspace id.
+             */
+            id: string;
+            /** @description `home` or `business`. */
+            mode: string;
+            /** @description Name. */
+            name: string;
+            /** @description `us` or `uk`. */
+            region: string;
+            /** @description Membership status (`active` or `disabled`). */
+            status: string;
         };
     };
     responses: never;
@@ -728,6 +1235,1342 @@ export interface operations {
                 headers: {
                     /** @description Seconds to wait before retrying */
                     "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    auth_apple_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Signed in; iOS gets the token in the body, web gets the cookie */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "account_hint": null,
+                     *       "is_new_user": true,
+                     *       "session": {
+                     *         "client": "ios",
+                     *         "csrf_token": null,
+                     *         "expires_at": "2027-02-11T10:00:00Z",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000b",
+                     *         "token": "Zk3x9rR0m1c0n0pq0V4m7Xb1u2y8wQ5n6J7h8G9f0Aa"
+                     *       },
+                     *       "user": {
+                     *         "contact_email": null,
+                     *         "display_name": "",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000a"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    auth_email_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Accepted (a mail is sent when the address is valid) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expires_in": 900
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EmailStartResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    auth_email_verify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description Signed in */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "account_hint": {
+                     *         "providers": [
+                     *           "apple"
+                     *         ]
+                     *       },
+                     *       "is_new_user": true,
+                     *       "session": {
+                     *         "client": "ios",
+                     *         "csrf_token": null,
+                     *         "expires_at": "2027-02-11T10:00:00Z",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000b",
+                     *         "token": "Zk3x9rR0m1c0n0pq0V4m7Xb1u2y8wQ5n6J7h8G9f0Aa"
+                     *       },
+                     *       "user": {
+                     *         "contact_email": "sam@example.com",
+                     *         "display_name": "",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000a"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    auth_google_login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Signed in; iOS gets the token in the body, web gets the cookie */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "account_hint": null,
+                     *       "is_new_user": false,
+                     *       "session": {
+                     *         "client": "web",
+                     *         "csrf_token": "n0m7k4V0s2k6e1x9Q8d3b5aA7cC0uUu1wWw2yYy3zZz",
+                     *         "expires_at": "2026-11-13T22:00:00Z",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000b",
+                     *         "token": null
+                     *       },
+                     *       "user": {
+                     *         "contact_email": "sam@example.com",
+                     *         "display_name": "Sam Brewer",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000a"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    auth_nonce_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A nonce valid for 10 minutes */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expires_at": "2026-11-13T10:10:00Z",
+                     *       "nonce": "q8o0m2s1V6mQ0fQmB1x8m7Tt0cV3oO6bV4k0fF0yJ1A"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["NonceResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_identities_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Linked sign-in methods */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "0192f1c0-7a3b-7000-8000-00000000000d",
+                     *           "label": null,
+                     *           "linked_at": "2026-11-13T10:00:00Z",
+                     *           "provider": "apple"
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_IdentitySummary"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_identities_link: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkIdentityRequest"];
+            };
+        };
+        responses: {
+            /** @description Linked; the response carries the replacement session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "identity": {
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000d",
+                     *         "label": null,
+                     *         "linked_at": "2026-11-13T10:00:00Z",
+                     *         "provider": "google"
+                     *       },
+                     *       "session": {
+                     *         "client": "ios",
+                     *         "csrf_token": null,
+                     *         "expires_at": "2027-02-11T10:00:00Z",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000e",
+                     *         "token": "Zk3x9rR0m1c0n0pq0V4m7Xb1u2y8wQ5n6J7h8G9f0Aa"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LinkResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_identities_unlink: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identity id */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Method removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Second factor required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "session": {
+                     *         "client": "web",
+                     *         "created_at": "2026-11-13T10:00:00Z",
+                     *         "csrf_token": "n0m7k4V0s2k6e1x9Q8d3b5aA7cC0uUu1wWw2yYy3zZz",
+                     *         "expires_at": "2026-11-13T22:00:00Z",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000b",
+                     *         "step_up_at": null
+                     *       },
+                     *       "user": {
+                     *         "contact_email": "sam@example.com",
+                     *         "display_name": "Sam Brewer",
+                     *         "id": "0192f1c0-7a3b-7000-8000-00000000000a"
+                     *       },
+                     *       "workspaces": [
+                     *         {
+                     *           "id": "0192f1c0-7a3b-7000-8000-00000000000c",
+                     *           "mode": "home",
+                     *           "name": "Home brewery",
+                     *           "region": "us",
+                     *           "status": "active"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SessionInfo"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_session_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed out */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_sessions_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Open sessions, newest first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "approx_location": "US",
+                     *           "client": "ios",
+                     *           "created_at": "2026-11-13T10:00:00Z",
+                     *           "current": true,
+                     *           "device_name": "Sam's iPad",
+                     *           "expires_at": "2027-02-11T10:00:00Z",
+                     *           "id": "0192f1c0-7a3b-7000-8000-00000000000b",
+                     *           "last_activity_at": "2026-11-13T10:05:00Z"
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_SessionItem"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_sessions_revoke_all: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every session closed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    me_session_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Session id */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session closed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
                     [name: string]: unknown;
                 };
                 content: {
@@ -891,6 +2734,133 @@ export interface operations {
             };
             /** @description Upgrade required */
             426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    workspaces_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkspaceCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Workspace created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "country": "US",
+                     *       "created_at": "2026-11-13T10:00:00Z",
+                     *       "id": "0192f1c0-7a3b-7000-8000-00000000000c",
+                     *       "mode": "home",
+                     *       "name": "Home brewery",
+                     *       "region": "us",
+                     *       "time_zone": "America/New_York"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WorkspaceResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
                 headers: {
                     [name: string]: unknown;
                 };

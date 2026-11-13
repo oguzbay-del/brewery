@@ -11,7 +11,7 @@ use std::{collections::BTreeSet, pin::Pin};
 
 use axum::{
     extract::{FromRequestParts, Request, State},
-    http::{HeaderMap, request::Parts},
+    http::{HeaderMap, Method, request::Parts},
     middleware::Next,
     response::{IntoResponse, Response},
 };
@@ -61,6 +61,20 @@ pub trait Authenticator: Send + Sync + 'static {
         identity: &'a Identity,
         workspace_id: Uuid,
     ) -> BoxFuture<'a, ApiResult<Option<Membership>>>;
+
+    /// Checks the CSRF defence of a cookie-authenticated unsafe request (ADR-0009 rule 3.5).
+    /// The default accepts everything (bearer-only authenticators, tests).
+    ///
+    /// # Errors
+    /// `403 forbidden` when the origin or token does not match.
+    fn check_csrf<'a>(
+        &'a self,
+        _method: &'a Method,
+        _headers: &'a HeaderMap,
+        _identity: &'a Identity,
+    ) -> BoxFuture<'a, ApiResult<()>> {
+        Box::pin(async { Ok(()) })
+    }
 }
 
 /// Rejects every request with `401` until real authentication (T2.11) is wired in.
@@ -155,12 +169,14 @@ fn workspace_in_path(path: &str) -> Result<Option<Uuid>, ApiError> {
 
 async fn resolve(
     state: &AppState,
+    method: &Method,
     path: &str,
     headers: &HeaderMap,
     slot: &Slot,
 ) -> ApiResult<RequestContext> {
     let workspace_id = workspace_in_path(path)?;
     let identity = state.auth.authenticate(headers).await?;
+    state.auth.check_csrf(method, headers, &identity).await?;
     let permissions = match workspace_id {
         Some(ws) => {
             state
@@ -187,7 +203,8 @@ async fn resolve(
 pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) -> Response {
     let slot = req.extensions().get::<Slot>().cloned().unwrap_or_default();
     let path = req.uri().path().to_owned();
-    match resolve(&state, &path, &req.headers().clone(), &slot).await {
+    let method = req.method().clone();
+    match resolve(&state, &method, &path, &req.headers().clone(), &slot).await {
         Ok(ctx) => {
             req.extensions_mut().insert(ctx);
             next.run(req).await

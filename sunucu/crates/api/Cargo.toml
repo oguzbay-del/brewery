@@ -15,31 +15,37 @@ db.workspace = true
 engine-client = { path = "../engine-client" }
 events.workspace = true
 futures-util.workspace = true
+getrandom.workspace = true
+hmac.workspace = true
 opentelemetry = "0.33.1"
 prost.workspace = true
 redis.workspace = true
+reqwest.workspace = true
+ring.workspace = true
+rustls.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 sqlx.workspace = true
 time.workspace = true
 storage.workspace = true
-tokio.workspace = true
+tokio = { workspace = true, features = ["io-util", "time"] }
 tonic.workspace = true
 tonic-types.workspace = true
 tokio-stream.workspace = true
+thiserror.workspace = true
 tower.workspace = true
 tracing.workspace = true
 tracing-opentelemetry = "0.34.0"
+unicode-normalization.workspace = true
 utoipa = { version = "6.0.0", features = ["chrono", "uuid"] }
 uuid.workspace = true
 
 [dev-dependencies]
 engine-service = { path = "../engine-service" }
-tokio-stream.workspace = true
+fake-oidc = { path = "../fake-oidc" }
 http-body-util.workspace = true
 opentelemetry_sdk = "0.33.1"
-reqwest = { version = "0.13.5", default-features = false, features = ["rustls"] }
 tracing-subscriber.workspace = true
 
 [[bin]]

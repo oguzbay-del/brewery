@@ -152,6 +152,37 @@ impl RateLimiter {
         Ok(())
     }
 
+    /// Counts one request for `scope`/`id` in a fixed window of `window_secs` (hours for the
+    /// e-mail link limits, ADR-0009 rule 2.3). `Ok` also when Redis is down.
+    pub async fn check_window(
+        &self,
+        scope: &'static str,
+        id: &str,
+        limit: u32,
+        window_secs: u64,
+    ) -> ApiResult<()> {
+        let now = now_secs();
+        let window = now / window_secs;
+        let reset_secs = window_secs - now % window_secs;
+        let key = format!("rl:{scope}:{id}:{window_secs}:{window}");
+        let count = self
+            .redis
+            .run(|mut c| async move {
+                redis::Script::new(SCRIPT)
+                    .key(key)
+                    .arg(window_secs * 2)
+                    .invoke_async::<i64>(&mut c)
+                    .await
+            })
+            .await;
+        match count {
+            Some(count) if u32::try_from(count).unwrap_or(u32::MAX) > limit => {
+                Err(ApiError::new(ErrorCode::RateLimited).with_retry_after(reset_secs))
+            }
+            _ => Ok(()),
+        }
+    }
+
     /// User and workspace checks, run once the request is authenticated.
     pub async fn check_account(
         &self,
@@ -180,9 +211,24 @@ impl RateLimiter {
 }
 
 fn client_ip(req: &Request, trust_forwarded: bool) -> String {
+    client_ip_of(
+        req.headers(),
+        req.extensions()
+            .get::<ConnectInfo<SocketAddr>>()
+            .map(|c| c.0),
+        trust_forwarded,
+    )
+}
+
+/// The caller's IP: the first `X-Forwarded-For` entry when behind a trusted proxy, else the
+/// socket address.
+pub(crate) fn client_ip_of(
+    headers: &axum::http::HeaderMap,
+    peer: Option<SocketAddr>,
+    trust_forwarded: bool,
+) -> String {
     if trust_forwarded
-        && let Some(first) = req
-            .headers()
+        && let Some(first) = headers
             .get("x-forwarded-for")
             .and_then(|v| v.to_str().ok())
             .and_then(|v| v.split(',').next())
@@ -191,9 +237,7 @@ fn client_ip(req: &Request, trust_forwarded: bool) -> String {
     {
         return first.to_owned();
     }
-    req.extensions()
-        .get::<ConnectInfo<SocketAddr>>()
-        .map_or_else(|| "unknown".to_owned(), |c| c.0.ip().to_string())
+    peer.map_or_else(|| "unknown".to_owned(), |a| a.ip().to_string())
 }
 
 /// Middleware: per-IP limit, installs the [`Slot`] for later checks and writes the

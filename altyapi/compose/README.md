@@ -21,6 +21,7 @@ Ortam değişkenlerinin hepsinin varsayılanı var; değiştirmek için `.env.ex
 | api | 8080 | `GET /healthz` |
 | worker | 8081 | `GET /healthz` |
 | ingest | 8082 | `GET /healthz` |
+| fake-oidc | 9000 | `GET /healthz`; sahte Apple ve Google sağlayıcısı: `/{apple\|google}/jwks`, `POST /{apple\|google}/mint` (belirteç üretir), `POST /{apple\|google}/rotate` (anahtarı değiştirir) |
 | engine-service | 50051 | gRPC; sağlık için `grpc_health_probe` imajın içinde |
 | PostgreSQL | 5432 | kullanıcı/veritabanı `demleme` (yalnız yerel örnek değer) |
 | Redis | 6379 | |

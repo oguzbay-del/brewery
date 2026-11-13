@@ -200,13 +200,47 @@ services:
       <<: *rust-env
       PORT: "8080"
       SERVICE_NAME: api
+      # Giriş (ADR-0009): Apple ve Google yerelde sahte OIDC sağlayıcısından doğrulanır.
+      APPLE_CLIENT_IDS: com.demleme.app.dev
+      APPLE_ISSUER: http://fake-oidc:9000/apple
+      APPLE_JWKS_URL: http://fake-oidc:9000/apple/jwks
+      GOOGLE_CLIENT_IDS: demleme-dev.apps.googleusercontent.example
+      GOOGLE_ISSUER: http://fake-oidc:9000/google
+      GOOGLE_JWKS_URL: http://fake-oidc:9000/google/jwks
+      WEB_BASE_URL: http://localhost:3000
+      MAIL_FROM: no-reply@demleme.local
+      # Yalnız yerel geliştirme değeri; kümede sır yöneticisinden gelir (CSRF_HMAC_KEY_FILE).
+      CSRF_HMAC_KEY: ${CSRF_HMAC_KEY:-demleme-yerel-csrf-anahtari}
     depends_on:
       <<: *rust-deps
       engine-service: { condition: service_healthy }
+      fake-oidc: { condition: service_healthy }
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     healthcheck:
       test: &healthz-probe ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/$${PORT}; printf 'GET /healthz HTTP/1.0\\r\\n\\r\\n' >&3; head -n1 <&3 | grep -q ' 200 '"]
+      <<: *http-health
+
+  # Sahte Apple ve Google OIDC sağlayıcısı (JWKS ve belirteç üretimi); yalnız yerel ve testler için.
+  # Belirteç üretmek: POST http://127.0.0.1:9000/{apple|google}/mint (sunucu/crates/fake-oidc).
+  fake-oidc:
+    restart: unless-stopped
+    build:
+      context: ../../sunucu
+      additional_contexts:
+        proto: ../../sozlesme/proto
+      secrets: [build_ca]
+      args:
+        BIN: fake-oidc
+    image: demleme/fake-oidc:dev
+    environment:
+      RUST_LOG: info
+      PORT: "9000"
+      PUBLIC_URL: http://fake-oidc:9000
+    ports:
+      - "127.0.0.1:${FAKE_OIDC_PORT:-9000}:9000"
+    healthcheck:
+      test: *healthz-probe
       <<: *http-health
 
   worker:

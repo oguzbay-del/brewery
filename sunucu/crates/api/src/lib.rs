@@ -3,6 +3,7 @@
 //! endpoints come in later jobs and use these building blocks.
 
 pub mod app_version;
+pub mod auth;
 pub mod concurrency;
 pub mod config;
 pub mod context;

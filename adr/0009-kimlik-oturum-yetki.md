@@ -234,6 +234,18 @@ Kimlik doğrulama kodu kendimizde, ayrı kimlik servisi yok (plan › Mimari kar
 | Yetki yükseltme | Destek ekibinin içeriğe erişimi | Süreli izin, salt okunur işlem, iki onaylı acil erişim, müşteriye görünen geçmiş |
 | Yetki yükseltme | Servisler arası doğrudan erişim | Istio mTLS ve `AuthorizationPolicy`, ağ politikası |
 
+## Uygulama notları (T2.11, 13.11.2026)
+
+Karar değişmedi; yazarken netleşenler:
+- **Oturum ucu:** `GET|DELETE /v1/me/session` (mevcut oturum, çıkış), `GET|DELETE /v1/me/sessions` (liste, her yerden çıkış), `DELETE /v1/me/sessions/{id}`. Web girişi çerezi `Set-Cookie` ile verir, gövdede belirteç yoktur; CSRF belirteci giriş yanıtında ve `GET /v1/me/session`'dadır. Çerezle gelen güvenli olmayan istek `Origin` (izin listesi) ve `X-CSRF-Token` ister, ikisi de `403 forbidden` (`origin_not_allowed`, `csrf_invalid`).
+- **Hesap ipucu** yalnız yeni hesap açılırken döner ve sağlayıcı adlarını taşır (`account_hint.providers`); kullanıcı kimliği sızmaz. Giriş yine de yeni hesapla açılır.
+- **E-posta bağlantısı:** hız sınırı adres başına saatte 5, IP başına saatte 20 (aşılırsa `429`); SMTP hatası yanıtı değiştirmez, yalnız günlüğe yazılır. Adres geçersizse `422` (kayıt durumu sızmaz).
+- **Nonce:** `POST /v1/auth/nonce` ham değeri verir; Apple belirtecindeki `nonce` bunun SHA-256 hex'idir, Google'da kendisidir. Nonce, belirteç imzası ve alanları geçtikten sonra tüketilir; geçmeyen belirteç nonce'u yakmaz, geçen ama nonce'u tutmayan yakar.
+- **JWKS yenileme aralığı:** bilinmeyen `kid` yenilemeyi tetikler, ama yenilemeler arası en az 30 sn (`JWKS_MIN_REFRESH_SECS`); sahte `kid` yağmuru sağlayıcıya istek yağdıramaz. Yenileme başarısızsa `503`.
+- **Giriş yöntemi kaldırma:** son 10 dakikada giriş ya da ikinci adım (`step_up_at`) şartı; passkey gelene kadar (T2.12) `step_up_at` boştur, yani eski oturumda kaldırma `403 step_up_required` verir.
+- **İlk çalışma alanı:** `POST /v1/workspaces` (Idempotency-Key şart) çalışma alanını, üyeyi, tüm izinleri taşıyan "Administrator" rolünü ve atamayı tek işlemde açar. Hazır rollerin geri kalanı ve izin önbelleği T2.13'tedir; `membership` her istekte iki sorgu yapar.
+- **Yapılmayanlar:** web yönlendirmeli kod akışı (`/v1/auth/{provider}/start` ve `callback`) ve CORS Aşama 3'te (web istemcisi) gelir; Apple yenileme belirteci değişimi (madde 1.5) hesap silmeyle (T2.31); oturum işlemlerinin denetim kaydına yazılması T2.14'te (şimdilik günlük).
+
 ## Sonuçlar
 
 - ADR-0007'ye iki ek: `auth_requests` tablosu (nonce, durum, PKCE) ve `user_identities.provider_refresh_token_enc`.

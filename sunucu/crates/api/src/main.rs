@@ -2,7 +2,14 @@
 
 use std::{net::SocketAddr, sync::Arc};
 
-use api::{ApiConfig, AppState, context::DenyAll, redis_client::Redis};
+use api::{
+    ApiConfig, AppState,
+    auth::{
+        AuthServices,
+        email::{Mailer, MemoryMailer, SmtpMailer},
+    },
+    redis_client::Redis,
+};
 use common::{otel, shutdown::shutdown_signal};
 
 #[tokio::main]
@@ -20,7 +27,16 @@ async fn main() -> common::Result<()> {
         Redis::disabled()
     };
     let port = config.service.port;
-    // Real authentication arrives with T2.11; until then every sign-in-only route answers 401.
+    let mailer: Arc<dyn Mailer> = if let Some(smtp) = &config.auth.smtp {
+        Arc::new(SmtpMailer::new(
+            &smtp.host,
+            smtp.port,
+            &config.auth.mail_from,
+        ))
+    } else {
+        tracing::warn!("SMTP_HOST not set; sign-in mails are kept in memory and not delivered");
+        Arc::new(MemoryMailer::default())
+    };
     let store = if let Some(s3) = &config.storage {
         {
             let store = Arc::new(storage::S3Store::new(s3.clone()).map_err(|e| {
@@ -35,7 +51,13 @@ async fn main() -> common::Result<()> {
         tracing::warn!("S3_ENDPOINT not set; file endpoints answer 503");
         None
     };
-    let mut state = AppState::new(db, redis, Arc::new(DenyAll), config);
+    let auth = Arc::new(AuthServices::new(
+        db.clone(),
+        redis.clone(),
+        config.auth.clone(),
+        mailer,
+    ));
+    let mut state = AppState::new(db, redis, auth.clone(), config);
     // SSE needs NATS; without NATS_URL the events endpoint answers 503.
     if let Ok(nats_url) = std::env::var("NATS_URL") {
         match events::connect(&nats_url).await {
@@ -48,7 +70,8 @@ async fn main() -> common::Result<()> {
     if let Some(store) = store {
         state = state.with_store(store);
     }
-    let router = api::build(state.clone(), api::files::routes(&state));
+    let all_routes = api::files::routes(&state).merge(auth.routes(&state));
+    let router = api::build(state.clone(), all_routes);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;

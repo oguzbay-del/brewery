@@ -49,6 +49,8 @@ pub struct ApiConfig {
     pub rate: RateLimitConfig,
     /// Object store (`S3_*`); `None` turns the file endpoints off (`503`).
     pub storage: Option<storage::S3Config>,
+    /// Sign-in settings (T2.11).
+    pub auth: crate::auth::AuthConfig,
 }
 
 fn parse_u32(
@@ -133,6 +135,7 @@ impl ApiConfig {
             min_versions,
             rate,
             storage,
+            auth: crate::auth::AuthConfig::from_lookup(&lookup)?,
         })
     }
 }

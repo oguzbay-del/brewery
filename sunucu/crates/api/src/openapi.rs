@@ -13,6 +13,15 @@ use utoipa::OpenApi;
 
 use crate::{
     app_version::ClientRequirements,
+    auth::{
+        handlers::{
+            self as auth_handlers, AccountHint, ClientParam, EmailStartRequest, EmailStartResponse,
+            EmailVerifyRequest, IdentitySummary, LinkIdentityRequest, LinkResponse, LoginResponse,
+            NonceResponse, ProviderLoginRequest, SessionDetail, SessionInfo, SessionIssued,
+            SessionItem, UserSummary, WorkspaceSummary,
+        },
+        setup::{self, WorkspaceCreateRequest, WorkspaceResponse},
+    },
     concurrency::Concurrency,
     error::{ErrorCode, FieldIssue, ProblemDetails},
     files,
@@ -34,13 +43,34 @@ pub struct OperationSpec {
     pub errors: &'static [ErrorCode],
 }
 
-use ErrorCode::{Internal, MalformedRequest, RateLimited, UpgradeRequired};
-
 use ErrorCode::{
-    Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, NotFound, PayloadTooLarge,
-    PreconditionRequired, Unauthenticated, Unavailable, UnsupportedMediaType, ValidationFailed,
-    VersionMismatch,
+    Conflict, Forbidden, Internal, MalformedRequest, NotFound, PreconditionRequired, RateLimited,
+    StepUpRequired, Unauthenticated, Unavailable, UnsupportedMediaType, UpgradeRequired,
+    ValidationFailed,
 };
+
+const PUBLIC_AUTH_ERRORS: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    NotFound,
+    UnsupportedMediaType,
+    ValidationFailed,
+    UpgradeRequired,
+    RateLimited,
+    Unavailable,
+    Internal,
+];
+const ME_ERRORS: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    UpgradeRequired,
+    RateLimited,
+    Internal,
+];
+
+use ErrorCode::{IdempotencyInProgress, IdempotencyMismatch, PayloadTooLarge, VersionMismatch};
 
 const FILE_READ: &[ErrorCode] = &[
     MalformedRequest,
@@ -210,6 +240,144 @@ pub const OPERATIONS: &[OperationSpec] = &[
         Some(Concurrency::FieldLww),
         FILE_DELETE,
     ),
+    OperationSpec {
+        operation_id: "auth_nonce_create",
+        public: true,
+        permission: None,
+        concurrency: None,
+        errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
+    },
+    OperationSpec {
+        operation_id: "auth_apple_login",
+        public: true,
+        permission: None,
+        concurrency: None,
+        errors: PUBLIC_AUTH_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "auth_google_login",
+        public: true,
+        permission: None,
+        concurrency: None,
+        errors: PUBLIC_AUTH_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "auth_email_verify",
+        public: true,
+        permission: None,
+        concurrency: None,
+        errors: PUBLIC_AUTH_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "auth_email_start",
+        public: true,
+        permission: None,
+        concurrency: None,
+        errors: &[
+            MalformedRequest,
+            UnsupportedMediaType,
+            ValidationFailed,
+            UpgradeRequired,
+            RateLimited,
+            Internal,
+        ],
+    },
+    OperationSpec {
+        operation_id: "me_session_get",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: ME_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "me_session_delete",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: ME_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "me_sessions_list",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: ME_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "me_sessions_revoke_all",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: ME_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "me_identities_list",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: ME_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "me_session_revoke",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: ME_ERRORS,
+    },
+    OperationSpec {
+        operation_id: "me_identities_link",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: &[
+            MalformedRequest,
+            Unauthenticated,
+            Forbidden,
+            NotFound,
+            Conflict,
+            UnsupportedMediaType,
+            ValidationFailed,
+            UpgradeRequired,
+            RateLimited,
+            Unavailable,
+            Internal,
+        ],
+    },
+    OperationSpec {
+        operation_id: "me_identities_unlink",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: &[
+            MalformedRequest,
+            Unauthenticated,
+            Forbidden,
+            StepUpRequired,
+            NotFound,
+            Conflict,
+            UpgradeRequired,
+            RateLimited,
+            Internal,
+        ],
+    },
+    OperationSpec {
+        operation_id: "workspaces_create",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: &[
+            MalformedRequest,
+            Unauthenticated,
+            Forbidden,
+            Conflict,
+            UnsupportedMediaType,
+            ValidationFailed,
+            UpgradeRequired,
+            PreconditionRequired,
+            RateLimited,
+            Internal,
+        ],
+    },
 ];
 
 /// The `OpenAPI` document of the public API.
@@ -233,7 +401,21 @@ pub const OPERATIONS: &[OperationSpec] = &[
         files::scanned_document_list,
         files::scanned_document_get,
         files::scanned_document_download,
-        files::scanned_document_delete
+        files::scanned_document_delete,
+        auth_handlers::nonce_create,
+        auth_handlers::apple_login,
+        auth_handlers::google_login,
+        auth_handlers::email_start,
+        auth_handlers::email_verify,
+        auth_handlers::session_get,
+        auth_handlers::session_delete,
+        auth_handlers::sessions_list,
+        auth_handlers::sessions_revoke_all,
+        auth_handlers::session_revoke,
+        auth_handlers::identities_list,
+        auth_handlers::identity_link,
+        auth_handlers::identity_unlink,
+        setup::workspace_create
     ),
     components(schemas(
         HealthResponse,
@@ -250,13 +432,35 @@ pub const OPERATIONS: &[OperationSpec] = &[
         files::ScannedDocumentCreated,
         files::DownloadLink,
         files::NewAttachment,
-        files::NewScannedDocument
+        files::NewScannedDocument,
+        AccountHint,
+        ClientParam,
+        EmailStartRequest,
+        EmailStartResponse,
+        EmailVerifyRequest,
+        IdentitySummary,
+        LinkIdentityRequest,
+        LinkResponse,
+        LoginResponse,
+        NonceResponse,
+        ProviderLoginRequest,
+        SessionDetail,
+        SessionInfo,
+        SessionIssued,
+        SessionItem,
+        UserSummary,
+        WorkspaceSummary,
+        WorkspaceCreateRequest,
+        WorkspaceResponse
     )),
     tags(
         (name = "system", description = "Service status and version"),
         (name = "meta", description = "Definitions and client requirements"),
         (name = "events", description = "Live updates (SSE)"),
-        (name = "files", description = "Attachments and scanned documents (direct upload to the object store)")
+        (name = "files", description = "Attachments and scanned documents (direct upload to the object store)"),
+        (name = "auth", description = "Sign-in with Apple, Google or an e-mail link"),
+        (name = "me", description = "The signed-in user: session, sessions, sign-in methods"),
+        (name = "workspaces", description = "Workspaces")
     )
 )]
 pub struct ApiDoc;
