@@ -27,7 +27,7 @@ Bu kayıt tabloları, sütun kurallarını, ayrım ve bütünlük kurallarını 
 
 1. **Üç tür tablo var.**
    - *Çalışma alanı tablosu:* `workspace_id uuid NOT NULL`. Tarif, parti, stok, bildirim gibi müşteri içeriğinin tamamı.
-   - *Hesap tablosu:* kullanıcıya bağlı, çalışma alanından bağımsız (`users`, `user_identities`, `passkeys`, `sessions`, `email_login_tokens`, `push_targets`).
+   - *Hesap tablosu:* kullanıcıya bağlı, çalışma alanından bağımsız (`users`, `user_identities`, `passkeys`, `sessions`, `email_login_tokens`, `push_targets`; `auth_requests` girişten önce olduğundan kullanıcısızdır ve yalnız madde 2.6'daki fonksiyonlarla erişilir).
    - *Ortak tablo:* herkesin okuduğu, yalnız göç ve tohum rolünün yazdığı veriler (ortak malzeme kütüphanesi, stil kılavuzları, vergi tabloları, varsayılan kaplar). Ortak kütüphane ile çalışma alanına özel kayıtlar aynı tabloda tutulur: `workspace_id` NULL ise satır ortaktır.
 2. **RLS:** çalışma alanı tablolarının hepsinde `ENABLE` ve `FORCE ROW LEVEL SECURITY`. Politika `workspace_id = current_setting('app.workspace_id', true)::uuid`. Bağlam yoksa ayar NULL olur ve hiçbir satır eşleşmez. Ortak veri de tutan tablolarda okuma `workspace_id IS NULL OR workspace_id = bağlam`, yazma (`WITH CHECK`) yalnız `workspace_id = bağlam` olur. Hesap tablolarında politika `user_id = current_setting('app.user_id', true)::uuid` biçimindedir.
 3. **Bağlam:** API her isteği tek işlemde yürütür ve başında `SET LOCAL app.user_id`, `app.workspace_id`, `app.actor_kind` (`user` / `support` / `system` / `device`) ayarlar (T2.10). Destek erişimi `actor_kind = support` ile ve `SET TRANSACTION READ ONLY` ile açılır. Bunu yalnız geçerli bir SupportGrant'ı denetleyen kod açar (T2.30).
@@ -51,10 +51,11 @@ Kalın yazılanlar plan varlığıdır; ötekiler bu kayıtta eklenen yardımcı
 |---|---|
 | **`workspaces`** | ad, `mode` (`home` / `business`), `region` (`us` / `uk`; değişmez), `country` (vergi ve mevzuat), `time_zone`, `support_pseudonym` (rastgele, kalıcı; GitHub'da yalnız bu görünür), `settings jsonb` |
 | **`users`** | görünen ad, iletişim e-postası (doğrulanmış, isteğe bağlı), dil, `deleted_at`. E-posta kimlik değildir |
-| **`user_identities`** | `provider` (`apple` / `google` / `email`), `subject` (sağlayıcıdaki kalıcı kimlik; e-postada normalize adres), bağlanma zamanı; `UNIQUE (provider, subject)` |
+| **`user_identities`** | `provider` (`apple` / `google` / `email`), `subject` (sağlayıcıdaki kalıcı kimlik; e-postada normalize adres), bağlanma zamanı; `UNIQUE (provider, subject)`; Apple yenileme belirteci zarf şifreli (`provider_refresh_token_enc`, hesap silmede iptal için; ADR-0009) |
 | `passkeys` | WebAuthn kimlik kaydı: kimlik bilgisi kimliği, açık anahtar, sayaç, ad, son kullanım (plan: UserIdentity'nin "passkey kayıtları") |
 | `sessions` | opak belirtecin özeti, kullanıcı, istemci türü, cihaz adı, oluşturma, son etkinlik, bitiş, ikinci adım zamanı, kapatılma. Oturum listesi ve uzaktan çıkış buradan; Redis yalnız önbellek (ADR-0009) |
 | `email_login_tokens` | tek kullanımlık giriş bağlantısı: özet, adres, bitiş, kullanılma |
+| `auth_requests` | giriş denemesi: tek kullanımlık nonce, `state`, PKCE doğrulayıcısı, bitiş (10 dk) (ADR-0009) |
 | `workspace_members` | kullanıcı ↔ çalışma alanı, durum (`active` / `disabled`), katılma. Politika: `user_id = app.user_id OR workspace_id = app.workspace_id` (kullanıcı kendi çalışma alanlarını listeleyebilsin) |
 | **`roles`** | çalışma alanı rolü: ad, `template_key` (hazır rolden kopyalandıysa), açılış ekranı |
 | `role_permissions` | rol × izin. İzinler kodda sabit bir listedir (`recipe.view`, `recipe.edit`, `recipe.approve`, …; plan › Yetki matrisi) ve sütun CHECK ile bu listeye bağlanır. Planın **Permission** varlığı tablo değil, bu listedir: yeni izin kodla birlikte gelir |

@@ -879,7 +879,7 @@ Tarif sürümleri kendiliğinden çoğalmamalı (Grainfather'da birikmiş sürü
 
 ### Ortak cihaz modu
 
-Üretim alanındaki tek iPad'i birden fazla kişi kullanır: hızlı kullanıcı değiştirme (PIN veya Face ID), her işlem o anki kullanıcıya yazılır, belirli süre işlem olmazsa ekran kilitlenir. Yetkiler sunucuda denetlenir. Bağlantı yoksa yalnız indirilmiş demleme paketiyle sayaç ve ölçüm girişi yapılır; ölçümler o anki kullanıcıya yazılıp kuyruğa alınır.
+Üretim alanındaki tek iPad'i birden fazla kişi kullanır: hızlı kullanıcı değiştirme (kişiye özel PIN; Face ID cihaz sahibine kayıtlı olduğundan ortak cihazda kişiyi ayırmaz, ADR-0009), her işlem o anki kullanıcıya yazılır, belirli süre işlem olmazsa ekran kilitlenir. Yetkiler sunucuda denetlenir. Bağlantı yoksa yalnız indirilmiş demleme paketiyle sayaç ve ölçüm girişi yapılır; ölçümler o anki kullanıcıya yazılıp kuyruğa alınır.
 
 ### Ev modunda
 
