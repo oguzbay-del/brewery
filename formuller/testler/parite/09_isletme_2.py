@@ -70,6 +70,8 @@ def uret():
         if isinstance(beklenen, D):
             assert "E" not in str(beklenen), "bilimsel gösterim: %s" % beklenen
         v.ekle("tax_line", girdi, beklenen)
+        # T1.17 (§2.3): aynı girdiyle vergi + LPA + uygulanan oran
+        v.ekle("tax_line_detail", girdi, _hata_ile(lambda: ref.tax_line_detail(method, D(volume), **kw)))
 
     B22 = [["3.5", "9.27"], ["8.5", "21.78"], [None, "29.54"]]
     B24 = [["10.0", "16.88"], ["14.0", "25.32"], [None, "33.76"]]

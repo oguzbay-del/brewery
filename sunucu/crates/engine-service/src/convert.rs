@@ -1,6 +1,9 @@
 //! Conversion layer between the metric wire units and the engine's BeerSmith units
 //! (ADR-0004 item 4, ADR-0005 item 3). Services convert only through this module.
 
+/// Bar per psi: the single engine constant (T1.17).
+use engine::units::PSI_BAR;
+
 /// Degrees Celsius to degrees Fahrenheit.
 #[must_use]
 pub fn c_to_f(c: f64) -> f64 {
@@ -117,9 +120,6 @@ pub fn per_12floz_to_per_100ml(v: f64) -> f64 {
 pub fn per_100ml_to_per_12floz(v: f64) -> f64 {
     v * (12.0 * engine::units::FLOZ_ML / 100.0)
 }
-
-/// Bar per pound-force per square inch (1 psi = 6894.757293168 Pa, exact by definition).
-const PSI_BAR: f64 = 0.068_947_572_931_683_6;
 
 /// Pressure, bar to psi.
 #[must_use]

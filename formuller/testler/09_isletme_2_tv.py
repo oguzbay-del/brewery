@@ -82,7 +82,15 @@ def money(x, dp=2, mode=ROUND_HALF_UP):
 
 def tax_line(*a, **k):
     """Karar (T1.12 D5): sonuç eksi sıfır içermez (`+ 0`)."""
-    return _tax_line(*a, **k) + D(0)
+    return _tax_line(*a, **k)[0] + D(0)
+
+def tax_line_detail(*a, **k):
+    """Karar (T1.17, 09 §2.3): rapor satırı için vergi + LPA + uygulanan oran. `lpa` yalnız `saf_alkol`'da, `oran`
+    tek bir oranın uygulandığı yöntemlerde (kademeli_hacim: None). `saf_alkol` oranı indirim sonrası net orandır
+    (vergi = lpa × oran); `hacim`/`hl_plato` oranı 0'a kenetlenir."""
+    tax, lpa, rate = _tax_line(*a, **k)
+    return {"vergi": tax + D(0), "lpa": None if lpa is None else lpa + D(0),
+            "oran": None if rate is None else rate + D(0)}
 
 def _tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=None, ytd=0,
              plato_trunc=True, discount_per_lpa=0, input_dp=TANIMSIZ, input_mode=ROUND_HALF_UP, inclusive=None):
@@ -102,21 +110,24 @@ def _tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=No
         raise ValueError("girdi yuvarlama kuralı tanımsız: ülke satırı input_dp yazmalı (None = yuvarlama yok)")
     hl = d(V_L) / 100
     if method == "hacim":
-        return max(d(rate) * hl, D(0))
+        rt = max(d(rate), D(0))
+        return max(d(rate) * hl, D(0)), None, rt
     if method == "saf_alkol":
         a = _round_in(abv, input_dp, input_mode)
         lpa = d(V_L) * a / 100
         if bands: _check_bands(bands)
         rt = _band(a, bands, False if inclusive is None else inclusive) if bands else d(rate)
-        return max(lpa * max(rt - d(discount_per_lpa), D(0)), D(0))      # indirim oranı aşamaz, negatif vergi yok
+        net = max(rt - d(discount_per_lpa), D(0))                         # indirim oranı aşamaz, negatif vergi yok
+        return max(lpa * net, D(0)), lpa, net
     if method == "hl_plato":
         p = _round_in(plato, input_dp, input_mode)
         if plato_trunc: p = p.to_integral_value(rounding=ROUND_FLOOR)
-        return max(d(rate) * hl * p, D(0))
+        return max(d(rate) * hl * p, D(0)), None, max(d(rate), D(0))
     if method == "plato_bandi":
         p = _round_in(plato, input_dp, input_mode)
         _check_bands(bands)
-        return _band(p, bands, True if inclusive is None else inclusive) * hl
+        rt = _band(p, bands, True if inclusive is None else inclusive)
+        return rt * hl, None, rt
     if method == "kademeli_hacim":
         _check_bands(tiers)
         tax, start, left = D(0), d(ytd), hl
@@ -126,10 +137,11 @@ def _tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=No
             take = min(room, left)
             tax += take * d(rt); start += take; left -= take
         if left > 0: raise ValueError("son kademenin üst sınırı aşıldı: %s hL kademesiz" % left)
-        return tax
+        return tax, None, None
     raise ValueError(method)
 
 # ---------------------------------------------------------------- 3. Spunding
+PSI_BAR = 0.0689475729316836  # 1 psi = 6894.757293168361 Pa (tam), bar karşılığı; motorda `units::PSI_BAR` (T1.17)
 CO2_G_PER_VOL = 44.01/22.414  # = 1.9635 g/L, ideal gaz, 0 °C 1 atm [kesin; 10 ve 11 ile tek sabit, F1 karar 9]
 BALLING_CO2 = 0.9565/2.0665   # g CO2 / g fermente ekstrakt [Balling]
 
@@ -153,7 +165,7 @@ def spund(target_vol, T_C, fg_expected):
     close_P = to_plato(fg_expected) + dAE_P
     psi = co2_pressure_psi(T_C, target_vol)
     return {"kalinti_vol": r(residual_co2(T_C), 2), "gereken_g_L": r(need_g, 2), "kapama_SG": r(to_sg(close_P), 4),
-            "puan_once": r((to_sg(close_P) - fg_expected)*1000, 1), "ayar_psi": r(psi, 1), "ayar_bar": r(psi*0.0689476, 2)}
+            "puan_once": r((to_sg(close_P) - fg_expected)*1000, 1), "ayar_psi": r(psi, 1), "ayar_bar": r(psi*PSI_BAR, 2)}
 
 # ---------------------------------------------------------------- 4. Beyan, vergilenecek hacim, spunding uyarıları (T1.14g)
 LABEL_NUTRITION_EXEMPT_ABV = D("1.2")      # §1.3 [mevzuat, doğrulanacak]: bu ABV'nin üstünde besin değeri beyanı zorunlu değil

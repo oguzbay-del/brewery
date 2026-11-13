@@ -94,6 +94,7 @@ Mevzuat raporu bu hesabı kullanır.
 
 ### 2.3 Rapor çıktısı [tasarım]
 - Dönem (ay veya çeyrek), ürün, ambalaj tipi (fıçı/şişe/kutu) ve vergi satırı bazında hacim, ABV, °P, LPA, oran ve tutar.
+- **Karar (T1.17): LPA ve uygulanan oran motordan gelir.** `tax_line_detail` vergiyle birlikte LPA'yı (yalnız `saf_alkol`; diğer yöntemlerde boş) ve satıra uygulanan oranı döndürür. `saf_alkol` oranı indirim sonrası net orandır (`vergi = LPA × oran`); `hacim` ve `hl_plato` oranı 0'a kenetlenir; `plato_bandi` bant oranıdır; `kademeli_hacim` birden çok oran uyguladığı için oran boştur. Rapor satırı bu iki değeri olduğu gibi gösterir, istemci yeniden hesaplamaz.
 - **CSV/PDF:** resmi beyanname formatını birebir üretmek ilk sürümde hedef değil. Rapor, beyannameye girilecek sayıları verir.
 
 ### 2.4 Örnek oran tablosu [doğrulanacak; arama tarihi 31 Ekim 2026]
@@ -142,7 +143,7 @@ kapama gravitesi               = ToSG(ToPlato(FG_beklenen) + ΔAE)
 ### 3.3 Vana ayarı [kesin, 04 §3.5]
 
 ```
-ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0.0689476)
+ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0.0689475729316836; 1 psi = 6894.757293168361 Pa tam değerdir, motorda tek sabit `units::PSI_BAR`)
 ```
 
 ### 3.4 Uyarılar [tasarım]

@@ -181,6 +181,12 @@ fn parite_08() {
             "conversion_eff" => {
                 c.check_r(b::conversion_eff(c.f("fw_measured_p"), c.f("fw_max_p")));
             }
+            "lab_ratio" => c.check_r(b::lab_ratio(c.f("brewhouse_pct"), c.f("lab_extract_pct"))),
+            "lauter_eff" => c.check_r(b::lauter_eff(
+                c.f("brewhouse_pct"),
+                c.f("lab_extract_pct"),
+                c.f("conversion"),
+            )),
             "malt_from_analysis" => {
                 let r = b::malt_from_analysis(c.f("fgdb"), c.f("moisture"), c.f("fc_diff"));
                 c.check(&json!({
@@ -234,6 +240,10 @@ fn invalid_inputs_are_errors() {
     assert!(b::kwh_from_heat(1.0, 0.0).is_err());
     assert!(b::kwh_from_heat(f64::NAN, 0.9).is_err());
     assert!(b::conversion_eff(10.0, 0.0).is_err());
+    assert!(b::lab_ratio(70.0, 0.0).is_err());
+    assert!(b::lauter_eff(70.0, 0.0, 0.9).is_err());
+    assert!(b::lauter_eff(70.0, 78.0, 0.0).is_err());
+    assert!(b::lauter_eff(70.0, 78.0, f64::NAN).is_err());
     assert!(b::brewhouse_yield(20.0, 12.0, 0.0, true).is_err());
     assert!(b::slurry_volume_ml(100.0, Some(0.0), 0.0, 1.0e9).is_err());
     assert!(b::first_wort_max_p(0.0, 80.0, 4.0, 0.0).is_err());

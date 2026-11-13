@@ -119,6 +119,12 @@ def uret():
                dene(ref.first_wort_max_P, gk, ex, mo, mw))
     for m, mx in ((19.6, 20.09), (20.0, 20.0), (0.0, 18.0)):
         v.ekle("conversion_eff", {"fw_measured_p": m, "fw_max_p": mx}, dene(ref.conversion_eff, m, mx))
+    # T1.17: laboratuvara oran (§4.2) ve süzme verimi (§4.3)
+    for b, lx, ce in ((73.88, 78.0, 0.975), (73.88, 78.0, 1.0), (60.0, 78.0, 0.8), (80.0, 80.0, 1.0), (0.0, 78.0, 0.9),
+                      (73.88, 78.0, 1.2)):
+        v.ekle("lab_ratio", {"brewhouse_pct": b, "lab_extract_pct": lx}, dene(ref.lab_ratio, b, lx))
+        v.ekle("lauter_eff", {"brewhouse_pct": b, "lab_extract_pct": lx, "conversion": ce},
+               dene(ref.lauter_eff, b, lx, ce))
 
     # 5. Malt analizi
     for fg, mo, fc in ((81.5, 4.3, 1.5), (81.0, 4.0, 2.0), (80.0, 0.0, 0.0), (85.2, 5.5, 1.0), (70.0, 6.0, 3.0)):
@@ -161,4 +167,9 @@ def uret():
     v.ekle("first_wort_max_p", {"grain_kg": 0.0, "extract_as_is_pct": 80.0, "moisture_pct": 4.0, "mash_water_l": 0.0},
            dene(ref.first_wort_max_P, 0.0, 80.0, 4.0, 0.0), n)
     v.ekle("conversion_eff", {"fw_measured_p": 10.0, "fw_max_p": 0.0}, dene(ref.conversion_eff, 10.0, 0.0), n)
+    v.ekle("lab_ratio", {"brewhouse_pct": 70.0, "lab_extract_pct": 0.0}, dene(ref.lab_ratio, 70.0, 0.0), "T1.17 bölen 0: " + n)
+    v.ekle("lauter_eff", {"brewhouse_pct": 70.0, "lab_extract_pct": 0.0, "conversion": 0.9},
+           dene(ref.lauter_eff, 70.0, 0.0, 0.9), "T1.17 laboratuvar ekstraktı 0: " + n)
+    v.ekle("lauter_eff", {"brewhouse_pct": 70.0, "lab_extract_pct": 78.0, "conversion": 0.0},
+           dene(ref.lauter_eff, 70.0, 78.0, 0.0), "T1.17 dönüşüm verimi 0: " + n)
     return v.yaz()

@@ -92,6 +92,16 @@ fn run_tax_line(c: &Case) {
             mode: mode(c, "input_mode"),
         },
     };
+    if c.fonk == "tax_line_detail" {
+        let opt = |x: Option<Decimal>| x.map_or(Value::Null, dec_json);
+        match bt::tax_line_detail(&p) {
+            Ok(d) => {
+                c.check(&json!({"vergi": dec_json(d.tax), "lpa": opt(d.lpa), "oran": opt(d.rate)}));
+            }
+            Err(_) => c.check(&json!({ "hata": "ValueError" })),
+        }
+        return;
+    }
     check_result(c, &bt::tax_line(&p));
 }
 
@@ -123,7 +133,7 @@ fn parite_09() {
                     })
                 }));
             }
-            "tax_line" => run_tax_line(c),
+            "tax_line" | "tax_line_detail" => run_tax_line(c),
             "round_in" => {
                 let rounding = if c.v("dp").is_null() {
                     None

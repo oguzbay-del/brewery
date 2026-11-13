@@ -392,6 +392,23 @@ pub fn conversion_eff(fw_measured_p: f64, fw_max_p: f64) -> Result<f64> {
     Ok(fw_measured_p / fw_max_p)
 }
 
+/// Brewhouse yield to lab extract ratio (spec 08 §4.2, as a fraction; ×100 for the percentage).
+/// Errors on non-finite input and `lab_extract_pct = 0` (T1.17).
+pub fn lab_ratio(brewhouse_pct: f64, lab_extract_pct: f64) -> Result<f64> {
+    ensure_finite("brewhouse_pct", brewhouse_pct)?;
+    ensure_nonzero("lab_extract_pct", lab_extract_pct)?;
+    Ok(brewhouse_pct / lab_extract_pct)
+}
+
+/// Lauter efficiency (ratio): `(brewhouse yield / lab extract) / conversion efficiency` (spec 08
+/// §4.3). Errors on non-finite input and when the lab extract or the conversion efficiency is 0.
+/// Meaningless for BIAB and no-sparge mashes; hiding it is the caller's job (T1.17).
+pub fn lauter_eff(brewhouse_pct: f64, lab_extract_pct: f64, conversion: f64) -> Result<f64> {
+    ensure_finite("conversion", conversion)?;
+    ensure_nonzero("conversion", conversion)?;
+    Ok(lab_ratio(brewhouse_pct, lab_extract_pct)? / conversion)
+}
+
 // ------------------------------------------------------ 5. Malt analysis
 
 /// Malt potential from lab analysis (spec 08 §5.1–5.2), unrounded (T1.12 C9).

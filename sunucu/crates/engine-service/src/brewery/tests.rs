@@ -634,6 +634,7 @@ async fn brewhouse_efficiency_matches_vectors() {
             lab: Some(lab()),
             mash_water_l: Some(520.0),
             first_wort_p: Some(19.6),
+            no_sparge: false,
         }))
         .await
         .unwrap()
@@ -645,6 +646,12 @@ async fn brewhouse_efficiency_matches_vectors() {
     close(
         r.conversion_efficiency.unwrap(),
         19.6 / 20.092_722_809_670_25,
+    );
+    let ratio = 73.884_540_573_944_62 / 77.995_499_999_999_99;
+    close(r.lab_ratio.unwrap(), ratio);
+    close(
+        r.lauter_efficiency.unwrap(),
+        ratio / (19.6 / 20.092_722_809_670_25),
     );
 
     // #88, #92: measured cold, no lab values.

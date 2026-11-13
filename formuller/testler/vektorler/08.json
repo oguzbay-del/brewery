@@ -103,6 +103,18 @@
 {"fonk":"conversion_eff","girdi":{"fw_measured_p":19.6,"fw_max_p":20.09},"beklenen":0.9756097560975611},
 {"fonk":"conversion_eff","girdi":{"fw_measured_p":20.0,"fw_max_p":20.0},"beklenen":1.0},
 {"fonk":"conversion_eff","girdi":{"fw_measured_p":0.0,"fw_max_p":18.0},"beklenen":0.0},
+{"fonk":"lab_ratio","girdi":{"brewhouse_pct":73.88,"lab_extract_pct":78.0},"beklenen":0.9471794871794871},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":73.88,"lab_extract_pct":78.0,"conversion":0.975},"beklenen":0.9714661406969098},
+{"fonk":"lab_ratio","girdi":{"brewhouse_pct":73.88,"lab_extract_pct":78.0},"beklenen":0.9471794871794871},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":73.88,"lab_extract_pct":78.0,"conversion":1.0},"beklenen":0.9471794871794871},
+{"fonk":"lab_ratio","girdi":{"brewhouse_pct":60.0,"lab_extract_pct":78.0},"beklenen":0.7692307692307693},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":60.0,"lab_extract_pct":78.0,"conversion":0.8},"beklenen":0.9615384615384616},
+{"fonk":"lab_ratio","girdi":{"brewhouse_pct":80.0,"lab_extract_pct":80.0},"beklenen":1.0},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":80.0,"lab_extract_pct":80.0,"conversion":1.0},"beklenen":1.0},
+{"fonk":"lab_ratio","girdi":{"brewhouse_pct":0.0,"lab_extract_pct":78.0},"beklenen":0.0},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":0.0,"lab_extract_pct":78.0,"conversion":0.9},"beklenen":0.0},
+{"fonk":"lab_ratio","girdi":{"brewhouse_pct":73.88,"lab_extract_pct":78.0},"beklenen":0.9471794871794871},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":73.88,"lab_extract_pct":78.0,"conversion":1.2},"beklenen":0.7893162393162393},
 {"fonk":"malt_from_analysis","girdi":{"fgdb":81.5,"moisture":4.3,"fc_diff":1.5},"beklenen":{"FGAI":77.99549999999999,"CGDB":80.0,"CGAI_yield":76.56,"potansiyel":1.035378376,"potansiyel_BS":1.0352176,"PPG":35.378376}},
 {"fonk":"malt_from_analysis","girdi":{"fgdb":81.0,"moisture":4.0,"fc_diff":2.0},"beklenen":{"FGAI":77.75999999999999,"CGDB":79.0,"CGAI_yield":75.84,"potansiyel":1.035045664,"potansiyel_BS":1.0348864,"PPG":35.045664}},
 {"fonk":"malt_from_analysis","girdi":{"fgdb":80.0,"moisture":0.0,"fc_diff":0.0},"beklenen":{"FGAI":80.0,"CGDB":80.0,"CGAI_yield":80.0,"potansiyel":1.036968,"potansiyel_BS":1.0368,"PPG":36.968}},
@@ -157,5 +169,8 @@
 {"fonk":"slurry_volume_ml","girdi":{"cells_billion":100.0,"density_cells_ml":null,"viability":0.0,"default_density":1000000000.0},"beklenen":{"hata":"ValueError"},"not":"canlılık 0: T1.16: hata"},
 {"fonk":"brewhouse_yield","girdi":{"v_l":20.0,"p":12.0,"malt_kg":0.0,"hot":true},"beklenen":{"hata":"ValueError"},"not":"T1.16: hata"},
 {"fonk":"first_wort_max_p","girdi":{"grain_kg":0.0,"extract_as_is_pct":80.0,"moisture_pct":4.0,"mash_water_l":0.0},"beklenen":{"hata":"ValueError"},"not":"T1.16: hata"},
-{"fonk":"conversion_eff","girdi":{"fw_measured_p":10.0,"fw_max_p":0.0},"beklenen":{"hata":"ValueError"},"not":"T1.16: hata"}
+{"fonk":"conversion_eff","girdi":{"fw_measured_p":10.0,"fw_max_p":0.0},"beklenen":{"hata":"ValueError"},"not":"T1.16: hata"},
+{"fonk":"lab_ratio","girdi":{"brewhouse_pct":70.0,"lab_extract_pct":0.0},"beklenen":{"hata":"ValueError"},"not":"T1.17 bölen 0: T1.16: hata"},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":70.0,"lab_extract_pct":0.0,"conversion":0.9},"beklenen":{"hata":"ValueError"},"not":"T1.17 laboratuvar ekstraktı 0: T1.16: hata"},
+{"fonk":"lauter_eff","girdi":{"brewhouse_pct":70.0,"lab_extract_pct":78.0,"conversion":0.0},"beklenen":{"hata":"ValueError"},"not":"T1.17 dönüşüm verimi 0: T1.16: hata"}
 ]}

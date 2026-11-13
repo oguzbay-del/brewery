@@ -29,6 +29,10 @@ pub const CO2_G_PER_VOL: f64 = 44.01 / 22.414;
 /// g CO₂ per g fermented extract (Balling, spec 11 §3.2).
 pub const BALLING_CO2: f64 = 0.9565 / 2.0665;
 
+/// Bar per psi: 1 psi = 6894.757293168361 Pa exactly (spec 09 §3.3); the one constant for every
+/// psi/bar conversion (T1.17).
+pub const PSI_BAR: f64 = 0.068_947_572_931_683_6;
+
 /// Litres to US fluid ounces.
 #[must_use]
 pub fn l_to_floz(litres: f64) -> f64 {

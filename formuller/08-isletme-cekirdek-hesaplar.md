@@ -181,6 +181,7 @@ dönüşüm verimi = ölçülen ilk şıra °P / ilk şıra maks
 süzme verimi   = (brewhouse verimi / laboratuvar ekstraktı) / dönüşüm verimi
 ```
 
+- **Karar (T1.17):** motor `lab_ratio` (§4.2, kesir) ve `lauter_eff` (süzme verimi, kesir) hesaplar. Bölenlerden biri (laboratuvar ekstraktı ya da dönüşüm verimi) 0 ise hata verir (00-OKU-BENI hata kuralı). Motor BIAB'de de hesaplar; gösterimi gizlemek istemcinin işidir, bu yüzden yanıtta süzme alanı isteğe bağlıdır (istemci "sparge yok" bilgisini verirse sunucu alanı boş bırakır).
 - **Ne için:** düşük verimin nedenini ayırır.
   - Dönüşüm düşükse sorun mash'te: öğütme, sıcaklık, süre, pH.
   - Süzme düşükse sorun lauterde.

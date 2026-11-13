@@ -322,6 +322,9 @@ message BrewhouseEfficiencyRequest {
   // Measured first wort after about 10 min recirculation, degrees Plato; with `lab` and
   // `mash_water_l` gives the conversion efficiency.
   optional double first_wort_p = 7;
+  // BIAB or no-sparge mash: first wort is the whole wort, so the lauter efficiency is not
+  // computed (spec 08 §4.3) and `lauter_efficiency` stays unset.
+  bool no_sparge = 8;
 }
 
 message BrewhouseEfficiencyResponse {
@@ -335,6 +338,11 @@ message BrewhouseEfficiencyResponse {
   optional double first_wort_max_p = 4;
   // Conversion efficiency, ratio (measured / maximum first wort).
   optional double conversion_efficiency = 5;
+  // Brewhouse yield / lab extract, ratio (spec 08 §4.2); set with `lab`.
+  optional double lab_ratio = 6;
+  // Lauter efficiency, ratio: (brewhouse yield / lab extract) / conversion efficiency (spec 08
+  // §4.3). Set with the conversion efficiency unless `no_sparge`; hide it when unset.
+  optional double lauter_efficiency = 7;
 }
 
 // ------------------------------------------------------------------- 5. Malt analysis
@@ -609,6 +617,11 @@ message TaxLineResult {
   string tax_unrounded = 9;
   // Rounded with the row's money rule when the scope is LINE; equals `tax_unrounded` for TOTAL.
   string tax = 10;
+  // Litres of pure alcohol of the line, decimal text; set for the pure-alcohol method (spec 09 §2.3).
+  optional string lpa = 11;
+  // Rate applied to the line, decimal text, net of relief for the pure-alcohol method; unset for
+  // tiered volume (several rates).
+  optional string applied_rate = 12;
 }
 
 message TaxReportResponse {

@@ -308,6 +308,8 @@ fn brewhouse_efficiency(
         lab_extract_as_is_pct: None,
         first_wort_max_p: None,
         conversion_efficiency: None,
+        lab_ratio: None,
+        lauter_efficiency: None,
     };
     if r.lab.is_none() && (r.mash_water_l.is_some() || r.first_wort_p.is_some()) {
         return Err(bad_request(
@@ -323,6 +325,10 @@ fn brewhouse_efficiency(
             eb::lab_extract_as_is(fgdb, moisture, diff),
         )?;
         resp.lab_extract_as_is_pct = Some(as_is);
+        resp.lab_ratio = Some(out(
+            "lab_ratio",
+            eb::lab_ratio(yield_pct, as_is).map_err(|e| from_engine(&e))?,
+        )?);
         match r.mash_water_l {
             Some(w) => {
                 let max = out(
@@ -332,11 +338,19 @@ fn brewhouse_efficiency(
                 )?;
                 resp.first_wort_max_p = Some(max);
                 if let Some(fw) = r.first_wort_p {
-                    resp.conversion_efficiency = Some(out(
+                    let conversion = out(
                         "conversion_efficiency",
                         eb::conversion_eff(non_negative("first_wort_p", fw)?, max)
                             .map_err(|e| from_engine(&e))?,
-                    )?);
+                    )?;
+                    resp.conversion_efficiency = Some(conversion);
+                    if !r.no_sparge {
+                        resp.lauter_efficiency = Some(out(
+                            "lauter_efficiency",
+                            eb::lauter_eff(yield_pct, as_is, conversion)
+                                .map_err(|e| from_engine(&e))?,
+                        )?);
+                    }
                 }
             }
             None if r.first_wort_p.is_some() => {

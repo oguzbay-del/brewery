@@ -218,7 +218,7 @@ fn line_tax(
     row: &Row,
     line: &TaxProductLine,
     taxable_l: Decimal,
-) -> Result<Decimal, Status> {
+) -> Result<bt::TaxLineDetail, Status> {
     let opt = |name: &str, v: &Option<String>| {
         v.as_deref()
             .map(|s| dec::tax_signed(&format!("lines[{i}].{name}"), s))
@@ -235,7 +235,7 @@ fn line_tax(
     p.discount_per_lpa = row.relief;
     p.input = row.input;
     p.inclusive = row.inclusive;
-    bt::tax_line(&p).map_err(|e| from_engine(&e))
+    bt::tax_line_detail(&p).map_err(|e| from_engine(&e))
 }
 
 pub(super) fn report(r: &TaxReportRequest) -> Result<TaxReportResponse, Status> {
@@ -265,7 +265,8 @@ pub(super) fn report(r: &TaxReportRequest) -> Result<TaxReportResponse, Status> 
     let mut total = Decimal::ZERO;
     for (i, line) in r.lines.iter().enumerate() {
         let vol = volume(i, &row, line, (&r.period_start, &r.period_end))?;
-        let unrounded = line_tax(i, &row, line, vol.taxable_l)?;
+        let detail = line_tax(i, &row, line, vol.taxable_l)?;
+        let unrounded = detail.tax;
         let tax = if row.line_scope {
             bt::money(unrounded, row.money_dp, row.money_mode).map_err(|e| from_engine(&e))?
         } else {
@@ -283,6 +284,8 @@ pub(super) fn report(r: &TaxReportRequest) -> Result<TaxReportResponse, Status> 
             lab_l: dec::fmt(vol.lab_l),
             tax_unrounded: dec::fmt(unrounded),
             tax: dec::fmt(tax),
+            lpa: detail.lpa.map(dec::fmt),
+            applied_rate: detail.rate.map(dec::fmt),
         });
     }
     if !row.line_scope {

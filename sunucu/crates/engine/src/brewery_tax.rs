@@ -10,7 +10,9 @@
 use rust_decimal::{Decimal, RoundingStrategy};
 
 use crate::error::Error;
-use crate::units::{BALLING_CO2, CO2_G_PER_VOL, c_to_f, gravity_units, round_py, to_plato, to_sg};
+use crate::units::{
+    BALLING_CO2, CO2_G_PER_VOL, PSI_BAR, c_to_f, gravity_units, round_py, to_plato, to_sg,
+};
 use crate::yeast;
 
 // ---------------------------------------------------------------------------------------------
@@ -488,6 +490,31 @@ pub fn money(x: Decimal, dp: u32, mode: RoundMode) -> Result<Decimal, Error> {
 /// Methods that use ABV or °P (`PureAlcohol`, `HlPlato`, `PlatoBand`) fail with
 /// [`Error::InvalidInput`] when the rounding rule is [`InputRounding::Undefined`].
 pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, Error> {
+    tax_line_detail(p).map(|d| d.tax)
+}
+
+/// Tax of one line with the figures the report shows (spec 09 §2.3, T1.17).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TaxLineDetail {
+    /// Tax, unrounded, never negative (same as [`tax_line`]).
+    pub tax: Decimal,
+    /// Litres of pure alcohol (`PureAlcohol` only).
+    pub lpa: Option<Decimal>,
+    /// Rate applied; `None` for `TieredVolume` (several rates). `PureAlcohol`: net of relief
+    /// (`tax = lpa × rate`); `Volume`/`HlPlato`: clamped at 0.
+    pub rate: Option<Decimal>,
+}
+
+/// Like [`tax_line`] but also returns LPA and the applied rate.
+///
+/// # Errors
+/// Same as [`tax_line`].
+pub fn tax_line_detail(p: &TaxLine<'_>) -> Result<TaxLineDetail, Error> {
+    let plain = |tax, rate| TaxLineDetail {
+        tax,
+        lpa: None,
+        rate,
+    };
     let uses_input = matches!(
         p.method,
         Method::PureAlcohol | Method::HlPlato | Method::PlatoBand
@@ -511,7 +538,10 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, Error> {
             let rate = p
                 .rate
                 .ok_or(Error::invalid("rate", "required input is missing"))?;
-            Ok(max_py(mul(rate, hl)?, Decimal::ZERO))
+            Ok(plain(
+                max_py(mul(rate, hl)?, Decimal::ZERO),
+                Some(max_py(rate, Decimal::ZERO)),
+            ))
         }
         Method::PureAlcohol => {
             let abv = p
@@ -526,7 +556,11 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, Error> {
                 band(a, p.bands, p.inclusive.unwrap_or(false))?
             };
             let net = max_py(sub(rate, p.discount_per_lpa)?, Decimal::ZERO);
-            Ok(max_py(mul(lpa, net)?, Decimal::ZERO))
+            Ok(TaxLineDetail {
+                tax: max_py(mul(lpa, net)?, Decimal::ZERO),
+                lpa: Some(lpa),
+                rate: Some(net),
+            })
         }
         Method::HlPlato => {
             let plato = p
@@ -539,7 +573,10 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, Error> {
             if p.plato_trunc {
                 pl = quantize(pl, 0, RoundMode::Floor)?;
             }
-            Ok(max_py(mul(mul(rate, hl)?, pl)?, Decimal::ZERO))
+            Ok(plain(
+                max_py(mul(mul(rate, hl)?, pl)?, Decimal::ZERO),
+                Some(max_py(rate, Decimal::ZERO)),
+            ))
         }
         Method::PlatoBand => {
             let plato = p
@@ -547,7 +584,7 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, Error> {
                 .ok_or(Error::invalid("plato", "required input is missing"))?;
             let pl = round_in(plato, rounding)?;
             let rate = band(pl, p.bands, p.inclusive.unwrap_or(true))?;
-            mul(rate, hl)
+            Ok(plain(mul(rate, hl)?, Some(rate)))
         }
         Method::TieredVolume => {
             let mut tax = Decimal::ZERO;
@@ -569,7 +606,7 @@ pub fn tax_line(p: &TaxLine<'_>) -> Result<Decimal, Error> {
             if left > Decimal::ZERO {
                 return Err(Error::invalid("volume", "above the last tier"));
             }
-            Ok(tax)
+            Ok(plain(tax, None))
         }
     }
 }
@@ -619,7 +656,7 @@ pub fn spund(target_co2_vol: f64, t_c: f64, fg_expected: f64) -> Result<Spund, E
         closing_sg: round_py(to_sg(close_p), 4),
         points_before: round_py((to_sg(close_p) - fg_expected) * 1000.0, 1),
         setting_psi: round_py(psi, 1),
-        setting_bar: round_py(psi * 0.068_947_6, 2),
+        setting_bar: round_py(psi * PSI_BAR, 2),
     })
 }
 

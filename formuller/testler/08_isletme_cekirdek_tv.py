@@ -99,6 +99,17 @@ def first_wort_max_P(grain_kg, extract_as_is_pct, moisture_pct, mash_water_L):
 
 def conversion_eff(fw_measured_P, fw_max_P): return fw_measured_P/fw_max_P
 
+def lab_ratio(brewhouse_pct, lab_extract_pct):
+    """§4.2 laboratuvara oran = brewhouse verimi / laboratuvar ekstraktı (kesir; % için ×100). Bölen 0: ValueError."""
+    if lab_extract_pct == 0: raise ValueError("laboratuvar ekstraktı 0 olamaz")
+    return brewhouse_pct/lab_extract_pct
+
+def lauter_eff(brewhouse_pct, lab_extract_pct, conversion):
+    """§4.3 süzme verimi = (brewhouse verimi / laboratuvar ekstraktı) / dönüşüm verimi (kesir). Bölenlerden biri 0:
+    ValueError (T1.17). BIAB ve sparge'sız mash'te anlamsız: istemci gösterimi gizler (motor hesaplar)."""
+    if conversion == 0: raise ValueError("dönüşüm verimi 0 olamaz")
+    return lab_ratio(brewhouse_pct, lab_extract_pct)/conversion
+
 # ---------------------------------------------------------------- 5. Malt analizinden potansiyel
 def malt_from_analysis(fgdb, moisture, fc_diff):
     fgai = fgdb*(1 - moisture/100.0)
@@ -170,10 +181,10 @@ if __name__ == "__main__":
     print("TV4.1 12 °P SG", r(sg, 4), "; 1040 L sıcak -> ekstrakt", r(extract_kg(1040, 12.0), 2), "kg")
     sha = brewhouse_yield(1040, 12.0, 170)
     lab = lab_extract_as_is(81.5, 4.3)
-    print("TV4.2 brewhouse verimi (170 kg malt):", r(sha, 2), "%; lab as-is", r(lab, 2), "%; oran", r(sha/lab*100, 1), "%")
+    print("TV4.2 brewhouse verimi (170 kg malt):", r(sha, 2), "%; lab as-is", r(lab, 2), "%; oran", r(lab_ratio(sha, lab)*100, 1), "%")
     fwmax = first_wort_max_P(170, lab, 4.3, 520)
     ce = conversion_eff(19.6, fwmax)
-    print("TV4.3 ilk şıra maks", r(fwmax, 2), "°P; ölçülen 19.6 -> dönüşüm", r(ce*100, 1), "%; süzme", r(sha/lab/ce*100, 1), "%")
+    print("TV4.3 ilk şıra maks", r(fwmax, 2), "°P; ölçülen 19.6 -> dönüşüm", r(ce*100, 1), "%; süzme", r(lauter_eff(sha, lab, ce)*100, 1), "%")
 
     print("== 5 Malt analizi")
     print("TV5.1 FGDB 81.5, nem 4.3, ince/kaba 1.5:", {k: r(v, 4 if k.startswith("pot") else 2) for k, v in malt_from_analysis(81.5, 4.3, 1.5).items()})
