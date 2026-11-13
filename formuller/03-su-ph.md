@@ -299,6 +299,7 @@ Kodda W ile (mash suyu + sparge) hacmi de okunuyor ama kullanılmıyor.
 ```
 pH_adj = pH_grist + m · ( RA/50 + MiscAcidRA(mash = doğru) )
 ```
+Birden çok asit (sıvı asitler ve asit maltlar) olduğunda `MiscAcidRA` toplamdır: `pH_adj = pH_grist + m · (RA/50 + Σ acid_ra)`. Motor `adjusted_ph_multi_acid(grist, RA, [acid_ra…], m)`, bunu `est_mash_ph(grist, RA + 50 · Σ acid_ra, m)` olarak hesaplar (T1.17). Asit malt yinelemesinde (§6.4) fatura `(kg, SRM, F_G_TYPE)` üçlüleridir; grist pH §5.1 tip süzgecinden geçer (eklenen asit malt tip 0, 3 SRM).
 
 ---
 
@@ -635,4 +636,4 @@ def acid_frac(pk,ph):
 - Tanımlı mash asidi kodları 0–3'tür; 4–8 tanımsızdır (motor bunları reddedecek, ADR-0004; şimdilik `mash_acid_defined`).
 - Sıvı asitle ayarlanmış pH, §5.4(a)'daki ayrışma oranı `f` ile hesaplanır.
 - Asit maltı yinelemesi 8 turda hedefe ulaşmazsa sonuç `converged = false` taşır.
-- `grist_ph` tahıl tipi süzgeci: yalnız tip 0 ve 3 toplama girer, payda bütün mash tahılıdır (`grist_ph_typed`).
+- `grist_ph` tahıl tipi süzgeci: yalnız tip 0 ve 3 toplama girer, payda bütün mash tahılıdır (`grist_ph_typed`). `adjusted_ph` ve `acid_malt_amount` da bu yolu kullanır (T1.17).

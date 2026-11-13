@@ -135,7 +135,7 @@ fn yeast_viability(
             calc: false,
             user_viability_pct: percent(&f("viability_pct"), v)?,
             v0_pct: 0.0,
-            rate_pct_per_day: 0.0,
+            rate_pct_per_month: 0.0,
             days: 0.0,
         }));
     }
@@ -183,7 +183,7 @@ fn map_yeast(
         new_amount: packs,
         form,
         // The engine reads this field as g for dry yeast and mL otherwise (proto comment).
-        amount_oz: amount,
+        amount_g_or_ml: amount,
         cells_ml_billion: cells_ml,
     });
     let viable = yeast::viable_cells(total, viability);

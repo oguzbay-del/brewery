@@ -36,6 +36,15 @@ def gristph(bill, bizim=False):
     W=sum(w for w,c in bill)
     s=sum(w/W*gfun(c,bizim) for w,c in bill)
     return 5.72-0.0337*s, s
+GRIST_TYPES = (0, 3)                    # §5.1 F_G_TYPE: Grain, Adjunct
+def gristph_typed(bill, bizim=False):
+    """§5.1 tam hali: bill = [(kg, SRM, F_G_TYPE)] (mash tahılları). Payda bütün mash tahıllarıdır;
+    yalnız tip 0 ve 3 toplama girer (şeker vb. S'ye 0 katar). W <= 0 ise (7.0, 0.0)."""
+    W = sum(w for w, c, ty in bill)
+    if W <= 0: return 7.0, 0.0
+    s = sum(w/W*gfun(c, bizim) for w, c, ty in bill if ty in GRIST_TYPES)
+    return 5.72-0.0337*s, s
+
 def slope(model,t):
     return t*0.47930613*0.17/1.5 if model==1 else 0.037+0.014*t
 def pks(a):
@@ -117,11 +126,12 @@ Vb,Vp,cool,trub,top=28.0,24.0,1.0,1.0,0.0
 a_=Vp-cool; b_=a_-trub
 print("T7 boilscale",((Vb/a_)*b_+top)/(b_+top))
 def adj_ph(bill_, acidmalt_g, pct, model, ra, t, bizim=False, target=5.4):
-    """§5.5 (asit malt). target: hedef pH (§6.4); ayrışma kesri yalnız bizim modelde ona bağlıdır."""
-    b=bill_+([(acidmalt_g/1000,3.0)] if acidmalt_g>0 else [])
-    W=sum(w for w,c in b)
+    """§5.5 (asit malt). bill_ = [(kg, SRM, F_G_TYPE)] (T1.17: tip süzgeci, §5.1). Eklenen asit malt tip 0, 3 SRM.
+    target: hedef pH (§6.4); ayrışma kesri yalnız bizim modelde ona bağlıdır."""
+    b=bill_+([(acidmalt_g/1000,3.0,0)] if acidmalt_g>0 else [])
+    W=sum(w for w,c,ty in b)
     if W<=0 or t<=0: raise ValueError("tahıl ağırlığı ve kalınlık > 0 olmalı")  # Karar (T1.16)
-    gp,_=gristph(b,bizim); sl=slope(model,t)
+    gp,_=gristph_typed(b,bizim); sl=slope(model,t)
     f=fdiss(3,model,target,bizim)
     acidra=-((pct/100)*1000*(acidmalt_g/1000)*f)/(W*t*0.09009)
     return gp+sl*(ra/50+acidra), W
@@ -129,12 +139,13 @@ for bizim in (False,True):
   print("-- asit malt yinelemesi", "BİZİM MODEL" if bizim else "BeerSmith uyumu")
   for model in (0,1):
     tot=0.0
+    tbill=[(w,c,0) for w,c in bill]
     for it in range(8):
-        ph,W=adj_ph(bill,tot,3.0,model,ra,t,bizim)
+        ph,W=adj_ph(tbill,tot,3.0,model,ra,t,bizim)
         sl=slope(model,t)
         amt=acid_per_L((ph-5.4)/sl,3,3.0,model,5.4,bizim)*W*t if ph-5.4>=0 else 0
         tot+=amt
-        ph2,_=adj_ph(bill,tot,3.0,model,ra,t,bizim)
+        ph2,_=adj_ph(tbill,tot,3.0,model,ra,t,bizim)
         print(f"  model{model} it{it} add={amt:.2f} g total={tot:.2f} g adjpH={ph2:.4f}")
         if ph2-5.4<0.005: break
 try:
@@ -289,16 +300,7 @@ print("T1.14c so4/cl etiket (1.426, 0.3, 19):", so4cl_label(1.426), so4cl_label(
 # ---- T1.15: parite betiğinde duran hesaplar referansa taşındı (ADR-0003 madde 1; T1.12 B4, B7, B17, B18)
 # Aşağıdaki fonksiyonlar yukarıdakileri değiştirmez; parite betiği yalnız çağırır.
 LB_G = 453.5924                         # §0.1 lb -> g (05 ile aynı LB_KG)
-GRIST_TYPES = (0, 3)                    # §5.1 F_G_TYPE: Grain, Adjunct
 MASH_ACIDS_DEFINED = (0, 1, 2, 3)       # §6.2: yalnız bu kodların MW ve yoğunluğu tanımlı (T1.15 B13 kararı)
-
-def gristph_typed(bill, bizim=False):
-    """§5.1 tam hali: bill = [(kg, SRM, F_G_TYPE)] (mash tahılları). Payda bütün mash tahıllarıdır;
-    yalnız tip 0 ve 3 toplama girer (şeker vb. S'ye 0 katar). W <= 0 ise (7.0, 0.0)."""
-    W = sum(w for w, c, ty in bill)
-    if W <= 0: return 7.0, 0.0
-    s = sum(w/W*gfun(c, bizim) for w, c, ty in bill if ty in GRIST_TYPES)
-    return 5.72-0.0337*s, s
 
 def to_grams(amount, units):
     """§0.1 ToGrams: tanımsız birim kodu ValueError (T1.16). mL (5) değeri olduğu gibi gram sayar [belirsiz]."""
@@ -319,6 +321,13 @@ def mash_acid_amount(est, target, model, t, w, acid, conc, bizim):
     sl = slope(model, t)
     return acid_per_L(dph/sl, acid, conc, model, target, bizim)*w*t
 
+def adj_ph_multi(grist_ph, ra, acid_ras, sl):
+    """§5.5 çok asitli ayarlanmış pH (T1.17): gp + m*(RA/50 + Σ acid_ra) = est_mash_ph(gp, RA + 50*Σ acid_ra, m).
+    acid_ras: sıvı asitlerin (misc_acid_ra) ve asit maltların (acid_malt_ra) RA eşdeğerleri, mEq/L, verilen sırayla toplanır."""
+    tot = 0.0
+    for a in acid_ras: tot += a
+    return est_mash_ph(grist_ph, ra + 50.0*tot, sl)
+
 def lactic_acid_ra(conc, vol_l, f, w_kg, t):
     """§5.4(a) laktik (T3 kontrolü: acidra = -(p*1000*rho*VL*f)/(0.09009*W*t))."""
     p_ = conc/100
@@ -331,7 +340,7 @@ def adj_ph_liquid(grist_ph, ra, t, model, w_kg, acid, conc, vol_l, target, bizim
     return grist_ph + slope(model, t)*(ra/50 + misc_acid_ra(acid, conc, vol_l, f, w_kg, t))
 
 def acid_malt_amount(bill, pct, model, ra, t, target, bizim):
-    """§6.4: en fazla 8 tur. Döner (toplam g, son pH, yakınsadı). yakınsadı = pH_adj - hedef < 0.005 ile durdu."""
+    """§6.4: en fazla 8 tur. bill = [(kg, SRM, F_G_TYPE)] (T1.17). Döner (toplam g, son pH, yakınsadı). yakınsadı = pH_adj - hedef < 0.005 ile durdu."""
     if pct <= 0: raise ValueError("asit malt yüzdesi > 0 olmalı")  # Karar (T1.16)
     tot = 0.0
     ph2 = 0.0

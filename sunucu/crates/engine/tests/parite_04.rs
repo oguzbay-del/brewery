@@ -143,7 +143,7 @@ fn parite_04() {
                 calc: c.b("calc"),
                 user_viability_pct: c.f("user_v"),
                 v0_pct: c.f("v0"),
-                rate_pct_per_day: c.f("rate"),
+                rate_pct_per_month: c.f("rate"),
                 days: c.f("days"),
             })),
             "viable_cells" => c.check_f(yeast::viable_cells(c.f("total"), c.f("v"))),
@@ -153,7 +153,7 @@ fn parite_04() {
                     cells_pkg_billion: c.f("cells_pkg"),
                     new_amount: c.f("new_amount"),
                     form: yform(c)?,
-                    amount_oz: c.f("amount"),
+                    amount_g_or_ml: c.f("amount"),
                     cells_ml_billion: c.f("cells_ml"),
                 }))
             })()),

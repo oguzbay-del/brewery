@@ -324,9 +324,20 @@ fn parite_03() {
                 w_kg: c.f("w_kg"),
                 t_l_per_kg: c.f("t"),
             })),
+            "adjusted_ph_multi_acid" => c.check_f(water::adjusted_ph_multi_acid(
+                c.f("grist_ph"),
+                c.f("ra"),
+                &c.v("acid_ras")
+                    .as_array()
+                    .expect("acid_ras array")
+                    .iter()
+                    .map(|x| x.as_f64().expect("ra"))
+                    .collect::<Vec<_>>(),
+                c.f("slope"),
+            )),
             "adjusted_ph" => {
                 let r = water::adjusted_ph(&water::AdjustedPhInput {
-                    bill: &bill(c),
+                    bill: &typed_bill(c),
                     acid_malt_g: c.f("acid_malt_g"),
                     acid_pct: c.f("pct"),
                     model: model(c),
@@ -339,7 +350,7 @@ fn parite_03() {
             }
             "acid_malt_amount" => {
                 let r = water::acid_malt_amount(&water::AcidMaltInput {
-                    bill: &bill(c),
+                    bill: &typed_bill(c),
                     acid_pct: c.f("pct"),
                     model: model(c),
                     ra_ppm: c.f("ra"),
@@ -408,7 +419,7 @@ fn parite_03() {
             }
             "acid_malt_amount_checked" => {
                 let r = water::acid_malt_amount(&water::AcidMaltInput {
-                    bill: &bill(c),
+                    bill: &typed_bill(c),
                     acid_pct: c.f("pct"),
                     model: model(c),
                     ra_ppm: c.f("ra"),

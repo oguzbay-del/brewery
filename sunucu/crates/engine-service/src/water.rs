@@ -319,7 +319,7 @@ fn mash_ph_of(
     let grist = water::grist_ph_typed(&bill, ours).ph;
     let estimated = water::est_mash_ph(grist, ra_ppm, slope);
 
-    let mut acid_ra = 0.0;
+    let mut acid_ras: Vec<f64> = Vec::with_capacity(p.acids.len() + grains.len());
     for (i, a) in p.acids.iter().enumerate() {
         let acid = engine_code(&format!("mash_ph.acids[{i}].acid"), a.acid, Acid::from_code)?;
         let vol_ml = non_negative(&format!("mash_ph.acids[{i}].volume_ml"), a.volume_ml)?;
@@ -327,30 +327,34 @@ fn mash_ph_of(
             &format!("mash_ph.acids[{i}].concentration_pct"),
             a.concentration_pct,
         )?;
-        acid_ra += water::misc_acid_ra(&MiscAcidRaInput {
-            acid,
-            conc_pct: conc,
-            // mL to L is a metric prefix, no unit system change.
-            vol_l: vol_ml / 1000.0,
-            f: water::dissociation_fraction(acid, model, target, ours),
-            w_kg,
-            t_l_per_kg: t,
-        })
-        .map_err(|e| from_engine(&e))?;
+        acid_ras.push(
+            water::misc_acid_ra(&MiscAcidRaInput {
+                acid,
+                conc_pct: conc,
+                // mL to L is a metric prefix, no unit system change.
+                vol_l: vol_ml / 1000.0,
+                f: water::dissociation_fraction(acid, model, target, ours),
+                w_kg,
+                t_l_per_kg: t,
+            })
+            .map_err(|e| from_engine(&e))?,
+        );
     }
     let malt_f = water::dissociation_fraction(Acid::AcidMalt, model, target, ours);
     for g in grains.iter().filter(|g| g.acid_malt) {
-        acid_ra += water::acid_malt_ra(&AcidMaltRaInput {
-            acid_pct: g.acid_pct,
-            malt_kg: g.kg,
-            f: malt_f,
-            w_kg,
-            t_l_per_kg: t,
-        })
-        .map_err(|e| from_engine(&e))?;
+        acid_ras.push(
+            water::acid_malt_ra(&AcidMaltRaInput {
+                acid_pct: g.acid_pct,
+                malt_kg: g.kg,
+                f: malt_f,
+                w_kg,
+                t_l_per_kg: t,
+            })
+            .map_err(|e| from_engine(&e))?,
+        );
     }
-    // Spec §5.5: pH_grist + m (RA/50 + MiscAcidRA), composed from the engine terms.
-    let adjusted = water::est_mash_ph(grist, 50.0f64.mul_add(acid_ra, ra_ppm), slope);
+    // Spec §5.5: pH_grist + m (RA/50 + Σ acid RA), engine `adjusted_ph_multi_acid`.
+    let adjusted = water::adjusted_ph_multi_acid(grist, ra_ppm, &acid_ras, slope);
     Ok(MashPhResult {
         grist_ph: out("grist_ph", grist)?,
         ra_slope: out("ra_slope", slope)?,
@@ -451,7 +455,8 @@ impl WaterService for WaterHandler {
         };
 
         let (mash_amount, resulting_ph, converged) = if acid == Acid::AcidMalt {
-            let bill: Vec<(f64, f64)> = grains.iter().map(|g| (g.kg, g.srm)).collect();
+            let bill: Vec<(f64, f64, GrainType)> =
+                grains.iter().map(|g| (g.kg, g.srm, g.kind)).collect();
             let m = water::acid_malt_amount(&AcidMaltInput {
                 bill: &bill,
                 acid_pct: conc,
