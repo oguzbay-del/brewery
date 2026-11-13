@@ -146,8 +146,12 @@ pub struct ForecastResult {
     pub k_per_h: f64,
     /// Finish time since batch start (hours): when `SG − FG∞ ≤ eps`.
     pub finish_h: f64,
-    /// Remaining time from the last point (hours).
+    /// Remaining time from the last point (hours), never negative: `0.0` when [`Self::finished`]
+    /// (T1.17 C10).
     pub remaining_h: f64,
+    /// "Bitti" (T1.17 C10, spec §1.5): `finish_h − t_last ≤ 0`, i.e. SG is already within `eps`
+    /// of `FG∞`. The raw `finish_h` may then lie in the past.
+    pub finished: bool,
     /// `|u(FG∞) − u(FG_recipe)| > 1000` ([`fg_warning`]): finishing differently than expected.
     pub warning: bool,
 }
@@ -161,6 +165,13 @@ pub enum Forecast {
     /// A forecast could be made.
     Ready(ForecastResult),
 }
+
+/// Default SG distance to `FG∞` that counts as finished, spec 07 §1.5.
+pub const FINISH_EPS_SG: f64 = 0.0005;
+/// Default minimum number of hourly points, spec 07 §1.4.
+pub const MIN_POINTS: usize = 12;
+/// Default minimum share (fraction) of the expected drop already done, spec 07 §1.4.
+pub const MIN_DROP: f64 = 0.30;
 
 /// §1.4 drop rule in integer gravity units (T1.12 C3): enough of the expected drop is done
 /// unless `Δu(OG − SG_now) < min_drop · Δu(OG − FG_recipe) − 1e-9`. An exact 30 % drop passes.
@@ -255,13 +266,15 @@ fn forecast_checked(
         (lo.min(x), hi.max(x))
     });
     let t_end = (fit.a / eps).ln() / fit.k_per_h;
+    let remaining = t_end - t_last;
     Forecast::Ready(ForecastResult {
         fg: fit.fg_inf,
         a_sg: fit.a,
         range_sg: (lo, hi),
         k_per_h: fit.k_per_h,
         finish_h: t_end,
-        remaining_h: t_end - t_last,
+        remaining_h: remaining.max(0.0),
+        finished: remaining <= 0.0,
         warning: fg_warning(fit.fg_inf, fg_recipe).unwrap_or(false),
     })
 }
@@ -473,6 +486,16 @@ pub fn tilt_cal(points: &[(f64, f64)]) -> Result<TiltCorrection> {
         slope: b,
         offset_sg: a,
     })
+}
+
+/// Applies a Tilt correction to a raw reading: `SG_flat = slope·SG_tilt + offset` (§2.2,
+/// T1.17). One-point calibrations have slope 1. The result is unrounded and not range-checked.
+/// Errors on non-finite input.
+pub fn tilt_apply(c: &TiltCorrection, sg_tilt: f64) -> Result<f64> {
+    ensure_finite("slope", c.slope)?;
+    ensure_finite("offset", c.offset_sg)?;
+    ensure_finite("tilt", sg_tilt)?;
+    Ok(c.slope * sg_tilt + c.offset_sg)
 }
 
 // ------------------------------------------------------------------ §3 heating and cooling

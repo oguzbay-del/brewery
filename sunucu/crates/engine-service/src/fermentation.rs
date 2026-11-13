@@ -11,8 +11,9 @@ use engine::manual::{
     ReadingSource,
 };
 use engine::trigger::{
-    self, CaskPrimingInput, FermentationType, FgSource, KegMode, KegParams, PolyPoint,
-    PredictedTriggerInput, PrimingWarning, Stability, Sugar, TriggerForecast,
+    self, CaskPrimingInput, FermentationType, FgSource, KegMode, KegParams, ManualTriggerForecast,
+    ManualTriggerInput, PolyPoint, PredictedTriggerInput, PrimingWarning, Stability, Sugar,
+    TriggerForecast,
 };
 use tonic::{Request, Response, Status};
 
@@ -21,11 +22,12 @@ use crate::proto::{
     self, CalibrateIspindelRequest, CalibrateIspindelResponse, CalibrateTiltRequest,
     CalibrateTiltResponse, CarbonationPoint, CaskConditioningRequest, CaskConditioningResponse,
     ConditioningWarning, ConditioningWarningCode, ConvertIspindelAnglesRequest,
-    ConvertIspindelAnglesResponse, DeviceForecast, FermentationForecastMethod,
-    FermentationScheduleRequest, FermentationScheduleResponse, FgReferenceSource, FgStability,
-    FgStabilityState, GravityPoint, GravityTrigger, IspindelSg, KegPrimingRequest,
-    KegPrimingResponse, ManualForecast, ManualForecastStatus, NoChillIbuRequest,
-    NoChillIbuResponse, PredictedTriggerState, TrackFermentationRequest, TrackFermentationResponse,
+    ConvertIspindelAnglesResponse, ConvertTiltReadingsRequest, ConvertTiltReadingsResponse,
+    DeviceForecast, FermentationForecastMethod, FermentationScheduleRequest,
+    FermentationScheduleResponse, FgReferenceSource, FgStability, FgStabilityState, GravityPoint,
+    GravityTrigger, IspindelSg, KegPrimingRequest, KegPrimingResponse, ManualForecast,
+    ManualForecastStatus, NoChillIbuRequest, NoChillIbuResponse, PredictedTriggerState,
+    TrackFermentationRequest, TrackFermentationResponse,
     fermentation_service_server::{FermentationService, FermentationServiceServer},
 };
 use crate::recipe::engine_code;
@@ -37,12 +39,6 @@ pub struct FermentationHandler;
 
 /// Consecutive hourly medians that must meet the trigger on device data (spec 11 §1.2).
 const TRIGGER_CONSECUTIVE: usize = 3;
-/// Device forecast: finished when this close to FG, SG (spec 07 §1.5).
-const FINISH_EPS_SG: f64 = 0.0005;
-/// Device forecast: minimum hourly points (spec 07 §1.4).
-const MIN_POINTS: usize = 12;
-/// Device forecast: minimum share of the expected drop, percent (spec 07 §1.4).
-const MIN_DROP_PCT: f64 = 30.0;
 /// "FG stable" window, hours (spec 11 §1.4).
 const STABLE_WINDOW_H: f64 = 48.0;
 /// "FG stable" minimum hourly points in the window (spec 11 §1.4).
@@ -205,10 +201,11 @@ fn track_params(r: &TrackFermentationRequest) -> Result<TrackParams, Status> {
     Ok(TrackParams {
         delta_sg,
         consecutive: r.trigger_consecutive.map_or(TRIGGER_CONSECUTIVE, to_usize),
-        eps_sg: opt_non_negative("finish_eps_sg", r.finish_eps_sg)?.unwrap_or(FINISH_EPS_SG),
-        min_points: r.min_points.map_or(MIN_POINTS, to_usize),
+        eps_sg: opt_non_negative("finish_eps_sg", r.finish_eps_sg)?.unwrap_or(home::FINISH_EPS_SG),
+        min_points: r.min_points.map_or(home::MIN_POINTS, to_usize),
         // The engine takes a fraction.
-        min_drop: opt_non_negative("min_drop_pct", r.min_drop_pct)?.unwrap_or(MIN_DROP_PCT) / 100.0,
+        min_drop: opt_non_negative("min_drop_pct", r.min_drop_pct)?
+            .map_or(home::MIN_DROP, |pct| pct / 100.0),
         window_h: opt_non_negative("stable_window_h", r.stable_window_h)?
             .unwrap_or(STABLE_WINDOW_H),
         stable_min: r.stable_min_points.map_or(STABLE_MIN_POINTS, to_usize),
@@ -273,6 +270,7 @@ fn map_device_forecast(f: Option<&ForecastResult>) -> Result<DeviceForecast, Sta
         finish_h: Some(out("finish_h", f.finish_h)?),
         remaining_h: Some(out("remaining_h", f.remaining_h)?),
         fg_warning: Some(f.warning),
+        finished: Some(f.finished),
     })
 }
 
@@ -322,6 +320,7 @@ fn track_trigger(
     hourly: &[(f64, f64)],
     fg_ref: f64,
     forecast: Option<&ForecastResult>,
+    manual_trigger: Option<ManualTriggerInput>,
 ) -> Result<GravityTrigger, Status> {
     // Device data: hourly medians, several in a row; manual data: single readings.
     let on_device = !readings.device.is_empty();
@@ -357,6 +356,29 @@ fn track_trigger(
                 t.predicted = PredictedTriggerState::AlreadyPast as i32;
             }
             TriggerForecast::Unreachable => {
+                t.predicted = PredictedTriggerState::Unreachable as i32;
+            }
+        }
+    }
+    if let Some(m) = manual_trigger {
+        // Spec 11 §1.3 (T1.17): the 10 §1.2 model with the prior FG, day resolution.
+        match trigger::predicted_trigger_manual(&m).map_err(|e| from_engine(&e))? {
+            ManualTriggerForecast::At {
+                hours,
+                days,
+                remaining_days,
+            } => {
+                t.predicted = PredictedTriggerState::At as i32;
+                t.predicted_at_h = Some(out("predicted_at_h", hours)?);
+                t.predicted_min_days = Some(days.0);
+                t.predicted_max_days = Some(days.1);
+                t.predicted_remaining_min_days = Some(remaining_days.0);
+                t.predicted_remaining_max_days = Some(remaining_days.1);
+            }
+            ManualTriggerForecast::AlreadyPast => {
+                t.predicted = PredictedTriggerState::AlreadyPast as i32;
+            }
+            ManualTriggerForecast::Unreachable => {
                 t.predicted = PredictedTriggerState::Unreachable as i32;
             }
         }
@@ -432,6 +454,7 @@ fn track(r: &TrackFermentationRequest) -> Result<TrackFermentationResponse, Stat
     let device = (!readings.device.is_empty())
         .then(|| map_device_forecast(forecast.as_ref()))
         .transpose()?;
+    let mut manual_k = None;
     let manual_forecast = if readings.manual.is_empty() {
         None
     } else {
@@ -443,6 +466,9 @@ fn track(r: &TrackFermentationRequest) -> Result<TrackFermentationResponse, Stat
             sigma_sg: p.sigma_sg,
         })
         .map_err(|e| from_engine(&e))?;
+        if let FewForecast::Estimate { k_per_h, .. } = f {
+            manual_k = Some(k_per_h);
+        }
         Some(map_manual_forecast(&f)?)
     };
 
@@ -457,7 +483,25 @@ fn track(r: &TrackFermentationRequest) -> Result<TrackFermentationResponse, Stat
         .and_then(|sg| trigger::progress(og, sg, fg_ref.fg))
         .map(|ratio| out("progress_pct", ratio * 100.0))
         .transpose()?;
-    let trig = track_trigger(&p, &readings, &hourly, fg_ref.fg, forecast.as_ref())?;
+    // Manual batches: predicted trigger from the few-readings model (spec 11 §1.3). Only an
+    // ESTIMATE has a rate; the reference FG is the recipe FG there (no device forecast).
+    let manual_trigger = manual_k.map(|k_per_h| ManualTriggerInput {
+        og,
+        fg: fg_recipe,
+        k_per_h,
+        lag_h: p.lag_h,
+        fg_ref: fg_ref.fg,
+        delta: p.delta_sg,
+        t_last_h: readings.manual.last().map_or(0.0, |&(t, _)| t),
+    });
+    let trig = track_trigger(
+        &p,
+        &readings,
+        &hourly,
+        fg_ref.fg,
+        forecast.as_ref(),
+        manual_trigger,
+    )?;
     let stability = track_stability(&p, &readings, &hourly, fg_ref.fg)?;
 
     Ok(TrackFermentationResponse {
@@ -624,6 +668,35 @@ impl FermentationService for FermentationHandler {
         }))
     }
 
+    async fn convert_tilt_readings(
+        &self,
+        request: Request<ConvertTiltReadingsRequest>,
+    ) -> Result<Response<ConvertTiltReadingsResponse>, Status> {
+        let r = request.into_inner();
+        if r.tilt_sg.is_empty() {
+            return Err(bad_request(
+                "tilt_sg must not be empty",
+                "tilt_sg",
+                "must not be empty",
+            ));
+        }
+        let c = home::TiltCorrection {
+            slope: finite("slope", r.slope)?,
+            offset_sg: finite("offset_sg", r.offset_sg)?,
+        };
+        let sg = r
+            .tilt_sg
+            .iter()
+            .enumerate()
+            .map(|(i, &x)| {
+                let tilt = non_negative(&format!("tilt_sg[{i}]"), x)?;
+                let v = home::tilt_apply(&c, tilt).map_err(|e| from_engine(&e))?;
+                out("sg", v)
+            })
+            .collect::<Result<_, Status>>()?;
+        Ok(Response::new(ConvertTiltReadingsResponse { sg }))
+    }
+
     async fn keg_priming(
         &self,
         request: Request<KegPrimingRequest>,
@@ -749,8 +822,9 @@ pub fn server() -> FermentationServiceServer<FermentationHandler> {
 mod tests {
     use super::*;
     use crate::proto::{
-        ConditioningSugar, FermentationKind, GravityReading, GravityReadingSource, IspindelPoint,
-        KegPrimingMode, NoChillHop, NoChillMode, TemperatureRamp, TiltPoint,
+        ConditioningSugar, ConvertTiltReadingsRequest, FermentationKind, GravityReading,
+        GravityReadingSource, IspindelPoint, KegPrimingMode, NoChillHop, NoChillMode,
+        TemperatureRamp, TiltPoint,
     };
     use tonic::Code;
 
@@ -960,10 +1034,35 @@ mod tests {
         let t = r.trigger.unwrap();
         assert!(t.triggered_at_h.is_none());
         assert!(!t.needs_confirmation);
+        // Predicted trigger (spec 11 §1.3, T1.17): 12 + ln(3800 / 200) / 0.0218 = 147.07 h.
+        assert_eq!(t.predicted, PredictedTriggerState::At as i32);
+        close(t.predicted_at_h.unwrap(), 12.0 + (19.0_f64).ln() / 0.0218);
+        assert_eq!(t.predicted_min_days, Some(6));
+        assert_eq!(t.predicted_max_days, Some(7));
+        assert_eq!(t.predicted_remaining_min_days, Some(2));
+        assert_eq!(t.predicted_remaining_max_days, Some(3));
         assert_eq!(
             r.stability.unwrap().state,
             FgStabilityState::NotStable as i32
         );
+    }
+
+    #[tokio::test]
+    async fn track_device_finished_reports_zero_remaining() {
+        // A huge eps puts the finish time before the last point (spec 07 §1.5, T1.17 C10).
+        let mut req = device_req(&V07_16, 1.09, 1.017);
+        req.finish_eps_sg = Some(0.05);
+        let d = track_call(req).await.unwrap().device.unwrap();
+        assert_eq!(d.finished, Some(true));
+        assert_eq!(d.remaining_h, Some(0.0));
+        assert!(d.finish_h.unwrap() < 11.2);
+        // The default eps keeps the vector 07 case 16 forecast unfinished.
+        let d = track_call(device_req(&V07_16, 1.09, 1.017))
+            .await
+            .unwrap()
+            .device
+            .unwrap();
+        assert_eq!(d.finished, Some(false));
     }
 
     #[tokio::test]
@@ -1458,6 +1557,64 @@ mod tests {
         assert_eq!(field_of(&s), "points[0].tilt_sg");
         let s = call(tilt_points(&[(1.0, -1.0)])).await;
         assert_eq!(field_of(&s), "points[0].reference_sg");
+    }
+
+    #[tokio::test]
+    async fn convert_tilt_readings_applies_the_correction() {
+        // Vector 07 tilt_apply: one point (1.0545 -> 1.0520) is a constant offset of -0.0025.
+        let r = FermentationHandler
+            .convert_tilt_readings(Request::new(ConvertTiltReadingsRequest {
+                slope: 1.0,
+                offset_sg: 1.052 - 1.0545,
+                tilt_sg: vec![1.03, 1.0545],
+            }))
+            .await
+            .unwrap()
+            .into_inner();
+        assert_eq!(r.sg.len(), 2);
+        close(r.sg[0], 1.03 + (1.052 - 1.0545));
+        close(r.sg[1], 1.052);
+        // Linear correction.
+        let r = FermentationHandler
+            .convert_tilt_readings(Request::new(ConvertTiltReadingsRequest {
+                slope: 0.5,
+                offset_sg: 0.5,
+                tilt_sg: vec![1.0],
+            }))
+            .await
+            .unwrap()
+            .into_inner();
+        close(r.sg[0], 1.0);
+        // Bad input.
+        let call = |r: ConvertTiltReadingsRequest| async move {
+            FermentationHandler
+                .convert_tilt_readings(Request::new(r))
+                .await
+                .unwrap_err()
+        };
+        let ok = ConvertTiltReadingsRequest {
+            slope: 1.0,
+            offset_sg: 0.0,
+            tilt_sg: vec![1.0],
+        };
+        let s = call(ConvertTiltReadingsRequest {
+            tilt_sg: vec![],
+            ..ok.clone()
+        })
+        .await;
+        assert_eq!(s.code(), Code::InvalidArgument);
+        let s = call(ConvertTiltReadingsRequest {
+            slope: f64::NAN,
+            ..ok.clone()
+        })
+        .await;
+        assert_eq!(field_of(&s), "slope");
+        let s = call(ConvertTiltReadingsRequest {
+            tilt_sg: vec![1.0, -1.0],
+            ..ok
+        })
+        .await;
+        assert_eq!(field_of(&s), "tilt_sg[1]");
     }
 
     // -------------------------------------------------------------- keg and cask

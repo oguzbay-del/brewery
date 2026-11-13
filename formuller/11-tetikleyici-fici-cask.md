@@ -43,7 +43,17 @@ t_tetik = ln(A / (FG_ref + Δ − FG∞)) / k        (FG_ref + Δ > FG∞ ise)
 Uç durumlar (referans uygulama `(durum, saat)` döndürür):
 - `FG_ref + Δ ≤ FG∞` → **"tetik erişilemez"**: eğri eşiğe hiç inmez. Ekranda "Bu fermantasyon hızıyla eşiğe inilmeyecek görünüyor; eşiği yükselt ya da elle karar ver" yazılır. Tahmin gösterilirken FG_ref = FG∞ olduğundan bu durum yalnız tahminin kapalı olduğu ya da Δ ≤ 0 girildiği hâlde oluşur.
 - `A ≤ FG_ref + Δ − FG∞` → eşik zaten sağlanıyor (tetik geçmiş), `t_tetik = 0`.
-Takvim ve Bugün "tahmini diacetyl rest: Perşembe öğleden sonra" gösterir. Az okumalı partide 10 §1 modeliyle aynı hesap gün çözünürlüğünde yapılır.
+Takvim ve Bugün "tahmini diacetyl rest: Perşembe öğleden sonra" gösterir.
+
+**Az okumalı (elle) partide (Karar T1.17)** 10 §1.2 modeli kullanılır: `SG(t) = FG + (OG − FG)·e^(−k·(t − L))`, `FG = FG_tarif` (10 §1: FG tariften alınır), `k` ve `L` 10 §1.3 oturtmasından (`manual::few_forecast` çıktısı: yuvarlanmış `k`, 4 hane) ve gecikme fazı. Eşik `θ = FG_ref + Δ`; elle partide tahmin gösterilmediğinden `FG_ref = FG_tarif`'tir (§1.1). Hepsi tam sayı birimde (`u`):
+```
+d = u(FG_ref) + u(Δ) − u(FG)           (θ'nın modelin asimptotundan yüksekliği)
+d ≤ 0                  → "tetik erişilemez"
+u(OG) − u(FG) ≤ d      → "tetik geçmiş" (t = 0; OG zaten eşikte)
+k < 0 hata, k = 0 hata (sıfıra bölme)
+t_tetik = L + ln( (u(OG) − u(FG)) / d ) / k      (saat, parti başlangıcından)
+```
+Gün çözünürlüğü (10 §1.6 ile aynı biçim, saat verilmez): parti başlangıcından `(floor(t_tetik/24), ceil(t_tetik/24))`; son okumadan itibaren kalan `(max(0, floor((t_tetik − t_son)/24)), max(0, ceil((t_tetik − t_son)/24)))`. Etiket "yaklaşık". FG ± σ aralığı tetik için hesaplanmaz (tek `k`); belirsizlik yalnızca gün yuvarlamasıyla gösterilir. Hesap yalnız `few_forecast` tahmin verdiğinde (durum "Estimate": `k > 0`, yeterli veri, durgunluk yok) yapılır; diğer durumlarda tetik tahmini yoktur.
 
 ### 1.4 "FG sabit" koşulu [tasarım]
 - **Cihaz:** son 48 saatin saatlik medyanlarına doğrusal eğim; en az 24 nokta. `|eğim| × 24 ≤ 0.0005` (günde yarım puandan az) ise sabit.

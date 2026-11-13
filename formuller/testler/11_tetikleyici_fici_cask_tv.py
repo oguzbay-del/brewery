@@ -50,6 +50,21 @@ def predicted_trigger(fg_inf, A, k, fg_ref, delta):
     if k < 0: raise ValueError("k < 0")                                                      # k = 0: ZeroDivisionError
     return ("tetik", math.log(A / (target_u / 100000)) / k)
 
+def predicted_trigger_manual(og, fg, k, lag, fg_ref, delta, t_last):
+    """§1.3 (T1.17): az okumalı partide tetik zamanı, 10 §1.2 modeliyle SG(t) = FG + (OG-FG) e^(-k (t-L)).
+    k: few_forecast çıktısı (yuvarlanmış, 4 hane). Tam sayı birimde: d = u(FG_ref) + u(Δ) - u(FG).
+    Dönüş: ("tetik", saat, (gün_min, gün_maks), (kalan_gün_min, kalan_gün_maks)) | ("gecmis", 0.0) | ("erisilemez", None)."""
+    if not _fin(og, fg, k, lag, fg_ref, delta, t_last): raise ValueError("girdiler sonlu olmalı")
+    d = u(fg_ref) + u(delta) - u(fg)
+    if d <= 0: return ("erisilemez", None)
+    a = u(og) - u(fg)
+    if a <= d: return ("gecmis", 0.0)
+    if k < 0: raise ValueError("k < 0")
+    t = lag + math.log(a / d) / k                       # k = 0: ZeroDivisionError
+    kalan = (t - t_last) / 24
+    return ("tetik", t, (math.floor(t / 24), math.ceil(t / 24)),
+            (max(0, math.floor(kalan)), max(0, math.ceil(kalan))))
+
 def fg_reference(fg_recipe, fg_inf=None, shown=False, delta=0.004):
     """Tahmin gösteriliyorsa ve FG∞, FG_tarif'ten (Δ − 1 puan)'dan fazla saparsa FG_ref = FG∞. Yukarı yönde ölü bölge yok
     (eşik asimptotun altında kalmaz); aşağı yön de Δ'ya bağlı, yani simetrik (F1 karar 14; eski sabit 0.004 kalktı)."""

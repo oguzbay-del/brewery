@@ -196,6 +196,94 @@ pub fn predicted_trigger(p: &PredictedTriggerInput) -> Result<TriggerForecast, E
     Ok(TriggerForecast::At((a / target).ln() / k))
 }
 
+/// Predicted trigger of a manual (few readings) batch, day resolution (spec §1.3, T1.17).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum ManualTriggerForecast {
+    /// `("tetik", t, days, remaining_days)`.
+    At {
+        /// Trigger time since pitching, hours.
+        hours: f64,
+        /// Days since pitching `(floor, ceil)`.
+        days: (i64, i64),
+        /// Days remaining from the last reading `(floor, ceil)`, at least 0.
+        remaining_days: (i64, i64),
+    },
+    /// `("gecmis", 0.0)`: OG is already at or below the threshold.
+    AlreadyPast,
+    /// `("erisilemez", None)`: the threshold is at or below the prior FG.
+    Unreachable,
+}
+
+/// Inputs of [`predicted_trigger_manual`].
+#[derive(Debug, Clone, Copy)]
+pub struct ManualTriggerInput {
+    /// Original gravity, SG.
+    pub og: f64,
+    /// Prior final gravity of the 10 §1.2 model, SG.
+    pub fg: f64,
+    /// Rate `k`, 1/hour (from `manual::few_forecast`).
+    pub k_per_h: f64,
+    /// Lag phase `L`, hours.
+    pub lag_h: f64,
+    /// Reference FG, SG.
+    pub fg_ref: f64,
+    /// Offset above the reference, SG.
+    pub delta: f64,
+    /// Time of the last reading, hours.
+    pub t_last_h: f64,
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn floor_i(x: f64) -> i64 {
+    x.floor() as i64
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn ceil_i(x: f64) -> i64 {
+    x.ceil() as i64
+}
+
+/// Trigger time for the 10 §1.2 model `SG(t) = FG + (OG − FG)·e^(−k·(t − L))` reaching
+/// `fg_ref + delta` (spec §1.3, T1.17): `t = L + ln((u(OG) − u(FG)) / d) / k` with
+/// `d = u(fg_ref) + u(delta) − u(FG)` in integer gravity units, plus the day range.
+pub fn predicted_trigger_manual(p: &ManualTriggerInput) -> Result<ManualTriggerForecast, Error> {
+    let ManualTriggerInput {
+        og,
+        fg,
+        k_per_h: k,
+        lag_h: lag,
+        fg_ref,
+        delta,
+        t_last_h: t_last,
+    } = *p;
+    if !finite(&[og, fg, k, lag, fg_ref, delta, t_last]) {
+        return Err(Error::invalid("input", "not finite or out of range"));
+    }
+    let d = gravity_units(fg_ref) + gravity_units(delta) - gravity_units(fg);
+    if d <= 0 {
+        return Ok(ManualTriggerForecast::Unreachable);
+    }
+    let a = gravity_units(og) - gravity_units(fg);
+    if a <= d {
+        return Ok(ManualTriggerForecast::AlreadyPast);
+    }
+    if k < 0.0 {
+        return Err(Error::invalid("input", "not finite or out of range"));
+    }
+    if k == 0.0 {
+        return Err(Error::DivisionByZero { field: "divisor" });
+    }
+    #[allow(clippy::cast_precision_loss)]
+    let ratio = a as f64 / d as f64;
+    let t = lag + ratio.ln() / k;
+    let remaining = (t - t_last) / 24.0;
+    Ok(ManualTriggerForecast::At {
+        hours: t,
+        days: (floor_i(t / 24.0), ceil_i(t / 24.0)),
+        remaining_days: (floor_i(remaining).max(0), ceil_i(remaining).max(0)),
+    })
+}
+
 /// Source of the reference FG (spec §1.1).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FgSource {

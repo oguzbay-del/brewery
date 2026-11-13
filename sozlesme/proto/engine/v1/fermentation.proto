@@ -19,6 +19,7 @@ service FermentationService {
   // SG_last - 0.0002], 400 steps, spec 07 §1.3), manual::few_forecast,
   // manual::forecast_method, trigger::default_delta, trigger::fg_reference,
   // trigger::progress, trigger::trigger_index, trigger::predicted_trigger,
+  // trigger::predicted_trigger_manual (manual ESTIMATE, spec 11 §1.3),
   // trigger::is_stable, manual::stall_check.
   rpc TrackFermentation(TrackFermentationRequest) returns (TrackFermentationResponse);
   // Fermentation profile editor: ramp durations, lagering suggestion and default trigger
@@ -35,6 +36,9 @@ service FermentationService {
   // Device screen: Tilt bias correction from reference (hydrometer) readings
   // (spec 07 §2.2; manual readings of a device batch, spec 10 §1.1). Engine: home::tilt_cal.
   rpc CalibrateTilt(CalibrateTiltRequest) returns (CalibrateTiltResponse);
+  // Tilt readings to corrected SG with a stored correction (spec 07 §2.2, T1.17), for incoming
+  // device readings. Engine: home::tilt_apply per reading.
+  rpc ConvertTiltReadings(ConvertTiltReadingsRequest) returns (ConvertTiltReadingsResponse);
   // Packaging screen, keg: priming sugar with headspace, serving and peak pressure
   // (spec 11 §2). Engine: trigger::keg_priming.
   rpc KegPriming(KegPrimingRequest) returns (KegPrimingResponse);
@@ -146,10 +150,14 @@ message DeviceForecast {
   optional double k_per_h = 6;
   // Finish time since pitching, hours.
   optional double finish_h = 7;
-  // Remaining time from the last hourly point, hours.
+  // Remaining time from the last hourly point, hours; 0 when `finished` (never negative).
   optional double remaining_h = 8;
   // |FG∞ − FG_recipe| > 0.010: "finishing differently than expected".
   optional bool fg_warning = 9;
+  // "Finished" (spec 07 §1.5, T1.17 C10): the finish time is not after the last hourly point,
+  // i.e. SG is already within `finish_eps_sg` of FG∞. The client shows "finished" instead of a
+  // remaining time; `finish_h` stays the raw model value (it may lie in the past).
+  optional bool finished = 10;
 }
 
 // Outcome of the few-readings forecast (`manual::FewForecast`, spec 10 §1.4-1.6).
@@ -217,10 +225,17 @@ message GravityTrigger {
   optional double triggered_at_h = 3;
   // Triggered by a single manual reading: "measure again to confirm" (spec 11 §1.2).
   bool needs_confirmation = 4;
-  // Set only when the device forecast is ready.
+  // Set when the device forecast is ready, or, for manual data, when the manual forecast is an
+  // ESTIMATE (spec 11 §1.3: the 10 §1.2 model with the prior FG, T1.17).
   PredictedTriggerState predicted = 5;
   // PREDICTED_TRIGGER_STATE_AT only: hours since pitching.
   optional double predicted_at_h = 6;
+  // Manual data, PREDICTED_TRIGGER_STATE_AT only (day resolution, "approximately"): days since
+  // pitching (floor, ceil) and days remaining from the last reading (floor, ceil; at least 0).
+  optional int64 predicted_min_days = 7;
+  optional int64 predicted_max_days = 8;
+  optional int64 predicted_remaining_min_days = 9;
+  optional int64 predicted_remaining_max_days = 10;
 }
 
 // "FG stable" state (spec 11 §1.4).
@@ -354,6 +369,20 @@ message CalibrateTiltResponse {
   // `SG_flat = slope·SG_tilt + offset_sg`.
   double slope = 1;
   double offset_sg = 2;
+}
+
+message ConvertTiltReadingsRequest {
+  // From CalibrateTiltResponse: `SG_flat = slope·SG_tilt + offset_sg` (slope 1 for a one-point
+  // calibration).
+  double slope = 1;
+  double offset_sg = 2;
+  // Raw Tilt readings, SG.
+  repeated double tilt_sg = 3;
+}
+
+message ConvertTiltReadingsResponse {
+  // Corrected SG, one per reading in request order (unrounded).
+  repeated double sg = 1;
 }
 
 // ------------------------------------------------------------------ keg and cask
