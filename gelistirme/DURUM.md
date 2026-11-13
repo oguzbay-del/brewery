@@ -3,19 +3,22 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.4 `db` crate ve göç altyapısı (Sonnet); ardından T2.5 çekirdek göçler. T2.17 (alan tanımları) da açık, paralel yürüyebilir. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
+**Sıradaki iş:** T2.5 çekirdek göçler (Sonnet); ardından T2.6 Ev MVP alan göçleri. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
 
 - Kurulu: Rust 1.97, Node 22, Docker istemcisi. Oturum başında `dockerd` elle başlatılır.
 - scratchpad/bin: terraform 1.17.2, kind 0.33.0, kubectl 1.37.2, actionlint 1.7.12. Yeni oturumda scratchpad boşsa yeniden indirilir (README'lerde yazılı).
+- Testler PostgreSQL ister: `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres` ya da `make up`; `make test` DATABASE_URL'yi compose varsayılanıyla verir.
 - Bu ortamda imaj derlemesi: `make up BUILD_CA_FILE=/root/.ccr/ca-bundle.crt` (TLS vekili).
 - CI: GitHub Actions, 6 iş akışı; iOS GitHub macOS makinelerinde.
 
 ## Engeller
 
-- Yok. T2.28 web ödemesi O6 kararını bekler (App Store kısmı engelsiz). Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
+- kind ve k8s manifestleri (T2.4 göç Job'ı, `kind-test.sh` değişikliği) ile CI iş akışı bu oturumda doğrulanamadı: kubectl/actionlint indirmesi izinle reddedildi. CI'da ya da araçlar kurulunca `kubectl kustomize`, `actionlint`, `make kind-test` çalıştırılacak.
+- T2.17 alan sınırları ürün önerisi (`verify: true`, doğrulanacak); katalog kesin birim tanımlarını, motor BeerSmith'in yuvarlak sabitlerini kullanıyor (~1e-7 fark), hizalama kararı açık.
+- T2.28 web ödemesi O6 kararını bekler (App Store kısmı engelsiz). Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
 
 ## Son kararlar
 
@@ -31,7 +34,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Aşama 2 (sürüyor)
 
-T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009). Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
+T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`). 219 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
 
 ## Aşama 1 (kapandı)
 
