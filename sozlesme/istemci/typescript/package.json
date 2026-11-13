@@ -6,7 +6,8 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
-    "gen": "openapi-typescript ../../openapi/openapi.json -o src/schema.d.ts"
+    "gen": "openapi-typescript ../../openapi/openapi.json -o src/schema.d.ts",
+    "typecheck": "tsc -p ."
   },
   "devDependencies": {
     "openapi-typescript": "7.13.0",

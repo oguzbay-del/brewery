@@ -1,0 +1,1651 @@
+{
+  "$schema": "./katalog.schema.json",
+  "version": 1,
+  "notlar": [
+    "Alan anahtarı `kapsam.alan` biçimindedir; alan adı ve birim eki API'deki JSON alanıyla (ADR-0008, ADR-0007) aynıdır.",
+    "Sınırlar tüm modlarda kabul edilen en geniş aralıktır; `modes` yalnız daha dar ev veya işletme sınırı verir.",
+    "`verify: true` olan sınırlar ürün kararıdır, kaynakla doğrulanmadı (doğrulanacak).",
+    "Dönüşüm: SI = (değer + pre) × mul / div + post; ters: değer = (SI − post) × div / mul − pre. Doğrusal olmayan birimler `nonlinear` adlı formülle çevrilir."
+  ],
+  "quantities": {
+    "volume": {
+      "si": "l"
+    },
+    "mass": {
+      "si": "kg"
+    },
+    "temperature": {
+      "si": "c"
+    },
+    "gravity": {
+      "si": "sg"
+    },
+    "color": {
+      "si": "srm"
+    },
+    "pressure": {
+      "si": "bar"
+    },
+    "time": {
+      "si": "min"
+    },
+    "length": {
+      "si": "m"
+    },
+    "percent": {
+      "si": "pct"
+    },
+    "concentration": {
+      "si": "ppm"
+    },
+    "hardness": {
+      "si": "caco3_mg_l"
+    },
+    "co2": {
+      "si": "vol"
+    },
+    "dose": {
+      "si": "g_l"
+    },
+    "ratio": {
+      "si": "l_kg"
+    },
+    "bitterness": {
+      "si": "ibu"
+    },
+    "ph": {
+      "si": "ph"
+    }
+  },
+  "units": {
+    "l": {
+      "quantity": "volume",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "ml": {
+      "quantity": "volume",
+      "mul": 0.001,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "hl": {
+      "quantity": "volume",
+      "mul": 100,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "gal_us": {
+      "quantity": "volume",
+      "mul": 3.785411784,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1 US gal = 231 in³ = 3.785411784 L (tam)"
+    },
+    "qt_us": {
+      "quantity": "volume",
+      "mul": 0.946352946,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1/4 US gal (tam)"
+    },
+    "fl_oz_us": {
+      "quantity": "volume",
+      "mul": 0.0295735295625,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1/128 US gal (tam)"
+    },
+    "gal_uk": {
+      "quantity": "volume",
+      "mul": 4.54609,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1 imperial gal = 4.54609 L (tam)"
+    },
+    "qt_uk": {
+      "quantity": "volume",
+      "mul": 1.1365225,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1/4 imperial gal (tam)"
+    },
+    "fl_oz_uk": {
+      "quantity": "volume",
+      "mul": 0.0284130625,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1/160 imperial gal (tam)"
+    },
+    "bbl_us": {
+      "quantity": "volume",
+      "mul": 117.347765304,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "31 US gal (tam)"
+    },
+    "bbl_uk": {
+      "quantity": "volume",
+      "mul": 163.65924,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "36 imperial gal (tam)"
+    },
+    "kg": {
+      "quantity": "mass",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "g": {
+      "quantity": "mass",
+      "mul": 0.001,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "lb": {
+      "quantity": "mass",
+      "mul": 0.45359237,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1 lb = 0.45359237 kg (tam). Motor BeerSmith sabitini (0.4535924) kullanır; fark yaklaşık 1e-7 göreli"
+    },
+    "oz": {
+      "quantity": "mass",
+      "mul": 0.028349523125,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1/16 lb (tam)"
+    },
+    "c": {
+      "quantity": "temperature",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "f": {
+      "quantity": "temperature",
+      "mul": 5,
+      "div": 9,
+      "pre": -32,
+      "post": 0,
+      "ref": "°C = (°F − 32) × 5/9 (ofsetli)"
+    },
+    "sg": {
+      "quantity": "gravity",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "sg_x1000": {
+      "quantity": "gravity",
+      "mul": 1,
+      "div": 1000,
+      "pre": 0,
+      "post": 0,
+      "ref": "1050 = 1.050 SG"
+    },
+    "plato": {
+      "quantity": "gravity",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "nonlinear": "plato",
+      "ref": "formuller/01-yogunluk-alkol-renk.md §1.1 ve §1.2 (doğrusal değil)"
+    },
+    "brix": {
+      "quantity": "gravity",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "nonlinear": "brix",
+      "ref": "formuller/01-yogunluk-alkol-renk.md §1.3 (doğrusal değil)"
+    },
+    "srm": {
+      "quantity": "color",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "ebc": {
+      "quantity": "color",
+      "mul": 1,
+      "div": 1.97,
+      "pre": 0,
+      "post": 0,
+      "ref": "EBC = SRM × 1.97 (formuller/01 §1.5)"
+    },
+    "lovibond": {
+      "quantity": "color",
+      "mul": 1.3564,
+      "div": 1,
+      "pre": 0,
+      "post": -0.76,
+      "ref": "SRM = 1.3564·°L − 0.76 (formuller/01 §1.5; literatürde 1.3546, BeerSmith uyumu için 1.3564)"
+    },
+    "bar": {
+      "quantity": "pressure",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "kpa": {
+      "quantity": "pressure",
+      "mul": 0.01,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1 kPa = 0.01 bar (tam)"
+    },
+    "psi": {
+      "quantity": "pressure",
+      "mul": 0.0689475729316836,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1 psi = 6894.757293168361 Pa (tam; formuller/09 §3.3)"
+    },
+    "min": {
+      "quantity": "time",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "h": {
+      "quantity": "time",
+      "mul": 60,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "d": {
+      "quantity": "time",
+      "mul": 1440,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "m": {
+      "quantity": "length",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "ft": {
+      "quantity": "length",
+      "mul": 0.3048,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "1 ft = 0.3048 m (tam)"
+    },
+    "pct": {
+      "quantity": "percent",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "ppm": {
+      "quantity": "concentration",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "mg_l": {
+      "quantity": "concentration",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "caco3_mg_l": {
+      "quantity": "hardness",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "dh": {
+      "quantity": "hardness",
+      "mul": 17.848,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "formuller/07 §5: 1 °dH = 17.848 mg/L CaCO₃"
+    },
+    "fh": {
+      "quantity": "hardness",
+      "mul": 10.009,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "formuller/07 §5: 1 °fH = 10.009 mg/L CaCO₃"
+    },
+    "meq_l": {
+      "quantity": "hardness",
+      "mul": 50.04,
+      "div": 1,
+      "pre": 0,
+      "post": 0,
+      "ref": "formuller/07 §5: 1 mEq/L = 50.04 mg/L CaCO₃"
+    },
+    "vol": {
+      "quantity": "co2",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "g_l_co2": {
+      "quantity": "co2",
+      "mul": 1,
+      "div": 1.9635,
+      "pre": 0,
+      "post": 0,
+      "ref": "1 vol = 1.9635 g/L (formuller/09 §3, tek sabit)"
+    },
+    "g_l": {
+      "quantity": "dose",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "oz_gal_us": {
+      "quantity": "dose",
+      "mul": 28.349523125,
+      "div": 3.785411784,
+      "pre": 0,
+      "post": 0,
+      "ref": "oz / US gal"
+    },
+    "oz_gal_uk": {
+      "quantity": "dose",
+      "mul": 28.349523125,
+      "div": 4.54609,
+      "pre": 0,
+      "post": 0,
+      "ref": "oz / imperial gal"
+    },
+    "lb_bbl_us": {
+      "quantity": "dose",
+      "mul": 453.59237,
+      "div": 117.347765304,
+      "pre": 0,
+      "post": 0,
+      "ref": "lb / US beer barrel"
+    },
+    "l_kg": {
+      "quantity": "ratio",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "qt_lb": {
+      "quantity": "ratio",
+      "mul": 0.946352946,
+      "div": 0.45359237,
+      "pre": 0,
+      "post": 0,
+      "ref": "US qt / lb"
+    },
+    "ibu": {
+      "quantity": "bitterness",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    },
+    "ph": {
+      "quantity": "ph",
+      "mul": 1,
+      "div": 1,
+      "pre": 0,
+      "post": 0
+    }
+  },
+  "fields": {
+    "recipe.batch_volume_l": {
+      "quantity": "volume",
+      "unit": "l",
+      "min": 0.5,
+      "max": 100000,
+      "step": 0.5,
+      "decimals": 1,
+      "required": true,
+      "verify": true,
+      "modes": {
+        "home": {
+          "max": 200
+        },
+        "brewery": {
+          "min": 5
+        }
+      }
+    },
+    "recipe.boil_volume_l": {
+      "quantity": "volume",
+      "unit": "l",
+      "min": 0.5,
+      "max": 120000,
+      "step": 0.5,
+      "decimals": 1,
+      "required": true,
+      "verify": true,
+      "modes": {
+        "home": {
+          "max": 250
+        },
+        "brewery": {
+          "min": 5
+        }
+      }
+    },
+    "recipe.boil_time_min": {
+      "quantity": "time",
+      "unit": "min",
+      "min": 0,
+      "max": 600,
+      "step": 5,
+      "decimals": 0,
+      "required": true,
+      "verify": true
+    },
+    "recipe.efficiency_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 1,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "required": true,
+      "verify": true
+    },
+    "equipment.trub_loss_l": {
+      "quantity": "volume",
+      "unit": "l",
+      "min": 0,
+      "max": 5000,
+      "step": 0.1,
+      "decimals": 1,
+      "required": false,
+      "verify": true,
+      "modes": {
+        "home": {
+          "max": 50
+        }
+      }
+    },
+    "equipment.pre_trub_loss_l": {
+      "quantity": "volume",
+      "unit": "l",
+      "min": 0,
+      "max": 5000,
+      "step": 0.1,
+      "decimals": 1,
+      "required": false,
+      "verify": true,
+      "modes": {
+        "home": {
+          "max": 50
+        }
+      }
+    },
+    "equipment.altitude_m": {
+      "quantity": "length",
+      "unit": "m",
+      "min": -500,
+      "max": 5000,
+      "step": 10,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "equipment.hop_util_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 0,
+      "max": 150,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "equipment.whirlpool_time_min": {
+      "quantity": "time",
+      "unit": "min",
+      "min": 0,
+      "max": 240,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "fermentable.amount_kg": {
+      "quantity": "mass",
+      "unit": "kg",
+      "min": 0,
+      "max": 20000,
+      "step": 0.01,
+      "decimals": 2,
+      "required": true,
+      "verify": true,
+      "modes": {
+        "home": {
+          "max": 100
+        }
+      }
+    },
+    "fermentable.yield_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 0,
+      "max": 100,
+      "step": 0.1,
+      "decimals": 1,
+      "required": true,
+      "verify": false
+    },
+    "fermentable.color_srm": {
+      "quantity": "color",
+      "unit": "srm",
+      "min": 0,
+      "max": 1000,
+      "step": 0.5,
+      "decimals": 1,
+      "required": true,
+      "verify": true
+    },
+    "fermentable.late_extract_min": {
+      "quantity": "time",
+      "unit": "min",
+      "min": 0,
+      "max": 600,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "hop.amount_kg": {
+      "quantity": "mass",
+      "unit": "kg",
+      "min": 0,
+      "max": 100,
+      "step": 0.001,
+      "decimals": 3,
+      "required": true,
+      "verify": true,
+      "modes": {
+        "home": {
+          "max": 5
+        }
+      }
+    },
+    "hop.alpha_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 0,
+      "max": 40,
+      "step": 0.1,
+      "decimals": 1,
+      "required": true,
+      "verify": true
+    },
+    "hop.time_min": {
+      "quantity": "time",
+      "unit": "min",
+      "min": 0,
+      "max": 10080,
+      "step": 1,
+      "decimals": 0,
+      "required": true,
+      "verify": true
+    },
+    "hop.whirlpool_temp_c": {
+      "quantity": "temperature",
+      "unit": "c",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "yeast.min_attenuation_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": false
+    },
+    "yeast.max_attenuation_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": false
+    },
+    "yeast.tolerance_abv_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 0,
+      "max": 25,
+      "step": 0.5,
+      "decimals": 1,
+      "required": false,
+      "verify": true
+    },
+    "yeast.viability_pct": {
+      "quantity": "percent",
+      "unit": "pct",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": false
+    },
+    "mash.grain_weight_kg": {
+      "quantity": "mass",
+      "unit": "kg",
+      "min": 0,
+      "max": 20000,
+      "step": 0.01,
+      "decimals": 2,
+      "required": false,
+      "verify": true,
+      "modes": {
+        "home": {
+          "max": 100
+        }
+      }
+    },
+    "mash.step_temp_c": {
+      "quantity": "temperature",
+      "unit": "c",
+      "min": 0,
+      "max": 100,
+      "step": 0.5,
+      "decimals": 1,
+      "required": true,
+      "verify": true
+    },
+    "mash.step_time_min": {
+      "quantity": "time",
+      "unit": "min",
+      "min": 0,
+      "max": 600,
+      "step": 1,
+      "decimals": 0,
+      "required": true,
+      "verify": true
+    },
+    "mash.thickness_l_per_kg": {
+      "quantity": "ratio",
+      "unit": "l_kg",
+      "min": 0.5,
+      "max": 10,
+      "step": 0.1,
+      "decimals": 1,
+      "required": false,
+      "verify": true
+    },
+    "measurement.sg": {
+      "quantity": "gravity",
+      "unit": "sg",
+      "min": 0.98,
+      "max": 1.25,
+      "step": 0.001,
+      "decimals": 3,
+      "required": true,
+      "verify": true
+    },
+    "measurement.og_sg": {
+      "quantity": "gravity",
+      "unit": "sg",
+      "min": 1.0,
+      "max": 1.25,
+      "step": 0.001,
+      "decimals": 3,
+      "required": true,
+      "verify": true
+    },
+    "measurement.fg_sg": {
+      "quantity": "gravity",
+      "unit": "sg",
+      "min": 0.98,
+      "max": 1.25,
+      "step": 0.001,
+      "decimals": 3,
+      "required": true,
+      "verify": true
+    },
+    "measurement.temp_c": {
+      "quantity": "temperature",
+      "unit": "c",
+      "min": -20,
+      "max": 120,
+      "step": 0.5,
+      "decimals": 1,
+      "required": true,
+      "verify": true
+    },
+    "measurement.ph": {
+      "quantity": "ph",
+      "unit": "ph",
+      "min": 0,
+      "max": 14,
+      "step": 0.01,
+      "decimals": 2,
+      "required": true,
+      "verify": true
+    },
+    "target.ibu": {
+      "quantity": "bitterness",
+      "unit": "ibu",
+      "min": 0,
+      "max": 300,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "target.color_srm": {
+      "quantity": "color",
+      "unit": "srm",
+      "min": 0,
+      "max": 200,
+      "step": 0.5,
+      "decimals": 1,
+      "required": false,
+      "verify": true
+    },
+    "target.mash_ph": {
+      "quantity": "ph",
+      "unit": "ph",
+      "min": 4.5,
+      "max": 6.5,
+      "step": 0.01,
+      "decimals": 2,
+      "required": false,
+      "verify": true
+    },
+    "target.co2_vol": {
+      "quantity": "co2",
+      "unit": "vol",
+      "min": 0,
+      "max": 5,
+      "step": 0.1,
+      "decimals": 2,
+      "required": false,
+      "verify": true
+    },
+    "process.keg_pressure_bar": {
+      "quantity": "pressure",
+      "unit": "bar",
+      "min": 0,
+      "max": 6,
+      "step": 0.05,
+      "decimals": 2,
+      "required": false,
+      "verify": true
+    },
+    "process.priming_g_per_l": {
+      "quantity": "dose",
+      "unit": "g_l",
+      "min": 0,
+      "max": 20,
+      "step": 0.1,
+      "decimals": 1,
+      "required": false,
+      "verify": true
+    },
+    "water.calcium_ppm": {
+      "quantity": "concentration",
+      "unit": "ppm",
+      "min": 0,
+      "max": 1000,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "water.magnesium_ppm": {
+      "quantity": "concentration",
+      "unit": "ppm",
+      "min": 0,
+      "max": 500,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "water.sodium_ppm": {
+      "quantity": "concentration",
+      "unit": "ppm",
+      "min": 0,
+      "max": 1000,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "water.chloride_ppm": {
+      "quantity": "concentration",
+      "unit": "ppm",
+      "min": 0,
+      "max": 2000,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "water.sulfate_ppm": {
+      "quantity": "concentration",
+      "unit": "ppm",
+      "min": 0,
+      "max": 3000,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "water.bicarbonate_ppm": {
+      "quantity": "concentration",
+      "unit": "ppm",
+      "min": 0,
+      "max": 1500,
+      "step": 1,
+      "decimals": 0,
+      "required": false,
+      "verify": true
+    },
+    "water.ph": {
+      "quantity": "ph",
+      "unit": "ph",
+      "min": 0,
+      "max": 14,
+      "step": 0.01,
+      "decimals": 2,
+      "required": false,
+      "verify": true
+    },
+    "tool.volume_l": {
+      "quantity": "volume",
+      "unit": "l",
+      "min": 0,
+      "max": 100000,
+      "step": 0.1,
+      "decimals": 1,
+      "required": false,
+      "verify": true
+    },
+    "tool.mass_kg": {
+      "quantity": "mass",
+      "unit": "kg",
+      "min": 0,
+      "max": 20000,
+      "step": 0.01,
+      "decimals": 2,
+      "required": false,
+      "verify": true
+    }
+  },
+  "texts": {
+    "tr": {
+      "quantities": {
+        "volume": "Hacim",
+        "mass": "Kütle",
+        "temperature": "Sıcaklık",
+        "gravity": "Yoğunluk",
+        "color": "Renk",
+        "pressure": "Basınç",
+        "time": "Süre",
+        "length": "Uzunluk",
+        "percent": "Yüzde",
+        "concentration": "Derişim",
+        "hardness": "Sertlik",
+        "co2": "CO₂ miktarı",
+        "dose": "Doz oranı",
+        "ratio": "Su/tahıl oranı",
+        "bitterness": "Acılık",
+        "ph": "pH"
+      },
+      "units": {
+        "l": {
+          "name": "litre",
+          "symbol": "L"
+        },
+        "ml": {
+          "name": "mililitre",
+          "symbol": "mL"
+        },
+        "hl": {
+          "name": "hektolitre",
+          "symbol": "hL"
+        },
+        "gal_us": {
+          "name": "galon (ABD)",
+          "symbol": "gal (ABD)"
+        },
+        "qt_us": {
+          "name": "quart (ABD)",
+          "symbol": "qt (ABD)"
+        },
+        "fl_oz_us": {
+          "name": "sıvı ons (ABD)",
+          "symbol": "fl oz (ABD)"
+        },
+        "gal_uk": {
+          "name": "galon (İngiltere)",
+          "symbol": "gal (İng.)"
+        },
+        "qt_uk": {
+          "name": "quart (İngiltere)",
+          "symbol": "qt (İng.)"
+        },
+        "fl_oz_uk": {
+          "name": "sıvı ons (İngiltere)",
+          "symbol": "fl oz (İng.)"
+        },
+        "bbl_us": {
+          "name": "varil (ABD bira)",
+          "symbol": "bbl (ABD)"
+        },
+        "bbl_uk": {
+          "name": "varil (İngiltere bira)",
+          "symbol": "bbl (İng.)"
+        },
+        "kg": {
+          "name": "kilogram",
+          "symbol": "kg"
+        },
+        "g": {
+          "name": "gram",
+          "symbol": "g"
+        },
+        "lb": {
+          "name": "libre",
+          "symbol": "lb"
+        },
+        "oz": {
+          "name": "ons",
+          "symbol": "oz"
+        },
+        "c": {
+          "name": "santigrat derece",
+          "symbol": "°C"
+        },
+        "f": {
+          "name": "fahrenhayt derece",
+          "symbol": "°F"
+        },
+        "sg": {
+          "name": "özgül ağırlık",
+          "symbol": "SG"
+        },
+        "sg_x1000": {
+          "name": "özgül ağırlık (1050 biçimi)",
+          "symbol": "SG×1000"
+        },
+        "plato": {
+          "name": "Plato derecesi",
+          "symbol": "°P"
+        },
+        "brix": {
+          "name": "Brix derecesi",
+          "symbol": "°Bx"
+        },
+        "srm": {
+          "name": "SRM",
+          "symbol": "SRM"
+        },
+        "ebc": {
+          "name": "EBC",
+          "symbol": "EBC"
+        },
+        "lovibond": {
+          "name": "Lovibond derecesi",
+          "symbol": "°L"
+        },
+        "bar": {
+          "name": "bar",
+          "symbol": "bar"
+        },
+        "kpa": {
+          "name": "kilopaskal",
+          "symbol": "kPa"
+        },
+        "psi": {
+          "name": "psi",
+          "symbol": "psi"
+        },
+        "min": {
+          "name": "dakika",
+          "symbol": "dk"
+        },
+        "h": {
+          "name": "saat",
+          "symbol": "sa"
+        },
+        "d": {
+          "name": "gün",
+          "symbol": "gün"
+        },
+        "m": {
+          "name": "metre",
+          "symbol": "m"
+        },
+        "ft": {
+          "name": "fit",
+          "symbol": "ft"
+        },
+        "pct": {
+          "name": "yüzde",
+          "symbol": "%"
+        },
+        "ppm": {
+          "name": "mg/L (ppm)",
+          "symbol": "ppm"
+        },
+        "mg_l": {
+          "name": "miligram/litre",
+          "symbol": "mg/L"
+        },
+        "caco3_mg_l": {
+          "name": "mg/L (CaCO₃ olarak)",
+          "symbol": "mg/L CaCO₃"
+        },
+        "dh": {
+          "name": "Alman sertliği",
+          "symbol": "°dH"
+        },
+        "fh": {
+          "name": "Fransız sertliği",
+          "symbol": "°fH"
+        },
+        "meq_l": {
+          "name": "mEq/L",
+          "symbol": "mEq/L"
+        },
+        "vol": {
+          "name": "hacim CO₂",
+          "symbol": "vol"
+        },
+        "g_l_co2": {
+          "name": "g/L CO₂",
+          "symbol": "g/L"
+        },
+        "g_l": {
+          "name": "gram/litre",
+          "symbol": "g/L"
+        },
+        "oz_gal_us": {
+          "name": "ons/galon (ABD)",
+          "symbol": "oz/gal"
+        },
+        "oz_gal_uk": {
+          "name": "ons/galon (İngiltere)",
+          "symbol": "oz/gal (İng.)"
+        },
+        "lb_bbl_us": {
+          "name": "libre/varil (ABD)",
+          "symbol": "lb/bbl"
+        },
+        "l_kg": {
+          "name": "litre/kg",
+          "symbol": "L/kg"
+        },
+        "qt_lb": {
+          "name": "quart/libre",
+          "symbol": "qt/lb"
+        },
+        "ibu": {
+          "name": "IBU",
+          "symbol": "IBU"
+        },
+        "ph": {
+          "name": "pH",
+          "symbol": "pH"
+        }
+      },
+      "fields": {
+        "recipe.batch_volume_l": {
+          "label": "Parti hacmi (fermentöre)"
+        },
+        "recipe.boil_volume_l": {
+          "label": "Kaynatma hacmi"
+        },
+        "recipe.boil_time_min": {
+          "label": "Kaynatma süresi"
+        },
+        "recipe.efficiency_pct": {
+          "label": "Verim"
+        },
+        "equipment.trub_loss_l": {
+          "label": "Tortu kaybı"
+        },
+        "equipment.pre_trub_loss_l": {
+          "label": "Tortu öncesi kayıp"
+        },
+        "equipment.altitude_m": {
+          "label": "Rakım"
+        },
+        "equipment.hop_util_pct": {
+          "label": "Hop kullanım oranı"
+        },
+        "equipment.whirlpool_time_min": {
+          "label": "Whirlpool süresi"
+        },
+        "fermentable.amount_kg": {
+          "label": "Malt miktarı"
+        },
+        "fermentable.yield_pct": {
+          "label": "Ekstrakt verimi"
+        },
+        "fermentable.color_srm": {
+          "label": "Malt rengi"
+        },
+        "fermentable.late_extract_min": {
+          "label": "Geç ekstrakt süresi"
+        },
+        "hop.amount_kg": {
+          "label": "Hop miktarı"
+        },
+        "hop.alpha_pct": {
+          "label": "Alfa asit"
+        },
+        "hop.time_min": {
+          "label": "Hop süresi"
+        },
+        "hop.whirlpool_temp_c": {
+          "label": "Whirlpool sıcaklığı"
+        },
+        "yeast.min_attenuation_pct": {
+          "label": "En düşük atenüasyon"
+        },
+        "yeast.max_attenuation_pct": {
+          "label": "En yüksek atenüasyon"
+        },
+        "yeast.tolerance_abv_pct": {
+          "label": "Alkol toleransı"
+        },
+        "yeast.viability_pct": {
+          "label": "Canlılık"
+        },
+        "mash.grain_weight_kg": {
+          "label": "Tahıl ağırlığı"
+        },
+        "mash.step_temp_c": {
+          "label": "Mash adım sıcaklığı"
+        },
+        "mash.step_time_min": {
+          "label": "Mash adım süresi"
+        },
+        "mash.thickness_l_per_kg": {
+          "label": "Su/tahıl oranı"
+        },
+        "measurement.sg": {
+          "label": "Gravite"
+        },
+        "measurement.og_sg": {
+          "label": "Başlangıç gravitesi (OG)"
+        },
+        "measurement.fg_sg": {
+          "label": "Bitiş gravitesi (FG)"
+        },
+        "measurement.temp_c": {
+          "label": "Sıcaklık"
+        },
+        "measurement.ph": {
+          "label": "pH"
+        },
+        "target.ibu": {
+          "label": "Hedef IBU"
+        },
+        "target.color_srm": {
+          "label": "Hedef renk"
+        },
+        "target.mash_ph": {
+          "label": "Hedef mash pH"
+        },
+        "target.co2_vol": {
+          "label": "Hedef karbonasyon"
+        },
+        "process.keg_pressure_bar": {
+          "label": "Fıçı basıncı"
+        },
+        "process.priming_g_per_l": {
+          "label": "Priming şekeri oranı"
+        },
+        "water.calcium_ppm": {
+          "label": "Kalsiyum"
+        },
+        "water.magnesium_ppm": {
+          "label": "Magnezyum"
+        },
+        "water.sodium_ppm": {
+          "label": "Sodyum"
+        },
+        "water.chloride_ppm": {
+          "label": "Klorür"
+        },
+        "water.sulfate_ppm": {
+          "label": "Sülfat"
+        },
+        "water.bicarbonate_ppm": {
+          "label": "Bikarbonat"
+        },
+        "water.ph": {
+          "label": "Su pH'ı"
+        },
+        "tool.volume_l": {
+          "label": "Hacim (araç)"
+        },
+        "tool.mass_kg": {
+          "label": "Kütle (araç)"
+        }
+      },
+      "errors": {
+        "required": "{label} gerekli.",
+        "invalid_number": "{label} geçerli bir sayı olmalı.",
+        "out_of_range": "{label} {min} ile {max} {unit} arasında olmalı.",
+        "unknown_field": "Bilinmeyen alan: {field}."
+      }
+    },
+    "en": {
+      "quantities": {
+        "volume": "Volume",
+        "mass": "Mass",
+        "temperature": "Temperature",
+        "gravity": "Gravity",
+        "color": "Colour",
+        "pressure": "Pressure",
+        "time": "Duration",
+        "length": "Length",
+        "percent": "Percent",
+        "concentration": "Concentration",
+        "hardness": "Hardness",
+        "co2": "CO₂ amount",
+        "dose": "Dose rate",
+        "ratio": "Water-to-grain ratio",
+        "bitterness": "Bitterness",
+        "ph": "pH"
+      },
+      "units": {
+        "l": {
+          "name": "litre",
+          "symbol": "L"
+        },
+        "ml": {
+          "name": "millilitre",
+          "symbol": "mL"
+        },
+        "hl": {
+          "name": "hectolitre",
+          "symbol": "hL"
+        },
+        "gal_us": {
+          "name": "gallon (US)",
+          "symbol": "gal (US)"
+        },
+        "qt_us": {
+          "name": "quart (US)",
+          "symbol": "qt (US)"
+        },
+        "fl_oz_us": {
+          "name": "fluid ounce (US)",
+          "symbol": "fl oz (US)"
+        },
+        "gal_uk": {
+          "name": "gallon (UK)",
+          "symbol": "gal (UK)"
+        },
+        "qt_uk": {
+          "name": "quart (UK)",
+          "symbol": "qt (UK)"
+        },
+        "fl_oz_uk": {
+          "name": "fluid ounce (UK)",
+          "symbol": "fl oz (UK)"
+        },
+        "bbl_us": {
+          "name": "barrel (US beer)",
+          "symbol": "bbl (US)"
+        },
+        "bbl_uk": {
+          "name": "barrel (UK brewer's)",
+          "symbol": "bbl (UK)"
+        },
+        "kg": {
+          "name": "kilogram",
+          "symbol": "kg"
+        },
+        "g": {
+          "name": "gram",
+          "symbol": "g"
+        },
+        "lb": {
+          "name": "pound",
+          "symbol": "lb"
+        },
+        "oz": {
+          "name": "ounce",
+          "symbol": "oz"
+        },
+        "c": {
+          "name": "degree Celsius",
+          "symbol": "°C"
+        },
+        "f": {
+          "name": "degree Fahrenheit",
+          "symbol": "°F"
+        },
+        "sg": {
+          "name": "specific gravity",
+          "symbol": "SG"
+        },
+        "sg_x1000": {
+          "name": "specific gravity (1050 form)",
+          "symbol": "SG×1000"
+        },
+        "plato": {
+          "name": "degrees Plato",
+          "symbol": "°P"
+        },
+        "brix": {
+          "name": "degrees Brix",
+          "symbol": "°Bx"
+        },
+        "srm": {
+          "name": "SRM",
+          "symbol": "SRM"
+        },
+        "ebc": {
+          "name": "EBC",
+          "symbol": "EBC"
+        },
+        "lovibond": {
+          "name": "degrees Lovibond",
+          "symbol": "°L"
+        },
+        "bar": {
+          "name": "bar",
+          "symbol": "bar"
+        },
+        "kpa": {
+          "name": "kilopascal",
+          "symbol": "kPa"
+        },
+        "psi": {
+          "name": "psi",
+          "symbol": "psi"
+        },
+        "min": {
+          "name": "minute",
+          "symbol": "min"
+        },
+        "h": {
+          "name": "hour",
+          "symbol": "h"
+        },
+        "d": {
+          "name": "day",
+          "symbol": "d"
+        },
+        "m": {
+          "name": "metre",
+          "symbol": "m"
+        },
+        "ft": {
+          "name": "foot",
+          "symbol": "ft"
+        },
+        "pct": {
+          "name": "percent",
+          "symbol": "%"
+        },
+        "ppm": {
+          "name": "mg/L (ppm)",
+          "symbol": "ppm"
+        },
+        "mg_l": {
+          "name": "milligram per litre",
+          "symbol": "mg/L"
+        },
+        "caco3_mg_l": {
+          "name": "mg/L (as CaCO₃)",
+          "symbol": "mg/L CaCO₃"
+        },
+        "dh": {
+          "name": "German degree",
+          "symbol": "°dH"
+        },
+        "fh": {
+          "name": "French degree",
+          "symbol": "°fH"
+        },
+        "meq_l": {
+          "name": "mEq/L",
+          "symbol": "mEq/L"
+        },
+        "vol": {
+          "name": "volumes CO₂",
+          "symbol": "vol"
+        },
+        "g_l_co2": {
+          "name": "g/L CO₂",
+          "symbol": "g/L"
+        },
+        "g_l": {
+          "name": "gram per litre",
+          "symbol": "g/L"
+        },
+        "oz_gal_us": {
+          "name": "ounce per US gallon",
+          "symbol": "oz/gal"
+        },
+        "oz_gal_uk": {
+          "name": "ounce per UK gallon",
+          "symbol": "oz/gal (UK)"
+        },
+        "lb_bbl_us": {
+          "name": "pound per US barrel",
+          "symbol": "lb/bbl"
+        },
+        "l_kg": {
+          "name": "litre per kilogram",
+          "symbol": "L/kg"
+        },
+        "qt_lb": {
+          "name": "quart per pound",
+          "symbol": "qt/lb"
+        },
+        "ibu": {
+          "name": "IBU",
+          "symbol": "IBU"
+        },
+        "ph": {
+          "name": "pH",
+          "symbol": "pH"
+        }
+      },
+      "fields": {
+        "recipe.batch_volume_l": {
+          "label": "Batch volume (into fermenter)"
+        },
+        "recipe.boil_volume_l": {
+          "label": "Boil volume"
+        },
+        "recipe.boil_time_min": {
+          "label": "Boil time"
+        },
+        "recipe.efficiency_pct": {
+          "label": "Efficiency"
+        },
+        "equipment.trub_loss_l": {
+          "label": "Trub loss"
+        },
+        "equipment.pre_trub_loss_l": {
+          "label": "Pre-trub loss"
+        },
+        "equipment.altitude_m": {
+          "label": "Altitude"
+        },
+        "equipment.hop_util_pct": {
+          "label": "Hop utilization"
+        },
+        "equipment.whirlpool_time_min": {
+          "label": "Whirlpool time"
+        },
+        "fermentable.amount_kg": {
+          "label": "Fermentable amount"
+        },
+        "fermentable.yield_pct": {
+          "label": "Extract yield"
+        },
+        "fermentable.color_srm": {
+          "label": "Fermentable colour"
+        },
+        "fermentable.late_extract_min": {
+          "label": "Late extract time"
+        },
+        "hop.amount_kg": {
+          "label": "Hop amount"
+        },
+        "hop.alpha_pct": {
+          "label": "Alpha acid"
+        },
+        "hop.time_min": {
+          "label": "Hop time"
+        },
+        "hop.whirlpool_temp_c": {
+          "label": "Whirlpool temperature"
+        },
+        "yeast.min_attenuation_pct": {
+          "label": "Minimum attenuation"
+        },
+        "yeast.max_attenuation_pct": {
+          "label": "Maximum attenuation"
+        },
+        "yeast.tolerance_abv_pct": {
+          "label": "Alcohol tolerance"
+        },
+        "yeast.viability_pct": {
+          "label": "Viability"
+        },
+        "mash.grain_weight_kg": {
+          "label": "Grain weight"
+        },
+        "mash.step_temp_c": {
+          "label": "Mash step temperature"
+        },
+        "mash.step_time_min": {
+          "label": "Mash step time"
+        },
+        "mash.thickness_l_per_kg": {
+          "label": "Water-to-grain ratio"
+        },
+        "measurement.sg": {
+          "label": "Gravity"
+        },
+        "measurement.og_sg": {
+          "label": "Original gravity (OG)"
+        },
+        "measurement.fg_sg": {
+          "label": "Final gravity (FG)"
+        },
+        "measurement.temp_c": {
+          "label": "Temperature"
+        },
+        "measurement.ph": {
+          "label": "pH"
+        },
+        "target.ibu": {
+          "label": "Target IBU"
+        },
+        "target.color_srm": {
+          "label": "Target colour"
+        },
+        "target.mash_ph": {
+          "label": "Target mash pH"
+        },
+        "target.co2_vol": {
+          "label": "Target carbonation"
+        },
+        "process.keg_pressure_bar": {
+          "label": "Keg pressure"
+        },
+        "process.priming_g_per_l": {
+          "label": "Priming sugar rate"
+        },
+        "water.calcium_ppm": {
+          "label": "Calcium"
+        },
+        "water.magnesium_ppm": {
+          "label": "Magnesium"
+        },
+        "water.sodium_ppm": {
+          "label": "Sodium"
+        },
+        "water.chloride_ppm": {
+          "label": "Chloride"
+        },
+        "water.sulfate_ppm": {
+          "label": "Sulfate"
+        },
+        "water.bicarbonate_ppm": {
+          "label": "Bicarbonate"
+        },
+        "water.ph": {
+          "label": "Water pH"
+        },
+        "tool.volume_l": {
+          "label": "Volume (tool)"
+        },
+        "tool.mass_kg": {
+          "label": "Mass (tool)"
+        }
+      },
+      "errors": {
+        "required": "{label} is required.",
+        "invalid_number": "{label} must be a valid number.",
+        "out_of_range": "{label} must be between {min} and {max} {unit}.",
+        "unknown_field": "Unknown field: {field}."
+      }
+    }
+  }
+}

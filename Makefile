@@ -57,3 +57,7 @@ kind-test: ## kind duman testi: podlar, /healthz, gRPC sağlığı, ağ politika
 
 kind-down: ## kind kümesini siler
 	altyapi/k8s/kind-down.sh
+
+.PHONY: gen
+gen: ## Sözleşme ve istemci kodunu üretir (OpenAPI, TS tipleri, alan/birim/metin kataloğu)
+	bash sozlesme/scripts/gen.sh

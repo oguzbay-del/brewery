@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Demleme alan, birim ve metin kataloğu",
+  "type": "object",
+  "required": ["version", "notlar", "quantities", "units", "fields", "texts"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "integer", "minimum": 1 },
+    "notlar": { "type": "array", "items": { "type": "string" } },
+    "quantities": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_]*$": {
+          "type": "object",
+          "required": ["si"],
+          "additionalProperties": false,
+          "properties": { "si": { "type": "string" } }
+        }
+      },
+      "additionalProperties": false
+    },
+    "units": {
+      "type": "object",
+      "patternProperties": { "^[a-z][a-z0-9_]*$": { "$ref": "#/$defs/unit" } },
+      "additionalProperties": false
+    },
+    "fields": {
+      "type": "object",
+      "patternProperties": { "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$": { "$ref": "#/$defs/field" } },
+      "additionalProperties": false
+    },
+    "texts": {
+      "type": "object",
+      "required": ["tr", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "tr": { "$ref": "#/$defs/locale" },
+        "en": { "$ref": "#/$defs/locale" }
+      }
+    }
+  },
+  "$defs": {
+    "unit": {
+      "type": "object",
+      "required": ["quantity", "mul", "div", "pre", "post"],
+      "additionalProperties": false,
+      "properties": {
+        "quantity": { "type": "string" },
+        "mul": { "type": "number" },
+        "div": { "type": "number" },
+        "pre": { "type": "number" },
+        "post": { "type": "number" },
+        "nonlinear": { "enum": ["plato", "brix"] },
+        "ref": { "type": "string" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": { "min": { "type": "number" }, "max": { "type": "number" } }
+    },
+    "field": {
+      "type": "object",
+      "required": ["quantity", "unit", "min", "max", "step", "decimals", "required", "verify"],
+      "additionalProperties": false,
+      "properties": {
+        "quantity": { "type": "string" },
+        "unit": { "type": "string" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number" },
+        "decimals": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "required": { "type": "boolean" },
+        "verify": { "type": "boolean" },
+        "modes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "home": { "$ref": "#/$defs/limits" },
+            "brewery": { "$ref": "#/$defs/limits" }
+          }
+        }
+      }
+    },
+    "locale": {
+      "type": "object",
+      "required": ["quantities", "units", "fields", "errors"],
+      "additionalProperties": false,
+      "properties": {
+        "quantities": { "type": "object", "additionalProperties": { "type": "string" } },
+        "units": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["name", "symbol"],
+            "additionalProperties": false,
+            "properties": { "name": { "type": "string" }, "symbol": { "type": "string" } }
+          }
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["label"],
+            "additionalProperties": false,
+            "properties": { "label": { "type": "string" }, "hint": { "type": "string" } }
+          }
+        },
+        "errors": {
+          "type": "object",
+          "required": ["required", "invalid_number", "out_of_range", "unknown_field"],
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

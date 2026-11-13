@@ -7,17 +7,19 @@ publish.workspace = true
 
 [features]
 # Shared HTTP helpers (health endpoint, graceful shutdown) for axum services.
-http = ["dep:axum", "dep:serde_json"]
+http = ["dep:axum"]
 
 [dependencies]
 axum = { workspace = true, optional = true }
-serde_json = { workspace = true, optional = true }
+serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 
 [dev-dependencies]
+engine.workspace = true
 tower.workspace = true
 
 [lints]
