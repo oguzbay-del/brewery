@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.1 veri modeli (ADR-0007, Opus); ardından T2.2 API kuralları ve T2.3 kimlik ve yetki ADR'leri. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
+**Sıradaki iş:** T2.2 API kuralları (ADR-0008, Opus); ardından T2.3 kimlik ve yetki (ADR-0009), sonra T2.4 göç altyapısı (Sonnet). Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -24,11 +24,12 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - F1: formüller Fable ile bağımsız doğrulandı; 22 bulgu ve 14 karar işlendi. Kayan nokta ilkesi: gravite eşikleri tam sayı birimde (`round(SG*100000)`), sürekli büyüklükte 1e-9 (formuller/00-OKU-BENI.md).
 - Her aşamaya yeni oturum.
 - ADR-0006: Aşama 1 kapandı (13.11.2026); T1.17 motor eksikleri.
+- ADR-0007: veri modeli. RLS + bileşik yabancı anahtarla çalışma alanı ayrımı, BYPASSRLS'siz uygulama rolleri, metrik birim ekli sütunlar, değişmez tarif sürümü, aylık bölümlü ölçüm, çalışma alanı başına özet zincirli denetim kaydı, EditSession Redis'te, bölge başına ayrı kurulum.
 - ADR-0003: motor paritesi; bölüm başına modül; motor fonksiyonları spesifikasyon birimini alır; para `rust_decimal`.
 
 ## Aşama 2 (sürüyor)
 
-T2.0 iş listesi (13.11.2026): kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
+T2.0 iş listesi · T2.1 veri modeli (ADR-0007). Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
 
 ## Aşama 1 (kapandı)
 
