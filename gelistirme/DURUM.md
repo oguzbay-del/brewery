@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.6 Ev MVP alan göçleri (Sonnet); ardından T2.7 İşletme göçleri. T2.10 (API çekirdeği) de açık, paralel yürüyebilir. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
+**Sıradaki iş:** T2.7 İşletme göçleri (Sonnet); T2.10 API çekirdeği alt ajanda sürüyor. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -17,7 +17,9 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Engeller
 
-- T2.6/T2.7: `role_assignments.scope_id` ve `invitations.scope_id` için hedef tablolar gelince bütünlük tetikleyicisi eklenecek (T2.5 notu).
+- T2.7: `vessel`/`area` kapsam türleri ve `devices.vessel_id` yabancı anahtarı tablolar gelince açılır (T2.6 notu).
+- T2.22: parti yalnız `approved` sürümden açılır (Evde de); taslaktan parti başlatılırsa sürüm önce yayınlanmalı.
+- T2.30: `subscriptions`/`entitlements` yalnız `app_worker` yazar; destek elle düzeltmesi için yol kararlaştırılacak.
 - T2.17 alan sınırları ürün önerisi (`verify: true`, doğrulanacak); katalog kesin birim tanımlarını, motor BeerSmith'in yuvarlak sabitlerini kullanıyor (~1e-7 fark), hizalama kararı açık.
 - T2.28 web ödemesi O6 kararını bekler (App Store kısmı engelsiz). Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
 
@@ -35,7 +37,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Aşama 2 (sürüyor)
 
-T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 çekirdek göçler (23 tablo, FORCE RLS, üç rol, girişten önce SECURITY DEFINER işlevleri, RLS taraması). 246 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
+T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 çekirdek göçler (23 tablo, FORCE RLS, üç rol, girişten önce SECURITY DEFINER işlevleri, RLS taraması) · T2.6 Ev MVP alan göçleri (0007–0013, `secure_workspace_table`, bölümlü ölçüm, değişmez sürüm, kapsam tetikleyicisi). 266 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
 
 ## Aşama 1 (kapandı)
 

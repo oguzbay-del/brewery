@@ -6,7 +6,7 @@
 - `migrate` ikilisi compose'da ve Kubernetes'te tek seferlik çalışır; uygulama servisleri göç çalıştırmaz.
 
 ## Neye dokunmaz
-- Tablo ve sütun kararları `adr/0007-veri-modeli.md`'dedir; Ev (T2.6) ve İşletme (T2.7) tabloları kendi göçlerinde gelir.
+- Tablo ve sütun kararları `adr/0007-veri-modeli.md`'dedir; Ev tabloları (T2.6) `0007`–`0013` göçlerindedir, İşletme (T2.7) kendi göçünde gelir.
 - Uygulama servislerinin iş mantığı burada yazılmaz.
 
 ## Roller ve göç kuralları
@@ -21,8 +21,10 @@
 ## Nasıl test edilir
 - Gerçek PostgreSQL gerekir: `make up` (ya da yalnız `docker compose -f altyapi/compose/compose.yaml up -d postgres`), sonra kökte `make test`. Elle: `DATABASE_URL=postgres://demleme:demleme-yerel@127.0.0.1:5432/demleme cargo test -p db`.
 - `#[sqlx::test]` her test için geçici veritabanı açar, göçleri uygular ve sonda siler. Uygulama davranışı `tests/common`'daki `pool_as` ile sınanır: bağlantılar `SET ROLE app_api` (ya da `app_worker`, `app_owner`) ile açılır; süper kullanıcının kendi RLS muafiyeti `SET ROLE` sonrası geçerli olmaz. Süper kullanıcı oturumuyla `SET ROLE` her role geçebilir; bu yüzden "uygulama rolü sahip olamaz" gibi savlar `pg_roles`/katalogdan sınanır.
-- Testler: `migrations.rs` (göç), `rls.rs` (çalışma alanı ayrımı), `catalog.rs` (katalog taraması, haklar), `audit_log.rs`, `auth_access.rs` (hesap tabloları ve giriş öncesi işlevler), `infra.rs` (outbox, tekrar güvenliği).
+- Testler: `migrations.rs` (göç), `rls.rs` (çalışma alanı ayrımı), `catalog.rs` (katalog taraması, haklar), `audit_log.rs`, `auth_access.rs` (hesap tabloları ve giriş öncesi işlevler), `infra.rs` (outbox, tekrar güvenliği), `library.rs` (ortak kütüphane), `recipes.rs` (değişmez sürüm), `batches.rs` (parti, ölçüm bölümleri, stok, kapsam tetikleyicisi, yazma kısıtları).
 - Sorgu önbelleği: kökte `make sqlx-prepare`; `sunucu/.sqlx/` commit edilir, derleme `SQLX_OFFLINE=true` ile çalışır.
+
+- Yeni tablo göçü `secure_workspace_table(tablo, kip, haklar)` çağırır (0007). Ortak satır tutan tablo `shared` kipindedir, ortak kayda başvuru `shared_ref_<sütun>` tetikleyicisi ister ve tablo `tests/catalog.rs` `OWNER_SEED` listesine eklenir; ölçüm gibi bölümlü tablonun her bölümü ayrıca RLS ve politika taşır.
 
 ## Kurallar
 - Göç dosyaları `NNNN_ad.sql` (dört haneli sıra, küçük harf, alt çizgi); uygulanmış göç değiştirilmez, yeni göç eklenir.

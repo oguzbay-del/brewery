@@ -1,6 +1,7 @@
 //! Catalog scan (ADR-0007, rule 2.8): isolation must be enforced for every table, not only
 //! for the ones the other tests happen to touch. T2.6 and T2.7 add tables and are covered by
-//! the same scan without changes here.
+//! the same scan without changes here (T2.6 added the library, recipe, batch, stock,
+//! notification and support tables, partitions of `measurements` included).
 
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
@@ -19,6 +20,20 @@ const OWNER_LOOKUP: &[&str] = &[
     "shared_devices",
     "invitations",
     "idempotency_keys",
+];
+
+/// Shared-library tables (`workspace_id` NULL = shared row): `app_owner` seeds them through the
+/// `owner_seed` policy (migrations and seed jobs); the application roles cannot write NULL rows.
+const OWNER_SEED: &[&str] = &[
+    "ingredients",
+    "ingredient_fermentables",
+    "ingredient_hops",
+    "ingredient_yeasts",
+    "ingredient_miscs",
+    "style_guides",
+    "styles",
+    "style_mappings",
+    "package_types",
 ];
 
 fn names(rows: Vec<(String,)>) -> Vec<String> {
@@ -93,12 +108,11 @@ async fn the_scan_detects_unprotected_tables(pool: PgPool) -> sqlx::Result<()> {
     Ok(())
 }
 
-#[sqlx::test(migrator = "db::MIGRATOR")]
-async fn workspace_references_use_composite_foreign_keys(pool: PgPool) -> sqlx::Result<()> {
-    // A foreign key between two tables that both carry `workspace_id` must include it:
-    // referential checks bypass RLS, so a single-column key would let one workspace point at
-    // another's row.
-    let offenders = names(
+/// Single-column foreign keys between two workspace tables (referential checks bypass RLS, so
+/// such a key would let one workspace point at another's row). References to shared-capable
+/// tables (nullable `workspace_id`) are exempt: a trigger checks them (see below).
+async fn single_column_references(pool: &PgPool) -> sqlx::Result<Vec<String>> {
+    Ok(names(
         sqlx::query_as(
             "SELECT con.conrelid::regclass::text || '.' || con.conname
              FROM pg_constraint con
@@ -109,15 +123,153 @@ async fn workspace_references_use_composite_foreign_keys(pool: PgPool) -> sqlx::
                            AND a.attname = 'workspace_id' AND NOT a.attisdropped)
                AND NOT EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = con.conrelid
                                AND a.attname = 'workspace_id' AND a.attnum = ANY (con.conkey))
+               AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = con.confrelid
+                           AND a.attname = 'workspace_id' AND a.attnotnull)
              ORDER BY 1",
         )
-        .fetch_all(&pool)
+        .fetch_all(pool)
         .await?,
-    );
+    ))
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn workspace_references_use_composite_foreign_keys(pool: PgPool) -> sqlx::Result<()> {
+    let offenders = single_column_references(&pool).await?;
     assert!(
         offenders.is_empty(),
         "single-column references: {offenders:?}"
     );
+    Ok(())
+}
+
+/// The scans also cover partitions and references added later (negative tests).
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn the_scans_detect_an_unprotected_partition_and_a_single_column_reference(
+    pool: PgPool,
+) -> sqlx::Result<()> {
+    sqlx::raw_sql(
+        "CREATE TABLE measurements_y2099m01 PARTITION OF measurements
+             FOR VALUES FROM ('2099-01-01+00') TO ('2099-02-01+00');
+         CREATE TABLE leak_fk (id uuid PRIMARY KEY, workspace_id uuid NOT NULL,
+                               recipe_id uuid REFERENCES recipes (id))",
+    )
+    .execute(&pool)
+    .await?;
+    assert_eq!(
+        unprotected_workspace_tables(&pool).await?,
+        ["leak_fk", "measurements_y2099m01"]
+    );
+    assert_eq!(
+        single_column_references(&pool).await?,
+        ["leak_fk.leak_fk_recipe_id_fkey"]
+    );
+    Ok(())
+}
+
+/// Foreign keys from a workspace table to a shared-capable table (nullable `workspace_id`)
+/// that lack the checking trigger: the referenced row could belong to another workspace.
+async fn unchecked_shared_references(pool: &PgPool) -> sqlx::Result<Vec<String>> {
+    Ok(names(
+        sqlx::query_as(
+            "SELECT con.conrelid::regclass::text || '.' || a.attname
+             FROM pg_constraint con
+             JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = con.conkey[1]
+             WHERE con.contype = 'f' AND array_length(con.conkey, 1) = 1
+               AND EXISTS (SELECT 1 FROM pg_attribute w WHERE w.attrelid = con.confrelid
+                           AND w.attname = 'workspace_id' AND NOT w.attnotnull)
+               AND EXISTS (SELECT 1 FROM pg_attribute w WHERE w.attrelid = con.conrelid
+                           AND w.attname = 'workspace_id' AND NOT w.attisdropped)
+               AND NOT EXISTS (
+                   SELECT 1 FROM pg_trigger t
+                   WHERE t.tgrelid = con.conrelid AND NOT t.tgisinternal
+                     AND t.tgname = 'shared_ref_' || a.attname
+                     AND t.tgfoid = 'check_shared_ref'::regproc)
+             ORDER BY 1",
+        )
+        .fetch_all(pool)
+        .await?,
+    ))
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn references_to_shared_tables_are_checked_by_trigger(pool: PgPool) -> sqlx::Result<()> {
+    let unchecked = unchecked_shared_references(&pool).await?;
+    assert!(unchecked.is_empty(), "unchecked: {unchecked:?}");
+
+    // Not vacuous: a reference without the trigger is reported, the trigger clears it.
+    sqlx::raw_sql(
+        "CREATE TABLE leak_ref (id uuid PRIMARY KEY, workspace_id uuid NOT NULL,
+                                ingredient_id uuid REFERENCES ingredients (id))",
+    )
+    .execute(&pool)
+    .await?;
+    assert_eq!(
+        unchecked_shared_references(&pool).await?,
+        ["leak_ref.ingredient_id"]
+    );
+    sqlx::raw_sql(
+        "CREATE TRIGGER shared_ref_ingredient_id BEFORE INSERT ON leak_ref
+         FOR EACH ROW EXECUTE FUNCTION check_shared_ref('ingredients', 'ingredient_id')",
+    )
+    .execute(&pool)
+    .await?;
+    assert!(unchecked_shared_references(&pool).await?.is_empty());
+    Ok(())
+}
+
+/// Every table the application can update carries the common columns (ADR-0007, rule 1.2).
+/// Exceptions are the T2.5 tables keyed by their natural key and the cross-workspace tables.
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn mutable_tables_carry_the_common_columns(pool: PgPool) -> sqlx::Result<()> {
+    let missing = names(
+        sqlx::query_as(
+            "SELECT c.relname::text || '.' || col.name
+             FROM pg_class c
+             JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = 'public'
+             CROSS JOIN (VALUES ('created_at'), ('updated_at'), ('deleted_at'), ('version'),
+                                ('created_by'), ('updated_by')) col(name)
+             WHERE c.relkind IN ('r', 'p') AND c.relname <> ALL ($1)
+               AND (has_table_privilege('app_api', c.oid, 'UPDATE')
+                    OR has_table_privilege('app_worker', c.oid, 'UPDATE'))
+               AND EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid
+                           AND a.attname = 'workspace_id' AND NOT a.attisdropped)
+               AND NOT EXISTS (SELECT 1 FROM pg_attribute a WHERE a.attrelid = c.oid
+                               AND a.attname = col.name AND NOT a.attisdropped)
+             ORDER BY 1",
+        )
+        .bind(
+            [
+                "audit_heads",
+                "role_permissions",
+                "outbox",
+                "scheduled_jobs",
+                "external_events",
+                "idempotency_keys",
+            ]
+            .as_slice(),
+        )
+        .fetch_all(&pool)
+        .await?,
+    );
+    assert!(missing.is_empty(), "missing common columns: {missing:?}");
+    Ok(())
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn measurement_partitions_exist_and_are_protected(pool: PgPool) -> sqlx::Result<()> {
+    let parts: Vec<(String, bool, bool, i64)> = sqlx::query_as(
+        "SELECT c.relname::text, c.relrowsecurity, c.relforcerowsecurity,
+                (SELECT count(*) FROM pg_policy p WHERE p.polrelid = c.oid)
+         FROM pg_inherits i JOIN pg_class c ON c.oid = i.inhrelid
+         WHERE i.inhparent = 'measurements'::regclass ORDER BY 1",
+    )
+    .fetch_all(&pool)
+    .await?;
+    assert!(parts.len() >= 13, "partitions: {}", parts.len());
+    assert_eq!(parts[0].0, "measurements_y2026m01");
+    for (name, rls, force, policies) in parts {
+        assert!(rls && force && policies >= 1, "{name} is not protected");
+    }
     Ok(())
 }
 
@@ -164,6 +316,26 @@ async fn application_roles_hold_only_the_intended_rights(pool: PgPool) -> sqlx::
         ("auth_requests", "app_api", "INSERT", false),
         ("staff_users", "app_api", "INSERT", false),
         ("staff_users", "app_api", "SELECT", true),
+        // Append-only ledgers: no UPDATE or DELETE for the application (T2.6).
+        ("measurements", "app_api", "INSERT", true),
+        ("measurements", "app_api", "UPDATE", false),
+        ("measurements", "app_worker", "DELETE", false),
+        ("stage_events", "app_api", "UPDATE", false),
+        ("stock_movements", "app_api", "INSERT", true),
+        ("stock_movements", "app_api", "UPDATE", false),
+        ("stock_movements", "app_worker", "DELETE", false),
+        ("notification_events", "app_api", "DELETE", false),
+        ("support_actions", "app_api", "INSERT", true),
+        ("support_actions", "app_api", "UPDATE", false),
+        ("calc_results", "app_api", "UPDATE", false),
+        // Written by the server side only (ingest to worker): the API reads.
+        ("subscriptions", "app_api", "SELECT", true),
+        ("subscriptions", "app_api", "INSERT", false),
+        ("subscriptions", "app_worker", "UPDATE", true),
+        ("entitlements", "app_api", "UPDATE", false),
+        ("entitlements", "app_worker", "INSERT", true),
+        // Library tables: read and write are policy-restricted, not privilege-restricted.
+        ("ingredients", "app_api", "INSERT", true),
     ] {
         let has: bool = sqlx::query_scalar("SELECT has_table_privilege($1, $2, $3)")
             .bind(role)
@@ -192,7 +364,11 @@ async fn owner_policies_exist_only_where_a_definer_function_needs_them(
         .fetch_all(&pool)
         .await?,
     );
-    let mut expected: Vec<String> = OWNER_LOOKUP.iter().map(|s| (*s).to_owned()).collect();
+    let mut expected: Vec<String> = OWNER_LOOKUP
+        .iter()
+        .chain(OWNER_SEED)
+        .map(|s| (*s).to_owned())
+        .collect();
     expected.sort();
     assert_eq!(tables, expected);
 

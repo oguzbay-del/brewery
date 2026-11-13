@@ -110,3 +110,42 @@ pub async fn create_role(app: &PgPool, ws: Uuid, role: Uuid, name: &str) -> sqlx
         .await?;
     tx.commit().await
 }
+
+/// Runs `sql` (several statements allowed) in one transaction with the given context.
+pub async fn run(app: &PgPool, workspace: Uuid, user: Option<Uuid>, sql: &str) -> sqlx::Result<()> {
+    let mut tx = app.begin().await?;
+    set_context(&mut tx, Some(workspace), user).await?;
+    sqlx::raw_sql(sqlx::AssertSqlSafe(sql.to_owned()))
+        .execute(&mut *tx)
+        .await?;
+    tx.commit().await
+}
+
+/// A recipe with one version (`status`; a non-draft version gets `approved_by` = `approver`).
+/// Ids: recipe `n`, version `n + 1`.
+pub async fn create_recipe(
+    app: &PgPool,
+    ws: Uuid,
+    n: u128,
+    status: &str,
+    approver: Option<Uuid>,
+) -> sqlx::Result<()> {
+    let (recipe, version) = (id(n), id(n + 1));
+    let approval = match (status, approver) {
+        ("draft", _) => "NULL, NULL".to_owned(),
+        (_, Some(u)) => format!("'{u}', now()"),
+        (_, None) => "NULL, now()".to_owned(),
+    };
+    run(
+        app,
+        ws,
+        None,
+        &format!(
+            "INSERT INTO recipes (id, workspace_id, name) VALUES ('{recipe}', '{ws}', 'Pale Ale');
+             INSERT INTO recipe_versions (id, workspace_id, recipe_id, number, status, batch_volume_l,
+                                          efficiency_pct, approved_by, approved_at)
+             VALUES ('{version}', '{ws}', '{recipe}', 1, '{status}', 20, 72, {approval});"
+        ),
+    )
+    .await
+}
