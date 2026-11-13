@@ -10,6 +10,7 @@ images:
   - { name: demleme/engine-service, newTag: dev }
   - { name: demleme/worker, newTag: dev }
   - { name: demleme/ingest, newTag: dev }
+  - { name: demleme/migrate, newTag: dev }
 # Yalnız yerel örnek değer (compose ile aynı); gerçek ortamlara girmez.
 secretGenerator:
   - name: demleme-postgres

@@ -9,10 +9,17 @@ ok()  { printf '  ok    %s\n' "$1"; }
 bad() { printf '  HATA  %s\n' "$1"; fail=1; }
 
 echo "Pod durumu"
-if $K wait --for=condition=Ready pod --all --timeout=120s >/dev/null 2>&1; then
-  ok "bütün podlar Ready ($($K get pods --no-headers | wc -l) pod)"
+# Göç Job'ının podu biter (Succeeded) ve Ready olmaz; ayrıca Job'ın tamamlandığı denetlenir.
+SVC_PODS='app.kubernetes.io/name!=migrate'
+if $K wait --for=condition=Ready pod -l "$SVC_PODS" --timeout=120s >/dev/null 2>&1; then
+  ok "bütün servis podları Ready ($($K get pods -l "$SVC_PODS" --no-headers | wc -l) pod)"
 else
   bad "Ready olmayan pod var"; $K get pods
+fi
+if $K wait --for=condition=complete job/migrate --timeout=60s >/dev/null 2>&1; then
+  ok "göç Job'ı tamamlandı"
+else
+  bad "göç Job'ı tamamlanmadı"; $K logs job/migrate --tail=20
 fi
 
 echo "HTTP /healthz (port-forward)"

@@ -144,7 +144,7 @@ spec:
     - from:
         - podSelector:
             matchExpressions:
-              - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest] }
+              - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest, migrate] }
       ports:
         - { protocol: TCP, port: 5432 }
 ---

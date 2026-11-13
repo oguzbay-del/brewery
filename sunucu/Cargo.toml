@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "crates/common",
+    "crates/db",
     "crates/engine",
     "crates/engine-service",
     "crates/api",
@@ -18,6 +19,7 @@ publish = false
 [workspace.dependencies]
 # Internal crates
 common = { path = "crates/common" }
+db = { path = "crates/db" }
 engine = { path = "crates/engine" }
 
 # Shared third-party crates
@@ -28,6 +30,7 @@ protox = "0.10.0"
 serde = { version = "1.0.229", features = ["derive"] }
 rust_decimal = "1.43.0"
 serde_json = { version = "1.0.154", features = ["float_roundtrip"] }
+sqlx = { version = "=0.9.0", default-features = false, features = ["postgres", "runtime-tokio", "tls-rustls", "uuid", "chrono", "json", "migrate", "macros"] }
 thiserror = "2.0.21"
 tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread", "net", "signal"] }
 tokio-stream = { version = "0.1.19", features = ["net"] }

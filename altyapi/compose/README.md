@@ -29,6 +29,8 @@ Ortam değişkenlerinin hepsinin varsayılanı var; değiştirmek için `.env.ex
 | github-mock | 8090 | WireMock |
 | apns-mock | 8091 | WireMock |
 
+`migrate` tek seferlik bir servistir: PostgreSQL sağlıklı olunca `sunucu/migrations` göçlerini uygular ve çıkar (`make ps` içinde çıkmış görünür); api, worker ve ingest başarıyla bitmesini bekler. Göçü elle çalıştırmak: `make migrate`.
+
 Servislere şu ortam değişkenleri verilir (şimdilik kullanılmayabilir): `DATABASE_URL`, `REDIS_URL`, `NATS_URL`, `ENGINE_URL`, `SMTP_HOST`/`SMTP_PORT`, `GITHUB_API_URL`, `APNS_URL`.
 
 ## Sahte servisler

@@ -13,5 +13,6 @@ images:
   - { name: demleme/engine-service, newName: KAYIT-DEFTERI/demleme/engine-service, newTag: SURUM }
   - { name: demleme/worker, newName: KAYIT-DEFTERI/demleme/worker, newTag: SURUM }
   - { name: demleme/ingest, newName: KAYIT-DEFTERI/demleme/ingest, newTag: SURUM }
+  - { name: demleme/migrate, newName: KAYIT-DEFTERI/demleme/migrate, newTag: SURUM }
 patches:
   - path: kopyalar.yaml

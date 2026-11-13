@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 #
 # One Dockerfile for all server binaries: build with
-#   docker build --build-arg BIN=api|engine-service|worker|ingest \
+#   docker build --build-arg BIN=api|engine-service|worker|ingest|migrate \
 #     --build-context proto=../sozlesme/proto sunucu
 # The build context is sunucu/; the gRPC contract (sozlesme/proto) is passed as
 # the named context "proto" because engine-service/build.rs compiles it.
@@ -21,6 +21,8 @@ FROM ${RUST_IMAGE} AS chef
 # rust-toolchain.toml stops rustup from downloading a second toolchain
 # (rustfmt/clippy are not needed for release builds).
 ENV RUSTUP_TOOLCHAIN=1.97.0
+# sqlx checks queries against the committed cache (sunucu/.sqlx), not a live database.
+ENV SQLX_OFFLINE=true
 RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=secret,id=build_ca \
     ca=/run/secrets/build_ca; if [ -s "$ca" ]; then export CARGO_HTTP_CAINFO="$ca"; fi; \
@@ -74,6 +76,7 @@ ENTRYPOINT ["/usr/local/bin/service"]
 FROM runtime-base AS final-api
 FROM runtime-base AS final-worker
 FROM runtime-base AS final-ingest
+FROM runtime-base AS final-migrate
 FROM runtime-base AS final-engine-service
 COPY --from=probe /grpc_health_probe /usr/local/bin/grpc_health_probe
 

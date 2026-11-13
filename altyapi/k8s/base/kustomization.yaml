@@ -9,6 +9,7 @@ resources:
   - engine-service.yaml
   - worker.yaml
   - ingest.yaml
+  - migrate.yaml
   - nats.yaml
   - networkpolicy.yaml
 configMapGenerator:

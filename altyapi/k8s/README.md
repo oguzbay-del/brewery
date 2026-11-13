@@ -4,7 +4,7 @@ Kubernetes tanımları (Kustomize; Helm yok). İş: T0.7.
 
 | Yol | İçerik |
 |---|---|
-| `base/` | api, engine-service, worker, ingest (Deployment + Service), NATS JetStream (StatefulSet), ConfigMap, NetworkPolicy |
+| `base/` | api, engine-service, worker, ingest (Deployment + Service), `migrate` (veritabanı göç Job'ı), NATS JetStream (StatefulSet), ConfigMap, NetworkPolicy |
 | `overlays/yerel/` | base + PostgreSQL ve Redis (küme içinde, tek kopya), yerel imaj etiketi `dev`, yalnız yerel örnek Secret |
 | `overlays/test/`, `overlays/canli/` | base + kopya sayısı ve kaynaklar; PostgreSQL ve Redis YOK (Cloud SQL, Memorystore) |
 | `kind/` | yerel küme yapılandırması |
@@ -25,6 +25,7 @@ Doğrulama: `kubectl kustomize altyapi/k8s/overlays/<ad>` ve `kubectl apply --dr
 - **Ağ:** ad alanında girişler varsayılan kapalı. engine-service'e yalnız api erişir; api ve ingest dışarıdan gelen trafiği alır; NATS, PostgreSQL ve Redis yalnız api, worker, ingest'e açık. Çıkış kısıtlanmaz.
 - **CNI:** kind'ın varsayılan CNI'si (kindnet) NetworkPolicy için nftables ister; bazı çekirdeklerde çalışmaz. Bu yüzden kind-up Calico (iptables) kurar; manifest sürüme ve sağlama toplamına sabit, imajlar quay.io'dan.
 - **Güvenlik:** root olmayan kullanıcı, salt okunur kök dosya sistemi, bütün yetenekler kapalı, `seccomp: RuntimeDefault`, ad alanında Pod Security `restricted`.
+- **Göç:** `base/migrate.yaml` tek seferlik Job; `migrate` imajı `sunucu/migrations`'ı uygular, `DATABASE_URL`'i `demleme-dis-servisler` Secret'ından alır. `make kind-up` Job'ın bitmesini bekler; servislerin göçten sonra başlaması henüz zorlanmıyor (servisler veritabanı kullanmıyor; T2.10'da eklenir). Job şablonu değişmez olduğundan imaj etiketi değişen canlı dağıtımda önce eski Job silinir (`ttlSecondsAfterFinished` 1 saat sonra kendisi siler).
 - **Gizli bilgi:** test ve canlıda `demleme` ad alanında `demleme-dis-servisler` Secret'ı (anahtarlar `DATABASE_URL`, `REDIS_URL`) dışarıdan sağlanır; depoda değer yoktur. Yerelde aynı ad compose'daki örnek değerlerle üretilir.
 - **İmajlar:** test ve canlıda `KAYIT-DEFTERI` ve `SURUM` yer tutucudur; CI `kustomize edit set image` ile doldurur (kayıt defteri doğrulanacak).
 

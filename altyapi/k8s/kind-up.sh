@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 CLUSTER=demleme
 NS=demleme
-IMAGES=(demleme/api:dev demleme/engine-service:dev demleme/worker:dev demleme/ingest:dev)
+IMAGES=(demleme/api:dev demleme/engine-service:dev demleme/worker:dev demleme/ingest:dev demleme/migrate:dev)
 # Küme imaj çekmesin diye bağımlılık imajları da yüklenir.
 DEPS=(nats:2-alpine postgres:17-alpine redis:7-alpine)
 CALICO_VERSION=v3.30.3
@@ -29,7 +29,7 @@ echo "==> Uygulama imajları derleniyor (docker compose build)"
 built=0
 if [ "${SKIP_BUILD:-0}" != 1 ]; then
   for try in 1 2 3; do
-    if docker compose -f altyapi/compose/compose.yaml build api engine-service worker ingest; then built=1; break; fi
+    if docker compose -f altyapi/compose/compose.yaml build api engine-service worker ingest migrate; then built=1; break; fi
     echo "derleme başarısız (deneme $try/3)"; sleep 30
   done
 fi
@@ -85,4 +85,5 @@ for r in statefulset/nats statefulset/postgres statefulset/redis \
          deployment/engine-service deployment/api deployment/worker deployment/ingest; do
   kubectl -n "$NS" rollout status "$r" --timeout=240s
 done
+kubectl -n "$NS" wait --for=condition=complete job/migrate --timeout=240s
 kubectl -n "$NS" get pods

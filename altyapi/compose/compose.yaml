@@ -15,6 +15,7 @@ x-rust-service: &rust-service
     APNS_URL: http://apns-mock:8080
   depends_on: &rust-deps
     postgres: { condition: service_healthy }
+    migrate: { condition: service_completed_successfully }
     redis: { condition: service_healthy }
     nats: { condition: service_healthy }
 
@@ -109,6 +110,23 @@ services:
       timeout: 3s
       retries: 12
       start_period: 5s
+
+  # Tek seferlik göç (sunucu/migrations); api, worker ve ingest bitmesini bekler.
+  migrate:
+    build:
+      context: ../../sunucu
+      additional_contexts:
+        proto: ../../sozlesme/proto
+      secrets: [build_ca]
+      args:
+        BIN: migrate
+    image: demleme/migrate:dev
+    restart: "no"
+    environment:
+      RUST_LOG: info
+      DATABASE_URL: postgres://${POSTGRES_USER:-demleme}:${POSTGRES_PASSWORD:-demleme-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
+    depends_on:
+      postgres: { condition: service_healthy }
 
   engine-service:
     <<: *rust-service
