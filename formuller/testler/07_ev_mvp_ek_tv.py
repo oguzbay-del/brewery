@@ -63,8 +63,11 @@ def forecast(points, og, fg_recipe, eps=0.0005, min_n=12, min_drop=0.30):
     lim = rss * (1 + 4.0/(n - 2))                       # ≈ %95 profil aralığı (F≈4)
     ok = [x for x, s in table if s <= lim]
     t_end = math.log(A/eps)/k                           # SG - FGinf ≤ eps olduğu an
+    kalan = t_end - pts[-1][0]
+    # Karar (T1.17 C10, §1.5): kalan ≤ 0 → "bitti"; negatif kalan süre dönmez.
     return {"FG": f, "aralik": (min(ok), max(ok)), "k_saat": k,
-            "bitis_saat": t_end, "kalan_saat": t_end - pts[-1][0], "uyari": fg_warning(f, fg_recipe)}
+            "bitis_saat": t_end, "kalan_saat": max(0.0, kalan), "bitti": kalan <= 0,
+            "uyari": fg_warning(f, fg_recipe)}
 
 # ---------------------------------------------------------------- 2. Cihaz kalibrasyonu
 def polyfit(xs, ys, deg):
@@ -112,6 +115,11 @@ def tilt_cal(points):
     if len(points) == 0: raise ValueError("en az bir nokta")  # Karar (T1.16)
     a, b = _linfit([x for x, _ in points], [y for _, y in points])
     return b, a                                         # SG_düz = egim*SG_tilt + sapma
+
+def tilt_apply(slope, offset, sg_tilt):
+    """§2.2 (T1.17): SG_düz = eğim·SG_tilt + sapma; ham değer, 1 noktalı kalibrasyonda eğim 1."""
+    if not all(math.isfinite(x) for x in (slope, offset, sg_tilt)): raise ValueError("girdi sonlu olmalı")
+    return slope * sg_tilt + offset
 
 # ---------------------------------------------------------------- 3. Isınma ve soğuma
 C_WATER, C_GRAIN, C_STEEL = 4.186, 1.59, 0.50          # kJ/(kg·K); tahıl = 0.38 cal/g°C (05 ile aynı)

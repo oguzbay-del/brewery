@@ -61,6 +61,7 @@ Cihazı olmayan partide (yalnız elle veya kağıt okumalar) bunun yerine `10-el
 - **Belirsizlik aralığı:** `RSS(FG∞) ≤ RSS_min · (1 + 4/(n−2))` koşulunu sağlayan `FG∞` değerlerinin en küçüğü ve en büyüğü. Yaklaşık %95 profil aralığıdır (F≈4).
 - **Bitiş zamanı:** `t_bitiş = ln(A/ε) / k`, `ε = 0.0005`; yani SG'nin FG'ye 0.0005'ten fazla yaklaşmadığı an. Kalan süre `t_bitiş − t_son`.
 - **Uyarı:** `|FG∞ − FG_tarif| > 0.010` ise "beklenenden farklı bitiyor" (takılma ya da enfeksiyon şüphesi). Uyarı kuralları ekranı bunu kullanır.
+- **Karar (T1.17 C10): bitti durumu.** `kalan = t_bitiş − t_son ≤ 0` ise (SG zaten `FG∞ + ε` altında; kalan süre sürekli büyüklük olduğundan karşılaştırma tolerans içermez, ham ondalık sayıyla yapılır) tahmin **"bitti"** durumundadır: çıktıya `bitti = doğru` eklenir ve kalan süre 0 olarak döner (negatif kalan süre gösterilmez, istemci "bitti" yazar). `kalan > 0` ise `bitti = yanlış` ve kalan süre ham değerdir. `bitiş_saat` ham değer olarak aynen kalır (geçmişte bir an olabilir). Varsayılanlar (`ε = 0.0005`, en az nokta 12, en az düşüş %30) motorda sabittir; servis katmanı kendi kopyasını taşımaz.
 - **Karar (T1.12 C3, C9):** uyarı tam sayı birimde ve yuvarlanmamış `FG∞` ile verilir: `|u(FG∞) − u(FG_tarif)| > 1000`. Tam 0.010 fark uyarı vermez. FG, aralık, k, saatler yuvarlanmadan döner.
 
 ### 1.6 Bilinen sınırlar
@@ -90,6 +91,7 @@ SG = c0 + c1·α + c2·α²        (varsayılan derece 2; 3 seçilebilir)
 - **1 nokta:** sabit sapma `SG_düz = SG_tilt + (SG_ref − SG_tilt)`.
 - **2 ve daha çok nokta:** doğrusal regresyon `SG_düz = eğim · SG_tilt + sapma`.
 - **Sıcaklık:** ayrı ve sabit bir sapma (°C).
+- **Karar (T1.17): düzeltmenin uygulanması.** Okumaya `SG_düz = eğim · SG_tilt + sapma` uygulanır; 1 noktalı kalibrasyonda eğim 1'dir (`SG_düz = SG_tilt + sapma`). Sonuç ham değerdir (yuvarlama yok); kalibrasyon aralığı denetimi yoktur (iSpindel'deki dışdeğerleme uyarısının karşılığı Tilt'te tanımlı değil). Girdi sonlu olmalıdır, değilse hata (`ValueError`). Düzeltme saatlik medyandan önce, ham okumaya uygulanır (§1.1); ham okuma saklanır (§2.3).
 
 ### 2.3 Genel
 - Kalibrasyon bir tarihle birlikte saklanır.

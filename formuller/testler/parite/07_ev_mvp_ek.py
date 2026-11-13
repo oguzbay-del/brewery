@@ -55,6 +55,10 @@ def uret():
     p2 = _sentetik(1.060, 1.014, 0.03, 8, 120)
     fc([p for p in p2 if 20 <= p[0] < 90], 1.060, 1.014)
     fc([p for p in p2 if 20 <= p[0] < 60], 1.060, 1.014, min_drop=0.5)
+    # T1.17 C10: kalan ≤ 0 → bitti (kalan_saat 0'a sabitlenir)
+    fc([p for p in p2 if 20 <= p[0] < 120], 1.060, 1.014, eps=0.002)
+    fc([p for p in p2 if 20 <= p[0] < 120], 1.060, 1.014)
+    fc([p for p in p2 if 20 <= p[0] < 120], 1.060, 1.014, eps=0.00005)
 
     # T1.12 C3, C5, C7: eşikler tam sınırda (tam sayı gravite birimi), min_n, geçersiz seri
     def seri(son, n=12):
@@ -140,6 +144,16 @@ def uret():
     tilt([(1.0020, 1.0000), (1.0545, 1.0520)])
     tilt([(1.0020, 1.0000), (1.0300, 1.0285), (1.0545, 1.0520)])
     tilt([(1.0000, 1.0000)])
+
+    def tapply(pts, x, not_=None):
+        e, sl = ref.tilt_cal(pts)
+        v.ekle("tilt_apply", {"slope": e, "offset": sl, "tilt": x}, ref.tilt_apply(e, sl, x), not_)
+
+    # T1.17 §2.2: düzeltmenin uygulanması (1 nokta: eğim 1; 2 ve 3 nokta: doğrusal)
+    tapply([(1.0545, 1.0520)], 1.0300, "1 nokta: sabit sapma")
+    tapply([(1.0020, 1.0000), (1.0545, 1.0520)], 1.0300, "2 nokta")
+    tapply([(1.0020, 1.0000), (1.0300, 1.0285), (1.0545, 1.0520)], 1.0100, "3 nokta, aralık dışı da uygulanır")
+    tapply([(1.0000, 1.0000)], 1.0123, "sapma 0")
 
     # 3. Isınma ve soğuma
     adlar = ("water_l", "grain_kg", "kettle_kg", "t0", "t1", "power_kw", "eff")

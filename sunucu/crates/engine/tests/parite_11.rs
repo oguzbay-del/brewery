@@ -146,6 +146,34 @@ fn parite_11() {
                 );
                 c.check(&out);
             }
+            "predicted_trigger_manual" => {
+                let out = result_json(
+                    trigger::predicted_trigger_manual(&trigger::ManualTriggerInput {
+                        og: c.f("og"),
+                        fg: c.f("fg"),
+                        k_per_h: c.f("k"),
+                        lag_h: c.f("lag"),
+                        fg_ref: c.f("fg_ref"),
+                        delta: c.f("delta"),
+                        t_last_h: c.f("t_last"),
+                    }),
+                    |f| match f {
+                        trigger::ManualTriggerForecast::At {
+                            hours,
+                            days,
+                            remaining_days,
+                        } => json!([
+                            "tetik",
+                            hours,
+                            [days.0, days.1],
+                            [remaining_days.0, remaining_days.1]
+                        ]),
+                        trigger::ManualTriggerForecast::AlreadyPast => json!(["gecmis", 0.0]),
+                        trigger::ManualTriggerForecast::Unreachable => json!(["erisilemez", null]),
+                    },
+                );
+                c.check(&out);
+            }
             "fg_reference" => {
                 let r = trigger::fg_reference(
                     c.f("fg_recipe"),

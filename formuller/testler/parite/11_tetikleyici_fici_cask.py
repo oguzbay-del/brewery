@@ -78,6 +78,30 @@ def uret():
     pt(1.010, 0.040, 0.01, 1.012, 0.002)
     pt(1.010, 0.040, 0.0, 1.012, 0.002, "k = 0")
 
+    def ptm(og, fg, k, lag, fg_ref, delta, t_last, not_=None):
+        girdi = {"og": og, "fg": fg, "k": k, "lag": lag, "fg_ref": fg_ref, "delta": delta, "t_last": t_last}
+        beklenen = _hata(lambda: [x if not isinstance(x, tuple) else list(x)
+                                  for x in ref.predicted_trigger_manual(og, fg, k, lag, fg_ref, delta, t_last)])
+        v.ekle("predicted_trigger_manual", girdi, beklenen, not_)
+
+    # T1.17 §1.3: az okumalı parti, 10 §1.2 modeli
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.004, 60.0, "ale 1.050 → FG 1.012, Δ 0.004")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.002, 60.0, "Δ 0.002")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.004, 400.0, "son okuma tetikten sonra: kalan 0")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.004, 24.0 * 5, "gün sınırı yakını")
+    ptm(1.060, 1.014, 0.0123, 24.0, 1.014, 0.004, 72.0, "lager gecikmesi 24 saat")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.0, 60.0, "Δ 0: erişilemez")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, -0.001, 60.0, "Δ < 0: erişilemez")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.038, 60.0, "OG tam eşikte: geçmiş")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.050, 60.0, "OG eşiğin altında: geçmiş")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.012, 0.03799, 60.0, "OG eşiğin 1 birim üstünde")
+    ptm(1.050, 1.012, 0.0200, 12.0, 1.014, 0.002, 60.0, "FG_ref ≠ FG")
+    ptm(1.050, 1.012, 0.0, 12.0, 1.012, 0.004, 60.0, "k = 0: ZeroDivisionError")
+    ptm(1.050, 1.012, -0.02, 12.0, 1.012, 0.004, 60.0, "k < 0: ValueError")
+    ptm(1.050, 1.012, 1e9, 12.0, 1.012, 0.004, 60.0, "k çok büyük: sonlu")
+    ptm(1.050, 1.012, 0.02, 12.0, 1e9, 0.004, 60.0, "T1.12 D2: makul olmayan FG_ref")
+    ptm(1.050, 1.012, 0.02, 12.0, 1.012, 0.004, 1e9, "makul olmayan t_son")
+
     def fr(fg_recipe, fg_inf=None, shown=False, delta=0.004, not_=None):
         fg, kaynak = ref.fg_reference(fg_recipe, fg_inf, shown, delta)
         v.ekle("fg_reference", {"fg_recipe": fg_recipe, "fg_inf": fg_inf, "shown": shown, "delta": delta},

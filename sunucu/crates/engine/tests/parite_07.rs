@@ -106,6 +106,7 @@ fn parite_07() {
                     Forecast::Ready(r) => json!({
                         "FG": r.fg, "aralik": [r.range_sg.0, r.range_sg.1], "k_saat": r.k_per_h,
                         "bitis_saat": r.finish_h, "kalan_saat": r.remaining_h,
+                        "bitti": r.finished,
                         "uyari": r.warning,
                     }),
                 };
@@ -153,6 +154,16 @@ fn parite_07() {
                     home::tilt_cal(&pairs(c.v("points"))).map(|t| json!([t.slope, t.offset_sg])),
                 );
             }
+            "tilt_apply" => c.check_res(
+                home::tilt_apply(
+                    &home::TiltCorrection {
+                        slope: c.f("slope"),
+                        offset_sg: c.f("offset"),
+                    },
+                    c.f("tilt"),
+                )
+                .map(|x| json!(x)),
+            ),
             "heat_time_min" => c.check_r(home::heat_time_min(&home::HeatTimeInput {
                 water_l: c.f("water_l"),
                 grain_kg: c.f("grain_kg"),
