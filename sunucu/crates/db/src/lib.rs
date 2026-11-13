@@ -3,14 +3,21 @@
 //! - [`database_url`] / [`connect`] / [`connect_from_env`]: connection pool setup.
 //! - [`migrate`]: applies `sunucu/migrations/` (embedded at compile time).
 //! - [`provision_role`]: login and password for the application roles (after migrating).
+//! - [`append_audit`], [`verify_chain`], [`verify_all_chains`]: tamper-evident audit log
+//!   (hash chain per workspace, ADR-0007 rule 5).
 //! - [`DbContext`], [`begin`], [`set_context`]: request context for row level security
 //!   (ADR-0007).
 
+mod audit;
 mod context;
 mod error;
 mod pool;
 mod roles;
 
+pub use audit::{
+    AuditEvent, AuditRecord, CanonicalFields, ChainBreak, ChainReport, GENESIS_HASH, NewAuditEntry,
+    append_audit, canonical_row, chain_hash, value_digest, verify_all_chains, verify_chain,
+};
 pub use context::{
     ActorKind, DbContext, begin, set_actor_kind, set_context, set_user_id, set_workspace_id,
 };

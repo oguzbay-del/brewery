@@ -12,6 +12,8 @@ PostgreSQL erişim katmanı (sqlx). Kararlar: `adr/0007-veri-modeli.md`.
 | `migrate_database_url()` | Göç adresi: `MIGRATE_DATABASE_URL` (ya da `_FILE`) varsa o, yoksa `database_url()` |
 | `provision_role`, `AppRole`, `password_from_env` | `app_api` / `app_worker` rollerine oturum açma ve parola verir (parola `APP_API_PASSWORD`, `APP_WORKER_PASSWORD` ya da `*_FILE`) |
 | `migrate` ikilisi | `cargo run -p db --bin migrate`; göçleri uygular, sonra roller için parola varsa `provision_role` çalıştırır. Compose ve Kubernetes göç Job'ı bunu çalıştırır |
+| `append_audit`, `NewAuditEntry`, `AuditEvent` | Denetim kaydına ekleme (T2.14): istek işleminde `audit_heads` satırını `FOR UPDATE` kilitler, `hash = SHA-256(prev_hash ‖ RFC 8785 kanonik satır)` hesaplar, satırı ve başı yazar. Olay türleri `AuditEvent::ALL` (rol, yetki, kapanmış parti düzeltmesi, ...); gerekçe zorunlu olanlar `requires_reason()`. Kişisel alan için `value_digest` |
+| `verify_chain`, `verify_all_chains`, `audit-verify` ikilisi | Zinciri yeniden hesaplar: `audit-verify --all` ya da `--workspace <uuid>` (`MIGRATE_DATABASE_URL`, RLS'yi aşan rol); çıkış 0 sağlam, 1 bozuk, 2 hata |
 
 Komutlar (kökten): `make migrate` yerel compose veritabanına göç uygular; `make sqlx-prepare` `sunucu/.sqlx/` önbelleğini üretir (commit edilir; `SQLX_OFFLINE=true` ile derlenir).
 

@@ -34,6 +34,15 @@ pub enum Error {
         /// Human-readable reason.
         reason: String,
     },
+    /// An audit entry was refused before it reached the database (ADR-0007 rule 5).
+    #[error("invalid audit entry: {0}")]
+    InvalidAuditEntry(&'static str),
+    /// A stored audit row cannot be read back in the canonical form.
+    #[error("unreadable audit row: {0}")]
+    AuditCanonical(String),
+    /// Audit verification was asked for with a role that cannot see every workspace.
+    #[error("verifying all workspaces needs a role that bypasses row level security")]
+    VerifyNeedsBypass,
     /// Query, connection or pool failure.
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),
