@@ -11,13 +11,17 @@ base64.workspace = true
 chrono.workspace = true
 common = { workspace = true, features = ["http", "otel"] }
 db.workspace = true
+engine-client = { path = "../engine-client" }
 opentelemetry = "0.33.1"
+prost.workspace = true
 redis.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
 sqlx.workspace = true
 tokio.workspace = true
+tonic.workspace = true
+tonic-types.workspace = true
 tower.workspace = true
 tracing.workspace = true
 tracing-opentelemetry = "0.34.0"
@@ -25,6 +29,8 @@ utoipa = { version = "6.0.0", features = ["chrono", "uuid"] }
 uuid.workspace = true
 
 [dev-dependencies]
+engine-service = { path = "../engine-service" }
+tokio-stream.workspace = true
 http-body-util.workspace = true
 opentelemetry_sdk = "0.33.1"
 tracing-subscriber.workspace = true

@@ -4,6 +4,7 @@
 - Çekirdek REST API: ADR-0008'in ara katmanları (hata zarfı, istek bağlamı, tekrar anahtarı, ETag/If-Match, imleçli sayfalama, hız sınırı, istek kimliği ve iz, sürüm uyumu) ve OpenAPI üretimi. Ayrıntı: `README.md`.
 - Uçlar: `/healthz`, `/readyz`, `/v1/version`, `/v1/meta/fields`, `/v1/meta/client-requirements`. Alan uçları sonraki işlerde.
 - Veritabanına `db` crate'i üzerinden (`app_api` rolü) erişir; her istek bağlamı `RequestContext::begin` ile `SET LOCAL` yapılmış işlemde yürür.
+- Motor bağlantısı (T2.16): `src/engine.rs`. `ENGINE_URL` ile tonic kanalı, motor sürüm damgası, girdi özetiyle (protobuf kanonik bayt + SHA-256) Redis önbelleği, `calc_results` kaydı, motor durumunun hata zarfına eşlenmesi. Hesap isteyen uç `EngineClient::calculate` kullanır. Çıktı `calc_results.output` içinde base64 protobuf.
 - Port `PORT` (varsayılan 8080).
 
 ## Neye dokunmaz

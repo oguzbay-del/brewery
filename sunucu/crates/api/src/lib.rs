@@ -6,6 +6,7 @@ pub mod app_version;
 pub mod concurrency;
 pub mod config;
 pub mod context;
+pub mod engine;
 pub mod error;
 pub mod idempotency;
 pub mod openapi;

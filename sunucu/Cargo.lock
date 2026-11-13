@@ -41,15 +41,21 @@ dependencies = [
  "chrono",
  "common",
  "db",
+ "engine-client",
+ "engine-service",
  "http-body-util",
  "opentelemetry",
  "opentelemetry_sdk",
+ "prost",
  "redis",
  "serde",
  "serde_json",
  "sha2 0.11.1",
  "sqlx",
  "tokio",
+ "tokio-stream",
+ "tonic",
+ "tonic-types",
  "tower",
  "tracing",
  "tracing-opentelemetry",
@@ -507,6 +513,17 @@ version = "0.1.0"
 dependencies = [
  "rust_decimal",
  "serde_json",
+]
+
+[[package]]
+name = "engine-client"
+version = "0.1.0"
+dependencies = [
+ "prost",
+ "protox",
+ "tonic",
+ "tonic-prost",
+ "tonic-prost-build",
 ]
 
 [[package]]
