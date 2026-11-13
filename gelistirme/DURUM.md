@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** Aşama 2 iş listesini yaz (Opus, yeni oturumda): veri modeli, göçler, giriş, yetki, NATS, Redis, destek. Aşama 1 açık kalanları ADR-0006 sonunda.
+**Sıradaki iş:** T2.1 veri modeli (ADR-0007, Opus); ardından T2.2 API kuralları ve T2.3 kimlik ve yetki ADR'leri. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -15,7 +15,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Engeller
 
-- Yok. Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
+- Yok. T2.28 web ödemesi O6 kararını bekler (App Store kısmı engelsiz). Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
 
 ## Son kararlar
 
@@ -25,6 +25,10 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - Her aşamaya yeni oturum.
 - ADR-0006: Aşama 1 kapandı (13.11.2026); T1.17 motor eksikleri.
 - ADR-0003: motor paritesi; bölüm başına modül; motor fonksiyonları spesifikasyon birimini alır; para `rust_decimal`.
+
+## Aşama 2 (sürüyor)
+
+T2.0 iş listesi (13.11.2026): kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
 
 ## Aşama 1 (kapandı)
 
