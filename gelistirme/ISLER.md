@@ -62,7 +62,8 @@ Yöntem: ADR-0003. Bölüm işleri (T1.1–T1.10) birbirine dokunmaz, paralel y�
 | T1.16 | Ortak tarif girdi modeli (`engine::recipe`), motor hata tipi ve girdi denetimi, birim adlandırması, yinelenen yardımcıların tekleşmesi (ADR-0004) | ADR-0004; 01/02 tek model; yinelenen fonksiyon yok; Python'un istisna attığı yerde Rust `Err`; testler geçiyor | T1.15 | Claude | Opus (ADR), Sonnet (uygulama) | bitti (12.11.2026; A hata ve kodlar, B ortak model, C adlar ve imzalar) |
 | T1.11 | engine-service gRPC uçları: proto tasarımı (tarif özeti, su, mash hacimleri, karbonasyon, maya) ve uygulama; sözleşme üretimi | Proto ve OpenAPI fark kontrolü temiz; gRPC uç testleri geçiyor | T1.16 | Claude | Opus (proto), Sonnet (uygulama) | bitti (13.11.2026; 8 servis, ADR-0005; motor eksikleri `raporlar/T1.11-motor-eksikleri.md`) |
 | T1.12 | Bağımsız inceleme: Rust ile spesifikasyon arasında sapma, kapsanmayan fonksiyon | Rapor `gelistirme/raporlar/T1.12-motor-inceleme.md`; bulgular kapandı | T1.1–T1.10, T1.14 | Claude | Fable | bitti (12.11.2026; 5 rapor) |
-| T1.13 | Aşama 1 kapı kontrolü | Kapı maddeleri sağlandı; sapmalar ADR'de | T1.11, T1.12 | Claude | Opus | bekliyor |
+| T1.17 | T1.11 motor eksikleri ve açık T1.12 bulguları: 03 tipli grist ve çok asitli pH; 04 maya alan adı; 07 C10 "bitti" durumu, Tilt düzeltmesi, 11 §1.3 elle gün çözünürlüklü tetik; 08 §4.3 süzme verimi ve lab oranı; 09 LPA ve uygulanan oran çıktısı, spunding sabiti (`raporlar/T1.11-motor-eksikleri.md`) | Spesifikasyon → referans → vektör → Rust → servis; parite ve uç testleri geçiyor | T1.11 | Claude | Sonnet (yazım), Opus (inceleme) | sürüyor |
+| T1.13 | Aşama 1 kapı kontrolü | Kapı maddeleri sağlandı; sapmalar ADR'de | T1.11, T1.12, T1.17 | Claude | Opus | bekliyor |
 
 ## Aşama 2–6
 
