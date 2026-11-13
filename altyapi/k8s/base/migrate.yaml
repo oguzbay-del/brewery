@@ -1,5 +1,6 @@
-# Veritabanı göçleri: tek seferlik Job (sunucu/migrations, `migrate` ikilisi). DATABASE_URL
-# `demleme-dis-servisler` Secret'ından gelir. Tekrar çalışması güvenlidir (sqlx kilit alır).
+# Veritabanı göçleri: tek seferlik Job (sunucu/migrations, `migrate` ikilisi). MIGRATE_DATABASE_URL
+# ve uygulama rollerinin parolaları (APP_API_PASSWORD, APP_WORKER_PASSWORD) `demleme-migrate`
+# Secret'ından gelir; servisler bu Secret'ı görmez. Tekrar çalışması güvenlidir (sqlx kilit alır).
 # Servislerin göçten sonra başlaması şimdilik zorlanmıyor (servisler henüz veritabanı
 # kullanmıyor); sıralama T2.10'da API veritabanına bağlanırken eklenir.
 apiVersion: batch/v1
@@ -28,7 +29,7 @@ spec:
             - { name: SERVICE_NAME, value: migrate }
           envFrom:
             - configMapRef: { name: demleme-config }
-            - secretRef: { name: demleme-dis-servisler }
+            - secretRef: { name: demleme-migrate }
           resources:
             requests: { cpu: 50m, memory: 32Mi }
             limits: { memory: 128Mi }

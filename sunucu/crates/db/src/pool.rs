@@ -8,6 +8,12 @@ use crate::{Error, Result};
 pub const ENV_DATABASE_URL: &str = "DATABASE_URL";
 /// Environment variable naming a file that holds the connection URL (mounted secret).
 pub const ENV_DATABASE_URL_FILE: &str = "DATABASE_URL_FILE";
+/// Environment variable holding the migration connection URL (owner-capable role). The
+/// `migrate` binary prefers it over [`ENV_DATABASE_URL`], which then stays free for the
+/// application role.
+pub const ENV_MIGRATE_DATABASE_URL: &str = "MIGRATE_DATABASE_URL";
+/// Environment variable naming a file that holds the migration connection URL.
+pub const ENV_MIGRATE_DATABASE_URL_FILE: &str = "MIGRATE_DATABASE_URL_FILE";
 /// Pool size used by [`connect_from_env`].
 pub const DEFAULT_MAX_CONNECTIONS: u32 = 10;
 
@@ -23,8 +29,39 @@ pub fn database_url_from_lookup<F>(lookup: F) -> Result<String>
 where
     F: Fn(&str) -> Option<String>,
 {
-    let direct = lookup(ENV_DATABASE_URL).filter(|v| !v.trim().is_empty());
-    let file = lookup(ENV_DATABASE_URL_FILE).filter(|v| !v.trim().is_empty());
+    url_from_lookup(&lookup, ENV_DATABASE_URL, ENV_DATABASE_URL_FILE)
+}
+
+/// Connection URL for running migrations: `MIGRATE_DATABASE_URL` / `MIGRATE_DATABASE_URL_FILE`
+/// when either is set, otherwise the ordinary [`database_url`].
+pub fn migrate_database_url() -> Result<String> {
+    migrate_database_url_from_lookup(|name| std::env::var(name).ok())
+}
+
+/// Like [`migrate_database_url`] with an injectable lookup function.
+pub fn migrate_database_url_from_lookup<F>(lookup: F) -> Result<String>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let set = |name: &str| lookup(name).is_some_and(|v| !v.trim().is_empty());
+    if set(ENV_MIGRATE_DATABASE_URL) || set(ENV_MIGRATE_DATABASE_URL_FILE) {
+        url_from_lookup(
+            &lookup,
+            ENV_MIGRATE_DATABASE_URL,
+            ENV_MIGRATE_DATABASE_URL_FILE,
+        )
+    } else {
+        database_url_from_lookup(lookup)
+    }
+}
+
+fn url_from_lookup(
+    lookup: &dyn Fn(&str) -> Option<String>,
+    var: &str,
+    file_var: &str,
+) -> Result<String> {
+    let direct = lookup(var).filter(|v| !v.trim().is_empty());
+    let file = lookup(file_var).filter(|v| !v.trim().is_empty());
     match (direct, file) {
         (Some(_), Some(_)) => Err(Error::AmbiguousUrl),
         (Some(url), None) => Ok(url.trim().to_owned()),
@@ -104,6 +141,27 @@ mod tests {
         assert!(matches!(
             database_url_from_lookup(both),
             Err(Error::AmbiguousUrl)
+        ));
+    }
+
+    #[test]
+    fn migrate_url_is_preferred_over_the_application_url() {
+        let both = lookup(&[
+            (ENV_DATABASE_URL, "postgres://app/db"),
+            (ENV_MIGRATE_DATABASE_URL, "postgres://owner/db"),
+        ]);
+        assert_eq!(
+            migrate_database_url_from_lookup(both).unwrap(),
+            "postgres://owner/db"
+        );
+        let only_app = lookup(&[(ENV_DATABASE_URL, "postgres://app/db")]);
+        assert_eq!(
+            migrate_database_url_from_lookup(only_app).unwrap(),
+            "postgres://app/db"
+        );
+        assert!(matches!(
+            migrate_database_url_from_lookup(lookup(&[])),
+            Err(Error::MissingUrl)
         ));
     }
 

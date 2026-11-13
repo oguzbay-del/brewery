@@ -5,7 +5,8 @@ x-rust-service: &rust-service
   restart: unless-stopped
   environment: &rust-env
     RUST_LOG: info
-    DATABASE_URL: postgres://${POSTGRES_USER:-demleme}:${POSTGRES_PASSWORD:-demleme-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
+    # Uygulama rolü (app_api); tablo sahibi ve süper kullanıcı değil, RLS altında (ADR-0007).
+    DATABASE_URL: postgres://app_api:${APP_API_PASSWORD:-demleme-api-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
     REDIS_URL: redis://redis:6379
     NATS_URL: nats://nats:4222
     ENGINE_URL: http://engine-service:50051
@@ -111,7 +112,8 @@ services:
       retries: 12
       start_period: 5s
 
-  # Tek seferlik göç (sunucu/migrations); api, worker ve ingest bitmesini bekler.
+  # Tek seferlik göç (sunucu/migrations); api, worker ve ingest bitmesini bekler. Göç rolü
+  # PostgreSQL'in kurucu kullanıcısıdır; göçten sonra app_api ve app_worker'a parolalarını verir.
   migrate:
     build:
       context: ../../sunucu
@@ -124,7 +126,9 @@ services:
     restart: "no"
     environment:
       RUST_LOG: info
-      DATABASE_URL: postgres://${POSTGRES_USER:-demleme}:${POSTGRES_PASSWORD:-demleme-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
+      MIGRATE_DATABASE_URL: postgres://${POSTGRES_USER:-demleme}:${POSTGRES_PASSWORD:-demleme-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
+      APP_API_PASSWORD: ${APP_API_PASSWORD:-demleme-api-yerel}
+      APP_WORKER_PASSWORD: ${APP_WORKER_PASSWORD:-demleme-worker-yerel}
     depends_on:
       postgres: { condition: service_healthy }
 
@@ -183,6 +187,7 @@ services:
     image: demleme/worker:dev
     environment:
       <<: *rust-env
+      DATABASE_URL: postgres://app_worker:${APP_WORKER_PASSWORD:-demleme-worker-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
       PORT: "8081"
       SERVICE_NAME: worker
     depends_on:

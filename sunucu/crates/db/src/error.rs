@@ -20,6 +20,20 @@ pub enum Error {
         /// Human-readable reason.
         reason: String,
     },
+    /// A secret is set both directly and through its `_FILE` variable.
+    #[error("{variable} and {variable}_FILE are both set; set exactly one")]
+    AmbiguousSecret {
+        /// Name of the direct variable.
+        variable: String,
+    },
+    /// The file named by a `*_FILE` secret variable could not be read or is empty.
+    #[error("cannot read secret from {path}: {reason}")]
+    SecretFile {
+        /// Path taken from the `*_FILE` variable.
+        path: String,
+        /// Human-readable reason.
+        reason: String,
+    },
     /// Query, connection or pool failure.
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),

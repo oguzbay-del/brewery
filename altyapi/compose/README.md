@@ -29,9 +29,9 @@ Ortam değişkenlerinin hepsinin varsayılanı var; değiştirmek için `.env.ex
 | github-mock | 8090 | WireMock |
 | apns-mock | 8091 | WireMock |
 
-`migrate` tek seferlik bir servistir: PostgreSQL sağlıklı olunca `sunucu/migrations` göçlerini uygular ve çıkar (`make ps` içinde çıkmış görünür); api, worker ve ingest başarıyla bitmesini bekler. Göçü elle çalıştırmak: `make migrate`.
+`migrate` tek seferlik bir servistir: PostgreSQL sağlıklı olunca `sunucu/migrations` göçlerini uygular ve çıkar (`make ps` içinde çıkmış görünür); api, worker ve ingest başarıyla bitmesini bekler. Göçü elle çalıştırmak: `make migrate`. Göç PostgreSQL'in kurucu kullanıcısıyla (`MIGRATE_DATABASE_URL`) çalışır; ardından `app_api` ve `app_worker` rollerine oturum açma ve parola verir (`APP_API_PASSWORD`, `APP_WORKER_PASSWORD`, yerel örnek değerler). api ve ingest `app_api` ile, worker `app_worker` ile bağlanır; ikisi de tablo sahibi değildir ve RLS altındadır (ADR-0007). Kurucu kullanıcı ile bağlanan testler (`make test`) rolü `SET ROLE` ile alır.
 
-Servislere şu ortam değişkenleri verilir (şimdilik kullanılmayabilir): `DATABASE_URL`, `REDIS_URL`, `NATS_URL`, `ENGINE_URL`, `SMTP_HOST`/`SMTP_PORT`, `GITHUB_API_URL`, `APNS_URL`.
+Servislere şu ortam değişkenleri verilir (şimdilik kullanılmayabilir): `DATABASE_URL` (uygulama rolü), `REDIS_URL`, `NATS_URL`, `ENGINE_URL`, `SMTP_HOST`/`SMTP_PORT`, `GITHUB_API_URL`, `APNS_URL`.
 
 ## Sahte servisler
 

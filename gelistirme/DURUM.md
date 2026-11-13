@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.5 çekirdek göçler (Sonnet); ardından T2.6 Ev MVP alan göçleri. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
+**Sıradaki iş:** T2.6 Ev MVP alan göçleri (Sonnet); ardından T2.7 İşletme göçleri. T2.10 (API çekirdeği) de açık, paralel yürüyebilir. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -12,11 +12,12 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - scratchpad/bin: terraform 1.17.2, kind 0.33.0, kubectl 1.37.2, actionlint 1.7.12. Yeni oturumda scratchpad boşsa yeniden indirilir (README'lerde yazılı).
 - Testler PostgreSQL ister: `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres` ya da `make up`; `make test` DATABASE_URL'yi compose varsayılanıyla verir.
 - Bu ortamda imaj derlemesi: `make up BUILD_CA_FILE=/root/.ccr/ca-bundle.crt` (TLS vekili).
-- CI: GitHub Actions, 6 iş akışı; iOS GitHub macOS makinelerinde.
+- CI: GitHub Actions, 6 iş akışı; iOS GitHub macOS makinelerinde. `altyapi.yml` actionlint, kustomize ve kind duman testini de koşar; kind ve compose uçtan uca denetimi CI'a bırakılır, yerelde ilgili crate testi yeterli. Gönderimden sonra CI sonucu `actions_list` ile denetlenir.
+- DB rolleri: `app_owner` (sahip, NOLOGIN), `app_api`, `app_worker`; parolayı `migrate` verir (`APP_*_PASSWORD`).
 
 ## Engeller
 
-- kind ve k8s manifestleri (T2.4 göç Job'ı, `kind-test.sh` değişikliği) ile CI iş akışı bu oturumda doğrulanamadı: kubectl/actionlint indirmesi izinle reddedildi. CI'da ya da araçlar kurulunca `kubectl kustomize`, `actionlint`, `make kind-test` çalıştırılacak.
+- T2.6/T2.7: `role_assignments.scope_id` ve `invitations.scope_id` için hedef tablolar gelince bütünlük tetikleyicisi eklenecek (T2.5 notu).
 - T2.17 alan sınırları ürün önerisi (`verify: true`, doğrulanacak); katalog kesin birim tanımlarını, motor BeerSmith'in yuvarlak sabitlerini kullanıyor (~1e-7 fark), hizalama kararı açık.
 - T2.28 web ödemesi O6 kararını bekler (App Store kısmı engelsiz). Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
 
@@ -34,7 +35,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Aşama 2 (sürüyor)
 
-T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`). 219 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
+T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 çekirdek göçler (23 tablo, FORCE RLS, üç rol, girişten önce SECURITY DEFINER işlevleri, RLS taraması). 246 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
 
 ## Aşama 1 (kapandı)
 

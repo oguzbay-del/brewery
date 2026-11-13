@@ -16,9 +16,16 @@ secretGenerator:
   - name: demleme-postgres
     literals:
       - POSTGRES_PASSWORD=demleme-yerel
+  # Göç Job'ı: kurucu kullanıcı + uygulama rollerinin parolaları (yalnız migrate görür).
+  - name: demleme-migrate
+    literals:
+      - MIGRATE_DATABASE_URL=postgres://demleme:demleme-yerel@postgres:5432/demleme
+      - APP_API_PASSWORD=demleme-api-yerel
+      - APP_WORKER_PASSWORD=demleme-worker-yerel
   - name: demleme-dis-servisler
     literals:
-      - DATABASE_URL=postgres://demleme:demleme-yerel@postgres:5432/demleme
+      - DATABASE_URL=postgres://app_api:demleme-api-yerel@postgres:5432/demleme
+      - WORKER_DATABASE_URL=postgres://app_worker:demleme-worker-yerel@postgres:5432/demleme
       - REDIS_URL=redis://redis:6379
 generatorOptions:
   disableNameSuffixHash: true

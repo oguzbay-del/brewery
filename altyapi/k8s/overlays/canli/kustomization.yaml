@@ -1,6 +1,8 @@
 # Canli: PostgreSQL ve Redis YOK; dış servisler (Cloud SQL, Memorystore) Secret ile bağlanır.
-# Ön koşul: `demleme` ad alanında `demleme-dis-servisler` Secret'ı (anahtarlar: DATABASE_URL, REDIS_URL)
-# bulut tarafında (ör. Secret Manager) üretilmiş olmalı; değerler depoya yazılmaz.
+# Ön koşul: `demleme` ad alanında bulut tarafında (ör. Secret Manager) üretilmiş iki Secret olmalı;
+# değerler depoya yazılmaz: `demleme-dis-servisler` (DATABASE_URL = app_api, WORKER_DATABASE_URL =
+# app_worker, REDIS_URL) ve `demleme-migrate` (MIGRATE_DATABASE_URL = göç rolü, APP_API_PASSWORD,
+# APP_WORKER_PASSWORD; yalnız göç Job'ı okur).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: demleme

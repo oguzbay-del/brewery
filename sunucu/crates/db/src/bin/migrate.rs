@@ -20,7 +20,7 @@ async fn main() -> ExitCode {
 }
 
 async fn run() -> db::Result<()> {
-    let url = db::database_url()?;
+    let url = db::migrate_database_url()?;
     // A single connection is enough; the migrator serialises runs with an advisory lock.
     let pool = db::connect(&url, 1).await?;
     db::migrate(&pool).await?;
@@ -28,6 +28,20 @@ async fn run() -> db::Result<()> {
         migrations = db::MIGRATOR.migrations.len(),
         "migrations applied"
     );
+    // Logins of the application roles: skipped (with a note) where no password is configured,
+    // e.g. when only the schema is needed.
+    for role in [db::AppRole::Api, db::AppRole::Worker] {
+        if let Some(password) = db::password_from_env(role)? {
+            db::provision_role(&pool, role, &password).await?;
+            tracing::info!(role = role.name(), "role login provisioned");
+        } else {
+            tracing::info!(
+                role = role.name(),
+                variable = db::password_variable(role),
+                "no password configured, role login left unchanged"
+            );
+        }
+    }
     pool.close().await;
     Ok(())
 }
