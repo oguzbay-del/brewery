@@ -2,8 +2,8 @@
 
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
-**Aşama:** 1 Hesap motoru (Aşama 0 kapandı: ADR-0002)
-**Sıradaki iş:** T1.13 Aşama 1 kapı kontrolü (motor eksikleri raporu dahil: `raporlar/T1.11-motor-eksikleri.md`).
+**Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
+**Sıradaki iş:** Aşama 2 iş listesini yaz (Opus, yeni oturumda): veri modeli, göçler, giriş, yetki, NATS, Redis, destek. Aşama 1 açık kalanları ADR-0006 sonunda.
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -23,11 +23,12 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - ADR-0001 depo düzeni; ADR-0002 Aşama 0 kapanışı ve sapmalar.
 - F1: formüller Fable ile bağımsız doğrulandı; 22 bulgu ve 14 karar işlendi. Kayan nokta ilkesi: gravite eşikleri tam sayı birimde (`round(SG*100000)`), sürekli büyüklükte 1e-9 (formuller/00-OKU-BENI.md).
 - Her aşamaya yeni oturum.
+- ADR-0006: Aşama 1 kapandı (13.11.2026); T1.17 motor eksikleri.
 - ADR-0003: motor paritesi; bölüm başına modül; motor fonksiyonları spesifikasyon birimini alır; para `rust_decimal`.
 
-## Son biten işler (Aşama 1)
+## Aşama 1 (kapandı)
 
-T1.0 ADR-0003 · T1.1–T1.10 portlar · T1.14 referanssız hesaplar · T1.12 Fable incelemesi (5 rapor) · T1.15 bulgu düzeltmeleri · T1.16 ortak model, hata tipi, adlar (ADR-0004) · T1.11 ToolService, RecipeService, T1.11 bitti: 8 gRPC servisi (Tool, Recipe, Mash, Water, Yeast, Fermentation, Brewery, Engine), vektörlü uç testleri ve TCP üzerinden uçtan uca test; çalışma alanında 203 test geçiyor. 9970 parite vakası, hepsi eşit.
+T1.0 ADR-0003 · T1.1–T1.10 portlar · T1.14 referanssız hesaplar · T1.12 Fable incelemesi (5 rapor) · T1.15 bulgu düzeltmeleri · T1.16 ortak model, hata tipi, adlar (ADR-0004) · T1.11 ToolService, RecipeService, T1.11 bitti: 8 gRPC servisi (Tool, Recipe, Mash, Water, Yeast, Fermentation, Brewery, Engine), vektörlü uç testleri ve TCP üzerinden uçtan uca test; çalışma alanında 203 test geçiyor. T1.17 motor eksikleri · T1.13 kapı (ADR-0006). 10 269 parite vakası, hepsi eşit.
 
 ## Aşama 0 (kapandı)
 
