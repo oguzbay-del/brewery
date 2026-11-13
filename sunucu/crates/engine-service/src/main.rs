@@ -3,7 +3,7 @@
 use std::net::SocketAddr;
 
 use common::{ServiceConfig, telemetry};
-use engine_service::{mash, recipe, service, tool};
+use engine_service::{brewery, mash, recipe, service, tool};
 use tonic::transport::Server;
 
 const DEFAULT_NAME: &str = "engine-service";
@@ -38,6 +38,12 @@ async fn main() -> common::Result<()> {
         >>()
         .await;
 
+    reporter
+        .set_serving::<engine_service::proto::brewery_service_server::BreweryServiceServer<
+            brewery::BreweryHandler,
+        >>()
+        .await;
+
     let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     tracing::info!(%addr, version = engine::version(), "engine-service listening");
 
@@ -47,6 +53,7 @@ async fn main() -> common::Result<()> {
         .add_service(tool::server())
         .add_service(recipe::server())
         .add_service(mash::server())
+        .add_service(brewery::server())
         .serve_with_shutdown(addr, common::shutdown::shutdown_signal())
         .await
         .map_err(|e| common::Error::Io(std::io::Error::other(e)))?;
