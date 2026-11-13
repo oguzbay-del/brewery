@@ -37,6 +37,17 @@ Komutlar (kökten): `make migrate` yerel compose veritabanına göç uygular; `m
 | `0012_abonelik_ve_destek` | `subscriptions`, `entitlements`, `support_requests`, `support_messages`, `support_grants`, `support_actions` |
 | `0013_kapsam_butunlugu` | `check_polymorphic_target()` (`role_assignments`, `invitations`, `alert_rules` kapsamı; `attachments` bağlı kaydı), `drop_scope_references()` |
 
+## İşletme göçleri (T2.7)
+
+| Göç | İçerik |
+|---|---|
+| `0014_isletme_uretim` | `production_areas`, `vessels`, `vessel_occupancies`, `transfers`, `transfer_batches`, `packaging_runs`, `packaging_run_lines`, `quality_specs`, `lab_results` (yalnız eklenir), `releases` (yalnız eklenir), `cleaning_records`, `yeast_generations`, `yeast_generation_batches`; `devices.vessel_id` yabancı anahtarı; `drop_scope_references` `vessel` alarm kurallarını da siler; `btree_gist` |
+| `0015_vergi_tablolari` | `tax_jurisdictions`, `tax_rate_tables`, `tax_rate_bands` (ortak referans veri) |
+
+- Gerçekleşen (`actual`) tank doluluğu aynı tankta çakışmaz (`vessel_occupancies_no_actual_overlap`, `EXCLUDE USING gist`; yumuşak silinen satır sayılmaz, bitiş `[)`). Planlanan doluluk çakışabilir (planlama uyarısı, ADR-0007).
+- `lab_results` ve `releases` uygulama rollerine yalnız INSERT ve SELECT verir; düzeltme yeni satırdır (`lab_results.corrects_id`). Bekletme ve red gerekçesiz olmaz.
+- Vergi tabloları `workspace_id`'siz ortak veridir (RLS yok, `staff_users` gibi `SHARED`); uygulama rolleri yalnız okur, yazımı göç ve tohum (`app_owner`) yapar. Aynı ülke, `rate_class` ve `chain_position` için yürürlük aralıkları çakışmaz (`tax_rate_tables_no_overlap`). Bant ve kademeler işlem sonunda denetlenir: sıra ardışık, üst sınırlar kesin artan, son bant açık uçlu (motor D8 kuralı). `verified` satır resmi kaynak, adı, adresi ve tarihiyle gelir; ABV ya da °P kullanan yöntemde girdi yuvarlaması açıkça yazılır. Oran satırı tohumu yok (resmi kaynaktan doğrulanınca yüklenir).
+
 `EditSession` tablo değildir (ADR-0007 madde 4: Redis'te süreli anahtar). Yeni tablo göçleri `secure_workspace_table(tablo, kip, haklar)` ile kurulur; kipler `standard`, `shared` (workspace_id NULL = ortak satır), `append` (yalnız eklenir).
 
 Kurallar (testlerle zorlanır, `tests/catalog.rs`):
@@ -45,6 +56,6 @@ Kurallar (testlerle zorlanır, `tests/catalog.rs`):
 - Yayınlanmış (`draft` olmayan) `recipe_versions` ve satır tabloları değişmez; yalnız `approved -> archived` geçişi serbest. Parti yalnız yayınlanmış sürümden açılır.
 - `measurements` yalnız eklenir, `measured_at` üzerinde aylık bölümlüdür; her bölümde RLS ve politika ayrıca kurulur (`create_measurement_partition`, yalnız `app_owner`/göç; worker `ensure_measurement_partitions(n)` çağırır). Bölüm yoksa ekleme `23514` ile düşer; ilk bölümler 2026-01'den göç günü + 2 aya kadar açılır. Tekrar gönderim `INSERT ... ON CONFLICT DO NOTHING` ile.
 - `stock_lots.quantity` yalnız `stock_movements` ekleme tetikleyicisiyle değişir; `stock_movements`, `measurements`, `stage_events`, `notification_events`, `support_actions` uygulama rollerine yalnız INSERT ve SELECT verir. `subscriptions` ve `entitlements`'ı yalnız `app_worker` yazar.
-- `role_assignments`, `invitations`, `alert_rules` kapsamı ve `attachments` bağlı kaydı (`scope_id`/`record_id`) için tür sütununa göre hedef tablo ve çalışma alanı denetlenir; `vessel` ve `area` türleri T2.7'de tablolar gelince çalışır (o zamana dek reddedilir). Hedef silinince bağlı atama ve davetler silinir.
+- `role_assignments`, `invitations`, `alert_rules` kapsamı ve `attachments` bağlı kaydı (`scope_id`/`record_id`) için tür sütununa göre hedef tablo ve çalışma alanı denetlenir; `vessel` ve `area` türleri `0014`ten beri çalışır (hedef silinince atama, davet ve tank alarm kuralı gider). Hedef silinince bağlı atama ve davetler silinir.
 
 Giriş öncesi işlevler (yalnız `app_api` çağırır): `find_user_by_identity`, `find_session_by_token_hash`, `find_shared_device_by_key_hash`, `find_invitation_by_token_hash`, `email_login_token_create/consume`, `auth_request_create/consume`. Bakım işlevleri (yalnız `app_worker`): `purge_expired_auth_rows`, `purge_expired_idempotency_keys`.

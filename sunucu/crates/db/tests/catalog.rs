@@ -10,7 +10,12 @@ use sqlx::PgPool;
 /// Cross-workspace tables (ADR-0007, rule 2.5): protected by privileges instead of RLS.
 const CROSS_WORKSPACE: &[&str] = &["outbox", "scheduled_jobs", "external_events"];
 /// Shared tables written only by migrations and seeds; no RLS, read-only for the API.
-const SHARED: &[&str] = &["staff_users"];
+const SHARED: &[&str] = &[
+    "staff_users",
+    "tax_jurisdictions",
+    "tax_rate_tables",
+    "tax_rate_bands",
+];
 /// Tables whose `app_owner` policies serve the pre-login SECURITY DEFINER functions.
 const OWNER_LOOKUP: &[&str] = &[
     "user_identities",

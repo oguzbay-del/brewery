@@ -334,7 +334,8 @@ async fn scope_ids_must_point_at_a_row_of_their_kind_in_the_workspace(
         )
     };
     // Own batch: fine. Missing target, another workspace's recipe, a kind without a table yet
-    // (vessel and area arrive with T2.7): foreign key violation.
+    // (here a batch id used as a vessel or area): foreign key violation. Real vessel and area
+    // scopes are covered in business.rs.
     run(&app, a, None, &assign(90, "batch", id(20))).await?;
     run(&app, a, None, &assign(91, "recipe", id(85))).await?;
     for (n, kind, target) in [
