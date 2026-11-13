@@ -462,6 +462,16 @@ pub fn mash_ra_slope(model: MashModel, t_l_per_kg: f64) -> f64 {
     }
 }
 
+/// Adjusted mash pH with any number of acids (spec §5.5): `pH_grist + m · (RA/50 + Σ acid_ra)`,
+/// computed as [`est_mash_ph`]`(grist, RA + 50 · Σ acid_ra, m)`. `acid_ras` are the RA equivalents
+/// in mEq/L (negative) of liquid acids ([`misc_acid_ra`]) and acid malts ([`acid_malt_ra`]), summed
+/// in the given order. An empty slice gives [`est_mash_ph`].
+#[must_use]
+pub fn adjusted_ph_multi_acid(grist_ph: f64, ra_ppm: f64, acid_ras: &[f64], slope: f64) -> f64 {
+    let sum: f64 = acid_ras.iter().sum();
+    est_mash_ph(grist_ph, 50.0 * sum + ra_ppm, slope)
+}
+
 /// Estimated mash pH without acid: `pH_grist + RA/50 · slope` (spec §5.3). `ra_ppm` in ppm `CaCO₃`.
 #[must_use]
 pub fn est_mash_ph(grist_ph: f64, ra_ppm: f64, slope: f64) -> f64 {
@@ -641,8 +651,8 @@ pub struct AdjustedPh {
 /// Inputs of [`adjusted_ph`].
 #[derive(Debug, Clone, Copy)]
 pub struct AdjustedPhInput<'a> {
-    /// Grain bill `(weight kg, colour SRM)`.
-    pub bill: &'a [(f64, f64)],
+    /// Mash grain bill `(weight kg, colour SRM, grain type)`; the type filter of spec §5.1 applies.
+    pub bill: &'a [(f64, f64, GrainType)],
     /// Acid malt added, g.
     pub acid_malt_g: f64,
     /// Acid malt acid content, %.
@@ -660,7 +670,7 @@ pub struct AdjustedPhInput<'a> {
 }
 
 /// Adjusted mash pH with `acid_malt_g` grams of acid malt (3 SRM, `pct` percent acid) added to
-/// the bill (spec §5.5). Returns the pH and the total grain in kg. `ra` in ppm `CaCO₃`. Errors
+/// the bill (spec §5.5), grist pH with the §5.1 grain-type filter (T1.17; the added malt is type Grain). Returns the pH and the total grain in kg. `ra` in ppm `CaCO₃`. Errors
 /// (T1.16) on non-finite input and when the total grain weight or `t` is not positive (the
 /// reference divides by `W * t`).
 pub fn adjusted_ph(p: &AdjustedPhInput<'_>) -> Result<AdjustedPh> {
@@ -683,22 +693,22 @@ pub fn adjusted_ph(p: &AdjustedPhInput<'_>) -> Result<AdjustedPh> {
     ] {
         ensure_finite(field, x)?;
     }
-    for &(w, c) in bill {
+    for &(w, c, _) in bill {
         ensure_finite("bill weight", w)?;
         ensure_finite("bill colour", c)?;
     }
     let mut b = bill.to_vec();
     if acid_malt_g > 0.0 {
-        b.push((acid_malt_g / 1000.0, 3.0));
+        b.push((acid_malt_g / 1000.0, 3.0, GrainType::Grain));
     }
-    let w: f64 = b.iter().map(|&(wj, _)| wj).sum();
+    let w: f64 = b.iter().map(|&(wj, _, _)| wj).sum();
     if w <= 0.0 || t <= 0.0 {
         return Err(Error::invalid(
             "bill",
             "grain weight and thickness must be > 0",
         ));
     }
-    let gp = grist_ph(&b, ours).ph;
+    let gp = grist_ph_typed(&b, ours).ph;
     let slope = mash_ra_slope(model, t);
     let f = dissociation_fraction(Acid::AcidMalt, model, target_ph, ours);
     let acid_ra = -((pct / 100.0) * 1000.0 * (acid_malt_g / 1000.0) * f) / (w * t * 0.09009);
@@ -723,8 +733,8 @@ pub struct AcidMaltResult {
 /// Inputs of [`acid_malt_amount`].
 #[derive(Debug, Clone, Copy)]
 pub struct AcidMaltInput<'a> {
-    /// Grain bill `(weight kg, colour SRM)`.
-    pub bill: &'a [(f64, f64)],
+    /// Mash grain bill `(weight kg, colour SRM, grain type)`; the type filter of spec §5.1 applies.
+    pub bill: &'a [(f64, f64, GrainType)],
     /// Acid malt acid content, %.
     pub acid_pct: f64,
     /// Mash pH model.

@@ -1415,6 +1415,7 @@ Kodda W ile (mash suyu + sparge) hacmi de okunuyor ama kullanılmıyor.
 ```
 pH_adj = pH_grist + m · ( RA/50 + MiscAcidRA(mash = doğru) )
 ```
+Birden çok asit (sıvı asitler ve asit maltlar) olduğunda `MiscAcidRA` toplamdır: `pH_adj = pH_grist + m · (RA/50 + Σ acid_ra)`. Motor `adjusted_ph_multi_acid(grist, RA, [acid_ra…], m)`, bunu `est_mash_ph(grist, RA + 50 · Σ acid_ra, m)` olarak hesaplar (T1.17). Asit malt yinelemesinde (§6.4) fatura `(kg, SRM, F_G_TYPE)` üçlüleridir; grist pH §5.1 tip süzgecinden geçer (eklenen asit malt tip 0, 3 SRM).
 
 ---
 
@@ -1833,6 +1834,7 @@ V = max(V, 5.0)        (yalnız gün > 0 ise uygulanır; gün ≤ 0 ise V = V0)
 - `r` (%/ay):
   - Malzemede `F_Y_AGE_RATE`. Bu alan < 0 ise (eski veya ithal veri) `YeastImportHook` doldurur: Dry → 1.66, Culture → 25, Laboratuvar = "White Labs" olan sıvı → **5**, diğer sıvılar → 10.
   - Araçta `F_YC_AGE_RATE` (varsayılan 10). Form değişince `O_Y_DRY_AGING`, `O_Y_LIQUID_AGING` veya `O_Y_SLURRY_AGING` ile yeniden doldurulur (`RefreshYeastStarter`).
+- Motorda oran `rate_pct_per_month` (%/ay) alanıdır; `tool_viability` bu değeri `viability`'ye olduğu gibi verir (gün başına değil).
 - Araçta `F_YC_CALC_VIABILITY = 0` ise kullanıcının girdiği `F_YC_VIABILITY` aynen kullanılır.
 - Model: aylık sabit oranlı üstel kayıp (bileşik). White Labs/Wyeast'in "ayda yaklaşık %20" doğrusal kuralının yerine geçiyor [tahmin: BeerSmith'e özgü].
 
@@ -1842,7 +1844,7 @@ V = max(V, 5.0)        (yalnız gün > 0 ise uygulanır; gün ≤ 0 ise V = V0)
 ### 1.5 Toplam hücre (malzeme) – `YeastTotalCells` [kesin]
 Sonuç milyar hücredir.
 - Paket modu: `F_Y_CELLS (milyar/paket) × F_Y_NEW_AMOUNT (paket)`.
-- Hacim/ağırlık modu:
+- Hacim/ağırlık modu (motor girdisi `amount_g_or_ml`: Dry için gram, diğerleri için mL; oz değil):
   - Dry (1): `gram × 10`. Kod `(g/75)·100·7.5` yazıyor; bu 10 milyar/g'a eşit. Yani **O_Y_DRY_CELLS_PER_GRAM (18) burada kullanılmıyor**.
   - Liquid/Slant/Culture (0, 2, 3): `ml × F_Y_CELLS_ML` (milyar/ml, varsayılan 1.0).
   - form ≥ 4: 0.

@@ -90,6 +90,14 @@ def uret():
         [(5.0, 4.0), (0.4, 120.0)],
         [(2.0, 1.5), (1.0, 40.0), (0.25, 450.0), (0.5, 8.0)],
     ]
+    def tipli(b, ty=0):
+        """2'li fatura -> [kg, SRM, tip] (T1.17: adjusted_ph ve acid_malt_amount tipli fatura alır)."""
+        return [(w, c, ty) for w, c in b]
+
+    # tipli faturalar: şeker (2) ve ekstrakt (4) S'ye 0 katar, payda yine bütün mash tahılları
+    tb0 = tipli(bills[0])
+    tb3 = tipli(bills[3])
+    tmix = [(4.0, 3.0, 0), (1.0, 40.0, 1), (0.5, 5.0, 4), (0.5, 2.0, 2), (0.25, 60.0, 3)]
     for b in bills:
         for bizim in (False, True):
             gp, s = ref.gristph_guarded(b, bizim)
@@ -188,13 +196,32 @@ def uret():
         for bizim in (False, True):
             for target in (5.2, 5.4, 5.6):
                 for ag in (0.0, 62.78, 128.88):
-                    ph, w = dene(ref.adj_ph, bills[0], ag, 3.0, model, 1.1166, 3.0, bizim, target)
-                    v.ekle("adjusted_ph", {"bill": bills[0], "acid_malt_g": ag, "pct": 3.0, "model": model, "ra": 1.1166,
+                    ph, w = dene(ref.adj_ph, tb0, ag, 3.0, model, 1.1166, 3.0, bizim, target)
+                    v.ekle("adjusted_ph", {"bill": tb0, "acid_malt_g": ag, "pct": 3.0, "model": model, "ra": 1.1166,
                                            "t": 3.0, "target_ph": target, "ours": bizim}, [ph, w])
     for target in (5.2, 5.4, 6.0):
-        ph, w = dene(ref.adj_ph, bills[3], 80.0, 2.0, 0, 20.0, 2.5, True, target)
-        v.ekle("adjusted_ph", {"bill": bills[3], "acid_malt_g": 80.0, "pct": 2.0, "model": 0, "ra": 20.0,
+        ph, w = dene(ref.adj_ph, tb3, 80.0, 2.0, 0, 20.0, 2.5, True, target)
+        v.ekle("adjusted_ph", {"bill": tb3, "acid_malt_g": 80.0, "pct": 2.0, "model": 0, "ra": 20.0,
                                "t": 2.5, "target_ph": target, "ours": True}, [ph, w])
+
+    # tip süzgeci (T1.17): şeker ve ekstrakt içeren faturada asit malt hesabı da süzgeçten geçer
+    for model in (0, 1):
+        for bizim in (False, True):
+            for ag in (0.0, 40.0, 90.0):
+                ph, w = dene(ref.adj_ph, tmix, ag, 3.0, model, 25.0, 3.0, bizim, 5.4)
+                v.ekle("adjusted_ph", {"bill": [list(x) for x in tmix], "acid_malt_g": ag, "pct": 3.0, "model": model,
+                                       "ra": 25.0, "t": 3.0, "target_ph": 5.4, "ours": bizim}, [ph, w],
+                       "şeker ve ekstrakt grist toplamına girmez")
+
+    # --- §5.5 çok asitli ayarlanmış pH: pH_grist + m (RA/50 + Σ acid_ra) (T1.17)
+    for gp, ra, t, model, ras in (
+        (5.55, 40.0, 3.0, 0, []), (5.55, 40.0, 3.0, 0, [-0.3]), (5.6, 80.0, 2.5, 0, [-0.4, -0.15, -0.05]),
+        (5.6, 80.0, 3.0, 1, [-0.2, -0.2]), (5.4, -20.0, 4.0, 1, [-0.01, -0.02, -0.03, -0.04]),
+        (5.72, 0.0, 3.0, 0, [0.0, 0.0]),
+    ):
+        sl = ref.slope(model, t)
+        v.ekle("adjusted_ph_multi_acid", {"grist_ph": gp, "ra": ra, "acid_ras": ras, "slope": sl},
+               ref.adj_ph_multi(gp, ra, ras, sl), "Σ acid_ra boş: est_mash_ph")
 
     # --- §5.5 sıvı asitli ayarlanmış pH ve T3 geri kontrolü: önerilen asit eklenince pH hedefe oturur
     # (laktik: iki yoğunluk formülü aynı; fosforik: 0.375 / 0.365 tutarsızlığı yüzünden binde birler düzeyinde sapar)
@@ -218,8 +245,9 @@ def uret():
 
     # --- §6.4 asit malt yinelemesi (referans: ref.acid_malt_amount, [toplam, son pH]); hedef pH değişken
     for bill, pct, model, ra, t in (
-        (bills[0], 3.0, 0, 1.1166, 3.0), (bills[0], 3.0, 1, 1.1166, 3.0), (bills[3], 2.5, 0, 40.0, 2.5),
-        (bills[3], 2.5, 1, 40.0, 2.5), (bills[1], 3.0, 0, -20.0, 3.0), (bills[2], 4.0, 0, 60.0, 3.5),
+        (tb0, 3.0, 0, 1.1166, 3.0), (tb0, 3.0, 1, 1.1166, 3.0), (tb3, 2.5, 0, 40.0, 2.5),
+        (tb3, 2.5, 1, 40.0, 2.5), (tipli(bills[1]), 3.0, 0, -20.0, 3.0), (tipli(bills[2]), 4.0, 0, 60.0, 3.5),
+        (tmix, 3.0, 0, 30.0, 3.0), (tmix, 3.0, 1, 30.0, 3.0),
     ):
         for bizim in (False, True):
             for target in (5.2, 5.4, 5.6):
@@ -228,10 +256,10 @@ def uret():
                        [tot, ph2])
     # yakınsama bayrağı (T1.12 B19): [toplam, pH, yakınsadı]; 8 tur dolunca false
     for bill, pct, model, ra, t, target, bizim in (
-        (bills[0], 3.0, 0, 1.1166, 3.0, 5.4, False), (bills[3], 2.5, 1, 40.0, 2.5, 5.2, True),
-        (bills[0], 0.1, 0, 200.0, 3.0, 5.2, False),     # çok zayıf asit malt: 8 turda yetişmez
-        (bills[0], 0.5, 1, 150.0, 3.0, 5.2, True), (bills[1], 3.0, 0, -20.0, 3.0, 5.4, False),
-        (bills[0], 3.0, 0, 500.0, 3.0, 5.2, False),
+        (tb0, 3.0, 0, 1.1166, 3.0, 5.4, False), (tb3, 2.5, 1, 40.0, 2.5, 5.2, True),
+        (tb0, 0.1, 0, 200.0, 3.0, 5.2, False),     # çok zayıf asit malt: 8 turda yetişmez
+        (tb0, 0.5, 1, 150.0, 3.0, 5.2, True), (tipli(bills[1]), 3.0, 0, -20.0, 3.0, 5.4, False),
+        (tb0, 3.0, 0, 500.0, 3.0, 5.2, False), (tmix, 3.0, 0, 30.0, 3.0, 5.2, True),
     ):
         tot, ph2, ok = dene(ref.acid_malt_amount, bill, pct, model, ra, t, target, bizim)
         v.ekle("acid_malt_amount_checked",
@@ -377,13 +405,13 @@ def _uret_hatalar(v, ref):
         v.ekle("mash_acid_amount", {"est_ph": 5.8, "target_ph": 5.4, "model": model, "t": t, "w_kg": w, "acid": 1,
                                     "conc": 88.0, "ours": False},
                dene(ref.mash_acid_amount, 5.8, 5.4, model, t, w, 1, 88.0, False), "kalınlık/ağırlık <= 0: " + n)
-    for bill, t in (([], 3.0), ([(4.0, 3.0)], 0.0)):
+    for bill, t in (([], 3.0), ([(4.0, 3.0, 0)], 0.0)):
         v.ekle("adjusted_ph", {"bill": [list(x) for x in bill], "acid_malt_g": 0.0, "pct": 3.0, "model": 0, "ra": 10.0,
                                "t": t, "target_ph": 5.4, "ours": False},
                dene(ref.adj_ph, bill, 0.0, 3.0, 0, 10.0, t, False, 5.4), "boş tarif ya da kalınlık 0: " + n)
-    v.ekle("acid_malt_amount", {"bill": [[4.0, 3.0]], "pct": 0.0, "model": 0, "ra": 50.0, "t": 3.0, "target_ph": 5.4,
+    v.ekle("acid_malt_amount", {"bill": [[4.0, 3.0, 0]], "pct": 0.0, "model": 0, "ra": 50.0, "t": 3.0, "target_ph": 5.4,
                                 "ours": False},
-           dene(ref.acid_malt_amount, [(4.0, 3.0)], 0.0, 0, 50.0, 3.0, 5.4, False), "asit malt yüzdesi 0: " + n)
+           dene(ref.acid_malt_amount, [(4.0, 3.0, 0)], 0.0, 0, 50.0, 3.0, 5.4, False), "asit malt yüzdesi 0: " + n)
     v.ekle("boil_scale", {"vb": 28.0, "vp": 1.0, "cool_loss": 1.0, "trub_loss": 0.0, "top_up": 0.0, "has_boil_ing": True},
            dene(ref.boil_scale, 28.0, 1.0, 1.0, 0.0, 0.0, True), "Vp = soğuma kaybı: " + n)
     v.ekle("boil_scale", {"vb": 28.0, "vp": 24.0, "cool_loss": 1.0, "trub_loss": 23.0, "top_up": 0.0, "has_boil_ing": True},

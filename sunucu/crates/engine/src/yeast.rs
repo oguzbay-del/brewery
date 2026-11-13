@@ -472,8 +472,8 @@ pub struct ToolViabilityInput {
     pub user_viability_pct: f64,
     /// Initial viability, %.
     pub v0_pct: f64,
-    /// Viability loss rate, % per day.
-    pub rate_pct_per_day: f64,
+    /// Viability loss rate, percent per month (`F_YC_AGE_RATE`, passed to [`viability`] as is).
+    pub rate_pct_per_month: f64,
     /// Days of storage.
     pub days: f64,
 }
@@ -485,7 +485,7 @@ pub fn tool_viability(p: &ToolViabilityInput) -> f64 {
         calc,
         user_viability_pct: user_v,
         v0_pct: v0,
-        rate_pct_per_day: rate,
+        rate_pct_per_month: rate,
         days,
     } = *p;
     if calc {
@@ -512,10 +512,10 @@ pub struct YeastTotalCellsInput {
     pub cells_pkg_billion: f64,
     /// Number of packages.
     pub new_amount: f64,
-    /// Hop form.
+    /// Yeast form.
     pub form: YeastForm,
-    /// Amount in volume/weight mode, oz.
-    pub amount_oz: f64,
+    /// Amount in volume/weight mode: grams for dry yeast, mL for liquid, slant and culture.
+    pub amount_g_or_ml: f64,
     /// Cells per mL, billions.
     pub cells_ml_billion: f64,
 }
@@ -531,7 +531,7 @@ pub fn yeast_total_cells(p: &YeastTotalCellsInput) -> f64 {
         cells_pkg_billion: cells_pkg,
         new_amount,
         form,
-        amount_oz: amount,
+        amount_g_or_ml: amount,
         cells_ml_billion: cells_ml,
     } = *p;
     if use_pkgs {
