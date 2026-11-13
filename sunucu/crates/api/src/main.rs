@@ -21,7 +21,16 @@ async fn main() -> common::Result<()> {
     };
     let port = config.service.port;
     // Real authentication arrives with T2.11; until then every sign-in-only route answers 401.
-    let state = AppState::new(db, redis, Arc::new(DenyAll), config);
+    let mut state = AppState::new(db, redis, Arc::new(DenyAll), config);
+    // SSE needs NATS; without NATS_URL the events endpoint answers 503.
+    if let Ok(nats_url) = std::env::var("NATS_URL") {
+        match events::connect(&nats_url).await {
+            Ok(client) => state = state.with_events(async_nats::jetstream::new(client)),
+            Err(e) => tracing::error!(error = %e, "NATS setup failed; SSE is off"),
+        }
+    } else {
+        tracing::warn!("NATS_URL not set; SSE is off");
+    }
     let router = api::router(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));

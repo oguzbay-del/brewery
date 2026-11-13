@@ -43,6 +43,9 @@ pub enum Error {
     /// Audit verification was asked for with a role that cannot see every workspace.
     #[error("verifying all workspaces needs a role that bypasses row level security")]
     VerifyNeedsBypass,
+    /// An outbox event with a malformed topic or entity kind.
+    #[error("invalid outbox event: {0}")]
+    InvalidOutboxEvent(String),
     /// Query, connection or pool failure.
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),

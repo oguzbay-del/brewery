@@ -8,7 +8,12 @@
 use sqlx::PgPool;
 
 /// Cross-workspace tables (ADR-0007, rule 2.5): protected by privileges instead of RLS.
-const CROSS_WORKSPACE: &[&str] = &["outbox", "scheduled_jobs", "external_events"];
+const CROSS_WORKSPACE: &[&str] = &[
+    "outbox",
+    "scheduled_jobs",
+    "external_events",
+    "processed_events",
+];
 /// Shared tables written only by migrations and seeds; no RLS, read-only for the API.
 const SHARED: &[&str] = &[
     "staff_users",

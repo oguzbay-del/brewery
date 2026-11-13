@@ -15,6 +15,8 @@ PostgreSQL erişim katmanı (sqlx). Kararlar: `adr/0007-veri-modeli.md`.
 | `append_audit`, `NewAuditEntry`, `AuditEvent` | Denetim kaydına ekleme (T2.14): istek işleminde `audit_heads` satırını `FOR UPDATE` kilitler, `hash = SHA-256(prev_hash ‖ RFC 8785 kanonik satır)` hesaplar, satırı ve başı yazar. Olay türleri `AuditEvent::ALL` (rol, yetki, kapanmış parti düzeltmesi, ...); gerekçe zorunlu olanlar `requires_reason()`. Kişisel alan için `value_digest` |
 | `verify_chain`, `verify_all_chains`, `audit-verify` ikilisi | Zinciri yeniden hesaplar: `audit-verify --all` ya da `--workspace <uuid>` (`MIGRATE_DATABASE_URL`, RLS'yi aşan rol); çıkış 0 sağlam, 1 bozuk, 2 hata |
 
+| `outbox::enqueue`, `NewOutboxEvent`, `Entity` | Kaydı yazan işlemin içinde outbox satırı ekler (UUIDv7 kimlik döner); konu `a.b_c` biçiminde olmalı. Olay yalnız kimlik, sürüm ve küçük `data` taşır (T2.15) |
+
 Komutlar (kökten): `make migrate` yerel compose veritabanına göç uygular; `make sqlx-prepare` `sunucu/.sqlx/` önbelleğini üretir (commit edilir; `SQLX_OFFLINE=true` ile derlenir).
 
 ## Göçler (T2.5)
@@ -38,6 +40,7 @@ Komutlar (kökten): `make migrate` yerel compose veritabanına göç uygular; `m
 | `0011_bildirim_cihaz_dosya` | `notifications`, `notification_events`, `reminders`, `alert_rules`, `attachments`, `scanned_documents`, `import_sources`, `export_jobs` |
 | `0012_abonelik_ve_destek` | `subscriptions`, `entitlements`, `support_requests`, `support_messages`, `support_grants`, `support_actions` |
 | `0013_kapsam_butunlugu` | `check_polymorphic_target()` (`role_assignments`, `invitations`, `alert_rules` kapsamı; `attachments` bağlı kaydı), `drop_scope_references()` |
+| `0050_islenmis_olaylar` (T2.15) | `processed_events (consumer, event_id)`: tüketici çerçevesinin tekrar denetimi; yalnız `app_worker` okur, ekler, siler |
 
 ## İşletme göçleri (T2.7)
 

@@ -38,6 +38,21 @@ use ErrorCode::{Internal, MalformedRequest, RateLimited, UpgradeRequired};
 /// Specs of every operation in the document. New endpoints add a line here.
 pub const OPERATIONS: &[OperationSpec] = &[
     OperationSpec {
+        operation_id: "events_stream",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: &[
+            ErrorCode::Unauthenticated,
+            ErrorCode::NotFound,
+            ErrorCode::ValidationFailed,
+            UpgradeRequired,
+            RateLimited,
+            Internal,
+            ErrorCode::Unavailable,
+        ],
+    },
+    OperationSpec {
         operation_id: "health_check",
         public: true,
         permission: None,
@@ -82,7 +97,8 @@ pub const OPERATIONS: &[OperationSpec] = &[
         routes::readyz,
         routes::version,
         routes::client_requirements,
-        routes::meta_fields
+        routes::meta_fields,
+        crate::events::workspace_events
     ),
     components(schemas(
         HealthResponse,
@@ -95,7 +111,8 @@ pub const OPERATIONS: &[OperationSpec] = &[
     )),
     tags(
         (name = "system", description = "Service status and version"),
-        (name = "meta", description = "Definitions and client requirements")
+        (name = "meta", description = "Definitions and client requirements"),
+        (name = "events", description = "Live updates (SSE)")
     )
 )]
 pub struct ApiDoc;

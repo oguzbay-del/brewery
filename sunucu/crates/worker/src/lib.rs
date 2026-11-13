@@ -1,5 +1,7 @@
 //! `worker` service: HTTP router.
 
+pub mod background;
+
 use axum::Router;
 
 /// Service name reported in logs and the health response.

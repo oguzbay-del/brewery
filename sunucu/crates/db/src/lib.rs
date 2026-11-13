@@ -5,12 +5,14 @@
 //! - [`provision_role`]: login and password for the application roles (after migrating).
 //! - [`append_audit`], [`verify_chain`], [`verify_all_chains`]: tamper-evident audit log
 //!   (hash chain per workspace, ADR-0007 rule 5).
+//! - [`outbox::enqueue`]: transactional outbox writes (events for SSE and consumers).
 //! - [`DbContext`], [`begin`], [`set_context`]: request context for row level security
 //!   (ADR-0007).
 
 mod audit;
 mod context;
 mod error;
+pub mod outbox;
 mod pool;
 mod roles;
 

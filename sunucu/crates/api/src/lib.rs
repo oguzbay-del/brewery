@@ -8,6 +8,7 @@ pub mod config;
 pub mod context;
 pub mod engine;
 pub mod error;
+pub mod events;
 pub mod idempotency;
 pub mod openapi;
 pub mod pagination;
@@ -53,6 +54,8 @@ pub struct AppState {
     pub config: Arc<ApiConfig>,
     /// Rate limiter (over `redis`).
     pub rate: RateLimiter,
+    /// NATS `JetStream` for SSE (T2.15); `None` answers the events endpoint with `503`.
+    pub events: Option<events::JetStream>,
 }
 
 impl std::fmt::Debug for AppState {
@@ -72,7 +75,15 @@ impl AppState {
             auth,
             config: Arc::new(config),
             rate,
+            events: None,
         }
+    }
+
+    /// Connects the state to NATS `JetStream` (SSE).
+    #[must_use]
+    pub fn with_events(mut self, js: events::JetStream) -> Self {
+        self.events = Some(js);
+        self
     }
 }
 
@@ -101,6 +112,7 @@ pub fn build(state: AppState, extra: Router<AppState>) -> Router {
             "/v1/meta/client-requirements",
             get(routes::client_requirements),
         )
+        .merge(events::routes(&state))
         .merge(extra)
         .fallback(error::not_found)
         .method_not_allowed_fallback(error::not_found)

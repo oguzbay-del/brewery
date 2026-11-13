@@ -15,7 +15,7 @@
 - Her tablo göçü `SET LOCAL ROLE app_owner;` ile başlar ve `RESET ROLE;` ile biter: nesneler `app_owner`'ındır, sqlx kaydı göç rolüyle yazılır. Her tablo için `ENABLE` + `FORCE ROW LEVEL SECURITY`, en az bir politika ve açık `GRANT`; `PUBLIC`'e hak verilmez.
 - Politikalar `app_workspace_id()` ve `app_user_id()` işlevlerini `(SELECT ...)` biçiminde kullanır (boş metni NULL sayar; `SET LOCAL` bitince ayar boş metne döner).
 - Girişten önceki aramalar dar `SECURITY DEFINER` işlevlerdir (sahibi `app_owner`, `search_path` sabit, `PUBLIC` çağıramaz); bu tablolarda yalnız `app_owner`'a açık `owner_lookup` politikası bulunur. Yenisi eklenirse `tests/catalog.rs` içindeki `OWNER_LOOKUP` listesi güncellenir.
-- `workspace_id` olan tabloda üst kayda bileşik yabancı anahtar (`(workspace_id, parent_id)`), katalog testi zorlar. Çalışma alanları arası tablolar (`outbox`, `scheduled_jobs`, `external_events`) RLS'siz, hakla korunur; listede olmayan tablo RLS'siz bırakılırsa test düşer.
+- `workspace_id` olan tabloda üst kayda bileşik yabancı anahtar (`(workspace_id, parent_id)`), katalog testi zorlar. Çalışma alanları arası tablolar (`outbox`, `scheduled_jobs`, `external_events`, `processed_events`) RLS'siz, hakla korunur; listede olmayan tablo RLS'siz bırakılırsa test düşer.
 - Denetim zinciri `src/audit.rs`'dedir (özet ve doğrulama Rust'ta, göç yok): ekleme yalnız `append_audit` ile, istek işleminde; satır alanları değişirse `canonical_row` biçimi de değişir ve eski zincir bozulur (yeni biçim sürümü gerekir). Test: `tests/audit_chain.rs`.
 - `audit_log` yalnız eklenir: uygulama rollerinde UPDATE/DELETE/TRUNCATE hakkı yoktur, tetikleyici sahip rolde de reddeder (çalışma alanı silinirken yabancı anahtar zinciri hariç).
 

@@ -26,6 +26,7 @@ env:
   # Servis konteyneri (aşağıda) ile aynı; yalnız CI için örnek değer.
   DATABASE_URL: postgres://demleme:demleme-ci@localhost:5432/demleme
   REDIS_URL: redis://localhost:6379
+  NATS_URL: nats://localhost:4222
 
 jobs:
   rust:
@@ -60,6 +61,11 @@ jobs:
         working-directory: sunucu
     steps:
       - uses: actions/checkout@v6
+      # JetStream için `-js` bayrağı gerekir; servis konteynerleri komut alamaz (T2.15).
+      - name: NATS (JetStream)
+        run: |
+          docker run -d --name nats -p 4222:4222 -p 8222:8222 nats:2-alpine -js -sd /data -m 8222
+          for i in $(seq 1 30); do curl -fs http://localhost:8222/healthz && break; sleep 1; done
       # rust-toolchain.toml (1.97.0, rustfmt, clippy) is the single source of the version.
       - name: Install pinned toolchain
         run: rustup show active-toolchain || rustup toolchain install
