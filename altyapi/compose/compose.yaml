@@ -14,11 +14,20 @@ x-rust-service: &rust-service
     SMTP_PORT: "1025"
     GITHUB_API_URL: http://github-mock:8080
     APNS_URL: http://apns-mock:8080
+    S3_ENDPOINT: http://objectstore:8333
+    S3_BUCKET: demleme-files
+    S3_REGION: us-east-1
+    S3_ACCESS_KEY: demleme-yerel
+    S3_SECRET_KEY: demleme-yerel-gizli
+    S3_CREATE_BUCKET: "true"
+    # Tarayıcı ve istemcinin eriştiği adres (imzalı bağlantılar bu adrese verilir).
+    S3_PUBLIC_ENDPOINT: http://127.0.0.1:${S3_PORT:-8333}
   depends_on: &rust-deps
     postgres: { condition: service_healthy }
     migrate: { condition: service_completed_successfully }
     redis: { condition: service_healthy }
     nats: { condition: service_healthy }
+    objectstore: { condition: service_healthy }
 
 x-http-health: &http-health
   interval: 5s
@@ -111,6 +120,31 @@ services:
       timeout: 3s
       retries: 12
       start_period: 5s
+
+  # S3 uyumlu yerel nesne deposu (ADR-0008 kural 11.1, T2.18). MinIO topluluk sürümü bakım
+  # modunda ve AGPL; SeaweedFS Apache 2.0. Üretimde S3, GCS (S3 birlikte çalışabilirliği) ya da
+  # başka S3 uyumlu depo; kod yalnız `ObjectStore` arayüzüne bağlıdır. Kova API açılışında
+  # (S3_CREATE_BUCKET=true) oluşturulur.
+  objectstore:
+    image: chrislusf/seaweedfs:4.05
+    restart: unless-stopped
+    command:
+      - server
+      - -dir=/data
+      - -master.volumeSizeLimitMB=64
+      - -volume.max=20
+      - -s3
+      - -s3.port=8333
+      - -s3.config=/etc/seaweedfs/s3.json
+      - -ip.bind=0.0.0.0
+    volumes:
+      - objectdata:/data
+      - ./s3/s3.json:/etc/seaweedfs/s3.json:ro
+    ports:
+      - "127.0.0.1:${S3_PORT:-8333}:8333"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9333/cluster/status"]
+      <<: *http-health
 
   # Tek seferlik göç (sunucu/migrations); api, worker ve ingest bitmesini bekler. Göç rolü
   # PostgreSQL'in kurucu kullanıcısıdır; göçten sonra app_api ve app_worker'a parolalarını verir.
@@ -229,3 +263,4 @@ secrets:
 volumes:
   pgdata:
   natsdata:
+  objectdata:

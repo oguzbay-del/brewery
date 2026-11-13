@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "demleme",
+      "credentials": [{ "accessKey": "demleme-yerel", "secretKey": "demleme-yerel-gizli" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

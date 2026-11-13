@@ -10,6 +10,7 @@ members = [
     "crates/worker",
     "crates/events",
     "crates/ingest",
+    "crates/storage",
 ]
 
 [workspace.package]
@@ -24,6 +25,7 @@ common = { path = "crates/common" }
 db = { path = "crates/db" }
 events = { path = "crates/events" }
 engine = { path = "crates/engine" }
+storage = { path = "crates/storage" }
 
 # Shared third-party crates
 async-nats = "0.52.0"

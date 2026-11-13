@@ -47,6 +47,8 @@ pub struct ApiConfig {
     pub min_versions: MinVersions,
     /// Rate limits.
     pub rate: RateLimitConfig,
+    /// Object store (`S3_*`); `None` turns the file endpoints off (`503`).
+    pub storage: Option<storage::S3Config>,
 }
 
 fn parse_u32(
@@ -120,12 +122,17 @@ impl ApiConfig {
             ios: parse_version(&lookup, "MIN_APP_VERSION_IOS")?,
             web: parse_version(&lookup, "MIN_APP_VERSION_WEB")?,
         };
+        let storage = storage::S3Config::from_lookup(&lookup).map_err(|e| Error::InvalidEnv {
+            name: "S3_ENDPOINT",
+            reason: e.to_string(),
+        })?;
         Ok(Self {
             service,
             database_url,
             redis_url,
             min_versions,
             rate,
+            storage,
         })
     }
 }

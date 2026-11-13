@@ -1,6 +1,6 @@
 # altyapi/compose
 
-Bütün sistemi yerelde tek komutla ayağa kaldırır: PostgreSQL, Redis, NATS, dört Rust servisi ve sahte dış servisler. Gereken: Docker (Compose v2) ve `curl`.
+Bütün sistemi yerelde tek komutla ayağa kaldırır: PostgreSQL, Redis, NATS, S3 uyumlu nesne deposu (SeaweedFS), dört Rust servisi ve sahte dış servisler. Gereken: Docker (Compose v2) ve `curl`.
 
 ## Komutlar (depo kökünden)
 
@@ -25,6 +25,7 @@ Ortam değişkenlerinin hepsinin varsayılanı var; değiştirmek için `.env.ex
 | PostgreSQL | 5432 | kullanıcı/veritabanı `demleme` (yalnız yerel örnek değer) |
 | Redis | 6379 | |
 | NATS | 4222, 8222 | JetStream açık; 8222 izleme (`/healthz`, `/jsz`) |
+| objectstore (SeaweedFS) | 8333 | S3 API; kova `demleme-files` API açılışında oluşur; anahtar `demleme-yerel` (yalnız yerel örnek değer), kimlik `altyapi/compose/s3/s3.json`. Dosyalar API'den geçmez: imzalı adresler `S3_PUBLIC_ENDPOINT` (`127.0.0.1:8333`) ile verilir |
 | Mailpit | 1025 (SMTP), 8025 (arayüz) | |
 | github-mock | 8090 | WireMock |
 | apns-mock | 8091 | WireMock |

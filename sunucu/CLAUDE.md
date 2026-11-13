@@ -1,7 +1,7 @@
 # sunucu: Rust çalışma alanı
 
 ## Ne yapar
-- Cargo workspace; crate'ler `crates/` altında: engine, engine-service, api, worker, ingest, common, db, events.
+- Cargo workspace; crate'ler `crates/` altında: engine, engine-service, api, worker, ingest, common, db, events, storage.
 - Sürüm `rust-toolchain.toml` ile sabit; ortak bağımlılıklar crate'lerde `workspace = true` ile gelir.
 - Düzen kararı: `adr/0001-depo-duzeni.md`.
 

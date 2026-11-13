@@ -92,6 +92,146 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/attachments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists completed attachments. */
+        get: operations["attachment_list"];
+        put?: never;
+        /** Creates an attachment record and returns the upload instructions. */
+        post: operations["attachment_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/attachments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one attachment. */
+        get: operations["attachment_get"];
+        put?: never;
+        post?: never;
+        /** Deletes an attachment (soft delete). */
+        delete: operations["attachment_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/attachments/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirms that the bytes were uploaded; the stored object is checked first. */
+        post: operations["attachment_complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/attachments/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gives a short lived link to download the file. */
+        get: operations["attachment_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/scanned-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists completed scanned documents. */
+        get: operations["scanned_document_list"];
+        put?: never;
+        /** Creates a scanned document record and returns the upload instructions. */
+        post: operations["scanned_document_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/scanned-documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one scanned document. */
+        get: operations["scanned_document_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a scanned document (soft delete); refused under legal hold. */
+        delete: operations["scanned_document_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/scanned-documents/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirms that the bytes were uploaded; the stored object is checked first. */
+        post: operations["scanned_document_complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/scanned-documents/{id}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Gives a short lived link to download the file. */
+        get: operations["scanned_document_download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{ws}/events": {
         parameters: {
             query?: never;
@@ -113,12 +253,89 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description A file attached to a batch or tasting note. */
+        Attachment: {
+            /** @description Caption. */
+            caption?: string | null;
+            /** @description Media type. */
+            content_type: string;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description `photo`, `note` or `file`. */
+            kind: string;
+            /**
+             * Format: uuid
+             * @description The record it belongs to.
+             */
+            record_id: string;
+            /** @description `batch` or `tasting_note`. */
+            record_kind: string;
+            /** @description SHA-256, hex. */
+            sha256: string;
+            /**
+             * Format: int64
+             * @description Size in bytes.
+             */
+            size_bytes: number;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: date-time
+             * @description Set once the upload was completed; `null` while the upload is pending.
+             */
+            uploaded_at?: string | null;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description Response of `POST .../attachments`. */
+        AttachmentCreated: {
+            /** @description The new (pending) attachment. */
+            attachment: components["schemas"]["Attachment"];
+            /** @description How to upload the bytes. */
+            upload: components["schemas"]["UploadInstructions"];
+        };
         /** @description Response of `GET /v1/meta/client-requirements`. */
         ClientRequirements: {
             /** @description Lowest supported iOS version, or `null`. */
             min_ios_version?: string | null;
             /** @description Lowest supported web build, or `null`. */
             min_web_version?: string | null;
+        };
+        /** @description A short lived download link. */
+        DownloadLink: {
+            /** @description Media type of the file. */
+            content_type: string;
+            /**
+             * Format: date-time
+             * @description The URL stops working at this instant.
+             */
+            expires_at: string;
+            /**
+             * Format: int64
+             * @description Size in bytes.
+             */
+            size_bytes: number;
+            /** @description Presigned `GET` URL. */
+            url: string;
         };
         /**
          * @description Every error code the API returns. The single list: the `OpenAPI` document and the text
@@ -143,6 +360,174 @@ export interface components {
             status: string;
             /** @description Service version. */
             version: string;
+        };
+        /** @description Body of `POST .../attachments`. */
+        NewAttachment: {
+            /** @description Caption (up to 500 characters). */
+            caption?: string | null;
+            /** @description Media type of the file. */
+            content_type: string;
+            /** @description `photo`, `note` or `file`. */
+            kind: string;
+            /**
+             * Format: uuid
+             * @description The record it belongs to.
+             */
+            record_id: string;
+            /** @description `batch` or `tasting_note`. */
+            record_kind: string;
+            /** @description SHA-256 of the file, hex (64 characters). */
+            sha256: string;
+            /**
+             * Format: int64
+             * @description Exact size in bytes.
+             */
+            size_bytes: number;
+        };
+        /** @description Body of `POST .../scanned-documents`. */
+        NewScannedDocument: {
+            /**
+             * Format: uuid
+             * @description Batch the form belongs to.
+             */
+            batch_id?: string | null;
+            /** @description Media type of the file. */
+            content_type: string;
+            /** @description Form type, lower case letters, digits and `_`. */
+            form_type: string;
+            /** @description Legal hold; needs `workspace.manage`. */
+            legal_hold?: boolean | null;
+            /**
+             * Format: date-time
+             * @description Retention end; needs `workspace.manage`.
+             */
+            retention_until?: string | null;
+            /** @description SHA-256 of the file, hex (64 characters). */
+            sha256: string;
+            /**
+             * Format: int64
+             * @description Exact size in bytes.
+             */
+            size_bytes: number;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Attachment: {
+            /** @description The rows of this page. */
+            items: {
+                /** @description Caption. */
+                caption?: string | null;
+                /** @description Media type. */
+                content_type: string;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description `photo`, `note` or `file`. */
+                kind: string;
+                /**
+                 * Format: uuid
+                 * @description The record it belongs to.
+                 */
+                record_id: string;
+                /** @description `batch` or `tasting_note`. */
+                record_kind: string;
+                /** @description SHA-256, hex. */
+                sha256: string;
+                /**
+                 * Format: int64
+                 * @description Size in bytes.
+                 */
+                size_bytes: number;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: date-time
+                 * @description Set once the upload was completed; `null` while the upload is pending.
+                 */
+                uploaded_at?: string | null;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_ScannedDocument: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: uuid
+                 * @description Batch the form belongs to.
+                 */
+                batch_id?: string | null;
+                /** @description Media type. */
+                content_type: string;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /** @description Form type (`brew_log`, ...). */
+                form_type: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description Legal hold: no deletion before `retention_until` (never when that is empty). */
+                legal_hold: boolean;
+                /**
+                 * Format: date-time
+                 * @description The document may not be deleted before this instant when under legal hold.
+                 */
+                retention_until?: string | null;
+                /** @description SHA-256, hex. */
+                sha256: string;
+                /**
+                 * Format: int64
+                 * @description Size in bytes.
+                 */
+                size_bytes: number;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: date-time
+                 * @description Set once the upload was completed; `null` while the upload is pending.
+                 */
+                uploaded_at?: string | null;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
         };
         /** @description RFC 9457 problem details body (`application/problem+json`). */
         ProblemDetails: {
@@ -172,6 +557,85 @@ export interface components {
             redis: string;
             /** @description `"ok"` when the database answers. */
             status: string;
+        };
+        /** @description A scanned paper form (brew log, quality sheet). */
+        ScannedDocument: {
+            /**
+             * Format: uuid
+             * @description Batch the form belongs to.
+             */
+            batch_id?: string | null;
+            /** @description Media type. */
+            content_type: string;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /** @description Form type (`brew_log`, ...). */
+            form_type: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description Legal hold: no deletion before `retention_until` (never when that is empty). */
+            legal_hold: boolean;
+            /**
+             * Format: date-time
+             * @description The document may not be deleted before this instant when under legal hold.
+             */
+            retention_until?: string | null;
+            /** @description SHA-256, hex. */
+            sha256: string;
+            /**
+             * Format: int64
+             * @description Size in bytes.
+             */
+            size_bytes: number;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: date-time
+             * @description Set once the upload was completed; `null` while the upload is pending.
+             */
+            uploaded_at?: string | null;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description Response of `POST .../scanned-documents`. */
+        ScannedDocumentCreated: {
+            /** @description The new (pending) document. */
+            document: components["schemas"]["ScannedDocument"];
+            /** @description How to upload the bytes. */
+            upload: components["schemas"]["UploadInstructions"];
+        };
+        /** @description What the client does next: one HTTP request to the object store. */
+        UploadInstructions: {
+            /**
+             * Format: date-time
+             * @description The URL stops working at this instant.
+             */
+            expires_at: string;
+            /** @description Headers to send unchanged with the body. */
+            headers: {
+                [key: string]: string;
+            };
+            /** @description `PUT`. */
+            method: string;
+            /** @description Presigned URL (signature in the query string). */
+            url: string;
         };
         /** @description Response of `GET /v1/version`. */
         VersionResponse: {
@@ -448,6 +912,1528 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    attachment_list: {
+        parameters: {
+            query?: {
+                /** @description `batch` or `tasting_note` */
+                record_kind?: string;
+                /** @description Record the files belong to */
+                record_id?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `created_at` or `-created_at` (default) */
+                sort?: string;
+                /** @description Changed since (RFC 3339), deleted ones included */
+                updated_since?: string;
+                /** @description Include soft-deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of attachments */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Attachment"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    attachment_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewAttachment"];
+            };
+        };
+        responses: {
+            /** @description Attachment created; upload the bytes with `upload`, then call `complete` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "attachment": {
+                     *         "caption": "Krausen on day 2",
+                     *         "content_type": "image/jpeg",
+                     *         "created_at": "2026-11-13T10:00:00Z",
+                     *         "deleted_at": null,
+                     *         "id": "0192f1c07a3b7000800000000000000b",
+                     *         "kind": "photo",
+                     *         "record_id": "0192f1c07a3b7000800000000000000c",
+                     *         "record_kind": "batch",
+                     *         "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *         "size_bytes": 482113,
+                     *         "updated_at": "2026-11-13T10:00:00Z",
+                     *         "uploaded_at": null,
+                     *         "version": 1
+                     *       },
+                     *       "upload": {
+                     *         "expires_at": "2026-11-13T10:10:00Z",
+                     *         "headers": {
+                     *           "content-type": "image/jpeg",
+                     *           "x-amz-checksum-sha256": "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg="
+                     *         },
+                     *         "method": "PUT",
+                     *         "url": "https://files.example.com/bucket/ws/attachments/id?X-Amz-Signature=..."
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AttachmentCreated"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    attachment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Attachment */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The attachment (also while the upload is pending) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "caption": null,
+                     *       "content_type": "image/jpeg",
+                     *       "created_at": "2026-11-13T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "kind": "photo",
+                     *       "record_id": "0192f1c07a3b7000800000000000000c",
+                     *       "record_kind": "batch",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "size_bytes": 482113,
+                     *       "updated_at": "2026-11-13T10:01:00Z",
+                     *       "uploaded_at": "2026-11-13T10:01:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    attachment_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Attachment */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    attachment_complete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Attachment */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Upload verified (size, type and checksum); safe to repeat */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "caption": null,
+                     *       "content_type": "image/jpeg",
+                     *       "created_at": "2026-11-13T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "kind": "photo",
+                     *       "record_id": "0192f1c07a3b7000800000000000000c",
+                     *       "record_kind": "batch",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "size_bytes": 482113,
+                     *       "updated_at": "2026-11-13T10:01:00Z",
+                     *       "uploaded_at": "2026-11-13T10:01:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Attachment"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    attachment_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Attachment */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Presigned download link */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "content_type": "image/jpeg",
+                     *       "expires_at": "2026-11-13T10:10:00Z",
+                     *       "size_bytes": 482113,
+                     *       "url": "https://files.example.com/bucket/ws/attachments/id?X-Amz-Signature=..."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadLink"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    scanned_document_list: {
+        parameters: {
+            query?: {
+                /** @description Form type */
+                form_type?: string;
+                /** @description Batch */
+                batch_id?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `created_at` or `-created_at` (default) */
+                sort?: string;
+                /** @description Changed since (RFC 3339), deleted ones included */
+                updated_since?: string;
+                /** @description Include soft-deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of scanned documents */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_ScannedDocument"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    scanned_document_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewScannedDocument"];
+            };
+        };
+        responses: {
+            /** @description Document created; upload the bytes with `upload`, then call `complete` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "document": {
+                     *         "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *         "content_type": "application/pdf",
+                     *         "created_at": "2026-11-13T10:00:00Z",
+                     *         "deleted_at": null,
+                     *         "form_type": "brew_log",
+                     *         "id": "0192f1c07a3b7000800000000000000d",
+                     *         "legal_hold": false,
+                     *         "retention_until": null,
+                     *         "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *         "size_bytes": 90211,
+                     *         "updated_at": "2026-11-13T10:00:00Z",
+                     *         "uploaded_at": null,
+                     *         "version": 1
+                     *       },
+                     *       "upload": {
+                     *         "expires_at": "2026-11-13T10:10:00Z",
+                     *         "headers": {
+                     *           "content-type": "application/pdf",
+                     *           "x-amz-checksum-sha256": "n4bQgYhMfWWaL+qgxVrQFaO/TxsrC4Is0V1sFbDwCgg="
+                     *         },
+                     *         "method": "PUT",
+                     *         "url": "https://files.example.com/bucket/ws/documents/id?X-Amz-Signature=..."
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ScannedDocumentCreated"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    scanned_document_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Scanned document */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The document (also while the upload is pending) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": null,
+                     *       "content_type": "application/pdf",
+                     *       "created_at": "2026-11-13T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "form_type": "brew_log",
+                     *       "id": "0192f1c07a3b7000800000000000000d",
+                     *       "legal_hold": false,
+                     *       "retention_until": null,
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "size_bytes": 90211,
+                     *       "updated_at": "2026-11-13T10:01:00Z",
+                     *       "uploaded_at": "2026-11-13T10:01:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ScannedDocument"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    scanned_document_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Scanned document */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    scanned_document_complete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Scanned document */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Upload verified (size, type and checksum); safe to repeat */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": null,
+                     *       "content_type": "application/pdf",
+                     *       "created_at": "2026-11-13T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "form_type": "brew_log",
+                     *       "id": "0192f1c07a3b7000800000000000000d",
+                     *       "legal_hold": false,
+                     *       "retention_until": null,
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "size_bytes": 90211,
+                     *       "updated_at": "2026-11-13T10:01:00Z",
+                     *       "uploaded_at": "2026-11-13T10:01:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ScannedDocument"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    scanned_document_download: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Scanned document */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Presigned download link */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "content_type": "application/pdf",
+                     *       "expires_at": "2026-11-13T10:10:00Z",
+                     *       "size_bytes": 90211,
+                     *       "url": "https://files.example.com/bucket/ws/documents/id?X-Amz-Signature=..."
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DownloadLink"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

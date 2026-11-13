@@ -15,6 +15,7 @@ use crate::{
     app_version::ClientRequirements,
     concurrency::Concurrency,
     error::{ErrorCode, FieldIssue, ProblemDetails},
+    files,
     routes::{self, HealthResponse, ReadyResponse, VersionResponse},
 };
 
@@ -34,6 +35,86 @@ pub struct OperationSpec {
 }
 
 use ErrorCode::{Internal, MalformedRequest, RateLimited, UpgradeRequired};
+
+use ErrorCode::{
+    Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, NotFound, PayloadTooLarge,
+    PreconditionRequired, Unauthenticated, Unavailable, UnsupportedMediaType, ValidationFailed,
+    VersionMismatch,
+};
+
+const FILE_READ: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    NotFound,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+    Unavailable,
+];
+const FILE_CREATE: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    IdempotencyInProgress,
+    PayloadTooLarge,
+    UnsupportedMediaType,
+    ValidationFailed,
+    IdempotencyMismatch,
+    PreconditionRequired,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+    Unavailable,
+];
+const FILE_COMPLETE: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    ValidationFailed,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+    Unavailable,
+];
+const FILE_DOWNLOAD: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    NotFound,
+    Conflict,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+    Unavailable,
+];
+const FILE_DELETE: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    Conflict,
+    VersionMismatch,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+    Unavailable,
+];
+
+const fn file_op(
+    operation_id: &'static str,
+    permission: Option<&'static str>,
+    concurrency: Option<Concurrency>,
+    errors: &'static [ErrorCode],
+) -> OperationSpec {
+    OperationSpec {
+        operation_id,
+        public: false,
+        permission,
+        concurrency,
+        errors,
+    }
+}
 
 /// Specs of every operation in the document. New endpoints add a line here.
 pub const OPERATIONS: &[OperationSpec] = &[
@@ -87,6 +168,48 @@ pub const OPERATIONS: &[OperationSpec] = &[
         concurrency: None,
         errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
     },
+    file_op(
+        "attachment_create",
+        Some(files::WRITE_PERMISSION),
+        Some(Concurrency::Append),
+        FILE_CREATE,
+    ),
+    file_op(
+        "attachment_complete",
+        Some(files::WRITE_PERMISSION),
+        Some(Concurrency::FieldLww),
+        FILE_COMPLETE,
+    ),
+    file_op("attachment_list", None, None, FILE_READ),
+    file_op("attachment_get", None, None, FILE_READ),
+    file_op("attachment_download", None, None, FILE_DOWNLOAD),
+    file_op(
+        "attachment_delete",
+        Some(files::WRITE_PERMISSION),
+        Some(Concurrency::FieldLww),
+        FILE_DELETE,
+    ),
+    file_op(
+        "scanned_document_create",
+        Some(files::WRITE_PERMISSION),
+        Some(Concurrency::Append),
+        FILE_CREATE,
+    ),
+    file_op(
+        "scanned_document_complete",
+        Some(files::WRITE_PERMISSION),
+        Some(Concurrency::FieldLww),
+        FILE_COMPLETE,
+    ),
+    file_op("scanned_document_list", None, None, FILE_READ),
+    file_op("scanned_document_get", None, None, FILE_READ),
+    file_op("scanned_document_download", None, None, FILE_DOWNLOAD),
+    file_op(
+        "scanned_document_delete",
+        Some(files::WRITE_PERMISSION),
+        Some(Concurrency::FieldLww),
+        FILE_DELETE,
+    ),
 ];
 
 /// The `OpenAPI` document of the public API.
@@ -98,7 +221,19 @@ pub const OPERATIONS: &[OperationSpec] = &[
         routes::version,
         routes::client_requirements,
         routes::meta_fields,
-        crate::events::workspace_events
+        crate::events::workspace_events,
+        files::attachment_create,
+        files::attachment_complete,
+        files::attachment_list,
+        files::attachment_get,
+        files::attachment_download,
+        files::attachment_delete,
+        files::scanned_document_create,
+        files::scanned_document_complete,
+        files::scanned_document_list,
+        files::scanned_document_get,
+        files::scanned_document_download,
+        files::scanned_document_delete
     ),
     components(schemas(
         HealthResponse,
@@ -107,12 +242,21 @@ pub const OPERATIONS: &[OperationSpec] = &[
         ClientRequirements,
         ProblemDetails,
         FieldIssue,
-        ErrorCode
+        ErrorCode,
+        files::Attachment,
+        files::ScannedDocument,
+        files::UploadInstructions,
+        files::AttachmentCreated,
+        files::ScannedDocumentCreated,
+        files::DownloadLink,
+        files::NewAttachment,
+        files::NewScannedDocument
     )),
     tags(
         (name = "system", description = "Service status and version"),
         (name = "meta", description = "Definitions and client requirements"),
-        (name = "events", description = "Live updates (SSE)")
+        (name = "events", description = "Live updates (SSE)"),
+        (name = "files", description = "Attachments and scanned documents (direct upload to the object store)")
     )
 )]
 pub struct ApiDoc;

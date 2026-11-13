@@ -9,6 +9,7 @@ pub mod context;
 pub mod engine;
 pub mod error;
 pub mod events;
+pub mod files;
 pub mod idempotency;
 pub mod openapi;
 pub mod pagination;
@@ -56,6 +57,8 @@ pub struct AppState {
     pub rate: RateLimiter,
     /// NATS `JetStream` for SSE (T2.15); `None` answers the events endpoint with `503`.
     pub events: Option<events::JetStream>,
+    /// Object store for files (T2.18); `None` when `S3_ENDPOINT` is not set.
+    pub store: Option<Arc<dyn storage::ObjectStore>>,
 }
 
 impl std::fmt::Debug for AppState {
@@ -76,6 +79,7 @@ impl AppState {
             config: Arc::new(config),
             rate,
             events: None,
+            store: None,
         }
     }
 
@@ -83,6 +87,13 @@ impl AppState {
     #[must_use]
     pub fn with_events(mut self, js: events::JetStream) -> Self {
         self.events = Some(js);
+        self
+    }
+
+    /// Adds the object store.
+    #[must_use]
+    pub fn with_store(mut self, store: Arc<dyn storage::ObjectStore>) -> Self {
+        self.store = Some(store);
         self
     }
 }

@@ -21,6 +21,20 @@ async fn main() -> common::Result<()> {
     };
     let port = config.service.port;
     // Real authentication arrives with T2.11; until then every sign-in-only route answers 401.
+    let store = if let Some(s3) = &config.storage {
+        {
+            let store = Arc::new(storage::S3Store::new(s3.clone()).map_err(|e| {
+                common::Error::Telemetry(format!("object store setup failed: {e}"))
+            })?);
+            if s3.create_bucket {
+                ensure_bucket(store.as_ref()).await;
+            }
+            Some(store)
+        }
+    } else {
+        tracing::warn!("S3_ENDPOINT not set; file endpoints answer 503");
+        None
+    };
     let mut state = AppState::new(db, redis, Arc::new(DenyAll), config);
     // SSE needs NATS; without NATS_URL the events endpoint answers 503.
     if let Ok(nats_url) = std::env::var("NATS_URL") {
@@ -31,7 +45,10 @@ async fn main() -> common::Result<()> {
     } else {
         tracing::warn!("NATS_URL not set; SSE is off");
     }
-    let router = api::router(state);
+    if let Some(store) = store {
+        state = state.with_store(store);
+    }
+    let router = api::build(state.clone(), api::files::routes(&state));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;
@@ -44,4 +61,18 @@ async fn main() -> common::Result<()> {
     .await?;
     tracing::info!("server stopped");
     Ok(())
+}
+
+/// Creates the bucket of the local stack; the store may still be starting, so retry briefly.
+async fn ensure_bucket(store: &dyn storage::ObjectStore) {
+    for attempt in 1..=10_u64 {
+        match store.ensure_bucket().await {
+            Ok(()) => return,
+            Err(e) => {
+                tracing::warn!(attempt, error = %e, "bucket creation failed; retrying");
+                tokio::time::sleep(std::time::Duration::from_secs(attempt)).await;
+            }
+        }
+    }
+    tracing::error!("could not create the bucket; uploads will fail");
 }

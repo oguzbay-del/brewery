@@ -5,6 +5,7 @@
 .DS_Store
 arayuz/undefined/
 sunucu/target/
+sunucu/target-yerel/
 
 # ios: Xcode proje dosyası XcodeGen ile üretilir
 ios/*.xcodeproj/
