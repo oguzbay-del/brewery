@@ -43,9 +43,60 @@ impl ServiceConfig {
     }
 }
 
+/// Reads a setting that may be a secret (ADR-0009 rule 11.1): from variable `name` or, if
+/// unset, from the file named by `<name>_FILE` (mounted secret). Both set is an error;
+/// neither gives `Ok(None)`. `file_name` must be `<name>_FILE`.
+pub fn secret_from_lookup<F>(
+    lookup: F,
+    name: &'static str,
+    file_name: &'static str,
+) -> Result<Option<String>>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let direct = lookup(name).filter(|v| !v.trim().is_empty());
+    let file = lookup(file_name).filter(|v| !v.trim().is_empty());
+    match (direct, file) {
+        (Some(_), Some(_)) => Err(Error::InvalidEnv {
+            name,
+            reason: format!("{name} and {file_name} are both set; set exactly one"),
+        }),
+        (Some(value), None) => Ok(Some(value.trim().to_owned())),
+        (None, Some(path)) => {
+            let content = std::fs::read_to_string(&path).map_err(|e| Error::InvalidEnv {
+                name: file_name,
+                reason: format!("cannot read {path}: {e}"),
+            })?;
+            let value = content.trim();
+            if value.is_empty() {
+                return Err(Error::InvalidEnv {
+                    name: file_name,
+                    reason: format!("{path} is empty"),
+                });
+            }
+            Ok(Some(value.to_owned()))
+        }
+        (None, None) => Ok(None),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn secret_is_read_from_variable_file_or_nothing() {
+        let var = |n: &str| (n == "X").then(|| " v \n".to_owned());
+        assert_eq!(
+            secret_from_lookup(var, "X", "X_FILE").unwrap().as_deref(),
+            Some("v")
+        );
+        assert_eq!(secret_from_lookup(|_| None, "X", "X_FILE").unwrap(), None);
+        let both = |n: &str| Some(n.to_owned());
+        assert!(secret_from_lookup(both, "X", "X_FILE").is_err());
+        let missing = |n: &str| (n == "X_FILE").then(|| "/nonexistent/secret".to_owned());
+        assert!(secret_from_lookup(missing, "X", "X_FILE").is_err());
+    }
 
     #[test]
     fn defaults_apply_when_unset() {

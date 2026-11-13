@@ -9,7 +9,7 @@ API sözleşmesi. Elle düzenlenmez; koddan üretilir.
 | `istemci/swift/` | Apple swift-openapi-generator ayarı; Swift kodu depoya konmaz, macOS'ta derlemede üretilir |
 | `katalog/` | Alan tanımları (SI birim, sınır, adım, zorunluluk), birim dönüşüm katsayıları ve TR/EN metin kataloğu: tek veri dosyası `katalog.json` (şema: `katalog.schema.json`). `uret.py` TypeScript (`istemci/typescript/src/katalog.ts`), Swift (`istemci/swift/Katalog.swift`) ve Rust'ın gömdüğü kopyayı (`sunucu/crates/common/src/catalog/`) üretir; `test.py` denetler (T2.17) |
 | `proto/` | Hesap motoru gRPC tanımları |
-| `scripts/` | `gen.sh` (yalnız üretir), `check.sh` (üretir, fark varsa 1 döner) |
+| `scripts/` | `gen.sh` (yalnız üretir), `check.sh` (üretir, fark varsa 1 döner; sonunda `breaking.sh`), `breaking.sh` (oasdiff ile `origin/main`'e göre geriye uyumsuzluk denetimi, ADR-0008 madde 8.2; oasdiff yoksa yerelde atlar, CI'da hata verir) |
 
 ## Komutlar
 
@@ -24,7 +24,8 @@ Yalnız OpenAPI için: `cd sunucu && cargo run -p api --bin gen-openapi`.
 
 - API koddaki `#[utoipa::path]` açıklamalarından üretilir. Uç nokta veya şema değişince `gen.sh` çalıştırılır, üretilen dosyalar aynı commit'e girer.
 - Üretilen dosyalar (`openapi.json`, `schema.d.ts`) elle düzenlenmez. Üretim deterministiktir (anahtarlar sıralı, sonda satır sonu).
-- Hatalar her yerde `{ "error": { "code", "message" } }` zarfıyla döner (`ErrorResponse`).
+- Hatalar her yerde RFC 9457 `application/problem+json` (`ProblemDetails`: `type`, `title`, `status`, `code`, `request_id`, `errors`) olarak döner; kod listesi `ErrorCode` enum'u (ADR-0008 madde 3).
+- Her işlem `operationId` (`<kaynak>_<eylem>`), `x-permission`, `x-concurrency`, `security` ve olası hata yanıtlarını taşır; liste `sunucu/crates/api/src/openapi.rs` içindeki `OPERATIONS` tablosundadır, yeni uç oraya satır ekler (test zorlar).
 - `GET /v1/version` yanıtında `engine` alanı hesap motoru bağlanana kadar `null`.
 
 ## Swift istemcisi (macOS)

@@ -3,6 +3,7 @@
 ## Ne yapar
 - Tüm sunucu crate'lerinin ortak parçaları: `PORT` ve `SERVICE_NAME` ortam değişkeninden yapılandırma, JSON log (`tracing`), ortak hata tipi, temiz kapanma sinyali.
 - `http` özelliği açılınca axum için `/healthz` ve sunucu başlatıcısı gelir.
+- `config::secret_from_lookup` (`NAME` / `NAME_FILE` sırları) ve `otel` özelliği (OpenTelemetry izi, OTLP isteğe bağlı).
 - `catalog`: alan tanımı, birim ve metin kataloğu (`sozlesme/katalog` verisinden; `validate`, `limits`). Alan sınırlarının tek kaynağı; sunucu doğrulaması buradan okur (T2.17).
 
 ## Neye dokunmaz

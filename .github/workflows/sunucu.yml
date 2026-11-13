@@ -25,6 +25,7 @@ env:
   SQLX_CLI_VERSION: 0.9.0
   # Servis konteyneri (aşağıda) ile aynı; yalnız CI için örnek değer.
   DATABASE_URL: postgres://demleme:demleme-ci@localhost:5432/demleme
+  REDIS_URL: redis://localhost:6379
 
 jobs:
   rust:
@@ -42,6 +43,15 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U demleme -d demleme"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 12
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 5s
           --health-timeout 3s
           --health-retries 12

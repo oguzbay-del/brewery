@@ -92,6 +92,14 @@ pub async fn connect(url: &str, max_connections: u32) -> Result<PgPool> {
     Ok(pool)
 }
 
+/// Builds a pool that connects on first use, so the process starts (and reports `503` on
+/// `/readyz`) even while the database is still unavailable.
+pub fn connect_lazy(url: &str, max_connections: u32) -> Result<PgPool> {
+    Ok(PgPoolOptions::new()
+        .max_connections(max_connections)
+        .connect_lazy(url)?)
+}
+
 /// Opens a pool using the URL from the environment ([`database_url`]).
 pub async fn connect_from_env() -> Result<PgPool> {
     connect(&database_url()?, DEFAULT_MAX_CONNECTIONS).await

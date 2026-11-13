@@ -30,6 +30,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # breaking.sh compares openapi.json with origin/main
       - name: Install pinned toolchain
         working-directory: sunucu
         run: rustup show active-toolchain || rustup toolchain install
@@ -41,4 +43,10 @@ jobs:
           node-version-file: web/.nvmrc
           cache: npm
           cache-dependency-path: sozlesme/istemci/typescript/package-lock.json
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
+      - name: Install pinned oasdiff
+        run: go install github.com/oasdiff/oasdiff@v1.37.0
       - run: bash sozlesme/scripts/check.sh

@@ -17,5 +17,6 @@ if ! git diff --exit-code -- "${PATHS[@]}"; then
 fi
 echo "ok: API contract is up to date."
 
+bash sozlesme/scripts/breaking.sh "${BREAKING_BASE_REF:-origin/main}"
 python3 -I sozlesme/katalog/test.py
 (cd sozlesme/istemci/typescript && npm run --silent typecheck)

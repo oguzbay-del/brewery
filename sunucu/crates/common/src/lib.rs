@@ -5,6 +5,8 @@ pub mod config;
 pub mod error;
 #[cfg(feature = "http")]
 pub mod http;
+#[cfg(feature = "otel")]
+pub mod otel;
 pub mod shutdown;
 pub mod telemetry;
 

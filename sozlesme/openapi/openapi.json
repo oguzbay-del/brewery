@@ -1,34 +1,69 @@
 {
   "components": {
     "schemas": {
-      "ErrorBody": {
-        "description": "Machine-readable error detail.",
+      "ClientRequirements": {
+        "description": "Response of `GET /v1/meta/client-requirements`.",
         "properties": {
-          "code": {
-            "description": "Stable error code (for clients to branch on).",
-            "type": "string"
+          "min_ios_version": {
+            "description": "Lowest supported iOS version, or `null`.",
+            "type": [
+              "string",
+              "null"
+            ]
           },
-          "message": {
-            "description": "Human-readable message (English; not shown to end users).",
-            "type": "string"
+          "min_web_version": {
+            "description": "Lowest supported web build, or `null`.",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
-        "required": [
-          "code",
-          "message"
-        ],
         "type": "object"
       },
-      "ErrorResponse": {
-        "description": "Common error envelope returned by every `/v1` endpoint on failure.",
+      "ErrorCode": {
+        "description": "Every error code the API returns. The single list: the `OpenAPI` document and the text\ncatalog are generated from it (ADR-0008 rule 3.2).",
+        "enum": [
+          "malformed_request",
+          "unauthenticated",
+          "forbidden",
+          "step_up_required",
+          "entitlement_required",
+          "not_found",
+          "conflict",
+          "idempotency_in_progress",
+          "version_mismatch",
+          "payload_too_large",
+          "unsupported_media_type",
+          "validation_failed",
+          "idempotency_mismatch",
+          "calculation_failed",
+          "upgrade_required",
+          "precondition_required",
+          "rate_limited",
+          "internal",
+          "unavailable"
+        ],
+        "type": "string"
+      },
+      "FieldIssue": {
+        "description": "One field-level problem (`errors[]`).",
         "properties": {
-          "error": {
-            "$ref": "#/components/schemas/ErrorBody",
-            "description": "Error detail."
+          "code": {
+            "description": "Stable code of the problem (`out_of_range`, ...).",
+            "type": "string"
+          },
+          "field": {
+            "description": "JSON Pointer (RFC 6901) into the request body; a query parameter name for query errors.",
+            "type": "string"
+          },
+          "params": {
+            "description": "Parameters for the user text (limits and the like)."
           }
         },
         "required": [
-          "error"
+          "field",
+          "code"
         ],
         "type": "object"
       },
@@ -55,6 +90,76 @@
         ],
         "type": "object"
       },
+      "ProblemDetails": {
+        "description": "RFC 9457 problem details body (`application/problem+json`).",
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/ErrorCode",
+            "description": "Stable code clients branch on."
+          },
+          "current": {
+            "description": "Current state of the record (`version_mismatch` only; shape depends on the resource)."
+          },
+          "errors": {
+            "description": "Field-level problems.",
+            "items": {
+              "$ref": "#/components/schemas/FieldIssue"
+            },
+            "type": "array"
+          },
+          "request_id": {
+            "description": "Request id (`X-Request-Id`).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "HTTP status.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "title": {
+            "description": "English summary; not shown to end users.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Relative address of the problem type (`/errors/<code>`).",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code"
+        ],
+        "type": "object"
+      },
+      "ReadyResponse": {
+        "description": "Response of `GET /readyz`.",
+        "properties": {
+          "database": {
+            "description": "Database state: `\"ok\"`.",
+            "type": "string"
+          },
+          "redis": {
+            "description": "Redis state: `\"ok\"`, `\"unavailable\"` or `\"disabled\"`. Redis loss never fails readiness.",
+            "type": "string"
+          },
+          "status": {
+            "description": "`\"ok\"` when the database answers.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "database",
+          "redis"
+        ],
+        "type": "object"
+      },
       "VersionResponse": {
         "description": "Response of `GET /v1/version`.",
         "properties": {
@@ -75,6 +180,19 @@
         ],
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "description": "Opaque session token of the iOS app (ADR-0009)",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "cookie": {
+        "description": "Web session cookie (ADR-0009)",
+        "in": "cookie",
+        "name": "__Host-session",
+        "type": "apiKey"
+      }
     }
   },
   "info": {
@@ -89,32 +207,358 @@
   "paths": {
     "/healthz": {
       "get": {
-        "operationId": "healthz",
+        "operationId": "health_check",
         "responses": {
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "service": "api",
+                  "status": "ok",
+                  "version": "0.1.0"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/HealthResponse"
                 }
               }
             },
             "description": "Service is alive"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
           }
         },
+        "security": [],
         "summary": "Liveness probe (unversioned).",
         "tags": [
           "system"
-        ]
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
       }
     },
-    "/v1/version": {
+    "/readyz": {
       "get": {
-        "operationId": "getVersion",
+        "operationId": "health_ready",
         "responses": {
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "database": "ok",
+                  "redis": "ok",
+                  "status": "ok"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            },
+            "description": "Ready to serve"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Readiness probe (unversioned): the database must answer.",
+        "tags": [
+          "system"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      }
+    },
+    "/v1/meta/client-requirements": {
+      "get": {
+        "operationId": "meta_client_requirements_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "min_ios_version": "1.4.0",
+                  "min_web_version": null
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ClientRequirements"
+                }
+              }
+            },
+            "description": "Minimum supported client versions"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [],
+        "summary": "Lowest supported client versions; readable before sign-in (ADR-0008 rule 8.3).",
+        "tags": [
+          "meta"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      }
+    },
+    "/v1/meta/fields": {
+      "get": {
+        "operationId": "meta_fields_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "fields": {},
+                  "quantities": {},
+                  "texts": {},
+                  "units": {},
+                  "version": 1
+                },
+                "schema": {}
+              }
+            },
+            "description": "The field catalog (see sozlesme/katalog/katalog.schema.json)"
+          },
+          "304": {
+            "description": "Not modified (`If-None-Match` matched the `ETag`)"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [],
+        "summary": "Field definitions: limits, units, steps, modes and texts, from `common::catalog` (the one\nsource the server validation also reads; ADR-0008 rule 7).",
+        "tags": [
+          "meta"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      }
+    },
+    "/v1/version": {
+      "get": {
+        "operationId": "version_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "api": "0.1.0",
+                  "engine": null
+                },
                 "schema": {
                   "$ref": "#/components/schemas/VersionResponse"
                 }
@@ -122,21 +566,111 @@
             },
             "description": "Version information"
           },
-          "default": {
+          "400": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/ProblemDetails"
                 }
               }
             },
-            "description": "Error"
+            "description": "Malformed request"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
           }
         },
+        "security": [],
         "summary": "Reports the API and engine versions.",
         "tags": [
           "system"
-        ]
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
       }
     }
   },
@@ -144,6 +678,10 @@
     {
       "description": "Service status and version",
       "name": "system"
+    },
+    {
+      "description": "Definitions and client requirements",
+      "name": "meta"
     }
   ]
 }

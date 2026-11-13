@@ -1,7 +1,7 @@
 # db
 
 ## Ne yapar
-- PostgreSQL erişiminin tek kapısı: sqlx havuzu (`DATABASE_URL` ya da `DATABASE_URL_FILE`), göçler, istek bağlamı yardımcıları.
+- PostgreSQL erişiminin tek kapısı: sqlx havuzu (`DATABASE_URL` ya da `DATABASE_URL_FILE`), göçler, istek bağlamı yardımcıları (`DbContext`, `begin`: işlem başına `SET LOCAL app.*`).
 - Göçler `sunucu/migrations/` altındadır ve `migrate()` ile (ya da `migrate` ikilisiyle) uygulanır; imaja gömülüdür.
 - `migrate` ikilisi compose'da ve Kubernetes'te tek seferlik çalışır; uygulama servisleri göç çalıştırmaz.
 

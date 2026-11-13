@@ -7,7 +7,8 @@ PostgreSQL erişim katmanı (sqlx). Kararlar: `adr/0007-veri-modeli.md`.
 | `database_url()` | Bağlantı adresini `DATABASE_URL` ya da `DATABASE_URL_FILE` (dosyadan, Kubernetes Secret bağlaması için) okur; ikisi birden verilirse hata |
 | `connect`, `connect_from_env` | Havuzu kurar |
 | `migrate` | `sunucu/migrations/` göçlerini uygular (derleme zamanında gömülür) |
-| `set_workspace_id` | İşlem içinde `app.workspace_id` bağlamını ayarlar (RLS politikalarının girdisi; ADR-0007 madde 3). Tam bağlam (`app.user_id`, `app.actor_kind`) T2.10'da |
+| `DbContext`, `ActorKind`, `begin`, `set_context` | Tam istek bağlamı: `app.user_id`, `app.workspace_id`, `app.actor_kind` (`user`/`support`/`system`/`device`) işlemde `SET LOCAL` ile ayarlanır; `support` işlemi `READ ONLY` açar. `begin(pool, &ctx)` bağlamı uygulanmış işlemi verir (API her isteği böyle yürütür; ADR-0007 madde 2.3). Tek tek: `set_workspace_id`, `set_user_id`, `set_actor_kind` |
+| `connect_lazy` | İlk kullanımda bağlanan havuz; API veritabanı henüz yokken de açılır, `/readyz` `503` verir |
 | `migrate_database_url()` | Göç adresi: `MIGRATE_DATABASE_URL` (ya da `_FILE`) varsa o, yoksa `database_url()` |
 | `provision_role`, `AppRole`, `password_from_env` | `app_api` / `app_worker` rollerine oturum açma ve parola verir (parola `APP_API_PASSWORD`, `APP_WORKER_PASSWORD` ya da `*_FILE`) |
 | `migrate` ikilisi | `cargo run -p db --bin migrate`; göçleri uygular, sonra roller için parola varsa `provision_role` çalıştırır. Compose ve Kubernetes göç Job'ı bunu çalıştırır |

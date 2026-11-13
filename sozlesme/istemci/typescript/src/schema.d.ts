@@ -12,7 +12,61 @@ export interface paths {
             cookie?: never;
         };
         /** Liveness probe (unversioned). */
-        get: operations["healthz"];
+        get: operations["health_check"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/readyz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Readiness probe (unversioned): the database must answer. */
+        get: operations["health_ready"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/meta/client-requirements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lowest supported client versions; readable before sign-in (ADR-0008 rule 8.3). */
+        get: operations["meta_client_requirements_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/meta/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Field definitions: limits, units, steps, modes and texts, from `common::catalog` (the one
+         *     source the server validation also reads; ADR-0008 rule 7).
+         */
+        get: operations["meta_fields_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -29,7 +83,7 @@ export interface paths {
             cookie?: never;
         };
         /** Reports the API and engine versions. */
-        get: operations["getVersion"];
+        get: operations["version_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -42,17 +96,27 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Machine-readable error detail. */
-        ErrorBody: {
-            /** @description Stable error code (for clients to branch on). */
-            code: string;
-            /** @description Human-readable message (English; not shown to end users). */
-            message: string;
+        /** @description Response of `GET /v1/meta/client-requirements`. */
+        ClientRequirements: {
+            /** @description Lowest supported iOS version, or `null`. */
+            min_ios_version?: string | null;
+            /** @description Lowest supported web build, or `null`. */
+            min_web_version?: string | null;
         };
-        /** @description Common error envelope returned by every `/v1` endpoint on failure. */
-        ErrorResponse: {
-            /** @description Error detail. */
-            error: components["schemas"]["ErrorBody"];
+        /**
+         * @description Every error code the API returns. The single list: the `OpenAPI` document and the text
+         *     catalog are generated from it (ADR-0008 rule 3.2).
+         * @enum {string}
+         */
+        ErrorCode: "malformed_request" | "unauthenticated" | "forbidden" | "step_up_required" | "entitlement_required" | "not_found" | "conflict" | "idempotency_in_progress" | "version_mismatch" | "payload_too_large" | "unsupported_media_type" | "validation_failed" | "idempotency_mismatch" | "calculation_failed" | "upgrade_required" | "precondition_required" | "rate_limited" | "internal" | "unavailable";
+        /** @description One field-level problem (`errors[]`). */
+        FieldIssue: {
+            /** @description Stable code of the problem (`out_of_range`, ...). */
+            code: string;
+            /** @description JSON Pointer (RFC 6901) into the request body; a query parameter name for query errors. */
+            field: string;
+            /** @description Parameters for the user text (limits and the like). */
+            params?: unknown;
         };
         /** @description Response of `GET /healthz`. */
         HealthResponse: {
@@ -62,6 +126,35 @@ export interface components {
             status: string;
             /** @description Service version. */
             version: string;
+        };
+        /** @description RFC 9457 problem details body (`application/problem+json`). */
+        ProblemDetails: {
+            /** @description Stable code clients branch on. */
+            code: components["schemas"]["ErrorCode"];
+            /** @description Current state of the record (`version_mismatch` only; shape depends on the resource). */
+            current?: unknown;
+            /** @description Field-level problems. */
+            errors?: components["schemas"]["FieldIssue"][];
+            /** @description Request id (`X-Request-Id`). */
+            request_id?: string | null;
+            /**
+             * Format: int32
+             * @description HTTP status.
+             */
+            status: number;
+            /** @description English summary; not shown to end users. */
+            title: string;
+            /** @description Relative address of the problem type (`/errors/<code>`). */
+            type: string;
+        };
+        /** @description Response of `GET /readyz`. */
+        ReadyResponse: {
+            /** @description Database state: `"ok"`. */
+            database: string;
+            /** @description Redis state: `"ok"`, `"unavailable"` or `"disabled"`. Redis loss never fails readiness. */
+            redis: string;
+            /** @description `"ok"` when the database answers. */
+            status: string;
         };
         /** @description Response of `GET /v1/version`. */
         VersionResponse: {
@@ -79,7 +172,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    healthz: {
+    health_check: {
         parameters: {
             query?: never;
             header?: never;
@@ -94,12 +187,195 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "service": "api",
+                     *       "status": "ok",
+                     *       "version": "0.1.0"
+                     *     }
+                     */
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };
     };
-    getVersion: {
+    health_ready: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Ready to serve */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "database": "ok",
+                     *       "redis": "ok",
+                     *       "status": "ok"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ReadyResponse"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    meta_client_requirements_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Minimum supported client versions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "min_ios_version": "1.4.0",
+                     *       "min_web_version": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ClientRequirements"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    meta_fields_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The field catalog (see sozlesme/katalog/katalog.schema.json) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "fields": {},
+                     *       "quantities": {},
+                     *       "texts": {},
+                     *       "units": {},
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": unknown;
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched the `ETag`) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    version_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -114,16 +390,51 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "api": "0.1.0",
+                     *       "engine": null
+                     *     }
+                     */
                     "application/json": components["schemas"]["VersionResponse"];
                 };
             };
-            /** @description Error */
-            default: {
+            /** @description Malformed request */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
         };
