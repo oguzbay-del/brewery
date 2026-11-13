@@ -8,6 +8,7 @@ pub mod proto {
 
 mod check;
 pub mod convert;
+pub mod fermentation;
 pub mod mash;
 pub mod recipe;
 pub mod service;

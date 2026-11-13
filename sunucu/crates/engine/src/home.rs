@@ -137,6 +137,9 @@ pub fn fit_decay(
 pub struct ForecastResult {
     /// Final gravity `FG∞` (SG).
     pub fg: f64,
+    /// Fitted amplitude `A` of `SG(t) = FG∞ + A·e^(−k·t)` (SG), for the trigger time and the
+    /// chart curve.
+    pub a_sg: f64,
     /// Approximate 95 % profile interval `(low, high)` of `FG∞` (SG).
     pub range_sg: (f64, f64),
     /// Rate `k` (1/hour).
@@ -254,6 +257,7 @@ fn forecast_checked(
     let t_end = (fit.a / eps).ln() / fit.k_per_h;
     Forecast::Ready(ForecastResult {
         fg: fit.fg_inf,
+        a_sg: fit.a,
         range_sg: (lo, hi),
         k_per_h: fit.k_per_h,
         finish_h: t_end,
@@ -1017,6 +1021,42 @@ pub fn fruit(kg: f64, density_kg_per_l: f64, sediment: f64) -> Result<FruitVolum
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn forecast_reports_the_fitted_amplitude() {
+        // Vector 07 case 16 (12 hourly points).
+        let pts = [
+            (0.2, 1.09),
+            (1.2, 1.086_197),
+            (2.2, 1.082_757),
+            (3.2, 1.079_679),
+            (4.2, 1.076_963),
+            (5.2, 1.074_609),
+            (6.2, 1.072_617),
+            (7.2, 1.070_987),
+            (8.2, 1.069_72),
+            (9.2, 1.068_814),
+            (10.2, 1.068_271),
+            (11.2, 1.068_09),
+        ];
+        let Forecast::Ready(r) = forecast(&ForecastInput {
+            points: &pts,
+            og: 1.09,
+            fg_recipe: 1.017,
+            eps_sg: 0.0005,
+            min_points: 12,
+            min_drop: 0.30,
+        })
+        .unwrap() else {
+            panic!("forecast must be ready");
+        };
+        let hm = hourly_median(&pts);
+        let fit = fit_decay(&hm, 1.017 - 0.015, hm[hm.len() - 1].1 - 0.0002, 400)
+            .unwrap()
+            .fit;
+        assert!((r.a_sg - fit.a).abs() < 1e-12);
+        assert!((r.finish_h - (fit.a / 0.0005).ln() / fit.k_per_h).abs() < 1e-12);
+    }
 
     #[test]
     fn heat_time_spec_vector() {
