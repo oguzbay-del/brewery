@@ -9,6 +9,7 @@ use engine::mash::{
 use engine::recipe::{RecipeType, StepKind};
 use tonic::{Request, Response, Status};
 
+use crate::check::{finite, non_negative, out};
 use crate::proto::{
     DecoctionVolumeRequest, DecoctionVolumeResponse, InfusionAmountRequest, InfusionAmountResponse,
     InfusionTempRequest, InfusionTempResponse, MashScheduleRequest, MashScheduleResponse,
@@ -23,45 +24,6 @@ use crate::status::bad_request;
 /// Handler implementing the mash gRPC service.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct MashHandler;
-
-/// Requires a finite value.
-fn finite(field: &str, v: f64) -> Result<f64, Status> {
-    if v.is_finite() {
-        Ok(v)
-    } else {
-        Err(bad_request(
-            &format!("{field} must be finite"),
-            field,
-            "must be finite",
-        ))
-    }
-}
-
-/// Requires a finite, non-negative value.
-fn non_negative(field: &str, v: f64) -> Result<f64, Status> {
-    finite(field, v)?;
-    if v < 0.0 {
-        return Err(bad_request(
-            &format!("{field} must not be negative"),
-            field,
-            "must not be negative",
-        ));
-    }
-    Ok(v)
-}
-
-/// Fails when a computed output is not finite.
-fn out(field: &str, v: f64) -> Result<f64, Status> {
-    if v.is_finite() {
-        Ok(v)
-    } else {
-        Err(bad_request(
-            &format!("{field} result is not finite"),
-            field,
-            "result is not finite",
-        ))
-    }
-}
 
 /// Maps the optional wire tun to the engine tun; unset means the tun is ignored.
 fn map_tun(tun: Option<MashTun>) -> Result<Tun, Status> {
