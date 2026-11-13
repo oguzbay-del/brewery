@@ -7,13 +7,13 @@ on:
       - "altyapi/**"
       - "sunucu/**"
       - "Makefile"
-      - ".github/workflows/altyapi.yml"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - "altyapi/**"
       - "sunucu/**"
       - "Makefile"
-      - ".github/workflows/altyapi.yml"
+      - ".github/workflows/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -66,3 +66,44 @@ jobs:
       - name: make down
         if: always()
         run: make down ARGS=-v
+
+  actionlint:
+    name: iş akışı denetimi (actionlint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - name: actionlint 1.7.12
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
+
+  kubernetes:
+    name: kustomize ve kind duman testi
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - name: kind 0.33.0
+        uses: helm/kind-action@v1
+        with:
+          version: v0.33.0
+          install_only: true
+      - name: kustomize (base ve bütün overlay'ler)
+        run: |
+          set -euo pipefail
+          for d in altyapi/k8s/base altyapi/k8s/overlays/*/; do
+            echo "::group::$d"
+            kubectl kustomize "$d" > /dev/null
+            echo "::endgroup::"
+          done
+      - name: make kind-up
+        run: make kind-up
+      - name: make kind-test
+        run: make kind-test
+      - name: Küme durumu (başarısızlıkta)
+        if: failure()
+        run: |
+          kubectl --context kind-demleme -n demleme get pods,jobs -o wide || true
+          kubectl --context kind-demleme -n demleme describe pods | tail -n 200 || true
+      - name: make kind-down
+        if: always()
+        run: make kind-down
