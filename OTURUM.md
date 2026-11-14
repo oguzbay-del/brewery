@@ -380,3 +380,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Pricing, public roadmap dates, customer stories, testimonials, security badges, compliance guarantees ve AI/prediction claims hold'da.
 - PR #16 ve #19 tarihsel/açık PR olarak kaldı; WP-03 claim audit'in main'e temiz entegrasyonu ayrıca ele alınacak.
 - **Sıradaki adım:** WP-11 — mevcut marketing-site uygulamasını WP-04–10 ile karşılaştıran gap analysis ve uygulama sırası. Production koduna geçiş için ayrıca açık onay gerekir.
+
+
+## WP-03 — Feature claim denetimi (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/14-feature-claim-denetimi.md`.
+- 16 feature alanı ürün planı domain'lerine, audience ve release stage'e eşlendi.
+- Kritik çelişkiler: fermantasyon bitiş/FG tahminleri onaysız analitik modeller; eğri sapma uyarısı onay bekleyen model 2; ekipman kalibrasyonu Home MVP ile onaysız model 3 arasında çelişkili.
+- Mash pH, public calculator kapsamı, cihaz/protokol ve read/control ayrımı, mevzuat ve security iddiaları için ek doğrulama şart.
+- Pazarlama “Available” durumunu yalnız deploy edilmiş/test edilmiş müşteri akışında kullanmalı.
+- **Sıradaki adım:** PR #16 feature catalog diff'ini claim audit ile denetle; yalnız doğrulanmış, muhafazakâr metinleri entegre et.
