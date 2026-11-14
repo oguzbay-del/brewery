@@ -1,8 +1,9 @@
 ---
 import "../styles/global.css";
+import "../styles/audience-pages.css";
 import { features } from "../data/features";
-const breweryAreas = features.filter((feature) => feature.audiences.includes("Breweries"));
 
+const breweryAreas = features.filter((feature) => feature.audiences.includes("Breweries"));
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}breweries/`, import.meta.env.SITE).href;
 const structuredData = {
@@ -10,10 +11,29 @@ const structuredData = {
   "@type": "WebPage",
   name: "For Professional Breweries — Demleme",
   url: canonicalUrl,
-  description: "Brewing software in development for professional breweries.",
+  description: "Brewing software in development for professional teams working with recipe decisions and production records.",
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
 };
+const workflow = [
+  { number: "01", title: "Review the recipe", question: "Which recipe definition and targets guide the batch?", body: "Keep recipe intent, target values and version context visible before production begins.", feature: "Recipe design & management", href: "recipe-design" },
+  { number: "02", title: "Plan the work", question: "What needs to happen, and when?", body: "The Business roadmap includes production planning, task views and tank scheduling. Availability depends on delivery and validation.", feature: "Planning & scheduling", href: "planning-scheduling" },
+  { number: "03", title: "Record the batch", question: "What was planned, and what actually happened?", body: "Connect the recipe reference with actual quantities, times, temperatures, measurements and production notes.", feature: "Brew day & production records", href: "brew-day" },
+  { number: "04", title: "Review fermentation and vessels", question: "Which observations belong to this batch and vessel?", body: "The product plan describes batch timelines, vessel context and recorded observations. Automated predictions are separately gated.", feature: "Fermentation & batch tracking", href: "fermentation-monitoring" },
+  { number: "05", title: "Connect quality and traceability", question: "Can a result be understood in its batch and material context?", body: "Quality records, ingredient-lot relationships and release workflows are planned capabilities that require product and regulatory validation.", feature: "Quality, laboratory & release", href: "quality-laboratory" },
+];
+const roles = [
+  { role: "Head brewer", need: "Recipe intent, target values and batch review", focus: "Recipe decisions and consistency" },
+  { role: "Production operator", need: "Planned versus actual values and process observations", focus: "Clear records and shift handover" },
+  { role: "Quality role", need: "Measurements, test results and traceability context", focus: "Evidence, review and release records" },
+];
+const faqs = [
+  { q: "Is Demleme ready for production use?", a: "No. Demleme is in development. The Business page describes planned workflows and does not represent a live production system." },
+  { q: "Does Demleme replace a brewery ERP?", a: "No. Demleme focuses on brewing-related recipe, batch and production information. It is not positioned as a general ERP." },
+  { q: "Does it manage sales, orders, distribution or keg tracking?", a: "No. Sales, customer orders, distribution and shipping, keg tracking, CRM and accounting are outside the stated product scope." },
+  { q: "Are APIs, webhooks and integrations available today?", a: "No public availability claim is made. Professional open API and production-data webhooks are planned for a later Business release; Homebrew device webhook scope is separate." },
+  { q: "How are roles, permissions and approvals handled?", a: "Role-based workflows and approvals appear in the product plan. Their exact behaviour and availability must be verified before they are described as supported." },
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -23,44 +43,75 @@ const structuredData = {
     <meta name="theme-color" content="#f2f2f7" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Brewing software in development for professional breweries." />
+    <meta name="description" content="Explore Demleme's planned professional brewery workflows: recipe review, production planning, batch records, quality and traceability." />
     <title>For Professional Breweries — Demleme</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Demleme" />
     <meta property="og:title" content="For Professional Breweries — Demleme" />
-    <meta property="og:description" content="Brewing software in development for professional breweries." />
+    <meta property="og:description" content="A clearer view of recipe decisions and production records." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="For Professional Breweries — Demleme" />
-    <meta name="twitter:description" content="Brewing software in development for professional breweries." />
+    <meta name="twitter:description" content="A clearer view of recipe decisions and production records." />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`} aria-current="page">Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
       <a class="header-cta" href={`${base}#audience-paths`}>All brewing paths <span aria-hidden="true">↗</span></a>
       <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product features</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
     </header>
     <main id="main-content">
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR PROFESSIONAL BREWERIES · IN DEVELOPMENT</p>
-        <h1>Consistency is built <em>batch by batch.</em></h1>
-        <p>Demleme is in development. We are shaping a technical brewing software experience for professional teams that value clear recipe information, repeatable methods and informed review.</p>
-        <a class="button button-primary" href="#brewery-focus">Explore the brewery focus <span aria-hidden="true">↗</span></a>
+        <h1>From recipe review to <em>production records.</em></h1>
+        <p>Demleme is being developed for professional brewing teams that need a clearer view of recipe decisions, batch information and production records.</p>
+        <a class="button button-primary" href="#brewery-workflow">Explore the brewery workflow <span aria-hidden="true">↗</span></a>
       </section>
-      <!-- IMAGE SLOT: BREWERIES-HERO | Replace placeholder with licensed documentary-style photo of a professional brewery floor or team. -->
+      <!-- IMAGE SLOT: BREWERIES-HERO | Replace only with user-approved or licensed documentary photography. -->
       <section class="shell audience-hero">
         <div class="image-placeholder" data-image-slot="breweries-hero"><strong>IMAGE PLACEHOLDER · BREWERIES-HERO</strong><span>Professional brewing team, stainless vessels or a working production floor</span></div>
       </section>
-      <section class="audience-page-section section-pad" id="brewery-focus">
+      <section class="audience-page-section section-pad" id="brewery-workflow">
         <div class="shell">
           <div class="section-heading">
-            <p class="eyebrow"><span class="eyebrow-line"></span> PROFESSIONAL BREWING · PRODUCT ROADMAP</p>
-            <h2>From formulation to production control.</h2>
-            <p>Explore the planned Business mode for professional brewing teams: standardised recipes, production records, tank workflows, traceability, quality and team operations.</p>
+            <p class="eyebrow"><span class="eyebrow-line"></span> THE PROFESSIONAL BREWING WORKFLOW</p>
+            <h2>Connect the decisions with <em>the records.</em></h2>
+            <p>Business mode is planned around brewing-specific work. Each workflow below is a product direction, not a statement that the capability is already live.</p>
+          </div>
+          <ol class="workflow-grid">
+            {workflow.map((step) => (
+              <li class="workflow-card">
+                <span class="workflow-number">{step.number}</span>
+                <h3>{step.title}</h3>
+                <p class="workflow-question">{step.question}</p>
+                <p>{step.body}</p>
+                <a href={`${base}features/${step.href}/`}>{step.feature} <span aria-hidden="true">↗</span></a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section class="role-section section-pad">
+        <div class="shell">
+          <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> PEOPLE AND INFORMATION</p><h2>Different roles. <em>Shared production context.</em></h2><p>These are audience needs that inform the product design—not a claim that role permissions or approval queues are currently available.</p></div>
+          <div class="role-table-wrap">
+            <table class="role-table">
+              <thead><tr><th scope="col">Role</th><th scope="col">Primary information need</th><th scope="col">Editorial emphasis</th></tr></thead>
+              <tbody>{roles.map((item) => <tr><th scope="row">{item.role}</th><td>{item.need}</td><td>{item.focus}</td></tr>)}</tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      <section class="audience-feature-section section-pad">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> BUSINESS PRODUCT AREAS · ROADMAP</p>
+            <h2>Brewing operations, <em>clearly bounded.</em></h2>
+            <p>Explore the planned Business capabilities, with each feature page showing its intended stage and limitations.</p>
           </div>
           <div class="audience-feature-grid">
             {breweryAreas.map((feature) => (
@@ -69,8 +120,18 @@ const structuredData = {
               </a>
             ))}
           </div>
-          <p class="audience-page-note" style="margin-top:28px">Demleme is brewing production software, not a general ERP. Sales, orders, distribution, keg tracking, CRM and accounting are outside the planned scope.</p>
-          <a class="text-link" style="margin-top:18px" href={`${base}features/`}>View the complete product feature catalogue <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+      <section class="erp-boundary-section section-pad">
+        <div class="shell erp-boundary-inner">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT SCOPE</p><h2>A brewing workspace, <em>not a general ERP.</em></h2></div>
+          <div><p>Demleme focuses on brewing-related recipe, batch and production information. It is not positioned as a general ERP and does not claim to manage:</p><ul><li>Sales or customer orders</li><li>Distribution, shipping or delivery operations</li><li>Keg tracking</li><li>CRM or accounting</li></ul><p>Keep those systems in their appropriate specialist tools; Demleme's planned scope stays centred on brewing work.</p></div>
+        </div>
+      </section>
+      <section class="audience-faq-section section-pad">
+        <div class="shell audience-faq-layout">
+          <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> BREWERY FAQ</p><h2>Know the scope <em>before the detail.</em></h2></div>
+          <div class="audience-faq-list">{faqs.map((faq) => <details class="audience-faq-item"><summary>{faq.q}</summary><p>{faq.a}</p></details>)}</div>
         </div>
       </section>
       <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={base}>Explore both brewing paths <span aria-hidden="true">↗</span></a></div></section>
