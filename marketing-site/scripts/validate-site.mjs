@@ -76,6 +76,13 @@ for (const loc of sitemapLocs) {
   assert(await exists(file), `sitemap target exists: ${url.pathname}`);
 }
 
+for (const file of htmlFiles) {
+  const rel = path.relative(dist, file).replaceAll(path.sep, "/");
+  if (rel === "404.html") continue;
+  const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
+  const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
+  assert(sitemap.includes(pageUrl.href), `sitemap lists page: ${pagePath}`);
+}
 const forbidden = [
   "A complete toolkit for your next brew",
   "selected advanced features available to enable",
@@ -93,6 +100,30 @@ for (const file of htmlFiles) {
   assert(titleCount === 1, `${rel}: exactly one title`);
   assert(canonicalCount === 1, `${rel}: exactly one canonical`);
   assert(descriptionCount === 1, `${rel}: exactly one meta description`);
+  const ogTitleCount = (html.match(/property=["\']og:title["\']/g) || []).length;
+  const ogDescriptionCount = (html.match(/property=["\']og:description["\']/g) || []).length;
+  const ogUrlCount = (html.match(/property=["\']og:url["\']/g) || []).length;
+  const twitterCardCount = (html.match(/name=["\']twitter:card["\']/g) || []).length;
+  assert(ogTitleCount === 1, `${rel}: exactly one Open Graph title`);
+  assert(ogDescriptionCount === 1, `${rel}: exactly one Open Graph description`);
+  assert(ogUrlCount === 1, `${rel}: exactly one Open Graph URL`);
+  assert(twitterCardCount === 1, `${rel}: exactly one Twitter card type`);
+  assert(html.includes('<html lang="en">'), `${rel}: language is declared`);
+  const canonicalTag = html.match(/<link\\b[^>]*rel=["\']canonical["\'][^>]*>/)?.[0];
+  const canonicalHref = canonicalTag?.match(/\\bhref=["\']([^"\']+)["\']/)?.[1];
+  const ogUrl = html.match(/<meta\\s+property=["\']og:url["\']\\s+content=["\']([^"\']+)["\']/)?.[1];
+  assert(Boolean(canonicalHref), `${rel}: canonical URL is present`);
+  if (canonicalHref) {
+    const canonical = new URL(decodeHtml(canonicalHref), siteOrigin);
+    assert(canonical.origin === siteOrigin && canonical.pathname === pageUrl.pathname, `${rel}: canonical URL matches page path`);
+    if (ogUrl) assert(new URL(decodeHtml(ogUrl), siteOrigin).href === canonical.href, `${rel}: Open Graph URL matches canonical`);
+  }
+  const jsonLd = html.match(/<script\\s+type=["\']application\\/ld\\+json["\'][^>]*>([\\s\\S]*?)<\\/script>/)?.[1];
+  assert(Boolean(jsonLd), `${rel}: JSON-LD structured data exists`);
+  if (jsonLd) {
+    try { JSON.parse(jsonLd); assert(true, `${rel}: JSON-LD is valid JSON`); }
+    catch { failures.push(rel + ": JSON-LD is invalid JSON"); }
+  }
 
   for (const phrase of forbidden) {
     assert(!html.toLowerCase().includes(phrase.toLowerCase()), `${rel}: no unsafe legacy claim “${phrase}”`);
