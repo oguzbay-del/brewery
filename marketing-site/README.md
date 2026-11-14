@@ -62,3 +62,10 @@ Review the homepage and both audience pages at 1440px desktop and 390px mobile. 
 - Pushes to `main` that change `marketing-site/**` or this workflow build and deploy `marketing-site/dist` only. The PR check workflow validates the marketing site before merge; Pages deployment happens from the default branch.
 - The separate `marketing-site.yml` workflow runs PR checks.
 - After the PR checks and scope review pass, merge manually. Then verify the published project site at desktop and mobile sizes.
+
+
+## Search metadata
+
+- The homepage publishes schema.org `WebSite` JSON-LD.
+- The Homebrewers and Professional Breweries pages publish schema.org `WebPage` JSON-LD with their canonical URLs and the site as their parent.
+- Structured data describes the marketing pages only. It does not claim that the product is generally available or that planned functionality is already usable.
