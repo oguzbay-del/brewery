@@ -36,3 +36,4 @@ Discovery → sitemap → wireframe → görsel tasarım → içerik → gelişt
 18. [Sayfa bazlı wireframe ve içerik-layout eşlemesi — WP-07](18-page-level-wireframes-content-layout.md)
 20. [Teknik içerik ve hesaplayıcı doğrulama backlog'u — WP-09](20-technical-content-calculator-validation.md)
 19. [SEO, teknik yayın ve içerik kalite standardı — WP-08](19-seo-technical-publishing-standard.md)
+23. [Uygulama spesifikasyonu ve release gate — WP-12](23-implementation-spec-release-gate.md)
