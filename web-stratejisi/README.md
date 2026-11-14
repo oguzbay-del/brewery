@@ -34,3 +34,4 @@ Discovery → sitemap → wireframe → görsel tasarım → içerik → gelişt
 16. [İçerik ve mesaj mimarisi — WP-05](16-content-messaging-architecture.md)
 17. [Görsel yön ve tasarım sistemi — WP-06](17-visual-direction-design-system.md)
 18. [Sayfa bazlı wireframe ve içerik-layout eşlemesi — WP-07](18-page-level-wireframes-content-layout.md)
+19. [SEO, teknik yayın ve içerik kalite standardı — WP-08](19-seo-technical-publishing-standard.md)
