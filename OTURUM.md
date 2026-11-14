@@ -338,3 +338,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - WCAG 2.2 AA hedefi, klavye/touch, reduced motion ve responsive QA kabul kriterleri eklendi.
 - Yalnız strateji dokümanları değiştirildi; `marketing-site/`, `web/`, ürün API'leri, iOS ve Claude ürün geliştirme kuyruğuna dokunulmadı.
 - **Sıradaki adım:** temiz PR için CI/Vercel kontrolü; sonrasında WP-07 sayfa bazlı wireframe refinement. Production uygulama için ayrıca açık kullanıcı onayı gerekir.
+
+
+## WP-08 — SEO, teknik yayın ve içerik kalite standardı (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/19-seo-technical-publishing-standard.md`.
+- URL/search intent sahipliği, on-page içerik kalitesi, crawl/indexation, sitemap/robots/canonical, redirect, metadata ve JSON-LD kuralları tanımlandı.
+- ABD/İngiltere lokalizasyonu, US/Imperial/metric birim ayrımı, hreflang koşulları ve iç link modeli yazıldı.
+- Core Web Vitals, erişilebilirlik, analytics/privacy ve yayın kontrol kapıları eklendi.
+- FoamByte benchmark dersleri Demleme'ye özgü içerik/kanıt yaklaşımıyla eşlendi; kopyalama yok.
+- **Sıradaki adım:** WP-09 — teknik içerik ve hesaplayıcı doğrulama backlog'u. Formül testleri tamamlanmadan calculator implementasyonu/yayını yok.
