@@ -378,7 +378,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - P0/P1/P2/P3 sayfa backlog'u; Home ve Business içerik farkları; claim/evidence register şeması ve içerik türüne göre kanıt paketi tanımlandı.
 - Ürün aşaması, teknik kanıt, gerçek CTA ve erişilebilirlik/SEO kapıları geçmeden yayın yok.
 - Pricing, public roadmap dates, customer stories, testimonials, security badges, compliance guarantees ve AI/prediction claims hold'da.
-- PR #16 ve #19 tarihsel/açık PR olarak kaldı; WP-03 claim audit'in main'e temiz entegrasyonu ayrıca ele alınacak.
+- PR #19 kapatıldı; WP-03 claim audit PR #36 ile main'e merge edildi. PR #16 açık; WP-03 yorumlarına göre düzeltme ve güncel main tabanına taşıma bekliyor.
 - **Sıradaki adım:** WP-11 — mevcut marketing-site uygulamasını WP-04–10 ile karşılaştıran gap analysis ve uygulama sırası. Production koduna geçiş için ayrıca açık onay gerekir.
 
 
@@ -410,3 +410,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
 - Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
 - **Sıradaki adım:** PR #16 feature catalogue değişikliklerini WP-03 ile denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
+
+
+## Repository cleanup — 14 Kasım 2026
+
+- PR #22 WP-05/WP-06, PR #24 WP-07, PR #27 WP-09, PR #29 WP-08, PR #31 WP-10, PR #34 WP-11, PR #36 WP-03 ve PR #38 WP-12 manuel squash merge edildi.
+- Eski, duplicate-base PR'lar kapatıldı; ilgili dosyalar temiz main tabanlı PR'larla taşındı.
+- PR #16 feature catalogue branch'i açık bırakıldı; WP-03 claim kontrol yorumları eklendi. Expected-curve alerts, calibration suggestions, one-month trial, device/API/security maturity ve branch ancestry düzeltilmeden merge edilmemeli.
+- **Aktif strateji durumu:** WP-03–WP-12 dokümantasyonu main'de. Production marketing-site kod değişikliği hâlâ ayrı implementation gate'e bağlı.
