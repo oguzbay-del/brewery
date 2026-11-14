@@ -2,7 +2,7 @@
 
 **Work package:** WP-13  
 **Tarih:** 15 Kasım 2026  
-**Durum:** İçerik ve kaynak-kod denetimi tamamlandı; görsel tarayıcı QA bekliyor.  
+**Durum:** Benchmark ve ilk uygulama dalgaları tamamlandı; statik QA otomasyonu çalışıyor; gerçek tarayıcı QA ve Vercel Preview bekliyor.  
 **Kapsam:** Demleme pazarlama sitesi ile FoamByte kamuya açık pazarlama sayfaları. Ürün uygulaması, API, iOS ve ürün geliştirme kapsam dışıdır.  
 **Karar zemini:** Homebrewers + Professional Breweries; teknik konumlandırma; ABD/İngiltere önceliği; İngilizce; self-service öncelikli.
 
@@ -157,6 +157,26 @@ FoamByte'ın görsel avantajı yalnız estetik değil, **ürünün nasıl çalı
 | FB-11 | Gerçek görsel varlıkların seçimi/değişimi | HOLD | Kullanıcı tarafından sağlanan veya açıkça onaylanan varlık |
 | FB-12 | Responsive visual QA | P0 launch gate | Preview erişimi; 1440/1024/768/390/320 |
 | FB-13 | A11y, internal links, metadata, schema ve sitemap QA | P0 launch gate | WP-08 checklist ve kanıt kaydı |
+
+## 7A. Uygulama durumu — 15 Kasım 2026
+
+| Backlog ID | Durum | Uygulama / karar |
+|---|---|---|
+| FB-01 | Tamamlandı | Home sayfasındaki “complete toolkit” ve “available to enable” riskli ifadeleri claim-safe içerikle değiştirildi (PR #43). |
+| FB-02 | Tamamlandı | Business hero “From recipe review to production records” olarak düzeltildi (PR #43). |
+| FB-03 | Tamamlandı | Homebrew record loop tablosu eklendi: recipe/targets → ingredients/water → brew-day actuals → fermentation observations → tasting/review (PR #53). |
+| FB-04 | Tamamlandı | Business record model eklendi: recipe version → batch record → ingredient lots → vessel events → quality records; release stage etiketleri var (PR #52). |
+| FB-05 | Tamamlandı | Home ve Business audience FAQ'ları ile merkezi `/faq/` sayfası mevcut (PR #47 ve audience sayfaları). |
+| FB-06 | Tamamlandı | `/how-it-works/` Home ve Business workflow'larını ayrı anlatıyor (PR #46). |
+| FB-07 | Tamamlandı | `/technical-principles/` method, units, planned-vs-actual, measurement context ve model validation ilkelerini anlatıyor (PR #46). |
+| FB-08 | Tamamlandı | Feature detail şablonunda inputs/records, outputs, limitations ve evidence status bölümü var; tüm feature sayfaları roadmap olarak işaretli (PR #47/#50). |
+| FB-09 | Beklemede / kanıt kapısı | Learn hub ve teknik rehberler, WP-10'da tanımlı birincil kaynak, yöntem, örnek ve subject-matter review tamamlanmadan yayınlanmayacak. |
+| FB-10 | HOLD | Calculators yalnız WP-09 formül/test vektörü doğrulaması ve public-use approval sonrasında. |
+| FB-11 | HOLD | Gerçek fotoğraf/ürün ekranı eklenmeyecek; kullanıcı onaylı veya lisanslı varlık bekleniyor. |
+| FB-12 | Beklemede / release gate | 1440/1024/768/390/320 px gerçek browser QA; Vercel Preview build-rate-limit nedeniyle ertelendi. |
+| FB-13 | Kısmen tamamlandı | Statik route/sitemap/link/metadata/JSON-LD ve temel accessibility smoke checks CI'da var (PR #48/#51/#57). Keyboard, screen-reader, contrast, focus ve responsive browser QA hâlâ açık. |
+
+GitHub Pages geçici preview olarak yayınlanıyor: https://oguzbay-del.github.io/brewery/. GitHub Actions run #77 ve Pages deployment run #28 başarılı. Bu başarı gerçek tarayıcı görsel QA yerine geçmez. Vercel Preview yeniden kullanılabilir olduğunda ayrı QA kaydı tamamlanmadan public release kapatılmaz.
 
 ## 8. Ölçülebilir kabul kriterleri
 
