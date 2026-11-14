@@ -1,17 +1,31 @@
 # Aktif çalışma oturumu
 
-**Son güncelleme:** 2026-11-14  
+**Son güncelleme:** 2026-11-15  
 **Amaç:** Yeni ChatGPT veya Claude oturumunun bağlamı yeniden araştırmadan devralması.  
 **Kural:** Bu dosya kısa tutulur. Her anlamlı iş tamamlandığında ve oturum kapatılırken güncellenir.
 
 
-## Güncel yayın durumu — 14 Kasım 2026
+## Güncel yayın durumu — 15 Kasım 2026
 
 - **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
 - **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
-- **Ana dalın ürün kataloğu öncesi son commit'i:** `5661692327cac99960955bcf0730e68326ebcec0`.
+- **Main güncel commit:** `897ec5a701b0f462acb3c5fc66fd48ba5d2c801e` (marketing accessibility smoke checks + README cleanup).
 - **Fotoğraflar:** Kullanıcı henüz fotoğraf sağlamadı. Yeni fotoğraf üretme, stok fotoğraf seçme veya otomatik görsel ekleme. Beş `data-image-slot` alanı ve SVG/yer tutucular korunacak; yalnız kullanıcı varlığı/izniyle değiştirilecek.
 - **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
+
+
+
+## Son devam özeti — 15 Kasım 2026
+
+- Kullanıcı, Vercel çalışmasa da marketing-site kod işlerinin GitHub üzerinden sürdürülmesini ve Vercel geri geldiğinde Preview/browser QA yapılmasını açıkça onayladı.
+- Geçici preview: https://oguzbay-del.github.io/brewery/ — Pages build ve statik validator başarılı; bu URL'nin gerçek tarayıcı render QA'sı henüz yapılmadı.
+- Vercel Preview, Hobby build-rate-limit nedeniyle hâlâ failure. Bu nedenle Vercel görsel QA ertelendi; public release gate olarak korunuyor.
+- PR #52 merge: Business için Recipe version → Batch record → Ingredient lots → Vessel events → Quality records ilişkisini anlatan, aşama etiketli record model.
+- PR #53 merge: Homebrewer için Recipe/targets → Ingredients/water → Brew-day actuals → Fermentation observations → Tasting/review kayıt döngüsü.
+- PR #57 merge: duplicate ID, tek H1/main landmark, skip-link, nav accessible name ve image alt attribute statik smoke kontrolleri; README içindeki hatalı literal \\n satır sonları düzeltildi.
+- PR #54–56 ilk/ara denemeler olarak kapatıldı; aktif açık PR yok.
+- Son başarılı marketing CI: run #77 (Astro/TypeScript, build, route/metadata/link ve accessibility smoke checks). GitHub Pages deployment run #28 son kontrol anında tamamlanmayı bekliyor.
+- **Sıradaki adım:** Pages run #28 sonucunu doğrula; Home ve Business içeriklerini son kez claim/UX açısından gözden geçir; Vercel erişilebilir olduğunda 1440/1024/768/390/320 px gerçek browser QA, keyboard/screen reader ve link interaction testlerini tamamla.
 
 ## Çalışma ilkeleri
 
