@@ -4,6 +4,18 @@
 **Amaç:** Yeni ChatGPT veya Claude oturumunun bağlamı yeniden araştırmadan devralması.  
 **Kural:** Bu dosya kısa tutulur. Her anlamlı iş tamamlandığında ve oturum kapatılırken güncellenir.
 
+
+## Güncel yayın durumu — 14 Kasım 2026
+
+- **Güncel hosting kararı:** Vercel. GitHub Pages yalnızca yedek yayın olarak tutuluyor. Eski Cloudflare Pages önerisi tarihsel araştırma notudur; aktif hosting kararı değildir.
+- **Canlı Vercel adresi:** https://brewery-rho.vercel.app
+- **Güncel main:** `5661692327cac99960955bcf0730e68326ebcec0` (PR #13 manuel squash merge).
+- **Son doğrulama:** Marketing site CI success; GitHub Pages deployment success; Vercel commit status success.
+- **Fotoğraflar:** Kullanıcı henüz fotoğraf sağlamadı. Yeni fotoğraf üretme, stok fotoğraf seçme veya otomatik görsel ekleme. Beş `data-image-slot` alanı ve SVG/yer tutucular korunacak. Fotoğraflar yalnızca kullanıcı varlıkları sağladığında veya ayrıca onay verdiğinde değiştirilecek.
+- **Görsel QA:** Vercel public sayfasına web erişim aracıyla ulaşılamadı; bu nedenle masaüstü/mobil tarayıcı QA tamamlanmış sayılmıyor. Kullanıcının ekran görüntüsü CSS'nin yüklendiğini göstermişti; bu, tüm sayfaların QA edildiği anlamına gelmez.
+- **Son kod düzeltmesi:** PR #13 ana sayfadaki “Discover the Demleme approach” CTA'sını mevcut `#approach` anchor'ına yönlendirdi.
+- **Sıradaki teknik iş:** Yayınlanmış sayfalar ve linkler için erişilebilir gerçek browser/device QA fırsatı bulunana kadar, kaynak seviyesinde SEO, link ve erişilebilirlik incelemesini sürdür. Fotoğraf işi beklemede.
+
 ## Çalışma ilkeleri
 
 - Token verimliliği oturum başında uygulanır; haftalık raporu bekleme.
