@@ -370,3 +370,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Core Web Vitals, erişilebilirlik, analytics/privacy ve yayın kontrol kapıları eklendi.
 - FoamByte benchmark dersleri Demleme'ye özgü içerik/kanıt yaklaşımıyla eşlendi; kopyalama yok.
 - **Sıradaki adım:** WP-09 — teknik içerik ve hesaplayıcı doğrulama backlog'u. Formül testleri tamamlanmadan calculator implementasyonu/yayını yok.
+
+
+## WP-12 — Uygulama spesifikasyonu ve release gate (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/23-implementation-spec-release-gate.md`.
+- WP-03–WP-11 kararları, hedef sitemap, Home/Business içerik tasarımı, implementasyon workstream'leri, bağımlılıklar, kalite kabul kriterleri ve release/merge protokolü birleştirildi.
+- İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
+- Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
+- **Sıradaki adım:** WP-03 ve PR #16'yı temiz base üzerinden denetle; sonra production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
