@@ -119,3 +119,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Gerçek tarayıcıda 1440/390 görsel kontrolü henüz yapılmadı; deploy edilmiş preview URL yok.
 - PR #3 draft; merge edilmedi. Kod değişiklikleri test edildi; sonrasında yalnız OTURUM dokümantasyonu güncellendi.
 - **Sıradaki adım:** Cloudflare Pages preview/deploy bağlantısı mevcutsa gerçek responsive QA; yoksa kullanıcıdan hosting/preview erişimi için karar al. Fotoğrafları ve app CTA URL'lerini beklet.
+
+
+**Son çalışma — 14 Kasım 2026 (CI ve statik bağlantı QA)**
+- GitHub Actions run #11 başarıyla tamamlandı: Node kurulumu, dependency install, npm run check (Astro/TypeScript) ve npm run build adımlarının tamamı başarılı.
+- Ana sayfa ve iki audience sayfasının dahili anchor hedefleri kaynak üzerinden denetlendi; eksik anchor bulunmadı. Audience sayfaları için /, /homebrewers, /breweries ve ana sayfa section linkleri tutarlı.
+- PR #3 açık, draft ve merge edilmedi. Head branch marketing/homepage-prototype; base main.
+- Bu oturumda gerçek tarayıcı / cihaz önizlemesi sağlayan bir araç yok; 1440px ve 390px görsel QA yapılmış sayılmıyor. GitHub CI başarısı görsel doğrulama yerine geçmez.
+- **Sıradaki adım:** preview ortamı/erişimi sağlandığında masaüstü ve mobil görsel QA; ardından CTA hedefleri ve production hosting/domain kararları.
