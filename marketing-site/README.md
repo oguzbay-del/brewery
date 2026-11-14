@@ -55,11 +55,10 @@ Review the homepage and both audience pages at 1440px desktop and 390px mobile. 
 
 ## GitHub Pages preview
 
-The prototype is configured for the repository Pages URL: `https://oguzbay-del.github.io/brewery/`.
-
-- Astro `site`: `https://oguzbay-del.github.io`; `base`: `/brewery`.
+- **Project website:** https://oguzbay-del.github.io/brewery/
+- **Repository root URL:** https://oguzbay-del.github.io/ is a separate user-site address and is not the Demleme project preview.
+- Astro uses `site: https://oguzbay-del.github.io` and `base: /brewery`; internal page links respect this base path.
 - Deployment workflow: `.github/workflows/marketing-site-pages.yml`.
-- Pushes to `marketing/homepage-prototype` build, check, and deploy the preview.
-- Repository Pages has been enabled by the repository owner with GitHub Actions as the deployment source. The next branch push will run the deployment.
-- The separate `marketing-site.yml` workflow continues to run PR checks.
-- Keep the PR unmerged until the live preview has passed desktop/mobile visual QA and the scope review is complete.
+- Pushes to `marketing/homepage-prototype` that change `marketing-site/**` or this workflow build and deploy `marketing-site/dist` only.
+- The separate `marketing-site.yml` workflow runs PR checks.
+- Keep the PR unmerged until the live project preview has passed desktop/mobile visual QA and the scope review is complete.
