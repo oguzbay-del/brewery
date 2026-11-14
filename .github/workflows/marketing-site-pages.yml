@@ -3,7 +3,7 @@ name: Deploy marketing preview to GitHub Pages
 on:
   push:
     branches:
-      - marketing/homepage-prototype
+      - main
     paths:
       - "marketing-site/**"
       - ".github/workflows/marketing-site-pages.yml"
