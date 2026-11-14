@@ -123,6 +123,18 @@ Aşamalar plan › Geliştirme düzeni ve plan › Yol haritasında. Her aşaman
 | 5 Ev MVP beta | Bulut kurulumu, beta | Görüşmeler ve altın test tamam; bağımsız güvenlik incelemesi |
 | 6 İşletme | İşletme ekranları | Aşama aşama |
 
+## Yapay zekâ ajanı entegrasyonu (AI) · ARAŞTIRMA BEKLİYOR
+
+Amaç (Oğuz, 14.11.2026): kullanıcı zaten sahip olduğu büyük dil modelini (Claude, ChatGPT, Gemini, Grok) kendi aboneliğiyle uygulamaya bağlar. Yazarak ya da konuşarak durum değerlendirmesi, reçete tasarımı, rapor ("şu raporu şöyle istiyorum") gibi işleri uygulamanın bütün yetenekleriyle, arayüzden yapıyormuş gibi uçtan uca yürütür. Ajan, uygulamada olmayan bir özellik istendiğinde bunu otomatik öneri olarak bize bildirir; öneriler iş açmaya girdi olur. Şimdi geliştirilmez; sıra araştırma → sorular → karar → tasarım → plan → geliştirme.
+
+| İş | Tanım | Bitti ölçütü | Bağlı | Kim | Model | Durum |
+|---|---|---|---|---|---|---|
+| AI.1 | Araştırma: entegrasyon yolları ve karşılaştırması. MCP (uzak MCP sunucusu, OAuth), sağlayıcıların bağlayıcı/uygulama mekanizmaları (Claude bağlayıcıları, ChatGPT uygulamaları, Gemini, Grok; hangisi kullanıcının kendi aboneliğiyle çalışır), doğrudan API ve kullanıcının kendi API anahtarı (BYOK), uygulama içi sohbet ve ses; yazma işlemlerinde onay ve kapsamlı yetki, istem enjeksiyonu ve veri sızıntısı riskleri, denetim kaydı; App Store ve sağlayıcı kullanım koşulları; maliyet kime düşer; gizlilik (ABD, İngiltere); "eksik özellik önerisi" akışı (toplama, anonimleştirme, kötüye kullanım); mevcut API'nin (OpenAPI, izin modeli, SSE) ajan aracı olarak açılmaya uygunluğu | Rapor `gelistirme/raporlar/AI1-ajan-entegrasyonu.md`: seçenekler tablosu (abonelik ile çalışır mı, istemci, kurulum zorluğu, güvenlik, maliyet), önerilen yol ve gerekçe, doğrulanmamış bilgiler "doğrulanacak" | T2.35 | Claude | Opus (sentez), Sonnet (web taraması) | bekliyor |
+| AI.2 | Sorular: AI.1'den çıkan karar soruları (hangi sağlayıcılar ilk sürümde, MCP mi uygulama içi mi ya da ikisi, sesli kullanım, ajanın yazma yetkisi ve onay düzeyi, Ev/İşletme kapsamı, abonelik planına etkisi, öneri akışının görünürlüğü) | Soru listesi Oğuz'a soruldu; cevaplar DURUM.md › Son kararlar'da | AI.1 | Claude | Opus | bekliyor |
+| AI.3 | Tasarım kararı (ADR): seçilen entegrasyon mimarisi; araç (tool) kataloğu ve API'ye eşlenmesi; kimlik ve kapsamlı yetki (OAuth, izin listesi, ikinci adım); yazma işlemlerinde onay; hız sınırı ve maliyet; denetim kaydı; öneri toplama hattı; katman modeline yerleşimi (kenar, uygulama) | ADR yazıldı; AI.2 kararlarıyla tutarlı | AI.2 | Claude | Opus | bekliyor |
+| AI.4 | Plan: plan, konsept ve tasarım sistemine özellik işlenir (ekranlar, ayarlar, mod ayrımı); geliştirme işleri ve aşaması (hangi aşamaya girdiği) iş listesine yazılır | Plan, konsept, tasarım sistemi güncel (`araclar/tutarlilik.py` temiz); AI geliştirme işleri bu tabloda | AI.3 | Claude | Opus | bekliyor |
+| AI.5 | Geliştirme | AI.4'te tanımlanır | AI.4 | Claude | AI.4'te | bekliyor |
+
 ## Oğuz'un işleri (paralel)
 
 | İş | Tanım | Gerektiği yer | Durum |
@@ -133,3 +145,4 @@ Aşamalar plan › Geliştirme düzeni ve plan › Yol haritasında. Her aşaman
 | O4 | Google Cloud organizasyonu ve faturalandırma | Aşama 5 | bekliyor |
 | O5 | GitHub'da eski 7 dalı silme | – | bekliyor |
 | O6 | Web ödeme sağlayıcısı seçimi (App Store dışındaki abonelik) | T2.28 | bekliyor |
+| O7 | Yapay zekâ ajanı entegrasyonu soruları (AI.2) üzerine tasarım kararı | AI.3 | bekliyor (AI.1 sonrası) |
