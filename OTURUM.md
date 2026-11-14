@@ -410,3 +410,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
 - Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
 - **Sıradaki adım:** PR #16 feature catalogue değişikliklerini WP-03 ile denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
+
+
+## PR #16 remediation — WP-03 claim-safe feature catalogue (15 Kasım 2026)
+
+- Eski PR #16 doğrudan merge edilmedi; değişiklikleri güncel `main` tabanlı temiz branch'e taşındı.
+- FG/fermantasyon bitiş tahminleri model 1 onayı bekliyor; eğri sapma/takılan fermantasyon uyarıları model 2 onayı bekliyor.
+- Cihaz/ekipman geçmişinden otomatik kalibrasyon önerileri model 3 onayı bekliyor; manuel ekipman kalibrasyon kaydı ile analitik model ayrıştırıldı.
+- Professional open API/webhooks Business ikinci sürüm olarak açıkça etiketlendi; Homebrew cihaz webhook kapsamı ayrı tutuldu.
+- Bir aylık deneme süresi kamuya açık ürün vaadi olmaktan çıkarıldı; fiyat/deneme/ücretsiz katman onaysız.
+- Şifreleme ve destek erişimi özellikleri planlanan olarak işaretlendi; canlı güvenlik veya sertifikasyon iddiası yok.
+- Vercel dışındaki PR kontrolleri ayrıca doğrulanacak; Vercel Preview tamamlanmadan merge yapılmayacak.
