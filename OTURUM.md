@@ -196,3 +196,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Değişiklikler Homebrewers/Breweries CTA hedeflerini iyileştirdi; ürün iddiası veya uygulama bağlantısı eklenmedi.
 - Gerçek tarayıcıda responsive görsel QA hâlâ açık; bu ortamda alan adına erişim kısıtı nedeniyle tamamlanmadı.
 - Sıradaki iş: sayfaların gerçek 1440px desktop / 390px mobile görsel QA'sı. Fotoğraflar ve onaylı app/sign-in URL'leri bekleniyor.
+
+**Ürün olgunluğu ve pazarlama iddiaları — 14 Kasım 2026**
+- Ürün deposu read-only incelendi: `web/src/App.tsx` ve iOS `ContentView.swift` hâlâ başlangıç ekranı iskeleti; web istemcisinde çalışan ürün akışı görünmüyor.
+- Hesap motorunda recipe, mash, fermentation, brewery, yeast ve water gRPC servisleri mevcut; ancak API modül kaydı şu an health/meta, events, files ve auth modüllerini içeriyor. API `/v1/version` yanıtında engine sürümü de henüz `null`.
+- Bu nedenle motorun hesaplama kodu yazılmış olsa da bunu ziyaretçinin bugün kullanabileceği uygulama özelliği gibi pazarlamak doğru değil.
+- Pazarlama ana sayfası ve iki audience sayfasına görünür “in development” durumu eklendi; çalışma alanı/araç varmış izlenimi veren ifadeler yumuşatıldı. Audience maddeleri “design priorities” olarak etiketlendi ve kullanılabilir özellik listesi olmadığı belirtildi.
+- Ürün kodu, API, `web/`, iOS ve geliştirme kuyruğu değiştirilmedi. Yalnız `marketing-site/` ve bu oturum notu değişiyor.
