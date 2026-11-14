@@ -114,6 +114,8 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Audience metinleri kesinleşmemiş ürün fonksiyonlarını vaat etmek yerine teknik yaklaşım ve odak alanlarını anlatacak şekilde yumuşatıldı.
 - Fotoğraf yer tutucusu arka planı düz renge çevrildi; görsel slot kimlikleri korundu.
 - README kapsamı iki ayrı audience landing page'ini ve güncel CTA davranışını yansıtacak şekilde güncellendi.
-- GitHub üzerinden dosya içerikleri ve bağlantı hedefleri kontrol edildi. Astro check/build ve gerçek tarayıcıda 1440/390 görsel kontrolü henüz yapılmadı.
-- PR #3 draft; merge edilmedi. Son commit için `Marketing site checks` workflow run #11 tetiklendi; `build` job'ı çalışıyor. Node kurulumu başladı; dependency install, Astro check ve production build henüz sonuçlanmadı.
-- **Sıradaki adım:** workflow tamamlandığında sonucu incele; ardından gerçek tarayıcı önizlemesiyle responsive görsel QA.
+- GitHub üzerinden üç sayfanın içerikleri ve navigasyon hedefleri incelendi. Astro check ve SSG production build GitHub Actions run #11 içinde başarıyla tamamlandı.
+- CI adımları: Node 22 kurulumu, dependency install, `npm run check`, `npm run build` — tümü success.
+- Gerçek tarayıcıda 1440/390 görsel kontrolü henüz yapılmadı; deploy edilmiş preview URL yok.
+- PR #3 draft; merge edilmedi. Kod değişiklikleri test edildi; sonrasında yalnız OTURUM dokümantasyonu güncellendi.
+- **Sıradaki adım:** Cloudflare Pages preview/deploy bağlantısı mevcutsa gerçek responsive QA; yoksa kullanıcıdan hosting/preview erişimi için karar al. Fotoğrafları ve app CTA URL'lerini beklet.
