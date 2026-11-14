@@ -40,3 +40,4 @@ Discovery → sitemap → wireframe → görsel tasarım → içerik → gelişt
 22. [Mevcut site gap analysis ve uygulama sırası — WP-11](22-existing-site-gap-analysis-implementation-sequence.md)
 14. [Feature claim denetimi — WP-03](14-feature-claim-denetimi.md)
 23. [Uygulama spesifikasyonu ve release gate — WP-12](23-implementation-spec-release-gate.md)
+24. [FoamByte derin benchmark ve sayfa iyileştirme kararları — WP-13](24-foambyte-benchmark-derinlemesine.md)
