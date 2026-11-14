@@ -62,6 +62,7 @@
 - Görsel öğeler özgün SVG illüstrasyonlarıdır; gerçek ürün ekranı veya ürün işlevi taklidi değildir.
 - Mevcut tasarım token'ları ve sistem font yığını kullanıldı.
 - GitHub üzerinden dosya ve değişiklik kaydı doğrulandı. Yerel `npm install`, `astro check` ve production build henüz çalıştırılmadı.
+- Yalnız `marketing-site/` değişikliklerinde çalışan GitHub Actions workflow eklendi: Astro check + SSG build. İlk PR workflow sonucu bekleniyor.
 - Gerçek fotoğraf varlıkları, ürün ekranları ve uygulama CTA URL'leri bekliyor.
 
 **Sınır:** Bu pazarlama iş parçacığı `gelistirme/DURUM.md`, `gelistirme/ISLER.md`, ürün kodu, API, Claude geliştirme sırası ve commit'lerini değiştirmez.
