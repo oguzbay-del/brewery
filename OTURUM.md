@@ -253,4 +253,6 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Main marketing CI run #43632202886 ve Pages deployment run #43632202813 yeniden kontrol edildi; build/check ve deploy job'ları success.
 - Gerçek HTTP/browser kontrolü DNS erişimi olmadığı için yapılamadı; görsel QA tamamlandı olarak raporlanmıyor.
 - Bir bağlantı/SEO hatası tespit edilmedi. Sonraki bağımsız SEO iyileştirmesi olarak homepage'e `WebSite`, iki audience sayfasına doğru canonical URL ve geliştirme durumu açıklaması kullanan `WebPage` JSON-LD eklendi. Ürün uygulaması, `web/`, iOS ve API değişmedi.
-- Branch: `marketing/structured-data-seo`; PR CI ve manuel squash merge bekleniyor. Auto-merge kullanılmadı.
+- PR #10 (`marketing/structured-data-seo`) CI run #43632635360 başarıyla tamamlandı: dependency install, Astro/TypeScript check ve static build success. Head SHA `2e137a9568aacdf05c4ebf90944ff0e9b6765fac` doğrulandıktan sonra Auto-merge olmadan manuel squash merge edildi.
+- Merge commit / main HEAD: `667a8554f2161693a3472eef548ade8e6b14d8b9`. PR #10 kapalı ve merged.
+- GitHub connector bu oturumda push-event Actions run listesi veya Pages deployment durumunu sunmuyor; bu nedenle post-merge main CI ve Pages sonucu doğrulanmış sayılmamalı. Gerçek HTTP/browser kontrolü de DNS erişimi nedeniyle yapılamadı.
