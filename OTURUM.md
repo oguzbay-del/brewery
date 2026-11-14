@@ -317,3 +317,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Business sayfasında ERP dışı kapsam (sales, orders, distribution/shipping, keg tracking, CRM, accounting) açıkça korunuyor.
 - PR19/PR16 durumları bu WP branch'inde değiştirilmedi; site kodu ve ürün uygulaması değiştirilmedi.
 - **Sıradaki adım:** WP-05 — sayfa bazında mesaj mimarisi, value proposition/headline seçenekleri, içerik brief'leri, proof requirements, terminoloji ve SEO intent. Final production copy ve canlı site değişikliği henüz yok.
+
+
+## WP-05 — İçerik ve mesaj mimarisi (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/16-content-messaging-architecture.md`.
+- Demleme için core positioning ve message house; Homebrewers ve Professional Breweries için ayrı value proposition, message pillars ve headline yönleri tanımlandı.
+- Homepage ve sitemap'teki her sayfa grubu için content brief, kullanıcı sorusu, mesaj görevi, kanıt ihtiyacı, SEO odağı ve CTA sınırı yazıldı.
+- Teknik iddialar için proof/evidence matrix oluşturuldu: hesaplama doğruluğu, stil desteği, cihaz entegrasyonu, üretim akışı, traceability, security/privacy, regulatory, müşteri sonucu, availability ve pricing.
+- Terminoloji standardı ve US/UK spelling/unit farkları tanımlandı; US default, birimlerin açık gösterimi, US gallon/Imperial gallon ayrımı vurgulandı.
+- SEO topic cluster ve ilk içerik backlog'u önceliklendirildi. Hesaplayıcı sayfaları WP-09/10 doğrulaması olmadan yayınlanmayacak.
+- Final production copy yazılmadı; canlı site, ürün planı ve uygulama kodu değiştirilmedi.
+- **Sıradaki adım:** WP-06 — mevcut marka yönünü koruyarak visual direction ve design system specification (layout, typography, tokens, grid, component inventory, responsive, accessibility, image slots). Kodlama/uygulama kapısı hâlâ kapalı.
