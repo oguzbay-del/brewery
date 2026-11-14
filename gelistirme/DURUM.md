@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.11 giriş (yarıda kaldı, sürdürülecek); T2.8 vergi zinciri ve F2.1 veri modeli incelemesi (Fable, yarıda kaldı) açık. T2.11 bitince T2.12, T2.13 açılır. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
+**Sıradaki iş:** T2.11 giriş (yarıda kaldı, sürdürülecek); T2.8 vergi zinciri alt ajanda. F2.1 bitti (0 kritik, 13 önemli, 33 küçük, 8 karar konusu): sıradaki T2.9 bulgu düzeltmesi. T2.11 bitince T2.12, T2.13 açılır. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
