@@ -105,6 +105,128 @@ fn run_tax_line(c: &Case) {
     check_result(c, &bt::tax_line(&p));
 }
 
+fn bands_of(v: Option<&Value>) -> Vec<bt::Band> {
+    v.map_or_else(Vec::new, |list| {
+        list.as_array()
+            .unwrap()
+            .iter()
+            .map(|b| bt::Band {
+                upper: if b[0].is_null() {
+                    None
+                } else {
+                    Some(dec_str(&b[0]))
+                },
+                rate: dec_str(&b[1]),
+            })
+            .collect()
+    })
+}
+
+fn chain_step(v: &Value) -> Result<bt::ChainStep, engine::Error> {
+    let get_dec = |k: &str| v.get(k).map(dec_str);
+    let conditions = v.get("indirim_kosul").filter(|k| !k.is_null());
+    Ok(bt::ChainStep {
+        position: u32::try_from(v["konum"].as_i64().unwrap()).unwrap_or(0),
+        rate_class: v["sinif"].as_str().unwrap().to_owned(),
+        valid_from: v["baslangic"].as_str().unwrap().to_owned(),
+        valid_to: v["bitis"].as_str().map(str::to_owned),
+        method: bt::Method::parse(v["yontem"].as_str().unwrap())?,
+        rate: get_dec("rate"),
+        bands: bands_of(v.get("bands")),
+        tiers: bands_of(v.get("tiers")),
+        inclusive: v.get("inclusive").map(|b| b.as_bool().unwrap()),
+        plato_trunc: v.get("plato_trunc").is_none_or(|b| b.as_bool().unwrap()),
+        discount_per_lpa: get_dec("discount_per_lpa").unwrap_or(Decimal::ZERO),
+        discount_conditions: bt::DiscountConditions {
+            abv_below: conditions.and_then(|k| k.get("abv_alti")).map(dec_str),
+            ytd_hl_below: conditions.and_then(|k| k.get("ytd_hl_alti")).map(dec_str),
+        },
+        input: match v.get("input_dp") {
+            None => bt::InputRounding::Undefined,
+            Some(Value::Null) => bt::InputRounding::NoRounding,
+            Some(n) => bt::InputRounding::Places {
+                dp: u32::try_from(n.as_i64().unwrap()).unwrap(),
+                mode: bt::RoundMode::parse(v["input_mode"].as_str().unwrap()).unwrap(),
+            },
+        },
+    })
+}
+
+fn run_chain(c: &Case) {
+    let error = || c.check(&json!({ "hata": "ValueError" }));
+    let Ok(steps) = c
+        .v("steps")
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(chain_step)
+        .collect::<Result<Vec<_>, _>>()
+    else {
+        return error();
+    };
+    let class = c.v("sinif").as_str().unwrap();
+    let (start, end) = (
+        c.v("baslangic").as_str().unwrap(),
+        c.v("bitis").as_str().unwrap(),
+    );
+    if c.fonk == "select_chain" {
+        match bt::select_chain(&steps, class, start, end) {
+            Ok(sel) => c.check(&json!(sel.iter().map(|a| a.position).collect::<Vec<_>>())),
+            Err(_) => error(),
+        }
+        return;
+    }
+    let lines: Vec<bt::ChainLine> = c
+        .v("satirlar")
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|l| bt::ChainLine {
+            volume_l: dec_str(&l["volume_l"]),
+            abv_pct: l.get("abv").map(dec_str),
+            plato_p: l.get("plato").map(dec_str),
+        })
+        .collect();
+    let opt = |x: Option<Decimal>| x.map_or(Value::Null, dec_json);
+    match bt::tax_chain(&steps, class, start, end, &lines, dec(c, "ytd")) {
+        Ok(r) => {
+            let lines: Vec<Value> = r
+                .lines
+                .iter()
+                .map(|l| {
+                    let parts: Vec<Value> = l
+                        .steps
+                        .iter()
+                        .map(|a| {
+                            json!({
+                                "konum": a.position,
+                                "yontem": method_name(a.method),
+                                "vergi": dec_json(a.detail.tax),
+                                "lpa": opt(a.detail.lpa),
+                                "oran": opt(a.detail.rate),
+                                "indirim_uygulandi": a.discount_applied,
+                            })
+                        })
+                        .collect();
+                    json!({"ytd_basi": dec_json(l.ytd_start_hl), "vergi": dec_json(l.tax), "adimlar": parts})
+                })
+                .collect();
+            c.check(&json!({"toplam": dec_json(r.total), "satirlar": lines}));
+        }
+        Err(_) => error(),
+    }
+}
+
+fn method_name(m: bt::Method) -> &'static str {
+    match m {
+        bt::Method::Volume => "hacim",
+        bt::Method::PureAlcohol => "saf_alkol",
+        bt::Method::HlPlato => "hl_plato",
+        bt::Method::PlatoBand => "plato_bandi",
+        bt::Method::TieredVolume => "kademeli_hacim",
+    }
+}
+
 #[test]
 fn parite_09() {
     ortak::run("09", |c| {
@@ -134,6 +256,7 @@ fn parite_09() {
                 }));
             }
             "tax_line" | "tax_line_detail" => run_tax_line(c),
+            "select_chain" | "tax_chain" => run_chain(c),
             "round_in" => {
                 let rounding = if c.v("dp").is_null() {
                     None

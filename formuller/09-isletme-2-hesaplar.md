@@ -92,6 +92,17 @@ Mevzuat raporu bu hesabı kullanır.
 - **Karar (T1.12 D2/D13):** `spund` sonlu olmayan girdi ya da FG ≤ 0'da hata verir (`Error::InvalidInput`). Tank basınç sınırı karşılaştırması `1e-9` psi mutlak toleranslıdır (`psi > sınır + 1e-9`); sınıra eşit ayar engellenmez.
 - **Uç durumlar:** son bant/kademe açık uçlu olmalıdır (üst sınır `None`); aksi hâlde bant bulunamazsa ya da son kademenin üstünde hacim kalırsa motor hata verir, sessizce 0 vergi hesaplamaz. İndirim oranı oranı aşamaz (`max(oran − indirim, 0)`); satır vergisi hiçbir zaman negatif olmaz.
 
+### 2.2a Yöntem zinciri, yürürlük ve yıl başından hacim [tasarım, T2.8]
+
+Motor oran tablosu içermez; veri tablosu satırlarını **girdi** olarak alır. Girdi modeli DB satırlarıyla bire birdir (`tax_rate_tables` + `tax_rate_bands`, adr/0007 T2.7 notu 6): `rate_class`, `chain_position`, yürürlük `[başlangıç, bitiş)`, `method`, oran, bantlar, kademeler, bant sınırı türü, girdi yuvarlaması, indirim (`discount_rate` + `discount_conditions`).
+
+- **Tablo seçimi (yürürlük tarihi):** motor adayların içinden `rate_class` eşleşen ve dönemin **ilk gününde** yürürlükte olanları alır (`başlangıç ≤ gün < bitiş`; bitiş günü dahil değildir, yürürlük günü yeni sürümdür). Dönemin **son gününde** seçilen küme farklıysa (bir tablo dönem içinde başlıyor ya da bitiyor) motor **hata** verir: dönem bölünür, sessizce tek oran uygulanmaz. Seçim boşsa, `chain_position` < 1 ya da aynı konumda iki satır yürürlükteyse, yürürlük aralığı boşsa ya da tarih biçimi `YYYY-AA-GG` değilse hata. Aday sırası önemsizdir.
+- **Zincir:** seçilen satırlar `chain_position` artan sırayla adımlardır. **Karar (T2.8): adımlar toplanır.** Her adım kendi yöntemiyle (§2.2; bant, kademe ya da tek oran) bir **bileşen vergisi** hesaplar; satır vergisi bileşenlerin toplamıdır (yuvarlanmamış). Sıra çıktı sırasını ve raporu belirler; bileşenler birbirinin girdisi değildir. Para yuvarlaması bütün zincir için tektir: seçilen satırlar para birimi, vergi doğuş anı, düşülecek türler ve para yuvarlama kuralında (hane, mod, satır/toplam) **aynı** olmalıdır, değilse servis hata verir. Satır "doğrulandı" yalnız seçilen **her** satır doğrulandıysa olur.
+- **İndirim ve koşulları:** indirim yalnız `saf_alkol` adımında vardır (LPA başına tutar; oranı aşamaz, §2.2). `discount_conditions` ile koşullanabilir; verilen **her** koşul sağlanmalıdır, biri sağlanmazsa indirim uygulanmaz ve adım `indirim_uygulandi = false` döner: `abv_alti` (girdi yuvarlaması sonrası ABV **<** sınır) ve `ytd_hl_alti` (satır başındaki `ytd_hl` **<** sınır, hL). Koşul tanımlı ama girdisi yoksa (ABV) ya da indirim `saf_alkol` dışı bir yöntemdeyse ya da negatifse hata. İndirim satırı **bölmez**: eşik satır başındaki `ytd_hl` ile karşılaştırılır (kademeler ise satırı böler).
+- **`ytd_hl` (yıl başından hacim):** aynı oran sınıfında, yılın başından dönemin başına dek **vergilenen** hacim, hL (≥ 0). Çağıran (api) ambalaj ve transfer/çıkış kayıtlarından toplar; tabloda tutulmaz. Dönemin satırları verilen sırayla işlenir ve her satırın vergilenecek hL'si sonrakinin başlangıcına eklenir: `ytd_{i+1} = ytd_i + litre_i / 100`. Kademe ve `ytd_hl_alti` satır başındaki değeri okur. Satır sırası hangi ürünün ucuz kademeye düştüğünü belirler; sıra çağıranındır. Sıfır hacimli satır `ytd`'yi değiştirmez.
+- **Birim eşlemesi (DB → motor):** `input_rounding` `none` → yuvarlama yok, `up` → `ROUND_UP`, `down` → `ROUND_DOWN`, `nearest` → `ROUND_HALF_UP` (ABV ve °P ≥ 0 olduğundan `up` = `ROUND_CEILING`); `rounding_mode` `half_up`, `half_even`, `up`, `down` → `ROUND_HALF_UP`, `ROUND_HALF_EVEN`, `ROUND_UP`, `ROUND_DOWN`; `bounds_inclusive` → bant sınırı türü; `base_rate` → tek oran; `tax_rate_bands.upper_bound` boş → açık uç.
+- **Kapsam dışı (açık):** yüzde indirimi (İsviçre: her 1 000 hL için %1), bir adımın çıktısını sonrakine veren (art arda) bileşim, üretim hacmine bağlı UK küçük üretici formülü. Bunlar gerçek oranlar doğrulanınca ayrı yöntem olarak eklenir (§5).
+
 ### 2.3 Rapor çıktısı [tasarım]
 - Dönem (ay veya çeyrek), ürün, ambalaj tipi (fıçı/şişe/kutu) ve vergi satırı bazında hacim, ABV, °P, LPA, oran ve tutar.
 - **Karar (T1.17): LPA ve uygulanan oran motordan gelir.** `tax_line_detail` vergiyle birlikte LPA'yı (yalnız `saf_alkol`; diğer yöntemlerde boş) ve satıra uygulanan oranı döndürür. `saf_alkol` oranı indirim sonrası net orandır (`vergi = LPA × oran`); `hacim` ve `hl_plato` oranı 0'a kenetlenir; `plato_bandi` bant oranıdır; `kademeli_hacim` birden çok oran uyguladığı için oran boştur. Rapor satırı bu iki değeri olduğu gibi gösterir, istemci yeniden hesaplamaz.
@@ -176,6 +187,9 @@ ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0
 | 2.11 | `kademeli_hacim`, tek kademe 100 hL'ye kadar 3.0, yıl içi 95 hL, yeni 20 hL | hata (15 hL kademesiz; F1 kararı 5: son kademe açık uçlu girilir, kapalıysa aşım hata) |
 | 2.13 | 20 hL, %5.0, `saf_alkol` oran 21.78, girdi yuvarlama kuralı yazılmamış | hata (kural tanımsız) |
 | 2.13b | aynı, `input_dp = None` (açıkça yuvarlama yok) | 2 178.00 |
+| 2.15 | Zincir (sentetik oran): 1 `saf_alkol` bantlı + indirim 5.0 (koşul: ABV < 8.5 ve `ytd_hl` < 100), 2 `kademeli_hacim` (100 hL: 3.0, 1000 hL: 5.0, sonra 7.5), 3 `hacim` 1.5; 20 hL, %5.0 | `ytd` 0: 1 678.00 + 60.00 + 30.00 = **1 768.00**; `ytd` 90 (kademe 90 → 110 hL bir satırda): 1 788.00; `ytd` 100: indirim yok (< sınır), 2 308.00; ABV 8.5: indirim yok, üçüncü bant |
+| 2.16 | Aynı zincir, üç satır (10 hL, 10 hL, 30 hL %4.0), `ytd` 85 | satır başları 85 → 95.0 → 105.0 hL; vergiler 884.00, 894.00 (kademe geçişi), 2 808.60 (indirim bitti); toplam 4 586.60 |
+| 2.17 | Yürürlük: `hacim` 1000.0 `[2026-01-01, 2026-07-01)`, 1200.0 `[2026-07-01, süresiz)`; 20 hL | 1 Haz–30 Haz: 20 000.00; **1 Tem**–31 Tem: 24 000.00; 15 Haz–15 Tem ve yürürlük öncesi dönem: hata |
 | 2.14 | `row_status()`; `row_status("gov.uk SPR kılavuzu", "2026-10-31")` | doğrulanacak; doğrulandı |
 | 3.1 | hedef 2.5 vol, 12 °C, FG 1.010 | kalıntı 1.12 vol; 2.71 g/L gerekli; **kapama SG 1.0128** (2.8 puan önce); ayar 19.5 psi = 1.35 bar |
 | 3.2 | hedef 2.6 vol, 18 °C, FG 1.012 | kalıntı 0.92 vol; 3.31 g/L; kapama SG 1.0154 (3.4 puan); 27.1 psi = 1.87 bar |
@@ -183,6 +197,7 @@ ayar basıncı = CO2_pressure(T_fermantasyon, hedef vol)   (psig; bar = psi · 0
 ## 5. Açık noktalar
 
 - **Türkiye ÖTV:** biranın güncel (Temmuz 2026 sonrası) maktu tutarı ve tutarın birimi Resmi Gazete'den alınacak. Beyanname dönemi ve verginin doğduğu an (ÖTV Kanunu) da tanımlanacak.
+- **Zincir (T2.8):** yüzde indirimi (İsviçre) ve art arda bileşim (§2.2a) gerçek oran tabloları doğrulanınca eklenir; vergi oranı tohumu (`tax_rate_tables` satırları) resmi kaynaktan, `unverified` olarak yazılır.
 - **Birleşik Krallık:** küçük üretici indirimi bir formülle hesaplanır, sabit bir indirim değildir. gov.uk kılavuzundaki hesap ayrı bir yöntem olarak eklenecek.
 - **Almanya:** kademeli oran tablosu ve °P'nin kesirli kısmının ele alınışı yasa metninden alınacak.
 - **Etiket:** protein varsayılanı ve AB yuvarlama kılavuzu kontrol edilecek. Türkiye yönetmeliğiyle karşılaştırılacak.

@@ -140,6 +140,88 @@ def _tax_line(method, V_L, abv=None, plato=None, rate=None, bands=None, tiers=No
         return tax, None, None
     raise ValueError(method)
 
+# ---------------------------------------------------------------- 2b. Yöntem zinciri (T2.8, 09 §2.2a)
+# Veri tablosu satırları (tax_rate_tables + tax_rate_bands, adr/0007 T2.7 notu 6) motora girdi olarak verilir; motor
+# tablo içermez. Zincir adımı = bir tablo satırı. Her adım kendi yöntemiyle bir bileşen vergisi hesaplar (_tax_line);
+# satır vergisi bileşenlerin toplamıdır (yuvarlanmamış). Sıra `konum` (chain_position) iledir ve çıktı sırasını belirler.
+def _tarih_dogru(t):
+    if not (isinstance(t, str) and len(t) == 10 and t[4] == "-" and t[7] == "-" and (t[:4] + t[5:7] + t[8:]).isdigit()):
+        raise ValueError("tarih YYYY-AA-GG olmalı: %r" % (t,))
+
+def _gecerli(adim, tarih):
+    """Yürürlük [başlangıç, bitiş): başlangıç ≤ tarih < bitiş (bitiş None: süresiz). ISO metin karşılaştırması."""
+    return adim["baslangic"] <= tarih and (adim["bitis"] is None or tarih < adim["bitis"])
+
+def select_chain(adimlar, sinif, baslangic, bitis):
+    """Dönemin zinciri: `sinif` oran sınıfında, dönemin İLK gününde yürürlükte olan adımlar, `konum`a göre artan.
+    Dönemin son gününde seçilen küme farklıysa (dönem içinde bir tablo başlıyor/bitiyor) hata: sessizce yanlış oran
+    yok, dönem bölünmelidir. Seçim boşsa, konum tekrarlıysa (< 1 ya da çakışan yürürlük) ya da aralık boşsa hata."""
+    _tarih_dogru(baslangic); _tarih_dogru(bitis)
+    if baslangic > bitis: raise ValueError("dönem başlangıcı bitişten sonra")
+    def sec(t):
+        out = []
+        for a in adimlar:
+            if a["sinif"] != sinif: continue
+            _tarih_dogru(a["baslangic"])
+            if a["bitis"] is not None:
+                _tarih_dogru(a["bitis"])
+                if a["bitis"] <= a["baslangic"]: raise ValueError("yürürlük aralığı boş")
+            if not _gecerli(a, t): continue
+            if a["konum"] < 1: raise ValueError("zincir konumu ≥ 1 olmalı")
+            out.append(a)
+        konumlar = [a["konum"] for a in out]
+        if len(set(konumlar)) != len(konumlar): raise ValueError("aynı konumda çakışan yürürlük")
+        return sorted(out, key=lambda a: a["konum"])
+    ilk, son = sec(baslangic), sec(bitis)
+    if not ilk: raise ValueError("dönem başında yürürlükte tablo yok")
+    if len(ilk) != len(son) or any(x is not y for x, y in zip(ilk, son)):
+        raise ValueError("dönem içinde oran tablosu değişiyor: dönemi böl")
+    return ilk
+
+def _indirim(adim, abv, ytd_basi):
+    """Dönüş: (uygulanacak indirim PB/LPA, uygulandı mı). İndirim yalnız `saf_alkol`; koşullar (hepsi sağlanmalı):
+    `abv_alti` (girdi yuvarlaması sonrası ABV < sınır), `ytd_hl_alti` (satır başındaki yıl başından hacim < sınır;
+    satır bölünmez). Koşul tanımlı ama ilgili girdi yoksa hata."""
+    ind = d(adim.get("discount_per_lpa", 0))
+    if ind < 0: raise ValueError("indirim negatif olamaz")
+    if ind == 0: return D(0), False
+    if adim["yontem"] != "saf_alkol": raise ValueError("indirim yalnız saf_alkol yönteminde")
+    kosul = adim.get("indirim_kosul") or {}
+    if "abv_alti" in kosul:
+        if abv is None or "input_dp" not in adim: raise ValueError("indirim koşulu ABV ve girdi yuvarlama kuralı ister")
+        if not _round_in(abv, adim["input_dp"], adim.get("input_mode", ROUND_HALF_UP)) < d(kosul["abv_alti"]):
+            return D(0), False
+    if "ytd_hl_alti" in kosul and not d(ytd_basi) < d(kosul["ytd_hl_alti"]):
+        return D(0), False
+    return ind, True
+
+def tax_chain(adimlar, sinif, baslangic, bitis, satirlar, ytd=0):
+    """Dönemin zincirini seçer (select_chain) ve satırların vergisini hesaplar. satirlar = [{"volume_l", "abv", "plato"}]
+    verilen sırayla işlenir; `ytd` = yıl başından dönem başına dek vergilenen hL (aynı oran sınıfı); her satırın hL'si
+    bir sonrakinin ytd'sine eklenir: ytd_{i+1} = ytd_i + hL_i (kademe/indirim eşiği satırlar arasında taşınır).
+    Satır vergisi = adım bileşenlerinin toplamı (yuvarlanmamış); dönüş toplamı satır vergilerinin toplamıdır."""
+    sec = select_chain(adimlar, sinif, baslangic, bitis)
+    if d(ytd) < 0: raise ValueError("ytd negatif olamaz")
+    toplam, basi, out = D(0), d(ytd), []
+    for s in satirlar:
+        vergi, adimlar_out = D(0), []
+        for a in sec:
+            ind, uygulandi = _indirim(a, s.get("abv"), basi)
+            kw = dict(rate=a.get("rate"), bands=a.get("bands"), tiers=a.get("tiers"), ytd=basi,
+                      discount_per_lpa=ind, plato_trunc=a.get("plato_trunc", True), inclusive=a.get("inclusive"),
+                      abv=s.get("abv"), plato=s.get("plato"), input_mode=a.get("input_mode", ROUND_HALF_UP))
+            kw = {k: v for k, v in kw.items() if v is not None}
+            if "input_dp" in a: kw["input_dp"] = a["input_dp"]
+            t, lpa, oran = _tax_line(a["yontem"], s["volume_l"], **kw)
+            vergi = vergi + t
+            adimlar_out.append({"konum": a["konum"], "yontem": a["yontem"], "vergi": t + D(0),
+                                "lpa": None if lpa is None else lpa + D(0),
+                                "oran": None if oran is None else oran + D(0), "indirim_uygulandi": uygulandi})
+        out.append({"ytd_basi": basi, "vergi": vergi + D(0), "adimlar": adimlar_out})
+        toplam = toplam + vergi
+        basi = basi + d(s["volume_l"]) / 100
+    return {"toplam": toplam + D(0), "satirlar": out}
+
 # ---------------------------------------------------------------- 3. Spunding
 PSI_BAR = 0.0689475729316836  # 1 psi = 6894.757293168361 Pa (tam), bar karşılığı; motorda `units::PSI_BAR` (T1.17)
 CO2_G_PER_VOL = 44.01/22.414  # = 1.9635 g/L, ideal gaz, 0 °C 1 atm [kesin; 10 ve 11 ile tek sabit, F1 karar 9]

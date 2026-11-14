@@ -22,7 +22,7 @@
 
 Ayrıntı `gelistirme/raporlar/T1.11-motor-eksikleri.md`.
 
-- 09 yöntem zinciri (bant + kademe + indirim) ve `ytd_hl` taşınması: veri tablosu tasarımıyla Aşama 2'de.
+- 09 yöntem zinciri (bant + kademe + indirim) ve `ytd_hl` taşınması: veri tablosu tasarımıyla Aşama 2'de (T2.8 ile kapandı: 09 §2.2a).
 - Elektrikli kaynatmada güç × süre enerji hesabı: istekte `additional_kwh`; ihtiyaç İşletme ekranında netleşir (Aşama 6).
 - 07 C10'un ikinci yarısı (ızgara kenarına yapışan aralığın açık uçlu gösterimi), Tilt aralık uyarısı ve §2.2 sıcaklık düzeltmesi.
 - Sparge hedef pH varsayılanı (6.0, doğrulanacak); 4–8 kodlu asitlerde mash miktarı tanımsız.

@@ -14,10 +14,10 @@ use tonic_types::StatusExt;
 use super::*;
 use crate::proto::{
     BlendComponent, CostElectric, CostEnergy, CostGas, CostIngredient, CostWater, DiastaticGrain,
-    HemocytometerCount, StainCount, StockLot, TaxBand, TaxInputRounding, TaxMethod, TaxProductLine,
-    TaxRateRow, TaxRoundMode, TaxRoundingScope, TaxRowStatus, TaxTrigger as ProtoTrigger,
-    TaxVolumeEvents, VolumeEvent as ProtoEvent, VolumeEventKind as ProtoKind,
-    tax_input_rounding::Kind, tax_product_line::Volume,
+    HemocytometerCount, StainCount, StockLot, TaxBand, TaxDiscountConditions, TaxInputRounding,
+    TaxMethod, TaxProductLine, TaxRateRow, TaxRoundMode, TaxRoundingScope, TaxRowStatus,
+    TaxTrigger as ProtoTrigger, TaxVolumeEvents, VolumeEvent as ProtoEvent,
+    VolumeEventKind as ProtoKind, tax_input_rounding::Kind, tax_product_line::Volume,
 };
 
 const H: BreweryHandler = BreweryHandler;
@@ -1235,6 +1235,7 @@ fn tax_req(row: TaxRateRow, lines: Vec<TaxProductLine>) -> TaxReportRequest {
         period_start: "2026-04-01".into(),
         period_end: "2026-04-30".into(),
         lines,
+        ..Default::default()
     }
 }
 
@@ -1662,4 +1663,288 @@ async fn tax_engine_errors_map_to_status() {
     r.rate = Some("21.78".into());
     let e = tax(tax_req(r, vec![direct("a", "10")])).await.unwrap_err();
     assert_eq!(e.code(), Code::InvalidArgument);
+}
+
+// ------------------------------------------------------------------------ TaxReport: chain (T2.8)
+
+fn step(
+    method: TaxMethod,
+    position: u32,
+    valid: (&str, Option<&str>),
+    config: impl FnOnce(&mut TaxRateRow),
+) -> TaxRateRow {
+    let mut r = row(method);
+    r.rate_class = "beer".into();
+    r.chain_position = position;
+    r.valid_from = valid.0.into();
+    r.valid_to = valid.1.map(Into::into);
+    config(&mut r);
+    r
+}
+
+/// Synthetic chain of the 09.json chain vectors: pure-alcohol bands with a conditional relief,
+/// tiered volume, flat volume (all rates are examples, not real rates).
+fn chain_rows() -> Vec<TaxRateRow> {
+    let from = ("2026-01-01", None);
+    vec![
+        step(TaxMethod::Volume, 3, from, |r| r.rate = Some("1.5".into())),
+        step(TaxMethod::PureAlcohol, 1, from, |r| {
+            r.bands = vec![
+                band(Some("3.5"), "9.27"),
+                band(Some("8.5"), "21.78"),
+                band(None, "29.54"),
+            ];
+            r.relief_per_lpa = "5.0".into();
+            r.discount_conditions = Some(TaxDiscountConditions {
+                abv_below: Some("8.5".into()),
+                ytd_hl_below: Some("100".into()),
+            });
+        }),
+        step(TaxMethod::TieredVolume, 2, from, |r| {
+            r.tiers = vec![
+                band(Some("100"), "3.0"),
+                band(Some("1000"), "5.0"),
+                band(None, "7.5"),
+            ];
+        }),
+    ]
+}
+
+fn chain_line(volume_l: &str, abv: &str) -> TaxProductLine {
+    TaxProductLine {
+        abv_pct: Some(abv.into()),
+        ..direct("p", volume_l)
+    }
+}
+
+fn chain_req(chain: Vec<TaxRateRow>, ytd: &str, lines: Vec<TaxProductLine>) -> TaxReportRequest {
+    TaxReportRequest {
+        row: None,
+        chain,
+        ytd_hl: ytd.into(),
+        ..tax_req(row(TaxMethod::Volume), lines)
+    }
+}
+
+#[tokio::test]
+async fn tax_chain_matches_vectors() {
+    // 09.json chain "yıl başı": 1678.0000 + 60.00 + 30.00; steps in chain_position order.
+    let res = tax(chain_req(
+        chain_rows(),
+        "0",
+        vec![chain_line("2000.0", "5.0")],
+    ))
+    .await
+    .unwrap();
+    let l = &res.lines[0];
+    assert_eq!(l.tax_unrounded, "1768.0000");
+    assert_eq!(l.tax, "1768.00");
+    assert_eq!(res.total_tax, "1768.00");
+    assert_eq!(l.ytd_start_hl.as_deref(), Some("0"));
+    assert_eq!((l.lpa.clone(), l.applied_rate.clone()), (None, None));
+    let parts: Vec<(u32, &str, bool)> = l
+        .steps
+        .iter()
+        .map(|s| (s.position, s.tax.as_str(), s.discount_applied))
+        .collect();
+    assert_eq!(
+        parts,
+        vec![
+            (1, "1678.0000", true),
+            (2, "60.00", false),
+            (3, "30.00", false)
+        ]
+    );
+    assert_eq!(l.steps[0].lpa.as_deref(), Some("100.00"));
+    assert_eq!(l.steps[0].applied_rate.as_deref(), Some("16.78"));
+    assert_eq!(l.steps[0].method, TaxMethod::PureAlcohol as i32);
+    assert_eq!(l.steps[1].applied_rate, None);
+    assert_eq!(res.row_status, TaxRowStatus::Unverified as i32);
+
+    // Tier crossing inside one batch (90 -> 110 hL), relief still on (ytd 90 < 100).
+    let res = tax(chain_req(
+        chain_rows(),
+        "90",
+        vec![chain_line("2000.0", "5.0")],
+    ))
+    .await
+    .unwrap();
+    assert_eq!(res.lines[0].tax_unrounded, "1788.0000");
+    // ytd at the limit: relief off, second tier.
+    let res = tax(chain_req(
+        chain_rows(),
+        "100",
+        vec![chain_line("2000.0", "5.0")],
+    ))
+    .await
+    .unwrap();
+    assert_eq!(res.lines[0].tax_unrounded, "2308.0000");
+    assert!(!res.lines[0].steps[0].discount_applied);
+}
+
+#[tokio::test]
+async fn tax_chain_carries_ytd_between_lines() {
+    // 09.json chain "ytd satırlar arasında taşınır": start 85 -> 95.0 -> 105.0 hL.
+    let lines = vec![
+        chain_line("1000.0", "5.0"),
+        chain_line("1000.0", "5.0"),
+        chain_line("3000.0", "4.0"),
+    ];
+    let res = tax(chain_req(chain_rows(), "85", lines)).await.unwrap();
+    let starts: Vec<_> = res
+        .lines
+        .iter()
+        .map(|l| l.ytd_start_hl.clone().unwrap())
+        .collect();
+    assert_eq!(starts, ["85", "95.0", "105.0"]);
+    let taxes: Vec<_> = res.lines.iter().map(|l| l.tax_unrounded.as_str()).collect();
+    assert_eq!(taxes, ["884.0000", "894.0000", "2808.6000"]);
+    assert_eq!(res.total_tax, "4586.60");
+    assert!(res.lines[1].steps[0].discount_applied);
+    assert!(!res.lines[2].steps[0].discount_applied);
+}
+
+#[tokio::test]
+async fn tax_chain_selects_by_effective_date_and_class() {
+    let versions = |old: &str, new: &str| {
+        vec![
+            step(
+                TaxMethod::Volume,
+                1,
+                ("2026-01-01", Some("2026-07-01")),
+                |r| {
+                    r.rate = Some(old.into());
+                },
+            ),
+            step(TaxMethod::Volume, 1, ("2026-07-01", None), |r| {
+                r.rate = Some(new.into());
+            }),
+            step(TaxMethod::Volume, 2, ("2026-01-01", None), |r| {
+                r.rate_class = "draught".into();
+                r.rate = Some("1.0".into());
+            }),
+        ]
+    };
+    let at = |start: &str, end: &str| TaxReportRequest {
+        period_start: start.into(),
+        period_end: end.into(),
+        ..chain_req(
+            versions("1000.0", "1200.0"),
+            "",
+            vec![direct("p", "2000.0")],
+        )
+    };
+    let r = tax(at("2026-06-01", "2026-06-30")).await.unwrap();
+    assert_eq!(r.lines[0].tax_unrounded, "20000.00");
+    // Effective day: the new version applies from 2026-07-01 on.
+    let r = tax(at("2026-07-01", "2026-07-31")).await.unwrap();
+    assert_eq!(r.lines[0].tax_unrounded, "24000.00");
+    assert_eq!(r.lines[0].steps.len(), 1);
+    // Table changes inside the period, no table in force, other class: errors, never a guess.
+    for (s, e) in [("2026-06-15", "2026-07-15"), ("2025-12-01", "2025-12-31")] {
+        let err = tax(at(s, e)).await.unwrap_err();
+        assert_eq!(err.code(), Code::InvalidArgument, "{s}..{e}");
+    }
+    let mut other = at("2026-06-01", "2026-06-30");
+    other.rate_class = "draught".into();
+    let r = tax(other).await.unwrap();
+    assert_eq!(r.lines[0].tax_unrounded, "20.00");
+    other_class_unknown().await;
+}
+
+async fn other_class_unknown() {
+    let mut req = chain_req(chain_rows(), "", vec![direct("p", "10")]);
+    req.rate_class = "cider".into();
+    assert_eq!(tax(req).await.unwrap_err().code(), Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn tax_chain_rejects_bad_requests() {
+    let line = || vec![chain_line("2000.0", "5.0")];
+    let mut cases: Vec<(&str, TaxReportRequest)> = Vec::new();
+    // Row and chain are exclusive; one of them is needed.
+    cases.push((
+        "chain",
+        TaxReportRequest {
+            row: Some(row(TaxMethod::Volume)),
+            ..chain_req(chain_rows(), "0", line())
+        },
+    ));
+    // The request ytd_hl belongs to the chain; the line's own one is for a single row.
+    cases.push((
+        "ytd_hl",
+        TaxReportRequest {
+            chain: Vec::new(),
+            row: Some({
+                let mut r = row(TaxMethod::Volume);
+                r.rate = Some("1".into());
+                r
+            }),
+            ..chain_req(chain_rows(), "5", line())
+        },
+    ));
+    cases.push((
+        "lines[0].ytd_hl",
+        chain_req(
+            chain_rows(),
+            "0",
+            vec![TaxProductLine {
+                ytd_hl: "5".into(),
+                ..chain_line("2000.0", "5.0")
+            }],
+        ),
+    ));
+    cases.push(("ytd_hl", chain_req(chain_rows(), "-1", line())));
+    // Rows in force disagree on the currency.
+    let mut mixed = chain_rows();
+    mixed[0].currency = "EUR".into();
+    cases.push(("chain", chain_req(mixed, "0", line())));
+    // Bad validity date and bad enum in a candidate row.
+    let mut bad_date = chain_rows();
+    bad_date[0].valid_from = "2026-13-01".into();
+    cases.push(("chain[0].valid_from", chain_req(bad_date, "0", line())));
+    let mut bad_enum = chain_rows();
+    bad_enum[1].method = 0;
+    cases.push(("chain[1].method", chain_req(bad_enum, "0", line())));
+    for (field, req) in cases {
+        let e = tax(req).await.unwrap_err();
+        assert_eq!(e.code(), Code::InvalidArgument, "{field}");
+        assert_eq!(field_of(&e), field);
+    }
+    // Duplicate positions and position 0 come from the engine.
+    let mut twice = chain_rows();
+    twice[0].chain_position = 1;
+    let mut zero = chain_rows();
+    zero[0].chain_position = 0;
+    for rows in [twice, zero] {
+        let e = tax(chain_req(rows, "0", line())).await.unwrap_err();
+        assert_eq!(e.code(), Code::InvalidArgument);
+    }
+    // Relief without ABV input fails (condition needs it); a line with ABV passes.
+    let e = tax(chain_req(chain_rows(), "0", vec![direct("p", "2000.0")]))
+        .await
+        .unwrap_err();
+    assert_eq!(e.code(), Code::InvalidArgument);
+}
+
+#[tokio::test]
+async fn tax_chain_status_needs_every_step_verified() {
+    let mut rows = chain_rows();
+    for r in &mut rows {
+        r.official_source = Some("gov.uk".into());
+        r.source_date = Some("2026-10-31".into());
+    }
+    let res = tax(chain_req(
+        rows.clone(),
+        "0",
+        vec![chain_line("2000.0", "5.0")],
+    ))
+    .await
+    .unwrap();
+    assert_eq!(res.row_status, TaxRowStatus::Verified as i32);
+    rows[2].source_date = None;
+    let res = tax(chain_req(rows, "0", vec![chain_line("2000.0", "5.0")]))
+        .await
+        .unwrap();
+    assert_eq!(res.row_status, TaxRowStatus::Unverified as i32);
 }

@@ -556,6 +556,25 @@ message TaxRateRow {
   // Official source and its date; both non-empty make the row VERIFIED.
   optional string official_source = 16;
   optional string source_date = 17;
+  // Chain fields (spec 09 §2.2a; DB: `tax_rate_tables`). Used when the row is a candidate in
+  // `TaxReportRequest.chain`; ignored for the single `row`.
+  // `rate_class` ("beer", ...): the request selects rows of one class.
+  string rate_class = 18;
+  // `chain_position` (at least 1): the order of the steps; unique among the rows in force.
+  uint32 chain_position = 19;
+  // In force `[valid_from, valid_to)`: ISO dates; `valid_to` unset = open-ended.
+  string valid_from = 20;
+  optional string valid_to = 21;
+  // When `relief_per_lpa` applies; unset = always.
+  TaxDiscountConditions discount_conditions = 22;
+}
+
+// Conditions of a row's relief (DB `discount_conditions`); every given condition must hold.
+message TaxDiscountConditions {
+  // ABV (after the row's input rounding) must be below this, % vol; decimal text.
+  optional string abv_below = 1;
+  // hL taxed this year at the start of the line must be below this; decimal text.
+  optional string ytd_hl_below = 2;
 }
 
 // One volume event (engine `brewery_tax::VolumeEvent`).
@@ -590,16 +609,45 @@ message TaxProductLine {
   // Original extract (Stammwuerze), degrees Plato, decimal text (HL_PLATO, PLATO_BAND).
   optional string original_extract_p = 7;
   // hL already taxed this year before this line (TIERED_VOLUME), decimal text; empty = 0.
-  // The service does not carry it from one line to the next.
+  // The service does not carry it from one line to the next; with `TaxReportRequest.chain` use
+  // the request's `ytd_hl` instead (this field must then be empty).
   string ytd_hl = 8;
 }
 
 message TaxReportRequest {
+  // A single country row (no chain, no selection by date). Exactly one of `row` and `chain`.
   TaxRateRow row = 1;
   // Period, inclusive ISO dates.
   string period_start = 2;
   string period_end = 3;
   repeated TaxProductLine lines = 4;
+  // Method chain (engine `brewery_tax::tax_chain`, spec 09 §2.2a): the candidate rows of the
+  // data table (any class, any validity). The service takes the rows of `rate_class` in force
+  // on `period_start`, in `chain_position` order, and sums their component taxes per line. A
+  // table that starts or ends inside the period is an error (split the period). The selected
+  // rows must agree on currency, trigger, deductions and money rounding.
+  repeated TaxRateRow chain = 5;
+  // Rate class of the chain (default "beer").
+  string rate_class = 6;
+  // hL taxed from the start of the year to `period_start` in this rate class (chain only), decimal
+  // text; empty = 0. The lines are processed in order and each adds its taxable hL to the next
+  // line's start (tiers and the relief condition read the start of the line).
+  string ytd_hl = 7;
+}
+
+// One chain step of a line.
+message TaxStepResult {
+  // `chain_position` of the row.
+  uint32 position = 1;
+  TaxMethod method = 2;
+  // Component tax, unrounded.
+  string tax = 3;
+  // Litres of pure alcohol (pure-alcohol steps).
+  optional string lpa = 4;
+  // Applied rate, net of relief for pure alcohol; unset for tiered volume.
+  optional string applied_rate = 5;
+  // The relief of the step applied (its conditions held).
+  bool discount_applied = 6;
 }
 
 message TaxLineResult {
@@ -622,6 +670,10 @@ message TaxLineResult {
   // Rate applied to the line, decimal text, net of relief for the pure-alcohol method; unset for
   // tiered volume (several rates).
   optional string applied_rate = 12;
+  // Chain only: hL taxed this year before the line, and the steps in `chain_position` order.
+  // `tax_unrounded` is their sum; `lpa` and `applied_rate` stay unset (see the steps).
+  optional string ytd_start_hl = 13;
+  repeated TaxStepResult steps = 14;
 }
 
 message TaxReportResponse {

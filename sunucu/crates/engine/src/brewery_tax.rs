@@ -612,6 +612,288 @@ pub fn tax_line_detail(p: &TaxLine<'_>) -> Result<TaxLineDetail, Error> {
 }
 
 // ---------------------------------------------------------------------------------------------
+// 2b. Method chain (T2.8, spec 09 §2.2a)
+// ---------------------------------------------------------------------------------------------
+
+/// Conditions under which a step's relief applies (row `discount_conditions`); all given
+/// conditions must hold. Both limits are exclusive upper limits.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct DiscountConditions {
+    /// ABV (after the step's input rounding) must be below this, % vol.
+    pub abv_below: Option<Decimal>,
+    /// Yearly volume so far at the start of the line must be below this, hL.
+    pub ytd_hl_below: Option<Decimal>,
+}
+
+/// One chain step: a data-table row (`tax_rate_tables` with its `tax_rate_bands`). The engine
+/// holds no tables; the caller passes the candidate rows (spec 09 §2.2a).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChainStep {
+    /// `chain_position` (≥ 1).
+    pub position: u32,
+    /// `rate_class`.
+    pub rate_class: String,
+    /// First day in force, ISO date (inclusive).
+    pub valid_from: String,
+    /// First day no longer in force, ISO date (exclusive); `None` = open-ended.
+    pub valid_to: Option<String>,
+    /// Method of the step.
+    pub method: Method,
+    /// Flat rate.
+    pub rate: Option<Decimal>,
+    /// ABV or °P bands.
+    pub bands: Vec<Band>,
+    /// Yearly volume tiers, hL.
+    pub tiers: Vec<Band>,
+    /// Band boundary type override.
+    pub inclusive: Option<bool>,
+    /// Truncate °P (`HlPlato`).
+    pub plato_trunc: bool,
+    /// Relief per LPA (`PureAlcohol` only; 0 = none).
+    pub discount_per_lpa: Decimal,
+    /// When the relief applies.
+    pub discount_conditions: DiscountConditions,
+    /// Input rounding rule.
+    pub input: InputRounding,
+}
+
+/// One product line of a chain calculation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ChainLine {
+    /// Taxable volume, litres.
+    pub volume_l: Decimal,
+    /// ABV, % vol.
+    pub abv_pct: Option<Decimal>,
+    /// Original extract, °P.
+    pub plato_p: Option<Decimal>,
+}
+
+/// Result of one step for one line.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ChainStepResult {
+    /// `chain_position` of the step.
+    pub position: u32,
+    /// Method of the step.
+    pub method: Method,
+    /// Component tax, LPA and applied rate.
+    pub detail: TaxLineDetail,
+    /// The step's relief applied (its conditions held).
+    pub discount_applied: bool,
+}
+
+/// Result of one line: the yearly volume at its start and the step components.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChainLineResult {
+    /// hL taxed this year before the line.
+    pub ytd_start_hl: Decimal,
+    /// Sum of the component taxes, unrounded.
+    pub tax: Decimal,
+    /// Steps in `chain_position` order.
+    pub steps: Vec<ChainStepResult>,
+}
+
+/// Result of [`tax_chain`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChainReport {
+    /// Sum of the line taxes, unrounded.
+    pub total: Decimal,
+    /// Lines in the given order.
+    pub lines: Vec<ChainLineResult>,
+}
+
+fn check_iso_date(s: &str) -> Result<(), Error> {
+    let b = s.as_bytes();
+    let ok = b.len() == 10
+        && b.iter().enumerate().all(|(i, c)| {
+            if i == 4 || i == 7 {
+                *c == b'-'
+            } else {
+                c.is_ascii_digit()
+            }
+        });
+    if ok {
+        Ok(())
+    } else {
+        Err(Error::invalid("date", "must be YYYY-MM-DD"))
+    }
+}
+
+fn pick_chain<'a>(
+    steps: &'a [ChainStep],
+    rate_class: &str,
+    day: &str,
+) -> Result<Vec<&'a ChainStep>, Error> {
+    let mut out: Vec<&ChainStep> = Vec::new();
+    for a in steps.iter().filter(|a| a.rate_class == rate_class) {
+        check_iso_date(&a.valid_from)?;
+        if let Some(to) = &a.valid_to {
+            check_iso_date(to)?;
+            if *to <= a.valid_from {
+                return Err(Error::invalid("valid_to", "empty validity range"));
+            }
+        }
+        let in_force =
+            a.valid_from.as_str() <= day && a.valid_to.as_deref().is_none_or(|to| day < to);
+        if !in_force {
+            continue;
+        }
+        if a.position < 1 {
+            return Err(Error::invalid(
+                "position",
+                "chain position must be at least 1",
+            ));
+        }
+        out.push(a);
+    }
+    out.sort_by_key(|a| a.position);
+    if out.windows(2).any(|w| w[0].position == w[1].position) {
+        return Err(Error::invalid(
+            "position",
+            "overlapping validity at one chain position",
+        ));
+    }
+    Ok(out)
+}
+
+/// The chain of a period: steps of `rate_class` in force on the first day, by `position`.
+///
+/// # Errors
+/// [`Error::InvalidInput`] for malformed dates, a reversed period, an empty validity range, a
+/// position below 1 or twice, no step in force on the first day, and when the set of steps in
+/// force on the last day differs (a table starts or ends inside the period: split the period;
+/// no silently wrong rate).
+pub fn select_chain<'a>(
+    steps: &'a [ChainStep],
+    rate_class: &str,
+    start: &str,
+    end: &str,
+) -> Result<Vec<&'a ChainStep>, Error> {
+    check_iso_date(start)?;
+    check_iso_date(end)?;
+    if start > end {
+        return Err(Error::invalid("period", "start is after end"));
+    }
+    let first = pick_chain(steps, rate_class, start)?;
+    let last = pick_chain(steps, rate_class, end)?;
+    if first.is_empty() {
+        return Err(Error::invalid(
+            "period",
+            "no rate table in force at the start",
+        ));
+    }
+    if first.len() != last.len() || first.iter().zip(&last).any(|(x, y)| !std::ptr::eq(*x, *y)) {
+        return Err(Error::invalid(
+            "period",
+            "rate table changes inside the period",
+        ));
+    }
+    Ok(first)
+}
+
+fn chain_discount(
+    a: &ChainStep,
+    abv: Option<Decimal>,
+    ytd_start: Decimal,
+) -> Result<(Decimal, bool), Error> {
+    let relief = a.discount_per_lpa;
+    if relief.is_sign_negative() && !relief.is_zero() {
+        return Err(Error::invalid("discount", "must not be negative"));
+    }
+    if relief.is_zero() {
+        return Ok((Decimal::ZERO, false));
+    }
+    if a.method != Method::PureAlcohol {
+        return Err(Error::invalid(
+            "discount",
+            "only for the pure-alcohol method",
+        ));
+    }
+    if let Some(limit) = a.discount_conditions.abv_below {
+        let abv = abv.ok_or(Error::invalid("abv", "required input is missing"))?;
+        let rounding = match a.input {
+            InputRounding::Undefined => {
+                return Err(Error::invalid("input_rounding", "rule is undefined"));
+            }
+            InputRounding::NoRounding => None,
+            InputRounding::Places { dp, mode } => Some((dp, mode)),
+        };
+        if round_in(abv, rounding)? >= limit {
+            return Ok((Decimal::ZERO, false));
+        }
+    }
+    if a.discount_conditions
+        .ytd_hl_below
+        .is_some_and(|limit| ytd_start >= limit)
+    {
+        return Ok((Decimal::ZERO, false));
+    }
+    Ok((relief, true))
+}
+
+/// Tax of the lines of one period under the chain selected by [`select_chain`].
+///
+/// Every step computes a component with its own method; the line tax is the sum of the
+/// components (unrounded; money rounding is the caller's, one rule for the whole chain). Lines
+/// are processed in the given order and `ytd_hl` (hL taxed this year before the period, same rate
+/// class) is carried: the next line starts at `ytd_hl + Σ hL of the previous lines`; tiers and
+/// the relief condition `ytd_hl_below` read the start of the line (a line is not split for the
+/// relief, but tiers split it).
+///
+/// # Errors
+/// Those of [`select_chain`] and [`tax_line_detail`]; a negative `ytd_hl`; a negative relief, a
+/// relief on a method other than pure alcohol, a relief condition without its input.
+pub fn tax_chain(
+    steps: &[ChainStep],
+    rate_class: &str,
+    start: &str,
+    end: &str,
+    lines: &[ChainLine],
+    ytd_hl: Decimal,
+) -> Result<ChainReport, Error> {
+    let selected = select_chain(steps, rate_class, start, end)?;
+    if ytd_hl.is_sign_negative() && !ytd_hl.is_zero() {
+        return Err(Error::invalid("ytd_hl", "must not be negative"));
+    }
+    let mut total = Decimal::ZERO;
+    let mut begin = ytd_hl;
+    let mut out = Vec::with_capacity(lines.len());
+    for line in lines {
+        let mut tax = Decimal::ZERO;
+        let mut parts = Vec::with_capacity(selected.len());
+        for a in &selected {
+            let (relief, applied) = chain_discount(a, line.abv_pct, begin)?;
+            let mut p = TaxLine::new(a.method, line.volume_l);
+            p.abv_pct = line.abv_pct;
+            p.plato_p = line.plato_p;
+            p.rate = a.rate;
+            p.bands = &a.bands;
+            p.tiers = &a.tiers;
+            p.ytd_hl = begin;
+            p.plato_trunc = a.plato_trunc;
+            p.discount_per_lpa = relief;
+            p.input = a.input;
+            p.inclusive = a.inclusive;
+            let detail = tax_line_detail(&p)?;
+            tax = add(tax, detail.tax)?;
+            parts.push(ChainStepResult {
+                position: a.position,
+                method: a.method,
+                detail,
+                discount_applied: applied,
+            });
+        }
+        out.push(ChainLineResult {
+            ytd_start_hl: begin,
+            tax,
+            steps: parts,
+        });
+        total = add(total, tax)?;
+        begin = add(begin, div100(line.volume_l)?)?;
+    }
+    Ok(ChainReport { total, lines: out })
+}
+
+// ---------------------------------------------------------------------------------------------
 // 3. Spunding
 // ---------------------------------------------------------------------------------------------
 

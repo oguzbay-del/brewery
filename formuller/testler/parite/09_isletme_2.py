@@ -195,6 +195,135 @@ def uret():
     tax("kademeli_hacim", V, tiers=[])                                            # hata
     tax("bilinmeyen", V, rate="1.0")                                              # hata: bilinmeyen yöntem
 
+    # ---- T2.8: yöntem zinciri (09 §2.2a). Bütün oranlar, eşikler ve tarihler SENTETİKTİR (gerçek oran değil).
+    def adim(konum, yontem, bas="2026-01-01", bit=None, sinif="beer", **o):
+        a = {"konum": konum, "sinif": sinif, "yontem": yontem, "baslangic": bas, "bitis": bit}
+        a.update(o)
+        return a
+
+    def _ref_adimlar(adimlar):
+        out = []
+        for a in adimlar:
+            b = dict(a)
+            if "input_mode" in b:
+                b["input_mode"] = MODLAR[b["input_mode"]]
+            out.append(b)
+        return out
+
+    def zincir(adimlar, bas, bit, satirlar=(), ytd="0", sinif="beer", not_=None, sec_only=False):
+        girdi = {"steps": adimlar, "sinif": sinif, "baslangic": bas, "bitis": bit}
+        if sec_only:
+            v.ekle("select_chain", girdi, _hata_ile(
+                lambda: [a["konum"] for a in ref.select_chain(_ref_adimlar(adimlar), sinif, bas, bit)]), not_)
+            return
+        girdi["satirlar"] = [dict(x) for x in satirlar]
+        girdi["ytd"] = ytd
+        beklenen = _hata_ile(lambda: ref.tax_chain(_ref_adimlar(adimlar), sinif, bas, bit, satirlar, ytd))
+        v.ekle("tax_chain", girdi, beklenen, not_)
+
+    # Yürürlük: iki sürüm; [başlangıç, bitiş) ve dönem seçimi
+    S1 = adim(1, "hacim", bas="2026-01-01", bit="2026-07-01", rate="1000.0")
+    S2 = adim(1, "hacim", bas="2026-07-01", bit=None, rate="1200.0")
+    for bas, bit, n in (("2026-03-01", "2026-03-31", "eski sürüm"), ("2026-06-01", "2026-06-30", "bitişten bir gün önce biter"),
+                        ("2026-06-30", "2026-06-30", "bitiş günü hariç: son gün eski"),
+                        ("2026-07-01", "2026-07-31", "yürürlük günü yeni sürüm"),
+                        ("2026-07-01", "2026-07-01", "yürürlük günü"), ("2026-01-01", "2026-01-31", "ilk yürürlük günü"),
+                        ("2026-06-15", "2026-07-15", "dönem içinde tablo değişiyor: hata"),
+                        ("2026-06-30", "2026-07-01", "dönem tam sınırda bölünüyor: hata"),
+                        ("2025-12-31", "2025-12-31", "yürürlükte tablo yok: hata"),
+                        ("2025-12-15", "2026-01-15", "başlangıçta tablo yok: hata"),
+                        ("2026-07-31", "2026-07-01", "başlangıç bitişten sonra: hata"),
+                        ("2026-7-01", "2026-07-31", "tarih biçimi: hata")):
+        zincir([S1, S2], bas, bit, sec_only=True, not_=n)
+        zincir([S1, S2], bas, bit, [{"volume_l": "2000.0"}], not_=n)
+    zincir([S1, S2], "2026-03-01", "2026-03-31", sinif="draught", sec_only=True, not_="başka sınıf: hata")
+    zincir([S1, adim(2, "hacim", sinif="draught", rate="1.0")], "2026-03-01", "2026-03-31", [{"volume_l": "2000.0"}],
+           not_="başka sınıfın adımı sayılmaz")
+    zincir([S1, adim(1, "hacim", bas="2026-03-01", bit=None, rate="5.0")], "2026-03-10", "2026-03-20",
+           [{"volume_l": "100"}], not_="aynı konumda çakışan yürürlük: hata")
+    zincir([S1, adim(0, "hacim", rate="5.0")], "2026-03-10", "2026-03-20", [{"volume_l": "100"}], not_="konum 0: hata")
+    zincir([adim(1, "hacim", bas="2026-05-01", bit="2026-05-01", rate="5.0")], "2026-03-10", "2026-03-20",
+           [{"volume_l": "100"}], not_="boş yürürlük aralığı: hata")
+    zincir([S1, adim(2, "hacim", bas="2026-01-01", bit="2025-12-01", rate="5.0")], "2026-03-10", "2026-03-20",
+           [{"volume_l": "100"}], not_="ters yürürlük aralığı: hata")
+    zincir([S2, S1], "2026-03-01", "2026-03-31", sec_only=True, not_="liste sırası önemsiz")
+    zincir([adim(3, "hacim", rate="1.0"), adim(1, "hacim", rate="2.0"), adim(2, "hacim", rate="3.0")],
+           "2026-03-01", "2026-03-31", sec_only=True, not_="konuma göre sıralı")
+
+    # Bant + kademe + indirim zinciri (sentetik): 1 saf_alkol bant + indirim (koşullu), 2 kademeli hacim, 3 hacim
+    ZB = adim(1, "saf_alkol", bands=B22, discount_per_lpa="5.0", input_dp=None,
+              indirim_kosul={"abv_alti": "8.5", "ytd_hl_alti": "100"})
+    ZT = adim(2, "kademeli_hacim", tiers=TIERS3)
+    ZH = adim(3, "hacim", rate="1.5")
+    ZINCIR = [ZH, ZB, ZT]                              # liste sırası karışık; sıra `konum`dur
+    D1, D2 = "2026-04-01", "2026-04-30"
+    L = lambda vl="2000.0", abv="5.0": {"volume_l": vl, "abv": abv}
+    zincir(ZINCIR, D1, D2, [L()], ytd="0", not_="yıl başı: indirim var, ilk kademe")
+    zincir(ZINCIR, D1, D2, [L()], ytd="90", not_="kademe geçişi bir partinin içinde (90 → 110 hL), indirim var")
+    zincir(ZINCIR, D1, D2, [L()], ytd="99.9", not_="eşiğin hemen altı: indirim var")
+    zincir(ZINCIR, D1, D2, [L()], ytd="100", not_="ytd = eşik: indirim yok (< sınır), ikinci kademe")
+    zincir(ZINCIR, D1, D2, [L()], ytd="990", not_="ikinci → açık uçlu üçüncü kademe geçişi")
+    zincir(ZINCIR, D1, D2, [L()], ytd="5000", not_="tamamen açık uçlu kademe")
+    zincir(ZINCIR, D1, D2, [L(abv="8.5")], ytd="0", not_="ABV = indirim sınırı: indirim yok; dışlayıcı bant: üçüncü bant")
+    zincir(ZINCIR, D1, D2, [L(abv="8.4")], ytd="0", not_="ABV sınırın altı: indirim var, ikinci bant")
+    zincir(ZINCIR, D1, D2, [L(abv="3.5")], ytd="0", not_="ABV bant sınırı (dışlayıcı): ikinci bant")
+    zincir(ZINCIR, D1, D2, [L(abv="3.4999")], ytd="0", not_="bant sınırının hemen altı: ilk bant")
+    zincir(ZINCIR, D1, D2, [L(abv="3.5001")], ytd="0", not_="bant sınırının hemen üstü: ikinci bant")
+    zincir(ZINCIR, D1, D2, [L("1000.0"), L("1000.0"), L("3000.0", "4.0")], ytd="85",
+           not_="ytd satırlar arasında taşınır: 85 → 95 → 105 (ikinci satırda kademe geçişi), üçüncüde indirim biter")
+    zincir(ZINCIR, D1, D2, [L("0.0"), L()], ytd="99.5", not_="sıfır hacimli satır ytd'yi değiştirmez")
+    zincir(ZINCIR, D1, D2, [], ytd="10", not_="satır yok")
+    zincir(ZINCIR, D1, D2, [L()], ytd="-1", not_="ytd negatif: hata")
+    zincir(ZINCIR, D1, D2, [{"volume_l": "2000.0"}], not_="saf_alkol adımı ABV ister: hata")
+    zincir([adim(1, "saf_alkol", bands=B22, discount_per_lpa="5.0")], D1, D2, [L()],
+           not_="girdi yuvarlama kuralı tanımsız: hata")
+    zincir([adim(1, "saf_alkol", bands=B22, discount_per_lpa="5.0", input_dp=1, input_mode="ROUND_DOWN",
+                 indirim_kosul={"abv_alti": "8.5"})], D1, D2, [L(abv="8.59")],
+           not_="koşul girdi yuvarlamasından sonra: 8.59 → 8.5 (aşağı), 8.5 < 8.5 değil: indirim yok")
+    zincir([adim(1, "saf_alkol", bands=B22, discount_per_lpa="5.0", input_dp=1, input_mode="ROUND_DOWN",
+                 indirim_kosul={"abv_alti": "8.6"})], D1, D2, [L(abv="8.59")],
+           not_="8.59 → 8.5 < 8.6: indirim var")
+    zincir([adim(1, "saf_alkol", rate="4.0", discount_per_lpa="5.0", input_dp=None)], D1, D2, [L()],
+           not_="indirim oranı aşar: vergi 0, indirim uygulandı")
+    zincir([adim(1, "saf_alkol", rate="21.78", discount_per_lpa="5.0", input_dp=None)], D1, D2, [L()],
+           not_="koşulsuz indirim her zaman uygulanır")
+    zincir([adim(1, "saf_alkol", rate="21.78", discount_per_lpa="0", input_dp=None,
+                 indirim_kosul={"ytd_hl_alti": "100"})], D1, D2, [L()], ytd="500", not_="indirim sıfır: koşul önemsiz")
+    zincir([adim(1, "hacim", rate="10.0", discount_per_lpa="1.0")], D1, D2, [L()],
+           not_="indirim yalnız saf_alkol: hata")
+    zincir([adim(1, "saf_alkol", rate="21.78", discount_per_lpa="-1", input_dp=None)], D1, D2, [L()],
+           not_="negatif indirim: hata")
+    zincir([adim(1, "saf_alkol", rate="21.78", discount_per_lpa="5.0", input_dp=None,
+                 indirim_kosul={"abv_alti": "8.5"})], D1, D2, [{"volume_l": "2000.0"}],
+           not_="ABV koşulu ABV girdisi ister: hata")
+    zincir([adim(1, "kademeli_hacim", tiers=[["100", "3.0"]])], D1, D2, [L()], ytd="95",
+           not_="kapalı son kademe aşıldı: hata")
+    zincir([adim(1, "kademeli_hacim", tiers=[["100", "3.0"]])], D1, D2, [L("1000.0")], ytd="95",
+           not_="kademe tam sığar (95 + 10 hL ≤ 100 değil: 5 hL kademesiz)")
+    zincir([adim(1, "kademeli_hacim", tiers=[["100", "3.0"]])], D1, D2, [L("500.0")], ytd="95",
+           not_="kademe tam dolar (95 + 5 hL = 100)")
+    zincir([adim(1, "kademeli_hacim", tiers=[["100", "3.0"]])], D1, D2, [L("500.0"), L("100.0")], ytd="95",
+           not_="ikinci satır dolu kademeyi aşar: hata")
+    zincir([adim(1, "kademeli_hacim", tiers=[[None, "3.25"]])], D1, D2, [L()], ytd="12345", not_="tek açık uçlu kademe")
+    zincir([adim(1, "kademeli_hacim", tiers=[["100", "3.0"], ["50", "5.0"], [None, "7.5"]])], D1, D2, [L()],
+           not_="kademe tablosu artan değil: hata")
+    # Tek adımlı zincirler: yöntem başına bant sınırı tam üstü/altı
+    PB = adim(1, "plato_bandi", bands=B24, input_dp=None)
+    for pl in ("9.99", "10.0", "10.01", "14.0", "14.01"):
+        zincir([PB], D1, D2, [{"volume_l": "2000.0", "plato": pl}], not_="plato bandı, kapsayıcı sınır")
+    zincir([adim(1, "plato_bandi", bands=B24, inclusive=False, input_dp=None)], D1, D2,
+           [{"volume_l": "2000.0", "plato": "10.0"}], not_="plato bandı, dışlayıcı sınır")
+    zincir([adim(1, "hl_plato", rate="0.787", input_dp=None),
+            adim(2, "kademeli_hacim", tiers=TIERS_SIMPLE)], D1, D2,
+           [{"volume_l": "2000.0", "plato": "12.6"}], ytd="90", not_="hl_plato + kademe, plato kesilir")
+    zincir([adim(1, "hl_plato", rate="0.787", input_dp=None, plato_trunc=False)], D1, D2,
+           [{"volume_l": "2000.0", "plato": "12.6"}], not_="plato kesilmez")
+    zincir([adim(1, "hl_plato", rate="0.787", input_dp=None)], D1, D2, [{"volume_l": "2000.0"}],
+           not_="plato yok: hata")
+    zincir([adim(1, "hacim", rate="0.1"), adim(2, "hacim", rate="0.2")], D1, D2,
+           [{"volume_l": "3.0"}], not_="ölçek: bileşen toplamı")
+    zincir([adim(1, "bilinmeyen", rate="1.0")], D1, D2, [L()], not_="bilinmeyen yöntem: hata")
+
     # ---- _round_in / _band / money / row_status
     for x, dp, mode in (("2.675", 2, "ROUND_HALF_UP"), ("2.675", 2, "ROUND_HALF_EVEN"), ("2.665", 2, "ROUND_HALF_EVEN"),
                         ("2.675", 2, "ROUND_DOWN"), ("2.671", 2, "ROUND_UP"), ("2.675", 2, "ROUND_HALF_DOWN"),
