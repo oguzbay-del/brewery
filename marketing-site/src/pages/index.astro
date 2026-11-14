@@ -3,6 +3,14 @@ import "../styles/global.css";
 
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(base, import.meta.env.SITE).href;
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Demleme",
+  url: canonicalUrl,
+  description: "Brewing software in development for homebrewers and professional breweries.",
+  inLanguage: "en",
+};
 
 const audiences = [
   {
@@ -53,6 +61,7 @@ const audiences = [
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Demleme — Brewing software in development" />
     <meta name="twitter:description" content="Demleme is brewing software in development for homebrewers and professional breweries." />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
