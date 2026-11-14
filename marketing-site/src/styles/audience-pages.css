@@ -210,3 +210,10 @@
   .record-model-flow { grid-template-columns: 1fr; }
   .record-model-flow li { min-height: 0; padding: 22px; }
 }
+
+
+/* Homebrew record loop: the personal learning cycle, distinct from Business traceability. */
+.home-record-section { background: #f0eee7; }
+.home-record-section .section-heading { max-width: 760px; }
+.home-record-table tbody th { min-width: 170px; }
+.home-record-table tbody td { min-width: 220px; }
