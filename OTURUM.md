@@ -231,3 +231,9 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Geçersiz/eski bağlantılardan ana sayfaya, Homebrewers veya Breweries sayfasına dönüş sağlandı.
 - Sayfa `noindex, follow` ile arama indeksinden hariç tutuldu; erişilebilir skip link içeriyor.
 - Sitemap'e 404 dahil edilmedi. Ürün veya pazarlama iddiaları değişmedi.
+
+**Markalı 404 sayfası yayında — 14 Kasım 2026**
+- PR #8 manuel squash merge edildi; Auto-merge kullanılmadı. Merge commit: `6fe86aee64bc57d81b846322bc3c30282aeab9e0`.
+- PR CI #43631631449: **success**. Main CI #43631699802: **success**. GitHub Pages deploy #43631699807: **success**.
+- Astro `404.astro` sayfası Pages için özel 404 çıktısı üretir; ana sayfa ve iki audience yoluna dönüş bağlantısı içerir. `noindex, follow` kullanır ve sitemap'e eklenmez.
+- Canlı site: https://oguzbay-del.github.io/brewery/.
