@@ -31,16 +31,17 @@
 - Ürün kabiliyeti doğrulanmadan özellik veya sonuç iddiası yayınlanmaz.
 
 **Mevcut kayıt**
-- `web-stratejisi/README.md` ve `01-stratejik-brief.md`–`09-launch-measurement.md` dosyaları GitHub'da mevcut ve 2026-11-14 tarihinde doğrulandı.
-- Bu 10 dosya strateji, iki audience brief'i, marka/mesaj, sitemap, görsel tasarım/UX, dönüşüm, SEO ve lansman ölçümünü kapsar.
-- Bu kayıtlar strateji dokümanlarıdır; çalışan web sitesi veya tamamlanmış görsel tasarım değildir.
+- `web-stratejisi/README.md`, `01-stratejik-brief.md`–`09-launch-measurement.md` ve `10-teknik-mimari.md` GitHub'da mevcut. Teknik mimari dokümanı Astro + TypeScript önerisidir; kullanıcı onayı bekler.
+- Strateji dosyaları iki audience brief'i, marka/mesaj, sitemap, görsel tasarım/UX, dönüşüm, SEO, lansman ölçümü ve teknik mimari önerisini kapsar.
+- Bu kayıtlar strateji ve mimari öneri dokümanlarıdır; çalışan pazarlama sitesi veya tamamlanmış görsel tasarım değildir.
 
-**Sıradaki adımlar**
-1. `web-stratejisi/06-visual-design-ux.md` ve `05-site-architecture.md` üzerinden ana sayfa ile iki audience landing page için wireframe kapsamını netleştir.
-2. Tasarım sistemi için önce `tasarim-sistemi/README.md` ve mevcut token/bileşenleri kullan; ikinci bir tasarım sistemi oluşturma.
-3. Wireframe'leri ayrı ayrı Homebrewers ve Professional Breweries için hazırla; masaüstü ve mobil durumları kapsa.
-4. Fiyat, trial, paket, ödeme sağlayıcısı ve limitler kesinleşmeden fiyat/teklif vaat etme.
-5. Sonraki oturumda yalnız bu iş için gereken dosyaları oku; ürün geliştirme kuyruğuna geçme.
+**Sonraki adımlar**
+1. `web-stratejisi/10-teknik-mimari.md` önerisini kullanıcıyla netleştir: Astro + TypeScript, hosting, domain, içerik ve form/analytics kararları.
+2. Stack onaylanınca `marketing-site/` için ayrı teknik plan ve CI tasarla; mevcut `web/` React/Vite ürün uygulamasını değiştirme.
+3. Ardından ana sayfa ve iki audience landing page için desktop/mobile wireframe hazırla.
+4. Tasarım sistemi token'larını `tasarim-sistemi/tokens.json` kaynağından kullan; paralel token sistemi oluşturma.
+5. Fiyat, trial, paket, ödeme sağlayıcısı ve limitler kesinleşmeden fiyat/teklif vaat etme.
+6. Yalnız pazarlama sitesi dosyalarına dokun; Claude ürün geliştirme kuyruğunu değiştirme.
 
 **Sınır:** Bu pazarlama iş parçacığı `gelistirme/DURUM.md`, `gelistirme/ISLER.md`, ürün kodu, API, Claude geliştirme sırası ve commit'lerini değiştirmez.
 
