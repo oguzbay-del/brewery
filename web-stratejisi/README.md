@@ -37,3 +37,4 @@ Discovery → sitemap → wireframe → görsel tasarım → içerik → gelişt
 20. [Teknik içerik ve hesaplayıcı doğrulama backlog'u — WP-09](20-technical-content-calculator-validation.md)
 19. [SEO, teknik yayın ve içerik kalite standardı — WP-08](19-seo-technical-publishing-standard.md)
 21. [Sayfa içerik backlog'u ve evidence register — WP-10](21-page-content-evidence-register.md)
+14. [Feature claim denetimi — WP-03](14-feature-claim-denetimi.md)
