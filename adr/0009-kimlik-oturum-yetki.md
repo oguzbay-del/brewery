@@ -246,6 +246,21 @@ Karar değişmedi; yazarken netleşenler:
 - **İlk çalışma alanı:** `POST /v1/workspaces` (Idempotency-Key şart) çalışma alanını, üyeyi, tüm izinleri taşıyan "Administrator" rolünü ve atamayı tek işlemde açar. Hazır rollerin geri kalanı ve izin önbelleği T2.13'tedir; `membership` her istekte iki sorgu yapar.
 - **Yapılmayanlar:** web yönlendirmeli kod akışı (`/v1/auth/{provider}/start` ve `callback`) ve CORS Aşama 3'te (web istemcisi) gelir; Apple yenileme belirteci değişimi (madde 1.5) hesap silmeyle (T2.31); oturum işlemlerinin denetim kaydına yazılması T2.14'te (şimdilik günlük).
 
+## Uygulama notları (T2.13, 14.11.2026)
+
+Karar değişmedi; yazarken netleşenler:
+- **Yer:** izin listesi, hazır roller, kapsam ve alan gizleme `api::authz`'de; uçlar `api::auth::access`'te. `Permission::ALL` ile veritabanı CHECK'i ve plan matrisi testle karşılaştırılır (tablo güdümlü, rol × izin).
+- **Tohum:** çalışma alanı açılırken `seed_roles`. İşletme: Administrator, Brewmaster, Operator, Quality, Warehouse, Viewer (matris). Ev: Administrator, Editor (`share_editor`), Viewer (`share_viewer`). Yeni üç izin (`workspace.manage`, `billing.manage`, `support.grant`, `devices.manage`) yalnız yöneticide.
+- **Uçlar** (hepsi `users.manage`, kabul hariç): `GET|POST /roles`, `POST /roles/{id}/copy`, `PATCH|DELETE /roles/{id}` (If-Match şart), `GET /members`, `PATCH|DELETE /members/{id}`, `POST /members/{id}/assignments`, `DELETE /members/{id}/assignments/{aid}`, `GET|POST /invitations`, `DELETE /invitations/{id}`, `POST /shares` (Ev), `POST /v1/invitations/accept` (oturum açmış herkes, çalışma alanı yolu yok).
+- **Etkin izinler:** kapsamsız atamalar `Membership.permissions`, kapsamlılar `Membership.scoped`. Redis anahtarı `authz:{ws}:{üye}:{authz_version}` (300 sn); her değişiklik `authz_version` artırır, bu yüzden değişiklik sonraki istekte görünür. Redis yoksa yalnız sorgu yapılır.
+- **Kapsam kuralı:** `RequestContext::require_for(izin, Target)`: izin tüm çalışma alanında ya da kaydı kapsayan kapsamlı atamada varsa geçer. Aksi halde kayıt kullanıcıya görünüyorsa (çalışma alanında `recipe.view` ya da kaydı kapsayan herhangi bir atama) `403`, görünmüyorsa `404`. Liste uçları `scope_filter(izin)` ile SQL koşulu kurar. Kapsamlı atama yalnız çalışma alanı düzeyi izin taşımayan rolle yapılır (`users.manage`, `workspace.manage`, `billing.manage`, `support.grant`, `devices.manage` varsa `422 role_not_scopable`).
+- **Korumalar:** her değişiklik çalışma alanı satırını kilitleyen işlemde yürür; değişiklikten sonra `last_admin` (etkin `users.manage` sahibi kalmadı) ve `self_lockout` (çağıran kendi iznini ya da üyeliğini kaybediyor) denetlenir, ikisi `409 conflict`. Yönetici sayılan: kapsamsız `users.manage` taşıyan etkin üye.
+- **Davet:** e-posta adresi saklanmaz, yalnız postayla gider (bağlantı `{WEB_BASE_URL}/invite?token=...`). Kabul tek `UPDATE ... WHERE accepted_at IS NULL AND expires_at > now()` ile tek kullanımlıktır; çakışan iki istekten biri `404` alır. Devre dışı üye davetle geri dönemez (`409 member_disabled`, davet yanmaz); çıkarılmış üye döner.
+- **Ev paylaşımı:** `POST /shares {kind: recipe|batch, id, access: editor|viewer, email}` kapsamlı davettir; yalnız Ev çalışma alanında (`409 home_mode_only`). Paylaşımı kaldırmak atamayı silmektir.
+- **Alan gizleme:** `RequestContext::redact` / `redacted_json`: anahtarın `_` ile ayrılmış parçalarından biri `cost` veya `price` ise (`unit_cost`, `price_currency`, ...) `cost.view` yokken alan yanıttan çıkar. `reject_cost_writes` aynı alanları yazmaya çalışana `403` verir. Kaynak uçları bu yardımcıları kullanır (şimdilik yalnız test uçlarında).
+- **Denetim:** rol, izin kümesi, atama, davet ve üyelik değişiklikleri `append_audit` ile aynı işlemde yazılır; ad ve e-posta `value_digest` ile.
+- **Yapılmayanlar:** abonelik denetimi (madde 7, T2.2x), üye adının listede görünmesi (`users` satırı RLS'ye göre yalnız kendisine açık), kapsamın dosya uçlarına (`files.rs`) uygulanması (kaynak uçlarıyla birlikte).
+
 ## Sonuçlar
 
 - ADR-0007'ye iki ek: `auth_requests` tablosu (nonce, durum, PKCE) ve `user_identities.provider_refresh_token_enc`.

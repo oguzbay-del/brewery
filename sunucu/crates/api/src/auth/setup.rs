@@ -13,28 +13,6 @@ use crate::{
     error::{ApiError, ApiJson, ApiResult, FieldIssue},
 };
 
-/// Every permission code (ADR-0009 rule 8.1). The administrator role of a new workspace holds
-/// all of them; the other preset roles are seeded by T2.13.
-pub const ALL_PERMISSIONS: [&str; 17] = [
-    "recipe.view",
-    "recipe.edit",
-    "recipe.approve",
-    "batch.plan",
-    "batch.record",
-    "batch.correct_closed",
-    "quality.record",
-    "release.approve",
-    "stock.move",
-    "cost.view",
-    "reports.export",
-    "settings.equipment",
-    "users.manage",
-    "workspace.manage",
-    "billing.manage",
-    "support.grant",
-    "devices.manage",
-];
-
 /// Most workspaces one user may belong to.
 const MAX_WORKSPACES_PER_USER: i64 = 20;
 
@@ -127,7 +105,7 @@ pub async fn workspace_create(
         return Err(ApiError::validation(issues));
     }
     let user_id = ctx.identity.user_id;
-    let (workspace_id, member_id, role_id) = (Uuid::now_v7(), Uuid::now_v7(), Uuid::now_v7());
+    let (workspace_id, member_id) = (Uuid::now_v7(), Uuid::now_v7());
     let name = req.name.trim().to_owned();
 
     // The workspace id goes into the context first: the row policies check it on insert.
@@ -166,25 +144,7 @@ pub async fn workspace_create(
     .bind(user_id)
     .execute(&mut *tx)
     .await?;
-    sqlx::query(
-        "INSERT INTO roles (id, workspace_id, name, template_key, created_by, updated_by) \
-         VALUES ($1, $2, 'Administrator', 'admin', $3, $3)",
-    )
-    .bind(role_id)
-    .bind(workspace_id)
-    .bind(user_id)
-    .execute(&mut *tx)
-    .await?;
-    sqlx::query(
-        "INSERT INTO role_permissions (workspace_id, role_id, permission, created_by) \
-         SELECT $1, $2, p, $3 FROM unnest($4::text[]) AS p",
-    )
-    .bind(workspace_id)
-    .bind(role_id)
-    .bind(user_id)
-    .bind(ALL_PERMISSIONS.map(str::to_owned).to_vec())
-    .execute(&mut *tx)
-    .await?;
+    let role_id = crate::authz::seed_roles(&mut tx, workspace_id, &req.mode, user_id).await?;
     sqlx::query(
         "INSERT INTO role_assignments (id, workspace_id, member_id, role_id, created_by, updated_by) \
          VALUES ($1, $2, $3, $4, $5, $5)",
@@ -246,12 +206,5 @@ mod tests {
             fields,
             ["/name", "/mode", "/region", "/country", "/time_zone"]
         );
-    }
-
-    #[test]
-    fn permission_list_matches_the_database_check() {
-        assert_eq!(ALL_PERMISSIONS.len(), 17);
-        let unique: std::collections::HashSet<_> = ALL_PERMISSIONS.iter().collect();
-        assert_eq!(unique.len(), 17);
     }
 }

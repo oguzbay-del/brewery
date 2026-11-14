@@ -8,6 +8,7 @@
 //! [`AuthServices`] ties them together, implements [`Authenticator`] (bearer or cookie session,
 //! CSRF, workspace membership and permissions) and builds the routes.
 
+pub mod access;
 pub mod config;
 pub mod email;
 pub mod handlers;
@@ -16,7 +17,11 @@ pub mod session;
 pub mod setup;
 pub mod tokens;
 
-use std::{collections::BTreeSet, sync::Arc, time::Duration};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+    time::Duration,
+};
 
 use axum::{
     Extension, Router,
@@ -34,6 +39,7 @@ use session::{ClientKind, SessionStore};
 
 use crate::{
     AppState, authenticated,
+    authz::{ScopeKind, ScopedGrant},
     context::{BoxFuture, Identity, Membership},
     error::{ApiError, ApiResult, ErrorCode, FieldIssue},
     idempotent,
@@ -54,6 +60,7 @@ pub struct AuthServices {
     pub(crate) google: Option<OidcVerifier>,
     pub(crate) mailer: Arc<dyn Mailer>,
     pub(crate) sessions: SessionStore,
+    pub(crate) redis: Redis,
 }
 
 impl std::fmt::Debug for AuthServices {
@@ -114,7 +121,8 @@ impl AuthServices {
         Self {
             apple: verifier(&config.apple),
             google: verifier(&config.google),
-            sessions: SessionStore::new(db.clone(), redis),
+            sessions: SessionStore::new(db.clone(), redis.clone()),
+            redis,
             db,
             config,
             mailer,
@@ -157,6 +165,7 @@ impl AuthServices {
         public
             .merge(me)
             .merge(workspaces)
+            .merge(access::routes(state))
             .layer(Extension(self.clone()))
     }
 
@@ -234,8 +243,8 @@ impl crate::Authenticator for AuthServices {
                 actor_kind: identity.actor_kind,
             };
             let mut tx = db::begin(&self.db, &ctx).await?;
-            let member: Option<(Uuid,)> = sqlx::query_as(
-                "SELECT m.id FROM workspace_members m \
+            let member: Option<(Uuid, i64)> = sqlx::query_as(
+                "SELECT m.id, w.authz_version FROM workspace_members m \
                  JOIN workspaces w ON w.id = m.workspace_id AND w.deleted_at IS NULL \
                  WHERE m.workspace_id = $1 AND m.user_id = $2 \
                    AND m.status = 'active' AND m.deleted_at IS NULL",
@@ -244,31 +253,79 @@ impl crate::Authenticator for AuthServices {
             .bind(identity.user_id)
             .fetch_optional(&mut *tx)
             .await?;
-            let Some((member_id,)) = member else {
+            let Some((member_id, version)) = member else {
                 tx.commit().await?;
                 return Ok(None);
             };
-            // Workspace-wide assignments only; scoped ones (recipe, batch, ...) are applied by the
-            // resource endpoints (T2.13).
-            let permissions: Vec<(String,)> = sqlx::query_as(
-                "SELECT DISTINCT p.permission FROM role_assignments a \
+            // Effective permissions are cached under (member, authz_version): every role,
+            // assignment or membership change bumps the version, so old entries die on their
+            // own (ADR-0009 rule 8.4).
+            let key = format!("authz:{workspace_id}:{member_id}:{version}");
+            let cached = self
+                .redis
+                .run(|mut c| {
+                    let key = key.clone();
+                    async move {
+                        redis::cmd("GET")
+                            .arg(key)
+                            .query_async::<Option<String>>(&mut c)
+                            .await
+                    }
+                })
+                .await
+                .flatten()
+                .and_then(|s| serde_json::from_str::<Membership>(&s).ok());
+            if let Some(m) = cached {
+                tx.commit().await?;
+                return Ok(Some(m));
+            }
+            let rows: Vec<(Option<String>, Option<Uuid>, String)> = sqlx::query_as(
+                "SELECT a.scope_kind, a.scope_id, p.permission FROM role_assignments a \
                  JOIN roles r ON r.workspace_id = a.workspace_id AND r.id = a.role_id \
                               AND r.deleted_at IS NULL \
                  JOIN role_permissions p ON p.workspace_id = r.workspace_id AND p.role_id = r.id \
-                 WHERE a.workspace_id = $1 AND a.member_id = $2 \
-                   AND a.deleted_at IS NULL AND a.scope_kind IS NULL",
+                 WHERE a.workspace_id = $1 AND a.member_id = $2 AND a.deleted_at IS NULL",
             )
             .bind(workspace_id)
             .bind(member_id)
             .fetch_all(&mut *tx)
             .await?;
             tx.commit().await?;
-            Ok(Some(Membership {
-                permissions: permissions
-                    .into_iter()
-                    .map(|p| p.0)
-                    .collect::<BTreeSet<_>>(),
-            }))
+            let mut membership = Membership::default();
+            let mut scoped: BTreeMap<(ScopeKind, Uuid), BTreeSet<String>> = BTreeMap::new();
+            for (kind, id, permission) in rows {
+                match (kind.as_deref().and_then(ScopeKind::parse), id) {
+                    (None, _) => {
+                        membership.permissions.insert(permission);
+                    }
+                    (Some(kind), Some(id)) => {
+                        scoped.entry((kind, id)).or_default().insert(permission);
+                    }
+                    (Some(_), None) => {}
+                }
+            }
+            membership.scoped = scoped
+                .into_iter()
+                .map(|((kind, id), permissions)| ScopedGrant {
+                    kind,
+                    id,
+                    permissions,
+                })
+                .collect();
+            if let Ok(json) = serde_json::to_string(&membership) {
+                self.redis
+                    .run(|mut c| async move {
+                        redis::cmd("SET")
+                            .arg(key)
+                            .arg(json)
+                            .arg("EX")
+                            .arg(300)
+                            .query_async::<()>(&mut c)
+                            .await
+                    })
+                    .await;
+            }
+            Ok(Some(membership))
         })
     }
 

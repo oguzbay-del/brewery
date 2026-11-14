@@ -125,6 +125,7 @@ impl Authenticator for FakeAuth {
                 .get(&(identity.user_id, workspace_id))
                 .map(|p| Membership {
                     permissions: p.clone(),
+                    ..Membership::default()
                 }))
         })
     }

@@ -40,10 +40,13 @@ pub struct Identity {
 }
 
 /// A member's effective permissions inside one workspace.
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Membership {
-    /// Permission codes (`recipe.edit`, `cost.view`, ...).
+    /// Permission codes held for the whole workspace (`recipe.edit`, `cost.view`, ...).
     pub permissions: BTreeSet<String>,
+    /// Permissions held only inside a recipe, batch, vessel or area (ADR-0009 rule 8.3).
+    #[serde(default)]
+    pub scoped: Vec<crate::authz::ScopedGrant>,
 }
 
 /// Filled in by T2.11 (sessions) and T2.13 (permissions); tests use a fake.
@@ -102,8 +105,10 @@ pub struct RequestContext {
     pub identity: Identity,
     /// Workspace of the path (`/v1/workspaces/{id}/...`), if any.
     pub workspace_id: Option<Uuid>,
-    /// Effective permissions in that workspace (empty outside one).
+    /// Permissions held for the whole workspace (empty outside one).
     pub permissions: BTreeSet<String>,
+    /// Scoped grants (see [`crate::authz`]).
+    pub scoped: Vec<crate::authz::ScopedGrant>,
 }
 
 impl RequestContext {
@@ -177,16 +182,13 @@ async fn resolve(
     let workspace_id = workspace_in_path(path)?;
     let identity = state.auth.authenticate(headers).await?;
     state.auth.check_csrf(method, headers, &identity).await?;
-    let permissions = match workspace_id {
-        Some(ws) => {
-            state
-                .auth
-                .membership(&identity, ws)
-                .await?
-                .ok_or_else(|| ApiError::new(ErrorCode::NotFound))?
-                .permissions
-        }
-        None => BTreeSet::new(),
+    let membership = match workspace_id {
+        Some(ws) => state
+            .auth
+            .membership(&identity, ws)
+            .await?
+            .ok_or_else(|| ApiError::new(ErrorCode::NotFound))?,
+        None => Membership::default(),
     };
     state
         .rate
@@ -195,7 +197,8 @@ async fn resolve(
     Ok(RequestContext {
         identity,
         workspace_id,
-        permissions,
+        permissions: membership.permissions,
+        scoped: membership.scoped,
     })
 }
 

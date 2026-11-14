@@ -14,6 +14,7 @@ use utoipa::OpenApi;
 use crate::{
     app_version::ClientRequirements,
     auth::{
+        access,
         handlers::{
             self as auth_handlers, AccountHint, ClientParam, EmailStartRequest, EmailStartResponse,
             EmailVerifyRequest, IdentitySummary, LinkIdentityRequest, LinkResponse, LoginResponse,
@@ -129,6 +130,66 @@ const FILE_DELETE: &[ErrorCode] = &[
     UpgradeRequired,
     Internal,
     Unavailable,
+];
+
+const ACCESS_READ: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+];
+const ACCESS_CREATE: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    Conflict,
+    IdempotencyInProgress,
+    UnsupportedMediaType,
+    ValidationFailed,
+    IdempotencyMismatch,
+    PreconditionRequired,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+];
+const ACCESS_UPDATE: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    Conflict,
+    VersionMismatch,
+    UnsupportedMediaType,
+    ValidationFailed,
+    PreconditionRequired,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+];
+const ACCESS_DELETE: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    Conflict,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
+];
+const ACCESS_ACCEPT: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    NotFound,
+    Conflict,
+    UnsupportedMediaType,
+    RateLimited,
+    UpgradeRequired,
+    Internal,
 ];
 
 const fn file_op(
@@ -361,6 +422,111 @@ pub const OPERATIONS: &[OperationSpec] = &[
         ],
     },
     OperationSpec {
+        operation_id: "roles_list",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: None,
+        errors: ACCESS_READ,
+    },
+    OperationSpec {
+        operation_id: "roles_create",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::Append),
+        errors: ACCESS_CREATE,
+    },
+    OperationSpec {
+        operation_id: "roles_copy",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::Append),
+        errors: ACCESS_CREATE,
+    },
+    OperationSpec {
+        operation_id: "roles_update",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::Optimistic),
+        errors: ACCESS_UPDATE,
+    },
+    OperationSpec {
+        operation_id: "roles_delete",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::Optimistic),
+        errors: ACCESS_UPDATE,
+    },
+    OperationSpec {
+        operation_id: "members_list",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: None,
+        errors: ACCESS_READ,
+    },
+    OperationSpec {
+        operation_id: "members_update",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::FieldLww),
+        errors: ACCESS_UPDATE,
+    },
+    OperationSpec {
+        operation_id: "members_remove",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::FieldLww),
+        errors: ACCESS_DELETE,
+    },
+    OperationSpec {
+        operation_id: "assignments_create",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::Append),
+        errors: ACCESS_CREATE,
+    },
+    OperationSpec {
+        operation_id: "assignments_delete",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::FieldLww),
+        errors: ACCESS_DELETE,
+    },
+    OperationSpec {
+        operation_id: "invitations_create",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::Append),
+        errors: ACCESS_CREATE,
+    },
+    OperationSpec {
+        operation_id: "invitations_list",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: None,
+        errors: ACCESS_READ,
+    },
+    OperationSpec {
+        operation_id: "invitations_revoke",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::FieldLww),
+        errors: ACCESS_DELETE,
+    },
+    OperationSpec {
+        operation_id: "invitations_accept",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: ACCESS_ACCEPT,
+    },
+    OperationSpec {
+        operation_id: "shares_create",
+        public: false,
+        permission: Some("users.manage"),
+        concurrency: Some(Concurrency::Append),
+        errors: ACCESS_CREATE,
+    },
+    OperationSpec {
         operation_id: "workspaces_create",
         public: false,
         permission: None,
@@ -415,7 +581,22 @@ pub const OPERATIONS: &[OperationSpec] = &[
         auth_handlers::identities_list,
         auth_handlers::identity_link,
         auth_handlers::identity_unlink,
-        setup::workspace_create
+        setup::workspace_create,
+        access::roles_list,
+        access::roles_create,
+        access::roles_copy,
+        access::roles_update,
+        access::roles_delete,
+        access::members_list,
+        access::members_update,
+        access::members_remove,
+        access::assignments_create,
+        access::assignments_delete,
+        access::invitations_create,
+        access::invitations_list,
+        access::invitations_revoke,
+        access::invitations_accept,
+        access::shares_create
     ),
     components(schemas(
         HealthResponse,
@@ -451,7 +632,24 @@ pub const OPERATIONS: &[OperationSpec] = &[
         UserSummary,
         WorkspaceSummary,
         WorkspaceCreateRequest,
-        WorkspaceResponse
+        WorkspaceResponse,
+        access::RoleResponse,
+        access::RoleList,
+        access::NewRole,
+        access::CopyRole,
+        access::RolePatch,
+        access::AssignmentResponse,
+        access::MemberResponse,
+        access::MemberList,
+        access::MemberPatch,
+        access::NewAssignment,
+        access::InvitationResponse,
+        access::InvitationCreated,
+        access::InvitationList,
+        access::NewInvitation,
+        access::AcceptInvitation,
+        access::InvitationAccepted,
+        access::NewShare
     )),
     tags(
         (name = "system", description = "Service status and version"),
@@ -460,7 +658,8 @@ pub const OPERATIONS: &[OperationSpec] = &[
         (name = "files", description = "Attachments and scanned documents (direct upload to the object store)"),
         (name = "auth", description = "Sign-in with Apple, Google or an e-mail link"),
         (name = "me", description = "The signed-in user: session, sessions, sign-in methods"),
-        (name = "workspaces", description = "Workspaces")
+        (name = "workspaces", description = "Workspaces"),
+        (name = "access", description = "Roles, members, assignments, invitations and sharing")
     )
 )]
 pub struct ApiDoc;
