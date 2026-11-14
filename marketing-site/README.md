@@ -78,3 +78,10 @@ The Astro config uses the root path on Vercel and `/brewery` only for the GitHub
 - Verify mobile menu, all internal links, keyboard navigation and 404 handling.
 - Verify page titles, descriptions, Open Graph, canonical URLs, structured data, robots and sitemap on the production domain.
 - Configure product/app/sign-in URLs only after they are confirmed.
+
+
+## Search metadata
+
+- The homepage publishes schema.org `WebSite` JSON-LD.
+- The Homebrewers and Professional Breweries pages publish schema.org `WebPage` JSON-LD with their canonical URLs and the site as their parent.
+- Structured data describes the marketing pages only. It does not claim that the product is generally available or that planned functionality is already usable.
