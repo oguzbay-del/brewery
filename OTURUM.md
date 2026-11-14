@@ -292,3 +292,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - “Devam et” ile küçük, doğrulanabilir iş paketleri ilerletilir; açık karar veya kullanıcıdan beklenen girdi varsa önce plan güncellenir. GitHub Auto-merge yok; manuel merge için CI, Vercel Preview, mergeability ve expected head SHA kontrol edilir.
 - Plan dosyası PR #17 içinde güncellendi. PR #17 Vercel deployment ve Preview Comments başarılı; güncel commit ve PR merge durumu devam oturumunda tekrar doğrulanmalı. PR #16 ayrıca açık; özellik kataloğu kapsamı içerir ve bu bütünsel revizyonla karıştırılmamalıdır.
 - Bu oturumda site kodu/tasarımı değiştirilmedi; yalnız plan ve oturum devir belgeleri güncellendi.
+
+
+## Ürün-planı iddia eşleştirmesi — WP-03 (14 Kasım 2026)
+
+- Ürün kaynağı `plan/demleme-plani.md` (113 KB) ve PR #16 feature catalog branch'inde yer alan 16 feature kaydı karşılaştırıldı.
+- Rapor: `web-stratejisi/14-feature-claim-denetimi.md`.
+- 16 feature alanı ürün planı domain'lerine ve audience/stage etiketlerine eşlendi.
+- Kritik çelişkiler: (1) fermantasyon bitiş/FG tahminleri analitik modeller bölümünde onaysız; (2) beklenen eğri sapma uyarısı onay bekleyen model 2 ile ilişkili; (3) ekipman kalibrasyonu Ek Özellikler'de Home MVP iken analitik model 3 listesinde onaysız. Pazarlama metni daha muhafazakâr durumu kullanmalı; ürün sahibi kararı gerekli.
+- Ek doğrulama gerektiren konular: mash pH formülü, public web calculator kapsamı, cihaz/protokol ve read/control ayrımı, mevzuat ve security iddiaları.
+- Ürün uygulaması veya ürün planı değiştirilmedi. Yalnız pazarlama denetim dokümanı ve bu oturum kaydı güncellendi.
+- **Sıradaki adım:** WP-04 Home/Business ayrı sitemap, user journey ve CTA haritası; açık ürün kararlarını “under consideration / requires validation” olarak koru.
