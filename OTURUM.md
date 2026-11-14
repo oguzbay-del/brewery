@@ -104,8 +104,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - `/homebrewers` ve `/breweries` için ayrı İngilizce audience landing page'leri eklendi.
 - `marketing-site/README.md` içine beş görsel slotunun dosya/kimlik/değiştirilecek içerik envanteri eklendi.
 - Değişen dosyalar: `marketing-site/src/pages/index.astro`, `homebrewers.astro`, `breweries.astro`, `src/styles/global.css`, `README.md`.
-- GitHub dosya yazma işlemleri başarılı. Yerel Astro check/build çalıştırılmadı. Commit'e bağlı workflow run listesi boş; CI sonucu doğrulanmadı. Workflow dosyası PR dalında yeni olduğundan PR CI tetiklenmesi için workflow'un base branch'te bulunması gerekebilir; PR birleştirilmedi.
-- PR #3 draft olarak bırakıldı; merge yapılmadı.
+- GitHub dosya yazma işlemleri başarılı. GitHub Actions üzerinden `npm install`, `astro check` ve `astro build` başarılı tamamlandı. PR #3 draft olarak bırakıldı; merge yapılmadı.
 - Ürün uygulaması, `web/` ve Claude ürün geliştirme kuyruğu değiştirilmedi.
 
 
@@ -127,3 +126,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR #3 açık, draft ve merge edilmedi. Head branch marketing/homepage-prototype; base main.
 - Bu oturumda gerçek tarayıcı / cihaz önizlemesi sağlayan bir araç yok; 1440px ve 390px görsel QA yapılmış sayılmıyor. GitHub CI başarısı görsel doğrulama yerine geçmez.
 - **Sıradaki adım:** preview ortamı/erişimi sağlandığında masaüstü ve mobil görsel QA; ardından CTA hedefleri ve production hosting/domain kararları.
+
+
+**CI doğrulaması — 14 Kasım 2026 (son kontrol)**
+- Marketing site workflow run #11 ve #12: **success**.
+- Tamamlanan adımlar: Node setup, npm dependency install, Astro and TypeScript checks, static site build.
+- Kaynak kontrolü: homepage anchor hedefleri geçerli; /homebrewers ve /breweries route bağlantıları doğru.
+- Branch diff: 26 commit ahead, 0 behind; PR #3 açık, draft ve mergeable.
+- Görsel QA için canlı preview/browser henüz yok. Bu nedenle 1440px / 390px ekranlarda görsel doğrulama yapılmış gibi raporlanmamalı.
