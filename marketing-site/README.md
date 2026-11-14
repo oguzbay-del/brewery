@@ -53,14 +53,13 @@ Keep the slot ID when replacing an image. Add final assets under `public/images/
 
 Review the homepage and both audience pages at 1440px desktop and 390px mobile. Configure production app/sign-in URLs only after they are confirmed.
 
-
 ## GitHub Pages preview
 
 The prototype is configured for the repository Pages URL: `https://oguzbay-del.github.io/brewery/`.
 
 - Astro `site`: `https://oguzbay-del.github.io`; `base`: `/brewery`.
 - Deployment workflow: `.github/workflows/marketing-site-pages.yml`.
-- Pushes to `marketing/homepage-prototype` build, check, and deploy the preview. The site is public while Pages is enabled.
-- Before the first deployment, enable Pages in **Repository Settings → Pages → Build and deployment → Source: GitHub Actions**. The workflow needs Actions permissions for Pages deployment.
+- Pushes to `marketing/homepage-prototype` build, check, and deploy the preview.
+- Repository Pages has been enabled by the repository owner with GitHub Actions as the deployment source. The next branch push will run the deployment.
 - The separate `marketing-site.yml` workflow continues to run PR checks.
-- Keep the PR unmerged; this branch deployment is for visual review only.
+- Keep the PR unmerged until the live preview has passed desktop/mobile visual QA and the scope review is complete.
