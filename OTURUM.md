@@ -60,3 +60,16 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - açık kararlar ve engeller;
 - tek bir net sıradaki adım.
 - Tamamlanmayan işi tamamlandı gibi yazma. Bilinmeyen token tüketimini tahmin etme.
+
+
+## Web framework araştırması — 14 Kasım 2026
+
+**Tamamlandı:** Resmî kaynaklarla Astro, Next.js App Router ve SvelteKit karşılaştırıldı. Güncel Astro 7.4 bilgisi ve Cloudflare Pages GitHub preview akışı kontrol edildi.
+
+**Önerilen mimari:** Astro 7.x + TypeScript strict/strictest + SSG + Markdown/MDX Content Collections/Zod + CSS token'ları + Cloudflare Pages. İlk sürümde backend/database/CMS yok; Astro components varsayılan, React yalnız gerekirse island.
+
+**Gerekçe:** Pazarlama sitesi içerik ve SEO ağırlıklı. Astro bu ihtiyaca doğrudan odaklanıyor. Next.js static export yapabilir ama ihtiyaç olmayan server/runtime özelliklerini de getirir; SvelteKit statik üretim yapabilir ancak mevcut React/TypeScript web ürününden farklı UI ekosistemi oluşturur.
+
+**Kaydedilen teknik doküman:** `web-stratejisi/10-teknik-mimari.md` — framework karşılaştırması, TypeScript/AI kodlama ilkeleri, repo yerleşimi, rendering, içerik/SEO, tasarım token'ları, hosting, CI/CD, kalite kapıları ve Mermaid sistem akışı.
+
+**Sıradaki adım:** Mimari tercihi esas alarak yalnız pazarlama sitesi için bilgi mimarisi ve desktop/mobile wireframe taslağı hazırlamak. Henüz `marketing-site/` kod iskeleti oluşturulmadı. `web/` ürün uygulaması ve Claude geliştirme kuyruğu değiştirilmedi.
