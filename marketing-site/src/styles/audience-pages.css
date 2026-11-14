@@ -1,0 +1,148 @@
+/* Audience journey components — shared structure, audience-specific content. */
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+.workflow-card {
+  min-height: 285px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px;
+  background: var(--surface);
+}
+.workflow-number {
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.workflow-card h3 {
+  margin: 22px 0 12px;
+  font-family: var(--serif);
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1.16;
+}
+.workflow-card p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.75;
+}
+.workflow-card .workflow-question {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+}
+.workflow-card a {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 20px;
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 700;
+}
+.technical-clarity-section { background: #e9e7df; }
+.technical-clarity-grid, .erp-boundary-inner {
+  display: grid;
+  grid-template-columns: .9fr 1fr;
+  gap: 12%;
+  align-items: start;
+}
+.technical-clarity-grid h2, .erp-boundary-inner h2 {
+  max-width: 520px;
+  margin: 0;
+  font-family: var(--serif);
+  font-size: clamp(38px, 4vw, 54px);
+  font-weight: 400;
+  line-height: 1.08;
+}
+.technical-clarity-grid h2 em, .erp-boundary-inner h2 em { color: var(--amber); }
+.technical-clarity-grid > div:last-child, .erp-boundary-inner > div:last-child {
+  color: #55584f;
+  font-size: 14px;
+  line-height: 1.85;
+}
+.technical-clarity-grid > div:last-child p:last-of-type,
+.erp-boundary-inner > div:last-child p:last-child { margin-bottom: 0; }
+.technical-clarity-grid .text-link { display: inline-flex; margin-top: 12px; }
+.role-section { background: var(--surface); }
+.role-table-wrap { overflow-x: auto; border: 1px solid var(--line); }
+.role-table { width: 100%; border-collapse: collapse; text-align: left; }
+.role-table th, .role-table td {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.65;
+  vertical-align: top;
+}
+.role-table thead th {
+  background: #e9e7df;
+  color: #55584f;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+}
+.role-table tbody th { min-width: 150px; font-weight: 650; }
+.role-table tbody td { color: var(--muted); }
+.role-table tr:last-child th, .role-table tr:last-child td { border-bottom: 0; }
+.erp-boundary-section { background: #eee6d8; }
+.erp-boundary-inner ul { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; padding-left: 18px; }
+.erp-boundary-inner li::marker { color: var(--amber); }
+.audience-faq-section { background: var(--surface); }
+.audience-faq-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 10%; align-items: start; }
+.audience-faq-layout .section-heading { margin-bottom: 0; }
+.audience-faq-list { border-top: 1px solid var(--line); }
+.audience-faq-item { border-bottom: 1px solid var(--line); }
+.audience-faq-item summary {
+  position: relative;
+  padding: 20px 38px 20px 0;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--serif);
+  font-size: 21px;
+  line-height: 1.3;
+  list-style: none;
+}
+.audience-faq-item summary::-webkit-details-marker { display: none; }
+.audience-faq-item summary::after {
+  content: "+";
+  position: absolute;
+  top: 17px;
+  right: 4px;
+  color: var(--amber);
+  font-family: var(--sans);
+  font-size: 22px;
+}
+.audience-faq-item[open] summary::after { content: "−"; }
+.audience-faq-item p {
+  max-width: 68ch;
+  margin: 0;
+  padding: 0 28px 22px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.audience-faq-item summary:focus-visible { outline: 2px solid var(--amber); outline-offset: 4px; }
+@media (max-width: 900px) {
+  .workflow-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .technical-clarity-grid, .erp-boundary-inner, .audience-faq-layout { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (max-width: 620px) {
+  .workflow-grid { grid-template-columns: 1fr; }
+  .workflow-card { min-height: 0; padding: 24px 22px; }
+  .workflow-card h3 { margin-top: 14px; }
+  .role-table { min-width: 620px; }
+  .erp-boundary-inner ul { grid-template-columns: 1fr; }
+  .audience-faq-item summary { font-size: 19px; }
+}
