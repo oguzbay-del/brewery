@@ -115,5 +115,5 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Fotoğraf yer tutucusu arka planı düz renge çevrildi; görsel slot kimlikleri korundu.
 - README kapsamı iki ayrı audience landing page'ini ve güncel CTA davranışını yansıtacak şekilde güncellendi.
 - GitHub üzerinden dosya içerikleri ve bağlantı hedefleri kontrol edildi. Astro check/build ve gerçek tarayıcıda 1440/390 görsel kontrolü henüz yapılmadı.
-- PR #3 draft; merge edilmedi. Workflow sonucu hâlâ doğrulanmadı.
-- **Sıradaki adım:** gerçek tarayıcı önizlemesiyle responsive görsel QA ve ardından Astro check/build.
+- PR #3 draft; merge edilmedi. Son commit için `Marketing site checks` workflow run #11 tetiklendi; `build` job'ı çalışıyor. Node kurulumu başladı; dependency install, Astro check ve production build henüz sonuçlanmadı.
+- **Sıradaki adım:** workflow tamamlandığında sonucu incele; ardından gerçek tarayıcı önizlemesiyle responsive görsel QA.
