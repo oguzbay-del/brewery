@@ -129,16 +129,16 @@ for (const file of htmlFiles) {
     assert(!html.toLowerCase().includes(phrase.toLowerCase()), `${rel}: no unsafe legacy claim “${phrase}”`);
   }
 
-  const idList = [...html.matchAll(/\\bid=["']([^"']+)["']/g)].map((match) => match[1]);
+  const idList = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]);
   const ids = new Set(idList);
   assert(idList.length === ids.size, `${rel}: no duplicate HTML IDs`);
-  assert((html.match(/<h1(?:\\s|>)/g) || []).length === 1, `${rel}: exactly one primary heading`);
-  assert((html.match(/<main(?:\\s|>)/g) || []).length === 1, `${rel}: exactly one main landmark`);
+  assert((html.match(/<h1(?:\s|>)/g) || []).length === 1, `${rel}: exactly one primary heading`);
+  assert((html.match(/<main(?:\s|>)/g) || []).length === 1, `${rel}: exactly one main landmark`);
   assert(/<a[^>]*class=["']skip-link["'][^>]*href=["']#main-content["']/.test(html), `${rel}: skip link targets main content`);
-  const navTags = [...html.matchAll(/<nav\\b([^>]*)>/g)].map((match) => match[1]);
+  const navTags = [...html.matchAll(/<nav\b([^>]*)>/g)].map((match) => match[1]);
   assert(navTags.length > 0 && navTags.every((attrs) => /aria-label=["'][^"']+["']|aria-labelledby=["'][^"']+["']/.test(attrs)), `${rel}: navigation landmarks have accessible names`);
-  const imageTags = [...html.matchAll(/<img\\b([^>]*)>/g)].map((match) => match[1]);
-  assert(imageTags.every((attrs) => /\\balt=["'][^"']*["']/.test(attrs)), `${rel}: every image has an alt attribute`);
+  const imageTags = [...html.matchAll(/<img\b([^>]*)>/g)].map((match) => match[1]);
+  assert(imageTags.every((attrs) => /\balt=["'][^"']*["']/.test(attrs)), `${rel}: every image has an alt attribute`);
   const attrs = [...html.matchAll(/\b(?:href|src)=["']([^"']+)["']/g)].map((match) => decodeHtml(match[1]));
   for (const raw of attrs) {
     if (!raw || raw.startsWith("data:") || raw.startsWith("mailto:") || raw.startsWith("tel:") || raw.startsWith("javascript:")) continue;
