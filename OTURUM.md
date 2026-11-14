@@ -187,3 +187,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Her iki sayfanın kapanış CTA'sı “Explore both brewing paths” olarak netleştirildi; ana sayfaya dönüş hedefi korundu.
 - Değişiklikler yalnız pazarlama sayfalarında. Ürün özelliği, fiyat, kayıt veya app URL'si uydurulmadı.
 - Branch: `marketing/audience-journey-polish`. CI ve manuel PR merge bekleniyor; görsel QA ayrı açık konu.
+
+**CTA iyileştirmesi yayınlandı — 14 Kasım 2026**
+- PR #5 manuel squash merge edildi; Auto-merge kullanılmadı. Merge commit: `919bf450453505fbc01bbc0a2938955c3012004c`.
+- PR marketing CI #43630573120: **success** (dependency install, Astro/TypeScript check, static build).
+- Main marketing CI #43630647610: **success**.
+- Main Pages deploy #43630647549: **success**. Canlı adres: https://oguzbay-del.github.io/brewery/.
+- Değişiklikler Homebrewers/Breweries CTA hedeflerini iyileştirdi; ürün iddiası veya uygulama bağlantısı eklenmedi.
+- Gerçek tarayıcıda responsive görsel QA hâlâ açık; bu ortamda alan adına erişim kısıtı nedeniyle tamamlanmadı.
+- Sıradaki iş: sayfaların gerçek 1440px desktop / 390px mobile görsel QA'sı. Fotoğraflar ve onaylı app/sign-in URL'leri bekleniyor.
