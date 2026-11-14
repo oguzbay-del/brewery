@@ -391,3 +391,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - CSS token değerlerinin canonical JSON'dan kopya tutulduğu, ortak header/metadata yapısının tekrarlandığı ve responsive/WCAG QA'nın gerçek tarayıcıda yapılmadığı kaydedildi.
 - Sıradaki uygulama sırası ve release gate yazıldı; `marketing-site/` değiştirilmedi.
 - **Sıradaki adım:** WP-12 — uygulama spesifikasyonu ve acceptance checklist'i birleştir; production implementasyon için kullanıcıdan açık onay bekle.
+
+
+## WP-12 — Uygulama spesifikasyonu ve release gate (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/23-implementation-spec-release-gate.md`.
+- WP-03–WP-11 kararları, hedef sitemap, Home/Business içerik tasarımı, implementasyon workstream'leri, bağımlılıklar, kalite kabul kriterleri ve release/merge protokolü birleştirildi.
+- İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
+- Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
+- **Sıradaki adım:** PR #36 WP-03 claim audit'i main'e al; PR #16 feature catalog diff'ini denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
