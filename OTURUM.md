@@ -49,11 +49,20 @@
 - Özellik iddiaları ürün akışı/test/dokümanıyla doğrulanmadan yayınlanmaz.
 
 **Sonraki adımlar**
-1. Wireframe ve görsel yön için kullanıcı geri bildirimi al; onay sonrası high-fidelity tasarım/prototip.
-2. Ürün ekranları ve fotoğraf varlıklarını topla; olmayan ekranı üretme.
-3. Tasarım onayından sonra `marketing-site/` Astro iskeleti ve CI oluştur; `web/` ürün uygulamasını değiştirme.
+1. Homepage prototipinin desktop/mobile görsel yönünü kullanıcıyla gözden geçir; fotoğraf varlıklarını ve gerçek ürün ekranlarını onayla.
+2. Tasarım onayından sonra iki audience landing page'i aynı sistemle hazırla.
+3. App URL, sign-in URL, domain ve analytics/form kararlarını ayrıca al.
 4. Fiyat, trial, paket, ödeme sağlayıcısı ve limitler kesinleşmeden fiyat/teklif vaat etme.
 5. Claude ürün geliştirme kuyruğuna dokunma.
+
+**Son çalışma — 14 Kasım 2026**
+- `marketing/homepage-prototype` dalı `main` üzerinden açıldı.
+- `marketing-site/` altında izole Astro + TypeScript + SSG homepage prototipi eklendi.
+- Desktop/mobile düzen, audience yolları, teknik mesaj bölümü ve erişilebilir mobil menü hazırlandı.
+- Görsel öğeler özgün SVG illüstrasyonlarıdır; gerçek ürün ekranı veya ürün işlevi taklidi değildir.
+- Mevcut tasarım token'ları ve sistem font yığını kullanıldı.
+- GitHub üzerinden dosya ve değişiklik kaydı doğrulandı. Yerel `npm install`, `astro check` ve production build henüz çalıştırılmadı.
+- Gerçek fotoğraf varlıkları, ürün ekranları ve uygulama CTA URL'leri bekliyor.
 
 **Sınır:** Bu pazarlama iş parçacığı `gelistirme/DURUM.md`, `gelistirme/ISLER.md`, ürün kodu, API, Claude geliştirme sırası ve commit'lerini değiştirmez.
 
