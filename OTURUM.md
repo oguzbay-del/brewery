@@ -292,3 +292,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - “Devam et” ile küçük, doğrulanabilir iş paketleri ilerletilir; açık karar veya kullanıcıdan beklenen girdi varsa önce plan güncellenir. GitHub Auto-merge yok; manuel merge için CI, Vercel Preview, mergeability ve expected head SHA kontrol edilir.
 - Plan dosyası PR #17 içinde güncellendi. PR #17 Vercel deployment ve Preview Comments başarılı; güncel commit ve PR merge durumu devam oturumunda tekrar doğrulanmalı. PR #16 ayrıca açık; özellik kataloğu kapsamı içerir ve bu bütünsel revizyonla karıştırılmamalıdır.
 - Bu oturumda site kodu/tasarımı değiştirilmedi; yalnız plan ve oturum devir belgeleri güncellendi.
+
+
+## Devam oturumu — site envanteri ve FoamByte benchmark (14 Kasım 2026)
+
+- PR #17 merged; main HEAD `8be1771c5cd68bfeca2e8e2b208d7a68241fab97`. Vercel repository status PR #16 head'i için success; PR #16 hâlâ açık ve eski main tabanlı. Doğrudan merge edilmedi; güncel main ile uyum/mergeability kontrolü gerekli.
+- WP-01 kaynak kodu/repo envanteri tamamlandı. İncelenen route'lar: `/`, `/homebrewers/`, `/breweries/`, `/features/`, `/features/[slug]/`, `/404`, `/sitemap.xml`, `/robots.txt`.
+- Mevcut artılar: Astro/TypeScript SSG, ayrı Home/Business landing page'leri, merkezi feature katalog datası, canonical/OG/Twitter/JSON-LD, native mobil menü, skip-link/focus-visible ve tanımlı fotoğraf slotları.
+- WP-02 FoamByte desk research: homepage, features, calculators, pricing, FAQ ve 17 Sep 2026 site redesign yazısı incelendi. Güçlü alanlar: adlandırılmış feature anlatımı, 25+ calculator dizini, FAQ, pricing ve sosyal kanıt. Demleme için uyarlama: teknik doğruluk, formül/varsayım/kaynak açıklığı ve daha keskin Home/Business ayrımı; rakip metin/tasarım/kanıt kopyalanmayacak.
+- Denetim raporu: `web-stratejisi/13-mevcut-site-ve-foambyte-denetimi.md` (audit branch / PR).
+- Canlı Vercel site bu oturumda tarayıcı ile açılamadı. 1440px/tablet/390px visual QA, HTTP sitemap/robots/canonical testi ve ürün planı satır bazlı iddia denetimi tamamlandı sayılmıyor.
+- Bu oturumda site kodu/tasarımı değiştirilmedi. Yalnız denetim dokümanı ve bu devir kaydı değiştirildi.
+- **Sıradaki adım:** WP-03 — 16 feature sayfasındaki her iddiayı `plan/demleme-plani.md` ve roadmap aşamalarıyla eşleştir. PR #16'nın eski base/mergeability durumunu ayrıca çözmeden merge etme.
