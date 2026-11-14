@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.11 giriş, T2.15 olaylar, T2.18 nesne deposu alt ajanlarda sürüyor; T2.8 vergi zinciri (T2.7'ye bağlı) ve F2.1 veri modeli incelemesi (Fable) açık. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
+**Sıradaki iş:** T2.11 giriş (yarıda kaldı, sürdürülecek); T2.8 vergi zinciri ve F2.1 veri modeli incelemesi (Fable, yarıda kaldı) açık. T2.11 bitince T2.12, T2.13 açılır. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -20,6 +20,8 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 - T2.14: zincirin hem satırları hem başı silinirse fark edilmez; dış çapa (periyodik özetin nesne deposuna yazılması) gerekir. Kanonik alan listesi değişirse biçim sürümü eklenir.
 - T2.16: `EngineClient` henüz `AppState`'e bağlı değil (T2.20/T2.21 bağlar); proto'da "Nasıl hesaplandı" için ayrı ara değer alanı yok.
+- T2.15: tüketici henüz kayıtlı değil (`worker/src/background.rs`'e `consumer::run`); SSE her bağlantıda kendi JetStream tüketicisini açar (ölçek gerekirse paylaşımlı abonelik).
+- T2.18: dosya sınırları (25 MiB; jpeg, png, heic, webp, pdf, text) ürün önerisi, doğrulanacak; silinen ve yarım yüklemelerin nesne baytlarını silen worker işi yok; k8s ve Terraform'a nesne deposu T2.32'de. Azure Blob uygulaması yok (arayüz hazır).
 - Vergi oranı tohumu yok; satırlar `unverified` başlar, resmi kaynakla doğrulanınca yüklenir (T2.8).
 - T2.22: parti yalnız `approved` sürümden açılır (Evde de); taslaktan parti başlatılırsa sürüm önce yayınlanmalı.
 - T2.10 kararları (itiraz gelmedikçe geçerli): bilinmeyen yol ve yanlış yöntem 404 (ADR kod listesinde 405 yok); idempotency yalnız 2xx saklar; hız sınırı IP 300, kullanıcı 600, çalışma alanı 1200 istek/dk; `/v1/meta/fields` `max-age=3600`; istek kimliği UUIDv7. Her yeni uç `api/src/openapi.rs` `OPERATIONS` tablosuna satır ekler. `/internal` dinleyicisi ve SSE sonraki işlerde.
@@ -41,7 +43,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Aşama 2 (sürüyor)
 
-T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 çekirdek göçler (23 tablo, FORCE RLS, üç rol, girişten önce SECURITY DEFINER işlevleri, RLS taraması) · T2.6 Ev MVP alan göçleri (0007–0013, `secure_workspace_table`, bölümlü ölçüm, değişmez sürüm, kapsam tetikleyicisi) · T2.10 API çekirdeği (bağlam ve `SET LOCAL`, RFC 9457, idempotency, ETag/If-Match, imleç, Redis hız sınırı fail-open, OTel, OpenAPI ve oasdiff, `/v1/meta/fields`). T2.7 İşletme ve vergi tabloları (0014–0015). T2.14 denetim zinciri (RFC 8785, `audit-verify`) · T2.16 motor istemcisi (`engine-client` crate, Redis + `calc_results` önbelleği, hata eşleme). 335 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
+T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 çekirdek göçler (23 tablo, FORCE RLS, üç rol, girişten önce SECURITY DEFINER işlevleri, RLS taraması) · T2.6 Ev MVP alan göçleri (0007–0013, `secure_workspace_table`, bölümlü ölçüm, değişmez sürüm, kapsam tetikleyicisi) · T2.10 API çekirdeği (bağlam ve `SET LOCAL`, RFC 9457, idempotency, ETag/If-Match, imleç, Redis hız sınırı fail-open, OTel, OpenAPI ve oasdiff, `/v1/meta/fields`). T2.7 İşletme ve vergi tabloları (0014–0015). T2.14 denetim zinciri (RFC 8785, `audit-verify`) · T2.16 motor istemcisi (`engine-client` crate, Redis + `calc_results` önbelleği, hata eşleme). T2.15 outbox → NATS aktarıcısı, tüketici çerçevesi, SSE · T2.18 nesne deposu (`storage` crate, SigV4, SeaweedFS, dosya uçları). 376 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
 
 ## Aşama 1 (kapandı)
 
