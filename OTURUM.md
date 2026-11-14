@@ -237,3 +237,8 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR CI #43631631449: **success**. Main CI #43631699802: **success**. GitHub Pages deploy #43631699807: **success**.
 - Astro `404.astro` sayfası Pages için özel 404 çıktısı üretir; ana sayfa ve iki audience yoluna dönüş bağlantısı içerir. `noindex, follow` kullanır ve sitemap'e eklenmez.
 - Canlı site: https://oguzbay-del.github.io/brewery/.
+
+**Alt sayfa gezinme hedefleri düzeltildi — 14 Kasım 2026**
+- Ana sayfanın logo ve “Back to top” bağlantılarının hedefi olan `#top` kimliği header'a eklendi.
+- Homebrewers/Breweries iç bağlantıları tutarlı trailing-slash biçimine alındı; Astro `trailingSlash: "always"` ile aynı URL standardına sabitlendi.
+- Bu düzeltme, 404 sayfasındaki zaten slash kullanan hedeflerle URL tutarlılığı sağlar. Canlı tarayıcı/HTTP testi ortam erişimi nedeniyle ayrıca doğrulanamadı.
