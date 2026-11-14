@@ -539,3 +539,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Mevcut renk paleti, illüstrasyon/SVG, sayfa içeriği ve diğer bölümlerin spacing değerleri değiştirilmedi.
 - CSS ayrı `home-hero-refinement.css` dosyasında izole edildi.
 - Branch: `design/homepage-hero-refinement`. CI ve gerçek responsive browser QA henüz tamamlanmadı; merge öncesi CI, Vercel/Pages preview ve QA durumu kontrol edilecek.
+
+
+## Original visual assets — 15 Kasım 2026
+
+- Added three original SVG diagrams: Homebrewing learning loop, Professional brewery record relationships, and an explicitly simulated fermentation profile.
+- Integrated the Home and Business diagrams into `/how-it-works/` and the simulated profile into `/technical-principles/`.
+- Accessible alt text and captions included; simulated values labelled as illustrative, not a product output or brewing recommendation.
+- No stock imagery, unapproved product UI, or unsupported capability claims added.
+- Branch: `design/visual-asset-foundation`. Awaiting CI and responsive browser QA.
