@@ -1,0 +1,183 @@
+# Demleme — FoamByte Derin Benchmark ve Sayfa İyileştirme Kararları
+
+**Work package:** WP-13  
+**Tarih:** 15 Kasım 2026  
+**Durum:** İçerik ve kaynak-kod denetimi tamamlandı; görsel tarayıcı QA bekliyor.  
+**Kapsam:** Demleme pazarlama sitesi ile FoamByte kamuya açık pazarlama sayfaları. Ürün uygulaması, API, iOS ve ürün geliştirme kapsam dışıdır.  
+**Karar zemini:** Homebrewers + Professional Breweries; teknik konumlandırma; ABD/İngiltere önceliği; İngilizce; self-service öncelikli.
+
+## 1. Yönetici kararı
+
+FoamByte bugün pazarlama sitesinde daha tamamlanmış bir ticari edinim deneyimi sunuyor: gerçek ürün ekranları, ayrı özellik açıklamaları, ücretsiz hesaplayıcı dizini, fiyat/plan bilgisi, FAQ ve müşteri kanıtları. Ana sayfada iki hedef kitleyi birlikte ele alıyor; ancak Home ve nano brewery için farklı, derinleştirilmiş yolculuklar sınırlı.
+
+Demleme'nin doğru stratejik avantajı FoamByte'ın daha fazla özelliğini taklit etmek değil. Demleme:
+1. Home ve Business için gerçekten farklı bilgi mimarisi ve kullanıcı yolculuğu kurmalı.
+2. Teknik iddiaları yöntem, girdi, çıktı, varsayım, sınır ve kanıtla açıklamalı.
+3. Ürün olgunluğunu her sayfada tutarlı biçimde göstermeli.
+4. Business tarafında profesyonel üretim kayıtları ve izlenebilirlik odağını ERP kapsamından açıkça ayırmalı.
+5. Ürün hazır değilken sahte kayıt, trial, demo, fiyat, müşteri veya hesaplayıcı vaat etmemeli.
+
+**Sonuç:** Demleme'nin mevcut yönü marka ve teknik ton açısından doğru; fakat mevcut Home ve Business sayfaları hâlâ kısa tanıtım/roadmap sayfaları. İçerik derinliği, süreç anlatımı ve kanıt katmanları eklenmeden FoamByte karşısında ikna edici bir teknik bilgi merkezi haline gelmez.
+
+## 2. Denetim yöntemi ve sınırlar
+
+- Demleme: 15 Kasım 2026 tarihinde GitHub main dalındaki Astro sayfaları, feature data, CSS ve WP-04–WP-12 strateji dokümanları incelendi. PR #40'taki claim-safe katalog değişiklikleri ayrıca bekleyen değişiklik olarak dikkate alındı; main'e merge edilmiş kabul edilmedi.
+- FoamByte: homepage, features, calculators ve FAQs kamuya açık sayfaları incelendi.
+- Vercel canlı Demleme adresi bu incelemede tarayıcı aracıyla açılamadı. Bu nedenle gerçek render, piksel karşılaştırması, responsive davranış, hız, etkileşim ve erişilebilirlik sonucu verilmedi.
+- Puanlar, sayfa içeriği ve gözlenebilen bilgi mimarisi üzerinden verilen göreli editoryal değerlendirmedir; kullanıcı testi veya laboratuvar ölçümü değildir.
+
+Kaynaklar:
+- https://foambyte.com/
+- https://foambyte.com/features/
+- https://foambyte.com/calculators/
+- https://foambyte.com/faqs/
+- Demleme kaynakları: marketing-site/src/pages/index.astro, homebrewers.astro, breweries.astro, src/data/features.ts, src/styles/global.css
+- Strateji: WP-04, WP-05, WP-06, WP-07, WP-08, WP-09, WP-10, WP-11, WP-12
+
+## 3. Genel karşılaştırma
+
+| Boyut | FoamByte — gözlenen durum | Demleme — main kaynak durumu | Karar |
+|---|---|---|---|
+| İlk ekran / değer önerisi | Ürünü ve ana faydayı doğrudan anlatıyor; Start Free CTA var | Güçlü editorial ton; ürünün geliştirme aşamasında olduğu açık | Demleme dürüstlük avantajını koruyup kullanıcı problemini daha somut anlatmalı |
+| Ürün somutluğu | Recipe Studio, Batch Tracking, Fermentation, Water Chemistry gibi modüller; ekran görselleri | 16 feature alanı; gerçek ürün ekranı yok; roadmap kartları | Sahte UI ekleme; süreç diyagramı, örnek kayıt şeması ve teknik açıklama kullan |
+| Özellik anlatımı | Her ana özellik için ayrı sayfa ve örnek görseller | Katalog ve detay route'ları var; anlatı çoğunlukla roadmap açıklaması | Her detay sayfası problem → workflow → inputs/outputs → stage → limits → evidence standardına geçmeli |
+| Teknik bilgi | Hesaplayıcı açıklamaları formül/yöntem, birim ve kullanım amacına değiniyor | Henüz yayınlanmış teknik bilgi merkezi yok | Doğrulanmış teknik rehberler Demleme'nin ana farklılaştırıcısı olmalı |
+| Hesaplayıcı edinimi | Kategorili, aranabilir, çok sayıda ücretsiz hesaplayıcı | Public calculator route yok; WP-09 doğrulaması bekliyor | Doğrulama tamamlanmadan yayınlama; sonrasında tekil, kaynaklı araç sayfaları |
+| Audience ayrımı | Homepage iki gruba hitap ediyor; ortak feature/FAQ/fiyat akışı | Home ve Business için ayrı route ve farklı giriş metni | Demleme'nin yapısal avantajı var; içerik ve örnekler daha fazla ayrışmalı |
+| Sosyal kanıt | İsimli yorumlar ve işletme logoları | Onaylı testimonial/logo/metric yok | Kanıt gelene kadar boş sosyal kanıt alanı açma |
+| Ticari şeffaflık | Free/Plus planı, limitler, billing ve ödeme sağlayıcısı anlatılıyor | Fiyat, trial ve paket kararı yok | Ticari karar verilmeden pricing sayfası üretme |
+| FAQ | Kullanım, kapsam, limit, cihaz ve billing sorularını yanıtlıyor | Ayrı FAQ sayfası henüz yok | Ürün durumu, kapsam dışı alanlar ve veri/cihaz sorularını cevaplayan FAQ hazırla |
+| Görsel dil | Gerçek ürün ekranları + bira üretim bağlamı | Editorial/technical CSS, özgün SVG ve görsel slotları | Gerçek ürün ekranı yokken teknik diyagramlar ve fotoğraf slotları; piksel QA ayrıca |
+| Navigasyon | Product, Resources, Calculators, FAQs ve Get Started | Product, Homebrewers, Breweries, Our approach | Learn ve doğrulanmış Calculators yayınlandığında ana navigasyona ekle |
+| Olgunluk yönetimi | Available ve Coming Soon ayrımı bazı özelliklerde görünür | In development / planned / under consideration ayrımı daha katı olmalı | Her claim için tek sözlük ve aynı görsel dil |
+| Dönüşüm | Çalışan ürün hesabına ve fiyat planına yönlendiriyor | Şimdilik keşif ve audience yönlendirme CTA'ları | Gerçek ürün onboarding'i yokken mevcut CTA yaklaşımı doğru |
+
+## 4. Ayrı profil karşılaştırmaları
+
+### 4.1 Homebrewers
+
+| Boyut | FoamByte | Demleme mevcut | Demleme için hedef |
+|---|---|---|---|
+| Kullanıcı niyeti | Reçete oluşturmak, hesaplamak ve batch geçmişini takip etmek | Teknik detaylara önem veren homebrewer için genel proje anlatısı | Somut iş sırası: recipe → ingredients/water → calculations → brew day → measurements → batch review |
+| Açılış mesajı | Basitlik ve daha iyi bira üretme sonucu | “Make every brew a learning experience” | Öğrenme vaadini koru; hangi kararların öğrenildiğini örnekle |
+| Özellik keşfi | Recipe Studio, Water Chemistry, Profiles ve Batch Tracking | Home'a filtrelenmiş roadmap kartları | Kartları süreç sırasına koy; her birinde bugün/plan/araştırma durumunu göster |
+| Teknik güven | Ürün ekranı, BJCP referansı ve hesaplayıcılar | Teknik ton var; yayınlanmış yöntem/örnek henüz yok | OG/FG, gravity, volume, water ve unit konularında kaynaklı rehberler |
+| İçerik fırsatı | Araç odaklı SEO | Teknik öğrenme merkezi henüz yok | “Why the number changes” yaklaşımı: yöntem, input, varsayım, örnek ve hata sınırı |
+| CTA | Start Free | Explore homebrewing / Explore planned capabilities | Ürün erişimi açılana kadar öğrenme ve kapsamı inceleme CTA'ları |
+
+**Home sayfası için kritik düzeltmeler**
+- “A complete toolkit for your next brew” ifadesi, ürünün tamamlanmış olduğu izlenimini verebilir. “A connected approach to planning, measuring and learning from each brew” gibi kapsamı aşmayan bir anlatı tercih edilmeli.
+- “selected advanced features available to enable” ifadesi mevcut ürün yeteneği izlenimi yaratabilir. Ürün planında kanıtlanmadıkça kaldırılmalı veya açıkça gelecekteki tasarım ilkesi olarak yazılmalı.
+- Feature kartları alfabetik/katalog mantığı yerine gerçek homebrewing iş akışına göre gruplanmalı.
+- Bir hesaplayıcı yayına alınmadan önce formül sahibi, kaynak, test vektörleri, birim ve tolerans kaydı olmalı.
+
+### 4.2 Professional Breweries
+
+| Boyut | FoamByte | Demleme mevcut | Demleme için hedef |
+|---|---|---|---|
+| Kullanıcı niyeti | Nano brewery ve küçük üretici için recipe, batch, tank ve üretim bilgisi | Profesyonel ekipler için teknik yazılım yaklaşımı | Head brewer, production operator ve quality rollerinin ayrı ihtiyaçlarını anlat |
+| Açılış mesajı | Basit, uygun fiyatlı ve organize üretim | “Consistency is built batch by batch” | Tutarlılık mesajını ölçülebilir kayıt ve review disipliniyle açıkla |
+| Workflow | Recipe → batch → fermentation / production | Recipe standardisation, production records, tank, traceability, quality roadmap | Recipe review → production plan → actual records → fermentation observations → QC/traceability (stage labelled) |
+| Ürün kanıtı | Batch ekranları ve görseller | Ürün ekranı yok | Uydurma ekran yerine kayıt ilişkisi ve süreç diyagramı |
+| Audience derinliği | Home ve nano brewery aynı geniş sayfa anlatısında | Ayrı Business route | Demleme burada ayrışabilir: rol, kayıt, lot/batch ilişkisi ve operasyonel sorumluluk |
+| Scope | Üretim yönetimi alanları genişliyor | ERP olmadığı açıkça belirtiliyor | ERP dışı alanlar görünür ve açık kalmalı |
+
+**Business sayfası için kritik düzeltmeler**
+- “From formulation to production control” ifadesi mevcut kapsamdan daha ileri bir kontrol/otomasyon algısı yaratabilir. “From recipe review to production records” daha güvenli.
+- “tank workflows, traceability, quality and team operations” başlıkları roadmap durumlarıyla tek tek etiketlenmeli; hepsi mevcut kabiliyet gibi sunulmamalı.
+- ERP sınırı yalnız dipnot olmamalı. Sayfada ayrı, görünür bir “What Demleme is — and is not” bölümü olmalı.
+- Gerçek örnek, müşteri hikâyesi veya uyum iddiası yoksa bunları taklit eden görsel/istatistik eklenmemeli.
+
+## 5. Bilgi akışı: önerilen sayfa anlatısı
+
+### Homepage
+1. Kısa teknik konumlandırma ve ürünün geliştirme aşaması.
+2. İki ayrı audience seçimi; iki yolun neyi farklı ele aldığı.
+3. Brewing lifecycle — yalnız onaylı kapsamı göster.
+4. Technical principles: kaynak, hesaplama, ölçüm ve sınırlama yaklaşımı.
+5. Home ve Business için ayrı değer önerisi kartları.
+6. Gerçekten yayınlanmış içeriklere bağlantı.
+7. Net ürün olgunluğu ve güvenli sonraki adım.
+
+### Homebrewers
+1. Kime yönelik ve hangi ev üretimi kararlarını desteklemeyi hedefliyor?
+2. Recipe → water/ingredients → calculations → brew day → fermentation records → review.
+3. Her adım için bir örnek soru ve ilgili feature.
+4. Teknik rehber / doğrulanmış calculator bağlantısı (yalnız hazırsa).
+5. Available / In development / Planned / Under consideration ayrımı.
+6. Home FAQ ve gerçek sonraki adım.
+
+### Professional Breweries
+1. Hangi büyüklükte/iş yapışında profesyonel üretim ekibine hitap ediyor?
+2. Recipe review → production planning → batch records → fermentation/vessel observations → QC/traceability.
+3. Brewer, operator ve quality rollerinin bilgi ihtiyaçları.
+4. Kayıt, lot ve batch ilişkisini gösteren basit şema.
+5. Açık ERP sınırı ve desteklenmeyen alanlar.
+6. Business FAQ ve gerçek sonraki adım.
+
+### Feature detail template
+Her sayfa aynı zorunlu sırayı izlemeli:
+1. User problem.
+2. Intended workflow.
+3. Inputs and outputs / records.
+4. Product stage and dependencies.
+5. What it does not do / limitations.
+6. Evidence or method reference.
+7. Related audience workflow and technical resources.
+
+## 6. Tasarım ve görsel sistem kararı
+
+Kaynak koddan görülen Demleme yönü editorial + technical: serif başlıklar, sade sans gövde, teknik mono etiketler, kontrollü amber/olive tonlar, geniş boşluk ve SVG illüstrasyon. Bu yaklaşım korunmalı.
+
+FoamByte'ın görsel avantajı yalnız estetik değil, **ürünün nasıl çalıştığını gösteren gerçek ekran görüntüleri** kullanmasıdır. Demleme'de henüz gerçek ürün ekranı olmadığı için dashboard mockup veya gerçekmiş gibi görünen sahte UI kullanılmamalı.
+
+Önerilen görsel dil:
+- Home: gerçek homebrew tezgâhı, ölçüm, malt/hop ve kettle bağlamı; görselin yanında kısa teknik annotation.
+- Business: profesyonel brewhouse, ekip, vessel ve batch-record akışı; insan/operasyon ölçeği.
+- Technical Principles: basit, etiketli süreç ve veri akış diyagramları.
+- Calculator/technical article: birim, formül girdisi ve örnek çıktı görselleştirmesi; yalnız doğrulama sonrası.
+- Her görselin amacı belirli bir bilgiyi açıklamak olmalı; dekoratif stok görsel doldurma yapılmamalı.
+
+**Görsel QA açık:** 1440, 1024, 768, 390 ve 320 px ekranlarında gerçek render görülmeden tipografi, spacing, crop, contrast, menu ve overflow sonucu verilmemeli. Vercel erişimi açıldığında ayrı QA kaydı oluşturulmalı.
+
+## 7. Önceliklendirilmiş iyileştirme backlog'u
+
+| ID | İş | Öncelik | Bağımlılık / kabul ölçütü |
+|---|---|---:|---|
+| FB-01 | Home sayfasındaki “complete toolkit” ve “available to enable” iddialarını düzelt | P0 | WP-03 claim map ile uyum |
+| FB-02 | Business “production control” başlığını kayıt odaklı ve stage-safe hale getir | P0 | WP-03 ve ürün planı |
+| FB-03 | Home sayfasına gerçek süreç sıralı bilgi mimarisi ekle | P1 | WP-07 wireframe; her adımda stage |
+| FB-04 | Business sayfasına rol + workflow + record model bölümleri ekle | P1 | Ürün planında onaylı kayıt kapsamı |
+| FB-05 | İki sayfanın FAQ bloklarını hazırla | P1 | Ürün, privacy ve platform cevapları onaylı olmalı |
+| FB-06 | How It Works — Home ve Business sayfalarını üret | P1 | WP-04 / WP-07 |
+| FB-07 | Technical Principles sayfası | P1 | Kaynak ve teknik reviewer onayı |
+| FB-08 | Feature detail şablonuna evidence / limits / inputs-outputs ekle | P1 | PR #40 claim-safe katalog merge ve WP-03 |
+| FB-09 | Learn topic hub ve ilk teknik rehberler | P1 | WP-10 evidence register |
+| FB-10 | Calculators hub ve araçlar | HOLD | WP-09 formül doğrulama + public-use approval |
+| FB-11 | Gerçek görsel varlıkların seçimi/değişimi | HOLD | Kullanıcı tarafından sağlanan veya açıkça onaylanan varlık |
+| FB-12 | Responsive visual QA | P0 launch gate | Preview erişimi; 1440/1024/768/390/320 |
+| FB-13 | A11y, internal links, metadata, schema ve sitemap QA | P0 launch gate | WP-08 checklist ve kanıt kaydı |
+
+## 8. Ölçülebilir kabul kriterleri
+
+- Home ve Business sayfalarında aynı metnin yalnız audience adı değiştirilmiş kopyası bulunmayacak.
+- Home'da en az 5 farklı homebrewing işi; Business'ta en az 5 farklı profesyonel üretim işi anlatılacak; her biri ürün aşamasıyla etiketlenecek.
+- Her feature claim, WP-03 claim kaydına ve ürün planı referansına bağlanacak.
+- Her teknik içerikte kaynak, yöntem, birim, varsayım, örnek ve sınırlama bulunacak.
+- Business ERP dışı alanları açıkça belirtecek.
+- Yayınlanmamış calculator, pricing, trial, signup, testimonial, metric veya customer logo CTA/kanıt olarak kullanılmayacak.
+- Görsel QA tüm beş viewport genişliğinde kaydedilecek; 320 px'de yatay taşma olmayacak.
+- Build başarısı, canlı görsel QA veya ürün claim onayı yerine sayılmayacak.
+
+## 9. Sıradaki uygulama sırası
+
+1. FB-01 ve FB-02 metin risklerini düzelt.
+2. Home ve Business sayfaları için WP-07 wireframe'i bu benchmark kararlarına göre güncelle.
+3. Her iki sayfanın içerik taslağını WP-10 evidence register'a bağla.
+4. İçerik ve claim review tamamlandıktan sonra ayrı bir uygulama PR'ı aç.
+5. Vercel Preview ve tarayıcı erişimi geldiğinde gerçek responsive/design QA yap.
+6. Hesaplayıcılar, pricing ve gerçek ürün CTA'larını yalnız ilgili onay kapıları geçildikten sonra ekle.
+
+## 10. Değişiklik ve yayın sınırı
+
+Bu doküman strateji/benchmark çıktısıdır. Tek başına production implementation, product app/API değişikliği, calculator launch, fotoğraf satın alma/üretme, analytics veya production deployment yetkisi vermez. Uygulama WP-12 release gate ve açık kullanıcı onayına tabidir.
