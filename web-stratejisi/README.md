@@ -27,3 +27,9 @@ Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini t
 
 ## Uygulama sırası
 Discovery → sitemap → wireframe → görsel tasarım → içerik → geliştirme → QA → lansman. Özellik iddiaları ürünün mevcut kabiliyetleriyle doğrulanmadan yayınlanmaz.
+
+13. [Mevcut site ve FoamByte denetimi](13-mevcut-site-ve-foambyte-denetimi.md)
+14. [Feature claim denetimi](14-feature-claim-denetimi.md)
+15. [Home / Business sitemap, journeys ve CTA](15-home-business-sitemap-user-journeys-cta.md)
+16. [İçerik ve mesaj mimarisi — WP-05](16-content-messaging-architecture.md)
+17. [Görsel yön ve tasarım sistemi — WP-06](17-visual-direction-design-system.md)
