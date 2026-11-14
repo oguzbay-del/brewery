@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://oguzbay-del.github.io/brewery/sitemap.xml
