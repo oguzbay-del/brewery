@@ -9,7 +9,7 @@
 
 - **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
 - **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
-- **Main güncel commit:** `897ec5a701b0f462acb3c5fc66fd48ba5d2c801e` (marketing accessibility smoke checks + README cleanup).
+- **Main güncel commit:** `b88b7d0a86dac3f4db9b88bd773d8800c4cf0c03` (WP-13 implementation status updated).
 - **Fotoğraflar:** Kullanıcı henüz fotoğraf sağlamadı. Yeni fotoğraf üretme, stok fotoğraf seçme veya otomatik görsel ekleme. Beş `data-image-slot` alanı ve SVG/yer tutucular korunacak; yalnız kullanıcı varlığı/izniyle değiştirilecek.
 - **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
 
