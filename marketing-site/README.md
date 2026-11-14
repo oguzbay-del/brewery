@@ -35,6 +35,20 @@ npm run preview
 - The CTA currently anchors to the audience selector. The app URL and sign-in URL are not yet configured.
 - Colour and spacing values follow the existing `tasarim-sistemi/tokens.json` source. The marketing site applies them in a separate editorial layout.
 
+## Image replacement map
+
+Search the `data-image-slot` attributes or `IMAGE SLOT:` comments to find every temporary visual:
+
+| Slot | File / location | Replace with |
+|---|---|---|
+| `home-hero` | `src/pages/index.astro` hero-art | Wide editorial brewing-process photo |
+| `audience-homebrewers` | `src/pages/index.astro` audience card | Homebrew setup / brewer at work |
+| `audience-breweries` | `src/pages/index.astro` audience card | Professional brewery / stainless tanks |
+| `homebrewers-hero` | `src/pages/homebrewers.astro` | Homebrewer working on a batch |
+| `breweries-hero` | `src/pages/breweries.astro` | Professional brewery team / production floor |
+
+Keep the slot ID when replacing an image. Add final assets under `public/images/`, use descriptive filenames, and confirm usage rights before publishing. Do not use product UI screenshots unless supplied and verified.
+
 ## Next review
 
-Review the desktop composition at 1440px and mobile composition at 390px. Confirm the visual direction before adding the two audience landing pages or wiring production URLs.
+Review the homepage and both audience pages at 1440px desktop and 390px mobile. Configure production app/sign-in URLs only after they are confirmed.
