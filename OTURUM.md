@@ -245,3 +245,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR #9 manuel squash merge edildi; Auto-merge kullanılmadı. Merge commit: `7a6ef089eb57c7941ea0a3e6fe5509f553953374`.
 - PR CI #43632140191, main CI #43632202886 ve Pages deploy #43632202813: **success**.
 - Canlı Pages deployment tamamlandı. Ancak bu ortamın tarayıcı erişimi alan adını açamadığı için her bağlantı için gerçek HTTP/cihaz testi yapıldığı iddia edilmemelidir.
+
+
+**SEO ve bağlantı denetimi — 14 Kasım 2026**
+- Güncel main commit: `b512d401c0594cbe052c6aaa994fa8b23f3062ba`; açık PR yok.
+- Homepage, Homebrewers, Breweries ve 404 sayfalarında statik anchor hedefleri kontrol edildi: eksik hedef ve yinelenen ID bulunmadı. Astro `BASE_URL` kullanımı, trailing-slash rotaları, canonical URL'ler, sitemap ve robots.txt tutarlı.
+- Main marketing CI run #43632202886 ve Pages deployment run #43632202813 yeniden kontrol edildi; build/check ve deploy job'ları success.
+- Gerçek HTTP/browser kontrolü DNS erişimi olmadığı için yapılamadı; görsel QA tamamlandı olarak raporlanmıyor.
+- Bir bağlantı/SEO hatası tespit edilmedi. Sonraki bağımsız SEO iyileştirmesi olarak homepage'e `WebSite`, iki audience sayfasına doğru canonical URL ve geliştirme durumu açıklaması kullanan `WebPage` JSON-LD eklendi. Ürün uygulaması, `web/`, iOS ve API değişmedi.
+- Branch: `marketing/structured-data-seo`; PR CI ve manuel squash merge bekleniyor. Auto-merge kullanılmadı.
