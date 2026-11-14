@@ -3,7 +3,7 @@ import type { APIRoute } from "astro";
 const routes = ["", "homebrewers/", "breweries/"];
 
 export const GET: APIRoute = ({ site }) => {
-  const origin = site ?? new URL("https://oguzbay-del.github.io");
+  const origin = new URL(import.meta.env.BASE_URL, site ?? new URL("https://oguzbay-del.github.io"));
   const urls = routes
     .map((route) => `  <url><loc>${new URL(route, origin).href}</loc></url>`)
     .join("\n");
