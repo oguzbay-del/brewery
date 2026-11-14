@@ -18,7 +18,7 @@ use axum::{
     routing::{delete, get, patch, post},
 };
 use chrono::{DateTime, Duration, Utc};
-use db::{AuditEvent, NewAuditEntry, value_digest};
+use db::{AuditEvent, NewAuditEntry, changed_marker};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value, json};
 use sqlx::{PgConnection, Postgres, Transaction};
@@ -477,7 +477,7 @@ pub async fn roles_create(
         "role",
         id,
         None,
-        Some(json!({"name": value_digest(&role.name), "permissions": role.permissions})),
+        Some(json!({"name": changed_marker(), "permissions": role.permissions})),
     )
     .await?;
     tx.commit().await?;
@@ -580,7 +580,7 @@ pub async fn roles_copy(
         id,
         None,
         Some(json!({
-            "name": value_digest(&role.name),
+            "name": changed_marker(),
             "permissions": role.permissions,
             "copied_from": source
         })),
@@ -733,8 +733,8 @@ pub async fn roles_update(
             AuditEvent::RoleUpdate,
             "role",
             id,
-            Some(json!({"name": value_digest(&before.name), "landing_screen": before.landing_screen})),
-            Some(json!({"name": value_digest(&after.name), "landing_screen": after.landing_screen})),
+            Some(json!({"name": changed_marker(), "landing_screen": before.landing_screen})),
+            Some(json!({"name": changed_marker(), "landing_screen": after.landing_screen})),
         )
         .await?;
     }
@@ -801,7 +801,7 @@ pub async fn roles_delete(
         AuditEvent::RoleDelete,
         "role",
         id,
-        Some(json!({"name": value_digest(&before.name), "permissions": before.permissions})),
+        Some(json!({"name": changed_marker(), "permissions": before.permissions})),
         None,
     )
     .await?;
@@ -1377,7 +1377,7 @@ async fn create_invitation(
         None,
         Some(json!({
             "role_id": role_id, "scope_kind": scope.map(|s| s.0.as_str()),
-            "scope_id": scope.map(|s| s.1), "email": value_digest(&to)
+            "scope_id": scope.map(|s| s.1), "email": changed_marker()
         })),
     )
     .await?;

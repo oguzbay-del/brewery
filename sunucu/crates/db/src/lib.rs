@@ -18,7 +18,7 @@ mod roles;
 
 pub use audit::{
     AuditEvent, AuditRecord, CanonicalFields, ChainBreak, ChainReport, GENESIS_HASH, NewAuditEntry,
-    append_audit, canonical_row, chain_hash, value_digest, verify_all_chains, verify_chain,
+    append_audit, canonical_row, chain_hash, changed_marker, verify_all_chains, verify_chain,
 };
 pub use context::{
     ActorKind, DbContext, begin, set_actor_kind, set_context, set_user_id, set_workspace_id,

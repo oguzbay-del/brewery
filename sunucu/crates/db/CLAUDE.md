@@ -19,10 +19,15 @@
 - Denetim zinciri `src/audit.rs`'dedir (özet ve doğrulama Rust'ta, göç yok): ekleme yalnız `append_audit` ile, istek işleminde; satır alanları değişirse `canonical_row` biçimi de değişir ve eski zincir bozulur (yeni biçim sürümü gerekir). Test: `tests/audit_chain.rs`.
 - `audit_log` yalnız eklenir: uygulama rollerinde UPDATE/DELETE/TRUNCATE hakkı yoktur, tetikleyici sahip rolde de reddeder (çalışma alanı silinirken yabancı anahtar zinciri hariç).
 
+- Silme (T2.9): `app_api`'nin `workspaces` ve `users` üzerinde DELETE hakkı yoktur; kalıcı çalışma alanı silme yalnız worker'da `purge_workspace()` ile (silme kaydı `workspace_tombstones`'a yazılır). Kalıcı kayıt silmede değişmez başvurular NULL'a iner, değer kopya sütununda kalır (`snapshot_reference`).
+- Saklama (İşletme): `retention_until` + `legal_hold` taşıyan tabloların silinmesi ve yumuşak silinmesi reddedilir; yasal tutmayı yalnız `release_legal_hold()` kaldırır. Süreler `retention_rules` (doğrulanacak).
+- `pg_trigger_depth()` kapıları (stok önbelleği, değişmez sürüm, denetim kaydı) tetikleyiciden gelen her yazıya açıktır: bu tablolara yazan yeni tetikleyici işlevi `tests/f21_fixes.rs` listesine bilinçli eklenir.
+- `external_events` yükünü API okuyamaz (`external_event_seen()`); hesap düzeyi olaylar `account_events`'e yazılır (zincirsiz, kullanıcıya bağlı). Denetim satırında kişisel alan için yalnız `changed_marker()`.
+
 ## Nasıl test edilir
 - Gerçek PostgreSQL gerekir: `make up` (ya da yalnız `docker compose -f altyapi/compose/compose.yaml up -d postgres`), sonra kökte `make test`. Elle: `DATABASE_URL=postgres://demleme:demleme-yerel@127.0.0.1:5432/demleme cargo test -p db`.
 - `#[sqlx::test]` her test için geçici veritabanı açar, göçleri uygular ve sonda siler. Uygulama davranışı `tests/common`'daki `pool_as` ile sınanır: bağlantılar `SET ROLE app_api` (ya da `app_worker`, `app_owner`) ile açılır; süper kullanıcının kendi RLS muafiyeti `SET ROLE` sonrası geçerli olmaz. Süper kullanıcı oturumuyla `SET ROLE` her role geçebilir; bu yüzden "uygulama rolü sahip olamaz" gibi savlar `pg_roles`/katalogdan sınanır.
-- Testler: `migrations.rs` (göç), `rls.rs` (çalışma alanı ayrımı), `catalog.rs` (katalog taraması, haklar), `audit_log.rs`, `auth_access.rs` (hesap tabloları ve giriş öncesi işlevler), `infra.rs` (outbox, tekrar güvenliği), `library.rs` (ortak kütüphane), `recipes.rs` (değişmez sürüm), `batches.rs` (parti, ölçüm bölümleri, stok, kapsam tetikleyicisi, yazma kısıtları).
+- Testler: `migrations.rs` (göç), `rls.rs` (çalışma alanı ayrımı), `catalog.rs` (katalog taraması, haklar), `audit_log.rs`, `auth_access.rs` (hesap tabloları ve giriş öncesi işlevler), `infra.rs` (outbox, tekrar güvenliği), `library.rs` (ortak kütüphane), `recipes.rs` (değişmez sürüm), `batches.rs` (parti, ölçüm bölümleri, stok, kapsam tetikleyicisi, yazma kısıtları), `f21_fixes.rs` (F2.1 düzeltmeleri, T2.9).
 - Sorgu önbelleği: kökte `make sqlx-prepare`; `sunucu/.sqlx/` commit edilir, derleme `SQLX_OFFLINE=true` ile çalışır.
 
 - Yeni tablo göçü `secure_workspace_table(tablo, kip, haklar)` çağırır (0007). Ortak satır tutan tablo `shared` kipindedir, ortak kayda başvuru `shared_ref_<sütun>` tetikleyicisi ister ve tablo `tests/catalog.rs` `OWNER_SEED` listesine eklenir; ölçüm gibi bölümlü tablonun her bölümü ayrıca RLS ve politika taşır.

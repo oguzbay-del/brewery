@@ -160,7 +160,7 @@ impl AuditEvent {
 }
 
 /// An audit row to append. Personal data (names, e-mail, free text) must not go into the
-/// values: use [`value_digest`] for such fields (ADR-0007 rule 5.5).
+/// values: use [`changed_marker`] for such fields (ADR-0007 rule 5.5).
 #[derive(Debug, Clone)]
 pub struct NewAuditEntry {
     /// Who acts.
@@ -192,11 +192,12 @@ pub struct AuditRecord {
     pub hash: [u8; 32],
 }
 
-/// Placeholder for a personal-data field: marks it as changed and keeps a digest of the value
-/// so that the value itself is not stored.
+/// Placeholder for a personal-data field: only "changed", never the value or a digest of it
+/// (a digest of a low-entropy value such as an e-mail address can be reversed with a
+/// dictionary; F2.1 finding 9). The field name is the key the caller puts it under.
 #[must_use]
-pub fn value_digest(value: &str) -> Value {
-    json!({ "changed": true, "digest": hex(&Sha256::digest(value.as_bytes())) })
+pub fn changed_marker() -> Value {
+    json!({ "changed": true })
 }
 
 /// Everything the hash covers, in the fixed shape used for the chain.
@@ -255,14 +256,6 @@ pub fn chain_hash(prev_hash: &[u8; 32], canonical: &[u8]) -> [u8; 32] {
     hasher.update(prev_hash);
     hasher.update(canonical);
     hasher.finalize().into()
-}
-
-fn hex(bytes: &[u8]) -> String {
-    use std::fmt::Write;
-    bytes.iter().fold(String::new(), |mut s, b| {
-        let _ = write!(s, "{b:02x}");
-        s
-    })
 }
 
 fn to_hash(bytes: Vec<u8>) -> Result<[u8; 32]> {

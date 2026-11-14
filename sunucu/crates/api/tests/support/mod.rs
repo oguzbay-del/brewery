@@ -247,6 +247,8 @@ async fn patch_item(
 }
 
 async fn create_item(
+    State(state): State<AppState>,
+    ctx: RequestContext,
     Extension(demo): Extension<Arc<Demo>>,
     Path(ws): Path<Uuid>,
     ApiJson(new): ApiJson<NewItem>,
@@ -262,6 +264,8 @@ async fn create_item(
         )]));
     }
     demo.creates.fetch_add(1, Ordering::SeqCst);
+    // The work transaction: it marks the idempotency key (F2.1 finding 4).
+    ctx.begin(&state.db).await?.commit().await?;
     let item = Item {
         id: Uuid::now_v7(),
         name: new.name,

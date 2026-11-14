@@ -26,7 +26,7 @@ fn entry(event: AuditEvent, n: i64) -> NewAuditEntry {
 }
 
 fn value_name() -> serde_json::Value {
-    db::value_digest("Brewer Name")
+    db::changed_marker()
 }
 
 async fn append_n(app: &PgPool, ws: Uuid, n: i64) {
@@ -344,4 +344,9 @@ fn canonical_form_is_stable() {
         text.contains(r#""new_value":{"a":[true,null],"b":1}"#),
         "{text}"
     );
+}
+
+#[test]
+fn personal_fields_carry_no_digest() {
+    assert_eq!(db::changed_marker(), json!({ "changed": true }));
 }

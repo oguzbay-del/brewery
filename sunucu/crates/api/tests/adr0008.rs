@@ -519,6 +519,49 @@ async fn same_key_and_body_replays_the_stored_response(pool: PgPool) {
     assert_eq!(stored, 1);
 }
 
+/// F2.1 finding 4: the key is marked in the work transaction, so a process that dies after
+/// the work committed but before the response was stored does not run the work twice.
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn a_committed_request_is_not_rerun_when_its_response_was_lost(pool: PgPool) {
+    let w = world(&pool).await;
+    let key = Uuid::new_v4().to_string();
+    let body = json!({"name": "ale"});
+    let first = send(
+        &w.app,
+        json_post(&items_path(&w), w.user, Some(&key), &body),
+    )
+    .await;
+    assert_eq!(first.status, 201);
+    let marked: bool = sqlx::query_scalar(
+        "SELECT work_committed_at IS NOT NULL FROM idempotency_keys WHERE key = $1",
+    )
+    .bind(&key)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(marked, "the work transaction marked the key");
+
+    // Simulate the crash: no stored response, the key is older than the takeover time.
+    sqlx::query(
+        "UPDATE idempotency_keys SET response_status = NULL, response_body = NULL,
+                created_at = now() - interval '10 minutes' WHERE key = $1",
+    )
+    .bind(&key)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let retry = send(
+        &w.app,
+        json_post(&items_path(&w), w.user, Some(&key), &body),
+    )
+    .await;
+    assert_eq!(
+        (retry.status.as_u16(), retry.body["code"].as_str()),
+        (409, Some("conflict"))
+    );
+    assert_eq!(w.demo.creates.load(Ordering::SeqCst), 1, "work ran once");
+}
+
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn same_key_with_another_body_is_rejected(pool: PgPool) {
     let w = world(&pool).await;

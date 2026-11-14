@@ -92,6 +92,8 @@ async fn world(base: &PgPool) -> World {
 /// Writes the event as a record change would: inside a transaction, through the outbox helper.
 async fn write_record(w: &World, ws: Uuid, kind: &str, id: Uuid, version: i64) -> Uuid {
     let mut tx = w.api.begin().await.unwrap();
+    // As a request does: the outbox accepts the API's events only for its own workspace.
+    db::set_workspace_id(&mut tx, ws).await.unwrap();
     let event_id = enqueue(
         &mut tx,
         &NewOutboxEvent {

@@ -109,6 +109,9 @@ pub struct RequestContext {
     pub permissions: BTreeSet<String>,
     /// Scoped grants (see [`crate::authz`]).
     pub scoped: Vec<crate::authz::ScopedGrant>,
+    /// The `idempotency_keys` row of this request (set by the idempotency layer): the work
+    /// transaction marks it, so the key and the work commit together (F2.1 finding 4).
+    pub idempotency_key: Option<Uuid>,
 }
 
 impl RequestContext {
@@ -142,7 +145,16 @@ impl RequestContext {
 
     /// Opens the request transaction with the context applied.
     pub async fn begin(&self, pool: &PgPool) -> ApiResult<Transaction<'static, Postgres>> {
-        Ok(db::begin(pool, &self.db_context()).await?)
+        let mut tx = db::begin(pool, &self.db_context()).await?;
+        if let Some(key) = self.idempotency_key
+            && self.identity.actor_kind != ActorKind::Support
+        {
+            sqlx::query("UPDATE idempotency_keys SET work_committed_at = now() WHERE id = $1")
+                .bind(key)
+                .execute(&mut *tx)
+                .await?;
+        }
+        Ok(tx)
     }
 }
 
@@ -199,6 +211,7 @@ async fn resolve(
         workspace_id,
         permissions: membership.permissions,
         scoped: membership.scoped,
+        idempotency_key: None,
     })
 }
 

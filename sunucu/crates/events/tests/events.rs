@@ -67,6 +67,8 @@ async fn js(url: &str) -> jetstream::Context {
 
 async fn emit(api: &PgPool, ws: Uuid, topic: &str, version: i64) -> Uuid {
     let mut tx = api.begin().await.unwrap();
+    // As a request does: the outbox accepts the API's events only for its own workspace.
+    db::set_workspace_id(&mut tx, ws).await.unwrap();
     let id = enqueue(
         &mut tx,
         &NewOutboxEvent {

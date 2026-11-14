@@ -592,6 +592,7 @@ mod tests {
             workspace_id: Some(Uuid::nil()),
             permissions: perms.iter().map(|p| p.as_str().to_owned()).collect(),
             scoped,
+            idempotency_key: None,
         }
     }
 

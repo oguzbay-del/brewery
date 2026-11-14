@@ -258,7 +258,7 @@ Karar değişmedi; yazarken netleşenler:
 - **Davet:** e-posta adresi saklanmaz, yalnız postayla gider (bağlantı `{WEB_BASE_URL}/invite?token=...`). Kabul tek `UPDATE ... WHERE accepted_at IS NULL AND expires_at > now()` ile tek kullanımlıktır; çakışan iki istekten biri `404` alır. Devre dışı üye davetle geri dönemez (`409 member_disabled`, davet yanmaz); çıkarılmış üye döner.
 - **Ev paylaşımı:** `POST /shares {kind: recipe|batch, id, access: editor|viewer, email}` kapsamlı davettir; yalnız Ev çalışma alanında (`409 home_mode_only`). Paylaşımı kaldırmak atamayı silmektir.
 - **Alan gizleme:** `RequestContext::redact` / `redacted_json`: anahtarın `_` ile ayrılmış parçalarından biri `cost` veya `price` ise (`unit_cost`, `price_currency`, ...) `cost.view` yokken alan yanıttan çıkar. `reject_cost_writes` aynı alanları yazmaya çalışana `403` verir. Kaynak uçları bu yardımcıları kullanır (şimdilik yalnız test uçlarında).
-- **Denetim:** rol, izin kümesi, atama, davet ve üyelik değişiklikleri `append_audit` ile aynı işlemde yazılır; ad ve e-posta `value_digest` ile.
+- **Denetim:** rol, izin kümesi, atama, davet ve üyelik değişiklikleri `append_audit` ile aynı işlemde yazılır; ad ve e-posta için yalnız `changed_marker()` ("değişti", özet yok; T2.9 / F2.1 karar 8).
 - **Yapılmayanlar:** abonelik denetimi (madde 7, T2.2x), üye adının listede görünmesi (`users` satırı RLS'ye göre yalnız kendisine açık), kapsamın dosya uçlarına (`files.rs`) uygulanması (kaynak uçlarıyla birlikte).
 ## Uygulama notları (T2.12, 14.11.2026)
 

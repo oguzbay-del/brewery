@@ -13,6 +13,8 @@ const CROSS_WORKSPACE: &[&str] = &[
     "scheduled_jobs",
     "external_events",
     "processed_events",
+    // Written only by `purge_workspace` (T2.9); the id column is not `workspace_id` on purpose.
+    "workspace_tombstones",
 ];
 /// Shared tables written only by migrations and seeds; no RLS, read-only for the API.
 const SHARED: &[&str] = &[
@@ -20,6 +22,7 @@ const SHARED: &[&str] = &[
     "tax_jurisdictions",
     "tax_rate_tables",
     "tax_rate_bands",
+    "retention_rules",
 ];
 /// Tables whose `app_owner` policies serve the pre-login SECURITY DEFINER functions.
 const OWNER_LOOKUP: &[&str] = &[
@@ -31,6 +34,8 @@ const OWNER_LOOKUP: &[&str] = &[
     "shared_devices",
     "invitations",
     "idempotency_keys",
+    "push_targets",
+    "workspaces",
 ];
 
 /// Shared-library tables (`workspace_id` NULL = shared row): `app_owner` seeds them through the
@@ -276,8 +281,9 @@ async fn measurement_partitions_exist_and_are_protected(pool: PgPool) -> sqlx::R
     )
     .fetch_all(&pool)
     .await?;
-    assert!(parts.len() >= 13, "partitions: {}", parts.len());
-    assert_eq!(parts[0].0, "measurements_y2026m01");
+    assert!(parts.len() >= 14, "partitions: {}", parts.len());
+    assert_eq!(parts[0].0, "measurements_legacy");
+    assert_eq!(parts[1].0, "measurements_y2026m01");
     for (name, rls, force, policies) in parts {
         assert!(rls && force && policies >= 1, "{name} is not protected");
     }
@@ -316,7 +322,8 @@ async fn application_roles_hold_only_the_intended_rights(pool: PgPool) -> sqlx::
         ("scheduled_jobs", "app_api", "INSERT", true),
         ("scheduled_jobs", "app_worker", "DELETE", true),
         ("external_events", "app_api", "INSERT", true),
-        ("external_events", "app_api", "SELECT", true),
+        // The API asks `external_event_seen()` instead of reading webhook payloads (T2.9).
+        ("external_events", "app_api", "SELECT", false),
         ("external_events", "app_api", "DELETE", false),
         ("audit_log", "app_api", "UPDATE", false),
         ("audit_log", "app_api", "DELETE", false),
