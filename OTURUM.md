@@ -31,17 +31,29 @@
 - Ürün kabiliyeti doğrulanmadan özellik veya sonuç iddiası yayınlanmaz.
 
 **Mevcut kayıt**
-- `web-stratejisi/README.md`, `01-stratejik-brief.md`–`09-launch-measurement.md` ve `10-teknik-mimari.md` GitHub'da mevcut. Teknik mimari dokümanı Astro + TypeScript önerisidir; kullanıcı onayı bekler.
+- `web-stratejisi/README.md`, `01-stratejik-brief.md`–`11-visual-design-wireframes.md` dosyaları GitHub'da mevcut. Astro + TypeScript + SSG mimarisi kullanıcı tarafından onaylandı.
 - Strateji dosyaları iki audience brief'i, marka/mesaj, sitemap, görsel tasarım/UX, dönüşüm, SEO, lansman ölçümü ve teknik mimari önerisini kapsar.
 - Bu kayıtlar strateji ve mimari öneri dokümanlarıdır; çalışan pazarlama sitesi veya tamamlanmış görsel tasarım değildir.
 
+**Onaylanan kararlar**
+- Framework: Astro 7.x (kurulum anındaki güncel stable), TypeScript strict, SSG.
+- UI: Astro components; React yalnız gerçekten gerekli interaktif island için.
+- İçerik: Markdown/MDX + Content Collections/Zod.
+- Hosting adayı: Cloudflare Pages. Domain, analytics, form ve consent sağlayıcısı hâlâ açık karar.
+- GitHub: pazarlama sitesi değişiklikleri feature branch + PR; kullanıcı talimatıyla Auto Merge kullan.
+
+**Tasarım yönü**
+- Editorial + Technical + Human. AI landing page klişeleri, sahte dashboard, uydurma metrik ve gradient/glow yok.
+- Gerçek ürün ekranı yalnız mevcut uygulamadan; gerçekçi homebrew ve brewery fotoğrafları.
+- Ana sayfa, Homebrewers ve Professional Breweries için desktop + mobile wireframe yazıldı: `web-stratejisi/11-visual-design-wireframes.md`.
+- Özellik iddiaları ürün akışı/test/dokümanıyla doğrulanmadan yayınlanmaz.
+
 **Sonraki adımlar**
-1. `web-stratejisi/10-teknik-mimari.md` önerisini kullanıcıyla netleştir: Astro + TypeScript, hosting, domain, içerik ve form/analytics kararları.
-2. Stack onaylanınca `marketing-site/` için ayrı teknik plan ve CI tasarla; mevcut `web/` React/Vite ürün uygulamasını değiştirme.
-3. Ardından ana sayfa ve iki audience landing page için desktop/mobile wireframe hazırla.
-4. Tasarım sistemi token'larını `tasarim-sistemi/tokens.json` kaynağından kullan; paralel token sistemi oluşturma.
-5. Fiyat, trial, paket, ödeme sağlayıcısı ve limitler kesinleşmeden fiyat/teklif vaat etme.
-6. Yalnız pazarlama sitesi dosyalarına dokun; Claude ürün geliştirme kuyruğunu değiştirme.
+1. Wireframe ve görsel yön için kullanıcı geri bildirimi al; onay sonrası high-fidelity tasarım/prototip.
+2. Ürün ekranları ve fotoğraf varlıklarını topla; olmayan ekranı üretme.
+3. Tasarım onayından sonra `marketing-site/` Astro iskeleti ve CI oluştur; `web/` ürün uygulamasını değiştirme.
+4. Fiyat, trial, paket, ödeme sağlayıcısı ve limitler kesinleşmeden fiyat/teklif vaat etme.
+5. Claude ürün geliştirme kuyruğuna dokunma.
 
 **Sınır:** Bu pazarlama iş parçacığı `gelistirme/DURUM.md`, `gelistirme/ISLER.md`, ürün kodu, API, Claude geliştirme sırası ve commit'lerini değiştirmez.
 
