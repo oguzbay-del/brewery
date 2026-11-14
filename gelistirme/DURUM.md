@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.9, T2.12, T2.13 bu oturumda sürüyor. Yeni oturumda ilk iş: tek seferlik yeniden düzenleme (her uç modülü rotasını ve OpenAPI satırını kendi dosyasında kaydeder; paralel işler `api/src/lib.rs`, `openapi.rs`, `main.rs`'e dokunmasın); (ADR-0007 uygulama notları `adr/0007-uygulama-notlari/` altına bölündü, 14.11.2026; ADR-0008 ve ADR-0009 sonlarındaki notlar henüz bölünmedi); ardından T2.19→T2.21→T2.22 zinciri tek ajanla. Çalışma kuralı: CLAUDE.md › Token verimliliği.
+**Sıradaki iş:** T2.9, T2.12, T2.13 bu oturumda sürüyor. Yeni oturumda ilk iş: tek seferlik yeniden düzenleme (her uç modülü rotasını ve OpenAPI satırını kendi dosyasında kaydeder; paralel işler `api/src/lib.rs`, `openapi.rs`, `main.rs`'e dokunmasın); (ADR-0007 uygulama notları `adr/0007-uygulama-notlari/` altına bölündü, 14.11.2026; ADR-0008 ve ADR-0009 notları da bölündü); ardından T2.19→T2.21→T2.22 zinciri tek ajanla. Çalışma kuralı: CLAUDE.md › Token verimliliği.
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
