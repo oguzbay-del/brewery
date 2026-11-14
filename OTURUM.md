@@ -203,3 +203,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Bu nedenle motorun hesaplama kodu yazılmış olsa da bunu ziyaretçinin bugün kullanabileceği uygulama özelliği gibi pazarlamak doğru değil.
 - Pazarlama ana sayfası ve iki audience sayfasına görünür “in development” durumu eklendi; çalışma alanı/araç varmış izlenimi veren ifadeler yumuşatıldı. Audience maddeleri “design priorities” olarak etiketlendi ve kullanılabilir özellik listesi olmadığı belirtildi.
 - Ürün kodu, API, `web/`, iOS ve geliştirme kuyruğu değiştirilmedi. Yalnız `marketing-site/` ve bu oturum notu değişiyor.
+
+**Ürün olgunluğu mesajı yayında — 14 Kasım 2026**
+- PR #6 manuel squash merge edildi; Auto-merge kullanılmadı. Merge commit: `87c36c944dae088da6b18a52f27e375d3ed13bfd`.
+- PR CI #43631065843: **success**. Son düzeltmeler sonrası PR CI #43631065843? (son head: `cb2c0e2c9a25107dbf53136b1c807e5cddec2f6a`) doğrulaması başarılı.
+- Main marketing checks #43631137613: **success**. Pages deploy #43631137672: **success**.
+- Ana sayfa ve iki audience sayfası artık ürünün geliştirme aşamasında olduğunu açıkça belirtiyor. Audience maddeleri kullanılabilir özellik iddiası değil, tasarım önceliği olarak etiketli.
+- Yayın: https://oguzbay-del.github.io/brewery/
+- Görsel tarayıcı QA (1440px / 390px) hâlâ açık; gerçek cihaz/browser erişimi gerekir.
+- Sıradaki adım: erişilebilir bir tarayıcı önizlemesinde responsive QA; sonrasında ürün API ve istemci akışları gerçekten yayınlandıkça pazarlama iddialarını kademeli doğrulamak.
