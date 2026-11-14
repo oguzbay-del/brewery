@@ -13,7 +13,7 @@ const audiences = [
     description:
       "A technical perspective on recipes, brewing calculations and the decisions behind every brew.",
     link: "Explore homebrewing",
-    href: `${base}homebrewers`,
+    href: `${base}homebrewers/`,
     visual: "home",
     visualLabel: "A considered homebrew setup",
   },
@@ -25,7 +25,7 @@ const audiences = [
     description:
       "A technical perspective on recipe and batch information for professional brewing teams.",
     link: "Explore breweries",
-    href: `${base}breweries`,
+    href: `${base}breweries/`,
     visual: "brewery",
     visualLabel: "A working craft brewery",
   },
@@ -56,11 +56,11 @@ const audiences = [
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <header class="site-header">
+    <header class="site-header" id="top">
       <a class="wordmark" href="#top" aria-label="Demleme home">demleme<span>.</span></a>
       <nav class="desktop-nav" aria-label="Main navigation">
-        <a href={`${base}homebrewers`}>Homebrewers</a>
-        <a href={`${base}breweries`}>Breweries</a>
+        <a href={`${base}homebrewers/`}>Homebrewers</a>
+        <a href={`${base}breweries/`}>Breweries</a>
         <a href="#approach">Our approach</a>
       </nav>
       <a class="header-cta" href="#audience-paths">Find your path <span aria-hidden="true">↗</span></a>
@@ -69,8 +69,8 @@ const audiences = [
           <span></span><span></span>
         </summary>
         <nav aria-label="Mobile navigation">
-          <a href={`${base}homebrewers`}>Homebrewers</a>
-          <a href={`${base}breweries`}>Breweries</a>
+          <a href={`${base}homebrewers/`}>Homebrewers</a>
+          <a href={`${base}breweries/`}>Breweries</a>
           <a href="#approach">Our approach</a>
           <a class="mobile-menu-cta" href="#audience-paths">Find your path ↗</a>
         </nav>
@@ -87,8 +87,8 @@ const audiences = [
             We are working towards a clearer way to understand the details behind every brew.
           </p>
           <div class="hero-actions">
-            <a class="button button-primary" href={`${base}homebrewers`}>Explore homebrewing <span aria-hidden="true">↗</span></a>
-            <a class="text-link" href={`${base}breweries`}>For professional breweries <span aria-hidden="true">→</span></a>
+            <a class="button button-primary" href={`${base}homebrewers/`}>Explore homebrewing <span aria-hidden="true">↗</span></a>
+            <a class="text-link" href={`${base}breweries/`}>For professional breweries <span aria-hidden="true">→</span></a>
           </div>
           <div class="hero-note">
             <span class="note-rule"></span>
