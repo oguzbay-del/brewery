@@ -242,3 +242,6 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Ana sayfanın logo ve “Back to top” bağlantılarının hedefi olan `#top` kimliği header'a eklendi.
 - Homebrewers/Breweries iç bağlantıları tutarlı trailing-slash biçimine alındı; Astro `trailingSlash: "always"` ile aynı URL standardına sabitlendi.
 - Bu düzeltme, 404 sayfasındaki zaten slash kullanan hedeflerle URL tutarlılığı sağlar. Canlı tarayıcı/HTTP testi ortam erişimi nedeniyle ayrıca doğrulanamadı.
+- PR #9 manuel squash merge edildi; Auto-merge kullanılmadı. Merge commit: `7a6ef089eb57c7941ea0a3e6fe5509f553953374`.
+- PR CI #43632140191, main CI #43632202886 ve Pages deploy #43632202813: **success**.
+- Canlı Pages deployment tamamlandı. Ancak bu ortamın tarayıcı erişimi alan adını açamadığı için her bağlantı için gerçek HTTP/cihaz testi yapıldığı iddia edilmemelidir.
