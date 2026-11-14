@@ -423,3 +423,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Fotoğraf slotları/yer tutucular korundu; yeni görsel veya sahte ürün ekranı eklenmedi. Hesaplayıcı, pricing veya signup CTA'sı eklenmedi.
 - İlk doğrulama: GitHub kaynak yazımları başarılı. GitHub Actions PR kontrolü ve Astro check/build sonucu bekleniyor; sonuç gelmeden build başarılı denmeyecek.
 - **Sıradaki adım:** PR aç, GitHub Actions sonuçlarını izle, hata varsa düzelt. Vercel QA'yı post-deploy gate olarak takip et.
+
+
+## WP-12 uygulama devamı — How It Works ve Technical Principles (15 Kasım 2026)
+
+- Yeni sayfalar eklendi: `/how-it-works/` (Home ve Business için ayrı workflow) ve `/technical-principles/` (method, units, planned-vs-actual, measurement context, model validation ve product-stage ilkeleri).
+- Her iki sayfa için canonical/OG/Twitter metadata ve WebPage JSON-LD eklendi.
+- Desktop ve mobile navigasyon tüm ana pazarlama sayfalarında yeni sayfalara bağlandı.
+- Sitemap route listesi iki yeni sayfayı kapsayacak şekilde güncellendi.
+- Yeni sayfa CSS'i `marketing-site/src/styles/learning-pages.css` içinde izole edildi.
+- Sayfalar ürünün mevcutta yayında olduğu iddiasını yapmaz; tüm içerik ürün planı ve tasarım ilkesi olarak etiketlenir. Hesaplayıcı, fiyat, trial, signup veya ürün kontrol iddiası eklenmedi.
+- GitHub Actions Astro check/build sonucu bu PR için bekleniyor; Vercel Preview ve responsive browser QA ertelenmiş release gate olarak kalır.
