@@ -33,11 +33,21 @@ npm run preview
 - The homepage uses the approved English messaging direction.
 - The hero and audience visuals are original editorial SVG illustrations. They are not product screenshots or representations of product functionality.
 - Real homebrewing and brewery photography can replace these illustration slots after usage rights and final assets are confirmed.
-- Product features are presented as planned capabilities, not currently available functionality. Homebrew MVP, Business core, later releases and unapproved ideas are clearly distinguished.\n- The product and website are both in development; no login, subscription, purchase or production workflow is live.\n- No fabricated product screenshots, metrics, testimonials, customer logos or pricing are included.
+- Product features are presented as planned capabilities, not currently available functionality. Homebrew MVP, Business core, later releases and unapproved ideas are clearly distinguished.
+- The product and website are both in development; no login, subscription, purchase or production workflow is live.
+- No fabricated product screenshots, metrics, testimonials, customer logos or pricing are included.
 - The homepage audience CTAs route to the two dedicated audience pages. App URL and sign-in URL are not yet configured.
 - Colour and spacing values follow the existing `tasarim-sistemi/tokens.json` source. The marketing site applies them in a separate editorial layout.
 
-## Product content source\n\n- Canonical product plan: `../plan/demleme-plani.md`.\n- Feature catalogue data: `src/data/features.ts`.\n- Add or revise feature groups in the data file; the feature index, detail pages and sitemap are generated from the same source.\n- Keep research-only analytical models marked as under consideration; do not present them as committed capabilities.\n- Do not add ERP functions excluded by the product plan (sales, orders, distribution, keg tracking, CRM or accounting).\n\n## Image replacement map
+## Product content source
+
+- Canonical product plan: `../plan/demleme-plani.md`.
+- Feature catalogue data: `src/data/features.ts`.
+- Add or revise feature groups in the data file; the feature index, detail pages and sitemap are generated from the same source.
+- Keep research-only analytical models marked as under consideration; do not present them as committed capabilities.
+- Do not add ERP functions excluded by the product plan (sales, orders, distribution, keg tracking, CRM or accounting).
+
+## Image replacement map
 
 Search the `data-image-slot` attributes or `IMAGE SLOT:` comments to find every temporary visual:
 

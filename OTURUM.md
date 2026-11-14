@@ -508,3 +508,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Manual/device measurement source ayrımı ve tahmin modellerinin mevcut olmadığı açıkça korundu.
 - Homebrew learning loop ile Business lot/vessel/shift/quality kayıt modeli arasındaki fark ayrıca belirtildi.
 - Böylece iki audience sayfası yalnız farklı başlıklar değil, farklı kayıt ve kullanım amaçları anlatıyor.
+
+
+## Marketing accessibility smoke checks — 15 Kasım 2026
+
+- Statik validator'a duplicate HTML ID, her sayfada tek H1, tek main landmark, skip-link hedefi, nav landmark accessible name ve img alt attribute kontrolleri eklendi.
+- README içindeki hatalı literal \\n satır sonları gerçek Markdown satır sonlarına dönüştürüldü.
+- Bu kontroller temel statik regresyon yakalar; klavye, screen reader, kontrast, focus görünürlüğü ve responsive davranış için gerçek browser QA hâlâ zorunlu.
