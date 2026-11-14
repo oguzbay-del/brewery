@@ -16,6 +16,8 @@ npm install
 npm run dev
 ```
 
+Pull requests touching `marketing-site/` run an isolated GitHub Actions check for Astro/TypeScript and static build.
+
 Check and build:
 
 ```sh
