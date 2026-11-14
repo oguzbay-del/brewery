@@ -59,6 +59,6 @@ Review the homepage and both audience pages at 1440px desktop and 390px mobile. 
 - **Repository root URL:** https://oguzbay-del.github.io/ is a separate user-site address and is not the Demleme project preview.
 - Astro uses `site: https://oguzbay-del.github.io` and `base: /brewery`; internal page links respect this base path.
 - Deployment workflow: `.github/workflows/marketing-site-pages.yml`.
-- Pushes to `marketing/homepage-prototype` that change `marketing-site/**` or this workflow build and deploy `marketing-site/dist` only.
+- Pushes to `main` that change `marketing-site/**` or this workflow build and deploy `marketing-site/dist` only. The PR check workflow validates the marketing site before merge; Pages deployment happens from the default branch.
 - The separate `marketing-site.yml` workflow runs PR checks.
-- Keep the PR unmerged until the live project preview has passed desktop/mobile visual QA and the scope review is complete.
+- After the PR checks and scope review pass, merge manually. Then verify the published project site at desktop and mobile sizes.
