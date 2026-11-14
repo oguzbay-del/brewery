@@ -49,8 +49,8 @@
 - Özellik iddiaları ürün akışı/test/dokümanıyla doğrulanmadan yayınlanmaz.
 
 **Sonraki adımlar**
-1. Homepage prototipinin desktop/mobile görsel yönünü kullanıcıyla gözden geçir; fotoğraf varlıklarını ve gerçek ürün ekranlarını onayla.
-2. Tasarım onayından sonra iki audience landing page'i aynı sistemle hazırla.
+1. Ana sayfa ve iki audience landing page'i 1440px desktop / 390px mobile ölçülerinde görsel olarak gözden geçir.
+2. Fotoğrafları, aşağıdaki slot envanterine göre lisans ve son varlıklar onaylandığında değiştir.
 3. App URL, sign-in URL, domain ve analytics/form kararlarını ayrıca al.
 4. Fiyat, trial, paket, ödeme sağlayıcısı ve limitler kesinleşmeden fiyat/teklif vaat etme.
 5. Claude ürün geliştirme kuyruğuna dokunma.
@@ -95,3 +95,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 **Kaydedilen teknik doküman:** `web-stratejisi/10-teknik-mimari.md` — framework karşılaştırması, TypeScript/AI kodlama ilkeleri, repo yerleşimi, rendering, içerik/SEO, tasarım token'ları, hosting, CI/CD, kalite kapıları ve Mermaid sistem akışı.
 
 **Sıradaki adım:** Mimari tercihi esas alarak yalnız pazarlama sitesi için bilgi mimarisi ve desktop/mobile wireframe taslağı hazırlamak. Henüz `marketing-site/` kod iskeleti oluşturulmadı. `web/` ürün uygulaması ve Claude geliştirme kuyruğu değiştirilmedi.
+
+
+**Son çalışma — 14 Kasım 2026 (devam)**
+
+- Kullanıcı talimatıyla fotoğraflar sonraki aşamaya bırakıldı; mevcut illüstrasyonlar ve yer tutucular geçici olarak korundu.
+- Ana sayfada fotoğraf değişim noktaları HTML yorumları ve `data-image-slot` kimlikleriyle işaretlendi.
+- `/homebrewers` ve `/breweries` için ayrı İngilizce audience landing page'leri eklendi.
+- `marketing-site/README.md` içine beş görsel slotunun dosya/kimlik/değiştirilecek içerik envanteri eklendi.
+- Değişen dosyalar: `marketing-site/src/pages/index.astro`, `homebrewers.astro`, `breweries.astro`, `src/styles/global.css`, `README.md`.
+- GitHub dosya yazma işlemleri başarılı. Yerel Astro check/build çalıştırılmadı. Commit'e bağlı workflow run listesi boş; CI sonucu doğrulanmadı. Workflow dosyası PR dalında yeni olduğundan PR CI tetiklenmesi için workflow'un base branch'te bulunması gerekebilir; PR birleştirilmedi.
+- PR #3 draft olarak bırakıldı; merge yapılmadı.
+- Ürün uygulaması, `web/` ve Claude ürün geliştirme kuyruğu değiştirilmedi.
