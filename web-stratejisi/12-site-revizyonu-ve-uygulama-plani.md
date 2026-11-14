@@ -364,3 +364,126 @@ Beklenen olası girdiler (şimdilik soru veya zorunlu form değil):
 - Pricing, waitlist ve ürün lansmanına ilişkin ticari kararlar.
 
 **Önemli:** Bu doküman planlama kaydıdır; kendiliğinden uygulama izni değildir. Kullanıcının açık “başla” talimatı olmadan hiçbir iş paketi uygulanmayacaktır.
+
+---
+## 20. Yeni zorunlu tasarım ve kalite standardı — 14 Kasım 2026
+
+Bu bölüm, kullanıcının verdiği UI/UX ve frontend yönlendirmesini Demleme'ye uyarlanmış kalıcı tasarım standardı olarak tanımlar. Tüm siteyi kapsar; yalnız ana sayfaya uygulanıp alt sayfalar eski standartta bırakılamaz.
+
+### 20.1 Tasarım hedefi ve referans çıtası
+- Tasarım ve uygulama titizliği Apple, Vercel ve Stripe seviyesinde hedeflenir: güçlü tipografi, kusursuz hizalama, tutarlı bileşenler, net bilgi hiyerarşisi, hızlı algılanan değer ve güvenilir etkileşim.
+- Bu markaların tasarımını, metinlerini veya bileşenlerini kopyalama. Referans, kalite çıtasıdır; Demleme'nin kendi görsel kimliği oluşturulacaktır.
+- Genel yön: ultra-modern, minimalist, temiz, teknik ve güven veren; yenilikçi ancak gösterişsiz.
+- Açık ve koyu tema desteği tasarım sisteminde düşünülür. Hangi temanın varsayılan olacağı marka/okunabilirlik testinden sonra kararlaştırılır.
+- Generous whitespace esastır. İçerik kartları, başlıklar ve tablolar sıkıştırılmaz.
+- Bento Grid yalnızca içerik önceliğini ve ilişkileri daha iyi anlattığında kullanılır; her bölümü aynı kart ızgarasına dönüştürmek yasaktır.
+- Glassmorphism, blur, gradyan, glow, derin gölge ve hover ölçekleme kontrollü mikro detaylardır. Okunabilirlik, performans veya teknik güven pahasına kullanılmaz.
+- Hareket ve geçişler kısa, amaca hizmet eden ve reduced-motion tercihine saygılı olmalıdır. Sürekli hareket eden dekoratif öğeler kullanılmaz.
+
+### 20.2 Design tokens ve renk sistemi
+İlk aşamada sabit renk kodu dayatılmaz. Kullanıcının örnek verdiği Indigo/Cyan ve koyu/açık arka plan kodları referans örnekleridir; onaylanmış Demleme marka renkleri değildir.
+- Önce mevcut logo, marka varlıkları, mevcut site ve kullanıcıdan gelecek örnekler denetlenir.
+- Ardından Primary, Accent, Background, Surface, Border, Text, Muted Text, Success, Warning ve Error semantic token'ları tanımlanır.
+- Açık/koyu temada aynı semantic token isimleri korunur; kontrast ve durum renkleri iki temada ayrı ayrı doğrulanır.
+- Saf beyaz/siyah yerine göz yormayan yüzey tonları tercih edilebilir; ancak kontrast WCAG 2.2 AA hedefini karşılamalıdır.
+- Renk tek başına durum veya anlam iletmemelidir.
+- Renk paleti ve token değerleri görsel sistem onayından önce site geneline yaygın biçimde uygulanmaz.
+
+### 20.3 Tipografi ve ritim
+- Modern, okunabilir sans-serif aileleri değerlendirilir (ör. Inter, Plus Jakarta Sans, Outfit); nihai font performans, lisans, karakter kapsamı ve görsel uyuma göre seçilir.
+- Modular scale için 1.25 veya 1.333 oranlarından biri seçilir; başlık, gövde, küçük metin ve etiket ölçüleri tek bir tutarlı ölçeğe bağlanır.
+- Gövde metninde yaklaşık 1.6 line-height başlangıç hedefidir; uzun teknik içeriklerde satır uzunluğu ve paragraf aralığı ayrıca optimize edilir.
+- H1 her sayfada tek ve açık olmalı; H2/H3 hiyerarşisi içerik sırasını yansıtmalıdır.
+- Teknik tablolar, ölçü birimleri ve sayısal değerler hizalı ve taranabilir olmalıdır; mümkünse tabular numerals kullanılır.
+
+### 20.4 Zorunlu sayfa akışı ve bileşen yaklaşımı
+Aşağıdaki bölümler sayfa amacına göre uyarlanır; her sayfaya mekanik olarak eklenmez:
+1. Navbar: Minimal logo, anlaşılır menü, Home/Business ayrımı ve bağlama uygun tek ana CTA. Sticky ve blur yalnız scroll davranışında okunabilirlik/erişilebilirlik korunuyorsa.
+2. Hero: Tek bir güçlü H1, kısa ve özgül alt açıklama, birincil CTA ve gerekirse ikincil metin bağlantısı. Arka plan görseli yalnız gerçek/izinli varlık veya açıkça şematik özgün görselleştirme olabilir.
+3. Güven/kanıt alanı: Partner veya müşteri logoları yalnız gerçek ilişki ve kullanım izni varsa. Aksi durumda logo şeridi kaldırılır; yerine yöntem, kapsam veya doğrulanmış teknik ilkeler anlatılır.
+4. Özellik anlatımı: Önceliğe göre değişen Bento Grid veya editoryal bölümler. Her kartın bir amacı ve anlamlı hedef sayfa bağlantısı bulunur.
+5. Etkileşimli anlatım: Tabs, stepper, karşılaştırma veya hesaplayıcı yalnız gerçek ve doğrulanmış işlevi açıklıyorsa. Çalışmayan demo veya ürün arayüzü taklidi yapılmaz.
+6. Sosyal kanıt: Testimonial, yıldız, avatar, müşteri adı ve başarı metriği yalnız gerçek, doğrulanmış ve yayın izni alınmışsa. Şu anda böyle veri yoksa bölüm kullanılmaz.
+7. CTA: Sayfanın sonunda kullanıcının bulunduğu aşamaya uygun, çalışan ve dürüst aksiyon. Ürün hazır değilse kayıt/satın alma/demo akışı varmış gibi davranılmaz.
+8. Footer: Mantıklı sütunlar, önemli sayfalara bağlantılar, yasal/gizlilik bağlantıları yalnız gerçek sayfalar hazır olduğunda; sosyal ikonlar yalnız aktif hesaplar varsa.
+Her bileşen mobil, tablet ve masaüstünde tasarlanır. Hover tek etkileşim yöntemi olamaz; klavye ve dokunmatik kullanımı da desteklenir.
+
+### 20.5 Home ve Business ayrımı — zorunlu karşılaştırma standardı
+Homebrewers ve Professional Breweries aynı ürün markasını paylaşır; ancak ihtiyaçları, terminolojileri, karar kriterleri, içerik sıraları ve CTA'ları ayrı tasarlanır. Tek bir genel sayfada iki profili belirsizce karıştırmak kabul edilmez.
+
+| Boyut | Homebrewers (Home) | Professional Breweries (Business) |
+|---|---|---|
+| Kullanıcı | Evde kendi ekipmanıyla bira/fermente içecek üreten kişi | Profesyonel bira üretim işletmesi ve üretim ekibi |
+| Temel hedef | Reçete geliştirmek, demlemeyi planlamak, ölçmek ve sonuçları öğrenmek | Reçete/üretim standardı, planlama, kayıt, kalite ve parti izlenebilirliği |
+| Dil | Açıklayıcı, öğretici, bireysel üretici odaklı | Operasyonel, teknik, ekip ve süreç odaklı |
+| Öncelikli konular | Reçete, hesaplamalar, su, ekipman, brew day, fermantasyon | Reçete onayı, üretim planı, tank/parti, kalite, lot ve vardiya kayıtları |
+| Değer anlatımı | Daha tutarlı ve anlaşılır ev üretim süreci | Daha kontrollü, izlenebilir ve ekipçe yürütülebilen üretim süreçleri |
+| Kanıt standardı | Formül, varsayım, birim ve eğitim içeriği | Süreç, kayıt modeli, yetki ve izlenebilirlik tasarımının doğruluğu |
+| CTA | Ürün erişimi gerçekten hazırsa Get started; değilse gerçek ve onaylı bekleme listesi/ürün güncellemesi | Business kapsamı ve erişim gerçekten hazırsa ilgili aksiyon; değilse dürüst bilgi/iletişim yolu |
+| SEO niyeti | Home brewing, recipe calculator, water, ABV, IBU, fermentation | Brewery software, production planning, batch records, quality, traceability |
+
+Karşılaştırma tabloları sayfa içinde görünür olmalı. Özellikle Home vs Business, planned capability vs current availability, manual workflow vs Demleme'nin planlanan yaklaşımı gibi farklar metin içinde kaybolmamalıdır. Tablo kullanımı mobilde yatay kaydırma veya anlamlı stacked layout ile erişilebilir olmalıdır.
+Her özellik ve use case için iç değerlendirme tablosu şu alanları içermelidir: audience, kullanıcı problemi, beklenen girdi, iş akışı, ürün planındaki karşılık, roadmap durumu, kanıt/kaynak, site sayfası ve CTA. Home ve Business için aynı özellik farklı anlam taşıyorsa iki ayrı anlatım hazırlanmalıdır.
+
+### 20.6 Bilgi kalitesi ve anlatım sırası
+FoamByte karşılaştırması yalnız özellik sayısı üzerinden yapılmayacak. Her rakip sayfası ve Demleme sayfası şu eksenlerde değerlendirilecektir:
+
+| Değerlendirme alanı | Kontrol sorusu |
+|---|---|
+| İçerik kapsamı | Konunun temel ve ileri seviye soruları yanıtlanıyor mu? |
+| Bilgi doğruluğu | Formül, teknik terim, birim ve iddialar güvenilir kaynaklarla doğrulanmış mı? |
+| Anlatım | Ön bilgi gerektirmeden anlaşılır, doğru sırada ve örnekli mi? |
+| Bilgi akışı | Problem → bağlam → yöntem → örnek → sınırlama → ürün bağlantısı sırası mantıklı mı? |
+| Kitle uyumu | Home ve Business ihtiyaçları ayrılmış mı; jargon doğru seviyede mi? |
+| Görsel/UX | Sayfa taranabilir mi; başlık, tablo, diyagram ve boşluklar bilgiyi destekliyor mu? |
+| Etkileşim | Hesaplayıcı veya örnek gerçekten çalışıyor ve doğrulanmış mı? |
+| SEO | Arama niyeti, başlık, snippet, dahili bağlantı ve konu kümesi uyumlu mu? |
+| Güven | Kaynaklar, varsayımlar, ürün durumu ve sınırlamalar açık mı? |
+| Dönüşüm | Ziyaretçiye bir sonraki anlamlı adım net biçimde gösteriliyor mu? |
+
+Teknik anlatım için varsayılan yapı: Problem → neden önemli → temel kavramlar → yöntem/formül → adım adım örnek → varsayımlar ve sınırlar → Home/Business uygulaması → ilgili Demleme kabiliyeti ve roadmap durumu → kaynaklar/sonraki okuma.
+Rakip incelemesinde her sayfa için URL, içerik başlıkları, tablo ve etkileşim örnekleri, kaynak kalitesi, güçlü/zayıf yönler, Demleme'ye uyarlama fırsatı ve kopyalanmaması gereken unsurlar kaydedilir. Sadece erişilebilen gerçek sayfalar değerlendirilir; rakip hakkında varsayım yazılmaz.
+
+### 20.7 İçerik ve tasarım kabul kriterleri
+Bir sayfa “tamamlandı” sayılmadan önce:
+- Tek bir ana hedef kitle ve arama/kullanıcı niyeti açıkça tanımlanmış olmalı.
+- H1 ve ilk ekran, sayfanın ne anlattığını ve kimin için olduğunu birkaç saniyede açıklamalı.
+- Bölümler doğru bilgi sırasına sahip olmalı; tekrar ve boş pazarlama cümleleri temizlenmeli.
+- Teknik iddialar ürün planı, birincil kaynak veya doğrulanmış testle desteklenmeli.
+- Planned / in development / available ayrımı görünür olmalı.
+- Gerekli yerde Home ve Business farkı tabloyla gösterilmeli.
+- İlgili konu, özellik, use case ve Learn sayfalarına bağlar çalışmalı.
+- CTA gerçek bir hedefe gitmeli.
+- Mobil/tablet/desktop responsive düzen, klavye erişimi, focus state, kontrast, reduced motion ve semantik HTML kontrol edilmeli.
+- SEO metadata ve dahili bağlantılar tamamlanmalı.
+- Görsel QA yapılmadan “responsive QA tamamlandı” denmemeli.
+
+### 20.8 Görsel doğruluk ve güven kuralları
+- Gerçek müşteri/partner logoları, testimonial, yıldız, avatar, kullanıcı sayısı, başarı metriği veya case study uydurulmaz.
+- Ürün arayüzü gibi görünen sahte dashboard, sahte cihaz bağlantısı veya gerçek olmayan entegrasyon akışı üretilmez.
+- Soyut SVG/şema kullanılabilir; bunun gerçek ürün ekranı olmadığı açık olmalıdır.
+- Kullanıcı fotoğraf sağlamadıkça fotoğraf, stok fotoğraf veya AI fotoğrafı eklenmez; mevcut slot kimlikleri ve değişim notları korunur.
+- Her içerik iddiası kaynak/ürün-planı referansına bağlanır; roadmap dışı fikirler “research / under consideration” olarak etiketlenir.
+- Demo CTA ve “Watch demo” yalnız gerçekten izlenebilir, doğru ürünü gösteren demo mevcutsa kullanılır.
+
+## 21. Oturum devri ve devam etme protokolü
+- Yeni oturumda kullanıcı “devam et” dediğinde ilk iş OTURUM.md, web-stratejisi/12-site-revizyonu-ve-uygulama-plani.md, web-stratejisi/README.md ve ilgili GitHub PR/branch/CI durumunu okumaktır.
+- Kullanıcıdan bu belgelerde kayıtlı hedefleri, kararları, kısıtları veya önceki talimatları yeniden anlatması istenmez.
+- “Devam et” komutu, bu plan için bir sonraki güvenli ve bağımlılıkları hazır iş paketini başlatma/ilerletme yetkisidir. Kullanıcı yeni bilgi veya açık bir bekleme koşulu verdiyse önce plan ve karar kaydı güncellenir; çelişki varsa daha yeni açık talimat geçerlidir.
+- İlk devam adımında tüm siteyi tek seferde kodlamaya girişilmez. Önce mevcut repo ve açık PR durumu kontrol edilir; sonra WP-00'dan itibaren küçük, doğrulanabilir ve bağımsız işlere ayrılarak ilerlenir.
+- Her oturum sonunda plan ve OTURUM.md güncellenir: son tamamlanan iş, commit/PR, doğrulama, engeller ve tek net sonraki adım.
+- Kullanıcıya aynı bağlam tekrar tekrar sorulmaz; yalnızca gerçekten yeni ve zorunlu bir karar eksikse tek net soru sorulur.
+- GitHub Auto-merge kullanılmaz. Manuel merge öncesi CI, Vercel Preview, mergeability ve beklenen head SHA doğrulanır.
+
+## 22. Tasarım ve uygulama iş paketlerine eklenen görevler
+Mevcut WP-00—WP-17 iş paketleri bu yeni standarda göre genişletilir:
+- WP-02: FoamByte ve diğer rakiplerde içerik + tasarım + bilgi kalitesi + bilgi akışı + iki audience ayrımı için karşılaştırmalı skor kartı.
+- WP-04: Home/Business ayrı sitemap, gezinme ve sayfa ilişkileri; gerekli karşılaştırma tabloları.
+- WP-05: Her sayfa için problem–yöntem–örnek–sınırlama–kanıt–ürün bağlantısı içerik şablonu.
+- WP-06: Desktop/tablet/mobile wireframe; navbar, hero, bento, etkileşim, CTA ve footer varyantları.
+- WP-07: Açık/koyu tema, semantic design tokens, tipografi modular scale, spacing, grid, motion ve component states.
+- WP-08: Home ve Business için ayrı How It Works akışları ve yan yana fark tabloları.
+- WP-11: Learn içerikleri için kaynak/kanıt standardı, teknik örnekler, glossary ve FAQ.
+- WP-12: Sayfa başına audience/search intent ve konu kümeleriyle teknik SEO.
+- WP-13—WP-16: Responsive/accessible component implementation, content integrity, visual regression ve gerçek cihaz/tarayıcı QA.
+- Her WP'nin tamamlanma tanımı 20.7 kabul kriterlerini karşılamalıdır.
