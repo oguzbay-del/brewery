@@ -40,11 +40,15 @@ tracing-opentelemetry = "0.34.0"
 unicode-normalization.workspace = true
 utoipa = { version = "6.0.0", features = ["chrono", "uuid"] }
 uuid.workspace = true
+webauthn-rs.workspace = true
+argon2.workspace = true
+url.workspace = true
 
 [dev-dependencies]
 engine-service = { path = "../engine-service" }
 fake-oidc = { path = "../fake-oidc" }
 http-body-util.workspace = true
+webauthn-authenticator-rs = { version = "=0.6.2", default-features = false, features = ["softpasskey"] }
 opentelemetry_sdk = "0.33.1"
 tracing-subscriber.workspace = true
 

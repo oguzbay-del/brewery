@@ -62,6 +62,9 @@ tower = { version = "0.5.3", features = ["util"] }
 tracing = "0.1.44"
 unicode-normalization = "0.1.26"
 uuid = { version = "1.29.2", features = ["v4", "v7", "serde"] }
+webauthn-rs = { version = "=0.6.2", features = ["danger-allow-state-serialisation"] }
+argon2 = { version = "=0.6.0", features = ["alloc", "password-hash"] }
+url = "2"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
 
 [workspace.lints.rust]
@@ -87,4 +90,8 @@ overflow-checks = true
 [profile.dev.package.num-bigint-dig]
 opt-level = 3
 [profile.dev.package.rsa]
+opt-level = 3
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
 opt-level = 3

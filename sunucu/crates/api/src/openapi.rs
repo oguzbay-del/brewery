@@ -21,7 +21,15 @@ use crate::{
             NonceResponse, ProviderLoginRequest, SessionDetail, SessionInfo, SessionIssued,
             SessionItem, UserSummary, WorkspaceSummary,
         },
+        passkey::{
+            self, CeremonyStart, PasskeySummary, RegistrationDone, RegistrationFinish, StepUpDone,
+            StepUpFinish,
+        },
         setup::{self, WorkspaceCreateRequest, WorkspaceResponse},
+        shared_device::{
+            self, DeviceKeyRotate, MemberTile, PinSet, SharedDeviceCreate, SharedDeviceSummary,
+            SwitchRequest, SwitchResponse,
+        },
     },
     concurrency::Concurrency,
     error::{ErrorCode, FieldIssue, ProblemDetails},
@@ -72,6 +80,76 @@ const ME_ERRORS: &[ErrorCode] = &[
 ];
 
 use ErrorCode::{IdempotencyInProgress, IdempotencyMismatch, PayloadTooLarge, VersionMismatch};
+
+const PASSKEY_ERRORS: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    StepUpRequired,
+    NotFound,
+    Conflict,
+    UnsupportedMediaType,
+    ValidationFailed,
+    UpgradeRequired,
+    RateLimited,
+    Unavailable,
+    Internal,
+];
+const DEVICE_ADMIN_ERRORS: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    StepUpRequired,
+    NotFound,
+    Conflict,
+    UnsupportedMediaType,
+    ValidationFailed,
+    UpgradeRequired,
+    RateLimited,
+    Internal,
+];
+const DEVICE_CREATE_ERRORS: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    Forbidden,
+    StepUpRequired,
+    NotFound,
+    Conflict,
+    IdempotencyInProgress,
+    UnsupportedMediaType,
+    ValidationFailed,
+    IdempotencyMismatch,
+    PreconditionRequired,
+    UpgradeRequired,
+    RateLimited,
+    Internal,
+];
+/// Endpoints the device calls with its key: no session, so `401` means a bad key.
+const DEVICE_KEY_ERRORS: &[ErrorCode] = &[
+    MalformedRequest,
+    Unauthenticated,
+    NotFound,
+    UnsupportedMediaType,
+    ValidationFailed,
+    UpgradeRequired,
+    RateLimited,
+    Internal,
+];
+
+const fn op(
+    operation_id: &'static str,
+    public: bool,
+    permission: Option<&'static str>,
+    errors: &'static [ErrorCode],
+) -> OperationSpec {
+    OperationSpec {
+        operation_id,
+        public,
+        permission,
+        concurrency: None,
+        errors,
+    }
+}
 
 const FILE_READ: &[ErrorCode] = &[
     MalformedRequest,
@@ -421,6 +499,56 @@ pub const OPERATIONS: &[OperationSpec] = &[
             Internal,
         ],
     },
+    op("me_passkeys_list", false, None, PASSKEY_ERRORS),
+    op(
+        "me_passkeys_registration_start",
+        false,
+        None,
+        PASSKEY_ERRORS,
+    ),
+    op(
+        "me_passkeys_registration_finish",
+        false,
+        None,
+        PASSKEY_ERRORS,
+    ),
+    op("me_passkeys_delete", false, None, PASSKEY_ERRORS),
+    op("me_stepup_start", false, None, PASSKEY_ERRORS),
+    op("me_stepup_finish", false, None, PASSKEY_ERRORS),
+    op(
+        "shareddevices_create",
+        false,
+        Some("devices.manage"),
+        DEVICE_CREATE_ERRORS,
+    ),
+    op(
+        "shareddevices_list",
+        false,
+        Some("devices.manage"),
+        DEVICE_ADMIN_ERRORS,
+    ),
+    op(
+        "shareddevices_revoke",
+        false,
+        Some("devices.manage"),
+        DEVICE_ADMIN_ERRORS,
+    ),
+    op(
+        "shareddevices_rotatekey",
+        false,
+        Some("devices.manage"),
+        DEVICE_ADMIN_ERRORS,
+    ),
+    op("shareddevices_pinset", false, None, DEVICE_ADMIN_ERRORS),
+    op(
+        "shareddevices_pinclear",
+        false,
+        Some("devices.manage"),
+        DEVICE_ADMIN_ERRORS,
+    ),
+    op("shareddevices_members", true, None, DEVICE_KEY_ERRORS),
+    op("shareddevices_switch", true, None, DEVICE_KEY_ERRORS),
+    op("shareddevices_lock", true, None, DEVICE_KEY_ERRORS),
     OperationSpec {
         operation_id: "roles_list",
         public: false,
@@ -596,7 +724,22 @@ pub const OPERATIONS: &[OperationSpec] = &[
         access::invitations_list,
         access::invitations_revoke,
         access::invitations_accept,
-        access::shares_create
+        access::shares_create,
+        passkey::passkeys_list,
+        passkey::registration_start,
+        passkey::registration_finish,
+        passkey::passkey_delete,
+        passkey::step_up_start,
+        passkey::step_up_finish,
+        shared_device::device_create,
+        shared_device::device_list,
+        shared_device::device_revoke,
+        shared_device::device_rotate_key,
+        shared_device::pin_set,
+        shared_device::pin_clear,
+        shared_device::device_members,
+        shared_device::device_switch,
+        shared_device::device_lock
     ),
     components(schemas(
         HealthResponse,
@@ -649,7 +792,20 @@ pub const OPERATIONS: &[OperationSpec] = &[
         access::NewInvitation,
         access::AcceptInvitation,
         access::InvitationAccepted,
-        access::NewShare
+        access::NewShare,
+        CeremonyStart,
+        PasskeySummary,
+        RegistrationDone,
+        RegistrationFinish,
+        StepUpDone,
+        StepUpFinish,
+        DeviceKeyRotate,
+        MemberTile,
+        PinSet,
+        SharedDeviceCreate,
+        SharedDeviceSummary,
+        SwitchRequest,
+        SwitchResponse
     )),
     tags(
         (name = "system", description = "Service status and version"),
@@ -659,7 +815,8 @@ pub const OPERATIONS: &[OperationSpec] = &[
         (name = "auth", description = "Sign-in with Apple, Google or an e-mail link"),
         (name = "me", description = "The signed-in user: session, sessions, sign-in methods"),
         (name = "workspaces", description = "Workspaces"),
-        (name = "access", description = "Roles, members, assignments, invitations and sharing")
+        (name = "access", description = "Roles, members, assignments, invitations and sharing"),
+        (name = "shared-devices", description = "Shared device mode: devices, member PINs, user switching")
     )
 )]
 pub struct ApiDoc;

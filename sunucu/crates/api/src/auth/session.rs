@@ -85,6 +85,9 @@ pub struct SessionRecord {
     pub step_up_at: Option<DateTime<Utc>>,
     /// Set when closed.
     pub revoked_at: Option<DateTime<Utc>>,
+    /// Idle timeout of a shared device session (seconds); the client default when empty.
+    #[serde(default)]
+    pub idle_timeout_secs: Option<i64>,
 }
 
 impl SessionRecord {
@@ -92,7 +95,10 @@ impl SessionRecord {
     /// lifetime and not idle for longer than the client kind allows.
     #[must_use]
     pub fn is_active(&self, now: DateTime<Utc>) -> bool {
-        let (idle, _) = lifetimes(self.client_kind, self.remember);
+        let (default_idle, _) = lifetimes(self.client_kind, self.remember);
+        let idle = self
+            .idle_timeout_secs
+            .map_or(default_idle, Duration::seconds);
         self.revoked_at.is_none() && now < self.expires_at && now - self.last_activity_at < idle
     }
 }
@@ -109,6 +115,7 @@ struct Row {
     expires_at: DateTime<Utc>,
     step_up_at: Option<DateTime<Utc>>,
     revoked_at: Option<DateTime<Utc>>,
+    idle_timeout_secs: Option<i32>,
 }
 
 impl TryFrom<Row> for SessionRecord {
@@ -130,13 +137,14 @@ impl TryFrom<Row> for SessionRecord {
             expires_at: r.expires_at,
             step_up_at: r.step_up_at,
             revoked_at: r.revoked_at,
+            idle_timeout_secs: r.idle_timeout_secs.map(i64::from),
         })
     }
 }
 
 // Fixed text, no user input: safe to splice into the queries below.
 const COLUMNS: &str = "id, user_id, client_kind, shared_device_id, remember, created_at, \
-                       last_activity_at, expires_at, step_up_at, revoked_at";
+                       last_activity_at, expires_at, step_up_at, revoked_at, idle_timeout_secs";
 
 /// Creates a session inside the caller's transaction (which must run with the user's context)
 /// and returns its token, shown once, and the record.
@@ -162,6 +170,7 @@ pub async fn insert(
         expires_at: now + max,
         step_up_at: None,
         revoked_at: None,
+        idle_timeout_secs: None,
     };
     sqlx::query(
         "INSERT INTO sessions (id, user_id, token_hash, client_kind, device_name, approx_location, \
@@ -323,6 +332,11 @@ impl SessionStore {
         row.map(SessionRecord::try_from).transpose()
     }
 
+    /// Drops the cached record of a session token (after its row changed or was closed).
+    pub async fn forget(&self, hash: &[u8]) {
+        self.cache_drop(&[hash.to_vec()]).await;
+    }
+
     /// The user's open sessions, newest sign-in first.
     pub async fn list(&self, user_id: Uuid, now: DateTime<Utc>) -> ApiResult<Vec<SessionListItem>> {
         #[derive(sqlx::FromRow)]
@@ -358,13 +372,23 @@ impl SessionStore {
     /// Replaces `old` by a new session of the same client, device name and location, and closes
     /// `old` (after linking an identity; ADR-0009 rule 3.4).
     pub async fn rotate(&self, old: &SessionRecord) -> ApiResult<(String, SessionRecord)> {
+        self.rotate_with(old, None).await
+    }
+
+    /// Like [`Self::rotate`]; `step_up` stamps the new session with a second factor time
+    /// (`step_up_at`, ADR-0009 rule 5.3); without it the new session has none.
+    pub async fn rotate_with(
+        &self,
+        old: &SessionRecord,
+        step_up: Option<DateTime<Utc>>,
+    ) -> ApiResult<(String, SessionRecord)> {
         let mut tx = db::begin(&self.db, &db::DbContext::user(old.user_id, None)).await?;
         let (device_name, location): (String, Option<String>) =
             sqlx::query_as("SELECT device_name, approx_location FROM sessions WHERE id = $1")
                 .bind(old.id)
                 .fetch_one(&mut *tx)
                 .await?;
-        let (token, record) = insert(
+        let (token, mut record) = insert(
             &mut tx,
             old.user_id,
             old.client_kind,
@@ -373,6 +397,14 @@ impl SessionStore {
             location.as_deref(),
         )
         .await?;
+        if step_up.is_some() {
+            sqlx::query("UPDATE sessions SET step_up_at = $2 WHERE id = $1")
+                .bind(record.id)
+                .bind(step_up)
+                .execute(&mut *tx)
+                .await?;
+            record.step_up_at = step_up;
+        }
         let hashes: Vec<(Vec<u8>,)> = sqlx::query_as(
             "UPDATE sessions SET revoked_at = now() WHERE id = $1 AND revoked_at IS NULL RETURNING token_hash",
         )
@@ -435,6 +467,7 @@ mod tests {
             expires_at: now + max,
             step_up_at: None,
             revoked_at: None,
+            idle_timeout_secs: None,
         }
     }
 

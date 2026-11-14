@@ -41,6 +41,24 @@ pub struct AuthConfig {
     pub mail_from: String,
     /// Shortest gap between two JWKS refreshes triggered by unknown `kid`s.
     pub jwks_min_refresh_secs: u64,
+    /// `WebAuthn` relying party id: the domain web and iOS share (ADR-0009 rule 5.1).
+    pub webauthn_rp_id: String,
+    /// Relying party name shown by the authenticator.
+    pub webauthn_rp_name: String,
+    /// Origins `WebAuthn` accepts in `clientDataJSON` (web address, `https://<rp id>` for iOS).
+    pub webauthn_origins: Vec<String>,
+}
+
+/// Host part of `https://host:port/path`.
+fn host_of(url: &str) -> String {
+    let rest = url.split_once("://").map_or(url, |(_, r)| r);
+    let authority = rest.split('/').next().unwrap_or_default();
+    let authority = authority.rsplit('@').next().unwrap_or_default();
+    authority
+        .rsplit_once(':')
+        .filter(|(_, port)| port.bytes().all(|b| b.is_ascii_digit()))
+        .map_or(authority, |(h, _)| h)
+        .to_owned()
 }
 
 impl std::fmt::Debug for AuthConfig {
@@ -157,6 +175,17 @@ impl AuthConfig {
                 name: "JWKS_MIN_REFRESH_SECS",
                 reason: e.to_string(),
             })?;
+        let webauthn_rp_id = lookup("WEBAUTHN_RP_ID")
+            .filter(|v| !v.trim().is_empty())
+            .map_or_else(|| host_of(&web_base_url), |v| v.trim().to_lowercase());
+        let mut webauthn_origins = list(lookup("WEBAUTHN_ORIGINS"));
+        if webauthn_origins.is_empty() {
+            webauthn_origins.clone_from(&web_origins);
+            let ios = format!("https://{webauthn_rp_id}");
+            if !webauthn_origins.contains(&ios) {
+                webauthn_origins.push(ios);
+            }
+        }
         Ok(Self {
             apple: provider(
                 lookup,
@@ -181,6 +210,11 @@ impl AuthConfig {
                     |v| v.trim().to_owned(),
                 ),
             jwks_min_refresh_secs,
+            webauthn_rp_id,
+            webauthn_rp_name: lookup("WEBAUTHN_RP_NAME")
+                .filter(|v| !v.trim().is_empty())
+                .map_or_else(|| "Demleme".to_owned(), |v| v.trim().to_owned()),
+            webauthn_origins,
         })
     }
 }
@@ -204,6 +238,18 @@ mod tests {
         assert_eq!(apple.jwks_url, "https://appleid.apple.com/auth/keys");
         assert!(cfg.google.is_none());
         assert_eq!(cfg.web_origins, ["https://app.example.com"]);
+    }
+
+    #[test]
+    fn webauthn_defaults_come_from_the_web_address() {
+        let lookup =
+            |n: &str| (n == "WEB_BASE_URL").then(|| "https://app.example.com:8443/x".to_owned());
+        let cfg = AuthConfig::from_lookup(&lookup).unwrap();
+        assert_eq!(cfg.webauthn_rp_id, "app.example.com");
+        assert_eq!(
+            cfg.webauthn_origins,
+            ["https://app.example.com:8443", "https://app.example.com"]
+        );
     }
 
     #[test]

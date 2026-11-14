@@ -4,6 +4,7 @@
 //! - [`session`]: opaque session tokens, cache, revocation.
 //! - [`email`]: addresses and the sign-in mail.
 //! - [`handlers`], [`setup`]: the endpoints.
+//! - [`passkey`], [`step_up`] (ADR-0009 rule 5) and [`shared_device`], [`pin`] (rule 7; T2.12).
 //!
 //! [`AuthServices`] ties them together, implements [`Authenticator`] (bearer or cookie session,
 //! CSRF, workspace membership and permissions) and builds the routes.
@@ -13,8 +14,12 @@ pub mod config;
 pub mod email;
 pub mod handlers;
 pub mod oidc;
+pub mod passkey;
+pub mod pin;
 pub mod session;
 pub mod setup;
+pub mod shared_device;
+pub mod step_up;
 pub mod tokens;
 
 use std::{
@@ -26,7 +31,7 @@ use std::{
 use axum::{
     Extension, Router,
     http::{HeaderMap, Method, header},
-    routing::{delete, get, post},
+    routing::{delete, get, post, put},
 };
 use chrono::Utc;
 use sqlx::PgPool;
@@ -61,6 +66,7 @@ pub struct AuthServices {
     pub(crate) mailer: Arc<dyn Mailer>,
     pub(crate) sessions: SessionStore,
     pub(crate) redis: Redis,
+    pub(crate) webauthn: Option<webauthn_rs::prelude::Webauthn>,
 }
 
 impl std::fmt::Debug for AuthServices {
@@ -123,6 +129,7 @@ impl AuthServices {
             google: verifier(&config.google),
             sessions: SessionStore::new(db.clone(), redis.clone()),
             redis,
+            webauthn: passkey::build_webauthn(&config),
             db,
             config,
             mailer,
@@ -153,8 +160,62 @@ impl AuthServices {
                     "/v1/me/identities",
                     get(handlers::identities_list).post(handlers::identity_link),
                 )
-                .route("/v1/me/identities/{id}", delete(handlers::identity_unlink)),
+                .route("/v1/me/identities/{id}", delete(handlers::identity_unlink))
+                .route("/v1/me/passkeys", get(passkey::passkeys_list))
+                .route("/v1/me/passkeys/{id}", delete(passkey::passkey_delete))
+                .route(
+                    "/v1/me/passkeys/registration/start",
+                    post(passkey::registration_start),
+                )
+                .route(
+                    "/v1/me/passkeys/registration/finish",
+                    post(passkey::registration_finish),
+                )
+                .route("/v1/me/step-up/start", post(passkey::step_up_start))
+                .route("/v1/me/step-up/finish", post(passkey::step_up_finish)),
         );
+        // Shared device administration and PINs (ADR-0009 rule 7).
+        let devices_admin = authenticated(
+            state,
+            idempotent(
+                state,
+                Router::new().route(
+                    "/v1/workspaces/{ws}/shared-devices",
+                    post(shared_device::device_create),
+                ),
+            )
+            .route(
+                "/v1/workspaces/{ws}/shared-devices",
+                get(shared_device::device_list),
+            )
+            .route(
+                "/v1/workspaces/{ws}/shared-devices/{id}",
+                delete(shared_device::device_revoke),
+            )
+            .route(
+                "/v1/workspaces/{ws}/shared-devices/{id}/rotate-key",
+                post(shared_device::device_rotate_key),
+            )
+            .route("/v1/workspaces/{ws}/me/pin", put(shared_device::pin_set))
+            .route(
+                "/v1/workspaces/{ws}/members/{member}/pin",
+                delete(shared_device::pin_clear),
+            ),
+        );
+        // The device proves itself with its key (`X-Device-Key`), not with a session.
+        let device_key = Router::new()
+            .route(
+                "/v1/shared-devices/{id}/members",
+                get(shared_device::device_members),
+            )
+            .route(
+                "/v1/shared-devices/{id}/switch",
+                post(shared_device::device_switch),
+            )
+            .route(
+                "/v1/shared-devices/{id}/lock",
+                post(shared_device::device_lock),
+            );
         let workspaces = authenticated(
             state,
             idempotent(
@@ -164,6 +225,8 @@ impl AuthServices {
         );
         public
             .merge(me)
+            .merge(devices_admin)
+            .merge(device_key)
             .merge(workspaces)
             .merge(access::routes(state))
             .layer(Extension(self.clone()))

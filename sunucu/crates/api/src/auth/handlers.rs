@@ -357,7 +357,7 @@ struct LoginOutcome {
 }
 
 impl AuthServices {
-    fn issued(&self, record: &SessionRecord, token: Option<String>) -> SessionIssued {
+    pub(super) fn issued(&self, record: &SessionRecord, token: Option<String>) -> SessionIssued {
         let web = record.client_kind == ClientKind::Web;
         SessionIssued {
             id: record.id,
@@ -369,7 +369,7 @@ impl AuthServices {
     }
 
     /// `Set-Cookie` for a web session; `None` for the iOS app.
-    fn cookie_for(record: &SessionRecord, token: &str) -> Option<String> {
+    pub(super) fn cookie_for(record: &SessionRecord, token: &str) -> Option<String> {
         (record.client_kind == ClientKind::Web).then(|| {
             let max_age = record
                 .remember
@@ -581,7 +581,7 @@ impl AuthServices {
     }
 }
 
-fn with_cookie(mut response: Response, cookie: Option<&str>) -> Response {
+pub(super) fn with_cookie(mut response: Response, cookie: Option<&str>) -> Response {
     let h = response.headers_mut();
     h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
     if let Some(cookie) = cookie.and_then(|c| HeaderValue::from_str(c).ok()) {
@@ -825,7 +825,10 @@ fn session_id_of(ctx: &RequestContext) -> ApiResult<Uuid> {
         .ok_or_else(|| ApiError::new(ErrorCode::Unauthenticated))
 }
 
-async fn current_record(svc: &AuthServices, ctx: &RequestContext) -> ApiResult<SessionRecord> {
+pub(super) async fn current_record(
+    svc: &AuthServices,
+    ctx: &RequestContext,
+) -> ApiResult<SessionRecord> {
     svc.sessions
         .get(ctx.identity.user_id, session_id_of(ctx)?)
         .await?
