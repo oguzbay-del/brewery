@@ -410,3 +410,16 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
 - Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
 - **Sıradaki adım:** PR #16 feature catalogue değişikliklerini WP-03 ile denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
+
+
+## Uygulama yetkisi ve Vercel geçici erteleme — 15 Kasım 2026
+
+- Kullanıcı, bekleyen pazarlama sitesi işlerinin kodla tamamlanmasını ve Vercel erişilebilir olmasa da GitHub üzerinden devam edilmesini açıkça onayladı.
+- Uygulama yetkisi yalnız `marketing-site/` pazarlama sitesini kapsar. Ürün uygulaması/API/iOS/Rust, hesaplayıcıların yayına alınması, görsel satın alma/üretme, analytics/form/consent, fiyatlandırma ve production release bu onayın dışındadır.
+- Vercel Preview ve gerçek tarayıcı QA geçici olarak ertelendi. Vercel yeniden çalıştığında Preview deployment, 1440/1024/768/390/320 px responsive QA, link/interaction ve erişilebilirlik kontrolleri yapılmadan public release tamamlanmış sayılmaz.
+- Bu arada GitHub Actions, Astro check, static build, source/diff review ve PR bazlı manuel merge akışı devam edecek. Auto-merge kullanılmayacak.
+- Yeni uygulama dalı: `marketing/audience-pages-content-implementation`.
+- Bu dalda claim-safe feature catalogue değişiklikleri PR #40'tan alındı; Homebrewers ve Professional Breweries sayfaları ayrı workflow, FAQ, teknik açıklama ve ERP sınırıyla yeniden yazıldı. Yeni audience bileşen CSS'i eklendi.
+- Fotoğraf slotları/yer tutucular korundu; yeni görsel veya sahte ürün ekranı eklenmedi. Hesaplayıcı, pricing veya signup CTA'sı eklenmedi.
+- İlk doğrulama: GitHub kaynak yazımları başarılı. GitHub Actions PR kontrolü ve Astro check/build sonucu bekleniyor; sonuç gelmeden build başarılı denmeyecek.
+- **Sıradaki adım:** PR aç, GitHub Actions sonuçlarını izle, hata varsa düzelt. Vercel QA'yı post-deploy gate olarak takip et.
