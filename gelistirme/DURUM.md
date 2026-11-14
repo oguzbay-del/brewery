@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.9 F2.1 bulgu düzeltmesi (Sonnet, Opus inceleme); T2.12 passkey ve ortak cihaz, T2.13 yetki (T2.11'e bağlı, paralel).
+**Sıradaki iş:** T2.9, T2.12, T2.13 bu oturumda sürüyor. Yeni oturumda ilk iş: tek seferlik yeniden düzenleme (her uç modülü rotasını ve OpenAPI satırını kendi dosyasında kaydeder; paralel işler `api/src/lib.rs`, `openapi.rs`, `main.rs`'e dokunmasın) ve ADR-0007 sonundaki uygulama notlarının konu dosyalarına bölünmesi; ardından T2.19→T2.21→T2.22 zinciri tek ajanla. Çalışma kuralı: CLAUDE.md › Token verimliliği.
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam

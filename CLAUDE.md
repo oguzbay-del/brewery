@@ -23,6 +23,16 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 6. Kullanıcıya en fazla beş satırla bildir: ne bitti, test sonucu, sıradaki iş. Kullanıcıdan karar gerekirse sor ve dur.
 7. Aşama kapısı kapanınca kullanıcıya yeni oturum açmasını öner.
 
+## Token verimliliği (Oğuz, 14.11.2026)
+
+- **Oturum kısa tutulur:** her aşamada ve ana oturumun bağlamı büyüyünce (yaklaşık 5–6 iş birleştirildikten sonra) iş tutarlı bir noktada kesilir, DURUM.md güncellenir ve kullanıcıya yeni oturum önerilir. Kayıt DURUM.md'dedir, sohbet geçmişine güvenilmez.
+- **Bağlı işler tek ajana, sırayla:** aynı modüle dokunan, birbirine bağlı işler (ör. API alan uçları T2.19→T2.21→T2.22) tek alt ajana zincir olarak verilir; ajan her işten sonra kendi commit'ini atar. Paralel ajan yalnız birbirinden ayrık işlerde (farklı crate, göç ile istemci, inceleme) kullanılır; aynı anda en çok 2–3 ajan (5 saatlik limit).
+- **Birleştirmeyi ajan yapar:** worktree ajanı işi bitirince `git fetch origin main && git rebase origin/main` yapar, çakışmayı kendisi çözer, testleri yeniden alır. Ana oturum çakışma çözmez; yalnız farkı inceler, testi doğrular, gönderir.
+- **Okuma dar tutulur:** alt ajan talimatında belgenin tamamı değil ilgili bölümü (başlık adıyla) ve crate'in CLAUDE.md'si gösterilir. Uzun ADR'ler ve planın tamamı okutulmaz.
+- **Çıktı süzülür:** test ve derleme çıktısı `grep -E "^test result|FAILED|panicked"` ya da `tail` ile okunur; tam workspace testi, clippy ve sqlx denetimi işin sonunda bir kez. compose `make up` ve kind CI'dadır (`altyapi.yml`); gönderimden sonra CI sonucu `actions_list` ile denetlenir.
+- **Disk:** worktree ajanları kendi `sunucu/target-yerel` dizinini kullanır (`CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0`), bitince siler. Ortak `CARGO_TARGET_DIR` kullanılmaz. Commit'ten önce `git status` ile derleme dizini girmediği denetlenir; `git add -A` yerine yol verilir.
+- **Model:** ana oturumda rutin koordinasyon (birleştirme, takip) için Sonnet önerilir; karar, inceleme ve spesifikasyon işinde Opus. Haiku yalnız mekanik işlerde (yeniden adlandırma, liste); kod ve göç işinde kullanılmaz.
+
 ## Dosyalar ve bağlantılar
 
 - Geliştirme takibi: `gelistirme/ISLER.md` (iş listesi, model dağılımı), `gelistirme/DURUM.md` (neredeyiz), `adr/` (karar kayıtları).
