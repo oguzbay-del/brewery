@@ -1,7 +1,7 @@
 # Demleme — Marketing Site Implementation Specification & Release Gate
 
 **Work package:** WP-12  
-**Status:** Consolidated implementation specification; production changes require explicit approval.  
+**Status:** User authorized implementation of the marketing website on 15 November 2026. Vercel Preview is deferred; GitHub Actions, source review and local/static checks continue. Production release remains a separate approval.  
 **Date:** 14 November 2026  
 **Inputs:** WP-03 through WP-11 and the existing marketing-site prototype.  
 **Scope:** Public marketing website only.
@@ -36,7 +36,7 @@ The target experience is:
 | ERP boundary | No sales, orders, distribution/shipping, keg tracking, CRM or accounting claims |
 | Brand tokens | `tasarim-sistemi/tokens.json` remains canonical |
 | Imagery | Existing five image slots retained; no unapproved sourcing or generation |
-| Merge | Manual PR merge only after checks; no Auto-merge |
+| Merge | Manual PR merge after GitHub checks and source review; Vercel visual QA deferred and recorded as a post-deployment gate; no Auto-merge |
 
 ## 3. Target sitemap
 
@@ -164,12 +164,12 @@ No workstream may bypass product-claim, technical evidence or accessibility gate
 ## 8. Release and merge protocol
 
 - Every workstream uses a focused feature branch and PR.
-- CI and Vercel Preview must complete successfully.
+- GitHub Actions checks and source/diff review must complete successfully. Vercel Preview and browser visual QA are deferred while Vercel is rate-limited; they remain mandatory before public release.
 - PR must be clean/mergeable; changed files and diff are reviewed.
 - Manual squash merge with expected head SHA only.
 - No GitHub Auto-merge.
 - Production deployment follows explicit release approval.
-- Preview build success is not visual QA; capture and inspect actual desktop/mobile render.
+- GitHub Actions build success is not visual QA. Record Vercel Preview + desktop/mobile render QA as pending and complete them when Vercel is available.
 
 ## 9. Scope exclusions
 
@@ -185,4 +185,4 @@ This implementation specification does not authorize:
 
 WP-03 claim audit and PR #16 require clean-base review/integration. WP-05 through WP-11 define the messaging, design, wireframes, SEO, calculator validation, content evidence and existing-site gaps.
 
-**Implementation readiness:** Strategy is sufficiently specified to begin the marketing-site implementation sequence once the user confirms the production implementation gate. Until then, continue safe documentation, PR validation and non-production preview review.
+**Implementation authorization:** The user explicitly authorized continued marketing-site code implementation on 15 November 2026, using GitHub as the source of truth while Vercel is unavailable. This authorizes the marketing website only. Product app/API/iOS/Rust, calculators, imagery sourcing/generation, analytics/forms/consent, pricing and public production release remain outside scope unless separately approved. GitHub Actions, static source checks and PR review continue. Vercel Preview, responsive browser QA and final public release remain deferred gates.
