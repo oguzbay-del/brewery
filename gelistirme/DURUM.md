@@ -3,7 +3,7 @@
 Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncellenir.
 
 **Aşama:** 2 Çekirdek API ve veri (Aşama 1 kapandı: ADR-0006)
-**Sıradaki iş:** T2.11 giriş (yarıda kaldı, sürdürülecek); T2.8 vergi zinciri alt ajanda. F2.1 bitti (0 kritik, 13 önemli, 33 küçük, 8 karar konusu): sıradaki T2.9 bulgu düzeltmesi. T2.11 bitince T2.12, T2.13 açılır. Aşama 2 listesi ISLER.md'de (T2.0–T2.35, F2.1, F2.2).
+**Sıradaki iş:** T2.9 F2.1 bulgu düzeltmesi (Sonnet, Opus inceleme); T2.12 passkey ve ortak cihaz, T2.13 yetki (T2.11'e bağlı, paralel).
 **Yöntem:** ADR-0003 (Python → JSON vektör → Rust parite testi; `make vektor`).
 
 ## Ortam
@@ -20,6 +20,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 - T2.14: zincirin hem satırları hem başı silinirse fark edilmez; dış çapa (periyodik özetin nesne deposuna yazılması) gerekir. Kanonik alan listesi değişirse biçim sürümü eklenir.
 - T2.16: `EngineClient` henüz `AppState`'e bağlı değil (T2.20/T2.21 bağlar); proto'da "Nasıl hesaplandı" için ayrı ara değer alanı yok.
+- T2.11: web yönlendirmeli kod akışı ve CORS Aşama 3'te; Apple yenileme belirteci T2.31'de; oturum olayları henüz denetim kaydına yazılmıyor; yalnız Administrator rolü tohumlanıyor (T2.13).
 - T2.15: tüketici henüz kayıtlı değil (`worker/src/background.rs`'e `consumer::run`); SSE her bağlantıda kendi JetStream tüketicisini açar (ölçek gerekirse paylaşımlı abonelik).
 - T2.18: dosya sınırları (25 MiB; jpeg, png, heic, webp, pdf, text) ürün önerisi, doğrulanacak; silinen ve yarım yüklemelerin nesne baytlarını silen worker işi yok; k8s ve Terraform'a nesne deposu T2.32'de. Azure Blob uygulaması yok (arayüz hazır).
 - Vergi oranı tohumu yok; satırlar `unverified` başlar, resmi kaynakla doğrulanınca yüklenir (T2.8).
@@ -30,6 +31,9 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 - T2.28 web ödemesi O6 kararını bekler (App Store kısmı engelsiz). Açık kalanlar ADR-0002'de (Terraform hukuki/maliyet kararları, bulut hesabı O4, AppIcon).
 
 ## Son kararlar
+
+- 14.11.2026 (F2.1 kararları, Oğuz): kalıcı silmede değişmez başvuru anlık kopyaya indirilir, asıl kayıt silinir; denetim kaydında kişisel alan için yalnız "değişti" (değer özeti yok; hukuki görüş doğrulanacak); partisiz cihaz ölçümü yalnız tanka bağlıysa tanka yazılır, boştaki cihazın verisi reddedilir; İşletme zorunlu saklama altyapısı (saklama bitişi, yasal tutma) şimdi, süreler "doğrulanacak" yapılandırmada, Aşama 6'da kesinleşir. Claude kararları: kalıcı çalışma alanı silme yalnız worker'da dar işlevle (`app_api` DELETE hakkı kalkar); silme sonrası küçük silme kaydı ve denetim zinciri son özeti dışarıda; hesap düzeyi olaylar zincirsiz hesap günlüğüne; lota özel hammadde değerleri Aşama 6.
+- T2.8: vergi zinciri adımları toplanır; yürürlük dönemin ilk gününe göre, dönem içi değişimde hata (dönem bölünür).
 
 - 11.11.2026: tam geliştirme; görüşme ve altın test Aşama 5 kapısı.
 - ADR-0001 depo düzeni; ADR-0002 Aşama 0 kapanışı ve sapmalar.
@@ -43,7 +47,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Aşama 2 (sürüyor)
 
-T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 çekirdek göçler (23 tablo, FORCE RLS, üç rol, girişten önce SECURITY DEFINER işlevleri, RLS taraması) · T2.6 Ev MVP alan göçleri (0007–0013, `secure_workspace_table`, bölümlü ölçüm, değişmez sürüm, kapsam tetikleyicisi) · T2.10 API çekirdeği (bağlam ve `SET LOCAL`, RFC 9457, idempotency, ETag/If-Match, imleç, Redis hız sınırı fail-open, OTel, OpenAPI ve oasdiff, `/v1/meta/fields`). T2.7 İşletme ve vergi tabloları (0014–0015). T2.14 denetim zinciri (RFC 8785, `audit-verify`) · T2.16 motor istemcisi (`engine-client` crate, Redis + `calc_results` önbelleği, hata eşleme). T2.15 outbox → NATS aktarıcısı, tüketici çerçevesi, SSE · T2.18 nesne deposu (`storage` crate, SigV4, SeaweedFS, dosya uçları). 376 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
+T2.0 iş listesi · T2.1 veri modeli (ADR-0007) · T2.2 API kuralları (ADR-0008) · T2.3 kimlik ve yetki (ADR-0009) · T2.4 `db` crate, sqlx 0.9, göç servisi ve Job'ı · T2.17 alan, birim ve metin kataloğu (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 çekirdek göçler (23 tablo, FORCE RLS, üç rol, girişten önce SECURITY DEFINER işlevleri, RLS taraması) · T2.6 Ev MVP alan göçleri (0007–0013, `secure_workspace_table`, bölümlü ölçüm, değişmez sürüm, kapsam tetikleyicisi) · T2.10 API çekirdeği (bağlam ve `SET LOCAL`, RFC 9457, idempotency, ETag/If-Match, imleç, Redis hız sınırı fail-open, OTel, OpenAPI ve oasdiff, `/v1/meta/fields`). T2.7 İşletme ve vergi tabloları (0014–0015). T2.14 denetim zinciri (RFC 8785, `audit-verify`) · T2.16 motor istemcisi (`engine-client` crate, Redis + `calc_results` önbelleği, hata eşleme). T2.15 outbox → NATS aktarıcısı, tüketici çerçevesi, SSE · T2.18 nesne deposu (`storage` crate, SigV4, SeaweedFS, dosya uçları). T2.11 giriş (Apple/Google JWKS, e-posta bağlantısı, opak oturum, çerez+CSRF, `fake-oidc`) · T2.8 vergi zinciri (09: 459 parite vakası). F2.1 raporu. 421 test geçiyor. Sıra: kararlar → veri ve F2.1 → API çekirdeği → alan uçları → destek → küme ve uçtan uca → F2.2 → kapı. Veri modeli İşletme tablolarını da taşır; İşletme uçları Aşama 6'da.
 
 ## Aşama 1 (kapandı)
 
