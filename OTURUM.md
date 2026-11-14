@@ -349,3 +349,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Tüm CTA'lar gerçek sayfalara/kanıtlanmış ürün akışlarına bağlı; mevcut olmayan signup/trial/demo akışları kullanılmayacak.
 - Bu çalışma yalnızca wireframe dokümantasyonu; site kodu veya canlı deployment değiştirilmedi.
 - **Sıradaki adım:** WP-07 PR CI/Vercel Preview kontrolü; ardından WP-08 SEO ve teknik içerik yayın standardı. Canlı tasarım QA ve production uygulama için ayrıca kullanıcı onayı gerekir.
+
+
+## WP-08 — SEO, teknik yayın ve içerik kalite standardı (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/19-seo-technical-publishing-standard.md`.
+- URL/search intent sahipliği, on-page içerik kalitesi, crawl/indexation, sitemap/robots/canonical, redirect, metadata ve JSON-LD kuralları tanımlandı.
+- ABD/İngiltere lokalizasyonu, US/Imperial/metric birim ayrımı, hreflang koşulları ve iç link modeli yazıldı.
+- Core Web Vitals, erişilebilirlik, analytics/privacy ve yayın kontrol kapıları eklendi.
+- FoamByte benchmark dersleri Demleme'ye özgü içerik/kanıt yaklaşımıyla eşlendi; kopyalama yok.
+- **Sıradaki adım:** WP-09 — teknik içerik ve hesaplayıcı doğrulama backlog'u. Formül testleri tamamlanmadan calculator implementasyonu/yayını yok.
