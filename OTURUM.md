@@ -218,3 +218,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Tüm ana içerik alanları `main-content` hedefi aldı; sayfa içi hedeflerde kaydırma boşluğu tanımlandı.
 - Mobil menü özet düğmesinin erişilebilir adı “Toggle navigation menu” olarak düzeltildi.
 - Mevcut görünüm korunarak yalnız gezinme/erişilebilirlik katmanı değiştirildi. Gerçek ekran okuyucu ve cihaz testi henüz yapılmadı.
+
+**Klavye gezinmesi erişilebilirliği yayında — 14 Kasım 2026**
+- PR #7 manuel squash merge edildi; Auto-merge kullanılmadı. Merge commit: `7728f64a88eef1f53233b8a523e867d46a9d705e`.
+- PR CI #43631421615: **success**. Main CI #43631476299: **success**. GitHub Pages deploy #43631476340: **success**.
+- Üç pazarlama sayfasına klavye ile görünür skip link eklendi; main landmark hedefleri tanımlandı; mobil menü erişilebilir adı iyileştirildi.
+- Ekran okuyucu ve gerçek cihaz testi henüz yapılmadı; gerçek tarayıcı QA açık.
+- Canlı site: https://oguzbay-del.github.io/brewery/.
