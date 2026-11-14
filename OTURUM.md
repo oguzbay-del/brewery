@@ -499,3 +499,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Bunun canlı veri modeli veya mevcut iş akışı olmadığı; ürün roadmap'i olduğu açıkça belirtildi.
 - Otomatik compliance, recall execution veya regulatory approval iddiası özellikle dışarıda bırakıldı.
 - Yeni görsel, fake UI veya ürün ekranı üretilmedi; responsive HTML/CSS ile erişilebilir bir ilişki listesi kullanıldı.
+
+
+## FB-03 — Homebrewer record loop (15 Kasım 2026)
+
+- Homebrewers sayfasına recipe/targets → ingredients/water → brew-day actuals → fermentation observations → tasting/review sırasını anlatan ayrı bir kayıt tablosu eklendi.
+- Her satırda kayda girecek bilgi ve bu bilginin homebrewer'a sağlayacağı yorum bağlamı ayrıştırıldı.
+- Manual/device measurement source ayrımı ve tahmin modellerinin mevcut olmadığı açıkça korundu.
+- Homebrew learning loop ile Business lot/vessel/shift/quality kayıt modeli arasındaki fark ayrıca belirtildi.
+- Böylece iki audience sayfası yalnız farklı başlıklar değil, farklı kayıt ve kullanım amaçları anlatıyor.
