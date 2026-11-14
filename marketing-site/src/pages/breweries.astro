@@ -3,6 +3,15 @@ import "../styles/global.css";
 
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}breweries/`, import.meta.env.SITE).href;
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "For Professional Breweries — Demleme",
+  url: canonicalUrl,
+  description: "Brewing software in development for professional breweries.",
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+};
 ---
 <!doctype html>
 <html lang="en">
@@ -23,6 +32,7 @@ const canonicalUrl = new URL(`${base}breweries/`, import.meta.env.SITE).href;
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="For Professional Breweries — Demleme" />
     <meta name="twitter:description" content="Brewing software in development for professional breweries." />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
