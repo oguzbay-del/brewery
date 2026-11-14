@@ -317,3 +317,24 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Business sayfasında ERP dışı kapsam (sales, orders, distribution/shipping, keg tracking, CRM, accounting) açıkça korunuyor.
 - PR19/PR16 durumları bu WP branch'inde değiştirilmedi; site kodu ve ürün uygulaması değiştirilmedi.
 - **Sıradaki adım:** WP-05 — sayfa bazında mesaj mimarisi, value proposition/headline seçenekleri, içerik brief'leri, proof requirements, terminoloji ve SEO intent. Final production copy ve canlı site değişikliği henüz yok.
+
+
+## WP-05 — İçerik ve mesaj mimarisi (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/16-content-messaging-architecture.md`.
+- Homebrewers ve Professional Breweries için ayrı value proposition, mesaj sütunları, sayfa brief'leri ve CTA sınırları tamamlandı.
+- Teknik, ürün, cihaz, güvenlik, mevzuat ve ticari iddialar için kanıt gereklilikleri tanımlandı.
+- Terminoloji, US/UK dil ve birim kuralları, SEO kümeleri ve içerik yayın iş akışı yazıldı.
+- Üretim metni ve canlı site uygulaması bu paketin kapsamı değil.
+
+## WP-06 — Görsel yön ve tasarım sistemi (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/17-visual-direction-design-system.md`.
+- Mevcut `tasarim-sistemi/tokens.json` tek token kaynağı olarak korundu; yeni marka renkleri icat edilmedi.
+- Tipografi rolleri, spacing/grid, 1440/1024/768/390/320 responsive kuralları ve ortak component envanteri tanımlandı.
+- Home ve Business için farklı sayfa kompozisyonu, görsel bağlam, veri örneği ve içerik ritmi belirlendi.
+- FoamByte kıyaslaması kopyalama amacıyla değil, discoverability, calculator utility, proof ve bilgi yoğunluğu dersleri için kullanıldı.
+- Beş mevcut `data-image-slot` korunacak; kullanıcı onayı olmadan fotoğraf üretilmeyecek veya bulunup eklenmeyecek.
+- WCAG 2.2 AA hedefi, klavye/touch, reduced motion ve responsive QA kabul kriterleri eklendi.
+- Yalnız strateji dokümanları değiştirildi; `marketing-site/`, `web/`, ürün API'leri, iOS ve Claude ürün geliştirme kuyruğuna dokunulmadı.
+- **Sıradaki adım:** temiz PR için CI/Vercel kontrolü; sonrasında WP-07 sayfa bazlı wireframe refinement. Production uygulama için ayrıca açık kullanıcı onayı gerekir.
