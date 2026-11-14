@@ -423,3 +423,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Fotoğraf slotları/yer tutucular korundu; yeni görsel veya sahte ürün ekranı eklenmedi. Hesaplayıcı, pricing veya signup CTA'sı eklenmedi.
 - İlk doğrulama: GitHub kaynak yazımları başarılı. GitHub Actions PR kontrolü ve Astro check/build sonucu bekleniyor; sonuç gelmeden build başarılı denmeyecek.
 - **Sıradaki adım:** PR aç, GitHub Actions sonuçlarını izle, hata varsa düzelt. Vercel QA'yı post-deploy gate olarak takip et.
+
+
+## Son doğrulama ve merge — 15 Kasım 2026
+
+- PR #43 manuel squash-merge edildi: `814dbcfded8985549e892c175219902b202f7b88`.
+- GitHub Actions run #56 başarılı: dependency install, Astro/TypeScript check ve static site build tamamlandı.
+- Vercel Preview status'u build-rate-limit nedeniyle failure; kullanıcı talimatıyla bu engel geçici olarak ertelendi. Bu, Vercel görsel QA'nın yapıldığı anlamına gelmez.
+- Homebrewers ve Breweries sayfaları artık ayrı workflow, role/FAQ, teknik açıklama ve kapsam anlatısı içeriyor.
+- PR #40'ın claim-safe feature katalog düzeltmeleri PR #43 ile main'e alındı.
+- WP-13 ve WP-14 dokümanları ile README indeks temizliği bu dokümantasyon PR'ında konsolide ediliyor.
+- **Sıradaki adım:** How It Works ve Technical Principles sayfalarını ekle; feature detail sayfalarının claim/evidence şablonunu tamamla. Vercel Preview ve gerçek responsive QA'yı release öncesi tamamla.
