@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+
+const base = import.meta.env.BASE_URL;
 ---
 <!doctype html>
 <html lang="en">
@@ -11,17 +13,17 @@ import "../styles/global.css";
   </head>
   <body>
     <header class="site-header">
-      <a class="wordmark" href="/" aria-label="Demleme home">demleme<span>.</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href="/homebrewers">Homebrewers</a><a href="/breweries">Breweries</a><a href="/#approach">Our approach</a></nav>
-      <a class="header-cta" href="/#audience-paths">All brewing paths <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href="/homebrewers">Homebrewers</a><a href="/breweries">Breweries</a><a href="/#approach">Our approach</a></nav></details>
+      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
+      <a class="header-cta" href={`${base}#audience-paths`}>All brewing paths <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
     </header>
     <main>
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR HOME BREWERS</p>
         <h1>Make every brew a <em>learning experience.</em></h1>
         <p>Explore the technical details behind recipes, ingredients and brewing notes. Demleme is being shaped for brewers who want to understand their process, not just follow a set of numbers.</p>
-        <a class="button button-primary" href="/#audience-paths">Explore Demleme <span aria-hidden="true">↗</span></a>
+        <a class="button button-primary" href={`${base}#audience-paths`}>Explore Demleme <span aria-hidden="true">↗</span></a>
       </section>
       <!-- IMAGE SLOT: HOMEBREWERS-HERO | Replace placeholder with licensed documentary-style photo of a homebrewer working on a batch. -->
       <section class="shell audience-hero">
@@ -33,8 +35,8 @@ import "../styles/global.css";
           <div><ul class="audience-page-list"><li>Recipe details and ingredient context</li><li>Brewing calculations and clear terminology</li><li>Batch observations and process learning</li></ul><p class="audience-page-note">Areas of focus: clarity, consistency and curiosity — not complexity for its own sake.</p></div>
         </div>
       </section>
-      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href="/">Back to Demleme <span aria-hidden="true">↗</span></a></div></section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={base}>Back to Demleme <span aria-hidden="true">↗</span></a></div></section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href="/">demleme<span>.</span></a><p>Technical brewing software for people who care about the details.</p><a class="back-top" href="/">Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Technical brewing software for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
