@@ -349,3 +349,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Tüm CTA'lar gerçek sayfalara/kanıtlanmış ürün akışlarına bağlı; mevcut olmayan signup/trial/demo akışları kullanılmayacak.
 - Bu çalışma yalnızca wireframe dokümantasyonu; site kodu veya canlı deployment değiştirilmedi.
 - **Sıradaki adım:** WP-07 PR CI/Vercel Preview kontrolü; ardından WP-08 SEO ve teknik içerik yayın standardı. Canlı tasarım QA ve production uygulama için ayrıca kullanıcı onayı gerekir.
+
+
+## WP-09 — Teknik içerik ve hesaplayıcı doğrulama backlog'u (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/20-technical-content-calculator-validation.md`.
+- Ürün planındaki sunucu taraflı Rust hesap motoru ile bağımsız public web calculator kararı birbirinden ayrıldı.
+- OG/gravity, ABV, recipe scaling/volume, IBU, colour, water/mineral, mash pH, yeast, boil-off, efficiency ve costing için kanıt/test backlog'u oluşturuldu.
+- Bağımsız golden vectors, boundary/invalid, unit equivalence, rounding, locale, regression ve cross-platform parity testleri tanımlandı.
+- Fermentation prediction, deviation alerts ve onaysız analitik modeller public calculator taahhüdü dışında tutuldu.
+- Public calculator için ayrıca ürün sahibi onayı ve teknik doğrulama kapısı zorunlu.
+- **Sıradaki adım:** WP-10 — sayfa bazlı içerik backlog'u ve evidence register. Formül/ürün kararları varsayılmayacak.
