@@ -5,7 +5,7 @@ An isolated Astro + TypeScript + SSG project for the Demleme marketing website.
 ## Scope
 
 - Desktop and mobile homepage prototype.
-- Two audience paths: Homebrewers and Professional Breweries.
+- Dedicated `/homebrewers` and `/breweries` audience landing pages.
 - Editorial + Technical + Human visual direction.
 - No product application code, product API, product queue, or Claude development task changes.
 
@@ -31,8 +31,8 @@ npm run preview
 - The homepage uses the approved English messaging direction.
 - The hero and audience visuals are original editorial SVG illustrations. They are not product screenshots or representations of product functionality.
 - Real homebrewing and brewery photography can replace these illustration slots after usage rights and final assets are confirmed.
-- No product dashboard, metrics, testimonials, customer logos, pricing, or unverified feature claims are included.
-- The CTA currently anchors to the audience selector. The app URL and sign-in URL are not yet configured.
+- No product dashboard, metrics, testimonials, customer logos, pricing, or unsupported outcome promises are included. Audience copy describes areas of focus rather than asserting unverified product functionality.
+- The homepage audience CTAs route to the two dedicated audience pages. App URL and sign-in URL are not yet configured.
 - Colour and spacing values follow the existing `tasarim-sistemi/tokens.json` source. The marketing site applies them in a separate editorial layout.
 
 ## Image replacement map
