@@ -499,3 +499,9 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Bunun canlı veri modeli veya mevcut iş akışı olmadığı; ürün roadmap'i olduğu açıkça belirtildi.
 - Otomatik compliance, recall execution veya regulatory approval iddiası özellikle dışarıda bırakıldı.
 - Yeni görsel, fake UI veya ürün ekranı üretilmedi; responsive HTML/CSS ile erişilebilir bir ilişki listesi kullanıldı.
+
+
+## Marketing accessibility smoke checks — 15 Kasım 2026
+
+- Statik validator'a duplicate HTML ID, her sayfada tek H1, tek main landmark, skip-link hedefi, nav landmark accessible name ve img alt attribute kontrolleri eklendi.
+- Bu kontroller kaynak/build HTML üzerinde temel regresyon yakalar; klavye ile gerçek kullanım, screen reader, kontrast, focus görünürlüğü ve responsive davranış için gerçek browser QA hâlâ zorunlu.
