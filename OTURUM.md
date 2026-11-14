@@ -467,3 +467,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - `npm run validate:site` script'i eklendi.
 - Hem PR/push marketing-site workflow'una hem GitHub Pages build/deploy workflow'una build sonrasında validator adımı eklendi.
 - Amaç: Vercel olmadan da GitHub Actions üzerinde tekrarlanabilir statik QA yapmak; gerçek responsive/browser QA'nın yerini almaz.
+
+
+## Responsive header refinement — 15 Kasım 2026
+
+- Ana navigasyon altı bağlantıya çıktığı için 761–980 px tablet genişliklerinde desktop nav yerine kompakt mobil menüye geçiş eklendi.
+- 981 px üzeri desktop nav; 760 px ve altı mevcut mobil nav davranışı korunur.
+- Gerçek tablet tarayıcı kontrolü GitHub Pages/Vercel browser QA kapısında yapılacak.
