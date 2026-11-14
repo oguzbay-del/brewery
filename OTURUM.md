@@ -378,7 +378,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - P0/P1/P2/P3 sayfa backlog'u; Home ve Business içerik farkları; claim/evidence register şeması ve içerik türüne göre kanıt paketi tanımlandı.
 - Ürün aşaması, teknik kanıt, gerçek CTA ve erişilebilirlik/SEO kapıları geçmeden yayın yok.
 - Pricing, public roadmap dates, customer stories, testimonials, security badges, compliance guarantees ve AI/prediction claims hold'da.
-- PR #19 kapatıldı; WP-03 claim audit PR #36 ile main'e merge edildi. PR #16 açık; WP-03 yorumlarına göre düzeltme ve güncel main tabanına taşıma bekliyor.
+- PR #19 kapatıldı; WP-03 claim audit PR #36 ile main'e merge edildi. PR #16 sonradan kapatıldı; claim-safe değişiklikleri temiz PR #40 ile taşındı.
 - **Sıradaki adım:** WP-11 — mevcut marketing-site uygulamasını WP-04–10 ile karşılaştıran gap analysis ve uygulama sırası. Production koduna geçiş için ayrıca açık onay gerekir.
 
 
@@ -409,7 +409,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - WP-03–WP-11 kararları, hedef sitemap, Home/Business içerik tasarımı, implementasyon workstream'leri, bağımlılıklar, kalite kabul kriterleri ve release/merge protokolü birleştirildi.
 - İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
 - Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
-- **Sıradaki adım:** PR #16 feature catalogue değişikliklerini WP-03 ile denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
+- PR #16 denetimi PR #40 ile devam ediyor. Production implementation gate ayrı; kullanıcı onayı olmadan yeni sayfa/komponent geliştirmesi veya canlı yayın yapılmayacak.
 
 
 ## Repository cleanup — 14 Kasım 2026
