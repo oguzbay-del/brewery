@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import { features } from "../data/features";
+const breweryAreas = features.filter((feature) => feature.audiences.includes("Breweries"));
 
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}breweries/`, import.meta.env.SITE).href;
@@ -38,9 +40,9 @@ const structuredData = {
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
       <a class="header-cta" href={`${base}#audience-paths`}>All brewing paths <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
+      <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product features</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
     </header>
     <main id="main-content">
       <section class="shell audience-page-intro">
@@ -54,9 +56,21 @@ const structuredData = {
         <div class="image-placeholder" data-image-slot="breweries-hero"><strong>IMAGE PLACEHOLDER · BREWERIES-HERO</strong><span>Professional brewing team, stainless vessels or a working production floor</span></div>
       </section>
       <section class="audience-page-section section-pad" id="brewery-focus">
-        <div class="shell audience-page-grid">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> BUILT AROUND THE WORK</p><h2>Make production information easier to work with.</h2><p>Professional brewing depends on repeatable methods and shared understanding. Our aim is to support that work with clear technical information.</p></div>
-          <div><p class="eyebrow">DESIGN PRIORITIES</p><ul class="audience-page-list"><li>Structured recipe and batch information</li><li>Clear calculations, units and terminology</li><li>Repeatable methods and informed review</li></ul><p class="audience-page-note">These are product design priorities, not a list of currently available features.</p></div>
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> PROFESSIONAL BREWING · PRODUCT ROADMAP</p>
+            <h2>From formulation to production control.</h2>
+            <p>Explore the planned Business mode for professional brewing teams: standardised recipes, production records, tank workflows, traceability, quality and team operations.</p>
+          </div>
+          <div class="audience-feature-grid">
+            {breweryAreas.map((feature) => (
+              <a class="audience-feature-link" href={`${base}features/${feature.slug}/`}>
+                <span>{feature.eyebrow}</span><strong>{feature.title}</strong><small>Explore planned capabilities ↗</small>
+              </a>
+            ))}
+          </div>
+          <p class="audience-page-note" style="margin-top:28px">Demleme is brewing production software, not a general ERP. Sales, orders, distribution, keg tracking, CRM and accounting are outside the planned scope.</p>
+          <a class="text-link" style="margin-top:18px" href={`${base}features/`}>View the complete product feature catalogue <span aria-hidden="true">→</span></a>
         </div>
       </section>
       <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={base}>Explore both brewing paths <span aria-hidden="true">↗</span></a></div></section>
