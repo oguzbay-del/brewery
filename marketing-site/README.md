@@ -5,7 +5,7 @@ An isolated Astro + TypeScript + static-site project for the Demleme marketing w
 ## Scope
 
 - Responsive homepage.
-- Dedicated `/homebrewers/` and `/breweries/` audience landing pages.
+- Dedicated `/homebrewers/` and `/breweries/` audience landing pages, including a stage-labelled Business record relationship model.
 - `/how-it-works/` with separate Home and Business workflows.
 - `/technical-principles/` and `/faq/` for technical transparency and product-scope answers.
 - Editorial + Technical + Human visual direction.
