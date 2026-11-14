@@ -279,3 +279,9 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Ürün ve site henüz live değil: tüm metinler roadmap/planned language kullanır. Fotoğraf eklenmedi; mevcut görsel yer tutucular korunur.
 - Yalnız `marketing-site/` ve `OTURUM.md` değiştirildi; `web/`, `ios/`, sunucu, API ve Claude ürün geliştirme kuyruğu değiştirilmedi.
 - **Sıradaki adım:** Astro check + build, route/sitemap kontrolü; sonra PR ve CI. Browser/mobile görsel QA ayrıca yapılacak.
+
+
+**Ürün özellik kapsamı tamamlayıcı turu — 14 Kasım 2026**
+- İlk 16 detay sayfası çapraz kontrol edilerek ürün planındaki ekran/özellik satırlarından eksik kalan alanlar eklendi: tarif arama/klasör/etiket/favori/liste sütunları; bira dışı reçete türleri; özel hesap yöntemleri; brew-sheet özelleştirme ve bildirimden hızlı ölçüm; parti karşılaştırma ve karbonasyon takibi; tank temizlik uyarısı ve geri çağırma; açık API/webhook; no-chill ve controller aktarımı; custom fields ve su raporu içe aktarma.
+- Platform sayfasına ilk açılış, global arama, yerelleştirme/birimler, abonelik/1 aylık deneme (fiyat ve free tier kararı açık), hesap bağlama/silme, Apple sistem entegrasyonları ve veri koruma başlıkları eklendi.
+- Bu değişiklik yalnız `marketing-site/src/data/features.ts` ve `OTURUM.md` dosyalarını etkiler. Ürün planında onaylanmamış analitik fikirler hâlâ açıkça taahhüt dışı olarak kalır.
