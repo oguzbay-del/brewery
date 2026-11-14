@@ -446,3 +446,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - İçerik ürünün mevcutta yayında olduğu iddiasını yapmaz; ürün planı ve tasarım ilkesi olarak çerçevelenir.
 - İlk branch'teki GitHub Actions run #58 başarılı: Astro/TypeScript check ve static build. Main'e yeni branch olarak taşındıktan sonra CI yeniden çalıştırılacak.
 - Vercel Preview ve responsive browser QA ertelenmiş release gate olarak kalır.
+
+
+## WP-12 uygulama devamı — FAQ ve feature evidence context (15 Kasım 2026)
+
+- `/faq/` eklendi: ürünün geliştirme durumu, Home/Business hedef kitlesi, ERP sınırı, hesaplayıcılar, tahmin modelleri, API/webhook ve ticari durum hakkında doğrulanmış kapsam yanıtları.
+- FAQ için canonical/OG/Twitter metadata ve WebPage JSON-LD eklendi; desktop/mobile navigasyon ve sitemap güncellendi.
+- Feature detail şablonuna intended inputs/records, intended outputs, limitations ve evidence status açıklaması eklendi. Her sayfanın roadmap olduğunu ve public validation evidence yayınlanmadığını açıkça belirtir.
+- `marketing-site/README.md` güncel sayfa envanteri, geçici GitHub Pages preview ve QA kontrol listesiyle güncellendi.
+- PR #46 manuel squash-merge edildi: `8921cdf8051d9578f27609ff82fdfc3dfdf6c913`.
+- GitHub Actions run #60 başarılı; GitHub Pages deploy run #20 başarılı. Geçici preview URL: https://oguzbay-del.github.io/brewery/
+- Vercel Preview halen build-rate-limit engelinde. GitHub Pages deployment başarıyla yayınlandı; ancak bu oturumdaki web tarayıcı aracı URL'yi açamadığı için gerçek render/visual QA yapılmış sayılmaz.
+- **Sıradaki adım:** PR #47'de FAQ + feature evidence context değişikliklerini CI ile doğrula; ardından feature-detail claim review, link/sitemap/metadata audit ve 320–1440 px browser QA için kalan listeyi sürdür.

@@ -1,0 +1,21 @@
+/* FAQ directory and feature evidence panel. */
+.faq-directory { background: var(--surface); }
+.faq-directory-layout { display: grid; grid-template-columns: .72fr 1.28fr; gap: 10%; align-items: start; }
+.faq-directory-aside { position: sticky; top: 30px; padding: 28px; background: #e9e7df; }
+.faq-directory-aside h2 { margin: 0 0 16px; font-size: clamp(32px, 3.5vw, 44px); line-height: 1.1; }
+.faq-directory-aside h2 em { color: var(--amber); }
+.faq-directory-aside > p:not(.eyebrow) { color: #55584f; font-size: 13px; line-height: 1.8; }
+.faq-groups { display: grid; gap: 58px; }
+.faq-group .eyebrow { margin-bottom: 18px; font-size: 9px; }
+.feature-evidence-section { background: #e9e7df; }
+.feature-evidence-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 10%; align-items: start; }
+.feature-evidence-layout h2 { max-width: 480px; margin: 0; font-size: clamp(34px, 3.8vw, 48px); line-height: 1.1; }
+.feature-evidence-layout h2 em { color: var(--amber); }
+.feature-evidence-content { color: #55584f; font-size: 13px; line-height: 1.8; }
+.feature-evidence-content ul { display: grid; gap: 8px; padding-left: 18px; }
+.feature-evidence-content li::marker { color: var(--amber); }
+.feature-evidence-content p:last-child { margin-bottom: 0; }
+@media (max-width: 900px) {
+  .faq-directory-layout, .feature-evidence-layout { grid-template-columns: 1fr; gap: 28px; }
+  .faq-directory-aside { position: static; }
+}

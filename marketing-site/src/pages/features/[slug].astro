@@ -1,5 +1,7 @@
 ---
 import "../../styles/global.css";
+import "../../styles/learning-pages.css";
+import "../../styles/faq-evidence.css";
 import { features, stageDescriptions } from "../../data/features";
 
 export function getStaticPaths() {
@@ -47,7 +49,7 @@ const structuredData = {
         <a href={`${base}homebrewers/`}>Homebrewers</a>
         <a href={`${base}breweries/`}>Breweries</a>
         <a href={`${base}how-it-works/`}>How it works</a>
-        <a href={`${base}technical-principles/`}>Principles</a>
+        <a href={`${base}technical-principles/`}>Principles</a><a href={`${base}faq/`}>FAQ</a>
       </nav>
       <a class="header-cta" href={`${base}features/`}>All features <span aria-hidden="true">↗</span></a>
       <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation">
@@ -55,7 +57,7 @@ const structuredData = {
           <a href={`${base}homebrewers/`}>Homebrewers</a>
           <a href={`${base}breweries/`}>Breweries</a>
           <a href={`${base}how-it-works/`}>How it works</a>
-          <a href={`${base}technical-principles/`}>Technical principles</a>
+          <a href={`${base}technical-principles/`}>Technical principles</a><a href={`${base}faq/`}>FAQ</a>
         </nav></details>
     </header>
     <main id="main-content">
@@ -88,6 +90,20 @@ const structuredData = {
             <div class="aside-divider"></div>
             <p class="feature-aside-note">This is a roadmap description, not a statement that the feature is currently available. Scope and release timing may evolve during development and validation.</p>
           </aside>
+        </div>
+      </section>
+      <section class="feature-evidence-section section-pad">
+        <div class="shell feature-evidence-layout">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> INPUTS · RECORDS · LIMITATIONS</p>
+            <h2>Understand the intended <em>scope.</em></h2>
+          </div>
+          <div class="feature-evidence-content">
+            <p><strong>Inputs and records:</strong> The intended inputs depend on the feature and release stage. They may include recipe definitions, ingredient and equipment information, measurements, material records or team-entered observations where those workflows are in scope.</p>
+            <p><strong>Intended outputs:</strong> Depending on the feature, the roadmap may describe calculations, recipe versions, schedules, batch records, measurement history or review context. This page does not imply that any of those outputs are currently available.</p>
+            <p><strong>Limitations:</strong> Formula defaults, supported formats, device compatibility, permissions, regulatory workflows and integrations require feature-specific implementation and validation. Fermentation predictions and model-driven calibration remain under consideration.</p>
+            <p><strong>Evidence status:</strong> This description reflects the product roadmap. Public validation reports and release evidence will be added only when the relevant method or workflow has been tested and approved.</p>
+          </div>
         </div>
       </section>
       {feature.note && <section class="feature-caveat"><div class="shell"><p>{feature.note}</p></div></section>}
