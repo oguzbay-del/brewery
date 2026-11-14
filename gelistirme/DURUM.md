@@ -32,6 +32,7 @@ Her oturum önce bu dosyayı okur. En fazla bir sayfa. Her iş bitince güncelle
 
 ## Son kararlar
 
+- 14.11.2026 (Oğuz): ayrı mimaride tanıtım ve satış sitesi (Ev / İşletme için ayrı tasarım dokümanı, çok ülke, çevrimiçi üyelik ve satış yalnız burada). ISLER.md'de S1–S4 olarak yazıldı, şimdi yapılmaz. Planın (Claude Docs) kapsam bölümüne işlenmesi bekliyor.
 - 14.11.2026 (F2.1 kararları, Oğuz): kalıcı silmede değişmez başvuru anlık kopyaya indirilir, asıl kayıt silinir; denetim kaydında kişisel alan için yalnız "değişti" (değer özeti yok; hukuki görüş doğrulanacak); partisiz cihaz ölçümü yalnız tanka bağlıysa tanka yazılır, boştaki cihazın verisi reddedilir; İşletme zorunlu saklama altyapısı (saklama bitişi, yasal tutma) şimdi, süreler "doğrulanacak" yapılandırmada, Aşama 6'da kesinleşir. Claude kararları: kalıcı çalışma alanı silme yalnız worker'da dar işlevle (`app_api` DELETE hakkı kalkar); silme sonrası küçük silme kaydı ve denetim zinciri son özeti dışarıda; hesap düzeyi olaylar zincirsiz hesap günlüğüne; lota özel hammadde değerleri Aşama 6.
 - T2.8: vergi zinciri adımları toplanır; yürürlük dönemin ilk gününe göre, dönem içi değişimde hata (dönem bölünür).
 

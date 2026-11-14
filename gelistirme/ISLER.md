@@ -123,6 +123,19 @@ Aşamalar plan › Geliştirme düzeni ve plan › Yol haritasında. Her aşaman
 | 5 Ev MVP beta | Bulut kurulumu, beta | Görüşmeler ve altın test tamam; bağımsız güvenlik incelemesi |
 | 6 İşletme | İşletme ekranları | Aşama aşama |
 
+### Tanıtım ve satış sitesi (Aşama 3–5 arası; ayrı iş hattı, şimdilik yalnız planlandı)
+
+Ürünün kendisinden ayrı mimaride (ayrı klasör `site/`, ayrı dağıtım; uygulama web'inden ve API'den bağımsız yayınlanır), yalnız tanıtım, üyelik ve satış için. Çok ülkeli ve çok dilli (ABD ve İngiltere öncelikli). Girişte Ev / İşletme seçimi; iki ayrı site ya da sayfa kümesi: Ev daha canlı ve süslü, İşletme daha ciddi ve profesyonel. Hesaplayıcı ve yetkinlik çokluğu öne çıkarılır. Üyelik ve ödeme yalnız bu sitede (çevrimiçi üyelik; App Store dışı abonelik, O6 ve T2.28'e bağlı).
+
+| İş | Tanım | Bitti ölçütü | Bağlı | Kim | Model | Durum |
+|---|---|---|---|---|---|---|
+| S1 | Site tasarım dili: Ev ve İşletme için iki ayrı tasarım dokümanı (uygulamanın tasarım sisteminden ayrı; ortak marka çekirdeği, iki ton), ülke ve dil kuralları | Her iki doküman yazıldı, Oğuz onayladı | Aşama 3 başı | Claude | Opus | bekliyor (planlanmadı) |
+| S2 | Site mimarisi ve ADR: `site/`, statik üretim, çok dil ve ülke yönlendirmesi, üyelik ve ödeme akışının uygulamayla bağı (yalnız hesap ve hak üzerinden), ayrı dağıtım | ADR yazıldı | S1, O6 | Claude | Opus | bekliyor (planlanmadı) |
+| S3 | Site içeriği: özellik ve hesaplayıcı envanteri, ekran görüntüleri, fiyat, SSS; alkol reklam ve yaş kapısı mevzuatı (doğrulanacak) | İçerik onaylandı, mevzuat maddesi kapandı | S1 | Claude | Opus, Sonnet | bekliyor (planlanmadı) |
+| S4 | Site yapımı ve testi (Ev ve İşletme), erişilebilirlik ve performans denetimi | Playwright, erişilebilirlik ve CI geçiyor | S1–S3, T2.28 | Claude | Sonnet | bekliyor (planlanmadı) |
+
+İşin ayrıntılı iş listesi Aşama 3 yazılırken (Opus) netleştirilir.
+
 ## Oğuz'un işleri (paralel)
 
 | İş | Tanım | Gerektiği yer | Durum |
