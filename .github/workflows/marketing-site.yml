@@ -34,3 +34,5 @@ jobs:
         run: npm run check
       - name: Build static site
         run: npm run build
+      - name: Validate generated routes, metadata and links
+        run: npm run validate:site
