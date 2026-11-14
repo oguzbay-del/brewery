@@ -91,10 +91,32 @@ pub async fn set_context(tx: &mut PgConnection, ctx: &DbContext) -> Result<()> {
     Ok(())
 }
 
+tokio::task_local! {
+    /// The `idempotency_keys` row of the request that runs in this task. The idempotency layer
+    /// scopes the handler future with it; [`begin`] then marks the row in every transaction the
+    /// handler opens, so the mark commits together with the business work (F2.1 finding 4).
+    pub static IDEMPOTENCY_KEY: Uuid;
+}
+
 /// Starts a transaction with the request context applied; the API runs every request in one.
+///
+/// Inside an idempotent request (see [`IDEMPOTENCY_KEY`]) the transaction also sets
+/// `idempotency_keys.work_committed_at`. If the process dies after the commit but before the
+/// stored response, a retry sees the mark and does not run the work again.
 pub async fn begin(pool: &PgPool, ctx: &DbContext) -> Result<Transaction<'static, Postgres>> {
     let mut tx = pool.begin().await?;
     set_context(&mut tx, ctx).await?;
+    if ctx.actor_kind != ActorKind::Support
+        && let Ok(key) = IDEMPOTENCY_KEY.try_with(|k| *k)
+    {
+        sqlx::query(
+            "UPDATE idempotency_keys SET work_committed_at = now() \
+             WHERE id = $1 AND work_committed_at IS NULL",
+        )
+        .bind(key)
+        .execute(&mut *tx)
+        .await?;
+    }
     Ok(tx)
 }
 

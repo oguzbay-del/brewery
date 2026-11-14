@@ -275,6 +275,22 @@ async fn create_item(
     Ok(response)
 }
 
+/// A creating handler that commits real work: one `outbox` row per call.
+async fn create_record(
+    State(state): State<AppState>,
+    ctx: RequestContext,
+) -> ApiResult<StatusCode> {
+    let mut tx = ctx.begin(&state.db).await?;
+    sqlx::query(
+        "INSERT INTO outbox (id, topic, payload) VALUES ($1, 'demo.record', '{\"schema_version\": 1}')",
+    )
+    .bind(Uuid::now_v7())
+    .execute(&mut *tx)
+    .await?;
+    tx.commit().await.map_err(ApiError::from)?;
+    Ok(StatusCode::CREATED)
+}
+
 async fn bulk(ApiJson(body): ApiJson<Value>) -> ApiResult<StatusCode> {
     let len = body["items"].as_array().map_or(0, Vec::len);
     api::ensure_bulk_len("/items", len)?;
@@ -325,7 +341,8 @@ pub fn demo_router(state: &AppState, demo: Arc<Demo>) -> Router {
         state,
         Router::new()
             .route("/v1/workspaces/{ws}/demo-items", post(create_item))
-            .route("/v1/workspaces/{ws}/demo-bulk", post(bulk)),
+            .route("/v1/workspaces/{ws}/demo-bulk", post(bulk))
+            .route("/v1/workspaces/{ws}/demo-records", post(create_record)),
     );
     let reads = Router::new()
         .route("/v1/workspaces/{ws}/demo-items", get(list_items))

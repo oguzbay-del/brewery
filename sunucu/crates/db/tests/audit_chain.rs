@@ -26,7 +26,7 @@ fn entry(event: AuditEvent, n: i64) -> NewAuditEntry {
 }
 
 fn value_name() -> serde_json::Value {
-    db::value_digest("Brewer Name")
+    db::changed_field()
 }
 
 async fn append_n(app: &PgPool, ws: Uuid, n: i64) {

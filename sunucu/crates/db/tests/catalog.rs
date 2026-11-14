@@ -31,6 +31,9 @@ const OWNER_LOOKUP: &[&str] = &[
     "shared_devices",
     "invitations",
     "idempotency_keys",
+    "workspaces",
+    "workspace_tombstones",
+    "push_targets",
 ];
 
 /// Shared-library tables (`workspace_id` NULL = shared row): `app_owner` seeds them through the
@@ -277,7 +280,8 @@ async fn measurement_partitions_exist_and_are_protected(pool: PgPool) -> sqlx::R
     .fetch_all(&pool)
     .await?;
     assert!(parts.len() >= 13, "partitions: {}", parts.len());
-    assert_eq!(parts[0].0, "measurements_y2026m01");
+    assert_eq!(parts[0].0, "measurements_legacy");
+    assert_eq!(parts[1].0, "measurements_y2026m01");
     for (name, rls, force, policies) in parts {
         assert!(rls && force && policies >= 1, "{name} is not protected");
     }
@@ -316,7 +320,9 @@ async fn application_roles_hold_only_the_intended_rights(pool: PgPool) -> sqlx::
         ("scheduled_jobs", "app_api", "INSERT", true),
         ("scheduled_jobs", "app_worker", "DELETE", true),
         ("external_events", "app_api", "INSERT", true),
-        ("external_events", "app_api", "SELECT", true),
+        ("external_events", "app_api", "SELECT", false),
+        ("workspaces", "app_api", "DELETE", false),
+        ("users", "app_api", "DELETE", false),
         ("external_events", "app_api", "DELETE", false),
         ("audit_log", "app_api", "UPDATE", false),
         ("audit_log", "app_api", "DELETE", false),

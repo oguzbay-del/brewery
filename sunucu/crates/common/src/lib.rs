@@ -7,6 +7,7 @@ pub mod error;
 pub mod http;
 #[cfg(feature = "otel")]
 pub mod otel;
+pub mod retention;
 pub mod shutdown;
 pub mod telemetry;
 

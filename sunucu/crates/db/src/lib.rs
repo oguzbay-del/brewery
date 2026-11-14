@@ -12,18 +12,24 @@
 mod audit;
 mod context;
 mod error;
+mod measurement;
 pub mod outbox;
 mod pool;
 mod roles;
 
 pub use audit::{
     AuditEvent, AuditRecord, CanonicalFields, ChainBreak, ChainReport, GENESIS_HASH, NewAuditEntry,
-    append_audit, canonical_row, chain_hash, value_digest, verify_all_chains, verify_chain,
+    append_audit, canonical_row, chain_hash, changed_field, verify_all_chains, verify_chain,
 };
 pub use context::{
-    ActorKind, DbContext, begin, set_actor_kind, set_context, set_user_id, set_workspace_id,
+    ActorKind, DbContext, IDEMPOTENCY_KEY, begin, set_actor_kind, set_context, set_user_id,
+    set_workspace_id,
 };
 pub use error::{Error, Result};
+pub use measurement::{
+    MAX_FUTURE as MAX_MEASURED_AT_FUTURE, MeasuredAtError, earliest_measured_at,
+    validate_measured_at,
+};
 pub use pool::{
     DEFAULT_MAX_CONNECTIONS, ENV_DATABASE_URL, ENV_DATABASE_URL_FILE, ENV_MIGRATE_DATABASE_URL,
     ENV_MIGRATE_DATABASE_URL_FILE, connect, connect_from_env, connect_lazy, database_url,

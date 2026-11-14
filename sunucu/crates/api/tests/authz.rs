@@ -861,6 +861,22 @@ async fn roles_can_be_created_copied_edited_and_deleted_and_changes_apply_at_onc
             "{expected} in {actions:?}"
         );
     }
+    // Personal fields are marked as changed; no digest of the value is written (F2.1 finding 9).
+    let with_digest: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM audit_log
+         WHERE previous_value::text LIKE '%digest%' OR new_value::text LIKE '%digest%'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(with_digest, 0);
+    let marked: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM audit_log WHERE new_value::text LIKE '%\"changed\": true%'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(marked > 0);
     let mut conn = pool.acquire().await.unwrap();
     assert!(db::verify_chain(&mut conn, ws).await.unwrap().is_ok());
 }

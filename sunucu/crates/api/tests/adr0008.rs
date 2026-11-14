@@ -591,6 +591,57 @@ async fn request_in_progress_gives_409_and_failures_release_the_key(pool: PgPool
     }
 }
 
+/// F2.1 finding 4: the process dies after the work committed, before the response is stored.
+/// A retry after the stale period must not run the work a second time.
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn a_takeover_after_committed_work_does_not_run_it_again(pool: PgPool) {
+    let w = world(&pool).await;
+    let path = format!("/v1/workspaces/{}/demo-records", w.ws);
+    let key = Uuid::new_v4().to_string();
+    let body = json!({});
+    let records = || async {
+        sqlx::query_scalar::<_, i64>("SELECT count(*) FROM outbox WHERE topic = 'demo.record'")
+            .fetch_one(&pool)
+            .await
+            .unwrap()
+    };
+    let first = send(&w.app, json_post(&path, w.user, Some(&key), &body)).await;
+    assert_eq!(first.status, 201);
+    assert_eq!(records().await, 1);
+
+    // Simulate the crash: the response is lost and the key is old.
+    sqlx::query(
+        "UPDATE idempotency_keys SET response_status = NULL, response_body = NULL,
+                created_at = now() - interval '10 minutes' WHERE key = $1",
+    )
+    .bind(&key)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let retry = send(&w.app, json_post(&path, w.user, Some(&key), &body)).await;
+    assert_eq!(retry.status, 409, "{:?}", retry.body);
+    assert_eq!(records().await, 1, "the work did not run again");
+
+    // A key whose work never committed is still taken over and runs.
+    let key2 = Uuid::new_v4().to_string();
+    sqlx::query(
+        "INSERT INTO idempotency_keys (id, workspace_id, key, request_hash, created_at)
+         SELECT $1, $2, $3, request_hash, now() - interval '10 minutes'
+         FROM idempotency_keys WHERE key = $4",
+    )
+    .bind(Uuid::now_v7())
+    .bind(w.ws)
+    .bind(&key2)
+    .bind(&key)
+    .execute(&pool)
+    .await
+    .unwrap();
+    // Same body and path give the same hash, so the stale row is taken over.
+    let again = send(&w.app, json_post(&path, w.user, Some(&key2), &body)).await;
+    assert_eq!(again.status, 201, "{:?}", again.body);
+    assert_eq!(records().await, 2);
+}
+
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn keys_are_scoped_to_the_workspace(pool: PgPool) {
     let w = world(&pool).await;

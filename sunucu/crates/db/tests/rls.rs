@@ -66,11 +66,13 @@ async fn workspace_a_cannot_read_update_delete_or_insert_for_b(pool: PgPool) -> 
         .execute(&mut *tx)
         .await?;
     assert_eq!(deleted.rows_affected(), 0);
+    // The API has no DELETE right on workspaces (F2.1 finding 6).
     let ws_deleted = sqlx::query("DELETE FROM workspaces WHERE id = $1")
         .bind(b)
         .execute(&mut *tx)
-        .await?;
-    assert_eq!(ws_deleted.rows_affected(), 0);
+        .await
+        .unwrap_err();
+    assert_eq!(sqlstate(&ws_deleted).as_deref(), Some("42501"));
     tx.rollback().await?;
 
     // Moving A's own row into B is refused by WITH CHECK.
@@ -355,14 +357,18 @@ async fn deleting_a_workspace_cascades_through_its_tables(pool: PgPool) -> sqlx:
         .await?;
         tx.commit().await?;
     }
+    // The API soft deletes; only the worker purges (F2.1 findings 5 and 6).
     let mut tx = app.begin().await?;
     set_context(&mut tx, Some(a), None).await?;
-    let deleted = sqlx::query("DELETE FROM workspaces WHERE id = $1")
+    sqlx::query("UPDATE workspaces SET deleted_at = now() WHERE id = $1")
         .bind(a)
         .execute(&mut *tx)
         .await?;
-    assert_eq!(deleted.rows_affected(), 1);
     tx.commit().await?;
+    sqlx::query("SELECT purge_workspace($1)")
+        .bind(a)
+        .execute(&pool_as(&pool, Role::Worker).await)
+        .await?;
 
     // Checked as the superuser: A's rows are gone (the append-only trigger lets the cascade
     // through), B's remain.

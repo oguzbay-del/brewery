@@ -13,7 +13,10 @@
 //! Decisions beyond the ADR: only `2xx` responses are stored (a failed attempt releases the key
 //! so the client can retry the same request); the handler runs in a detached task so a client
 //! disconnect cannot leave a half-finished key; a key still unanswered after two minutes
-//! (crashed process) can be taken over by a retry.
+//! (crashed process) can be taken over by a retry, unless its work already committed: the
+//! handler transactions mark the key row (`work_committed_at`, in the same transaction, see
+//! `db::begin`). A takeover of a marked key does not run the work again; it answers `409`
+//! (F2.1 finding 4).
 
 use std::time::Duration;
 
@@ -61,12 +64,26 @@ struct Stored {
 
 enum Claim {
     Fresh(Uuid),
-    Replay { status: i32, body: Vec<u8> },
+    Replay {
+        status: i32,
+        body: Vec<u8>,
+    },
     Mismatch,
     InProgress,
+    /// The first attempt committed its work, then the process died before the response was
+    /// stored. The response is unknown and the work must not run again.
+    WorkCommitted,
 }
 
-type ExistingRow = (Uuid, Vec<u8>, Option<i32>, Option<Vec<u8>>, bool, bool);
+type ExistingRow = (
+    Uuid,
+    Vec<u8>,
+    Option<i32>,
+    Option<Vec<u8>>,
+    bool,
+    bool,
+    bool,
+);
 
 fn parse_key(headers: &HeaderMap) -> ApiResult<String> {
     let value = headers
@@ -128,7 +145,8 @@ async fn claim(
         }
         let existing: Option<ExistingRow> = sqlx::query_as(
             "SELECT id, request_hash, response_status, response_body, \
-                    expires_at < now(), created_at < now() - make_interval(secs => $4) \
+                    expires_at < now(), created_at < now() - make_interval(secs => $4), \
+                    work_committed_at IS NOT NULL \
              FROM idempotency_keys \
              WHERE key = $1 AND workspace_id IS NOT DISTINCT FROM $2 \
                AND user_id IS NOT DISTINCT FROM $3",
@@ -139,7 +157,8 @@ async fn claim(
         .bind(f64::from(STALE_AFTER_SECS))
         .fetch_optional(&mut *tx)
         .await?;
-        let Some((existing_id, found_hash, status, found_body, expired, abandoned)) = existing
+        let Some((existing_id, found_hash, status, found_body, expired, abandoned, committed)) =
+            existing
         else {
             continue; // deleted between the insert and the read
         };
@@ -159,6 +178,9 @@ async fn claim(
                 status,
                 body: found_body.unwrap_or_default(),
             });
+        }
+        if abandoned && committed {
+            return Ok(Claim::WorkCommitted);
         }
         if abandoned {
             let taken: Option<Uuid> = sqlx::query_scalar(
@@ -285,6 +307,14 @@ async fn handle(state: AppState, req: Request, next: Next) -> ApiResult<Response
         Claim::Fresh(id) => id,
         Claim::Replay { status, body } => return Ok(replay(status, &body)),
         Claim::Mismatch => return Err(ApiError::new(ErrorCode::IdempotencyMismatch)),
+        Claim::WorkCommitted => {
+            return Err(
+                ApiError::new(ErrorCode::Conflict).with_errors(vec![FieldIssue::new(
+                    "Idempotency-Key",
+                    "work_already_committed",
+                )]),
+            );
+        }
         Claim::InProgress => {
             return Err(ApiError::new(ErrorCode::IdempotencyInProgress).with_retry_after(1));
         }
@@ -296,7 +326,11 @@ async fn handle(state: AppState, req: Request, next: Next) -> ApiResult<Response
     let task = tokio::spawn(
         REQUEST_ID
             .scope(request_id, async move {
-                let outcome = tokio::time::timeout(HANDLER_TIMEOUT, next.run(req)).await;
+                let outcome = tokio::time::timeout(
+                    HANDLER_TIMEOUT,
+                    db::IDEMPOTENCY_KEY.scope(id, next.run(req)),
+                )
+                .await;
                 let Ok(response) = outcome else {
                     release(&task_state, &ctx, id).await;
                     return ApiError::unavailable(1).into_response();

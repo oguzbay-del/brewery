@@ -199,7 +199,7 @@ Toplam: doğruluk kaynağı hareketlerdir. `stock_lots.quantity` aynı işlemde 
 2. **Satır:** çalışma alanı, sıra numarası (çalışma alanında artan), zaman, yapan türü ve kimliği, eylem, kayıt türü ve kimliği, önceki ve yeni değer (`jsonb`), gerekçe, `prev_hash`, `hash`.
 3. **Zincir:** `hash = SHA-256(prev_hash ‖ kanonik satır)`, çalışma alanı başına ayrı zincir. Kanonik biçim (alan sırası sabit JSON, RFC 8785) ve hesap Rust'ta, doğrulama komutu da Rust'ta (T2.14). Ekleme `audit_heads` satırını kilitleyerek sıraya girer; çalışma alanları birbirini beklemez.
 4. **Yalnız eklenir:** `app_api` ve `app_worker` rollerinin yalnız INSERT ve SELECT hakkı var. UPDATE, DELETE ve TRUNCATE'i bir tetikleyici sahip rolde de reddeder.
-5. **Kişisel veri:** denetim satırı kişiyi yalnız UUID ile anar. Ad, e-posta ve serbest metin önceki ve yeni değere yazılmaz; bu alanlar için "değişti" işareti ve değerin özeti yazılır. Böylece hesap silinince denetim satırını yeniden yazmak gerekmez: UUID'nin karşılığı silinir, satır anonim kalır, zincir bozulmaz.
+5. **Kişisel veri:** denetim satırı kişiyi yalnız UUID ile anar. Ad, e-posta ve serbest metin önceki ve yeni değere yazılmaz; bu alanlar için yalnız "değişti" işareti yazılır; değerin özeti yazılmaz (düşük entropili alanda özet sözlükle geri çözülür; F2.1 bulgu 9). Böylece hesap silinince denetim satırını yeniden yazmak gerekmez: UUID'nin karşılığı silinir, satır anonim kalır, zincir bozulmaz.
 
 ### 6. Silme, saklama, anonimleştirme
 
