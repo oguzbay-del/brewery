@@ -39,3 +39,4 @@ Discovery → sitemap → wireframe → görsel tasarım → içerik → gelişt
 21. [Sayfa içerik backlog'u ve evidence register — WP-10](21-page-content-evidence-register.md)
 22. [Mevcut site gap analysis ve uygulama sırası — WP-11](22-existing-site-gap-analysis-implementation-sequence.md)
 14. [Feature claim denetimi — WP-03](14-feature-claim-denetimi.md)
+23. [Uygulama spesifikasyonu ve release gate — WP-12](23-implementation-spec-release-gate.md)
