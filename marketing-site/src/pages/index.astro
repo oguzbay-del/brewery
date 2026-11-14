@@ -81,7 +81,8 @@ const audiences = [
           </div>
         </div>
 
-        <div class="hero-art" aria-label="Editorial illustration of brewing ingredients and equipment">
+        <!-- IMAGE SLOT: HOME-HERO | Replace .brew-illustration SVG with licensed brewing-process photography. Keep the art-index and art-caption overlays. -->
+        <div class="hero-art" data-image-slot="home-hero" aria-label="Temporary editorial illustration; replace with brewing photography">
           <div class="art-index">FIELD NOTES <span>001 / BREWING</span></div>
           <svg class="brew-illustration" viewBox="0 0 620 650" role="img" aria-labelledby="brew-title brew-desc">
             <title id="brew-title">The craft of brewing</title>
@@ -152,7 +153,8 @@ const audiences = [
           <div class="audience-grid">
             {audiences.map((audience) => (
               <article class="audience-card" id={audience.id}>
-                <div class:list={["audience-image", audience.visual]}>
+                <!-- IMAGE SLOT: AUDIENCE-HOMEBREWERS / AUDIENCE-BREWERIES | Replace each SVG with its matching licensed photograph. -->
+                <div class:list={["audience-image", audience.visual]} data-image-slot={`audience-${audience.id}`}>
                   {audience.visual === "home" ? (
                     <svg viewBox="0 0 600 320" aria-hidden="true">
                       <path d="M0 252 H600" stroke="currentColor" opacity=".3"/>
