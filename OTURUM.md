@@ -4,6 +4,15 @@
 **Amaç:** Yeni ChatGPT veya Claude oturumunun bağlamı yeniden araştırmadan devralması.  
 **Kural:** Bu dosya kısa tutulur. Her anlamlı iş tamamlandığında ve oturum kapatılırken güncellenir.
 
+
+## Güncel yayın durumu — 14 Kasım 2026
+
+- **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
+- **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
+- **Ana dalın ürün kataloğu öncesi son commit'i:** `5661692327cac99960955bcf0730e68326ebcec0`.
+- **Fotoğraflar:** Kullanıcı henüz fotoğraf sağlamadı. Yeni fotoğraf üretme, stok fotoğraf seçme veya otomatik görsel ekleme. Beş `data-image-slot` alanı ve SVG/yer tutucular korunacak; yalnız kullanıcı varlığı/izniyle değiştirilecek.
+- **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
+
 ## Çalışma ilkeleri
 
 - Token verimliliği oturum başında uygulanır; haftalık raporu bekleme.
