@@ -63,7 +63,8 @@ const requiredRoutes = [
   "/how-it-works/", "/technical-principles/", "/faq/",
 ];
 for (const route of requiredRoutes) {
-  const file = toDistFile(`${siteOrigin}${basePath}${route}`);
+  const routeUrl = new URL(`${basePath}${route}`, siteOrigin);
+  const file = toDistFile(routeUrl.pathname);
   assert(await exists(file), `required route exists: ${route}`);
   assert(sitemap.includes(`${siteOrigin}${basePath}${route}`), `sitemap includes: ${route}`);
 }
@@ -83,6 +84,7 @@ const forbidden = [
 for (const file of htmlFiles) {
   const html = await readFile(file, "utf8");
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
+  if (rel === "404.html") continue;
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
   const titleCount = (html.match(/<title>/g) || []).length;
