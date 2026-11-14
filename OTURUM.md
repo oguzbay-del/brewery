@@ -247,10 +247,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Canlı Pages deployment tamamlandı. Ancak bu ortamın tarayıcı erişimi alan adını açamadığı için her bağlantı için gerçek HTTP/cihaz testi yapıldığı iddia edilmemelidir.
 
 
-**SEO ve bağlantı denetimi — 14 Kasım 2026**
-- Güncel main commit: `b512d401c0594cbe052c6aaa994fa8b23f3062ba`; açık PR yok.
-- Homepage, Homebrewers, Breweries ve 404 sayfalarında statik anchor hedefleri kontrol edildi: eksik hedef ve yinelenen ID bulunmadı. Astro `BASE_URL` kullanımı, trailing-slash rotaları, canonical URL'ler, sitemap ve robots.txt tutarlı.
-- Main marketing CI run #43632202886 ve Pages deployment run #43632202813 yeniden kontrol edildi; build/check ve deploy job'ları success.
+**SEO ve yapılandırılmış veri — 14 Kasım 2026**
+- Homepage'e `WebSite`, Homebrewers ve Breweries sayfalarına canonical URL'leri kullanan `WebPage` JSON-LD eklendi.
+- PR #10 CI run #43632635360 başarıyla tamamlandı; head SHA `2e137a9568aacdf05c4ebf90944ff0e9b6765fac` doğrulandıktan sonra Auto-merge olmadan manuel squash merge edildi.
+- Merge commit / main HEAD: `667a8554f2161693a3472eef548ade8e6b14d8b9`. Post-merge main CI ve Pages durumu bu oturumda doğrulanamadı.
 - Gerçek HTTP/browser kontrolü DNS erişimi olmadığı için yapılamadı; görsel QA tamamlandı olarak raporlanmıyor.
-- Bir bağlantı/SEO hatası tespit edilmedi. Sonraki bağımsız SEO iyileştirmesi olarak homepage'e `WebSite`, iki audience sayfasına doğru canonical URL ve geliştirme durumu açıklaması kullanan `WebPage` JSON-LD eklendi. Ürün uygulaması, `web/`, iOS ve API değişmedi.
-- Branch: `marketing/structured-data-seo`; PR CI ve manuel squash merge bekleniyor. Auto-merge kullanılmadı.
+
+**Vercel geçiş hazırlığı — 14 Kasım 2026**
+- Ayrı branch: `hosting/vercel-migration`. Astro config Vercel'de root base, GitHub Pages fallback'inde `/brewery` kullanacak şekilde ayrıştırıldı.
+- Sitemap ve robots.txt Astro endpoint'lerine taşındı; aktif host ve base path'ten build-time üretilir. Pages workflow `GITHUB_PAGES=true` ile fallback davranışını korur.
+- `marketing-site/README.md` içine Vercel import ayarları, root directory, build/output ayarları ve launch QA checklist eklendi.
+- Vercel hesabı kullanıcı tarafından açıldı; proje henüz import edilmedi. Hobby plan ticari yayın için uygun olmadığından Pro yükseltmesi canlıya geçmeden önce gerekli.
+- Bu değişiklikler henüz PR/CI ile doğrulanmadı. GitHub Pages kapatılmayacak; Vercel Preview ve production domain/HTTPS/SEO kontrolleri tamamlanana kadar fallback olarak kalacak.
