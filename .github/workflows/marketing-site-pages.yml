@@ -23,6 +23,8 @@ jobs:
       contents: read
       pages: write
       id-token: write
+    env:
+      GITHUB_PAGES: "true"
     defaults:
       run:
         working-directory: marketing-site
