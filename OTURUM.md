@@ -370,3 +370,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Core Web Vitals, erişilebilirlik, analytics/privacy ve yayın kontrol kapıları eklendi.
 - FoamByte benchmark dersleri Demleme'ye özgü içerik/kanıt yaklaşımıyla eşlendi; kopyalama yok.
 - **Sıradaki adım:** WP-09 — teknik içerik ve hesaplayıcı doğrulama backlog'u. Formül testleri tamamlanmadan calculator implementasyonu/yayını yok.
+
+
+## WP-10 — Sayfa içerik backlog'u ve evidence register (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/21-page-content-evidence-register.md`.
+- P0/P1/P2/P3 sayfa backlog'u; Home ve Business içerik farkları; claim/evidence register şeması ve içerik türüne göre kanıt paketi tanımlandı.
+- Ürün aşaması, teknik kanıt, gerçek CTA ve erişilebilirlik/SEO kapıları geçmeden yayın yok.
+- Pricing, public roadmap dates, customer stories, testimonials, security badges, compliance guarantees ve AI/prediction claims hold'da.
+- PR #16 ve #19 tarihsel/açık PR olarak kaldı; WP-03 claim audit'in main'e temiz entegrasyonu ayrıca ele alınacak.
+- **Sıradaki adım:** WP-11 — mevcut marketing-site uygulamasını WP-04–10 ile karşılaştıran gap analysis ve uygulama sırası. Production koduna geçiş için ayrıca açık onay gerekir.
