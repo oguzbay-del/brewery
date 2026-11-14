@@ -2,14 +2,27 @@
 import "../styles/global.css";
 
 const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}breweries/`, import.meta.env.SITE).href;
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content="A technical brewing workspace for professional breweries." />
     <title>For Professional Breweries — Demleme</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Demleme" />
+    <meta property="og:title" content="For Professional Breweries — Demleme" />
+    <meta property="og:description" content="A technical brewing workspace for professional breweries." />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="For Professional Breweries — Demleme" />
+    <meta name="twitter:description" content="A technical brewing workspace for professional breweries." />
   </head>
   <body>
     <header class="site-header">
