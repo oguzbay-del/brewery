@@ -410,3 +410,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
 - Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
 - **Sıradaki adım:** PR #16 feature catalogue değişikliklerini WP-03 ile denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
+
+
+## WP-14 — Home / Business içerik ve kopya taslağı (15 Kasım 2026)
+
+- Rapor: `web-stratejisi/25-home-business-content-copy-blueprint.md`.
+- Home sayfasındaki “complete toolkit” ve “available to enable” riskleri için claim-safe alternatif metinler; Business “production control” başlığı için “recipe review to production records” önerisi hazırlandı.
+- Home için recipe → ingredients/water → calculations → brew-day measurements → fermentation records → batch review akışı; Business için recipe review → production planning → batch records → observations → QC/traceability akışı ayrı ayrı tasarlandı.
+- İki audience için farklı hero, içerik dili, rol/süreç örnekleri, FAQ başlıkları ve kabul kriterleri yazıldı. Business ERP kapsam sınırı görünür bölüm olarak korundu.
+- Öneriler editoryal taslaktır; WP-03 claim register ve WP-10 evidence register ile doğrulanmadan yayınlanamaz.
+- Yalnız strateji dokümanı ve indeks güncellendi; `marketing-site/`, ürün app/API, calculator, görsel varlıklar ve deployment değiştirilmedi. WP-12 implementation gate geçerlidir.
+- Açık PR #39/#40/#41 Vercel build-rate-limit hatası nedeniyle merge edilmedi. Auto-merge kullanılmadı.
+- **Sıradaki adım:** WP-14 metinlerini WP-03/WP-10 ile claim/evidence bazında çapraz kontrol et; ardından kullanıcı onayı ve WP-12 gate olmadan site koduna geçme.
