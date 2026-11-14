@@ -410,3 +410,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
 - Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
 - **Sıradaki adım:** PR #16 feature catalogue değişikliklerini WP-03 ile denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
+
+
+## Son çalışma — 15 Kasım 2026 (FoamByte derin benchmark)
+- WP-13 eklendi: `web-stratejisi/24-foambyte-benchmark-derinlemesine.md`.
+- FoamByte homepage, features, calculators ve FAQ sayfaları; Demleme homepage, Homebrewers ve Breweries Astro kaynaklarıyla karşılaştırıldı.
+- Home ve Business profilleri ayrı analiz edildi; içerik, bilgi akışı, teknik kanıt, görsel dil ve dönüşüm farkları kaydedildi.
+- Kritik copy riskleri: Home sayfasındaki “complete toolkit” ve “available to enable”; Business sayfasındaki “production control” ifadesi. WP-03 claim map ile düzeltilmeli.
+- FoamByte gerçek ürün ekranları, hesaplayıcı dizini, FAQ, fiyat ve sosyal kanıtla daha tamamlanmış ticari yol sunuyor. Demleme'nin farkı teknik açıklanabilirlik ve iki audience için ayrı iş akışları olmalı.
+- Canlı Vercel sitesi bu incelemede tarayıcıyla açılamadı; piksel/responsive QA tamamlandı sayılmıyor.
+- Yeni benchmark dokümanı için PR hazırlanıyor; production implementation ve ürün kapsamı değişmedi.
