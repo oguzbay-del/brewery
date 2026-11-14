@@ -1,10 +1,10 @@
 # Demleme marketing site — homepage prototype
 
-An isolated Astro + TypeScript + SSG project for the Demleme marketing website.
+An isolated Astro + TypeScript + static-site project for the Demleme marketing website.
 
 ## Scope
 
-- Desktop and mobile homepage prototype.
+- Responsive homepage.
 - Dedicated `/homebrewers` and `/breweries` audience landing pages.
 - Editorial + Technical + Human visual direction.
 - No product application code, product API, product queue, or Claude development task changes.
@@ -49,16 +49,32 @@ Search the `data-image-slot` attributes or `IMAGE SLOT:` comments to find every 
 
 Keep the slot ID when replacing an image. Add final assets under `public/images/`, use descriptive filenames, and confirm usage rights before publishing. Do not use product UI screenshots unless supplied and verified.
 
-## Next review
+## Vercel deployment
 
-Review the homepage and both audience pages at 1440px desktop and 390px mobile. Configure production app/sign-in URLs only after they are confirmed.
+The production target is Vercel. Keep the GitHub repository as the source of truth.
 
-## GitHub Pages preview
+1. Import `oguzbay-del/brewery` into Vercel.
+2. Set **Root Directory** to `marketing-site`.
+3. Select **Astro** as the framework preset.
+4. Use the defaults: install `npm install`, build `npm run build`, output `dist`.
+5. Do not add an Astro server adapter; this site is statically generated.
+6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed.
+7. Connect the production domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all three pages before switching public traffic.
+
+The Astro config uses the root path on Vercel and `/brewery` only for the GitHub Pages fallback. The robots and sitemap endpoints are generated at build time from the active site/base URL.
+
+**Plan note:** Vercel Hobby is for personal, non-commercial use. Use it for private setup/preview only; upgrade to Pro before operating this commercial marketing site publicly.
+
+## GitHub Pages fallback
 
 - **Project website:** https://oguzbay-del.github.io/brewery/
-- **Repository root URL:** https://oguzbay-del.github.io/ is a separate user-site address and is not the Demleme project preview.
-- Astro uses `site: https://oguzbay-del.github.io` and `base: /brewery`; internal page links respect this base path.
-- Deployment workflow: `.github/workflows/marketing-site-pages.yml` (default-branch only; it builds and deploys the marketing site to the project URL).
-- Pushes to `main` that change `marketing-site/**` or this workflow build and deploy `marketing-site/dist` only. The PR check workflow validates the marketing site before merge; Pages deployment happens from the default branch.
-- The separate `marketing-site.yml` workflow runs PR checks.
-- After the PR checks and scope review pass, merge manually. Then verify the published project site at desktop and mobile sizes.
+- Workflow: `.github/workflows/marketing-site-pages.yml`.
+- The workflow sets `GITHUB_PAGES=true` to build with the `/brewery` base path.
+- Keep Pages available until Vercel production, custom domain, SEO endpoints and mobile/desktop QA are verified.
+
+## Final QA checklist
+
+- Review homepage and both audience pages at 1440px desktop and 390px mobile.
+- Verify mobile menu, all internal links, keyboard navigation and 404 handling.
+- Verify page titles, descriptions, Open Graph, canonical URLs, structured data, robots and sitemap on the production domain.
+- Configure product/app/sign-in URLs only after they are confirmed.
