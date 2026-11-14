@@ -15,10 +15,10 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 ## "Devam" dendiğinde
 
 1. `gelistirme/DURUM.md`'yi oku; `gelistirme/ISLER.md`'den yalnız içinde bulunulan aşamayı oku. Planın tamamını okuma.
-2. Bağlı olduğu işler bitmiş, kimi `Claude`, durumu `bekliyor` olan ilk işi al. Kullanıcı başka bir iş ya da sayı söylediyse ona göre yap (ör. "devam, 3 iş").
-3. İşi ISLER.md'deki **Model** sütunundaki modelle yap: Opus işini ana oturumda; Sonnet, Haiku ve Fable işini Agent aracıyla alt ajana ver (`model` parametresiyle). Alt ajana okunacak dosyaları, bitti ölçütünü ve "testleri çalıştır, en fazla 20 satır rapor ver" talimatını yaz. Birbirine bağlı olmayan işler paralel alt ajanlarla yürüyebilir.
+2. Bağlı olduğu işler bitmiş, kimi `Claude`, durumu `todo` olan ilk işi al. Kullanıcı başka bir iş ya da sayı söylediyse ona göre yap (ör. "devam, 3 iş").
+3. İşi ISLER.md'deki **Model** sütunundaki modelle yap: Opus işini ana oturumda; Sonnet, Haiku ve Fable işini Agent aracıyla alt ajana ver (`model` parametresiyle). Alt ajana okunacak dosyaları, bitti ölçütünü ve "testleri çalıştır, en fazla 20 satır rapor ver" talimatını yaz; iş tarifi STE ile yazılır (aşağıda › Yazım standardı). Birbirine bağlı olmayan işler paralel alt ajanlarla yürüyebilir.
 4. Bitti ölçütünü kendin doğrula (testleri çalıştır, farkı incele). Geçmezse işi alt ajana geri gönder ya da düzelt.
-5. ISLER.md'de durumu `bitti (tarih)` yap; DURUM.md'de sıradaki işi, engelleri ve "Son biten işler"i güncelle; commit mesajını iş numarasıyla başlat (`T0.2: ...`), commit at ve `main`'e gönder.
+5. ISLER.md'de durumu `done (YYYY-AA-GG)` yap; DURUM.md'de sıradaki işi, engelleri ve son kararları STE ile güncelle; commit mesajını iş numarasıyla başlat (`T0.2: ...`), commit at ve `main`'e gönder.
    Commit ve push'u Claude onay istemeden yönetir; oturum dalına her işten sonra, `main`'e testler yeşilken ve iş tutarlı bir noktadayken (hızlı ileri, geçmiş yeniden yazılmaz) gönderir (Oğuz, 11.11.2026).
 6. Kullanıcıya en fazla beş satırla bildir: ne bitti, test sonucu, sıradaki iş. Kullanıcıdan karar gerekirse sor ve dur.
 7. Aşama kapısı kapanınca kullanıcıya yeni oturum açmasını öner.
@@ -32,6 +32,34 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 - **Çıktı süzülür:** test ve derleme çıktısı `grep -E "^test result|FAILED|panicked"` ya da `tail` ile okunur; tam workspace testi, clippy ve sqlx denetimi işin sonunda bir kez. compose `make up` ve kind CI'dadır (`altyapi.yml`); gönderimden sonra CI sonucu `actions_list` ile denetlenir.
 - **Disk:** worktree ajanları kendi `sunucu/target-yerel` dizinini kullanır (`CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0`), bitince siler. Ortak `CARGO_TARGET_DIR` kullanılmaz. Commit'ten önce `git status` ile derleme dizini girmediği denetlenir; `git add -A` yerine yol verilir.
 - **Model:** ana oturumda rutin koordinasyon (birleştirme, takip) için Sonnet önerilir; karar, inceleme ve spesifikasyon işinde Opus. Haiku yalnız mekanik işlerde (yeniden adlandırma, liste); kod ve göç işinde kullanılmaz.
+
+## Yazım standardı: ASD-STE100 (Oğuz, 14.11.2026)
+
+İş listesi ve notlar Basitleştirilmiş Teknik İngilizce ile yazılır (ASD-STE100, Issue 9). Amaç: her oturum ve her alt ajan aynı metni tek anlamla okusun.
+
+- **Kapsam (STE):** `gelistirme/ISLER.md` (tanım, bitti ölçütü, durum), `gelistirme/DURUM.md`, crate ve istemci `CLAUDE.md` dosyaları (`sunucu/`, `web/`, `ios/`), alt ajan iş tarifleri, koddaki `TODO` notları.
+- **Kapsam dışı (Türkçe kalır):** kullanıcıyla konuşma ve ona bildirim, bu kök `CLAUDE.md`, plan, konsept, tasarım sistemi, `formuller/`, ADR'ler, `gelistirme/raporlar/`, commit mesajları. Ürün metni (TR/EN katalog) STE değildir.
+- **Eski kayıt:** kapanmış aşamaların ve bitmiş işlerin Türkçe tanımları yeniden yazılmaz. Bir satır değişince o satır STE'ye çevrilir.
+- **Durum etiketleri:** `todo` · `active` · `done (YYYY-MM-DD)` · `blocked (reason)`. Tarih ISO biçimindedir. Kim: `Claude` · `Oğuz`.
+- **Teknik adlar değişmez:** kod adları, dosya yolları, tablo ve varlık adları (`RecipeVersion`), ürün ve servis adları, iş numaraları (T2.9, O6), komutlar. Türkçe belge başlığına başvuru Türkçe kalır: `plan › Veri modeli`.
+- **Doğrulanmamış bilgi:** "doğrulanacak" yerine `to be verified` yazılır.
+
+**Kurallar (Claude'un uyguladığı özet; tam sözlük ASD'nin lisanslı belgesindedir):**
+
+1. Onaylı sözcüğü yalnız onaylı anlamıyla ve sözcük türüyle kullan. Bir sözcük bir anlam; bir anlam bir sözcük. Aynı şeye her yerde aynı adı ver.
+2. Teknik ad ve teknik fiil serbesttir. Proje teknik fiilleri: build, compile, commit, push, merge, rebase, deploy, migrate, seed, sign, verify, encrypt, cache, parse, export, import, log. Yeni fiil gerekirse bu listeye eklenir.
+3. Deyimsel fiil kullanma (`set up` değil `install`/`configure`, `find out` değil `find`).
+4. Ad öbeği en çok üç sözcük. Uzunsa `of`, `for`, `in` ile aç (`session token hash cache` değil `the cache for session token hashes`).
+5. `the`, `a`, `this` gibi belirleyicileri atma; telgraf dili yok. İstisna: tablo hücresindeki ad öbeği, başlık ve liste maddesi başlığı.
+6. Fiil zamanı: geniş zaman, geçmiş zaman, gelecek zaman (`will`). Geçmiş ortaç yalnız sıfat olarak ya da tanım metninde edilgen yapıda.
+7. Yönergede etken çatı ve emir kipi: `Run the tests.` Edilgen yalnız tanım metninde, yapanın önemi yoksa.
+8. `-ing` fiil biçimi kullanma (teknik ad değilse). `while testing` değil `when you test`.
+9. Yönerge cümlesi en çok 20, tanım cümlesi en çok 25 sözcük. Bir cümlede bir yönerge (aynı anda yapılan iki iş hariç).
+10. Kısaltma biçimi yok (`do not`, `cannot`). Gerekçe ve koşul ayrı kısa cümlede: önce yönerge, sonra neden.
+11. Paragraf bir konu, en çok altı cümle, konu cümlesi başta. Üç ve daha çok adım ya da koşul dikey listeyle yazılır.
+12. Uyarı (engel, yasak) önce gelir ve açık yazılır: `Do not use a shared CARGO_TARGET_DIR.` Ardından tek cümle neden.
+
+Örnek. Kötü: `Paralel işlerde api/src/lib.rs'e dokunmamaya dikkat edilmeli.` İyi: `Do not change api/src/lib.rs in parallel tasks. Two tasks that change it cause a merge conflict.`
 
 ## Dosyalar ve bağlantılar
 

@@ -1,21 +1,21 @@
 # engine-service
 
-## Ne yapar
-- `engine` kütüphanesini gRPC ile sunar: `EngineService`, `ToolService`, `RecipeService`, `MashService`, `WaterService`, `YeastService`, `FermentationService`, `BreweryService` (`demleme.engine.v1`, ADR-0005) ve standart sağlık servisi.
-- Birim dönüşümü yalnız `convert.rs`'te; ortak girdi denetimi `check.rs`'te; uçtan uca test `tests/uc_uca.rs`.
-- Sözleşme `sozlesme/proto/engine/v1/*.proto`; `build.rs` onu `protox` ile derler (sistemde protoc gerekmez).
-- Port `PORT` (varsayılan 50051).
+## What it does
+- It serves the `engine` library over gRPC: `EngineService`, `ToolService`, `RecipeService`, `MashService`, `WaterService`, `YeastService`, `FermentationService`, `BreweryService` (`demleme.engine.v1`, ADR-0005) and the standard health service.
+- Unit conversion is only in `convert.rs`. Shared input checks are in `check.rs`. The end-to-end test is `tests/uc_uca.rs`.
+- The contract is `sozlesme/proto/engine/v1/*.proto`. `build.rs` compiles it with `protox` (the system does not need protoc).
+- Port `PORT` (default 50051).
 
-## Neye dokunmaz
-- Yalnız iç ağ içindir; dışarıya açılmaz.
-- Hesap kodu yazılmaz; hesap `engine`'de, bu crate onu çağırır.
-- Proto sözleşmesi `sozlesme/` altında değişir, bu crate'te değil.
+## What it does not touch
+- It is only for the internal network. Do not expose it to the outside.
+- Do not write calculation code. The calculation is in `engine`. This crate calls it.
+- Change the proto contract in `sozlesme/`. Do not change it in this crate.
 
-## Nasıl test edilir
-- `sunucu/` içinde: `cargo test -p engine-service`
+## How to test
+- In `sunucu/`, run: `cargo test -p engine-service`
 - Lint: `cargo clippy --workspace --all-targets -- -D warnings`
 
-## Kurallar
-- Proto değişince önce sözleşme güncellenir, sonra servis derlenir.
-- Kod İngilizce; belgeler Türkçe.
-- Commit mesajı iş numarasıyla başlar: `T0.x: ...`.
+## Rules
+- When the proto changes, update the contract first. Then build the service.
+- Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish.
+- Start the commit message with the task number: `T0.x: ...`.

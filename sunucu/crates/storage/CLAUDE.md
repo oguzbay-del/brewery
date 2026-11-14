@@ -1,18 +1,18 @@
 # storage
 
-## Ne yapar
-- Nesne deposu arayüzü `ObjectStore` ve S3 uygulaması `S3Store` (S3, GCS birlikte çalışabilirliği, SeaweedFS): imzalı `PUT`/`GET` adresi (SigV4, sorgu imzası), `head`, `digest` (akıtarak SHA-256), `put`, `delete`, `ensure_bucket`.
-- `S3Config`: `S3_*` ortam değişkenleri (`S3_ENDPOINT` yoksa depo kapalı).
-- Ayrıntı: `README.md`, karar: `adr/0008-api-kurallari.md` (T2.18 notları).
+## What it does
+- Object store interface `ObjectStore` and S3 implementation `S3Store` (S3, GCS interoperability, SeaweedFS): signed `PUT`/`GET` URL (SigV4, query signature), `head`, `digest` (streamed SHA-256), `put`, `delete`, `ensure_bucket`.
+- `S3Config`: `S3_*` environment variables. If `S3_ENDPOINT` is not set, the store is off.
+- Details: `README.md`. Decision: `adr/0008-api-kurallari.md` (T2.18 notes).
 
-## Neye dokunmaz
-- İş kuralı yoktur (boyut, tür, yetki `api` crate'indedir).
-- Azure Blob uygulaması yok; eklenirse `ObjectStore`'u uygular.
+## What it does not touch
+- It has no business rules (size, type and authorization are in the `api` crate).
+- It has no Azure Blob implementation. If you add one, it must implement `ObjectStore`.
 
-## Nasıl test edilir
-- `sunucu/` içinde: `cargo test -p storage`. `tests/s3_live.rs` compose'taki `objectstore`'a (127.0.0.1:8333) bağlanır: `docker compose -f altyapi/compose/compose.yaml up -d --wait objectstore`. `S3_*` değişkenleri adresi ve anahtarı değiştirir.
+## How to test
+- In `sunucu/`, run: `cargo test -p storage`. `tests/s3_live.rs` connects to `objectstore` in compose (127.0.0.1:8333). Start it with `docker compose -f altyapi/compose/compose.yaml up -d --wait objectstore`. The `S3_*` variables change the address and the key.
 
-## Kurallar
-- İmza koduna dokunan değişiklik `sigv4.rs` içindeki AWS örnek testlerini geçmelidir.
-- Sırlar günlüğe ve `Debug` çıktısına girmez.
-- Commit mesajı iş numarasıyla başlar: `T2.x: ...`.
+## Rules
+- A change to the signing code must pass the AWS example tests in `sigv4.rs`.
+- Do not write secrets to the log or to `Debug` output.
+- Start the commit message with the task number: `T2.x: ...`.

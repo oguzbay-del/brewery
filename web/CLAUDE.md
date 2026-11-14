@@ -1,25 +1,25 @@
 # web
 
-## Ne yapar
+## What it does
 
-- React + TypeScript (Vite) web arayüzü; TypeScript `strict` ve `noUncheckedIndexedAccess` açık.
-- Renk, yazı ve boşluk token'ları `tasarim-sistemi/tokens.json`'dan üretilir; açık, koyu ve yüksek karşıtlık temaları CSS değişkenidir.
+- React + TypeScript (Vite) web interface. TypeScript options `strict` and `noUncheckedIndexedAccess` are on.
+- Tokens for color, type and space come from `tasarim-sistemi/tokens.json`. The light, dark and high-contrast themes are CSS variables.
 - Node 22 (`.nvmrc`), npm.
 
-## Neye dokunmaz
+## What it does not touch
 
-- İş kuralı ve hesap yok; hesap sunucudadır (`sunucu/`), web yalnız arayüzü çizer.
-- Token değerleri `tasarim-sistemi/tokens.json`'da değişir, `src/styles/tokens.css`'de değil.
+- It has no business rules and no calculation. The server (`sunucu/`) does the calculation. The web app only draws the interface.
+- Change token values in `tasarim-sistemi/tokens.json`. Do not change them in `src/styles/tokens.css`.
 
-## Nasıl test edilir
+## How to test
 
-- `npm ci`, ardından `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm test`.
-- `npm run check:tokens`: üretilen token dosyası güncel mi.
-- `npm run e2e`: Chromium `/opt/pw-browsers/chromium` adresinde olmalı (ya da `PW_CHROMIUM_PATH`); `playwright install` çalıştırılmaz.
+- Run `npm ci`. Then run `npm run typecheck`, `npm run lint`, `npm run format:check` and `npm test`.
+- `npm run check:tokens`: checks that the generated token file is current.
+- `npm run e2e`: Chromium must be at `/opt/pw-browsers/chromium` (or set `PW_CHROMIUM_PATH`). Do not run `playwright install`.
 
-## Kurallar
+## Rules
 
-- `src/styles/tokens.css` üretilir (`npm run gen:tokens`); elle düzenlenmez.
-- Kod İngilizce; belgeler Türkçe.
-- Kullanıcıya görünen metin kodda yazılmaz; metin kataloğundan gelir (Türkçe ve İngilizce).
-- Commit mesajı iş numarasıyla başlar: `T0.x: ...`.
+- `npm run gen:tokens` generates `src/styles/tokens.css`. Do not edit it by hand.
+- Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish.
+- Do not write user-visible text in code. Text comes from the text catalog (Turkish and English).
+- Start the commit message with the task number: `T0.x: ...`.

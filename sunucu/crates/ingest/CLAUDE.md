@@ -1,18 +1,18 @@
 # ingest
 
-## Ne yapar
-- Dış olay alımı (webhook'lar): cihaz, App Store, ödeme ve GitHub kaynakları.
-- Şimdilik yalnız `GET /healthz` ve temiz kapanma; kaynak bağlantıları sonraki işlerde.
-- Port `PORT` (varsayılan 8082).
+## What it does
+- Intake of external events (webhooks): device, App Store, payment and GitHub sources.
+- For now it has only `GET /healthz` and clean shutdown. Later tasks add the source connections.
+- Port `PORT` (default 8082).
 
-## Neye dokunmaz
-- Veritabanına ve hesap koduna dokunmaz.
-- Olay işleme `worker`'a aittir; bu crate olayları alır.
+## What it does not touch
+- It does not touch the database or calculation code.
+- `worker` owns event processing. This crate only receives the events.
 
-## Nasıl test edilir
-- `sunucu/` içinde: `cargo test -p ingest`
+## How to test
+- In `sunucu/`, run: `cargo test -p ingest`
 - Lint: `cargo clippy --workspace --all-targets -- -D warnings`
 
-## Kurallar
-- Kod İngilizce; belgeler Türkçe.
-- Commit mesajı iş numarasıyla başlar: `T0.x: ...`.
+## Rules
+- Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish.
+- Start the commit message with the task number: `T0.x: ...`.

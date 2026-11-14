@@ -1,19 +1,19 @@
 # events
 
-## Ne yapar
-- Olay hattı (ADR-0007 madde 2.5, ADR-0008 madde 9): `db::outbox::enqueue` ile işlemde yazılan outbox satırları `relay` ile NATS JetStream'e (`EVENTS` akışı, 1 saat tutma) aktarılır; `consumer` çerçevesi kalıcı çekme tüketicileriyle olayı bir kez etkili işler; API aynı akıştan SSE sunar.
-- Konu: `ev.<çalışma alanı|_>.<varlık türü|_>.<varlık kimliği|_>.<olay türü>`; ölü mektup: `EVENTS_DLQ` akışı, `dlq.<tüketici>.<konu>`.
-- Aktarıcı: `FOR UPDATE SKIP LOCKED` + tek aktarıcı için danışma kilidi, sıralı yayın, `Nats-Msg-Id` = outbox kimliği, yalnız onaylanan önek `published_at` alır (en az bir kez; JetStream 2 dk içinde tekrarı atar).
-- Tüketici: işlem içinde `processed_events (consumer, event_id)` eklenir; çakışırsa olay atlanır. `Retry` geri çekilmeyle yeniden denenir, `max_attempts` sonunda ya da `Permanent` ile ölü mektuba gider.
+## What it does
+- Event pipeline (ADR-0007 item 2.5, ADR-0008 item 9). `db::outbox::enqueue` writes outbox rows in a transaction. `relay` sends them to NATS JetStream (stream `EVENTS`, retention 1 hour). The `consumer` framework uses durable pull consumers to process an event effectively once. The API gives SSE from the same stream.
+- Subject: `ev.<çalışma alanı|_>.<varlık türü|_>.<varlık kimliği|_>.<olay türü>`. Dead letter: stream `EVENTS_DLQ`, `dlq.<tüketici>.<konu>`.
+- Relay: `FOR UPDATE SKIP LOCKED` plus an advisory lock for a single relay. It publishes in order. `Nats-Msg-Id` is the outbox id. Only the acknowledged prefix gets `published_at` (at least once; JetStream drops a repeat within 2 minutes).
+- Consumer: it inserts `processed_events (consumer, event_id)` in the transaction. If the insert conflicts, it skips the event. It tries `Retry` again with backoff. After `max_attempts`, or with `Permanent`, the event goes to the dead letter.
 
-## Neye dokunmaz
-- Müşteri içeriği taşımaz (olay yalnız kimlik, sürüm, küçük `data`).
-- HTTP ve yetki burada değil: SSE ucu `api/src/events.rs`.
+## What it does not touch
+- It does not carry customer content. An event has only an id, a version and a small `data`.
+- HTTP and authorization are not here. The SSE endpoint is in `api/src/events.rs`.
 
-## Nasıl test edilir
-- PostgreSQL ve NATS gerekir: `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres nats`; `DATABASE_URL=... NATS_URL=nats://127.0.0.1:4222 cargo test -p events`.
-- Yeniden başlatma testi kendi `nats:2-alpine` konteynerini açar (Docker yoksa atlanır); compose NATS'ı durdurmaz.
+## How to test
+- You need PostgreSQL and NATS: `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres nats`. Then run `DATABASE_URL=... NATS_URL=nats://127.0.0.1:4222 cargo test -p events`.
+- The restart test starts its own `nats:2-alpine` container (it skips if Docker is not available). It does not stop the compose NATS.
 
-## Kurallar
-- Kod İngilizce; belgeler Türkçe.
-- Commit mesajı iş numarasıyla başlar: `T2.x: ...`.
+## Rules
+- Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish.
+- Start the commit message with the task number: `T2.x: ...`.

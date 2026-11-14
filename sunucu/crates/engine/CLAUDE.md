@@ -1,19 +1,19 @@
 # engine
 
-## Ne yapar
-- Hesap motoru kütüphanesi; formüller saf fonksiyon olarak burada yazılır.
-- Formüller `formuller/` spesifikasyonlarına ve test vektörlerine göre gelir (Aşama 1).
-- Bölüm başına bir modül (`units`, `density`, `hops`, …); parite yöntemi ADR-0003.
+## What it does
+- Calculation engine library. Write the formulas here as pure functions.
+- The formulas follow the specifications and test vectors in `formuller/` (Stage 1).
+- One module for each section (`units`, `density`, `hops`, ...). The parity method is in ADR-0003.
 
-## Neye dokunmaz
-- IO yok: veritabanı, ağ, saat ve async bağımlılığı eklenmez. Yalnız saf hesap crate'i (ör. `rust_decimal`) eklenebilir; test bağımlılığı `serde_json`.
-- gRPC ve sunucu kodu `engine-service`'e aittir.
+## What it does not touch
+- It has no IO. Do not add a dependency on a database, a network, a clock or async. You can add only a pure calculation crate (for example `rust_decimal`). The test dependency is `serde_json`.
+- `engine-service` owns the gRPC and server code.
 
-## Nasıl test edilir
-- `sunucu/` içinde: `cargo test -p engine` (parite: `tests/parite_NN.rs`, vektörler `make vektor` ile üretilir)
+## How to test
+- In `sunucu/`, run: `cargo test -p engine` (parity: `tests/parite_NN.rs`; `make vektor` generates the vectors)
 - Lint: `cargo clippy --workspace --all-targets -- -D warnings`
 
-## Kurallar
-- Kod İngilizce; belgeler Türkçe.
-- Formül değişikliği önce `formuller/` spesifikasyonunda yapılır, sonra kod ve test vektörü gelir.
-- Commit mesajı iş numarasıyla başlar: `T0.x: ...`.
+## Rules
+- Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish.
+- Change a formula in the `formuller/` specification first. Then change the code and the test vector.
+- Start the commit message with the task number: `T0.x: ...`.

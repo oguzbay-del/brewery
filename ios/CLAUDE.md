@@ -1,22 +1,22 @@
 # ios
 
-## Ne yapar
-- SwiftUI uygulaması (iPhone, iPad; iOS 18+, Swift 6.0).
-- Xcode projesi XcodeGen ile `project.yml`'dan üretilir; hedefler `Demleme`, `DemlemeTests`, `DemlemeUITests`.
-- Giriş noktası ve ilk ekran `Demleme/App` altında.
+## What it does
+- SwiftUI app (iPhone, iPad; iOS 18+, Swift 6.0).
+- XcodeGen generates the Xcode project from `project.yml`. The targets are `Demleme`, `DemlemeTests` and `DemlemeUITests`.
+- The entry point and the first screen are in `Demleme/App`.
 
-## Neye dokunmaz
-- `.xcodeproj` elle düzenlenmez ve depoya girmez; değişiklik `project.yml`'da yapılır.
-- İş kuralı ve hesap yok; hesap sunucudadır, iOS yalnız arayüzü çizer.
-- Bundle id ve imzalama (`DEVELOPMENT_TEAM`) kararı ürün sahibinde ve CI'da; burada doldurulmaz.
+## What it does not touch
+- Do not edit `.xcodeproj` by hand. Do not add it to the repository. Make changes in `project.yml`.
+- It has no business rules and no calculation. The server does the calculation. The iOS app only draws the interface.
+- The product owner and CI decide the bundle id and signing (`DEVELOPMENT_TEAM`). Do not set them here.
 
-## Nasıl test edilir
-- Linux: `python3 -I ios/scripts/validate.py` (Swift derlenmez).
-- Renk üretimi güncel mi: `python3 -I ios/scripts/gen_colors.py --check`.
-- Derleme ve testler macOS CI'da; cihaz testi ürün sahibinde.
+## How to test
+- Linux: `python3 -I ios/scripts/validate.py` (Swift does not compile on Linux).
+- Check that the generated colors are current: `python3 -I ios/scripts/gen_colors.py --check`.
+- The macOS CI does the build and the tests. The product owner does the device test.
 
-## Kurallar
-- Üretilen dosyalar elle düzenlenmez: `Demleme/Resources/Assets.xcassets/Colors` ve `Demleme/Design/Tokens.swift`; `python3 -I ios/scripts/gen_colors.py` ile yeniden üretilir.
-- Biçim: SwiftFormat ve SwiftLint (`.swiftformat`, `.swiftlint.yml`).
-- Kod İngilizce; belgeler Türkçe. Kullanıcıya görünen metin kataloğundan gelir.
-- Commit mesajı iş numarasıyla başlar: `T0.x: ...`.
+## Rules
+- Do not edit generated files by hand: `Demleme/Resources/Assets.xcassets/Colors` and `Demleme/Design/Tokens.swift`. Generate them again with `python3 -I ios/scripts/gen_colors.py`.
+- Format: SwiftFormat and SwiftLint (`.swiftformat`, `.swiftlint.yml`).
+- Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish. User-visible text comes from the text catalog.
+- Start the commit message with the task number: `T0.x: ...`.
