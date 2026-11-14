@@ -400,7 +400,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Kritik çelişkiler: fermantasyon bitiş/FG tahminleri onaysız analitik modeller; eğri sapma uyarısı onay bekleyen model 2; ekipman kalibrasyonu Home MVP ile onaysız model 3 arasında çelişkili.
 - Mash pH, public calculator kapsamı, cihaz/protokol ve read/control ayrımı, mevzuat ve security iddiaları için ek doğrulama şart.
 - Pazarlama “Available” durumunu yalnız deploy edilmiş/test edilmiş müşteri akışında kullanmalı.
-- **Sıradaki adım:** PR #16 feature catalog diff'ini claim audit ile denetle; yalnız doğrulanmış, muhafazakâr metinleri entegre et.
+- **Tamamlandı:** PR #16 claim audit ile denetlendi ve kapatıldı; claim-safe düzeltmeler PR #40'ta. Build ve Vercel Preview tamamlanmadan merge yapılmayacak.
 
 
 ## WP-12 — Uygulama spesifikasyonu ve release gate (14 Kasım 2026)
