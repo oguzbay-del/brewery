@@ -40,7 +40,7 @@
 - UI: Astro components; React yalnız gerçekten gerekli interaktif island için.
 - İçerik: Markdown/MDX + Content Collections/Zod.
 - Hosting adayı: Cloudflare Pages. Domain, analytics, form ve consent sağlayıcısı hâlâ açık karar.
-- GitHub: pazarlama sitesi değişiklikleri feature branch + PR; kullanıcı talimatıyla Auto Merge kullan.
+- GitHub: pazarlama sitesi değişiklikleri feature branch + PR; kullanıcı talimatıyla CI ve preview doğrulamasından sonra manuel merge yapılır. GitHub Auto-merge kullanılmaz.
 
 **Tasarım yönü**
 - Editorial + Technical + Human. AI landing page klişeleri, sahte dashboard, uydurma metrik ve gradient/glow yok.
@@ -49,11 +49,21 @@
 - Özellik iddiaları ürün akışı/test/dokümanıyla doğrulanmadan yayınlanmaz.
 
 **Sonraki adımlar**
-1. Wireframe ve görsel yön için kullanıcı geri bildirimi al; onay sonrası high-fidelity tasarım/prototip.
-2. Ürün ekranları ve fotoğraf varlıklarını topla; olmayan ekranı üretme.
-3. Tasarım onayından sonra `marketing-site/` Astro iskeleti ve CI oluştur; `web/` ürün uygulamasını değiştirme.
+1. Ana sayfa ve iki audience landing page'i 1440px desktop / 390px mobile ölçülerinde görsel olarak gözden geçir.
+2. Fotoğrafları, aşağıdaki slot envanterine göre lisans ve son varlıklar onaylandığında değiştir.
+3. App URL, sign-in URL, domain ve analytics/form kararlarını ayrıca al.
 4. Fiyat, trial, paket, ödeme sağlayıcısı ve limitler kesinleşmeden fiyat/teklif vaat etme.
 5. Claude ürün geliştirme kuyruğuna dokunma.
+
+**Son çalışma — 14 Kasım 2026**
+- `marketing/homepage-prototype` dalı `main` üzerinden açıldı.
+- `marketing-site/` altında izole Astro + TypeScript + SSG homepage prototipi eklendi.
+- Desktop/mobile düzen, audience yolları, teknik mesaj bölümü ve erişilebilir mobil menü hazırlandı.
+- Görsel öğeler özgün SVG illüstrasyonlarıdır; gerçek ürün ekranı veya ürün işlevi taklidi değildir.
+- Mevcut tasarım token'ları ve sistem font yığını kullanıldı.
+- GitHub üzerinden dosya ve değişiklik kaydı doğrulandı. Yerel `npm install`, `astro check` ve production build henüz çalıştırılmadı.
+- Yalnız `marketing-site/` değişikliklerinde çalışan GitHub Actions workflow eklendi: Astro check + SSG build. İlk PR workflow sonucu bekleniyor.
+- Gerçek fotoğraf varlıkları, ürün ekranları ve uygulama CTA URL'leri bekliyor.
 
 **Sınır:** Bu pazarlama iş parçacığı `gelistirme/DURUM.md`, `gelistirme/ISLER.md`, ürün kodu, API, Claude geliştirme sırası ve commit'lerini değiştirmez.
 
@@ -85,3 +95,62 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 **Kaydedilen teknik doküman:** `web-stratejisi/10-teknik-mimari.md` — framework karşılaştırması, TypeScript/AI kodlama ilkeleri, repo yerleşimi, rendering, içerik/SEO, tasarım token'ları, hosting, CI/CD, kalite kapıları ve Mermaid sistem akışı.
 
 **Sıradaki adım:** Mimari tercihi esas alarak yalnız pazarlama sitesi için bilgi mimarisi ve desktop/mobile wireframe taslağı hazırlamak. Henüz `marketing-site/` kod iskeleti oluşturulmadı. `web/` ürün uygulaması ve Claude geliştirme kuyruğu değiştirilmedi.
+
+
+**Son çalışma — 14 Kasım 2026 (devam)**
+
+- Kullanıcı talimatıyla fotoğraflar sonraki aşamaya bırakıldı; mevcut illüstrasyonlar ve yer tutucular geçici olarak korundu.
+- Ana sayfada fotoğraf değişim noktaları HTML yorumları ve `data-image-slot` kimlikleriyle işaretlendi.
+- `/homebrewers` ve `/breweries` için ayrı İngilizce audience landing page'leri eklendi.
+- `marketing-site/README.md` içine beş görsel slotunun dosya/kimlik/değiştirilecek içerik envanteri eklendi.
+- Değişen dosyalar: `marketing-site/src/pages/index.astro`, `homebrewers.astro`, `breweries.astro`, `src/styles/global.css`, `README.md`.
+- GitHub dosya yazma işlemleri başarılı. GitHub Actions üzerinden `npm install`, `astro check` ve `astro build` başarılı tamamlandı. PR #3 draft olarak bırakıldı; merge yapılmadı.
+- Ürün uygulaması, `web/` ve Claude ürün geliştirme kuyruğu değiştirilmedi.
+
+
+**Son çalışma — 14 Kasım 2026 (bağlantı ve mesaj denetimi)**
+- Ana sayfa kartları, hero CTA'ları ve navigasyon Homebrewers / Breweries sayfalarına yönlendirilecek şekilde düzeltildi.
+- Audience metinleri kesinleşmemiş ürün fonksiyonlarını vaat etmek yerine teknik yaklaşım ve odak alanlarını anlatacak şekilde yumuşatıldı.
+- Fotoğraf yer tutucusu arka planı düz renge çevrildi; görsel slot kimlikleri korundu.
+- README kapsamı iki ayrı audience landing page'ini ve güncel CTA davranışını yansıtacak şekilde güncellendi.
+- GitHub üzerinden üç sayfanın içerikleri ve navigasyon hedefleri incelendi. Astro check ve SSG production build GitHub Actions run #11 içinde başarıyla tamamlandı.
+- CI adımları: Node 22 kurulumu, dependency install, `npm run check`, `npm run build` — tümü success.
+- Gerçek tarayıcıda 1440/390 görsel kontrolü henüz yapılmadı; deploy edilmiş preview URL yok.
+- PR #3 draft; merge edilmedi. Kod değişiklikleri test edildi; sonrasında yalnız OTURUM dokümantasyonu güncellendi.
+- **Sıradaki adım:** Cloudflare Pages preview/deploy bağlantısı mevcutsa gerçek responsive QA; yoksa kullanıcıdan hosting/preview erişimi için karar al. Fotoğrafları ve app CTA URL'lerini beklet.
+
+
+**Son çalışma — 14 Kasım 2026 (CI ve statik bağlantı QA)**
+- GitHub Actions run #11 başarıyla tamamlandı: Node kurulumu, dependency install, npm run check (Astro/TypeScript) ve npm run build adımlarının tamamı başarılı.
+- Ana sayfa ve iki audience sayfasının dahili anchor hedefleri kaynak üzerinden denetlendi; eksik anchor bulunmadı. Audience sayfaları için /, /homebrewers, /breweries ve ana sayfa section linkleri tutarlı.
+- PR #3 açık, draft ve merge edilmedi. Head branch marketing/homepage-prototype; base main.
+- Bu oturumda gerçek tarayıcı / cihaz önizlemesi sağlayan bir araç yok; 1440px ve 390px görsel QA yapılmış sayılmıyor. GitHub CI başarısı görsel doğrulama yerine geçmez.
+- **Sıradaki adım:** preview ortamı/erişimi sağlandığında masaüstü ve mobil görsel QA; ardından CTA hedefleri ve production hosting/domain kararları.
+
+
+**CI doğrulaması — 14 Kasım 2026 (son kontrol)**
+- Marketing site workflow run #11 ve #12: **success**.
+- Tamamlanan adımlar: Node setup, npm dependency install, Astro and TypeScript checks, static site build.
+- Kaynak kontrolü: homepage anchor hedefleri geçerli; /homebrewers ve /breweries route bağlantıları doğru.
+- Branch diff: 26 commit ahead, 0 behind; PR #3 açık, draft ve mergeable.
+- Görsel QA için canlı preview/browser henüz yok. Bu nedenle 1440px / 390px ekranlarda görsel doğrulama yapılmış gibi raporlanmamalı.
+
+
+
+**GitHub Pages preview hazırlığı — 14 Kasım 2026**
+- Kullanıcı GitHub Pages ile devam edilmesini onayladı. Repository metadata kontrolünde `has_pages: false`; Pages henüz etkin değil.
+- Astro config `site: https://oguzbay-del.github.io` ve `base: /brewery` olarak ayarlandı.
+- Ana sayfa ve iki audience sayfasındaki iç linkler Astro `BASE_URL` üzerinden repo alt dizinine uyumlu hale getirildi.
+- `.github/workflows/marketing-site-pages.yml` eklendi: branch push / workflow_dispatch → Astro check + build → Pages artifact → deploy. Mevcut PR check workflow'u ayrı bırakıldı.
+- Hedef preview URL: `https://oguzbay-del.github.io/brewery/` (Pages etkinleştirilip deployment başarılı olunca erişilebilir).
+- Repository sahibi GitHub Pages'i etkinleştirdi; kaynak GitHub Actions olarak ayarlandı (kullanıcı teyidi).
+- Bu aşamada main merge edilmedi; `web/`, ürün API'leri ve Claude ürün geliştirme kuyruğu değiştirilmedi.
+- **Sıradaki adım:** yeni branch push sonrası Pages deployment sonucunu ve canlı URL'yi doğrula; ardından 1440px/390px görsel QA yap.
+
+
+**Pages workflow sonucu — 14 Kasım 2026**
+- Pages workflow ilk denemesinde build başarılı, deploy ise Pages etkin olmadığı için 404 ile başarısız olmuştu.
+- Kullanıcı Pages'i etkinleştirdiğini teyit etti. README'deki preview notu güncellendi; bu commit deployment'ı yeniden tetiklemeli.
+- PR #3 son kontrolünde Marketing site checks ve genel altyapı workflow success; PR hâlâ draft ve açık.
+- Preview canlı olduktan sonra masaüstü/mobil görsel QA yapılacak. Görsel QA tamamlanmadan PR merge edilmeyecek.
+- Kullanıcının açık talimatı: Auto-merge kullanma; CI ve preview QA tamamlanınca PR'ı manuel merge et.
