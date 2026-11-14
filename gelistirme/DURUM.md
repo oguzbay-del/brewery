@@ -3,15 +3,16 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task:** T2.9 (fixes for the F2.1 findings). After T2.9, give the chain T2.19 → T2.21 → T2.22 to one agent. Work rules: root `CLAUDE.md` › Token verimliliği.
+**Next task:** give the chain T2.19 → T2.21 → T2.22 to one agent (T2.20 can run in parallel). Work rules: root `CLAUDE.md` › Token verimliliği.
 - 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
+- 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment
 
 - Installed: Rust 1.97, Node 22, Docker client. Start `dockerd` manually at the start of each session.
 - In scratchpad/bin: terraform 1.17.2, kind 0.33.0, kubectl 1.37.2, actionlint 1.7.12. If the scratchpad is empty in a new session, download them again (the README files give the steps).
-- The tests need PostgreSQL. Start it with `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres` or with `make up`. `make test` sets DATABASE_URL to the compose default.
+- The tests need PostgreSQL. Start it with `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres` or with `make up`. `make test` sets DATABASE_URL to the compose default (`postgres://demleme:demleme-yerel@127.0.0.1:5432/demleme`). If Docker Hub gives 429, use the local PostgreSQL 16 (`pg_ctlcluster`) and `redis-server`.
 - The disk allowance is small. In parallel worktrees, set `CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0`.
 - Do not use a shared `CARGO_TARGET_DIR`. Cargo names workspace crates by relative path, so worktrees overwrite the test binaries of other worktrees. Delete the target directory of a worktree when its task is done.
 - To build images in this environment, use `make up BUILD_CA_FILE=/root/.ccr/ca-bundle.crt` (TLS proxy).
@@ -19,6 +20,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - Database roles: `app_owner` (owner, NOLOGIN), `app_api`, `app_worker`. `migrate` sets their passwords (`APP_*_PASSWORD`).
 
 ## Blockers
+
+- T2.9: the measurement endpoint (T2.22) must call `db::validate_measured_at`. `purge_workspace` has no worker job yet. Open decisions: F2.1 report items 8 (`reason` text) and 9–12 (references after a permanent delete, legal hold, retention of external event payloads, audit anchor).
 
 - T2.14: if an attacker deletes both the rows and the head of the chain, the check does not find it. An external anchor is necessary: write a periodic digest to the object store. If the canonical field list changes, add a format version.
 - T2.16: `EngineClient` is not connected to `AppState` yet (T2.20 and T2.21 connect it). The proto has no separate field for the intermediate values of "Nasıl hesaplandı".
