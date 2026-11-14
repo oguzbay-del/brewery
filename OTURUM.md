@@ -401,3 +401,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Mash pH, public calculator kapsamı, cihaz/protokol ve read/control ayrımı, mevzuat ve security iddiaları için ek doğrulama şart.
 - Pazarlama “Available” durumunu yalnız deploy edilmiş/test edilmiş müşteri akışında kullanmalı.
 - **Sıradaki adım:** PR #16 feature catalog diff'ini claim audit ile denetle; yalnız doğrulanmış, muhafazakâr metinleri entegre et.
+
+
+## WP-12 — Uygulama spesifikasyonu ve release gate (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/23-implementation-spec-release-gate.md`.
+- WP-03–WP-11 kararları, hedef sitemap, Home/Business içerik tasarımı, implementasyon workstream'leri, bağımlılıklar, kalite kabul kriterleri ve release/merge protokolü birleştirildi.
+- İlk sürüm kapsamı ve calculator/pricing/roadmap/account CTA gibi sonraki kapılar ayrıştırıldı.
+- Production uygulama için açık gate korunuyor; bu PR yalnız dokümantasyon.
+- **Sıradaki adım:** PR #16 feature catalogue değişikliklerini WP-03 ile denetle; ardından production implementation gate için kullanıcı onayını al. Bu onay olmadan `marketing-site/` değiştirilmeyecek.
