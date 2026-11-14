@@ -360,3 +360,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Fermentation prediction, deviation alerts ve onaysız analitik modeller public calculator taahhüdü dışında tutuldu.
 - Public calculator için ayrıca ürün sahibi onayı ve teknik doğrulama kapısı zorunlu.
 - **Sıradaki adım:** WP-10 — sayfa bazlı içerik backlog'u ve evidence register. Formül/ürün kararları varsayılmayacak.
+
+
+## WP-08 — SEO, teknik yayın ve içerik kalite standardı (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/19-seo-technical-publishing-standard.md`.
+- URL/search intent sahipliği, on-page içerik kalitesi, crawl/indexation, sitemap/robots/canonical, redirect, metadata ve JSON-LD kuralları tanımlandı.
+- ABD/İngiltere lokalizasyonu, US/Imperial/metric birim ayrımı, hreflang koşulları ve iç link modeli yazıldı.
+- Core Web Vitals, erişilebilirlik, analytics/privacy ve yayın kontrol kapıları eklendi.
+- FoamByte benchmark dersleri Demleme'ye özgü içerik/kanıt yaklaşımıyla eşlendi; kopyalama yok.
+- **Sıradaki adım:** WP-09 — teknik içerik ve hesaplayıcı doğrulama backlog'u. Formül testleri tamamlanmadan calculator implementasyonu/yayını yok.
