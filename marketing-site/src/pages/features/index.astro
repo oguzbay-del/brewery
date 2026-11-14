@@ -1,0 +1,85 @@
+---
+import "../../styles/global.css";
+import { features } from "../../data/features";
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}features/`, import.meta.env.SITE).href;
+const description = "Explore the full Demleme product roadmap: recipe design, brewing calculations, brew day, fermentation, inventory, production, quality and more.";
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Product features — Demleme",
+  description,
+  url: canonicalUrl,
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+};
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>Product features & roadmap — Demleme</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Demleme" />
+    <meta property="og:title" content="Product features & roadmap — Demleme" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href={`${base}features/`} aria-current="page">Product</a>
+        <a href={`${base}homebrewers/`}>Homebrewers</a>
+        <a href={`${base}breweries/`}>Breweries</a>
+        <a href={`${base}#approach`}>Our approach</a>
+      </nav>
+      <a class="header-cta" href={`${base}#audience-paths`}>Explore Demleme <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
+    </header>
+    <main id="main-content">
+      <section class="feature-hero shell">
+        <p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT ROADMAP · IN DEVELOPMENT</p>
+        <h1>A complete brewing workspace, <em>from recipe to release.</em></h1>
+        <p class="feature-lead">Demleme is being designed as one connected product for homebrewers and professional breweries. Explore the planned capabilities by the work they support—not just a short list of headline features.</p>
+        <div class="feature-hero-meta"><span>14 product areas</span><span>Home + Business modes</span><span>Roadmap-led, not live functionality</span></div>
+      </section>
+      <section class="feature-directory section-pad">
+        <div class="shell">
+          <div class="section-heading feature-section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> EXPLORE THE PRODUCT</p>
+            <h2>Every part of the brewing workflow has <em>a place.</em></h2>
+            <p>Each area has its own page with planned workflows, detailed capabilities, intended audience and development stage.</p>
+          </div>
+          <div class="feature-card-grid">
+            {features.map((feature, index) => (
+              <a class="feature-card" href={`${base}features/${feature.slug}/`}>
+                <span class="feature-card-index">{String(index + 1).padStart(2, "0")}</span>
+                <span class="feature-card-eyebrow">{feature.eyebrow}</span>
+                <h2>{feature.title}</h2>
+                <p>{feature.summary}</p>
+                <span class="feature-card-link">Explore details <span aria-hidden="true">↗</span></span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section class="roadmap-note section-pad">
+        <div class="shell roadmap-note-inner">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> HOW TO READ THIS ROADMAP</p><h2>Designed with ambition. <em>Built in stages.</em></h2></div>
+          <div><p>These pages describe the approved product plan, not features available today. Homebrew MVP, Business core and later releases are distinct development stages. Items marked “Under consideration” are research ideas, not commitments.</p><p>Demleme and this website are both in development. No account, subscription, sign-in or production workflow is live yet.</p></div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+  </body>
+</html>
