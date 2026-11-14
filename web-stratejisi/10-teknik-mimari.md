@@ -1,6 +1,6 @@
 # Web teknik mimarisi — öneri
 
-**Durum:** Mimari öneri; kullanıcı onayı sonrası teknoloji kararı olarak kilitlenecek.  
+**Durum:** Kullanıcı tarafından onaylandı (14 Kasım 2026). Astro + TypeScript + SSG teknik kararı kabul edildi.  
 **Kapsam:** Yalnızca Demleme pazarlama / tanıtım / self-service edinim sitesi. Ürün web uygulaması bu kapsamda değildir.
 
 ## 1. Karar özeti
