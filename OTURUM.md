@@ -529,3 +529,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Statik validator'a duplicate HTML ID, her sayfada tek H1, tek main landmark, skip-link hedefi, nav landmark accessible name ve img alt attribute kontrolleri eklendi.
 - README içindeki hatalı literal \\n satır sonları gerçek Markdown satır sonlarına dönüştürüldü.
 - Bu kontroller temel statik regresyon yakalar; klavye, screen reader, kontrast, focus görünürlüğü ve responsive davranış için gerçek browser QA hâlâ zorunlu.
+
+
+## Homepage hero refinement — 15 Kasım 2026
+
+- Kullanıcının isteği doğrultusunda yalnız homepage Hero alanında tipografi, CTA hiyerarşisi ve dikey boşluklar iyileştirildi.
+- Başlığın “care about the details.” bölümü ayrı satırda daha güçlü ve bold vurgulanıyor; mobil font/line-height değerleri ayrıca ayarlandı.
+- Homebrewing birincil CTA büyütüldü; Professional Breweries bağlantısı çerçeveli ikincil CTA olarak güçlendirildi.
+- Mevcut renk paleti, illüstrasyon/SVG, sayfa içeriği ve diğer bölümlerin spacing değerleri değiştirilmedi.
+- CSS ayrı `home-hero-refinement.css` dosyasında izole edildi.
+- Branch: `design/homepage-hero-refinement`. CI ve gerçek responsive browser QA henüz tamamlanmadı; merge öncesi CI, Vercel/Pages preview ve QA durumu kontrol edilecek.
