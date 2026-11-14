@@ -21,6 +21,7 @@ Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini t
 7. [Self-service ticari akış](07-commercial-conversion.md)
 8. [SEO ve içerik](08-seo-content.md)
 9. [Lansman ve ölçüm](09-launch-measurement.md)
+10. [Teknik mimari ve framework değerlendirmesi](10-teknik-mimari.md)
 
 ## Uygulama sırası
 Discovery → sitemap → wireframe → görsel tasarım → içerik → geliştirme → QA → lansman. Özellik iddiaları ürünün mevcut kabiliyetleriyle doğrulanmadan yayınlanmaz.
