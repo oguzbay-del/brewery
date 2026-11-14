@@ -1,6 +1,13 @@
 import type { APIRoute } from "astro";
+import { features } from "../data/features";
 
-const routes = ["", "homebrewers/", "breweries/"];
+const routes = [
+  "",
+  "homebrewers/",
+  "breweries/",
+  "features/",
+  ...features.map((feature) => `features/${feature.slug}/`),
+];
 
 export const GET: APIRoute = ({ site }) => {
   const origin = new URL(import.meta.env.BASE_URL, site ?? new URL("https://oguzbay-del.github.io"));
