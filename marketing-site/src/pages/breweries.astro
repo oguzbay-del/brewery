@@ -36,19 +36,19 @@ const canonicalUrl = new URL(`${base}breweries/`, import.meta.env.SITE).href;
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR PROFESSIONAL BREWERIES</p>
         <h1>Consistency is built <em>batch by batch.</em></h1>
         <p>Explore a technical approach to recipe and batch information for professional brewing teams. Keep the focus on clear terminology, repeatable methods and informed review.</p>
-        <a class="button button-primary" href={`${base}#audience-paths`}>Explore Demleme <span aria-hidden="true">↗</span></a>
+        <a class="button button-primary" href="#brewery-focus">Explore the brewery focus <span aria-hidden="true">↗</span></a>
       </section>
       <!-- IMAGE SLOT: BREWERIES-HERO | Replace placeholder with licensed documentary-style photo of a professional brewery floor or team. -->
       <section class="shell audience-hero">
         <div class="image-placeholder" data-image-slot="breweries-hero"><strong>IMAGE PLACEHOLDER · BREWERIES-HERO</strong><span>Professional brewing team, stainless vessels or a working production floor</span></div>
       </section>
-      <section class="audience-page-section section-pad">
+      <section class="audience-page-section section-pad" id="brewery-focus">
         <div class="shell audience-page-grid">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> BUILT AROUND THE WORK</p><h2>Make production information easier to work with.</h2><p>Professional brewing depends on repeatable methods and shared understanding. Technical information should be clear to the people who use it, from planning through batch review.</p></div>
           <div><ul class="audience-page-list"><li>Recipe and batch information</li><li>Calculations, units and terminology</li><li>Repeatable methods and batch review</li></ul><p class="audience-page-note">Areas of focus for brewery teams — with product capabilities described only when verified.</p></div>
         </div>
       </section>
-      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={base}>Back to Demleme <span aria-hidden="true">↗</span></a></div></section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={base}>Explore both brewing paths <span aria-hidden="true">↗</span></a></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Technical brewing software for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
