@@ -263,7 +263,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 
 **Ürün kapsamı pazarlama sitesine aktarılıyor — 14 Kasım 2026**
 - Kanonik ürün kaynağı `plan/demleme-plani.md` okundu; iki modlu ürün yapısı, Ev MVP, İşletme çekirdeği ve sonraki sürümler ayrıştırıldı.
-- Marketing site için `src/data/features.ts` ortak özellik kataloğu eklendi. 14 ürün alanı ayrı detay sayfalarıyla yayınlanacak: recipe design, brewing calculations, water/mash/yeast, brew day, fermentation, equipment/calibration, planning, inventory/costing, production management, quality/lab, packaging/compliance, teams/notifications, connected devices, imports/exports/tools, platform/security/data, analytics/reports (16? katalog sayısını dosyadan doğrula; mevcut veri 14 ürün alanı olarak tanımlandı).
+- Marketing site için `src/data/features.ts` ortak özellik kataloğu eklendi. 16 ürün alanı ayrı detay sayfalarıyla yayınlanacak: recipe design, brewing calculations, water/mash/yeast, brew day, fermentation, equipment/calibration, planning, inventory/costing, production management, quality/lab, packaging/compliance, teams/notifications, connected devices, imports/exports/tools, platform/security/data, analytics/reports .
 - `/features/` ürün kataloğu; `/features/[slug]/` her alan için ayrı detay sayfası. Ana sayfa ve Homebrewers/Breweries landing page'leri katalogla ilişkilendirildi.
 - Sitemap, feature data kaynağından bütün detay sayfalarını otomatik ekleyecek şekilde güncellendi.
 - Her detay sayfası audience ve geliştirme aşaması etiketlerini taşır. Araştırma/fikir aşamasındaki analitik modeller committed feature gibi sunulmaz. ERP kapsam dışı alanları (satış, sipariş, dağıtım, keg tracking, CRM, muhasebe) ürün vaadine eklenmez.
