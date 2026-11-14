@@ -154,3 +154,17 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR #3 son kontrolünde Marketing site checks ve genel altyapı workflow success; PR hâlâ draft ve açık.
 - Preview canlı olduktan sonra masaüstü/mobil görsel QA yapılacak. Görsel QA tamamlanmadan PR merge edilmeyecek.
 - Kullanıcının açık talimatı: Auto-merge kullanma; CI ve preview QA tamamlanınca PR'ı manuel merge et.
+
+
+**Pages yayını ve PR tamamlandı — 14 Kasım 2026**
+- PR #3 `Marketing: responsive Demleme homepage prototype` kullanıcı talimatına uygun şekilde Auto-merge olmadan manuel squash merge edildi.
+- Merge commit: `b360545f931b8dcef17f7a97efed88f7b5f90e31`.
+- GitHub Pages deployment workflow, feature branch deploy ortamı hatasından kaçınmak için yalnızca `main` push'larında çalışacak şekilde düzenlendi. `actions/configure-pages@v5` eklendi.
+- Main üzerindeki Pages workflow run #43629069191: **success**. Configure Pages, Astro/TypeScript check, static build, artifact upload ve deploy adımları başarılı.
+- Marketing site checks main run #43629069151: **success**.
+- Yayın adresi: https://oguzbay-del.github.io/brewery/
+- PR #3 kapatıldı/merge edildi; GitHub Auto-merge kullanılmadı.
+- Değişiklik kapsamı: yalnız `.github/workflows/marketing-site*.yml`, `marketing-site/` ve oturum dokümantasyonu. `web/`, ürün API'leri ve Claude ürün geliştirme kuyruğu değiştirilmedi.
+- **Açık QA:** Yayın başarılı; ancak bu oturumdaki browser inspection aracı siteyi açamadığı için 1440px desktop / 390px mobile görsel QA tamamlandı diye raporlanmıyor. Beş geçici görsel slotu lisanslı fotoğraflar gelene kadar korunuyor.
+- Altyapı workflow'undaki bazı bağımsız smoke testleri son kontrol sırasında hâlâ çalışıyordu; marketing CI ve Pages deploy başarıyla tamamlandı.
+- **Sıradaki adım:** Canlı siteyi gerçek tarayıcıda desktop/mobile kontrol et; fotoğraf ve onaylı app/sign-in URL'leri gelene kadar placeholder ve CTA'ları değiştirme.
