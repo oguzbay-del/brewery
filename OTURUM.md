@@ -176,7 +176,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Ana sayfa, Homebrewers ve Breweries sayfalarına canonical URL, Open Graph ve Twitter metadata eklendi.
 - SVG favicon, üç sayfalı sitemap.xml ve sitemap referanslı robots.txt eklendi.
 - PR marketing site Astro/TypeScript check ve static build: **success**.
-- Main push sonrası yeni Pages deploy ve marketing CI çalışmaları tetiklendi; son kontrol anında queued durumundaydı.
+- Main push sonrası marketing site checks run #43629643512: **success**. Pages deployment run #43629643581: **success** (configure, Astro/TypeScript check, build, artifact upload ve deploy).
 - Canlı URL aynı: https://oguzbay-del.github.io/brewery/
 - Browser-based 1440px/390px görsel QA hâlâ tamamlanmadı; ağ erişimi bu çalışma ortamında alan adına erişemedi.
 - Değişiklik yalnız `marketing-site/` içeriğinde; ürün uygulaması, API ve ürün geliştirme kuyruğuna dokunulmadı.
