@@ -458,3 +458,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - GitHub Actions run #60 başarılı; GitHub Pages deploy run #20 başarılı. Geçici preview URL: https://oguzbay-del.github.io/brewery/
 - Vercel Preview halen build-rate-limit engelinde. GitHub Pages deployment başarıyla yayınlandı; ancak bu oturumdaki web tarayıcı aracı URL'yi açamadığı için gerçek render/visual QA yapılmış sayılmaz.
 - **Sıradaki adım:** PR #47'de FAQ + feature evidence context değişikliklerini CI ile doğrula; ardından feature-detail claim review, link/sitemap/metadata audit ve 320–1440 px browser QA için kalan listeyi sürdür.
+
+
+## WP-12 kalite otomasyonu — statik site doğrulayıcı (15 Kasım 2026)
+
+- `marketing-site/scripts/validate-site.mjs` eklendi.
+- Validator build çıktısında zorunlu route'ları, sitemap hedeflerini, robots sitemap referansını, sayfa title/description/canonical alanlarını, yerel href/src dosyalarını, fragment anchor'larını ve kaldırılması gereken eski riskli metinleri denetler.
+- `npm run validate:site` script'i eklendi.
+- Hem PR/push marketing-site workflow'una hem GitHub Pages build/deploy workflow'una build sonrasında validator adımı eklendi.
+- Amaç: Vercel olmadan da GitHub Actions üzerinde tekrarlanabilir statik QA yapmak; gerçek responsive/browser QA'nın yerini almaz.
