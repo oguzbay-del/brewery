@@ -3,7 +3,7 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task:** T2.9, T2.12 and T2.13 are active in this session. The first task of the next session is a one-time refactor:
+**Next task:** T2.9 is open. T2.12 and T2.13 are done. The first task of the next session is a one-time refactor:
 - Each endpoint module registers its route and its OpenAPI row in its own file. Then parallel tasks do not change `api/src/lib.rs`, `openapi.rs` or `main.rs`.
 - Split the implementation notes at the end of ADR-0007 into topic files.
 
@@ -25,7 +25,7 @@ After that, give the chain T2.19 → T2.21 → T2.22 to one agent. Work rules: r
 
 - T2.14: if an attacker deletes both the rows and the head of the chain, the check does not find it. An external anchor is necessary: write a periodic digest to the object store. If the canonical field list changes, add a format version.
 - T2.16: `EngineClient` is not connected to `AppState` yet (T2.20 and T2.21 connect it). The proto has no separate field for the intermediate values of "Nasıl hesaplandı".
-- T2.11: the web redirect code flow and CORS come in stage 3. The Apple refresh token comes in T2.31. Session events are not written to the audit log yet. Only the Administrator role has seed data (T2.13).
+- T2.11: the web redirect code flow and CORS come in stage 3. The Apple refresh token comes in T2.31. Session events are not written to the audit log yet.
 - T2.15: the consumer is not registered yet (add `consumer::run` to `worker/src/background.rs`). Each SSE connection opens its own JetStream consumer. If scale makes it necessary, use a shared subscription.
 - T2.18: the file limits (25 MiB; jpeg, png, heic, webp, pdf, text) are a product proposal, to be verified. No worker job deletes the object bytes of deleted or incomplete uploads. The object store for k8s and Terraform comes in T2.32. There is no Azure Blob implementation (the interface is ready).
 - There is no seed data for tax rates. Rows start as `unverified`. Load them after a check against the official source (T2.8).
@@ -72,7 +72,7 @@ After that, give the chain T2.19 → T2.21 → T2.22 to one agent. Work rules: r
 
 ## Stage 2 (active)
 
-T2.0 task list · T2.1 data model (ADR-0007) · T2.2 API rules (ADR-0008) · T2.3 identity and authorization (ADR-0009) · T2.4 `db` crate, sqlx 0.9, migration service and Job · T2.17 field, unit and text catalog (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 core migrations (23 tables, FORCE RLS, three roles, SECURITY DEFINER functions before login, RLS scan) · T2.6 Home MVP domain migrations (0007–0013, `secure_workspace_table`, partitioned measurements, immutable version, scope trigger) · T2.10 API core (context and `SET LOCAL`, RFC 9457, idempotency, ETag/If-Match, cursor, Redis rate limit fail-open, OTel, OpenAPI and oasdiff, `/v1/meta/fields`) · T2.7 Business and tax tables (0014–0015) · T2.14 audit chain (RFC 8785, `audit-verify`) · T2.16 engine client (`engine-client` crate, Redis and `calc_results` cache, error mapping) · T2.15 outbox → NATS relay, consumer framework, SSE · T2.18 object store (`storage` crate, SigV4, SeaweedFS, file endpoints) · T2.11 login (Apple/Google JWKS, email link, opaque session, cookie and CSRF, `fake-oidc`) · T2.8 tax chain (09: 459 parity cases) · F2.1 report. 421 tests pass.
+T2.0 task list · T2.1 data model (ADR-0007) · T2.2 API rules (ADR-0008) · T2.3 identity and authorization (ADR-0009) · T2.4 `db` crate, sqlx 0.9, migration service and Job · T2.17 field, unit and text catalog (`sozlesme/katalog`, `make gen`, `common::catalog`) · T2.5 core migrations (23 tables, FORCE RLS, three roles, SECURITY DEFINER functions before login, RLS scan) · T2.6 Home MVP domain migrations (0007–0013, `secure_workspace_table`, partitioned measurements, immutable version, scope trigger) · T2.10 API core (context and `SET LOCAL`, RFC 9457, idempotency, ETag/If-Match, cursor, Redis rate limit fail-open, OTel, OpenAPI and oasdiff, `/v1/meta/fields`) · T2.7 Business and tax tables (0014–0015) · T2.14 audit chain (RFC 8785, `audit-verify`) · T2.16 engine client (`engine-client` crate, Redis and `calc_results` cache, error mapping) · T2.15 outbox → NATS relay, consumer framework, SSE · T2.18 object store (`storage` crate, SigV4, SeaweedFS, file endpoints) · T2.11 login (Apple/Google JWKS, email link, opaque session, cookie and CSRF, `fake-oidc`) · T2.8 tax chain (09: 459 parity cases) · F2.1 report · T2.13 authorization (`api::authz`, standard roles from the matrix, scope, cost field removal, roles and members, last administrator protection, 7-day invitation, Home sharing, permission cache in Redis) · T2.12 passkey (webauthn-rs 0.6.2), step-up for protected actions, shared device (6-digit Argon2id PIN, lock for 15 minutes after 5 failures, migration 0090). 421 tests passed before T2.12 and T2.13.
 
 Order: decisions → data and F2.1 → API core → domain endpoints → support → cluster and end-to-end → F2.2 → gate. The data model also contains the Business tables. Business endpoints come in stage 6.
 
