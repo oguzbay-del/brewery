@@ -434,3 +434,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR #40'ın claim-safe feature katalog düzeltmeleri PR #43 ile main'e alındı.
 - WP-13 ve WP-14 dokümanları ile README indeks temizliği bu dokümantasyon PR'ında konsolide ediliyor.
 - **Sıradaki adım:** How It Works ve Technical Principles sayfalarını ekle; feature detail sayfalarının claim/evidence şablonunu tamamla. Vercel Preview ve gerçek responsive QA'yı release öncesi tamamla.
+
+
+## WP-12 uygulama devamı — How It Works ve Technical Principles (15 Kasım 2026)
+
+- Yeni sayfalar: `/how-it-works/` (Home ve Business için ayrı workflow) ve `/technical-principles/` (method, units, planned-vs-actual, measurement context, model validation ve product-stage ilkeleri).
+- İki sayfa için canonical/OG/Twitter metadata ve WebPage JSON-LD eklendi.
+- Desktop ve mobile navigasyon tüm ana pazarlama sayfalarında yeni sayfalara bağlandı.
+- Sitemap route listesi iki yeni sayfayı kapsayacak şekilde güncellendi.
+- Yeni sayfa CSS'i `marketing-site/src/styles/learning-pages.css` içinde izole edildi.
+- İçerik ürünün mevcutta yayında olduğu iddiasını yapmaz; ürün planı ve tasarım ilkesi olarak çerçevelenir.
+- İlk branch'teki GitHub Actions run #58 başarılı: Astro/TypeScript check ve static build. Main'e yeni branch olarak taşındıktan sonra CI yeniden çalıştırılacak.
+- Vercel Preview ve responsive browser QA ertelenmiş release gate olarak kalır.

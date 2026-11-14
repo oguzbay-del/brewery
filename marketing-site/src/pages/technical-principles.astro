@@ -1,0 +1,89 @@
+---
+import "../styles/global.css";
+import "../styles/learning-pages.css";
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}technical-principles/`, import.meta.env.SITE).href;
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Technical Principles — Demleme",
+  description: "The technical principles guiding Demleme's planned brewing calculations, measurements and production records.",
+  url: canonicalUrl,
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+};
+const principles = [
+  { number: "01", title: "Explain the method", body: "A technical result should be accompanied by its method, inputs, units, assumptions, example and limitations. A number without context is difficult to review or reproduce." },
+  { number: "02", title: "Make units explicit", body: "The product plan specifies consistent internal values and regional display. Every public explanation must distinguish US customary, Imperial and metric units where relevant, and show conversions clearly." },
+  { number: "03", title: "Separate target from actual", body: "A recipe target is not a measurement. Planned values and observed results should remain distinguishable so that a batch record reflects what happened rather than silently rewriting the recipe." },
+  { number: "04", title: "Keep measurement context", body: "Manual, paper and connected-device readings have different origins and limitations. The intended record model keeps source and context visible wherever those inputs are supported." },
+  { number: "05", title: "Validate before estimating", body: "Calculation methods require reference cases and real brewing data. Predictive fermentation and model-driven calibration ideas remain under consideration until their analytical models are approved and validated." },
+  { number: "06", title: "Keep people in control", body: "Future estimates may inform a brewer's review; they must not silently change recipes, equipment profiles or process settings. Any action requiring a process change remains subject to explicit user decision." },
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content="Explore the technical principles guiding Demleme's planned brewing calculations, units, measurements and production records." />
+    <title>Technical Principles — Demleme</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Demleme" />
+    <meta property="og:title" content="Technical Principles — Demleme" />
+    <meta property="og:description" content="Methods, units, measurements and validation—explained with their limits." />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Technical Principles — Demleme" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`}>How it works</a><a href={`${base}technical-principles/`} aria-current="page">Principles</a>
+      </nav>
+      <a class="header-cta" href={`${base}features/`}>Explore product <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`}>How it works</a><a href={`${base}technical-principles/`}>Technical principles</a></nav></details>
+    </header>
+    <main id="main-content">
+      <section class="shell explain-page-hero">
+        <p class="eyebrow"><span class="eyebrow-line"></span> METHODS · MEASUREMENTS · VALIDATION</p>
+        <h1>Technical clarity is <em>part of the craft.</em></h1>
+        <p>Demleme is being designed around brewing information that can be understood, checked and discussed. These principles describe the standard we intend to meet—not a claim that every planned capability is already implemented.</p>
+      </section>
+      <section class="principles-section section-pad">
+        <div class="shell">
+          <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> DESIGN PRINCIPLES</p><h2>Trust comes from <em>showing the work.</em></h2><p>Good technical software makes assumptions visible and leaves room for human judgement.</p></div>
+          <ol class="principle-grid">
+            {principles.map((item) => <li class="principle-card"><span>{item.number}</span><h2>{item.title}</h2><p>{item.body}</p></li>)}
+          </ol>
+        </div>
+      </section>
+      <section class="validation-section section-pad">
+        <div class="shell validation-layout">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> BEFORE A TECHNICAL CLAIM IS PUBLISHED</p><h2>Evidence before <em>confidence.</em></h2></div>
+          <div><p>Each public calculation or technical guide should be reviewed against a repeatable evidence checklist:</p><ul><li>Named method and authoritative reference.</li><li>Inputs, units, defaults and assumptions.</li><li>Worked example with expected result and tolerance.</li><li>Known limitations and conditions where the method should not be used.</li><li>Reviewer, validation date and version of the method or engine.</li></ul><p>Where evidence is incomplete, the page must say so or the claim must remain unpublished.</p></div>
+        </div>
+      </section>
+      <section class="stage-section section-pad">
+        <div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT MATURITY</p><h2>Clear stages. <em>No implied availability.</em></h2>
+          <div class="stage-grid">
+            <article><strong>Available</strong><p>Released, tested and accessible to users.</p></article>
+            <article><strong>In development</strong><p>Actively being built; not a general availability promise.</p></article>
+            <article><strong>Planned</strong><p>Included in an approved product plan; not yet available.</p></article>
+            <article><strong>Under consideration</strong><p>A research idea, not a product commitment.</p></article>
+            <article><strong>Requires validation</strong><p>Not publishable as a supported method until the evidence review is complete.</p></article>
+          </div>
+        </div>
+      </section>
+      <section class="explain-disclaimer section-pad"><div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See how the principles map to <em>real brewing work.</em></h2><p>Homebrewers and professional breweries have different workflows. Explore each path and the product areas currently described in the roadmap.</p><div class="principles-actions"><a class="button button-primary" href={`${base}how-it-works/`}>How it works <span aria-hidden="true">↗</span></a><a class="text-link" href={`${base}features/`}>Explore product areas <span aria-hidden="true">→</span></a></div></div></section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+  </body>
+</html>

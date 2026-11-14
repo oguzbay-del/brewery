@@ -1,0 +1,91 @@
+---
+import "../styles/global.css";
+import "../styles/audience-pages.css";
+import "../styles/learning-pages.css";
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}how-it-works/`, import.meta.env.SITE).href;
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "How Demleme is designed to work",
+  description: "Two distinct brewing workflows for homebrewers and professional breweries.",
+  url: canonicalUrl,
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+};
+const homeSteps = [
+  { title: "Recipe design", body: "Define the beer, style, ingredients, equipment and batch size.", href: "features/recipe-design/", label: "Recipe design" },
+  { title: "Ingredients and water", body: "Bring fermentables, hops, yeast, water and mash assumptions into one recipe context.", href: "features/water-mash-yeast/", label: "Water, mash & yeast" },
+  { title: "Calculations", body: "Understand estimates through explicit methods, inputs, units and assumptions. Methods remain subject to validation.", href: "features/brewing-calculations/", label: "Brewing calculations" },
+  { title: "Brew day", body: "Keep planned targets distinct from actual quantities, times, temperatures and measurements.", href: "features/brew-day/", label: "Brew-day records" },
+  { title: "Fermentation", body: "Bring batch observations and manual or connected readings into the batch history. Predictive models are not approved.", href: "features/fermentation-monitoring/", label: "Fermentation" },
+  { title: "Batch review", body: "Review actual results and tasting notes to inform the next recipe iteration.", href: "features/analytics-reports/", label: "Batch insights" },
+];
+const businessSteps = [
+  { title: "Recipe review", body: "Establish the recipe definition, target values and version context for the batch.", href: "features/recipe-design/", label: "Recipe management" },
+  { title: "Production planning", body: "Plan production tasks and equipment use within the intended Business workflow.", href: "features/planning-scheduling/", label: "Planning & scheduling" },
+  { title: "Batch records", body: "Connect the recipe reference with planned and actual measurements, quantities and operator notes.", href: "features/brew-day/", label: "Production records" },
+  { title: "Vessel observations", body: "Keep fermentation and vessel observations in context with the batch. Automated predictions remain gated.", href: "features/fermentation-monitoring/", label: "Fermentation & tracking" },
+  { title: "Quality and traceability", body: "Relate quality results and material lots to the production record, subject to product and regulatory validation.", href: "features/quality-laboratory/", label: "Quality & laboratory" },
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content="See how Demleme is designed to support two different brewing workflows: homebrewing and professional brewery production records." />
+    <title>How It Works — Demleme</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Demleme" />
+    <meta property="og:title" content="How It Works — Demleme" />
+    <meta property="og:description" content="Two distinct brewing workflows. One considered approach to technical brewing information." />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="How It Works — Demleme" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`} aria-current="page">How it works</a><a href={`${base}technical-principles/`}>Principles</a>
+      </nav>
+      <a class="header-cta" href={`${base}#audience-paths`}>Find your path <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`}>How it works</a><a href={`${base}technical-principles/`}>Technical principles</a></nav></details>
+    </header>
+    <main id="main-content">
+      <section class="shell explain-page-hero">
+        <p class="eyebrow"><span class="eyebrow-line"></span> TWO AUDIENCES · TWO WORKFLOWS · IN DEVELOPMENT</p>
+        <h1>Different brewing days. <em>Clearer information.</em></h1>
+        <p>Demleme is being designed around the real sequence of decisions, measurements and records behind brewing. Home and Business follow different workflows; neither is presented as a live product today.</p>
+      </section>
+      <section class="explain-audience-section section-pad" id="home-workflow">
+        <div class="shell">
+          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 01 · HOMEBREWERS</p><h2>From recipe idea to <em>batch learning.</em></h2></div><p>For the brewer who designs, makes, measures and reviews their own batches.</p></div>
+          <ol class="explain-flow">
+            {homeSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
+          </ol>
+          <a class="text-link explain-audience-link" href={`${base}homebrewers/`}>Explore the Homebrewers page <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+      <section class="explain-audience-section explain-business-section section-pad" id="business-workflow">
+        <div class="shell">
+          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 02 · PROFESSIONAL BREWERIES</p><h2>From recipe review to <em>production records.</em></h2></div><p>For teams that need shared context around recipes, batches, vessels and quality records.</p></div>
+          <ol class="explain-flow">
+            {businessSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
+          </ol>
+          <div class="scope-inline"><strong>Scope boundary</strong><p>Demleme is not a general ERP. Sales, customer orders, distribution/shipping, keg tracking, CRM and accounting are outside the product scope.</p></div>
+          <a class="text-link explain-audience-link" href={`${base}breweries/`}>Explore the Professional Breweries page <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+      <section class="explain-disclaimer section-pad"><div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT MATURITY</p><h2>A workflow describes <em>the design intent.</em></h2><p>All capabilities on this page are part of the product plan unless explicitly identified otherwise. They are not a statement of current availability. Development stage, technical validation and product approval determine what can be released.</p><a class="button button-primary" href={`${base}technical-principles/`}>Read the technical principles <span aria-hidden="true">↗</span></a></div></section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+  </body>
+</html>
