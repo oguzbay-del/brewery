@@ -168,3 +168,16 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - **Açık QA:** Yayın başarılı; ancak bu oturumdaki browser inspection aracı siteyi açamadığı için 1440px desktop / 390px mobile görsel QA tamamlandı diye raporlanmıyor. Beş geçici görsel slotu lisanslı fotoğraflar gelene kadar korunuyor.
 - Ayrı altyapı workflow'u merge sonrasında `cancelled` olarak sonuçlandı; marketing CI ve Pages deploy başarıyla tamamlandı. Altyapı dosyaları bu PR kapsamında değiştirilmedi.
 - **Sıradaki adım:** Canlı siteyi gerçek tarayıcıda desktop/mobile kontrol et; fotoğraf ve onaylı app/sign-in URL'leri gelene kadar placeholder ve CTA'ları değiştirme.
+
+
+**SEO ve taranabilirlik iyileştirmesi — 14 Kasım 2026**
+- PR #4 manuel squash merge edildi; Auto-merge kullanılmadı.
+- Merge commit: `63cce6f4c56ed2e5bbee44211b689a677c77e269`.
+- Ana sayfa, Homebrewers ve Breweries sayfalarına canonical URL, Open Graph ve Twitter metadata eklendi.
+- SVG favicon, üç sayfalı sitemap.xml ve sitemap referanslı robots.txt eklendi.
+- PR marketing site Astro/TypeScript check ve static build: **success**.
+- Main push sonrası yeni Pages deploy ve marketing CI çalışmaları tetiklendi; son kontrol anında queued durumundaydı.
+- Canlı URL aynı: https://oguzbay-del.github.io/brewery/
+- Browser-based 1440px/390px görsel QA hâlâ tamamlanmadı; ağ erişimi bu çalışma ortamında alan adına erişemedi.
+- Değişiklik yalnız `marketing-site/` içeriğinde; ürün uygulaması, API ve ürün geliştirme kuyruğuna dokunulmadı.
+- **Sıradaki adım:** yeni Pages deploy'unu doğrula; ardından gerçek cihaz/tarayıcı üzerinde responsive görsel QA. Fotoğraflar ve onaylı app/sign-in URL'leri bekleniyor.
