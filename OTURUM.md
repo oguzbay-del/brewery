@@ -212,3 +212,9 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Yayın: https://oguzbay-del.github.io/brewery/
 - Görsel tarayıcı QA (1440px / 390px) hâlâ açık; gerçek cihaz/browser erişimi gerekir.
 - Sıradaki adım: erişilebilir bir tarayıcı önizlemesinde responsive QA; sonrasında ürün API ve istemci akışları gerçekten yayınlandıkça pazarlama iddialarını kademeli doğrulamak.
+
+**Erişilebilir gezinme iyileştirmesi — 14 Kasım 2026**
+- Üç sayfaya klavye kullanıcıları için görünür olduğunda açılan “Skip to main content” bağlantısı eklendi.
+- Tüm ana içerik alanları `main-content` hedefi aldı; sayfa içi hedeflerde kaydırma boşluğu tanımlandı.
+- Mobil menü özet düğmesinin erişilebilir adı “Toggle navigation menu” olarak düzeltildi.
+- Mevcut görünüm korunarak yalnız gezinme/erişilebilirlik katmanı değiştirildi. Gerçek ekran okuyucu ve cihaz testi henüz yapılmadı.

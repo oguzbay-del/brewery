@@ -25,13 +25,14 @@ const canonicalUrl = new URL(`${base}homebrewers/`, import.meta.env.SITE).href;
     <meta name="twitter:description" content="Brewing software in development for homebrewers who care about the details." />
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
       <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
       <a class="header-cta" href={`${base}#audience-paths`}>All brewing paths <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
+      <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
     </header>
-    <main>
+    <main id="main-content">
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR HOME BREWERS · IN DEVELOPMENT</p>
         <h1>Make every brew a <em>learning experience.</em></h1>
