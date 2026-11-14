@@ -1,0 +1,242 @@
+export type FeatureSection = {
+  heading: string;
+  intro: string;
+  items: string[];
+};
+
+export type FeaturePage = {
+  slug: string;
+  title: string;
+  eyebrow: string;
+  summary: string;
+  audiences: string[];
+  stages: string[];
+  sections: FeatureSection[];
+  note?: string;
+};
+
+export const features: FeaturePage[] = [
+  {
+    slug: "recipe-design",
+    title: "Recipe design & management",
+    eyebrow: "RECIPES",
+    summary: "From a guided first recipe to a deeply configurable professional formulation, Demleme is planned around recipes that stay understandable from version to version.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core"],
+    sections: [
+      { heading: "Start the way that suits you", intro: "Four entry points lead into one consistent recipe workflow.", items: ["Start from a blank recipe with style- and target-led ingredient suggestions", "Use style-based starter templates and adapt them to your equipment and batch size", "Copy an existing recipe or create a deliberate new version", "Import BeerXML, BeerJSON, BeerSmith .bsmx, Brewfather and Brewer's Friend exports with ingredient, equipment, style and unit matching"] },
+      { heading: "A recipe editor built for iteration", intro: "The editor is designed to make changes and their consequences visible.", items: ["Edit fermentables, hops, yeast, miscellaneous ingredients, mash, boil and fermentation details", "Adjust grain percentages and target OG, IBU or colour while keeping selected values in balance", "Convert all-grain recipes to extract and back; substitute ingredients and round quantities", "Scale by batch volume, brewhouse efficiency or equipment while recalculating losses", "Review recipe checks, warnings and one-step correction suggestions"] },
+      { heading: "Styles, versions and collaboration", intro: "Keep the reference and history behind a recipe clear.", items: ["BJCP 2021, BJCP mead/cider and Brewers Association style guides, with custom guide support", "Compare style ranges and map a recipe between guides", "Compare two recipes or versions side by side", "Keep immutable published versions; business recipes move through draft, review and approval", "Lock a recipe against accidental edits and preserve the version used by each batch"] }
+    ]
+  },
+  {
+    slug: "brewing-calculations",
+    title: "Brewing calculations",
+    eyebrow: "THE CALCULATION ENGINE",
+    summary: "A shared, server-side calculation engine is planned for the web and Apple apps, with clear inputs, consistent units and an explanation behind every result.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core", "Business second release"],
+    sections: [
+      { heading: "Core recipe calculations", intro: "The product plan specifies a broad calculation set for formulation and review.", items: ["Original and final gravity (OG / FG), apparent attenuation and alcohol by volume (ABV)", "Bitterness (IBU), including Tinseth as the default, late additions, whirlpool and hop-stand behaviour", "Colour estimates with selectable calculation approach", "Mash-temperature and yeast-tolerance adjustments to fermentation estimates", "Batch, kettle, trub and volume-chain calculations"] },
+      { heading: "Advanced brewing models", intro: "The engine specification includes specialist methods and configurable assumptions.", items: ["Hop ageing and alpha-acid adjustment; altitude options", "Yeast viability, starter growth and pitching calculations", "Carbonation and priming for bottles and kegs, including keg headspace and pressure limits", "Mead and wine fermentation calculations, with corrected YAN handling", "Extract, partial-boil, dilution and no-chill calculation tools"] },
+      { heading: "Explainable results", intro: "Technical transparency is a product principle, not a decorative claim.", items: ["A “How it was calculated” view for key results", "Calculation engine version stored with each saved result", "Consistent SI-based internal values with regional display and unit conversion", "Reference test vectors and golden-recipe validation planned for every engine release"] }
+    ],
+    note: "Calculation methods, defaults and regulatory formulas remain subject to validation against reference recipes and real brew data before launch."
+  },
+  {
+    slug: "water-mash-yeast",
+    title: "Water, mash & yeast",
+    eyebrow: "PROCESS DESIGN",
+    summary: "Plan water chemistry, mash steps and yeast preparation as connected parts of the recipe rather than isolated calculators.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP"],
+    sections: [
+      { heading: "Water profiles", intro: "Build a water profile from source water and a target style or recipe.", items: ["Save source-water and target-water profiles", "Enter a laboratory water report and manage ion concentrations", "Calculate salt additions and acid adjustments", "Review ion balance, hardness and regional hardness units", "Compare water profiles and retain the report used for a recipe"] },
+      { heading: "Mash planning", intro: "The mash plan connects ingredient choices, temperatures and volumes.", items: ["Mash schedule with rests, temperatures, durations and infusion steps", "Mash pH estimation using the selected model", "Decoction calculator for mash volume and temperature steps", "Mash water, sparge water and volume calculations", "BIAB-specific equipment and absorption handling"] },
+      { heading: "Yeast preparation", intro: "Keep yeast requirements and fermentation expectations visible.", items: ["Yeast selection, age and viability estimates", "Starter planning, including two-stage starters", "Dry yeast pitching guidance by hectolitre in business mode", "Fermentation profiles and target conditions", "Harvest and generation tracking in the business core; advanced home mode can enable yeast management"] }
+    ]
+  },
+  {
+    slug: "brew-day",
+    title: "Brew day & production records",
+    eyebrow: "BREW DAY",
+    summary: "A brew-day workspace is planned to keep the recipe plan separate from what actually happened, while remaining usable beside wet equipment and paper records.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core"],
+    sections: [
+      { heading: "A guided brew-day timeline", intro: "Move through a clear sequence on phone, tablet or web.", items: ["Full-screen step-by-step iPhone workflow and a detailed iPad/web step list", "Optional timers, start/finish controls and editable actual times", "Next-step guidance, target values and measurement entry", "Apple Live Activity, Dynamic Island and time-sensitive notifications planned for supported devices", "Multiple batches can run at the same time"] },
+      { heading: "Plan versus actual", intro: "The batch records reality without silently changing the source recipe.", items: ["Record actual quantities, time, temperature and volume", "Add, skip, reorder or correct steps; record ingredient substitutions and additions", "Mark deviations and recalculate actual OG, IBU and ABV when online", "Compare measured values with targets and receive contextual interpretation", "Optionally turn the actual outcome into a new recipe draft"] },
+      { heading: "Paper-friendly workflow", intro: "Digital and paper workflows are designed to work together.", items: ["Printable A4 or US Letter brew sheets with planned and actual fields", "QR code connects a printed sheet to its batch", "Enter paper measurements in the same numbered sequence", "Scan brew sheets with Apple document scanning and review extracted values side by side", "Business workspaces can require scanned records and apply retention rules"] }
+    ]
+  },
+  {
+    slug: "fermentation-monitoring",
+    title: "Fermentation & batch tracking",
+    eyebrow: "FERMENTATION",
+    summary: "Follow each batch from brew day through fermentation, conditioning and packaging, using device readings or manual measurements.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core"],
+    sections: [
+      { heading: "A complete batch timeline", intro: "Each brew has its own record and stage history.", items: ["Track planned, brewing, fermenting, conditioning, ready-to-package, packaged and closed stages", "Run multiple batches and fermenters concurrently", "Keep measurements, notes, photos and events on the batch timeline", "Compare plan and actual values in the batch summary", "Record tasting notes and use them to inform future recipe work"] },
+      { heading: "Measurements and insights", intro: "Bring readings together in one view.", items: ["Gravity, temperature and pH readings from devices or manual entry", "Charts with measurement-source labels for device, manual and paper readings", "Fermentation progress highlights, estimated FG and finish date with confidence range", "Dry-hop, cold-crash and packaging timing suggestions", "Manual-reading reminders when no sensor is connected"] },
+      { heading: "Rules and alerts", intro: "Alerts are planned to respond to the process, not create unnecessary noise.", items: ["Rules such as gravity stable for several days or temperature outside a target", "Expected-curve deviation and stuck-fermentation warnings", "Three priority levels, quiet hours, grouped alerts and daily summaries", "One notification inbox with acknowledge, snooze, ignore and history", "Business shift routing and escalation to the next responsible person"] }
+    ],
+    note: "Predictions are planned as guidance with confidence ranges; the product plan explicitly says models should not change recipes or process settings automatically."
+  },
+  {
+    slug: "equipment-calibration",
+    title: "Equipment & calibration",
+    eyebrow: "EQUIPMENT",
+    summary: "Equipment profiles are intended to reflect the real behaviour of a home setup or professional brewhouse, and improve through measured batch outcomes.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core"],
+    sections: [
+      { heading: "Equipment profiles", intro: "Set up the equipment that shapes every calculation.", items: ["Guided equipment setup for a first profile", "Mash tun, kettle, fermenter and packaging vessel details", "Volume losses, grain absorption, evaporation, dead space and cooling shrinkage", "Multiple brewhouses and vessel profiles for business workspaces", "Equipment-specific recipe scaling and efficiency assumptions"] },
+      { heading: "Calibration from real batches", intro: "Compare predicted and measured values across completed batches.", items: ["Track mash efficiency, evaporation, grain absorption, kettle dead space, trub loss and cooling shrinkage separately", "Identify consistent differences across three batches", "Show old and proposed equipment values with their impact on OG and volume", "Exclude unusual batches from calibration learning", "Never change an equipment profile without user approval"] },
+      { heading: "Vessel readiness", intro: "Professional vessel details connect equipment planning to production.", items: ["Tank capacity, pressure limit and current occupancy", "Cleaning status and last cleaning record", "Vessel availability in the production calendar", "Calibration suggestions based on measured brewhouse, conversion and lautering efficiency"] }
+    ]
+  },
+  {
+    slug: "planning-scheduling",
+    title: "Planning & scheduling",
+    eyebrow: "PLAN THE WORK",
+    summary: "Plan backwards from a target packaging date, understand the time required for each step and see how batches fit around equipment availability.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core", "Business second release"],
+    sections: [
+      { heading: "Calendar and backward planning", intro: "Work from the date you want the beer ready.", items: ["Plan brew day, fermentation steps, dry hop, cooling and packaging dates", "Schedule reminders from fermentation profiles", "Estimate heating and cooling time from power, volume and cooling equipment", "Use past equipment performance to improve timing estimates", "Business tank calendar with capacity and occupancy conflict warnings"] },
+      { heading: "Parallel batches", intro: "Keep concurrent work visible.", items: ["See batches by stage and upcoming task", "Single “Today” list of tasks across all active batches", "Weekly tank calendar and daily tank-round printout", "Identify planned tank conflicts before assigning a batch", "Business second-release tank-emptying suggestions and capacity optimisation"] },
+      { heading: "Flexible views", intro: "The business production board is designed to adapt to the team.", items: ["Editable dashboard cards and ordering", "Role-specific default views", "Saved views such as active fermentations only", "Operator-focused Today view and wall-mounted display mode"] }
+    ]
+  },
+  {
+    slug: "inventory-costing",
+    title: "Inventory, ingredients & costing",
+    eyebrow: "MATERIALS AND COST",
+    summary: "Manage ingredients from a simple home stock list to professional lot-level traceability, with recipe and batch costs grounded in actual material values.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core", "Business second release"],
+    sections: [
+      { heading: "Ingredient library", intro: "A shared ingredient catalogue supports recipe design and purchasing.", items: ["Malt, fermentables, hops, yeast, water and miscellaneous ingredients", "Detailed ingredient properties and custom ingredients", "Ingredient substitutions and stock-aware recipe planning", "Ingredient-specific units and regional display", "Custom malt analysis and certificate of analysis (COA) in business mode"] },
+      { heading: "Stock and receiving", intro: "Stock handling scales with the workspace mode.", items: ["Home stock quantities, minimum levels and shopping list", "Business stock lots, supplier details, reservations and FIFO valuation", "Goods receiving, barcode support and stock counts", "Movement ledger for receipts, usage, transfers and adjustments", "Expiry-risk analysis and lot availability for planned production"] },
+      { heading: "Recipe and batch costs", intro: "Understand material cost at the level that matters.", items: ["Optional recipe cost for homebrewers", "Business batch and per-litre cost using FIFO lot prices", "Bottle and serving cost based on package size", "Cost variance analysis by price, quantity and process loss in a later release", "Forecast ingredient demand and suggested reorder timing in the business core"] }
+    ]
+  },
+  {
+    slug: "production-management",
+    title: "Brewery production management",
+    eyebrow: "BUSINESS MODE",
+    summary: "A production workspace for small breweries, focused on recipes, batches, tanks, people and records—not a general-purpose ERP.",
+    audiences: ["Breweries"],
+    stages: ["Business core", "Business second release"],
+    sections: [
+      { heading: "Production board and operator view", intro: "Give each role a useful view of what needs attention today.", items: ["Production board organised by batch stage and tank", "Today task list for operators", "Role-based dashboard and saved views", "Operator display for production-floor iPads", "Daily tank rounds and printable weekly tank calendar"] },
+      { heading: "Tank and batch movements", intro: "Model the physical journey of beer through the brewery.", items: ["Tank detail with occupancy, status, pressure limit and cleaning status", "Transfer between vessels with volume and loss records", "Split one batch across multiple tanks", "Merge batches with calculated blend properties", "Capacity conflict checks and tank scheduling"] },
+      { heading: "Production records", intro: "Keep the planned process and actual work connected.", items: ["Operator identity, step completion and actual measurements", "Deviation records and corrective decisions", "Batch traceability from ingredients through packaging", "Multiple operators and simultaneous active batches", "Audit trail for changes to closed production records"] }
+    ],
+    note: "Demleme is not planned as an ERP. Sales, orders, distribution, keg tracking, CRM and accounting are outside the product scope."
+  },
+  {
+    slug: "quality-laboratory",
+    title: "Quality, laboratory & release",
+    eyebrow: "QUALITY MANAGEMENT",
+    summary: "Professional quality workflows are planned around product specifications, lab results, tasting and a recorded release decision before packaging.",
+    audiences: ["Breweries"],
+    stages: ["Business core", "Business second release"],
+    sections: [
+      { heading: "Product specifications", intro: "Define measurable target ranges for each beer.", items: ["Recipe-linked specifications for ABV, OG, FG, IBU, colour and pH", "Dissolved oxygen, turbidity, diacetyl and microbiology parameters", "Out-of-range warnings and deviation records", "Quality review linked to the batch and its recipe version"] },
+      { heading: "Laboratory and sensory records", intro: "Keep analytical and tasting results with the batch.", items: ["Laboratory results for pH, dissolved oxygen, CO₂, ABV and microbiology", "Tasting notes, sensory score and descriptive attributes", "Correction records rather than silent edits to historical results", "Sensory panel and triangle-test workflows in a later release"] },
+      { heading: "Release and process control", intro: "Make the decision to package explicit and traceable.", items: ["Quality hold, rejection and release decisions with reasons", "Release approval before packaging in business workflows", "Statistical process control charts for OG, FG, pH, colour and dissolved oxygen", "HACCP checkpoints and dual sign-off in a later release", "Trend and consistency analysis across batches"] }
+    ]
+  },
+  {
+    slug: "packaging-compliance",
+    title: "Packaging, CIP & compliance",
+    eyebrow: "PACKAGING AND RECORDS",
+    summary: "Packaging records, vessel cleaning and jurisdiction-aware reporting are planned for professional production, with clear boundaries around what the system does not do.",
+    audiences: ["Breweries"],
+    stages: ["Business core", "Business second release"],
+    sections: [
+      { heading: "Packaging runs and containers", intro: "Record what was packaged, in which format and how much.", items: ["Bottle, can, keg and UK cask container types with configurable sizes", "Packaging quantities, litres, losses, packaging efficiency and lot codes", "Multiple container types within one batch", "Bottle priming, keg pressure carbonation, canning from BBT and cask conditioning guidance", "Package material and empty weight for packaging reporting"] },
+      { heading: "Cleaning and cellar process", intro: "Connect cleaning records to vessel readiness.", items: ["CIP chemical, concentration, temperature, duration and verification", "Tank cleaning status and last-cleaned record", "Warnings when a tank without a valid cleaning record is assigned", "Spunding and forced carbonation planning in the business second release", "Cask conditioning and finings calculations for the UK market"] },
+      { heading: "Labels and regulatory reports", intro: "Support production-side reporting without pretending to replace accounting or sales systems.", items: ["Country-specific tax calculation methods and reporting templates", "US TTB, UK HMRC, Australia ATO, Germany Zoll and Türkiye-specific research scope", "ABV or Plato-based tax calculations according to jurisdiction", "Label information such as ABV, lot code, allergens and nutrition where requirements are confirmed", "Deposit-return and packaging/EPR reports in a later release"] }
+    ],
+    note: "Tax rates, filing obligations, label requirements and Turkish regulatory details require official-source and specialist validation before release. Sales and shipment quantities may need manual entry or file import because sales and distribution are outside scope."
+  },
+  {
+    slug: "team-notifications",
+    title: "Teams, roles & notifications",
+    eyebrow: "PEOPLE AND WORKFLOWS",
+    summary: "One workspace supports a solo brewer and a multi-role production team, with notifications routed to the right person and actions recorded.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core"],
+    sections: [
+      { heading: "Home and business workspaces", intro: "The workspace chooses Home or Business mode without splitting the underlying recipe and batch history.", items: ["Select a mode during onboarding and change it later in workspace settings", "Home mode keeps advanced business fields out of the way", "Optional invitations to collaborate on a recipe or batch in Home mode", "Switching modes preserves recipes and history; hidden business records are not deleted"] },
+      { heading: "Team, roles and shared devices", intro: "Business workspaces are designed for role-based production work.", items: ["Invite users with time-limited invitations and assign one or more roles", "Owner, brewmaster, operator, quality, warehouse and read-only auditor roles", "Custom roles, copied roles, permission groups and optional vessel/area scope", "Person-by-permission overview and role-specific opening screens", "Shared production iPad with personal PIN, fast user switching and automatic lock"] },
+      { heading: "Notifications and approvals", intro: "A single notification record stays consistent across devices.", items: ["In-app inbox, push notifications and optional daily email summary", "Three priority levels, quiet hours, grouped alerts and notification history", "Acknowledge, snooze, ignore or resolve notifications with an event record", "Business shift routing, escalation and shift handover", "Recipe approval, quality release and other role-based approval queues"] }
+    ]
+  },
+  {
+    slug: "connected-devices",
+    title: "Connected devices & integrations",
+    eyebrow: "CONNECTED BREWING",
+    summary: "The roadmap starts with read-only fermentation device data and grows towards professional sensor and industrial gateway support.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business second release", "Later"],
+    sections: [
+      { heading: "Homebrewing devices", intro: "Connect common fermentation monitors through dedicated adapters.", items: ["Tilt hydrometers, iSpindel and RAPT devices", "Webhook data endpoint for TiltBridge, Pitch and compatible bridges", "Device-specific keys that can be renewed", "Device-to-batch pairing and calibration records", "Detect missing, frozen or implausible sensor readings"] },
+      { heading: "Professional sensors", intro: "The business roadmap adds tank-level monitoring.", items: ["Gravity, pH, dissolved oxygen and pressure readings", "Tank assignment and device health status", "API or CSV ingestion for professional sensors", "Industrial gateway read support for Modbus TCP, OPC UA and MQTT in a later release", "Sending control commands to equipment is explicitly later and requires approval"] },
+      { heading: "Data use and reliability", intro: "Device data should remain useful when a sensor connection is interrupted.", items: ["Buffer sensor readings at the device or gateway and forward when connected", "Show source labels and calibration context alongside measurements", "Keep device adapters independent of any single manufacturer", "Use readings to support fermentation trends, alerts and calibration suggestions"] }
+    ]
+  },
+  {
+    slug: "imports-exports-tools",
+    title: "Import, export & brewing tools",
+    eyebrow: "PORTABILITY AND UTILITIES",
+    summary: "Bring existing recipe work into Demleme, move your data out when needed and use focused brewing tools alongside recipe and batch workflows.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Homebrew second release"],
+    sections: [
+      { heading: "Recipe portability", intro: "The plan includes import paths for established brewing formats.", items: ["BeerXML and BeerJSON import/export", "BeerSmith .bsmx import", "Brewfather and Brewer's Friend recipe exports", "Ingredient, equipment, style and unit matching during import", "Show source-versus-Demleme calculation differences before saving"] },
+      { heading: "Focused brewing tools", intro: "Small utilities are available from the relevant recipe or batch context.", items: ["Refractometer correction and gravity tools", "Carbonation and priming calculators for bottles, kegs and casks", "Dilution and volume conversion", "Extract brewing tools for partial boils, top-up water and LME/DME/honey conversions", "Decoction and parti-gyle tools; parti-gyle is planned for a later home release"] },
+      { heading: "Reports and custom records", intro: "Make useful records portable and printable.", items: ["Brew sheets, tank rounds, fermentation and packaging forms", "Custom brew-sheet fields and layouts in a later home release", "Recipe, batch, equipment, water profile, ingredient, device and support data export", "CSV and JSON exports plus scanned documents and photos in downloadable archives", "Competition-form output in a later home release"] }
+    ]
+  },
+  {
+    slug: "platform-security-data",
+    title: "Platform, security & data ownership",
+    eyebrow: "PLATFORM",
+    summary: "The product is planned as one connected system across Apple devices and desktop web, with a shared server-side engine and explicit data ownership controls.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core"],
+    sections: [
+      { heading: "Where Demleme is designed to run", intro: "The product plan defines different roles for each client.", items: ["iPad: full-featured native SwiftUI app", "iPhone: brew day, fermentation, stock and shopping workflows, plus recipe viewing and simple editing", "Web: full-featured React and TypeScript experience for Mac and PC browsers", "Apple Watch is not in the first release; optional support may be considered later", "Android and separate Mac/Windows desktop apps are not in scope"] },
+      { heading: "One engine and one source of truth", intro: "The same calculation and business rules are intended to serve every client.", items: ["Rust calculation engine runs server-side; calculation code is not shipped to clients", "Shared API and data model across web and Apple applications", "Online-first operation with a limited downloaded brew-day package for offline timers and measurement entry", "No general offline synchronisation; queued brew-day measurements upload when connectivity returns", "Versioned calculation results and immutable recipe/batch references"] },
+      { heading: "Security and data ownership", intro: "Security and portability are planned into the platform.", items: ["Sign in with Apple or Google, with one-time email links as a fallback; no password-based signup", "Passkeys for business administrators, session management and remote sign-out", "Workspace separation, server-side permissions and append-only audit records", "Encrypted storage, protected file access and time-limited support access with customer consent", "Export your recipes, batches, measurements, stock, equipment and files; request account deletion"] },
+      { heading: "Support and service", intro: "Customer support remains part of the product experience.", items: ["Searchable help and support request inbox", "Customer-visible request history and replies", "Optional, time-limited support access with a reason and audit history", "Internal support workspace separated from the customer application", "System status and support diagnostics"] }
+    ]
+  },
+  {
+    slug: "analytics-reports",
+    title: "Reports, insights & sustainability",
+    eyebrow: "REPORTING AND INSIGHTS",
+    summary: "The roadmap includes operational reporting and carefully bounded analytical tools, with estimates presented as guidance rather than automatic decisions.",
+    audiences: ["Homebrewers", "Breweries"],
+    stages: ["Homebrew MVP", "Business core", "Business second release", "Under consideration"],
+    sections: [
+      { heading: "Batch and recipe learning", intro: "Use actual results to understand repeatability.", items: ["Plan-versus-actual batch summary and tasting notes", "Compare batches made from the same recipe", "Fermentation finish estimates and equipment calibration suggestions", "Homebrew second-release trends for gravity, efficiency and tasting scores", "Explainable estimates with confidence ranges when enough data exists"] },
+      { heading: "Brewery reporting", intro: "Business reporting focuses on production and material performance.", items: ["Brewhouse, conversion and lautering efficiency", "Volume loss from brew day through packaging", "FIFO ingredient cost, cost per litre and cost variance", "Tank utilisation, batch throughput and production dashboard metrics", "Lot traceability and recall report from ingredient lot to packaging run"] },
+      { heading: "Advanced operational insights", intro: "Later business reporting expands into quality and resource efficiency.", items: ["Statistical process control (SPC) for production and quality measures", "Sustainability indicators for water, energy and CO₂ per hectolitre", "Ingredient demand and reorder timing forecasts", "Expiry risk and tank capacity bottleneck analysis", "Sensory trend analysis and tasting panel results in later releases"] }
+    ],
+    note: "Some advanced analytical models in the product plan are explicitly ideas requiring a separate decision. They are not presented as committed functionality."
+  }
+];
+
+export const stageDescriptions: Record<string, string> = {
+  "Homebrew MVP": "Planned for the Homebrew MVP; availability depends on development, validation and beta completion.",
+  "Homebrew second release": "Planned for a later Home mode release, after the initial MVP.",
+  "Business core": "Planned for the professional Business mode core.",
+  "Business second release": "Planned for a later Business mode release.",
+  "Later": "Listed as a later possibility in the product plan; not part of the initial release.",
+  "Under consideration": "A research idea only. It is not an approved product commitment."
+};
