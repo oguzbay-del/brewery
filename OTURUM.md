@@ -206,7 +206,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 
 **Ürün olgunluğu mesajı yayında — 14 Kasım 2026**
 - PR #6 manuel squash merge edildi; Auto-merge kullanılmadı. Merge commit: `87c36c944dae088da6b18a52f27e375d3ed13bfd`.
-- PR CI #43631065843: **success**. Son düzeltmeler sonrası PR CI #43631065843? (son head: `cb2c0e2c9a25107dbf53136b1c807e5cddec2f6a`) doğrulaması başarılı.
+- PR CI #43631065843: **success** (son head: `cb2c0e2c9a25107dbf53136b1c807e5cddec2f6a`).
 - Main marketing checks #43631137613: **success**. Pages deploy #43631137672: **success**.
 - Ana sayfa ve iki audience sayfası artık ürünün geliştirme aşamasında olduğunu açıkça belirtiyor. Audience maddeleri kullanılabilir özellik iddiası değil, tasarım önceliği olarak etiketli.
 - Yayın: https://oguzbay-del.github.io/brewery/
