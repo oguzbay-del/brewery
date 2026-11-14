@@ -134,3 +134,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Kaynak kontrolü: homepage anchor hedefleri geçerli; /homebrewers ve /breweries route bağlantıları doğru.
 - Branch diff: 26 commit ahead, 0 behind; PR #3 açık, draft ve mergeable.
 - Görsel QA için canlı preview/browser henüz yok. Bu nedenle 1440px / 390px ekranlarda görsel doğrulama yapılmış gibi raporlanmamalı.
+
+
+
+**GitHub Pages preview hazırlığı — 14 Kasım 2026**
+- Kullanıcı GitHub Pages ile devam edilmesini onayladı. Repository metadata kontrolünde `has_pages: false`; Pages henüz etkin değil.
+- Astro config `site: https://oguzbay-del.github.io` ve `base: /brewery` olarak ayarlandı.
+- Ana sayfa ve iki audience sayfasındaki iç linkler Astro `BASE_URL` üzerinden repo alt dizinine uyumlu hale getirildi.
+- `.github/workflows/marketing-site-pages.yml` eklendi: branch push / workflow_dispatch → Astro check + build → Pages artifact → deploy. Mevcut PR check workflow'u ayrı bırakıldı.
+- Hedef preview URL: `https://oguzbay-del.github.io/brewery/` (Pages etkinleştirilip deployment başarılı olunca erişilebilir).
+- **Açık kullanıcı adımı:** Repository Settings → Pages → Build and deployment → Source = GitHub Actions. Pages etkin değilken deploy workflow'u başarılı olamaz.
+- Bu aşamada main merge edilmedi; `web/`, ürün API'leri ve Claude ürün geliştirme kuyruğu değiştirilmedi.
+- **Sıradaki adım:** workflow'u doğrula; kullanıcı Pages kaynağını etkinleştirdikten sonra deploy'u çalıştırıp URL ve görsel QA'yı kontrol et.
