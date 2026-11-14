@@ -181,3 +181,9 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Browser-based 1440px/390px görsel QA hâlâ tamamlanmadı; ağ erişimi bu çalışma ortamında alan adına erişemedi.
 - Değişiklik yalnız `marketing-site/` içeriğinde; ürün uygulaması, API ve ürün geliştirme kuyruğuna dokunulmadı.
 - **Sıradaki adım:** yeni Pages deploy'unu doğrula; ardından gerçek cihaz/tarayıcı üzerinde responsive görsel QA. Fotoğraflar ve onaylı app/sign-in URL'leri bekleniyor.
+
+**Audience sayfaları — CTA ve gezinme iyileştirmesi (14 Kasım 2026)**
+- Homebrewers ve Breweries sayfalarının birincil CTA'ları artık ilgili sayfadaki içerik odağına gider; kullanıcıyı ana sayfaya geri döndürmez.
+- Her iki sayfanın kapanış CTA'sı “Explore both brewing paths” olarak netleştirildi; ana sayfaya dönüş hedefi korundu.
+- Değişiklikler yalnız pazarlama sayfalarında. Ürün özelliği, fiyat, kayıt veya app URL'si uydurulmadı.
+- Branch: `marketing/audience-journey-polish`. CI ve manuel PR merge bekleniyor; görsel QA ayrı açık konu.
