@@ -338,3 +338,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - WCAG 2.2 AA hedefi, klavye/touch, reduced motion ve responsive QA kabul kriterleri eklendi.
 - Yalnız strateji dokümanları değiştirildi; `marketing-site/`, `web/`, ürün API'leri, iOS ve Claude ürün geliştirme kuyruğuna dokunulmadı.
 - **Sıradaki adım:** temiz PR için CI/Vercel kontrolü; sonrasında WP-07 sayfa bazlı wireframe refinement. Production uygulama için ayrıca açık kullanıcı onayı gerekir.
+
+
+## WP-07 — Sayfa bazlı wireframe ve içerik-layout eşlemesi (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/18-page-level-wireframes-content-layout.md`.
+- Homepage, Homebrewers, Professional Breweries, Features, How It Works, Calculators, Learn, FAQ ve Technical Principles için bölüm sırası, layout ve mobil davranış tanımlandı.
+- Home ve Business için ayrı süreç diyagramları, veri örnekleri, CTA ve görsel bağlamı belirlendi.
+- Business sayfasında ERP dışı kapsam görünür bir bölüm olarak zorunlu tutuldu.
+- Tüm CTA'lar gerçek sayfalara/kanıtlanmış ürün akışlarına bağlı; mevcut olmayan signup/trial/demo akışları kullanılmayacak.
+- Bu çalışma yalnızca wireframe dokümantasyonu; site kodu veya canlı deployment değiştirilmedi.
+- **Sıradaki adım:** WP-07 PR CI/Vercel Preview kontrolü; ardından WP-08 SEO ve teknik içerik yayın standardı. Canlı tasarım QA ve production uygulama için ayrıca kullanıcı onayı gerekir.
