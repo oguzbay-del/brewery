@@ -63,12 +63,12 @@ const structuredData = {
     <main id="main-content">
       <section class="feature-detail-hero shell">
         <a class="feature-back-link" href={`${base}features/`}>← All product areas</a>
-        <p class="eyebrow"><span class="eyebrow-line"></span> {feature.eyebrow} · IN DEVELOPMENT</p>
+        <p class="eyebrow"><span class="eyebrow-line"></span> {feature.eyebrow} · PRODUCT ROADMAP</p>
         <h1>{feature.title}</h1>
         <p class="feature-lead">{feature.summary}</p>
         <div class="feature-tags">
           {feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}
-          <span class="feature-tag feature-tag-status">Planned capability</span>
+          <span class="feature-tag feature-tag-status">Roadmap scope</span>
         </div>
       </section>
       <section class="feature-detail-body section-pad">

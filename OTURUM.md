@@ -474,3 +474,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Ana navigasyon altı bağlantıya çıktığı için 761–980 px tablet genişliklerinde desktop nav yerine kompakt mobil menüye geçiş eklendi.
 - 981 px üzeri desktop nav; 760 px ve altı mevcut mobil nav davranışı korunur.
 - Gerçek tablet tarayıcı kontrolü GitHub Pages/Vercel browser QA kapısında yapılacak.
+
+
+## Feature stage wording refinement — 15 Kasım 2026
+
+- Feature detail sayfalarında tüm özelliklere ortak “IN DEVELOPMENT” ve “Planned capability” etiketleri yerine “PRODUCT ROADMAP” ve “Roadmap scope” kullanıldı.
+- Böylece Homebrew MVP, Business core, later release ve Under consideration ayrımı yalnız stage listesinde değil, sayfa girişinde de doğru bağlamla sunulur.
+- Özellikle research-only alt kabiliyetlerin aktif geliştirme vaadi gibi algılanma riski azaltılır.
