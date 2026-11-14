@@ -391,3 +391,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - CSS token değerlerinin canonical JSON'dan kopya tutulduğu, ortak header/metadata yapısının tekrarlandığı ve responsive/WCAG QA'nın gerçek tarayıcıda yapılmadığı kaydedildi.
 - Sıradaki uygulama sırası ve release gate yazıldı; `marketing-site/` değiştirilmedi.
 - **Sıradaki adım:** WP-12 — uygulama spesifikasyonu ve acceptance checklist'i birleştir; production implementasyon için kullanıcıdan açık onay bekle.
+
+
+## WP-03 — Feature claim denetimi (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/14-feature-claim-denetimi.md`.
+- 16 feature alanı ürün planı domain'lerine, audience ve release stage'e eşlendi.
+- Kritik çelişkiler: fermantasyon bitiş/FG tahminleri onaysız analitik modeller; eğri sapma uyarısı onay bekleyen model 2; ekipman kalibrasyonu Home MVP ile onaysız model 3 arasında çelişkili.
+- Mash pH, public calculator kapsamı, cihaz/protokol ve read/control ayrımı, mevzuat ve security iddiaları için ek doğrulama şart.
+- Pazarlama “Available” durumunu yalnız deploy edilmiş/test edilmiş müşteri akışında kullanmalı.
+- **Sıradaki adım:** PR #16 feature catalog diff'ini claim audit ile denetle; yalnız doğrulanmış, muhafazakâr metinleri entegre et.
