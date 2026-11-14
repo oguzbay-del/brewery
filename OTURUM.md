@@ -304,3 +304,16 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Canlı Vercel site bu oturumda tarayıcı ile açılamadı. 1440px/tablet/390px visual QA, HTTP sitemap/robots/canonical testi ve ürün planı satır bazlı iddia denetimi tamamlandı sayılmıyor.
 - Bu oturumda site kodu/tasarımı değiştirilmedi. Yalnız denetim dokümanı ve bu devir kaydı değiştirildi.
 - **Sıradaki adım:** WP-03 — 16 feature sayfasındaki her iddiayı `plan/demleme-plani.md` ve roadmap aşamalarıyla eşleştir. PR #16'nın eski base/mergeability durumunu ayrıca çözmeden merge etme.
+
+
+## WP-04 — Home / Business sitemap, user journeys ve CTA mimarisi (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/15-home-business-sitemap-user-journeys-cta.md`.
+- Global sitemap ve önerilen ana navigasyon tanımlandı.
+- Homebrewers ve Professional Breweries için ayrı ziyaretçi soruları, giriş sayfaları, içerik sırası, journey adımları ve use-case örnekleri yazıldı.
+- İki profil; iş birimi, değer dili, veri örneği, teknik güven, CTA ve kaçınılacak vaatler bakımından karşılaştırıldı.
+- CTA'lar ürün yaşam döngüsüne bağlandı: gerçek ürün/hesap akışı yokken Start free, trial, pricing, signup, purchase veya demo çağrısı kullanılmayacak. Waitlist/update ancak gerçek endpoint ve privacy/consent onayı varsa.
+- Calculators ve Learn SEO girişleri olarak konumlandı; formül doğrulaması olmadan calculator yayınlanmayacak.
+- Business sayfasında ERP dışı kapsam (sales, orders, distribution/shipping, keg tracking, CRM, accounting) açıkça korunuyor.
+- PR19/PR16 durumları bu WP branch'inde değiştirilmedi; site kodu ve ürün uygulaması değiştirilmedi.
+- **Sıradaki adım:** WP-05 — sayfa bazında mesaj mimarisi, value proposition/headline seçenekleri, içerik brief'leri, proof requirements, terminoloji ve SEO intent. Final production copy ve canlı site değişikliği henüz yok.
