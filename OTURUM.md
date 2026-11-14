@@ -416,5 +416,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 
 - PR #22 WP-05/WP-06, PR #24 WP-07, PR #27 WP-09, PR #29 WP-08, PR #31 WP-10, PR #34 WP-11, PR #36 WP-03 ve PR #38 WP-12 manuel squash merge edildi.
 - Eski, duplicate-base PR'lar kapatıldı; ilgili dosyalar temiz main tabanlı PR'larla taşındı.
-- PR #16 feature catalogue branch'i açık bırakıldı; WP-03 claim kontrol yorumları eklendi. Expected-curve alerts, calibration suggestions, one-month trial, device/API/security maturity ve branch ancestry düzeltilmeden merge edilmemeli.
+- PR #16 eski branch olarak kapatıldı; temiz ve WP-03 uyumlu PR #40 ile değiştirildi. PR #40, model 1/2/3 onay kapılarını, Business ikinci sürüm API kapsamını, deneme/fiyat ve security claim sınırlarını açıkça belirtiyor.
 - **Aktif strateji durumu:** WP-03–WP-12 dokümantasyonu main'de. Production marketing-site kod değişikliği hâlâ ayrı implementation gate'e bağlı.
+
+
+## Güncel PR durumu — 15 Kasım 2026
+
+- PR #16 kapalı; değişiklikleri WP-03 uyumlu temiz PR #40 ile taşındı. PR #40 Vercel deployment rate limit dışında build kontrolünde.
+- PR #39 yalnız OTURUM ve strateji indeksi düzenlemesi; Vercel rate limit nedeniyle beklemede, merge edilmedi.
+- WP-03–WP-12 dokümantasyonu main'de. PR #39'daki oturum ve indeks düzeltmeleri merge sonrası main'e geçecek.
+- Vercel dışındaki build ve diff incelemeleri yapılabilir; başarısız/pending deployment kontrolü başarı gibi gösterilmeyecek.
