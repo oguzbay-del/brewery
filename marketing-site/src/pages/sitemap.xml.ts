@@ -7,6 +7,7 @@ const routes = [
   "breweries/",
   "how-it-works/",
   "technical-principles/",
+  "faq/",
   "features/",
   ...features.map((feature) => `features/${feature.slug}/`),
 ];
