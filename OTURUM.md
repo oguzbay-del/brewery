@@ -146,3 +146,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - **Açık kullanıcı adımı:** Repository Settings → Pages → Build and deployment → Source = GitHub Actions. Pages etkin değilken deploy workflow'u başarılı olamaz.
 - Bu aşamada main merge edilmedi; `web/`, ürün API'leri ve Claude ürün geliştirme kuyruğu değiştirilmedi.
 - **Sıradaki adım:** workflow'u doğrula; kullanıcı Pages kaynağını etkinleştirdikten sonra deploy'u çalıştırıp URL ve görsel QA'yı kontrol et.
+
+
+**Pages workflow sonucu — 14 Kasım 2026**
+- Pages workflow run #1 build aşaması başarılı: Node 22, dependency install, Astro/TypeScript check ve static build tamamlandı.
+- Deploy aşaması beklenen nedenle başarısız: GitHub Pages henüz repo için etkin değil; deploy-pages API 404 döndürdü. Log açıkça Settings → Pages üzerinden Pages'i etkinleştirmeyi istiyor.
+- Marketing site PR check de son committe başarılı tamamlandı.
+- PR #3 açık, draft, merge edilmedi. Preview URL henüz canlı değil; görsel QA yapılmadı.
+- Kullanıcıdan gereken tek adım: https://github.com/oguzbay-del/brewery/settings/pages adresini açıp **Build and deployment → Source = GitHub Actions** seçmek. Sonrasında branch'e yeni bir commit göndererek deployment yeniden tetiklenecek.
