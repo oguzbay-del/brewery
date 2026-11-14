@@ -481,3 +481,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Feature detail sayfalarında tüm özelliklere ortak “IN DEVELOPMENT” ve “Planned capability” etiketleri yerine “PRODUCT ROADMAP” ve “Roadmap scope” kullanıldı.
 - Böylece Homebrew MVP, Business core, later release ve Under consideration ayrımı yalnız stage listesinde değil, sayfa girişinde de doğru bağlamla sunulur.
 - Özellikle research-only alt kabiliyetlerin aktif geliştirme vaadi gibi algılanma riski azaltılır.
+
+
+## SEO doğrulama kapsamının genişletilmesi — 15 Kasım 2026
+
+- Statik site validator'ına her HTML sayfası için Open Graph title/description/url, Twitter card, HTML language, canonical-path eşleşmesi ve JSON-LD varlığı/geçerli JSON kontrolü eklendi.
+- Sitemap'in yalnız hedefleri değil, üretilen her public HTML sayfasını kapsaması da kontrol ediliyor.
+- PR #50 feature detail roadmap etiketleri güncellendi ve merge edildi.
+- GitHub Pages deployment run #23 başarılı; validator Pages base path `/brewery` ile de build ve sitemap/link kontrollerini geçti.
