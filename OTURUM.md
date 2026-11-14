@@ -166,5 +166,5 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR #3 kapatıldı/merge edildi; GitHub Auto-merge kullanılmadı.
 - Değişiklik kapsamı: yalnız `.github/workflows/marketing-site*.yml`, `marketing-site/` ve oturum dokümantasyonu. `web/`, ürün API'leri ve Claude ürün geliştirme kuyruğu değiştirilmedi.
 - **Açık QA:** Yayın başarılı; ancak bu oturumdaki browser inspection aracı siteyi açamadığı için 1440px desktop / 390px mobile görsel QA tamamlandı diye raporlanmıyor. Beş geçici görsel slotu lisanslı fotoğraflar gelene kadar korunuyor.
-- Altyapı workflow'undaki bazı bağımsız smoke testleri son kontrol sırasında hâlâ çalışıyordu; marketing CI ve Pages deploy başarıyla tamamlandı.
+- Ayrı altyapı workflow'u merge sonrasında `cancelled` olarak sonuçlandı; marketing CI ve Pages deploy başarıyla tamamlandı. Altyapı dosyaları bu PR kapsamında değiştirilmedi.
 - **Sıradaki adım:** Canlı siteyi gerçek tarayıcıda desktop/mobile kontrol et; fotoğraf ve onaylı app/sign-in URL'leri gelene kadar placeholder ve CTA'ları değiştirme.
