@@ -1,7 +1,7 @@
 # Demleme — Pazarlama Sitesi Revizyon Planı
 
 **Durum:** PLANLAMA — uygulamaya başlanmayacak.  
-**Onay kapısı:** Kullanıcı açıkça “başla” demeden tasarım, kodlama, içerik üretimi, sayfa oluşturma veya mevcut sitenin revizyonu yapılmaz.  
+**Onay kapısı:** Kullanıcı açıkça “devam et” demeden tasarım, kodlama, içerik üretimi, sayfa oluşturma veya mevcut sitenin revizyonu yapılmaz. “Devam et” denildiğinde oturum devir protokolü uygulanır ve sıradaki güvenli iş paketi başlatılır.  
 **Plan sahibi:** Demleme web stratejisi  
 **Referans:** `plan/demleme-plani.md`, `web-stratejisi/`, `karsilastirma/`
 
@@ -340,7 +340,7 @@ Model seçimi işin risk ve karmaşıklığına göre yapılacak; her görevde e
 ## 12. Aşamalı uygulama sırası
 
 1. Kullanıcının ek bilgi ve kararlarını bekle.
-2. “Başla” onayı alındığında WP-00 ile girdileri ve açık kararları dondur.
+2. Kullanıcı “devam et” dediğinde WP-00 ile girdileri ve açık kararları gözden geçir; yeni bilgi beklenmiyorsa uygulamaya başla.
 3. WP-01–WP-05 ile mevcut site, rakip, ürün iddiası, sitemap ve içerik stratejisini tamamla.
 4. Wireframe ve art direction onayını al (WP-06/07).
 5. Bir dikey dilim seç: örneğin How It Works sayfası; tasarım, içerik, geliştirme ve QA uçtan uca.
@@ -363,7 +363,7 @@ Beklenen olası girdiler (şimdilik soru veya zorunlu form değil):
 - Hesaplayıcıların ilk sürüm önceliği.
 - Pricing, waitlist ve ürün lansmanına ilişkin ticari kararlar.
 
-**Önemli:** Bu doküman planlama kaydıdır; kendiliğinden uygulama izni değildir. Kullanıcının açık “başla” talimatı olmadan hiçbir iş paketi uygulanmayacaktır.
+**Önemli:** Bu doküman planlama kaydıdır; kendiliğinden uygulama izni değildir. Kullanıcı “devam et” dediğinde, kaydedilmiş bağlamı yeniden sormadan sıradaki güvenli iş paketi uygulanacaktır. Yeni bilgi bekleniyorsa önce plan güncellenir.
 
 ---
 ## 20. Yeni zorunlu tasarım ve kalite standardı — 14 Kasım 2026
