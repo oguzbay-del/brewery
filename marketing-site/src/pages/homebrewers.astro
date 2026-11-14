@@ -36,19 +36,19 @@ const canonicalUrl = new URL(`${base}homebrewers/`, import.meta.env.SITE).href;
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR HOME BREWERS</p>
         <h1>Make every brew a <em>learning experience.</em></h1>
         <p>Explore the technical details behind recipes, ingredients and brewing notes. Demleme is being shaped for brewers who want to understand their process, not just follow a set of numbers.</p>
-        <a class="button button-primary" href={`${base}#audience-paths`}>Explore Demleme <span aria-hidden="true">↗</span></a>
+        <a class="button button-primary" href="#homebrewing-focus">Explore the homebrewing focus <span aria-hidden="true">↗</span></a>
       </section>
       <!-- IMAGE SLOT: HOMEBREWERS-HERO | Replace placeholder with licensed documentary-style photo of a homebrewer working on a batch. -->
       <section class="shell audience-hero">
         <div class="image-placeholder" data-image-slot="homebrewers-hero"><strong>IMAGE PLACEHOLDER · HOMEBREWERS-HERO</strong><span>Homebrewer measuring, preparing ingredients or working beside a small-batch setup</span></div>
       </section>
-      <section class="audience-page-section section-pad">
+      <section class="audience-page-section section-pad" id="homebrewing-focus">
         <div class="shell audience-page-grid">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> A MORE CONSIDERED PROCESS</p><h2>Know what goes into every decision.</h2><p>Homebrewing is part craft, part measurement. A useful workspace should make the details easier to follow without getting between you and the brew.</p></div>
           <div><ul class="audience-page-list"><li>Recipe details and ingredient context</li><li>Brewing calculations and clear terminology</li><li>Batch observations and process learning</li></ul><p class="audience-page-note">Areas of focus: clarity, consistency and curiosity — not complexity for its own sake.</p></div>
         </div>
       </section>
-      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={base}>Back to Demleme <span aria-hidden="true">↗</span></a></div></section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={base}>Explore both brewing paths <span aria-hidden="true">↗</span></a></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Technical brewing software for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
