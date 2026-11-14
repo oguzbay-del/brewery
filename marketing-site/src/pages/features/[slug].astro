@@ -1,0 +1,96 @@
+---
+import "../../styles/global.css";
+import { features, stageDescriptions } from "../../data/features";
+
+export function getStaticPaths() {
+  return features.map((feature) => ({ params: { slug: feature.slug }, props: { feature } }));
+}
+
+const { feature } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}features/${feature.slug}/`, import.meta.env.SITE).href;
+const description = `${feature.summary} Demleme is in development.`;
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: `${feature.title} — Demleme`,
+  description,
+  url: canonicalUrl,
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+};
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>{feature.title} — Demleme</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Demleme" />
+    <meta property="og:title" content={`${feature.title} — Demleme`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href={`${base}features/`} aria-current="page">Product</a>
+        <a href={`${base}homebrewers/`}>Homebrewers</a>
+        <a href={`${base}breweries/`}>Breweries</a>
+        <a href={`${base}#approach`}>Our approach</a>
+      </nav>
+      <a class="header-cta" href={`${base}features/`}>All features <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
+    </header>
+    <main id="main-content">
+      <section class="feature-detail-hero shell">
+        <a class="feature-back-link" href={`${base}features/`}>← All product areas</a>
+        <p class="eyebrow"><span class="eyebrow-line"></span> {feature.eyebrow} · IN DEVELOPMENT</p>
+        <h1>{feature.title}</h1>
+        <p class="feature-lead">{feature.summary}</p>
+        <div class="feature-tags">
+          {feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}
+          <span class="feature-tag feature-tag-status">Planned capability</span>
+        </div>
+      </section>
+      <section class="feature-detail-body section-pad">
+        <div class="shell feature-detail-layout">
+          <div class="feature-detail-sections">
+            {feature.sections.map((section, index) => (
+              <section class="feature-detail-section">
+                <span class="feature-card-index">{String(index + 1).padStart(2, "0")}</span>
+                <div><h2>{section.heading}</h2><p>{section.intro}</p><ul>{section.items.map((item) => <li>{item}</li>)}</ul></div>
+              </section>
+            ))}
+          </div>
+          <aside class="feature-roadmap-aside">
+            <p class="eyebrow">AUDIENCE</p>
+            <p>{feature.audiences.join(" · ")}</p>
+            <div class="aside-divider"></div>
+            <p class="eyebrow">PLANNED DEVELOPMENT STAGES</p>
+            {feature.stages.map((stage) => <div class="stage-item"><strong>{stage}</strong><p>{stageDescriptions[stage]}</p></div>)}
+            <div class="aside-divider"></div>
+            <p class="feature-aside-note">This is a roadmap description, not a statement that the feature is currently available. Scope and release timing may evolve during development and validation.</p>
+          </aside>
+        </div>
+      </section>
+      {feature.note && <section class="feature-caveat"><div class="shell"><p>{feature.note}</p></div></section>}
+      <section class="feature-next section-pad">
+        <div class="shell feature-next-inner">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See the complete <em>Demleme roadmap.</em></h2></div>
+          <div><p>Explore the other product areas or choose the workspace that matches your brewing.</p><a class="button button-primary" href={`${base}features/`}>Browse all product features <span aria-hidden="true">↗</span></a></div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={`${base}features/`}>All features ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+  </body>
+</html>

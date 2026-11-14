@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import { features } from "../data/features";
+const homeAreas = features.filter((feature) => feature.audiences.includes("Homebrewers"));
 
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}homebrewers/`, import.meta.env.SITE).href;
@@ -38,9 +40,9 @@ const structuredData = {
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
       <a class="header-cta" href={`${base}#audience-paths`}>All brewing paths <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
+      <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product features</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
     </header>
     <main id="main-content">
       <section class="shell audience-page-intro">
@@ -54,9 +56,21 @@ const structuredData = {
         <div class="image-placeholder" data-image-slot="homebrewers-hero"><strong>IMAGE PLACEHOLDER · HOMEBREWERS-HERO</strong><span>Homebrewer measuring, preparing ingredients or working beside a small-batch setup</span></div>
       </section>
       <section class="audience-page-section section-pad" id="homebrewing-focus">
-        <div class="shell audience-page-grid">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> A MORE CONSIDERED PROCESS</p><h2>Know what goes into every decision.</h2><p>Homebrewing is part craft, part measurement. Our aim is to make the details easier to understand without getting between you and the craft.</p></div>
-          <div><p class="eyebrow">DESIGN PRIORITIES</p><ul class="audience-page-list"><li>Recipe and ingredient understanding</li><li>Clear brewing calculations and terminology</li><li>Learning from observations and results</li></ul><p class="audience-page-note">These are product design priorities, not a list of currently available features.</p></div>
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> HOME BREWING · PRODUCT ROADMAP</p>
+            <h2>A complete toolkit for your next brew.</h2>
+            <p>Explore the planned capabilities for homebrewing—from recipe formulation and water chemistry to brew-day guidance, fermentation and learning from each batch.</p>
+          </div>
+          <div class="audience-feature-grid">
+            {homeAreas.map((feature) => (
+              <a class="audience-feature-link" href={`${base}features/${feature.slug}/`}>
+                <span>{feature.eyebrow}</span><strong>{feature.title}</strong><small>Explore planned capabilities ↗</small>
+              </a>
+            ))}
+          </div>
+          <p class="audience-page-note" style="margin-top:28px">The Home mode is designed to keep advanced controls approachable, with selected advanced features available to enable when you need them.</p>
+          <a class="text-link" style="margin-top:18px" href={`${base}features/`}>View the complete product feature catalogue <span aria-hidden="true">→</span></a>
         </div>
       </section>
       <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={base}>Explore both brewing paths <span aria-hidden="true">↗</span></a></div></section>

@@ -4,6 +4,15 @@
 **Amaç:** Yeni ChatGPT veya Claude oturumunun bağlamı yeniden araştırmadan devralması.  
 **Kural:** Bu dosya kısa tutulur. Her anlamlı iş tamamlandığında ve oturum kapatılırken güncellenir.
 
+
+## Güncel yayın durumu — 14 Kasım 2026
+
+- **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
+- **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
+- **Ana dalın ürün kataloğu öncesi son commit'i:** `5661692327cac99960955bcf0730e68326ebcec0`.
+- **Fotoğraflar:** Kullanıcı henüz fotoğraf sağlamadı. Yeni fotoğraf üretme, stok fotoğraf seçme veya otomatik görsel ekleme. Beş `data-image-slot` alanı ve SVG/yer tutucular korunacak; yalnız kullanıcı varlığı/izniyle değiştirilecek.
+- **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
+
 ## Çalışma ilkeleri
 
 - Token verimliliği oturum başında uygulanır; haftalık raporu bekleme.
@@ -259,3 +268,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - `marketing-site/README.md` içine Vercel import ayarları, root directory, build/output ayarları ve launch QA checklist eklendi.
 - Vercel hesabı kullanıcı tarafından açıldı; proje henüz import edilmedi. Hobby plan ticari yayın için uygun olmadığından Pro yükseltmesi canlıya geçmeden önce gerekli.
 - Bu değişiklikler henüz PR/CI ile doğrulanmadı. GitHub Pages kapatılmayacak; Vercel Preview ve production domain/HTTPS/SEO kontrolleri tamamlanana kadar fallback olarak kalacak.
+
+
+**Ürün kapsamı pazarlama sitesine aktarılıyor — 14 Kasım 2026**
+- Kanonik ürün kaynağı `plan/demleme-plani.md` okundu; iki modlu ürün yapısı, Ev MVP, İşletme çekirdeği ve sonraki sürümler ayrıştırıldı.
+- Marketing site için `src/data/features.ts` ortak özellik kataloğu eklendi. 16 ürün alanı ayrı detay sayfalarıyla yayınlanacak: recipe design, brewing calculations, water/mash/yeast, brew day, fermentation, equipment/calibration, planning, inventory/costing, production management, quality/lab, packaging/compliance, teams/notifications, connected devices, imports/exports/tools, platform/security/data, analytics/reports .
+- `/features/` ürün kataloğu; `/features/[slug]/` her alan için ayrı detay sayfası. Ana sayfa ve Homebrewers/Breweries landing page'leri katalogla ilişkilendirildi.
+- Sitemap, feature data kaynağından bütün detay sayfalarını otomatik ekleyecek şekilde güncellendi.
+- Her detay sayfası audience ve geliştirme aşaması etiketlerini taşır. Araştırma/fikir aşamasındaki analitik modeller committed feature gibi sunulmaz. ERP kapsam dışı alanları (satış, sipariş, dağıtım, keg tracking, CRM, muhasebe) ürün vaadine eklenmez.
+- Ürün ve site henüz live değil: tüm metinler roadmap/planned language kullanır. Fotoğraf eklenmedi; mevcut görsel yer tutucular korunur.
+- Yalnız `marketing-site/` ve `OTURUM.md` değiştirildi; `web/`, `ios/`, sunucu, API ve Claude ürün geliştirme kuyruğu değiştirilmedi.
+- **Sıradaki adım:** Astro check + build, route/sitemap kontrolü; sonra PR ve CI. Browser/mobile görsel QA ayrıca yapılacak.
