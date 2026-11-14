@@ -187,7 +187,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
   gap: 10px;
   padding: 28px;
   border: 1px dashed rgba(80, 76, 65, .42);
-  background: linear-gradient(135deg, #e5e5ea, #eeece5);
+  background: #e5e5ea;
   color: #55574f;
   text-align: center;
 }
