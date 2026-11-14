@@ -91,3 +91,33 @@ Ana oturumun modeli kullanıcı tarafından `/model` ile seçilir; Claude kendi 
   - Ana model (Opus): plan ve kapsam kararları, formül ve hesap motoru spesifikasyonu, mevzuat ve vergi yorumu, tasarım kararları, plan incelemesi, birden çok kaynağı birleştiren araştırma özeti.
 - **Ana oturum için öneri yap:** Kullanıcının isteği baştan sona düşük kaynaklı bir işse (yalnız metin düzeltme, küçük konsept değişikliği, dosya düzenleme), işe başlamadan önce tek satırla `/model` ile Sonnet'e geçmeyi öner. Karar veya derin analiz gerektiren bir iş gelince Opus'a dönmeyi öner. Öneriyi bir kez yap, ısrar etme.
 - Emin değilsen ana modelde kal; yanlış sonuçla tekrar yapılan iş, ucuz modelin tasarrufundan pahalıdır.
+
+
+## Yeni oturum ve iş parçacığı devri
+
+Her yeni oturumun başında `OTURUM.md` dosyasını oku. Bu dosya iki iş parçacığının (pazarlama web sitesi ve ürün geliştirme) kısa devir kaydını ve ortak token politikasını içerir.
+
+- Kullanıcı hangi iş parçacığına devam edeceğini belirtmediyse, isteği mevcut bağlama göre sınıflandır. Belirsizse tek bir net soru sor.
+- **Ürün geliştirme** için `gelistirme/DURUM.md`'yi oku; `gelistirme/ISLER.md` içinden yalnız aktif aşama ve ilgili işleri aç. Mevcut `"Devam" dendiğinde` kuralları geçerlidir.
+- **Pazarlama web sitesi** için `web-stratejisi/README.md)'yi ve yalnız görevle ilgili strateji dosyalarını oku. Ürün geliştirme kuyruğuna veya ürün koduna dokunma.
+- Her anlamlı iş tamamlandığında ve oturum kapatılmadan önce `OTURUM.md)'yi güncelle. Tamamlanan işi, doğrulama sonucunu, engelleri ve tek bir sıradaki adımı kaydet. Ürün geliştirme durumunun asıl kaynağı yine `gelistirme/DURUM.md) ve `gelistirme/ISLER.md)'dir; bu dosyaları kopyalama.
+
+## Token politikası: işe başlarken uygula
+
+Haftalık rapor bekleme. Her işin başında aşağıdaki yönlendirmeyi uygula:
+
+| İş türü | Model |
+| --- | --- |
+| Sayım, dosya listesi, basit arama, mekanik yeniden adlandırma, şablondan dosya üretimi | Haiku veya en küçük uygun model |
+| Sınırları belli kodlama, rutin test, küçük hata düzeltme, dokümantasyon | Sonnet |
+| Mimari, veri modeli, güvenlik, zor hata analizi, ürün kararı, kritik inceleme | Opus |
+
+- Model seçimi için `gelistirme/ISLER.md)'deki açık Model sütunu önceliklidir.
+- Claude ana oturum modelini kendi değiştiremez. Alt ajan görevinde iş için yeterli en düşük modeli seç. Kullanıcıya ana oturum modeli değişikliği gerekiyorsa tek satır öneri ver.
+- Bir alt görev başarısız olursa yalnız o görevi bir üst modele yükselt. Varsayılan olarak tüm işleri Opus'a verme.
+- Önce ilgili dosyayı ve ilgili başlığı oku. Tam repo, tam plan veya tüm geçmişi her görevde yeniden yükleme.
+- Alt ajan talimatında yalnız gerekli dosya yollarını/bölümlerini, görev kapsamını, bitti ölçütünü ve test komutlarını ver. Alt ajan raporu en fazla 20 satır olsun.
+- Test ve derleme çıktısını filtrele; tam çıktıyı yalnız hata ayıklamak için oku. Tam workspace testlerini ve kapsamlı denetimleri uygun aşamada bir kez çalıştır.
+- Bağımlı işleri tek ajan içinde sırayla yürüt. Yalnız bağımsız işleri paralel çalıştır; aynı anda en fazla 2–3 ajan kullan.
+- İşin kapsamı büyür veya bağlam gereksiz büyürse tutarlı bir noktada dur, `OTURUM.md)'yi güncelle ve yeni oturum için devir notu bırak.
+- Token telemetrisi yoksa tüketim, maliyet veya tasarruf yüzdesi uydurma. Gözlenen veri ile tahmini öneriyi açıkça ayır.
