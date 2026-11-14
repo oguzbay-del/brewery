@@ -1,4 +1,4 @@
-# Demleme marketing site — homepage prototype
+# Demleme marketing site — product roadmap and feature catalogue
 
 An isolated Astro + TypeScript + static-site project for the Demleme marketing website.
 
@@ -31,11 +31,11 @@ npm run preview
 - The homepage uses the approved English messaging direction.
 - The hero and audience visuals are original editorial SVG illustrations. They are not product screenshots or representations of product functionality.
 - Real homebrewing and brewery photography can replace these illustration slots after usage rights and final assets are confirmed.
-- No product dashboard, metrics, testimonials, customer logos, pricing, or unsupported outcome promises are included. Audience copy describes areas of focus rather than asserting unverified product functionality.
+- Product features are presented as planned capabilities, not currently available functionality. Homebrew MVP, Business core, later releases and unapproved ideas are clearly distinguished.\n- The product and website are both in development; no login, subscription, purchase or production workflow is live.\n- No fabricated product screenshots, metrics, testimonials, customer logos or pricing are included.
 - The homepage audience CTAs route to the two dedicated audience pages. App URL and sign-in URL are not yet configured.
 - Colour and spacing values follow the existing `tasarim-sistemi/tokens.json` source. The marketing site applies them in a separate editorial layout.
 
-## Image replacement map
+## Product content source\n\n- Canonical product plan: `../plan/demleme-plani.md`.\n- Feature catalogue data: `src/data/features.ts`.\n- Add or revise feature groups in the data file; the feature index, detail pages and sitemap are generated from the same source.\n- Keep research-only analytical models marked as under consideration; do not present them as committed capabilities.\n- Do not add ERP functions excluded by the product plan (sales, orders, distribution, keg tracking, CRM or accounting).\n\n## Image replacement map
 
 Search the `data-image-slot` attributes or `IMAGE SLOT:` comments to find every temporary visual:
 
