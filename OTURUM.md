@@ -225,3 +225,9 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Üç pazarlama sayfasına klavye ile görünür skip link eklendi; main landmark hedefleri tanımlandı; mobil menü erişilebilir adı iyileştirildi.
 - Ekran okuyucu ve gerçek cihaz testi henüz yapılmadı; gerçek tarayıcı QA açık.
 - Canlı site: https://oguzbay-del.github.io/brewery/.
+
+**Özel 404 sayfası — 14 Kasım 2026**
+- GitHub Pages için markalı `404.html` üretilecek Astro `404.astro` sayfası eklendi.
+- Geçersiz/eski bağlantılardan ana sayfaya, Homebrewers veya Breweries sayfasına dönüş sağlandı.
+- Sayfa `noindex, follow` ile arama indeksinden hariç tutuldu; erişilebilir skip link içeriyor.
+- Sitemap'e 404 dahil edilmedi. Ürün veya pazarlama iddiaları değişmedi.
