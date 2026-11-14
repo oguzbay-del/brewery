@@ -35,3 +35,6 @@ altyapi/k8s/kind/.cache/
 .claude/target-*/
 sunucu/target-*/
 __pycache__/
+
+# Yerel redis-server dökümü
+dump.rdb
