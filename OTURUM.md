@@ -40,7 +40,7 @@
 - UI: Astro components; React yalnız gerçekten gerekli interaktif island için.
 - İçerik: Markdown/MDX + Content Collections/Zod.
 - Hosting adayı: Cloudflare Pages. Domain, analytics, form ve consent sağlayıcısı hâlâ açık karar.
-- GitHub: pazarlama sitesi değişiklikleri feature branch + PR; kullanıcı talimatıyla Auto Merge kullan.
+- GitHub: pazarlama sitesi değişiklikleri feature branch + PR; kullanıcı talimatıyla CI ve preview doğrulamasından sonra manuel merge yapılır. GitHub Auto-merge kullanılmaz.
 
 **Tasarım yönü**
 - Editorial + Technical + Human. AI landing page klişeleri, sahte dashboard, uydurma metrik ve gradient/glow yok.
@@ -143,14 +143,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Ana sayfa ve iki audience sayfasındaki iç linkler Astro `BASE_URL` üzerinden repo alt dizinine uyumlu hale getirildi.
 - `.github/workflows/marketing-site-pages.yml` eklendi: branch push / workflow_dispatch → Astro check + build → Pages artifact → deploy. Mevcut PR check workflow'u ayrı bırakıldı.
 - Hedef preview URL: `https://oguzbay-del.github.io/brewery/` (Pages etkinleştirilip deployment başarılı olunca erişilebilir).
-- **Açık kullanıcı adımı:** Repository Settings → Pages → Build and deployment → Source = GitHub Actions. Pages etkin değilken deploy workflow'u başarılı olamaz.
+- Repository sahibi GitHub Pages'i etkinleştirdi; kaynak GitHub Actions olarak ayarlandı (kullanıcı teyidi).
 - Bu aşamada main merge edilmedi; `web/`, ürün API'leri ve Claude ürün geliştirme kuyruğu değiştirilmedi.
-- **Sıradaki adım:** workflow'u doğrula; kullanıcı Pages kaynağını etkinleştirdikten sonra deploy'u çalıştırıp URL ve görsel QA'yı kontrol et.
+- **Sıradaki adım:** yeni branch push sonrası Pages deployment sonucunu ve canlı URL'yi doğrula; ardından 1440px/390px görsel QA yap.
 
 
 **Pages workflow sonucu — 14 Kasım 2026**
-- Pages workflow run #1 build aşaması başarılı: Node 22, dependency install, Astro/TypeScript check ve static build tamamlandı.
-- Deploy aşaması beklenen nedenle başarısız: GitHub Pages henüz repo için etkin değil; deploy-pages API 404 döndürdü. Log açıkça Settings → Pages üzerinden Pages'i etkinleştirmeyi istiyor.
-- Marketing site PR check de son committe başarılı tamamlandı.
-- PR #3 açık, draft, merge edilmedi. Preview URL henüz canlı değil; görsel QA yapılmadı.
-- Kullanıcıdan gereken tek adım: https://github.com/oguzbay-del/brewery/settings/pages adresini açıp **Build and deployment → Source = GitHub Actions** seçmek. Sonrasında branch'e yeni bir commit göndererek deployment yeniden tetiklenecek.
+- Pages workflow ilk denemesinde build başarılı, deploy ise Pages etkin olmadığı için 404 ile başarısız olmuştu.
+- Kullanıcı Pages'i etkinleştirdiğini teyit etti. README'deki preview notu güncellendi; bu commit deployment'ı yeniden tetiklemeli.
+- PR #3 son kontrolünde Marketing site checks ve genel altyapı workflow success; PR hâlâ draft ve açık.
+- Preview canlı olduktan sonra masaüstü/mobil görsel QA yapılacak. Görsel QA tamamlanmadan PR merge edilmeyecek.
+- Kullanıcının açık talimatı: Auto-merge kullanma; CI ve preview QA tamamlanınca PR'ı manuel merge et.
