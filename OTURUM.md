@@ -279,3 +279,16 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Ürün ve site henüz live değil: tüm metinler roadmap/planned language kullanır. Fotoğraf eklenmedi; mevcut görsel yer tutucular korunur.
 - Yalnız `marketing-site/` ve `OTURUM.md` değiştirildi; `web/`, `ios/`, sunucu, API ve Claude ürün geliştirme kuyruğu değiştirilmedi.
 - **Sıradaki adım:** Astro check + build, route/sitemap kontrolü; sonra PR ve CI. Browser/mobile görsel QA ayrıca yapılacak.
+
+## Demleme pazarlama sitesi — kalıcı devam talimatı (14 Kasım 2026)
+
+- Ana proje kitabı: web-stratejisi/12-site-revizyonu-ve-uygulama-plani.md. Yeni oturumda önce bu dosyayı ve bu OTURUM.md kaydını oku; kullanıcıdan daha önce verilmiş kararları tekrar isteme.
+- Kullanıcı yeni oturumda “devam et” dediğinde son GitHub durumunu (main, açık PR'lar, branch head, CI, Vercel Preview) kontrol et ve planın sıradaki güvenli iş paketini başlat/ilerlet. Her defasında aynı strateji açıklamasını tekrar etme.
+- Site bütünsel revize edilecek. FoamByte karşılaştırması; içerik, tasarım, bilgi kalitesi, bilgi akışı, teknik doğruluk ve Home/Business profillerinin ayrı anlatımı üzerinden yapılacak. Home vs Business farkları gerektiğinde net karşılaştırma tablolarıyla gösterilecek.
+- Tasarım çıtası Apple/Vercel/Stripe kalitesi; minimalist, modern, teknik, güven veren, bol boşluklu, responsive ve erişilebilir. Bento/blur/glass/gradient/shadow yalnız amaca hizmet ederse. Açık/koyu tema ve semantic design tokens değerlendirilecek. Örnek renk kodları onaylı marka renkleri değildir.
+- Navbar, hero, kanıt alanı, özellik anlatımı, gerçek işlevli etkileşim, CTA ve footer sayfa amacına göre tasarlanır. Gerçek müşteri logoları/testimonial/metric yoksa sosyal kanıt bölümü uydurulmaz; gerekirse çıkarılır. Sahte ürün ekranı, fotoğraf, fiyat, entegrasyon veya işlev yok.
+- Home ve Business ayrı kullanıcı yolculukları, dil, SEO, içerik sırası ve CTA ile tasarlanır. Teknik anlatım problem → bağlam → yöntem → örnek → sınırlama → ürün bağlantısı akışını izler.
+- Token/model optimizasyonu: mekanik envanter ve tekrar işleri en küçük yeterli model/script; içerik taslakları ekonomik model + editoryal kontrol; mimari, teknik doğruluk, formül, güvenlik ve kritik kararlar güçlü model/uzman kontrolü. Aynı dosyaya paralel yazım yok; alt ajan raporları kısa.
+- “Devam et” ile küçük, doğrulanabilir iş paketleri ilerletilir; açık karar veya kullanıcıdan beklenen girdi varsa önce plan güncellenir. GitHub Auto-merge yok; manuel merge için CI, Vercel Preview, mergeability ve expected head SHA kontrol edilir.
+- Plan dosyası PR #17 içinde güncellendi. PR #17 Vercel deployment ve Preview Comments başarılı; güncel commit ve PR merge durumu devam oturumunda tekrar doğrulanmalı. PR #16 ayrıca açık; özellik kataloğu kapsamı içerir ve bu bütünsel revizyonla karıştırılmamalıdır.
+- Bu oturumda site kodu/tasarımı değiştirilmedi; yalnız plan ve oturum devir belgeleri güncellendi.

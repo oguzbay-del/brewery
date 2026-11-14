@@ -23,6 +23,7 @@ Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini t
 9. [Lansman ve ölçüm](09-launch-measurement.md)
 10. [Teknik mimari ve framework değerlendirmesi](10-teknik-mimari.md)
 11. [Görsel tasarım ve responsive wireframe](11-visual-design-wireframes.md)
+12. [Bütünsel site revizyonu ve uygulama planı — planlama aşamasında](12-site-revizyonu-ve-uygulama-plani.md)
 
 ## Uygulama sırası
 Discovery → sitemap → wireframe → görsel tasarım → içerik → geliştirme → QA → lansman. Özellik iddiaları ürünün mevcut kabiliyetleriyle doğrulanmadan yayınlanmaz.
