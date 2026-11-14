@@ -195,3 +195,72 @@ Bu dilimde pricing backend, CMS, login, ödeme, CRM, analytics vendor entegrasyo
 - SvelteKit: https://svelte.dev/docs/kit/introduction
 - TypeScript Handbook: https://www.typescriptlang.org/docs/handbook/intro
 - Cloudflare Pages + Astro: https://developers.cloudflare.com/pages/framework-guides/deploy-an-astro-site/
+
+
+## 13. Araştırma doğrulaması ve nihai teknik öneri
+
+**Araştırma tarihi:** 14 Kasım 2026. Framework sürümleri hızla değiştiği için proje başlatılırken güncel stable sürümler yeniden doğrulanmalıdır. Astro ana sayfası şu anda Astro 7.4'ü ve içerik odaklı web siteleri için server-first yaklaşımı öne çıkarıyor. Astro 6.0 duyurusu; Content Layer, geliştirme sunucusu/build pipeline yenilemeleri ve Cloudflare runtime desteğindeki iyileştirmeleri belgeliyor.
+
+### Güncel resmi kaynaklara göre karşılaştırma
+
+- **Astro:** Pazarlama sitesi ve içerik odaklı sayfalar için doğrudan hedeflenmiş. Varsayılan sıfır istemci JavaScript yaklaşımı, islands ve Content Collections; bu sitenin SEO ve içerik önceliğiyle örtüşüyor. Content Collections TypeScript ve Zod tabanlı şema doğrulamasını destekliyor.
+- **Next.js:** App Router ve Server Components güçlü. Ayrıca statik export da destekliyor. Ancak static export modunda cookies, rewrites, redirects, headers, Server Actions ve ISR gibi server gerektiren özellikler desteklenmiyor. Bunlar ilk sürüm ihtiyaçlarımız değil; dolayısıyla Next.js'in esnekliği şu an ek mimari yüzey oluşturur.
+- **SvelteKit:** `adapter-static` ile tüm siteyi statik üretebilir. Teknik olarak uygun; ancak repo içinde mevcut web ürününün React + TypeScript olması nedeniyle yeni bir component dili ve ek AI bağlamı getirir.
+
+### Nihai öneri
+
+| Katman | Seçim |
+| --- | --- |
+| Web framework | Astro 7.x (kurulum anındaki güncel stable) |
+| Ana dil | TypeScript strict / strictest |
+| Rendering | Static Site Generation (SSG) |
+| UI | Astro components + CSS |
+| Etkileşim | Native TypeScript; gerekirse React island |
+| İçerik | Markdown / MDX + Astro Content Collections + Zod |
+| Stil | CSS variables; kaynak token dosyası `tasarim-sistemi/tokens.json` |
+| Test | Vitest (saf yardımcı fonksiyonlar), Playwright (tarayıcı akışları), axe tabanlı erişilebilirlik kontrolü |
+| Hosting | Cloudflare Pages, statik build |
+| CI/CD | GitHub PR checks + preview deployment; main'e merge production |
+| Backend | İlk sürümde yok |
+
+### Sistem akışı
+
+```mermaid
+flowchart TD
+  A[GitHub repository] --> B[Pull request]
+  B --> C[CI: typecheck, lint, tests, build]
+  C --> D{Checks pass?}
+  D -- No --> E[Fix and push]
+  E --> C
+  D -- Yes --> F[Cloudflare Pages preview]
+  F --> G[Human review]
+  G --> H[Merge to main]
+  H --> I[Production static build]
+  I --> J[CDN: HTML, CSS, assets]
+  K[Markdown / MDX content] --> I
+  L[tasarim-sistemi/tokens.json] --> M[Token generator]
+  M --> I
+  N[Existing product web app] <-->|Sign in / Open app link| J
+```
+
+### Karar sınırları
+
+Bu öneri framework ve teknik mimari seçimini netleştirir; aşağıdaki operasyonel tercihler ayrı karardır:
+- Marketing domaini ve app domaini.
+- Cloudflare hesabı / erişim / DNS sahipliği.
+- Analytics sağlayıcısı ve consent politikası.
+- Lead form veya newsletter sağlayıcısı.
+
+Bu kararlar netleşmeden özel backend, database, auth, CMS veya ücretli üçüncü taraf entegrasyonu eklenmeyecek.
+
+### Resmi kaynaklar
+
+- Astro güncel framework ve sürüm: https://astro.build/
+- Astro 6 release notes: https://astro.build/blog/astro-6/
+- Astro TypeScript: https://docs.astro.build/en/guides/typescript/
+- Astro Content Collections ve Zod: https://docs.astro.build/en/guides/content-collections/
+- Cloudflare Pages Astro deployment ve PR previews: https://developers.cloudflare.com/pages/framework-guides/deploy-an-astro-site/
+- Cloudflare GitHub integration: https://developers.cloudflare.com/pages/configuration/git-integration/github-integration/
+- Next.js App Router: https://nextjs.org/docs/app
+- Next.js static export ve desteklenmeyen server özellikleri: https://nextjs.org/docs/app/guides/static-exports
+- SvelteKit adapters: https://svelte.dev/docs/kit/adapters
