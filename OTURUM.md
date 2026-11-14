@@ -489,3 +489,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Sitemap'in yalnız hedefleri değil, üretilen her public HTML sayfasını kapsaması da kontrol ediliyor.
 - PR #50 feature detail roadmap etiketleri güncellendi ve merge edildi.
 - GitHub Pages deployment run #23 başarılı; validator Pages base path `/brewery` ile de build ve sitemap/link kontrollerini geçti.
+
+
+## FB-04 — Business record model anlatımı (15 Kasım 2026)
+
+- Professional Breweries sayfasına ayrı bir “Record Model” bölümü eklendi.
+- Recipe version → production/batch record → ingredient lots → vessel events → quality records ilişkisi açıklandı.
+- Her kayıt tipi ilgili ürün alanı ve Business release aşamasıyla etiketlendi.
+- Bunun canlı veri modeli veya mevcut iş akışı olmadığı; ürün roadmap'i olduğu açıkça belirtildi.
+- Otomatik compliance, recall execution veya regulatory approval iddiası özellikle dışarıda bırakıldı.
+- Yeni görsel, fake UI veya ürün ekranı üretilmedi; responsive HTML/CSS ile erişilebilir bir ilişki listesi kullanıldı.
