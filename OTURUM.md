@@ -370,3 +370,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Core Web Vitals, erişilebilirlik, analytics/privacy ve yayın kontrol kapıları eklendi.
 - FoamByte benchmark dersleri Demleme'ye özgü içerik/kanıt yaklaşımıyla eşlendi; kopyalama yok.
 - **Sıradaki adım:** WP-09 — teknik içerik ve hesaplayıcı doğrulama backlog'u. Formül testleri tamamlanmadan calculator implementasyonu/yayını yok.
+
+
+## WP-11 — Mevcut marketing-site gap analysis (14 Kasım 2026)
+
+- Rapor: `web-stratejisi/22-existing-site-gap-analysis-implementation-sequence.md`.
+- Güncel Astro route, feature data, CSS, token kaynağı, sitemap/robots ve SEO metadata source-level incelendi.
+- Mevcut site: homepage + iki audience landing + feature index/16 detail; How It Works, Learn, Calculators, FAQ, Technical Principles ve Use Cases henüz yok.
+- Feature status dilinin Planned / Under consideration / Requires validation ayrımını yeterince taşımama riski belirlendi.
+- CSS token değerlerinin canonical JSON'dan kopya tutulduğu, ortak header/metadata yapısının tekrarlandığı ve responsive/WCAG QA'nın gerçek tarayıcıda yapılmadığı kaydedildi.
+- Sıradaki uygulama sırası ve release gate yazıldı; `marketing-site/` değiştirilmedi.
+- **Sıradaki adım:** WP-12 — uygulama spesifikasyonu ve acceptance checklist'i birleştir; production implementasyon için kullanıcıdan açık onay bekle.
