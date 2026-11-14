@@ -132,7 +132,7 @@ async fn world(pool: &PgPool, ttl_secs: u64, with_store: bool) -> World {
     tx.commit().await.unwrap();
 
     World {
-        app: api::build(state.clone(), api::files::routes(&state)),
+        app: api::router(state.clone()),
         store,
         ws,
         batch,

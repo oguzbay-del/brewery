@@ -13,6 +13,7 @@ pub mod error;
 pub mod events;
 pub mod files;
 pub mod idempotency;
+pub mod modules;
 pub mod openapi;
 pub mod pagination;
 pub mod ratelimit;
@@ -26,7 +27,6 @@ use axum::{
     Router,
     extract::DefaultBodyLimit,
     middleware::{from_fn, from_fn_with_state},
-    routing::get,
 };
 use sqlx::PgPool;
 
@@ -61,6 +61,8 @@ pub struct AppState {
     pub events: Option<events::JetStream>,
     /// Object store for files (T2.18); `None` when `S3_ENDPOINT` is not set.
     pub store: Option<Arc<dyn storage::ObjectStore>>,
+    /// Sign-in services for the auth modules; `None` switches their routes off.
+    pub auth_services: Option<Arc<auth::AuthServices>>,
 }
 
 impl std::fmt::Debug for AppState {
@@ -82,6 +84,7 @@ impl AppState {
             rate,
             events: None,
             store: None,
+            auth_services: None,
         }
     }
 
@@ -89,6 +92,13 @@ impl AppState {
     #[must_use]
     pub fn with_events(mut self, js: events::JetStream) -> Self {
         self.events = Some(js);
+        self
+    }
+
+    /// Adds the sign-in services; the auth modules of [`modules::MODULES`] serve routes only then.
+    #[must_use]
+    pub fn with_auth_services(mut self, auth: Arc<auth::AuthServices>) -> Self {
+        self.auth_services = Some(auth);
         self
     }
 
@@ -112,20 +122,11 @@ pub fn idempotent(state: &AppState, routes: Router<AppState>) -> Router<AppState
     routes.route_layer(from_fn_with_state(state.clone(), idempotency::layer))
 }
 
-/// Builds the service router: the public endpoints plus `extra` (resource routes already
-/// wrapped with [`authenticated`] / [`idempotent`]), under the shared layers: request id and
-/// trace, rate limit, minimum app version and the 1 MiB body limit.
+/// Builds the service router: the routes of every module in [`modules::MODULES`] plus `extra`
+/// (more routes already wrapped with [`authenticated`] / [`idempotent`]), under the shared layers:
+/// request id and trace, rate limit, minimum app version and the 1 MiB body limit.
 pub fn build(state: AppState, extra: Router<AppState>) -> Router {
-    Router::new()
-        .route("/healthz", get(routes::healthz))
-        .route("/readyz", get(routes::readyz))
-        .route("/v1/version", get(routes::version))
-        .route("/v1/meta/fields", get(routes::meta_fields))
-        .route(
-            "/v1/meta/client-requirements",
-            get(routes::client_requirements),
-        )
-        .merge(events::routes(&state))
+    modules::routes(&state)
         .merge(extra)
         .fallback(error::not_found)
         .method_not_allowed_fallback(error::not_found)

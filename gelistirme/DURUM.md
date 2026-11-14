@@ -3,11 +3,8 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task:** T2.9 is open. T2.12 and T2.13 are done. The first task of the next session is a one-time refactor:
-- Each endpoint module registers its route and its OpenAPI row in its own file. Then parallel tasks do not change `api/src/lib.rs`, `openapi.rs` or `main.rs`.
-- Split the implementation notes at the end of ADR-0007 into topic files.
-
-After that, give the chain T2.19 → T2.21 → T2.22 to one agent. Work rules: root `CLAUDE.md` › Token verimliliği.
+**Next task:** T2.9 (fixes for the F2.1 findings). After T2.9, give the chain T2.19 → T2.21 → T2.22 to one agent. Work rules: root `CLAUDE.md` › Token verimliliği.
+- 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment

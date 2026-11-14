@@ -4,10 +4,11 @@
 use std::{sync::OnceLock, time::Duration};
 
 use axum::{
-    Json,
+    Json, Router,
     extract::State,
     http::{HeaderMap, HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
+    routing::get,
 };
 use serde::Serialize;
 use sha2::{Digest, Sha256};
@@ -206,3 +207,91 @@ pub async fn meta_fields(headers: HeaderMap) -> Response {
     h.insert(header::CACHE_CONTROL, cache);
     response
 }
+
+/// The core routes: health, readiness, version and meta. None needs a sign-in.
+pub fn routes(_state: &AppState) -> Router<AppState> {
+    Router::new()
+        .route("/healthz", get(healthz))
+        .route("/readyz", get(readyz))
+        .route("/v1/version", get(version))
+        .route("/v1/meta/fields", get(meta_fields))
+        .route("/v1/meta/client-requirements", get(client_requirements))
+}
+
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{Internal, MalformedRequest, RateLimited, UpgradeRequired};
+    use crate::openapi::OperationSpec;
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[
+        OperationSpec {
+            operation_id: "health_check",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[Internal],
+        },
+        OperationSpec {
+            operation_id: "health_ready",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[Internal, ErrorCode::Unavailable],
+        },
+        OperationSpec {
+            operation_id: "version_get",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
+        },
+        OperationSpec {
+            operation_id: "meta_client_requirements_get",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[RateLimited, Internal],
+        },
+        OperationSpec {
+            operation_id: "meta_fields_get",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
+        },
+    ];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        healthz,
+        readyz,
+        version,
+        client_requirements,
+        meta_fields
+    ),
+    components(schemas(
+        HealthResponse,
+        ReadyResponse,
+        VersionResponse,
+        crate::app_version::ClientRequirements
+    )),
+    tags(
+        (name = "system", description = "Service status and version"),
+        (name = "meta", description = "Definitions and client requirements")
+    )
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "system",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};

@@ -3,10 +3,11 @@
 use std::{net::SocketAddr, sync::Arc};
 
 use axum::{
-    Extension, Json,
+    Extension, Json, Router,
     extract::{ConnectInfo, Path, State},
     http::{HeaderMap, HeaderValue, StatusCode, header},
     response::{IntoResponse, Response},
+    routing::{delete, get, post},
 };
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -1203,6 +1204,245 @@ pub async fn identity_unlink(
     tracing::info!(user_id = %ctx.identity.user_id, identity_id = %id, "identity removed");
     Ok(StatusCode::NO_CONTENT.into_response())
 }
+
+/// The sign-in routes and the `/v1/me` session and identity routes.
+pub fn routes(state: &AppState) -> Router<AppState> {
+    // Without the auth services (see `AppState::with_auth_services`) these routes are off.
+    if state.auth_services.is_none() {
+        return Router::new();
+    }
+    let public = Router::new()
+        .route("/v1/auth/nonce", post(nonce_create))
+        .route("/v1/auth/apple", post(apple_login))
+        .route("/v1/auth/google", post(google_login))
+        .route("/v1/auth/email/start", post(email_start))
+        .route("/v1/auth/email/verify", post(email_verify));
+    let me = crate::authenticated(
+        state,
+        Router::new()
+            .route("/v1/me/session", get(session_get).delete(session_delete))
+            .route(
+                "/v1/me/sessions",
+                get(sessions_list).delete(sessions_revoke_all),
+            )
+            .route("/v1/me/sessions/{id}", delete(session_revoke))
+            .route(
+                "/v1/me/identities",
+                get(identities_list).post(identity_link),
+            )
+            .route("/v1/me/identities/{id}", delete(identity_unlink)),
+    );
+    public.merge(me)
+}
+
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{
+        Conflict, Forbidden, Internal, MalformedRequest, NotFound, RateLimited, StepUpRequired,
+        Unauthenticated, Unavailable, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+    };
+    use crate::openapi::OperationSpec;
+
+    const PUBLIC_AUTH_ERRORS: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        NotFound,
+        UnsupportedMediaType,
+        ValidationFailed,
+        UpgradeRequired,
+        RateLimited,
+        Unavailable,
+        Internal,
+    ];
+
+    const ME_ERRORS: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        UpgradeRequired,
+        RateLimited,
+        Internal,
+    ];
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[
+        OperationSpec {
+            operation_id: "auth_nonce_create",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
+        },
+        OperationSpec {
+            operation_id: "auth_apple_login",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: PUBLIC_AUTH_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "auth_google_login",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: PUBLIC_AUTH_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "auth_email_verify",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: PUBLIC_AUTH_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "auth_email_start",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[
+                MalformedRequest,
+                UnsupportedMediaType,
+                ValidationFailed,
+                UpgradeRequired,
+                RateLimited,
+                Internal,
+            ],
+        },
+        OperationSpec {
+            operation_id: "me_session_get",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: ME_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "me_session_delete",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: ME_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "me_sessions_list",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: ME_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "me_sessions_revoke_all",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: ME_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "me_identities_list",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: ME_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "me_session_revoke",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: ME_ERRORS,
+        },
+        OperationSpec {
+            operation_id: "me_identities_link",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: &[
+                MalformedRequest,
+                Unauthenticated,
+                Forbidden,
+                NotFound,
+                Conflict,
+                UnsupportedMediaType,
+                ValidationFailed,
+                UpgradeRequired,
+                RateLimited,
+                Unavailable,
+                Internal,
+            ],
+        },
+        OperationSpec {
+            operation_id: "me_identities_unlink",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: &[
+                MalformedRequest,
+                Unauthenticated,
+                Forbidden,
+                StepUpRequired,
+                NotFound,
+                Conflict,
+                UpgradeRequired,
+                RateLimited,
+                Internal,
+            ],
+        },
+    ];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        nonce_create,
+        apple_login,
+        google_login,
+        email_start,
+        email_verify,
+        session_get,
+        session_delete,
+        sessions_list,
+        sessions_revoke_all,
+        session_revoke,
+        identities_list,
+        identity_link,
+        identity_unlink
+    ),
+    components(schemas(
+        AccountHint,
+        ClientParam,
+        EmailStartRequest,
+        EmailStartResponse,
+        EmailVerifyRequest,
+        IdentitySummary,
+        LinkIdentityRequest,
+        LinkResponse,
+        LoginResponse,
+        NonceResponse,
+        ProviderLoginRequest,
+        SessionDetail,
+        SessionInfo,
+        SessionIssued,
+        SessionItem,
+        UserSummary,
+        WorkspaceSummary
+    )),
+    tags(
+        (name = "auth", description = "Sign-in with Apple, Google or an e-mail link"),
+        (name = "me", description = "The signed-in user: session, sessions, sign-in methods")
+    )
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "auth",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};
 
 #[cfg(test)]
 mod tests {

@@ -78,7 +78,7 @@ async fn world_with(pool: &PgPool, redis: Redis, extra: &[(&str, &str)]) -> Worl
         cfg.auth.clone(),
         mail.clone(),
     ));
-    let state = AppState::new(app_db, redis, svc.clone(), cfg);
+    let state = AppState::new(app_db, redis, svc.clone(), cfg).with_auth_services(svc.clone());
     // A probe route shows the permissions the authenticator found for the path's workspace.
     let probe = api::authenticated(
         &state,
@@ -87,7 +87,7 @@ async fn world_with(pool: &PgPool, redis: Redis, extra: &[(&str, &str)]) -> Worl
             get(|ctx: RequestContext| async move { Json(json!({"permissions": ctx.permissions})) }),
         ),
     );
-    let app = api::build(state.clone(), svc.routes(&state).merge(probe));
+    let app = api::build(state.clone(), probe);
     World {
         app,
         oidc,

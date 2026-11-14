@@ -1296,6 +1296,170 @@ pub fn routes(state: &AppState) -> Router<AppState> {
     crate::authenticated(state, writes.merge(others))
 }
 
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::concurrency::Concurrency;
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{
+        Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, Internal,
+        MalformedRequest, NotFound, PayloadTooLarge, PreconditionRequired, RateLimited,
+        Unauthenticated, Unavailable, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+        VersionMismatch,
+    };
+    use crate::openapi::{OperationSpec, file_op};
+
+    const FILE_READ: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        NotFound,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+
+    const FILE_CREATE: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        IdempotencyInProgress,
+        PayloadTooLarge,
+        UnsupportedMediaType,
+        ValidationFailed,
+        IdempotencyMismatch,
+        PreconditionRequired,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+
+    const FILE_COMPLETE: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        ValidationFailed,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+
+    const FILE_DOWNLOAD: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        NotFound,
+        Conflict,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+
+    const FILE_DELETE: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        Conflict,
+        VersionMismatch,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[
+        file_op(
+            "attachment_create",
+            Some(super::WRITE_PERMISSION),
+            Some(Concurrency::Append),
+            FILE_CREATE,
+        ),
+        file_op(
+            "attachment_complete",
+            Some(super::WRITE_PERMISSION),
+            Some(Concurrency::FieldLww),
+            FILE_COMPLETE,
+        ),
+        file_op("attachment_list", None, None, FILE_READ),
+        file_op("attachment_get", None, None, FILE_READ),
+        file_op("attachment_download", None, None, FILE_DOWNLOAD),
+        file_op(
+            "attachment_delete",
+            Some(super::WRITE_PERMISSION),
+            Some(Concurrency::FieldLww),
+            FILE_DELETE,
+        ),
+        file_op(
+            "scanned_document_create",
+            Some(super::WRITE_PERMISSION),
+            Some(Concurrency::Append),
+            FILE_CREATE,
+        ),
+        file_op(
+            "scanned_document_complete",
+            Some(super::WRITE_PERMISSION),
+            Some(Concurrency::FieldLww),
+            FILE_COMPLETE,
+        ),
+        file_op("scanned_document_list", None, None, FILE_READ),
+        file_op("scanned_document_get", None, None, FILE_READ),
+        file_op("scanned_document_download", None, None, FILE_DOWNLOAD),
+        file_op(
+            "scanned_document_delete",
+            Some(super::WRITE_PERMISSION),
+            Some(Concurrency::FieldLww),
+            FILE_DELETE,
+        ),
+    ];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        attachment_create,
+        attachment_complete,
+        attachment_list,
+        attachment_get,
+        attachment_download,
+        attachment_delete,
+        scanned_document_create,
+        scanned_document_complete,
+        scanned_document_list,
+        scanned_document_get,
+        scanned_document_download,
+        scanned_document_delete
+    ),
+    components(schemas(
+        Attachment,
+        ScannedDocument,
+        UploadInstructions,
+        AttachmentCreated,
+        ScannedDocumentCreated,
+        DownloadLink,
+        NewAttachment,
+        NewScannedDocument
+    )),
+    tags(
+        (name = "files", description = "Attachments and scanned documents (direct upload to the object store)")
+    )
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "files",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};
+
 #[cfg(test)]
 mod tests {
     use super::*;

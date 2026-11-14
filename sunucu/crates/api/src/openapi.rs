@@ -2,9 +2,11 @@
 //! hand; `sozlesme/openapi/openapi.json` is its checked-in output.
 //!
 //! utoipa describes paths and bodies. What every operation must additionally state is kept in
-//! one table, [`OPERATIONS`]: the error codes it can return, `x-concurrency`, `x-permission`
-//! and whether it needs a sign-in. [`openapi_json`] merges the table into the document, and a
-//! test fails when an operation is missing from it, so a new endpoint cannot skip these rules.
+//! one row per operation: the error codes it can return, `x-concurrency`, `x-permission` and
+//! whether it needs a sign-in. Each module owns its rows (`OPERATIONS`), its `OpenAPI` fragment
+//! and its routes, and registers them in [`crate::modules`]. [`openapi_json`] merges the
+//! fragments and the rows into the document, and a test fails when an operation has no row, so
+//! a new endpoint cannot skip these rules.
 
 use std::collections::BTreeMap;
 
@@ -12,29 +14,9 @@ use serde_json::{Map, Value, json};
 use utoipa::OpenApi;
 
 use crate::{
-    app_version::ClientRequirements,
-    auth::{
-        access,
-        handlers::{
-            self as auth_handlers, AccountHint, ClientParam, EmailStartRequest, EmailStartResponse,
-            EmailVerifyRequest, IdentitySummary, LinkIdentityRequest, LinkResponse, LoginResponse,
-            NonceResponse, ProviderLoginRequest, SessionDetail, SessionInfo, SessionIssued,
-            SessionItem, UserSummary, WorkspaceSummary,
-        },
-        passkey::{
-            self, CeremonyStart, PasskeySummary, RegistrationDone, RegistrationFinish, StepUpDone,
-            StepUpFinish,
-        },
-        setup::{self, WorkspaceCreateRequest, WorkspaceResponse},
-        shared_device::{
-            self, DeviceKeyRotate, MemberTile, PinSet, SharedDeviceCreate, SharedDeviceSummary,
-            SwitchRequest, SwitchResponse,
-        },
-    },
     concurrency::Concurrency,
     error::{ErrorCode, FieldIssue, ProblemDetails},
-    files,
-    routes::{self, HealthResponse, ReadyResponse, VersionResponse},
+    modules,
 };
 
 /// What an operation must state beyond what its handler macro says.
@@ -52,91 +34,8 @@ pub struct OperationSpec {
     pub errors: &'static [ErrorCode],
 }
 
-use ErrorCode::{
-    Conflict, Forbidden, Internal, MalformedRequest, NotFound, PreconditionRequired, RateLimited,
-    StepUpRequired, Unauthenticated, Unavailable, UnsupportedMediaType, UpgradeRequired,
-    ValidationFailed,
-};
-
-const PUBLIC_AUTH_ERRORS: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    NotFound,
-    UnsupportedMediaType,
-    ValidationFailed,
-    UpgradeRequired,
-    RateLimited,
-    Unavailable,
-    Internal,
-];
-const ME_ERRORS: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    UpgradeRequired,
-    RateLimited,
-    Internal,
-];
-
-use ErrorCode::{IdempotencyInProgress, IdempotencyMismatch, PayloadTooLarge, VersionMismatch};
-
-const PASSKEY_ERRORS: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    StepUpRequired,
-    NotFound,
-    Conflict,
-    UnsupportedMediaType,
-    ValidationFailed,
-    UpgradeRequired,
-    RateLimited,
-    Unavailable,
-    Internal,
-];
-const DEVICE_ADMIN_ERRORS: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    StepUpRequired,
-    NotFound,
-    Conflict,
-    UnsupportedMediaType,
-    ValidationFailed,
-    UpgradeRequired,
-    RateLimited,
-    Internal,
-];
-const DEVICE_CREATE_ERRORS: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    StepUpRequired,
-    NotFound,
-    Conflict,
-    IdempotencyInProgress,
-    UnsupportedMediaType,
-    ValidationFailed,
-    IdempotencyMismatch,
-    PreconditionRequired,
-    UpgradeRequired,
-    RateLimited,
-    Internal,
-];
-/// Endpoints the device calls with its key: no session, so `401` means a bad key.
-const DEVICE_KEY_ERRORS: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    NotFound,
-    UnsupportedMediaType,
-    ValidationFailed,
-    UpgradeRequired,
-    RateLimited,
-    Internal,
-];
-
-const fn op(
+/// Builds a row of the common shape (no `x-concurrency`).
+pub(crate) const fn op(
     operation_id: &'static str,
     public: bool,
     permission: Option<&'static str>,
@@ -151,126 +50,8 @@ const fn op(
     }
 }
 
-const FILE_READ: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    NotFound,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-    Unavailable,
-];
-const FILE_CREATE: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    IdempotencyInProgress,
-    PayloadTooLarge,
-    UnsupportedMediaType,
-    ValidationFailed,
-    IdempotencyMismatch,
-    PreconditionRequired,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-    Unavailable,
-];
-const FILE_COMPLETE: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    ValidationFailed,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-    Unavailable,
-];
-const FILE_DOWNLOAD: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    NotFound,
-    Conflict,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-    Unavailable,
-];
-const FILE_DELETE: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    Conflict,
-    VersionMismatch,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-    Unavailable,
-];
-
-const ACCESS_READ: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-];
-const ACCESS_CREATE: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    Conflict,
-    IdempotencyInProgress,
-    UnsupportedMediaType,
-    ValidationFailed,
-    IdempotencyMismatch,
-    PreconditionRequired,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-];
-const ACCESS_UPDATE: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    Conflict,
-    VersionMismatch,
-    UnsupportedMediaType,
-    ValidationFailed,
-    PreconditionRequired,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-];
-const ACCESS_DELETE: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    Conflict,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-];
-const ACCESS_ACCEPT: &[ErrorCode] = &[
-    MalformedRequest,
-    Unauthenticated,
-    Forbidden,
-    NotFound,
-    Conflict,
-    UnsupportedMediaType,
-    RateLimited,
-    UpgradeRequired,
-    Internal,
-];
-
-const fn file_op(
+/// Builds a row of a signed-in operation with a concurrency mode.
+pub(crate) const fn file_op(
     operation_id: &'static str,
     permission: Option<&'static str>,
     concurrency: Option<Concurrency>,
@@ -285,540 +66,10 @@ const fn file_op(
     }
 }
 
-/// Specs of every operation in the document. New endpoints add a line here.
-pub const OPERATIONS: &[OperationSpec] = &[
-    OperationSpec {
-        operation_id: "events_stream",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: &[
-            ErrorCode::Unauthenticated,
-            ErrorCode::NotFound,
-            ErrorCode::ValidationFailed,
-            UpgradeRequired,
-            RateLimited,
-            Internal,
-            ErrorCode::Unavailable,
-        ],
-    },
-    OperationSpec {
-        operation_id: "health_check",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: &[Internal],
-    },
-    OperationSpec {
-        operation_id: "health_ready",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: &[Internal, ErrorCode::Unavailable],
-    },
-    OperationSpec {
-        operation_id: "version_get",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
-    },
-    OperationSpec {
-        operation_id: "meta_client_requirements_get",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: &[RateLimited, Internal],
-    },
-    OperationSpec {
-        operation_id: "meta_fields_get",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
-    },
-    file_op(
-        "attachment_create",
-        Some(files::WRITE_PERMISSION),
-        Some(Concurrency::Append),
-        FILE_CREATE,
-    ),
-    file_op(
-        "attachment_complete",
-        Some(files::WRITE_PERMISSION),
-        Some(Concurrency::FieldLww),
-        FILE_COMPLETE,
-    ),
-    file_op("attachment_list", None, None, FILE_READ),
-    file_op("attachment_get", None, None, FILE_READ),
-    file_op("attachment_download", None, None, FILE_DOWNLOAD),
-    file_op(
-        "attachment_delete",
-        Some(files::WRITE_PERMISSION),
-        Some(Concurrency::FieldLww),
-        FILE_DELETE,
-    ),
-    file_op(
-        "scanned_document_create",
-        Some(files::WRITE_PERMISSION),
-        Some(Concurrency::Append),
-        FILE_CREATE,
-    ),
-    file_op(
-        "scanned_document_complete",
-        Some(files::WRITE_PERMISSION),
-        Some(Concurrency::FieldLww),
-        FILE_COMPLETE,
-    ),
-    file_op("scanned_document_list", None, None, FILE_READ),
-    file_op("scanned_document_get", None, None, FILE_READ),
-    file_op("scanned_document_download", None, None, FILE_DOWNLOAD),
-    file_op(
-        "scanned_document_delete",
-        Some(files::WRITE_PERMISSION),
-        Some(Concurrency::FieldLww),
-        FILE_DELETE,
-    ),
-    OperationSpec {
-        operation_id: "auth_nonce_create",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
-    },
-    OperationSpec {
-        operation_id: "auth_apple_login",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: PUBLIC_AUTH_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "auth_google_login",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: PUBLIC_AUTH_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "auth_email_verify",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: PUBLIC_AUTH_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "auth_email_start",
-        public: true,
-        permission: None,
-        concurrency: None,
-        errors: &[
-            MalformedRequest,
-            UnsupportedMediaType,
-            ValidationFailed,
-            UpgradeRequired,
-            RateLimited,
-            Internal,
-        ],
-    },
-    OperationSpec {
-        operation_id: "me_session_get",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: ME_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "me_session_delete",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: ME_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "me_sessions_list",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: ME_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "me_sessions_revoke_all",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: ME_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "me_identities_list",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: ME_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "me_session_revoke",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: ME_ERRORS,
-    },
-    OperationSpec {
-        operation_id: "me_identities_link",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: &[
-            MalformedRequest,
-            Unauthenticated,
-            Forbidden,
-            NotFound,
-            Conflict,
-            UnsupportedMediaType,
-            ValidationFailed,
-            UpgradeRequired,
-            RateLimited,
-            Unavailable,
-            Internal,
-        ],
-    },
-    OperationSpec {
-        operation_id: "me_identities_unlink",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: &[
-            MalformedRequest,
-            Unauthenticated,
-            Forbidden,
-            StepUpRequired,
-            NotFound,
-            Conflict,
-            UpgradeRequired,
-            RateLimited,
-            Internal,
-        ],
-    },
-    op("me_passkeys_list", false, None, PASSKEY_ERRORS),
-    op(
-        "me_passkeys_registration_start",
-        false,
-        None,
-        PASSKEY_ERRORS,
-    ),
-    op(
-        "me_passkeys_registration_finish",
-        false,
-        None,
-        PASSKEY_ERRORS,
-    ),
-    op("me_passkeys_delete", false, None, PASSKEY_ERRORS),
-    op("me_stepup_start", false, None, PASSKEY_ERRORS),
-    op("me_stepup_finish", false, None, PASSKEY_ERRORS),
-    op(
-        "shareddevices_create",
-        false,
-        Some("devices.manage"),
-        DEVICE_CREATE_ERRORS,
-    ),
-    op(
-        "shareddevices_list",
-        false,
-        Some("devices.manage"),
-        DEVICE_ADMIN_ERRORS,
-    ),
-    op(
-        "shareddevices_revoke",
-        false,
-        Some("devices.manage"),
-        DEVICE_ADMIN_ERRORS,
-    ),
-    op(
-        "shareddevices_rotatekey",
-        false,
-        Some("devices.manage"),
-        DEVICE_ADMIN_ERRORS,
-    ),
-    op("shareddevices_pinset", false, None, DEVICE_ADMIN_ERRORS),
-    op(
-        "shareddevices_pinclear",
-        false,
-        Some("devices.manage"),
-        DEVICE_ADMIN_ERRORS,
-    ),
-    op("shareddevices_members", true, None, DEVICE_KEY_ERRORS),
-    op("shareddevices_switch", true, None, DEVICE_KEY_ERRORS),
-    op("shareddevices_lock", true, None, DEVICE_KEY_ERRORS),
-    OperationSpec {
-        operation_id: "roles_list",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: None,
-        errors: ACCESS_READ,
-    },
-    OperationSpec {
-        operation_id: "roles_create",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::Append),
-        errors: ACCESS_CREATE,
-    },
-    OperationSpec {
-        operation_id: "roles_copy",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::Append),
-        errors: ACCESS_CREATE,
-    },
-    OperationSpec {
-        operation_id: "roles_update",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::Optimistic),
-        errors: ACCESS_UPDATE,
-    },
-    OperationSpec {
-        operation_id: "roles_delete",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::Optimistic),
-        errors: ACCESS_UPDATE,
-    },
-    OperationSpec {
-        operation_id: "members_list",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: None,
-        errors: ACCESS_READ,
-    },
-    OperationSpec {
-        operation_id: "members_update",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::FieldLww),
-        errors: ACCESS_UPDATE,
-    },
-    OperationSpec {
-        operation_id: "members_remove",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::FieldLww),
-        errors: ACCESS_DELETE,
-    },
-    OperationSpec {
-        operation_id: "assignments_create",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::Append),
-        errors: ACCESS_CREATE,
-    },
-    OperationSpec {
-        operation_id: "assignments_delete",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::FieldLww),
-        errors: ACCESS_DELETE,
-    },
-    OperationSpec {
-        operation_id: "invitations_create",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::Append),
-        errors: ACCESS_CREATE,
-    },
-    OperationSpec {
-        operation_id: "invitations_list",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: None,
-        errors: ACCESS_READ,
-    },
-    OperationSpec {
-        operation_id: "invitations_revoke",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::FieldLww),
-        errors: ACCESS_DELETE,
-    },
-    OperationSpec {
-        operation_id: "invitations_accept",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: ACCESS_ACCEPT,
-    },
-    OperationSpec {
-        operation_id: "shares_create",
-        public: false,
-        permission: Some("users.manage"),
-        concurrency: Some(Concurrency::Append),
-        errors: ACCESS_CREATE,
-    },
-    OperationSpec {
-        operation_id: "workspaces_create",
-        public: false,
-        permission: None,
-        concurrency: None,
-        errors: &[
-            MalformedRequest,
-            Unauthenticated,
-            Forbidden,
-            Conflict,
-            UnsupportedMediaType,
-            ValidationFailed,
-            UpgradeRequired,
-            PreconditionRequired,
-            RateLimited,
-            Internal,
-        ],
-    },
-];
-
-/// The `OpenAPI` document of the public API.
+/// The shared part of the `OpenAPI` document: the error schemas. Paths, schemas and tags come
+/// from the modules (`crate::modules`).
 #[derive(Debug, OpenApi)]
-#[openapi(
-    paths(
-        routes::healthz,
-        routes::readyz,
-        routes::version,
-        routes::client_requirements,
-        routes::meta_fields,
-        crate::events::workspace_events,
-        files::attachment_create,
-        files::attachment_complete,
-        files::attachment_list,
-        files::attachment_get,
-        files::attachment_download,
-        files::attachment_delete,
-        files::scanned_document_create,
-        files::scanned_document_complete,
-        files::scanned_document_list,
-        files::scanned_document_get,
-        files::scanned_document_download,
-        files::scanned_document_delete,
-        auth_handlers::nonce_create,
-        auth_handlers::apple_login,
-        auth_handlers::google_login,
-        auth_handlers::email_start,
-        auth_handlers::email_verify,
-        auth_handlers::session_get,
-        auth_handlers::session_delete,
-        auth_handlers::sessions_list,
-        auth_handlers::sessions_revoke_all,
-        auth_handlers::session_revoke,
-        auth_handlers::identities_list,
-        auth_handlers::identity_link,
-        auth_handlers::identity_unlink,
-        setup::workspace_create,
-        access::roles_list,
-        access::roles_create,
-        access::roles_copy,
-        access::roles_update,
-        access::roles_delete,
-        access::members_list,
-        access::members_update,
-        access::members_remove,
-        access::assignments_create,
-        access::assignments_delete,
-        access::invitations_create,
-        access::invitations_list,
-        access::invitations_revoke,
-        access::invitations_accept,
-        access::shares_create,
-        passkey::passkeys_list,
-        passkey::registration_start,
-        passkey::registration_finish,
-        passkey::passkey_delete,
-        passkey::step_up_start,
-        passkey::step_up_finish,
-        shared_device::device_create,
-        shared_device::device_list,
-        shared_device::device_revoke,
-        shared_device::device_rotate_key,
-        shared_device::pin_set,
-        shared_device::pin_clear,
-        shared_device::device_members,
-        shared_device::device_switch,
-        shared_device::device_lock
-    ),
-    components(schemas(
-        HealthResponse,
-        ReadyResponse,
-        VersionResponse,
-        ClientRequirements,
-        ProblemDetails,
-        FieldIssue,
-        ErrorCode,
-        files::Attachment,
-        files::ScannedDocument,
-        files::UploadInstructions,
-        files::AttachmentCreated,
-        files::ScannedDocumentCreated,
-        files::DownloadLink,
-        files::NewAttachment,
-        files::NewScannedDocument,
-        AccountHint,
-        ClientParam,
-        EmailStartRequest,
-        EmailStartResponse,
-        EmailVerifyRequest,
-        IdentitySummary,
-        LinkIdentityRequest,
-        LinkResponse,
-        LoginResponse,
-        NonceResponse,
-        ProviderLoginRequest,
-        SessionDetail,
-        SessionInfo,
-        SessionIssued,
-        SessionItem,
-        UserSummary,
-        WorkspaceSummary,
-        WorkspaceCreateRequest,
-        WorkspaceResponse,
-        access::RoleResponse,
-        access::RoleList,
-        access::NewRole,
-        access::CopyRole,
-        access::RolePatch,
-        access::AssignmentResponse,
-        access::MemberResponse,
-        access::MemberList,
-        access::MemberPatch,
-        access::NewAssignment,
-        access::InvitationResponse,
-        access::InvitationCreated,
-        access::InvitationList,
-        access::NewInvitation,
-        access::AcceptInvitation,
-        access::InvitationAccepted,
-        access::NewShare,
-        CeremonyStart,
-        PasskeySummary,
-        RegistrationDone,
-        RegistrationFinish,
-        StepUpDone,
-        StepUpFinish,
-        DeviceKeyRotate,
-        MemberTile,
-        PinSet,
-        SharedDeviceCreate,
-        SharedDeviceSummary,
-        SwitchRequest,
-        SwitchResponse
-    )),
-    tags(
-        (name = "system", description = "Service status and version"),
-        (name = "meta", description = "Definitions and client requirements"),
-        (name = "events", description = "Live updates (SSE)"),
-        (name = "files", description = "Attachments and scanned documents (direct upload to the object store)"),
-        (name = "auth", description = "Sign-in with Apple, Google or an e-mail link"),
-        (name = "me", description = "The signed-in user: session, sessions, sign-in methods"),
-        (name = "workspaces", description = "Workspaces"),
-        (name = "access", description = "Roles, members, assignments, invitations and sharing"),
-        (name = "shared-devices", description = "Shared device mode: devices, member PINs, user switching")
-    )
-)]
+#[openapi(components(schemas(ProblemDetails, FieldIssue, ErrorCode)))]
 pub struct ApiDoc;
 
 fn example_problem(code: ErrorCode) -> Value {
@@ -901,7 +152,7 @@ fn apply_operation_specs(doc: &mut Value) {
             let Some(id) = operation.get("operationId").and_then(Value::as_str) else {
                 continue;
             };
-            let Some(spec) = OPERATIONS.iter().find(|s| s.operation_id == id) else {
+            let Some(spec) = modules::operation(id) else {
                 continue;
             };
             operation.insert(
@@ -944,7 +195,11 @@ fn apply_operation_specs(doc: &mut Value) {
 /// Returns an error if serialization fails (never expected for this document).
 pub fn openapi_json() -> serde_json::Result<String> {
     // Going through `Value` sorts object keys (serde_json without `preserve_order`).
-    let mut value = serde_json::to_value(ApiDoc::openapi())?;
+    let mut doc = ApiDoc::openapi();
+    for module in modules::MODULES {
+        doc.merge((module.openapi)());
+    }
+    let mut value = serde_json::to_value(doc)?;
     apply_operation_specs(&mut value);
     let mut out = serde_json::to_string_pretty(&value)?;
     out.push('\n');
@@ -985,8 +240,8 @@ mod tests {
                 "{label}: operationId {id} is not <resource>_<action>"
             );
             assert!(
-                OPERATIONS.iter().any(|s| s.operation_id == id),
-                "{label}: {id} is missing from OPERATIONS"
+                modules::operation(id).is_some(),
+                "{label}: {id} has no row in the OPERATIONS of its module"
             );
             assert!(op.get("x-permission").is_some(), "{label}: x-permission");
             assert!(op.get("x-concurrency").is_some(), "{label}: x-concurrency");
@@ -1012,7 +267,7 @@ mod tests {
                     );
                 }
             }
-            let spec = OPERATIONS.iter().find(|s| s.operation_id == id).unwrap();
+            let spec = modules::operation(id).unwrap();
             for code in spec.errors {
                 assert!(
                     responses.contains_key(&code.status().as_u16().to_string()),
@@ -1021,11 +276,11 @@ mod tests {
                 );
             }
         }
-        for spec in OPERATIONS {
+        for spec in modules::operations() {
             assert!(
                 ops.iter()
                     .any(|(_, _, op)| op["operationId"] == spec.operation_id),
-                "{} is in OPERATIONS but not in the document",
+                "{} has a row but is not in the document",
                 spec.operation_id
             );
         }

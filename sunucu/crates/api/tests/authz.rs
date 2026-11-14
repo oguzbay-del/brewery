@@ -80,7 +80,7 @@ async fn world_with(pool: &PgPool, redis: Redis, smtp: Option<SmtpMailer>) -> Wo
         cfg.auth.clone(),
         tee,
     ));
-    let state = AppState::new(app_db, redis, svc.clone(), cfg);
+    let state = AppState::new(app_db, redis, svc.clone(), cfg).with_auth_services(svc.clone());
     // Probe routes stand in for resource endpoints: they show what the authenticator found and
     // how scopes and cost hiding behave.
     let probes = api::authenticated(
@@ -121,7 +121,7 @@ async fn world_with(pool: &PgPool, redis: Redis, smtp: Option<SmtpMailer>) -> Wo
                 }),
             ),
     );
-    let app = api::build(state.clone(), svc.routes(&state).merge(probes));
+    let app = api::build(state.clone(), probes);
     World { app, mail }
 }
 

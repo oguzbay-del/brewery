@@ -52,9 +52,13 @@ type Tx = Transaction<'static, Postgres>;
 /// How long an invitation works (ADR-0009 rule 6.1).
 pub const INVITATION_TTL_DAYS: i64 = 7;
 
-/// The routes of this module, to merge into [`AuthServices::routes`].
+/// The routes of this module: roles, members, assignments, invitations and shares.
 pub fn routes(state: &AppState) -> Router<AppState> {
     const WS: &str = "/v1/workspaces/{ws}";
+    // Without the auth services (see `AppState::with_auth_services`) these routes are off.
+    if state.auth_services.is_none() {
+        return Router::new();
+    }
     let plain = Router::new()
         .route(&format!("{WS}/roles"), get(roles_list))
         .route(
@@ -1793,3 +1797,242 @@ pub async fn shares_create(
     )
     .await
 }
+
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::concurrency::Concurrency;
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{
+        Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, Internal,
+        MalformedRequest, NotFound, PreconditionRequired, RateLimited, Unauthenticated,
+        UnsupportedMediaType, UpgradeRequired, ValidationFailed, VersionMismatch,
+    };
+    use crate::openapi::OperationSpec;
+
+    const ACCESS_READ: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    const ACCESS_CREATE: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        Conflict,
+        IdempotencyInProgress,
+        UnsupportedMediaType,
+        ValidationFailed,
+        IdempotencyMismatch,
+        PreconditionRequired,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    const ACCESS_UPDATE: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        Conflict,
+        VersionMismatch,
+        UnsupportedMediaType,
+        ValidationFailed,
+        PreconditionRequired,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    const ACCESS_DELETE: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        Conflict,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    const ACCESS_ACCEPT: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        NotFound,
+        Conflict,
+        UnsupportedMediaType,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[
+        OperationSpec {
+            operation_id: "roles_list",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: None,
+            errors: ACCESS_READ,
+        },
+        OperationSpec {
+            operation_id: "roles_create",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::Append),
+            errors: ACCESS_CREATE,
+        },
+        OperationSpec {
+            operation_id: "roles_copy",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::Append),
+            errors: ACCESS_CREATE,
+        },
+        OperationSpec {
+            operation_id: "roles_update",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::Optimistic),
+            errors: ACCESS_UPDATE,
+        },
+        OperationSpec {
+            operation_id: "roles_delete",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::Optimistic),
+            errors: ACCESS_UPDATE,
+        },
+        OperationSpec {
+            operation_id: "members_list",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: None,
+            errors: ACCESS_READ,
+        },
+        OperationSpec {
+            operation_id: "members_update",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::FieldLww),
+            errors: ACCESS_UPDATE,
+        },
+        OperationSpec {
+            operation_id: "members_remove",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::FieldLww),
+            errors: ACCESS_DELETE,
+        },
+        OperationSpec {
+            operation_id: "assignments_create",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::Append),
+            errors: ACCESS_CREATE,
+        },
+        OperationSpec {
+            operation_id: "assignments_delete",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::FieldLww),
+            errors: ACCESS_DELETE,
+        },
+        OperationSpec {
+            operation_id: "invitations_create",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::Append),
+            errors: ACCESS_CREATE,
+        },
+        OperationSpec {
+            operation_id: "invitations_list",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: None,
+            errors: ACCESS_READ,
+        },
+        OperationSpec {
+            operation_id: "invitations_revoke",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::FieldLww),
+            errors: ACCESS_DELETE,
+        },
+        OperationSpec {
+            operation_id: "invitations_accept",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: ACCESS_ACCEPT,
+        },
+        OperationSpec {
+            operation_id: "shares_create",
+            public: false,
+            permission: Some("users.manage"),
+            concurrency: Some(Concurrency::Append),
+            errors: ACCESS_CREATE,
+        },
+    ];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        roles_list,
+        roles_create,
+        roles_copy,
+        roles_update,
+        roles_delete,
+        members_list,
+        members_update,
+        members_remove,
+        assignments_create,
+        assignments_delete,
+        invitations_create,
+        invitations_list,
+        invitations_revoke,
+        invitations_accept,
+        shares_create
+    ),
+    components(schemas(
+        RoleResponse,
+        RoleList,
+        NewRole,
+        CopyRole,
+        RolePatch,
+        AssignmentResponse,
+        MemberResponse,
+        MemberList,
+        MemberPatch,
+        NewAssignment,
+        InvitationResponse,
+        InvitationCreated,
+        InvitationList,
+        NewInvitation,
+        AcceptInvitation,
+        InvitationAccepted,
+        NewShare
+    )),
+    tags(
+        (name = "access", description = "Roles, members, assignments, invitations and sharing")
+    )
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "access",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};

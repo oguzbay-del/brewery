@@ -28,11 +28,7 @@ use std::{
     time::Duration,
 };
 
-use axum::{
-    Extension, Router,
-    http::{HeaderMap, Method, header},
-    routing::{delete, get, post, put},
-};
+use axum::http::{HeaderMap, Method, header};
 use chrono::Utc;
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -43,11 +39,9 @@ use oidc::OidcVerifier;
 use session::{ClientKind, SessionStore};
 
 use crate::{
-    AppState, authenticated,
     authz::{ScopeKind, ScopedGrant},
     context::{BoxFuture, Identity, Membership},
     error::{ApiError, ApiResult, ErrorCode, FieldIssue},
-    idempotent,
     redis_client::Redis,
 };
 use db::ActorKind;
@@ -134,102 +128,6 @@ impl AuthServices {
             config,
             mailer,
         }
-    }
-
-    /// The sign-in, `/v1/me` and `/v1/workspaces` routes, ready to pass to [`crate::build`].
-    pub fn routes(self: &Arc<Self>, state: &AppState) -> Router<AppState> {
-        let public = Router::new()
-            .route("/v1/auth/nonce", post(handlers::nonce_create))
-            .route("/v1/auth/apple", post(handlers::apple_login))
-            .route("/v1/auth/google", post(handlers::google_login))
-            .route("/v1/auth/email/start", post(handlers::email_start))
-            .route("/v1/auth/email/verify", post(handlers::email_verify));
-        let me = authenticated(
-            state,
-            Router::new()
-                .route(
-                    "/v1/me/session",
-                    get(handlers::session_get).delete(handlers::session_delete),
-                )
-                .route(
-                    "/v1/me/sessions",
-                    get(handlers::sessions_list).delete(handlers::sessions_revoke_all),
-                )
-                .route("/v1/me/sessions/{id}", delete(handlers::session_revoke))
-                .route(
-                    "/v1/me/identities",
-                    get(handlers::identities_list).post(handlers::identity_link),
-                )
-                .route("/v1/me/identities/{id}", delete(handlers::identity_unlink))
-                .route("/v1/me/passkeys", get(passkey::passkeys_list))
-                .route("/v1/me/passkeys/{id}", delete(passkey::passkey_delete))
-                .route(
-                    "/v1/me/passkeys/registration/start",
-                    post(passkey::registration_start),
-                )
-                .route(
-                    "/v1/me/passkeys/registration/finish",
-                    post(passkey::registration_finish),
-                )
-                .route("/v1/me/step-up/start", post(passkey::step_up_start))
-                .route("/v1/me/step-up/finish", post(passkey::step_up_finish)),
-        );
-        // Shared device administration and PINs (ADR-0009 rule 7).
-        let devices_admin = authenticated(
-            state,
-            idempotent(
-                state,
-                Router::new().route(
-                    "/v1/workspaces/{ws}/shared-devices",
-                    post(shared_device::device_create),
-                ),
-            )
-            .route(
-                "/v1/workspaces/{ws}/shared-devices",
-                get(shared_device::device_list),
-            )
-            .route(
-                "/v1/workspaces/{ws}/shared-devices/{id}",
-                delete(shared_device::device_revoke),
-            )
-            .route(
-                "/v1/workspaces/{ws}/shared-devices/{id}/rotate-key",
-                post(shared_device::device_rotate_key),
-            )
-            .route("/v1/workspaces/{ws}/me/pin", put(shared_device::pin_set))
-            .route(
-                "/v1/workspaces/{ws}/members/{member}/pin",
-                delete(shared_device::pin_clear),
-            ),
-        );
-        // The device proves itself with its key (`X-Device-Key`), not with a session.
-        let device_key = Router::new()
-            .route(
-                "/v1/shared-devices/{id}/members",
-                get(shared_device::device_members),
-            )
-            .route(
-                "/v1/shared-devices/{id}/switch",
-                post(shared_device::device_switch),
-            )
-            .route(
-                "/v1/shared-devices/{id}/lock",
-                post(shared_device::device_lock),
-            );
-        let workspaces = authenticated(
-            state,
-            idempotent(
-                state,
-                Router::new().route("/v1/workspaces", post(setup::workspace_create)),
-            ),
-        );
-        public
-            .merge(me)
-            .merge(devices_admin)
-            .merge(device_key)
-            .merge(workspaces)
-            .merge(access::routes(state))
-            .layer(Extension(self.clone()))
     }
 
     /// The token the request carries, if any.

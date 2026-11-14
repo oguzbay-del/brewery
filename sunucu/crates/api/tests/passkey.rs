@@ -60,8 +60,9 @@ async fn world(pool: &PgPool) -> World {
         cfg.auth.clone(),
         Arc::new(MemoryMailer::default()),
     ));
-    let state = AppState::new(app_db, Redis::disabled(), svc.clone(), cfg);
-    let app = api::build(state.clone(), svc.routes(&state));
+    let state =
+        AppState::new(app_db, Redis::disabled(), svc.clone(), cfg).with_auth_services(svc.clone());
+    let app = api::router(state.clone());
     World { app, oidc }
 }
 

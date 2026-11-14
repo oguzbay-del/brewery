@@ -13,10 +13,11 @@
 //! times a minute.
 
 use axum::{
-    Extension, Json,
+    Extension, Json, Router,
     extract::{Path, State},
     http::{HeaderMap, StatusCode},
     response::{IntoResponse, Response},
+    routing::{delete, get, post, put},
 };
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -824,6 +825,172 @@ pub async fn device_lock(
     forget_all(&svc, &hashes).await;
     Ok(StatusCode::NO_CONTENT.into_response())
 }
+
+/// Shared device administration, member PINs and the routes the device calls with its key.
+pub fn routes(state: &AppState) -> Router<AppState> {
+    // Without the auth services (see `AppState::with_auth_services`) these routes are off.
+    if state.auth_services.is_none() {
+        return Router::new();
+    }
+    // Shared device administration and PINs (ADR-0009 rule 7).
+    let devices_admin = crate::authenticated(
+        state,
+        crate::idempotent(
+            state,
+            Router::new().route("/v1/workspaces/{ws}/shared-devices", post(device_create)),
+        )
+        .route("/v1/workspaces/{ws}/shared-devices", get(device_list))
+        .route(
+            "/v1/workspaces/{ws}/shared-devices/{id}",
+            delete(device_revoke),
+        )
+        .route(
+            "/v1/workspaces/{ws}/shared-devices/{id}/rotate-key",
+            post(device_rotate_key),
+        )
+        .route("/v1/workspaces/{ws}/me/pin", put(pin_set))
+        .route(
+            "/v1/workspaces/{ws}/members/{member}/pin",
+            delete(pin_clear),
+        ),
+    );
+    // The device proves itself with its key (`X-Device-Key`), not with a session.
+    let device_key = Router::new()
+        .route("/v1/shared-devices/{id}/members", get(device_members))
+        .route("/v1/shared-devices/{id}/switch", post(device_switch))
+        .route("/v1/shared-devices/{id}/lock", post(device_lock));
+    devices_admin.merge(device_key)
+}
+
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{
+        Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, Internal,
+        MalformedRequest, NotFound, PreconditionRequired, RateLimited, StepUpRequired,
+        Unauthenticated, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+    };
+    use crate::openapi::{OperationSpec, op};
+
+    const DEVICE_ADMIN_ERRORS: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        UnsupportedMediaType,
+        ValidationFailed,
+        UpgradeRequired,
+        RateLimited,
+        Internal,
+    ];
+
+    const DEVICE_CREATE_ERRORS: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        IdempotencyInProgress,
+        UnsupportedMediaType,
+        ValidationFailed,
+        IdempotencyMismatch,
+        PreconditionRequired,
+        UpgradeRequired,
+        RateLimited,
+        Internal,
+    ];
+
+    /// Endpoints the device calls with its key: no session, so `401` means a bad key.
+    const DEVICE_KEY_ERRORS: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        NotFound,
+        UnsupportedMediaType,
+        ValidationFailed,
+        UpgradeRequired,
+        RateLimited,
+        Internal,
+    ];
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[
+        op(
+            "shareddevices_create",
+            false,
+            Some("devices.manage"),
+            DEVICE_CREATE_ERRORS,
+        ),
+        op(
+            "shareddevices_list",
+            false,
+            Some("devices.manage"),
+            DEVICE_ADMIN_ERRORS,
+        ),
+        op(
+            "shareddevices_revoke",
+            false,
+            Some("devices.manage"),
+            DEVICE_ADMIN_ERRORS,
+        ),
+        op(
+            "shareddevices_rotatekey",
+            false,
+            Some("devices.manage"),
+            DEVICE_ADMIN_ERRORS,
+        ),
+        op("shareddevices_pinset", false, None, DEVICE_ADMIN_ERRORS),
+        op(
+            "shareddevices_pinclear",
+            false,
+            Some("devices.manage"),
+            DEVICE_ADMIN_ERRORS,
+        ),
+        op("shareddevices_members", true, None, DEVICE_KEY_ERRORS),
+        op("shareddevices_switch", true, None, DEVICE_KEY_ERRORS),
+        op("shareddevices_lock", true, None, DEVICE_KEY_ERRORS),
+    ];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        device_create,
+        device_list,
+        device_revoke,
+        device_rotate_key,
+        pin_set,
+        pin_clear,
+        device_members,
+        device_switch,
+        device_lock
+    ),
+    components(schemas(
+        DeviceKeyRotate,
+        MemberTile,
+        PinSet,
+        SharedDeviceCreate,
+        SharedDeviceSummary,
+        SwitchRequest,
+        SwitchResponse
+    )),
+    tags(
+        (name = "shared-devices", description = "Shared device mode: devices, member PINs, user switching")
+    )
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "shared-devices",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};
 
 #[cfg(test)]
 mod tests {

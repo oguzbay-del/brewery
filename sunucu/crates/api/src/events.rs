@@ -309,6 +309,51 @@ async fn still_member(state: &AppState, headers: &HeaderMap, user: Uuid, ws: Uui
 /// Re-exported for the NATS handle type in [`AppState`].
 pub type JetStream = jetstream::Context;
 
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{Internal, RateLimited, UpgradeRequired};
+    use crate::openapi::OperationSpec;
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[OperationSpec {
+        operation_id: "events_stream",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: &[
+            ErrorCode::Unauthenticated,
+            ErrorCode::NotFound,
+            ErrorCode::ValidationFailed,
+            UpgradeRequired,
+            RateLimited,
+            Internal,
+            ErrorCode::Unavailable,
+        ],
+    }];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        workspace_events
+    ),
+    tags(
+        (name = "events", description = "Live updates (SSE)")
+    )
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "events",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};
+
 #[cfg(test)]
 mod tests {
     use super::*;

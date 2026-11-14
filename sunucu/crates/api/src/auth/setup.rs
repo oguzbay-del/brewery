@@ -1,7 +1,7 @@
 //! First workspace of a user: `POST /v1/workspaces` (ADR-0009 rule 1.6: the account exists
 //! after the first sign-in; the workspace is opened by the setup screen with mode and region).
 
-use axum::{Json, http::StatusCode};
+use axum::{Json, Router, http::StatusCode, routing::post};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 use super::tokens::{hex, random_bytes};
 use crate::{
+    AppState,
     context::RequestContext,
     error::{ApiError, ApiJson, ApiResult, FieldIssue},
 };
@@ -172,6 +173,75 @@ pub async fn workspace_create(
         }),
     ))
 }
+
+/// The route that opens the first workspace.
+pub fn routes(state: &AppState) -> Router<AppState> {
+    // Without the auth services (see `AppState::with_auth_services`) these routes are off.
+    if state.auth_services.is_none() {
+        return Router::new();
+    }
+    crate::authenticated(
+        state,
+        crate::idempotent(
+            state,
+            Router::new().route("/v1/workspaces", post(workspace_create)),
+        ),
+    )
+}
+
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::error::ErrorCode::{
+        Conflict, Forbidden, Internal, MalformedRequest, PreconditionRequired, RateLimited,
+        Unauthenticated, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+    };
+    use crate::openapi::OperationSpec;
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[OperationSpec {
+        operation_id: "workspaces_create",
+        public: false,
+        permission: None,
+        concurrency: None,
+        errors: &[
+            MalformedRequest,
+            Unauthenticated,
+            Forbidden,
+            Conflict,
+            UnsupportedMediaType,
+            ValidationFailed,
+            UpgradeRequired,
+            PreconditionRequired,
+            RateLimited,
+            Internal,
+        ],
+    }];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        workspace_create
+    ),
+    components(schemas(
+        WorkspaceCreateRequest,
+        WorkspaceResponse
+    )),
+    tags(
+        (name = "workspaces", description = "Workspaces")
+    )
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "workspaces",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};
 
 #[cfg(test)]
 mod tests {

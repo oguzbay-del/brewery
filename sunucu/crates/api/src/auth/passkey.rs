@@ -9,10 +9,11 @@
 //! A successful verification issues a replacement session carrying `step_up_at` (rule 3.4).
 
 use axum::{
-    Extension, Json,
+    Extension, Json, Router,
     extract::Path,
     http::StatusCode,
     response::{IntoResponse, Response},
+    routing::{delete, get, post},
 };
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -32,6 +33,7 @@ use super::{
     step_up::ProtectedAction,
 };
 use crate::{
+    AppState,
     context::RequestContext,
     error::{ApiError, ApiJson, ApiResult, ErrorCode, FieldIssue},
 };
@@ -580,3 +582,103 @@ impl AuthServices {
         Ok((token, record, cookie))
     }
 }
+
+/// The passkey and step-up routes under `/v1/me`.
+pub fn routes(state: &AppState) -> Router<AppState> {
+    // Without the auth services (see `AppState::with_auth_services`) these routes are off.
+    if state.auth_services.is_none() {
+        return Router::new();
+    }
+    crate::authenticated(
+        state,
+        Router::new()
+            .route("/v1/me/passkeys", get(passkeys_list))
+            .route("/v1/me/passkeys/{id}", delete(passkey_delete))
+            .route(
+                "/v1/me/passkeys/registration/start",
+                post(registration_start),
+            )
+            .route(
+                "/v1/me/passkeys/registration/finish",
+                post(registration_finish),
+            )
+            .route("/v1/me/step-up/start", post(step_up_start))
+            .route("/v1/me/step-up/finish", post(step_up_finish)),
+    )
+}
+
+// --- registry entry ----------------------------------------------------------------------
+
+/// Operation specs of this module (rows for `crate::openapi`).
+mod spec {
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{
+        Conflict, Forbidden, Internal, MalformedRequest, NotFound, RateLimited, StepUpRequired,
+        Unauthenticated, Unavailable, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+    };
+    use crate::openapi::{OperationSpec, op};
+
+    const PASSKEY_ERRORS: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        UnsupportedMediaType,
+        ValidationFailed,
+        UpgradeRequired,
+        RateLimited,
+        Unavailable,
+        Internal,
+    ];
+
+    pub(super) const OPERATIONS: &[OperationSpec] = &[
+        op("me_passkeys_list", false, None, PASSKEY_ERRORS),
+        op(
+            "me_passkeys_registration_start",
+            false,
+            None,
+            PASSKEY_ERRORS,
+        ),
+        op(
+            "me_passkeys_registration_finish",
+            false,
+            None,
+            PASSKEY_ERRORS,
+        ),
+        op("me_passkeys_delete", false, None, PASSKEY_ERRORS),
+        op("me_stepup_start", false, None, PASSKEY_ERRORS),
+        op("me_stepup_finish", false, None, PASSKEY_ERRORS),
+    ];
+}
+
+/// `OpenAPI` fragment of this module; `crate::openapi` merges it.
+#[derive(Debug, utoipa::OpenApi)]
+#[openapi(
+    paths(
+        passkeys_list,
+        registration_start,
+        registration_finish,
+        passkey_delete,
+        step_up_start,
+        step_up_finish
+    ),
+    components(schemas(
+        CeremonyStart,
+        PasskeySummary,
+        RegistrationDone,
+        RegistrationFinish,
+        StepUpDone,
+        StepUpFinish
+    ))
+)]
+struct ModuleDoc;
+
+/// Registry entry (`crate::modules`).
+pub const MODULE: crate::modules::Module = crate::modules::Module {
+    name: "passkey",
+    routes,
+    operations: spec::OPERATIONS,
+    openapi: <ModuleDoc as utoipa::OpenApi>::openapi,
+};

@@ -57,7 +57,7 @@ async fn main() -> common::Result<()> {
         config.auth.clone(),
         mailer,
     ));
-    let mut state = AppState::new(db, redis, auth.clone(), config);
+    let mut state = AppState::new(db, redis, auth.clone(), config).with_auth_services(auth);
     // SSE needs NATS; without NATS_URL the events endpoint answers 503.
     if let Ok(nats_url) = std::env::var("NATS_URL") {
         match events::connect(&nats_url).await {
@@ -70,8 +70,7 @@ async fn main() -> common::Result<()> {
     if let Some(store) = store {
         state = state.with_store(store);
     }
-    let all_routes = api::files::routes(&state).merge(auth.routes(&state));
-    let router = api::build(state.clone(), all_routes);
+    let router = api::router(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     let listener = tokio::net::TcpListener::bind(addr).await?;

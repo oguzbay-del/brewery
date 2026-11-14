@@ -19,3 +19,11 @@
 - Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish (ADR-0001).
 - Format with `rustfmt`. Do not accept warnings (`clippy -D warnings`).
 - Start the commit message with the task number: `T0.x: ...`.
+
+## How to add an endpoint module (`crates/api`)
+- Write the module file. Put its `routes` function, its `OperationSpec` rows (`spec::OPERATIONS`) and its `#[derive(OpenApi)]` fragment in that file. Copy the block `registry entry` of `src/events.rs`.
+- Define `pub const MODULE: crate::modules::Module` in the file. Add `MODULE` to `MODULES` in `src/modules.rs`. This is the only other change.
+- Do not change `src/lib.rs`, `src/openapi.rs` or `src/main.rs`. `build()` serves the routes and `openapi_json()` merges the fragments and rows.
+- A module that needs the auth services returns an empty `Router` when `state.auth_services` is `None`. See `src/auth/access.rs`.
+- Put the tags of the module in its fragment. The order in `MODULES` sets the order of the tags.
+- Run `make gen`. The file `sozlesme/openapi/openapi.json` must change only for the new paths.
