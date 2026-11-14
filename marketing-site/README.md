@@ -5,7 +5,9 @@ An isolated Astro + TypeScript + static-site project for the Demleme marketing w
 ## Scope
 
 - Responsive homepage.
-- Dedicated `/homebrewers` and `/breweries` audience landing pages.
+- Dedicated `/homebrewers/` and `/breweries/` audience landing pages.
+- `/how-it-works/` with separate Home and Business workflows.
+- `/technical-principles/` and `/faq/` for technical transparency and product-scope answers.
 - Editorial + Technical + Human visual direction.
 - No product application code, product API, product queue, or Claude development task changes.
 
@@ -70,12 +72,12 @@ The Astro config uses the root path on Vercel and `/brewery` only for the GitHub
 - **Project website:** https://oguzbay-del.github.io/brewery/
 - Workflow: `.github/workflows/marketing-site-pages.yml`.
 - The workflow sets `GITHUB_PAGES=true` to build with the `/brewery` base path.
-- Keep Pages available until Vercel production, custom domain, SEO endpoints and mobile/desktop QA are verified.
+- GitHub Pages is the temporary preview fallback while Vercel is rate-limited. Vercel Preview and final responsive browser QA remain mandatory before public release.
 
 ## Final QA checklist
 
-- Review homepage and both audience pages at 1440px desktop and 390px mobile.
-- Verify mobile menu, all internal links, keyboard navigation and 404 handling.
+- Review homepage, audience pages, How It Works, Technical Principles, FAQ and feature details at 1440 / 1024 / 768 / 390 / 320 px.
+- Verify mobile menu, all internal links, keyboard navigation, native FAQ disclosures, sitemap routes and 404 handling.
 - Verify page titles, descriptions, Open Graph, canonical URLs, structured data, robots and sitemap on the production domain.
 - Configure product/app/sign-in URLs only after they are confirmed.
 
