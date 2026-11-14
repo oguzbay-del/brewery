@@ -107,3 +107,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - GitHub dosya yazma işlemleri başarılı. Yerel Astro check/build çalıştırılmadı. Commit'e bağlı workflow run listesi boş; CI sonucu doğrulanmadı. Workflow dosyası PR dalında yeni olduğundan PR CI tetiklenmesi için workflow'un base branch'te bulunması gerekebilir; PR birleştirilmedi.
 - PR #3 draft olarak bırakıldı; merge yapılmadı.
 - Ürün uygulaması, `web/` ve Claude ürün geliştirme kuyruğu değiştirilmedi.
+
+
+**Son çalışma — 14 Kasım 2026 (bağlantı ve mesaj denetimi)**
+- Ana sayfa kartları, hero CTA'ları ve navigasyon Homebrewers / Breweries sayfalarına yönlendirilecek şekilde düzeltildi.
+- Audience metinleri kesinleşmemiş ürün fonksiyonlarını vaat etmek yerine teknik yaklaşım ve odak alanlarını anlatacak şekilde yumuşatıldı.
+- Fotoğraf yer tutucusu arka planı düz renge çevrildi; görsel slot kimlikleri korundu.
+- README kapsamı iki ayrı audience landing page'ini ve güncel CTA davranışını yansıtacak şekilde güncellendi.
+- GitHub üzerinden dosya içerikleri ve bağlantı hedefleri kontrol edildi. Astro check/build ve gerçek tarayıcıda 1440/390 görsel kontrolü henüz yapılmadı.
+- PR #3 draft; merge edilmedi. Workflow sonucu hâlâ doğrulanmadı.
+- **Sıradaki adım:** gerçek tarayıcı önizlemesiyle responsive görsel QA ve ardından Astro check/build.
