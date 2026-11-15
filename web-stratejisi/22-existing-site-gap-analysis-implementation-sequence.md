@@ -28,7 +28,7 @@ No claim is made here about live visual quality at 1440/390 px: this is a source
 | Crawl | Generated sitemap and robots.txt | Functional source exists; sitemap covers only current routes |
 | Design | Editorial/technical style, system fonts, responsive CSS, SVG placeholders | Coherent start; token source is duplicated into CSS variables |
 | Accessibility | Skip link, focus-visible, semantic nav, details/summary mobile menu | Good baseline; needs keyboard, screen reader, contrast and zoom QA |
-| Imagery | Five named placeholders / SVG illustrations | Correctly avoids unapproved photography; retain slot IDs |
+| Imagery | Nine original public SVG assets, one inline homepage hero illustration, and reserved CSS audience-card art slots | Meaningful original graphics are now integrated; product screenshots and photography remain gated by approval |
 | Conversion | Audience and informational CTAs | Honest for product-in-development; no real product account flow |
 | Analytics | No provider configured in reviewed package | Do not add until privacy/consent decisions |
 | Build | Astro check/build workflow exists in repository | CI is necessary but does not replace browser QA |
