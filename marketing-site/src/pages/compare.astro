@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import "../styles/pricing.css";
+import "../styles/comparison.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import { features, type FeatureAudience } from "../data/features";
@@ -59,10 +60,11 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
     </header>
     <main id="main-content" class="compare-page shell">
       <Breadcrumbs items={breadcrumbItems} />
-      <section class="pricing-hero compare-hero"><p class="eyebrow"><span class="eyebrow-line"></span> TWO PATHS · ONE BREWING MINDSET</p><h1>Choose the workspace that <em>fits your brew.</em></h1><p class="pricing-lede">Homebrewers and professional breweries share a love of good brewing, but their workflows are different. Compare the planned product scope before choosing a plan.</p><p class="pricing-status"><strong>Roadmap comparison</strong> · These are planned capabilities, not a statement that the product is currently available.</p></section>
+      <section class="pricing-hero compare-hero"><p class="eyebrow"><span class="eyebrow-line"></span> TWO PATHS · ONE BREWING MINDSET</p><h1>Choose the workspace that <em>fits your brew.</em></h1><p class="pricing-lede">Homebrewers and professional breweries share a love of good brewing, but their workflows are different. Compare the planned product scope before choosing a plan.</p><p class="pricing-status"><strong>Roadmap comparison</strong> · These are planned capabilities, not a statement that the product is currently available.</p><div class="compare-hero-actions"><a class="button button-primary" href={`${base}pricing/`}>View plans & pricing ↗</a><a class="text-link" href={`${base}get-started/`}>Configure a plan →</a></div></section>
+      <section class="compare-stage-key" aria-label="How to read the comparison"><p><strong>How to read this table</strong></p><ul><li><span class="stage-pill">MVP / Core</span> Intended in an initial product stage</li><li><span class="stage-pill">Later</span> Planned for a subsequent stage</li><li><span class="stage-muted">Under consideration / Not in scope</span> Not a committed release capability</li></ul></section>
       <section class="compare-table-section section-pad">
         <div class="comparison-table-wrap" role="region" aria-label="Scrollable Homebrewer and Professional Brewery function comparison" tabindex="0">
-          <table class="comparison-table">
+          <table class="comparison-table" aria-label="Comparison of planned GRISTORA product areas for Homebrewers and Professional Breweries">
             <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
             <tbody>
               {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}features/${slug}/`}>{label} ↗</a></th><td><span class={homeStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={businessStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
