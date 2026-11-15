@@ -697,3 +697,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - The two detailed diagrams use labelled, keyboard-focusable horizontal scroll regions on narrow screens to preserve label readability; responsive overflow and axe checks passed.
 - GitHub Pages deployment #43688305665 and main checks #43688305663 are in progress.
 - Manual screen-reader, full keyboard/focus, real 200% browser zoom, embedded SVG text contrast and Vercel preview verification remain release gates.
+
+
+## Audience comparison matrix — 15 Kasım 2026
+
+- Added a side-by-side Homebrewers vs Professional Breweries comparison table to `/how-it-works/`.
+- Six dimensions: primary user, core unit of work, typical records, measurement context, main question and scope boundary.
+- The table is explicitly roadmap/information-needs context, not a feature-availability promise. The mobile table region is labelled and keyboard-focusable.
+- Branch: `content/audience-comparison-matrix`; CI and responsive/axe review pending.
