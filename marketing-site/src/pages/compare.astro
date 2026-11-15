@@ -31,7 +31,7 @@ const rows = [
 const stageFor = (slug, audience) => {
   const feature = features.find((item) => item.slug === slug);
   if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
-  const stages = feature.stages.filter((stage) => audience === "Homebrewers" ? stage.startsWith("Homebrew") : stage.startsWith("Business"));
+  const stages = feature.stages.filter((stage) => audience === "Homebrewers" ? stage.startsWith("Homebrew") || stage === "Later" || stage === "Under consideration" : stage.startsWith("Business") || stage === "Later" || stage === "Under consideration");
   if (stages.length) return stages.join(" · ");
   return feature.stages.includes("Under consideration") ? "Shared · under consideration" : "Shared roadmap";
 };
@@ -52,9 +52,9 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header"><a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`}>How it works</a></nav>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`} aria-current="page">Compare</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`}>How it works</a></nav>
       <a class="header-cta" href={`${base}get-started/`}>Choose a plan <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}get-started/`}>Choose a plan</a></nav></details>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`} aria-current="page">Compare</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}get-started/`}>Choose a plan</a></nav></details>
     </header>
     <main id="main-content" class="compare-page shell">
       <Breadcrumbs items={breadcrumbItems} />
