@@ -34,7 +34,7 @@ GRISTORA is the selected public brand. Do not use Demleme in public marketing su
 - Editorial + Technical + Human visual direction.
 - No product application code, product API, product queue, or Claude development task changes.
 
-## Run locally
+## Custom domain and production launch\n\nThe owner confirms that `gristora.com` has been purchased. DNS, GitHub Pages domain verification, HTTPS and production launch remain separate checks. Follow [`DOMAIN-SETUP.md`](./DOMAIN-SETUP.md); do not switch the shared Pages deployment from preview mode until those gates and owner launch approval are complete.\n\n## Run locally
 
 ```sh
 npm install
