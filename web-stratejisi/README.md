@@ -1,9 +1,10 @@
 # Demleme — Web sitesi stratejisi
 
-Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi uygulamanın kendisi değildir. İki hedef kitle ayrı ele alınır: **Homebrewers (Home)** ve **Professional Breweries (Business)**.
+Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi uygulamanın kendisi değildir. **Birincil ticari hedef Professional Breweries (Business)**; **Homebrewers (Home)** ikincil audience ve ayrı ürün yoludur.
 
 ## Kararlar
-- Segment: Both — Home ve Business.
+- Ticari öncelik: Professional Breweries (Business) — birincil pazar ve edinim hunisi.
+- İkincil audience: Homebrewers (Home) — ayrı ürün yolu; birincil ticari odağı dağıtmaz.
 - Konumlandırma: Technical — teknik doğruluk, hesaplama güvenilirliği ve üretim disiplini.
 - Öncelikli pazarlar: ABD ve İngiltere.
 - Birincil dil: İngilizce.
@@ -24,6 +25,7 @@ Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini t
 10. [Teknik mimari ve framework değerlendirmesi](10-teknik-mimari.md)
 11. [Görsel tasarım ve responsive wireframe](11-visual-design-wireframes.md)
 12. [Bütünsel site revizyonu ve uygulama planı](12-site-revizyonu-ve-uygulama-plani.md)
+32. [Ticari öncelik: Breweries-first, self-service GTM](32-brewery-primary-self-service-commercial-strategy.md)
 
 ## Denetim, tasarım ve uygulama work package'leri
 13. [Mevcut site ve FoamByte denetimi](13-mevcut-site-ve-foambyte-denetimi.md)
