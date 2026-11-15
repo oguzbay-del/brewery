@@ -9,7 +9,7 @@
 
 - **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
 - **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
-- **Main güncel commit:** `85547a0a4cd33d2209a6dee9b32b7b764d3904d1` (PR #63 visual library phase 2 merged).
+- **Main güncel commit:** `91b197425c30fcdd4b0331b98d56d537eb7a7e90` (PR #65 audience visual phase 3 merged).
 - **Görsel yaklaşımı:** Kullanıcı, konuya uygun çok sayıda özgün grafik/görsel üretimini onayladı. Öncelik özel SVG diyagramlar ve açıklayıcı veri grafikleri; gerektiğinde özgün editoryal illüstrasyonlar. Stok fotoğraf yok; mevcut homepage hero görseli ayrıca onay alınmadan değiştirilmez.
 - **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
 
@@ -575,4 +575,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Added a Professional Breweries batch timeline: recipe version → batch plan → production record → vessel events → quality review.
 - Both are explicitly labelled conceptual/roadmap visuals, not released workflows or general ERP claims.
 - Updated the visual asset inventory and moved completed items out of the backlog.
-- Branch: `design/audience-visuals-phase-3`; CI and responsive browser QA required before merge.
+- PR #65 merged to main after successful Astro/TypeScript, build and static route/metadata/link validation. New GitHub Pages deployment #43684462054 and main checks #43684462086 were queued.
+
+
+## Handoff update — PR #65 merged
+
+- Main commit: `91b197425c30fcdd4b0331b98d56d537eb7a7e90`.
+- PR #65 added Homebrew ingredient-context and Professional Breweries batch-timeline visuals; CI passed.
+- Total original SVG visuals in marketing site: seven.
+- PR #63 GitHub Pages deployment and main checks completed successfully. PR #65 merge deployment/checks are queued.
+- Actual responsive/browser QA remains pending; Vercel preview links are available per PR but have not been visually inspected at desktop/tablet/mobile widths.
