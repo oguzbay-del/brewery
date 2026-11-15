@@ -154,7 +154,7 @@ FoamByte'ın görsel avantajı yalnız estetik değil, **ürünün nasıl çalı
 | FB-08 | Feature detail şablonuna evidence / limits / inputs-outputs ekle | P1 | PR #40 claim-safe katalog merge ve WP-03 |
 | FB-09 | Learn topic hub ve ilk teknik rehberler | P1 | WP-10 evidence register |
 | FB-10 | Calculators hub ve araçlar | HOLD | WP-09 formül doğrulama + public-use approval |
-| FB-11 | Orijinal görsel varlıkların eklenmesi | Kısmen tamamlandı | Dokuz özgün public SVG + inline homepage hero; gerçek fotoğraf ve ürün ekranı ayrı onay bekliyor |
+| FB-11 | Orijinal görsel varlıkların eklenmesi | Kısmen tamamlandı | On bir özgün public SVG + inline homepage hero; gerçek fotoğraf ve ürün ekranı ayrı onay bekliyor |
 | FB-12 | Otomatik QA ve ilk screenshot incelemesi tamamlandı; kapsamlı manuel review bekliyor | P0 launch gate | 40 Playwright testi başarılı; 23 screenshot üretildi ve ilk tasarım incelemesi yapıldı. Keyboard/focus, screen-reader, contrast, 200% zoom ve Vercel görsel doğrulaması açık |
 | FB-13 | Kısmen tamamlandı | Statik route/SEO/accessibility smoke checks ve Playwright browser smoke tests CI'da. Screen-reader, contrast, keyboard focus, zoom ve manuel erişilebilirlik QA ayrıca gerekli |
 
@@ -235,3 +235,10 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - PR #71 final CI passed 60/60 browser tests: 40 responsive checks, 14 axe scans (seven routes at desktop/mobile), three keyboard interaction checks and three 720px layout proxies.
 - Axe findings remediated: hero note and footer metadata contrast now exceed 5:1; Homebrewers and Breweries horizontal tables are labelled/focusable regions with visible focus treatment.
 - Automated axe scans are clean for the covered WCAG A/AA tags. This is not a WCAG conformance certification; manual screen-reader, full keyboard, real 200% zoom and SVG text contrast review remain open.
+
+
+## 7F. Visual asset expansion — 15 Kasım 2026
+
+- Added two more original SVGs: a simulated fermentation-observation timeline for Homebrewers and a conceptual equipment-calibration record model for Technical Principles.
+- Total public original SVG assets: eleven; homepage hero remains an existing inline SVG. Product screenshots and photography remain separately gated.
+- Both new visuals include explicit simulation/conceptual caveats and accessible title/description/alt text.
