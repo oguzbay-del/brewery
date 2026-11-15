@@ -764,8 +764,18 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 
 ## Handoff update — PR #80 merged
 
-- Main commit: `56e44fd988a2eb6abee75bffee2ad717cbc04f00`.
+- Main commit: `0b727c66d0a2383d98bea2744e73355c58ceeb6a` (PR #81 documentation handoff merged).
 - PR #80 merged with FAQPage JSON-LD generated from the visible FAQ data and static validation that question count/answers match the rendered content.
 - PR CI #43689184058 passed: Astro/TypeScript, build, static validator, 40 responsive checks, 14 axe scans, 3 disclosure/skip-link keyboard checks, 3 narrow-desktop proxies and 3 table-focus checks (63/63 browser tests).
-- Main checks #43689298960 and GitHub Pages deployment #43689298947 are queued.
+- Main checks #43689298960 and GitHub Pages deployment #43689298947 completed successfully.
 - No FAQ rich-result or ranking guarantee is claimed. Manual screen-reader and actual 200% zoom checks remain open.
+
+
+## Current handoff — 15 Kasım 2026
+
+- Current main: `0b727c66d0a2383d98bea2744e73355c58ceeb6a`.
+- PR #80 FAQPage structured data merged; static validator confirms 11 visible Q&A entries match the FAQ schema.
+- Main checks #43689298960 and GitHub Pages deployment #43689298947 both succeeded after PR #80.
+- Current preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit, not by site build/test failures.
+- Visual inventory: eleven public original SVG assets plus the existing inline homepage hero and audience-card illustrations.
+- Browser QA: 63/63 responsive, axe and keyboard tests passed. Remaining manual release gates: screen-reader, full keyboard/focus review, actual 200% browser zoom, and embedded SVG text contrast review.
