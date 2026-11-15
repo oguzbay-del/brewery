@@ -142,7 +142,7 @@ test("plan wizard supports Home and Business journeys, terms and review", async 
   await expect(page.locator("#home-seat")).toBeVisible();
   await page.getByRole("button", { name: /Continue/ }).click();
   await expect(page.locator('[data-step="3"]')).toBeVisible();
-  await page.getByLabel(/Annually/).check();
+  await page.getByLabel(/Annual billing/).check();
   await page.getByRole("button", { name: /Continue/ }).click();
   await expect(page.locator('[data-step="4"]')).toBeVisible();
   await expect(page.locator("#review-audience")).toHaveText("Homebrewer");
@@ -164,7 +164,7 @@ test("Business wizard routes teams above 20 seats to custom quote", async ({ pag
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/get-started/?audience=business", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /Continue/ }).click();
-  await page.getByLabel(/20\+/).check();
+  await page.getByLabel(/More than 20 users/).check();
   await expect(page.locator("#contact-tier")).toBeVisible();
   await page.getByRole("button", { name: /Review contact request/ }).click();
   await expect(page.locator('[data-step="4"]')).toBeVisible();
