@@ -604,3 +604,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Nine original SVG assets are now in the marketing site: seven technical/workflow diagrams and two hero illustrations.
 - GitHub Pages deployment #43684614831 and main checks #43684614839 are queued.
 - Homepage hero illustration remains unchanged. Responsive visual/browser QA remains pending.
+
+
+## Responsive browser QA automation — 15 Kasım 2026
+
+- Added Playwright 1.65.1 and Chromium browser smoke tests to the marketing-site CI workflow.
+- Seven routes are checked at 1440 / 1024 / 768 / 390 / 320 px for overflow, route response, main/H1 structure, image alt/loading and browser page errors.
+- Primary navigation interaction is tested at all five widths. CI retains screenshot artifacts for review.
+- Cleaned the homepage hero illustration's stale placeholder/photography wording without changing its appearance.
+- Updated WP-13 visual QA and visual inventory status; manual visual, keyboard, screen-reader, contrast and zoom review remains a release gate.
+- Branch: `qa/playwright-responsive-smoke`; PR and CI validation pending.
