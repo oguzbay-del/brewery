@@ -250,3 +250,12 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - Total public original SVGs: eleven; homepage hero remains an existing inline SVG. New assets are caveated as simulated/conceptual, not released product output.
 - Detailed diagrams use labelled, keyboard-focusable horizontal scroll regions on narrow screens. Responsive and axe/keyboard tests passed (60/60).
 - Main GitHub Pages deployment and checks are being verified after merge.
+
+
+## 7H. Audience differentiation matrix — 15 Kasım 2026
+
+- Added a side-by-side Homebrewers / Professional Breweries comparison table to How It Works, covering six dimensions: user, work unit, records, measurement context, key question and scope boundary.
+- The matrix makes the distinction explicit without presenting roadmap items as released features; the table scroll region is keyboard accessible on narrow screens.
+
+
+- Screenshot review of the comparison page identified and corrected the five-item Business workflow's empty sixth grid cell; added an explicit mobile scroll hint to the comparison matrix.

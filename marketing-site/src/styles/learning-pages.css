@@ -58,3 +58,10 @@
   .scope-inline { grid-template-columns: 1fr; gap: 10px; }
   .principles-actions { align-items: flex-start; flex-direction: column; gap: 18px; }
 }
+
+
+/* The Business workflow has five cards; avoid a visually empty sixth grid cell. */
+.explain-business-section .explain-flow { gap: 16px; border: 0; background: transparent; }
+.explain-business-section .explain-flow-item { border: 1px solid var(--line); }
+.comparison-scroll-hint { display: none; }
+@media (max-width: 760px) { .comparison-scroll-hint { display: block; margin: 0 0 10px; color: var(--muted); font-size: 12px; } }

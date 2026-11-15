@@ -336,3 +336,6 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .visual-diagram-scroll { overflow-x: auto; overscroll-behavior-inline: contain; }
 .visual-diagram-scroll:focus-visible { outline: 3px solid #0066cc; outline-offset: 4px; }
 @media (max-width: 760px) { .visual-diagram-scroll img { min-width: 780px; } }
+
+
+.audience-compare-link { margin: 24px 0 0; text-align: center; }
