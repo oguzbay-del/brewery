@@ -6,6 +6,7 @@
 - The owner selected the **first logo design shown by the assistant** before the message beginning “Paralel çalışmayı sürdürdüm. Bu turda marka dokümantasyonundan çıkıp ilk logo tasarımını…”. This is the only direction to refine; do not substitute later exploration variants or ask the owner to repeat the decision.
 - Reference: https://chatgpt.com/s/m_6af9ac3f07e48191aa8504a2e22a77a9. The connector and web fetcher cannot retrieve the rendered image. Do not invent its geometry or claim a reconstruction is faithful. Exact tracing is pending access to that source, not pending owner preference.
 - Public website only. Do not rename or modify the product application, APIs, Rust engine, iOS app, data model, internal identifiers, product roadmap or product-development queue.
+- **ChatGPT assignment boundary (owner instruction, 15 Nov 2026):** ChatGPT works only on the public marketing website. It must not touch the main product, Claude's code, instructions, branches, or development queue. The binding rule and website completion/stop criteria are in `marketing-site/CHATGPT-SCOPE.md`. Claude's product-development workflow remains separate and unchanged.
 - Primary commercial audience: Professional Breweries. Homebrewers is a distinct secondary path. English-first, US/UK initial markets, self-service discovery.
 - The product and public site are in development. No unsupported customer, metric, pricing, trial, signup, integration, production availability, certification, compliance or predictive-AI claims.
 
