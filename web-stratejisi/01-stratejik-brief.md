@@ -3,11 +3,11 @@
 ## Web sitesinin görevi
 Demleme'nin ne olduğunu, kimin için olduğunu, hangi demleme problemlerini çözdüğünü ve nasıl başlanacağını anlatmak. Uygulamaya nitelikli trafik ve self-service kayıt/dönüşüm sağlamak.
 
-## İki audience, tek ürün
-- **Homebrewers:** Evde bira üreten; reçete tasarlayan, demlemeyi planlayan ve sonuçlarını takip eden bireyler.
-- **Professional Breweries:** Ticari bira üreticileri ve ekipleri; reçete, batch, ekip ve üretim kayıtlarında tutarlılık arayan işletmeler.
+## Ticari öncelik: Professional Breweries
+- **Birincil ticari audience — Professional Breweries (Business):** Bağımsız küçük/orta ölçekli bira üreticileri; işletme sahipleri, head brewer'lar ve üretim ekipleri. Ana edinim hunisi bu kitlenin operasyonel problemleri ve self-service ürün değerlendirmesi etrafında kurulur.
+- **İkincil audience — Homebrewers (Home):** Ayrı iş akışı ve ürün modu olarak korunur. Organik içerik, topluluk ve ürün kapsamı için önemlidir; ana sayfada ve ticari kaynak dağılımında Business ile eşit öncelik taşımaz.
 
-İki kitle aynı teknik çekirdeği kullanabilir; ihtiyaçları, kanıt beklentileri, dili ve dönüşüm mesajları farklıdır. Ana sayfa iki yola da net yönlendirme yapar.
+İki kitle aynı teknik çekirdeği paylaşabilir; ancak ihtiyaçları, kanıt beklentileri, dili ve dönüşüm mesajları farklıdır. Ana sayfa önce Professional Breweries'i konumlandırır, Homebrewers için açık ve ikincil bir yol sunar.
 
 ## Konumlandırma
 **Technical brewing software for people who care about accurate, repeatable brewing.**
@@ -21,5 +21,7 @@ Demleme'nin ne olduğunu, kimin için olduğunu, hangi demleme problemlerini ç�
 ## Pazar ve dil
 ABD ve İngiltere ilk pazarlardır. Web kopyası doğal, profesyonel İngilizce olmalıdır. ASD-STE100 pazarlama metnine uygulanmaz; teknik talimat ve dokümanlarda kullanılır.
 
-## Başarı hunisi
-Nitelikli ziyaretçi → doğru audience sayfası → ürün kabiliyetini anlama → kayıt → aktive kullanıcı → ücretli müşteri.
+## Birincil başarı hunisi — Business
+Professional brewery ziyaretçisi → Breweries landing page → operasyonel iş akışı ve kapsamı anlama → self-service erişim açıldığında hesap/workspace oluşturma → ilk recipe veya batch değeri → aktive işletme → ücretli müşteri.
+
+Homebrewers için ayrı bir ikincil funnel izlenir. Ürün erişimi açılana kadar hiçbir CTA çalışmayan signup, trial, demo veya waitlist varmış gibi sunulmaz.
