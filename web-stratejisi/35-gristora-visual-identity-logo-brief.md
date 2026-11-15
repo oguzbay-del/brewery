@@ -1,6 +1,6 @@
 # GRISTORA — Görsel kimlik ve logo tasarım brief'i
 
-**Durum:** İş listesinde; tasarım seçenekleri henüz üretilmedi veya onaylanmadı.  
+**Durum:** İlk iki vektör keşif panosu hazır; seçenekler henüz onaylanmadı.  
 **Teslim:** Düzenlenebilir SVG master dosyaları, kullanım varyantları ve karar panosu.
 
 ## 1. Tasarım hedefi
@@ -106,3 +106,17 @@ An initial vector exploration board is available at [assets/gristora-logo-explor
 | D | 4 | 4 | 3 | 4 | Best complete identity system if symbol is refined |
 
 Scores are subjective design hypotheses. Do not use as research findings. Next iteration should develop A, B and C separately, remove any leaf/hop-like ambiguity, test black/white and tiny sizes, and create a typographic-only option. No route is approved.
+
+
+## 9. Six-variant exploration — 15 November 2026
+
+A second editable vector board is available at [assets/gristora-logo-exploration-02.svg](assets/gristora-logo-exploration-02.svg). It develops three routes with two alternatives each:
+
+- **A1 Editorial Serif Wordmark:** premium, editorial and independent of a symbol; custom letterforms and small-size performance remain to be refined.
+- **A2 Typographic Wordmark:** more contemporary and direct; needs distinctive letterform treatment so it does not look like a stock font setting.
+- **B1 Technical Monogram:** compact circular G/process sketch; favicon potential is good, but generic industrial-symbol similarity needs review.
+- **B2 Minimal Lettermark:** simplest G-based alternative; strong reduction potential, but needs more proprietary geometry.
+- **C1 Grist-to-Flow:** process/material transformation concept; distinctive story, but the current line form needs optical simplification.
+- **C2 Abstract Grain Geometry:** geometric material reference without literal malt/hop illustration; test for unintended leaf/seed associations and 16 px clarity.
+
+These are six exploratory sketches, not finished logo masters. The next design pass should normalize optical weight, refine geometry and typography, create light/dark and monochrome exports, and compare silhouettes. No public-site asset should be replaced until owner approval and legal/domain review.
