@@ -40,12 +40,13 @@ Use original visuals to make brewing workflows, technical concepts and data rela
 | Measurement source and context | Technical principles | Added, conceptual principle |
 | Homebrew ingredient context | Homebrewers | Added, conceptual learning aid |
 | Business batch timeline | Breweries | Added, conceptual Business roadmap |
+| Fermentation observation timeline | Homebrewers | Added, simulated observations with timestamp/source context |
+| Equipment calibration record model | Technical principles | Added, conceptual record structure only |
 
 ## Next visual backlog
 
-1. Fermentation observation timeline: gravity, temperature and notes with explicit source and timestamp context; simulated values only. Avoid implying live device integration.
-2. Equipment calibration record: instrument, calibration date, reference method and status; do not depict model-driven recommendations as available.
-3. Product screenshots only after an approved, functioning product build exists and each depicted capability is confirmed.
+1. Product screenshots only after an approved, functioning product build exists and each depicted capability is confirmed.
+2. Additional editorial illustrations only where they clarify a new concept; avoid decorative repetition.
 
 ## Publication checklist
 
