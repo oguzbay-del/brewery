@@ -1,6 +1,6 @@
 # GRISTORA — Public marketing site strategy
 
-Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi yazılım uygulamasının kendisi değildir. GRISTORA marka dokümanları bu klasördeki 33–37 numaralı dosyalarda kanonik kayıttır. **Birincil ticari hedef Professional Breweries (Business)**; **Homebrewers (Home)** ikincil audience ve ayrı ürün yoludur.
+Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi yazılım uygulamasının kendisi değildir. GRISTORA marka dokümanları bu klasördeki 33–38 numaralı dosyalarda kanonik kayıttır. **Birincil ticari hedef Professional Breweries (Business)**; **Homebrewers (Home)** ikincil audience ve ayrı ürün yoludur.
 
 ## Kararlar
 - Ticari öncelik: Professional Breweries (Business) — birincil pazar ve edinim hunisi.
@@ -38,20 +38,20 @@ Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-s
 20. [Teknik içerik ve hesaplayıcı doğrulama backlog'u — WP-09](20-technical-content-calculator-validation.md)
 21. [Sayfa içerik backlog'u ve evidence register — WP-10](21-page-content-evidence-register.md)
 22. [Mevcut site gap analysis ve uygulama sırası — WP-11](22-existing-site-gap-analysis-implementation-sequence.md)
-23. [Uygulama spesifikasyonu ve release gate — WP-12](23-implementation-spec-release-gate.md)
+23. [Uygulama spesifikasyonu ve release gate — WP-12](23-site-revizyonu-ve-uygulama-plani.md)
 24. [FoamByte derin benchmark ve sayfa iyileştirme kararları — WP-13](24-foambyte-benchmark-derinlemesine.md)
 25. [Home / Business içerik ve kopya taslağı — WP-14](25-home-business-content-copy-blueprint.md)
 26. [Lansman karar kaydı — ticari, domain, analytics ve ürün erişimi](26-launch-decision-register.md)
 
 ## GRISTORA marka sistemi
-
 33. [GRISTORA marka platformu](33-gristora-brand-platform.md)
 34. [GRISTORA marka mimarisi](34-gristora-brand-architecture.md)
 35. [GRISTORA görsel kimlik ve logo brief'i](35-gristora-visual-identity-logo-brief.md)
 36. [GRISTORA public marketing site rebrand planı](36-gristora-public-site-rebrand-plan.md)
 37. [GRISTORA logo üretim ve QA spesifikasyonu](37-gristora-logo-production-and-qa.md)
+38. [GRISTORA public marketing-site brand implementation map](38-gristora-public-site-brand-implementation-map.md)
 
-Marka kararı: GRISTORA. Public sitede Demleme adı kullanılmayacak. Logo ve hukuki marka temizliği henüz tamamlanmadı. WP-17 onay kapıları geçilmeden mevcut public site markasını değiştirme. Ürün uygulamasına ve ürün yazılımına dokunma.
+Marka kararı: GRISTORA. Public sitede Demleme adı kullanılmayacak. Kullanıcının seçtiği ilk logo tasarımı üretim yönüdür; asıl görselden sadık vektör master üretimi ve onayı bekleniyor. Hukuki marka/domain temizliği de tamamlanmadı. WP-17 onay kapıları geçilmeden mevcut public site markasını değiştirme. Ürün uygulamasına ve ürün yazılımına dokunma.
 
 ## Yayın ilkesi
 Discovery → sitemap → wireframe → görsel tasarım → içerik → geliştirme → QA → lansman. Özellik iddiaları ürünün mevcut kabiliyetleriyle doğrulanmadan yayınlanmaz. Build başarısı, canlı görsel QA veya ürün claim onayı yerine sayılmaz.
