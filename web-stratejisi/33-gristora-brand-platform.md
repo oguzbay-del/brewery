@@ -112,13 +112,18 @@ Kontrol edilecek kaynaklar:
 - WIPO Global Brand Database: https://branddb.wipo.int/
 - TÜRKPATENT: https://www.turkpatent.gov.tr/en/research
 
-Öncelikli sınıflar ve mal/hizmet tanımları uzmanla netleştirilmelidir. Yazılım için Nice 9 ve 42; iş/işletme hizmetleri için ihtiyaca göre 35; ürünün gerçek kapsamına göre başka sınıflar değerlendirilebilir. Benzer yazım, telaffuz, logo ve ilgili ticari kullanım da incelenmelidir.
+Ön sınıf değerlendirmesi doküman 40'tadır: hosted SaaS için Nice 42 muhtemel ana sınıf; GRISTORA markasıyla indirilebilir yazılım sunulursa 9; 35 yalnız gerçek işletme yönetimi/administrasyon hizmetleri veriliyorsa; 41 ayrı pazarlanan eğitim varsa değerlendirilir.
 
-İlk web taramasında “Gristora” için belirgin bir doğrudan bira yazılımı markası görünmedi. Bu, sicil temizliği değildir. “Gistora” adlı BASF başvurusu Hindistan'da 1, 5 ve 31. sınıflarda listelenmiştir; farklı yazım ve sınıflar olsa da fonetik/isim benzerliği raporunda kaydedilmelidir: https://www.quickcompany.in/trademarks/7525714-36b6-gistora
+Önemli isim/önceki kullanım izleri:
+- Hindistan C-DAC resmi sitesinde “GistOra Tools” adlı, Oracle üzerinde çalışan sunucu tarafı uygulama geliştirme yazılımı listelenmektedir. Bu, yazılım sektöründe yakın isimli bir önceki kullanım işaretidir; güncel ticari faaliyet ve marka hakları doğrulanmış değildir: https://www.cdac.gov.in/index.aspx?id=mc_ilf_gistora
+- Endonezya DGIP resmi gazetesinde BASF adına GISTORA kelime markası başvurusu DID2026030217, 1/5/31 sınıflarında yayımlanmıştır. Güncel itiraz/tescil durumu ayrıca doğrulanmalıdır: https://dgip.go.id/uploads/berita_resmi/file/2879c93281a46699d12445ac5d5d5ae2.pdf
+- QuickCompany üçüncü taraf dizininde BASF adına Hindistan GISTORA başvurusu 7525714, 1/5/31 sınıflarında listelenmiştir; resmi IP India kaydı henüz yakalanmamıştır: https://www.quickcompany.in/trademarks/7525714-36b6-gistora
 
-WIPO, Global Brand Database'de sonuç bulunmamasının kullanılabilirlik garantisi olmadığını açıkça belirtir: https://www.wipo.int/en/web/global-brand-database/faqs_branddb
+C-DAC GistOra yazılım adı, GRISTORA'ya yalnızca bir harf uzaklıkta ve yazılım alanında olduğu için öncelikli hukuk danışmanı incelemesi gerektirir. Bu bulgular otomatik hukuki çatışma veya kullanılamazlık sonucu değildir. Ayrıntılı kayıt, kaynak ve belirsizlikler doküman 39'da tutulur.
 
-**Gate:** ABD, İngiltere ve Avustralya için benzer markalar ve common-law kullanımları profesyonel incelemeden geçmeden ticari lansman ve marka tescil kararı verilmez.
+WIPO, Global Brand Database'de sonuç bulunmamasının kullanılabilirlik garantisi olmadığını ve ulusal sicillerin ayrıca aranmasını önerir: https://www.wipo.int/en/web/global-brand-database/faqs_branddb
+
+**Gate:** ABD, İngiltere ve Avustralya için benzer markalar ve common-law kullanımları profesyonel incelemeden geçmeden ticari lansman ve marka tescil kararı verilmez. C-DAC GistOra yazılım izi ayrıca counsel review olmadan kapatılamaz.
 
 ## 10. Karar kaydı
 
@@ -131,6 +136,6 @@ WIPO, Global Brand Database'de sonuç bulunmamasının kullanılabilirlik garant
 | Professional Breweries birincil audience | Mevcut karar korunur |
 | Homebrewers ikincil audience | Mevcut karar korunur |
 | İngilizce / ABD + UK | Mevcut karar korunur |
-| Logo ve görsel kimlik | Tasarım çalışması bekliyor |
+| Logo ve görsel kimlik | İlk paylaşılan logo yönü seçildi; asıl görsele erişim ve sadık vektör üretimi bekliyor |
 | Marka sicil/domain temizliği | Açık gate |
 | Public site rebrand | Ayrı WP-17; henüz uygulanmadı |
