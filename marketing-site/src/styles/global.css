@@ -302,8 +302,8 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 }
 
 
-/* The expanded six-link navigation switches to the compact menu before tablet widths become crowded. */
-@media (min-width: 761px) and (max-width: 980px) {
+/* The expanded seven-link navigation switches to the compact menu before tablet widths become crowded. */
+@media (min-width: 761px) and (max-width: 1100px) {
   .site-header { min-height: 72px; padding-inline: 24px; gap: 20px; }
   .desktop-nav, .header-cta { display: none; }
   .mobile-menu { position: relative; display: block; }
