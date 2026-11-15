@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=Plus+Jakarta+Sans:wght@400..800&display=swap');
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/plus-jakarta-sans/index.css";
 :root {
   color-scheme: light;
   --page: #F7F6F3;
@@ -373,42 +374,60 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 }
 
 
-/* GRISTORA approved brand-board alignment — shared visual system. */
+/* GRISTORA brand-board alignment, based on the Stitch "Brewing Intelligence" screens.
+   Visual language only: copy, claims and page structure are unchanged. */
 :root {
+  --radius-chip: 999px;
   --radius-card: 18px;
   --radius-panel: 24px;
   --radius-control: 999px;
-  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --display: "Plus Jakarta Sans", "Inter", sans-serif;
+  --sans: "Inter Variable", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --display: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", "Inter Variable", sans-serif;
+  --amber-tint: #FBE9DA;
+  --card-shadow: 0 1px 2px rgba(11, 47, 38, .05), 0 8px 24px rgba(11, 47, 38, .05);
 }
 body { font-family: var(--sans); }
-h1, h2 { font-family: var(--display); font-weight: 650; letter-spacing: -1.2px; }
-h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; }
-.site-header { background: var(--page); }
+h1, h2 { font-family: var(--display); font-weight: 700; letter-spacing: -1.2px; }
+h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -.6px; }
+
+/* Header: wordmark, pill navigation group and amber pill CTA. */
+.site-header { background: var(--page); border-bottom-color: rgba(11, 47, 38, .08); }
 .wordmark { gap: 11px; }
 .brand-symbol { width: 34px; height: 42px; }
 .wordmark-text { font-family: var(--display); font-weight: 700; letter-spacing: 2.4px; }
-.header-cta { border-radius: var(--radius-control); padding: 12px 21px; }
-.button, .hero-actions .hero-secondary { border-radius: var(--radius-control); }
-.hero { overflow: hidden; padding-inline: clamp(26px, 4vw, 54px); border-radius: var(--radius-panel); background: var(--forest); color: var(--page); }
-.hero h1 { font-family: var(--display); font-weight: 650; letter-spacing: -1.8px; }
-.hero h1 em { font-family: var(--serif); font-weight: 400; }
-.hero-intro { color: #e1e9e4; }
-.hero-note { color: #e1d8c9; }
-.hero-art { border-radius: var(--radius-card); background: #eee9df; }
+.desktop-nav { gap: clamp(14px, 2vw, 30px); padding: 9px 22px; border-radius: var(--radius-control); background: var(--soft); }
+.desktop-nav a { color: #3f443f; }
+.header-cta { border: 0; border-radius: var(--radius-control); padding: 12px 21px; background: var(--amber-fill); color: var(--amber-ink); box-shadow: 0 4px 14px rgba(244, 162, 97, .35); transition: background .2s ease, transform .2s ease; }
+.header-cta:hover { background: #ee9147; transform: translateY(-1px); }
+.header-cta span { color: var(--amber-ink); }
+
+/* Hero: light editorial split with a pill status chip. */
+.hero-copy > .eyebrow { display: inline-flex; width: auto; padding: 8px 15px; border-radius: var(--radius-chip); background: var(--amber-tint); color: var(--amber); }
+.hero-copy > .eyebrow .eyebrow-line { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+.hero h1 { font-family: var(--display); font-weight: 700; letter-spacing: -1.8px; }
+.hero h1 em { font-family: var(--serif); font-weight: 400; color: var(--amber); }
+.hero-art { border-radius: var(--radius-panel); background: #EEE9DF; box-shadow: var(--card-shadow); }
+
+/* Controls: pill buttons. */
+.button, .hero-actions .hero-secondary, .plan-card .button { border-radius: var(--radius-control); }
+.button-primary { box-shadow: 0 4px 14px rgba(244, 162, 97, .35); }
+.button-primary:hover { background: #ee9147; }
+.hero-actions .hero-secondary { border-color: transparent; background: var(--soft); }
+.hero-actions .hero-secondary:hover { border-color: transparent; background: #dedcd6; color: var(--ink); }
+
+/* Cards and panels: rounded white surfaces with a soft border and shadow. */
 .audience-image, .audience-hero-art, .image-placeholder { border-radius: var(--radius-card); }
 .audience-card, .feature-card, .workflow-card, .explain-flow-item, .principle-card,
 .stage-grid article, .plan-card, .wizard-main, .wizard-summary, .choice-card,
-.principle-grid, .feature-card-grid, .audience-feature-link, .faq-directory-aside,
-.feature-roadmap-aside, .visual-diagram, .audience-page-note, .pricing-status,
-.compare-stage-key, .role-table-wrap, .record-model-stage {
+.audience-feature-link, .faq-directory-aside, .feature-roadmap-aside, .visual-diagram,
+.audience-page-note, .pricing-status, .compare-stage-key, .role-table-wrap, .record-model-stage {
   border-radius: var(--radius-card);
-  overflow: hidden;
 }
 .audience-grid, .feature-card-grid, .workflow-grid, .explain-flow,
 .principle-grid, .stage-grid { gap: 16px; border: 0; background: transparent; }
 .feature-card, .workflow-card, .explain-flow-item, .principle-card, .stage-grid article {
   border: 1px solid var(--line);
+  box-shadow: var(--card-shadow);
 }
 .feature-card { padding: 30px; }
 .audience-copy h3, .feature-card h2, .workflow-card h3, .principle-card h2 {
@@ -416,14 +435,14 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; 
 }
 .plan-card { border-radius: var(--radius-panel); }
 .plan-grid { gap: 20px; }
-.plan-card .button { border-radius: var(--radius-control); }
 .billing-grid { gap: 12px; border: 0; }
 .billing-grid article { border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); }
-.scope-inline, .audience-page-note, .faq-directory-aside { border-radius: var(--radius-card); }
+.scope-inline { border-radius: var(--radius-card); }
+
+/* Sections: warm neutral bands and one forest panel for the technical story. */
 .technical-section { background: var(--forest); }
-.closing-section { background: #eee9df; }
+.closing-section { background: #EEE9DF; }
 .site-footer { background: var(--page); }
 @media (max-width: 760px) {
-  .hero { margin-inline: 12px; padding-inline: 22px; border-radius: 20px; }
   .audience-grid, .feature-card-grid, .workflow-grid, .explain-flow, .principle-grid, .stage-grid { gap: 12px; }
 }

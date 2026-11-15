@@ -67,9 +67,8 @@
   .hero h1 em { letter-spacing: -1.35px; }
 }
 
-
-/* Brand-board control geometry and hero typography. */
+/* Brand-board pill controls. This file loads after global.css, so repeat the radius here. */
 .hero-actions .button, .hero-actions .hero-secondary { border-radius: 999px; }
-.hero h1 { font-family: var(--display); font-weight: 650; }
-.hero h1 em { font-family: var(--serif); font-weight: 400; }
-.hero-art { border-radius: 18px; }
+.hero h1 em { font-weight: 400; }
+.hero-actions .hero-secondary { border-color: transparent; background: var(--soft); }
+.hero-actions .hero-secondary:hover { border-color: transparent; background: #dedcd6; color: var(--ink); }
