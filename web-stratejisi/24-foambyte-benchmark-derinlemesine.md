@@ -218,3 +218,10 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - Added keyboard checks for skip-link navigation, mobile menu disclosure and FAQ disclosure.
 - Added a 720 px narrow-desktop layout proxy; actual 200% browser zoom and manual screen-reader review remain open.
 - Automated audit findings are triaged before any accessibility-conformance claim.
+
+
+## 7D. Axe findings and remediation — 15 Kasım 2026
+
+- First axe run found low-contrast 11px hero-note and 9px footer metadata text (3.96–3.98:1, below 4.5:1) and a non-focusable horizontally scrollable role table.
+- Remediation: darker text tokens for these small labels and a labelled/focusable role-table region with visible focus styling.
+- Re-run required; no WCAG conformance claim until all automated and manual checks are complete.
