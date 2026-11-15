@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
 import { features } from "../data/features";
@@ -31,7 +32,8 @@ const faqs = [
   { q: "Can I connect a fermentation device?", a: "Device connectivity is part of the product plan. Supported devices, setup instructions and availability will be stated only after implementation and validation." },
   { q: "Can I import or export my existing recipes?", a: "Recipe import and export formats are described in the roadmap. Compatibility and conversion behaviour must be verified before a format is advertised as supported." },
 ];
-const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Homebrewers", url: canonicalUrl }]);
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Homebrewers", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 ---
 <!doctype html>
 <html lang="en">
@@ -76,6 +78,7 @@ const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, i
         </nav></details>
     </header>
     <main id="main-content">
+      <Breadcrumbs items={breadcrumbItems} />
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR HOME BREWERS · IN DEVELOPMENT</p>
         <h1>A more considered approach to <em>every brew.</em></h1>
