@@ -1,6 +1,6 @@
 # GRISTORA — Görsel kimlik ve logo tasarım brief'i
 
-**Durum:** İlk iki vektör keşif panosu hazır; seçenekler henüz onaylanmadı.  
+**Durum:** Kullanıcı ilk paylaşılan GRISTORA logo tasarımını tercih etti. Bu tasarımın tam görsel kaynağına erişim ve sadık vektör üretimi bekleniyor; üretim master'ı henüz onaylanmadı. Keşif panoları tarihsel alternatiflerdir.  
 **Teslim:** Düzenlenebilir SVG master dosyaları, kullanım varyantları ve karar panosu.
 
 ## 1. Tasarım hedefi
@@ -78,6 +78,8 @@ Her rota 1–5 arası şu ölçütlerle değerlendirilir; skorlar tasarım karar
 - Reproducibility in SVG and CSS.
 
 ## 7. İş çıktısı ve kabul
+
+**Not:** Bu bölümdeki ilk keşif aşaması için yazılmış “en az 3 rota / 2 varyant” şartı, 10. bölümde kaydedilen kullanıcı tercihiyle logo seçimi bakımından superseded durumdadır. Yeni alternatifler üretmek yerine seçilen ilk tasarım sadakatle iyileştirilecektir.
 
 - En az 3 farklı rota; her rota için 2 varyant.
 - Her varyantı açık/koyu zemin, küçük favicon, 1:1 sosyal avatar ve header mockup'ta göster.
