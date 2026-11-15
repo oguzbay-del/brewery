@@ -116,11 +116,15 @@ for (const loc of sitemapLocs) {
 for (const file of htmlFiles) {
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
   if (rel === "404.html") continue;
+  assert(html.includes("GRISTORA"), rel + ": visible GRISTORA brand is present");
+  assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
   assert(sitemap.includes(pageUrl.href), `sitemap lists page: ${pagePath}`);
 }
 const forbidden = [
+  "Demleme",
+  "demleme.",
   "A complete toolkit for your next brew",
   "selected advanced features available to enable",
   "From formulation to production control",
@@ -157,8 +161,8 @@ for (const file of htmlFiles) {
   assert(twitterCardCount === 1, rel + ": exactly one Twitter card type");
   assert(twitterTitleCount === 1, rel + ": exactly one Twitter title");
   assert(twitterDescriptionCount === 1, rel + ": exactly one Twitter description");
-  assert(ogImageCount <= 1, rel + ": at most one Open Graph image");
-  assert(twitterImageCount <= 1, rel + ": at most one Twitter image");
+  assert(ogImageCount === 1, rel + ": exactly one Open Graph image");
+  assert(twitterImageCount === 1, rel + ": exactly one Twitter image");
   const twitterCard = getMetaContent(html, "name", "twitter:card");
   assert(["summary", "summary_large_image"].includes(twitterCard), rel + ": Twitter card uses a supported card type");
   const ogTitle = getMetaContent(html, "property", "og:title");
@@ -378,6 +382,8 @@ for (const file of htmlFiles) {
 
 
 const notFoundHtml = await readFile(path.join(dist, "404.html"), "utf8");
+assert(notFoundHtml.includes("GRISTORA"), "404 page displays GRISTORA brand");
+assert(!/demleme/i.test(notFoundHtml), "404 page contains no legacy Demleme brand");
 const notFoundDesktopNav = notFoundHtml.match(/<nav class=["']desktop-nav["'][^>]*>([\s\S]*?)<\/nav>/)?.[1] || "";
 const notFoundBreweriesIndex = notFoundDesktopNav.indexOf(">Breweries<");
 const notFoundHomebrewersIndex = notFoundDesktopNav.indexOf(">Homebrewers<");
@@ -403,5 +409,5 @@ if (failures.length) {
   for (const failure of failures) console.error(`FAIL: ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log("Routes, sitemap targets, metadata, local links, anchors and legacy-claim checks passed.");
+  console.log("Routes, sitemap targets, GRISTORA brand, social metadata, local links, anchors and legacy-claim checks passed.");
 }
