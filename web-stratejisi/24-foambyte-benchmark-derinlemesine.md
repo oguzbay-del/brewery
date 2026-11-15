@@ -279,3 +279,11 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 
 - Added Playwright checks for visible keyboard focus on the three scrollable table regions (Homebrewers, Breweries, How It Works comparison) at 390px.
 - Clarified homepage audience visuals are original inline SVG illustrations, not pending photo placeholders.
+
+
+## 7L. Keyboard focus QA — 15 Kasım 2026
+
+- PR #78 merged with real Tab-navigation tests for the Homebrewers, Breweries and How It Works scrollable table regions; each must receive a visible 3px focus outline.
+- Final PR CI passed 63/63 browser tests, including 40 responsive checks, 14 axe scans, three disclosure/skip-link checks, three narrow-desktop proxies and three table-focus checks.
+- Homepage audience card SVGs are documented as original editorial illustrations rather than pending licensed-photo placeholders.
+- Main checks and GitHub Pages deployment are queued after merge; manual screen-reader and actual 200% zoom review remain open.
