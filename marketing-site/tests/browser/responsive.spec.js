@@ -25,6 +25,12 @@ for (const route of routes) {
       await expect(page.locator("main")).toHaveCount(1);
       await expect(page.locator("h1")).toHaveCount(1);
       await expect(page.locator("header")).toBeVisible();
+      const brandMark = page.locator(".site-header .brand-symbol");
+      await expect(brandMark).toBeVisible();
+      await expect(brandMark).toHaveAttribute("aria-hidden", "true");
+      const brandMarkBox = await brandMark.boundingBox();
+      expect(brandMarkBox?.width ?? Infinity, "brand emblem width stays compact").toBeLessThanOrEqual(34);
+      expect(brandMarkBox?.height ?? Infinity, "brand emblem height stays compact").toBeLessThanOrEqual(44);
 
       const imageResults = await page.locator("img").evaluateAll(async (images) => {
         return Promise.all(images.map(async (img) => {
