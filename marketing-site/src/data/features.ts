@@ -1,3 +1,12 @@
+export type FeatureAudience = "Breweries" | "Homebrewers";
+export type FeatureStage =
+  | "Homebrew MVP"
+  | "Homebrew second release"
+  | "Business core"
+  | "Business second release"
+  | "Later"
+  | "Under consideration";
+
 export type FeatureSection = {
   heading: string;
   intro: string;
@@ -9,8 +18,8 @@ export type FeaturePage = {
   title: string;
   eyebrow: string;
   summary: string;
-  audiences: string[];
-  stages: string[];
+  audiences: FeatureAudience[];
+  stages: FeatureStage[];
   sections: FeatureSection[];
   note?: string;
 };
@@ -237,7 +246,7 @@ export const features: FeaturePage[] = [
   }
 ];
 
-export const stageDescriptions: Record<string, string> = {
+export const stageDescriptions: Record<FeatureStage, string> = {
   "Homebrew MVP": "Planned for the Homebrew MVP; availability depends on development, validation and beta completion.",
   "Homebrew second release": "Planned for a later Home mode release, after the initial MVP.",
   "Business core": "Planned for the professional Business mode core.",
@@ -254,7 +263,6 @@ for (const feature of features) {
     throw new Error(`Duplicate feature slug: ${feature.slug}`);
   }
   seenFeatureSlugs.add(feature.slug);
-
   if (feature.audiences.length === 0 || new Set(feature.audiences).size !== feature.audiences.length) {
     throw new Error(`Feature ${feature.slug} must have unique audience labels`);
   }
