@@ -39,6 +39,9 @@
   color: var(--amber);
 }
 .hero-note { margin-top: 42px; }
+
+/* Keep the secondary homepage route comfortably tappable and keyboard-friendly. */
+.closing-inner .text-link { min-height: 44px; padding: 10px 14px; }
 @media (max-width: 1050px) and (min-width: 761px) {
   .hero h1 { font-size: clamp(54px, 6vw, 68px); }
 }
