@@ -12,9 +12,9 @@ const canonicalUrl = new URL(base, import.meta.env.SITE).href;
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: "Demleme",
+  name: "GRISTORA",
   url: canonicalUrl,
-  description: "Brewing software in development for professional breweries, with a separate path for homebrewers.",
+  description: "Brewing Intelligence for professional breweries, with a separate path for homebrewers.",
   inLanguage: "en",
 };
 
@@ -55,24 +55,26 @@ const audiences = [
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta
       name="description"
-      content="Demleme is brewing software in development for professional breweries. Explore the Business workflow, technical approach and product scope."
+      content="GRISTORA is brewing software in development for professional breweries. Explore the Business workflow, technical approach and product scope."
     />
-    <title>Demleme — Brewing software for professional breweries</title>
+    <title>GRISTORA — Brewing Intelligence for professional breweries</title>
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="Demleme — Brewing software for professional breweries" />
-    <meta property="og:description" content="Demleme is brewing software in development for professional breweries. Explore the Business workflow, technical approach and product scope." />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="GRISTORA — Brewing software for professional breweries" />
+    <meta property="og:description" content="GRISTORA is brewing software in development for professional breweries. Explore the Business workflow, technical approach and product scope." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Demleme — Brewing software for professional breweries" />
+    <meta name="twitter:title" content="GRISTORA — Brewing software for professional breweries" />
     <meta name="twitter:description" content="Brewing software in development for professional breweries, with a separate path for homebrewers." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header" id="top">
-      <a class="wordmark" href="#top" aria-label="Demleme home">demleme<span>.</span></a>
+      <a class="wordmark" href="#top" aria-label="GRISTORA home">GRISTORA</a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href={`${base}features/`}>Product</a>
         <a href={`${base}breweries/`}>Breweries</a>
@@ -98,10 +100,10 @@ const audiences = [
     <main id="main-content">
       <section class="hero shell">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="eyebrow-line"></span> BREWING SOFTWARE · IN DEVELOPMENT</p>
+          <p class="eyebrow"><span class="eyebrow-line"></span> BREWING INTELLIGENCE · IN DEVELOPMENT</p>
           <h1>Brewing software for professional breweries who <em>care about every batch.</em></h1>
           <p class="hero-intro">
-            Demleme is in development: a technical brewing software project for professional breweries, with a distinct Homebrewers path.
+            GRISTORA is in development: a technical brewing software project for professional breweries, with a distinct Homebrewers path.
             Explore how recipe standards, production context and batch records are being brought together for brewing teams.
           </p>
           <div class="hero-actions">
@@ -239,7 +241,7 @@ const audiences = [
           <div class="details-content">
             <p class="details-lead">
               Brewing is a balance of ingredients, process and observation.
-              Demleme is being built around the information that helps brewers
+              GRISTORA is being built around the information that helps brewers
               make sense of each decision.
             </p>
             <div class="principles">
@@ -271,9 +273,9 @@ const audiences = [
             <p>
               Brewing calculations deserve clear terminology, consistent units
               and an explanation of what sits behind the result. That is the
-              standard Demleme is working towards.
+              standard GRISTORA is working towards.
             </p>
-            <a class="text-link" href="#approach">Discover the Demleme approach <span aria-hidden="true">→</span></a>
+            <a class="text-link" href="#approach">Discover the GRISTORA approach <span aria-hidden="true">→</span></a>
           </div>
           <div class="technical-note">
             <span class="note-kicker">A PRINCIPLE, NOT A CLAIM</span>
@@ -314,12 +316,12 @@ const audiences = [
 
     <footer class="site-footer">
       <div class="shell footer-main">
-        <a class="wordmark footer-wordmark" href="#top">demleme<span>.</span></a>
+        <a class="wordmark footer-wordmark" href="#top">GRISTORA</a>
         <p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p>
         <a class="back-top" href="#top">Back to top ↑</a>
       </div>
       <div class="shell footer-bottom">
-        <span>© {new Date().getFullYear()} Demleme</span>
+        <span>© {new Date().getFullYear()} GRISTORA</span>
         <span>Made for the craft of brewing.</span>
       </div>
     </footer>
