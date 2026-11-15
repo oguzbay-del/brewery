@@ -4,7 +4,7 @@
 
 > This section supersedes older dated snapshots below. Older entries are retained as history, not as the current state.
 
-- **Main:** `5666f995c051345f7d9cce580d4ce0319a3d0aad`; PRs #84, #85 and #86 are merged. Latest repository query returned no open PRs.
+- **Main:** `5666f995c051345f7d9cce580d4ce0319a3d0aad`; PRs #84, #85 and #86 are merged. PR #87 is the current grouped documentation/asset PR; no other open PRs were present at batch start.
 - **Latest delivery:** PR #86 visible accessible breadcrumbs. CI: 78/78 Playwright tests, 684 static validator checks, 16 axe WCAG 2.2 AA scans; screenshot artifact #14152513961.
 - **Preview:** GitHub Pages `https://oguzbay-del.github.io/brewery/` is the current fallback preview. Vercel `https://brewery-rho.vercel.app` remains subject to the Hobby 24-hour deployment quota; avoid repeated previews.
 - **Active batch:** `docs/parallel-readiness-batch` adds a launch-decision register and original social preview artwork. WP-09–WP-13 documents already exist on main. No product app/API/Rust or Claude queue changes.
