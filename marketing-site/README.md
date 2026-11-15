@@ -72,7 +72,7 @@ npm run test:browser
 - The product and website are both in development; no login, subscription, purchase or production workflow is live.
 - No fabricated product screenshots, metrics, testimonials, customer logos or pricing are included.
 - The homepage primary CTA leads to Professional Breweries; Homebrewers remains available as a separate audience path. App URL and sign-in URL are not yet configured.
-- Colour and spacing values follow the existing `tasarim-sistemi/tokens.json` source. The marketing site applies them in a separate editorial layout.
+- Core colour values follow the selected GRISTORA brand board and are documented in `BRAND-ASSETS.md`. Layout spacing and component styling remain isolated to the marketing site.
 
 ## Social preview asset
 
