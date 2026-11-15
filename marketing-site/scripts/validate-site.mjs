@@ -69,7 +69,7 @@ for (const route of requiredRoutes) {
   assert(sitemap.includes(`${siteOrigin}${basePath}${route}`), `sitemap includes: ${route}`);
 }
 
-const sitemapLocs = [...sitemap.matchAll(/<loc>(.*?)<\\/loc>/g)].map((match) => decodeHtml(match[1]));
+const sitemapLocs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => decodeHtml(match[1]));
 assert(sitemap.startsWith('<?xml version="1.0"'), "sitemap declares XML encoding");
 assert(sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'), "sitemap uses the standard XML namespace");
 assert(sitemapLocs.length > 0, "sitemap contains at least one URL");
