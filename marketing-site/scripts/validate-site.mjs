@@ -53,6 +53,21 @@ const robotsPath = path.join(dist, "robots.txt");
 assert(await exists(sitemapPath), "sitemap.xml exists");
 assert(await exists(robotsPath), "robots.txt exists");
 
+const socialCardPath = path.join(dist, "social-card.png");
+const socialCardExists = await exists(socialCardPath);
+assert(socialCardExists, "generated social-card.png exists");
+if (socialCardExists) {
+  const png = await readFile(socialCardPath);
+  assert(png.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), "social card is a valid PNG file");
+  if (png.length >= 24) {
+    assert(png.readUInt32BE(16) === 1200, "social card width is 1200 pixels");
+    assert(png.readUInt32BE(20) === 630, "social card height is 630 pixels");
+  } else {
+    assert(false, "social card PNG contains a complete IHDR header");
+  }
+  assert(png.length <= 512 * 1024, "social card PNG is no larger than 512 KiB");
+}
+
 const sitemap = await readFile(sitemapPath, "utf8");
 const firstLoc = sitemap.match(/<loc>(.*?)<\/loc>/)?.[1];
 assert(Boolean(firstLoc), "sitemap contains canonical URLs");
