@@ -2,16 +2,21 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Latest feature merge:** `1022a1c93f8d8790d83c518867b35205b02d99df` (PR #105). PRs #103, #104 and #105 were manually squash-merged. No open PRs at this handoff.
-- **Social metadata validation:** PR #103 extended `marketing-site/scripts/validate-site.mjs` to check supported Twitter card values, duplicate/empty social tags, Twitter/Open Graph title consistency, image URL consistency, HTTPS and local image existence. GitHub Actions run #43698119511 succeeded, including responsive Playwright QA and screenshot artifact upload.
-- **Metadata completeness:** PR #105 added a non-empty Twitter title and description to every generated route, including the feature index and all generated feature detail pages. The validator now requires exactly one of each and checks title alignment with Open Graph. GitHub Actions run #43698364890 succeeded: Astro/TypeScript, static build, route/metadata/link validation, Chromium installation, responsive browser QA and screenshot artifact upload.
-- **Release register:** PR #104 adds `web-stratejisi/26-release-gates-and-public-claims.md`, consolidating product-truth, commercial, hosting/domain, social, privacy, accessibility, responsive QA, content/legal and release-operation gates.
-- **Social preview:** 1200×630 SVG source exists (PR #101). Raster PNG export, image metadata wiring and final-domain/platform validation remain open. Do not use the SVG source as a substitute for a verified raster preview.
+- **Latest main:** `fd1b1e9556c4f536550c7b88a006a9d4fbd68946` (PR #110). No open PRs at this handoff.
+- **Social metadata:** PR #103 added metadata validation; PR #105 completed Twitter title/description on all generated routes. Runs #43698119511 and #43698364890 passed, including responsive Playwright QA.
+- **Accessibility validation:** PR #106 strengthened static checks for accessible names, ARIA references, iframe titles and safe new-tab links. Merged as `51184c08d8304f80f8d0bf9a5d2d12b8592410f3`.
+- **Sitemap / robots:** PR #109 added XML namespace/declaration, duplicate/canonical/same-origin/route target checks and exact robots sitemap validation. Merged as `18a9cfb4f7409fe9db94501e050c34e4982b8c7c`. Final CI run #43699516581 passed.
+- **Commercial strategy correction:** PR #110 makes Professional Breweries (Business) the primary commercial audience and self-service acquisition path; Homebrewers (Home) remains a distinct secondary audience. Updated `web-stratejisi/README.md`, `01`, `03`, `07`, `12`, `15`, `16`, `23`, and added `32-brewery-primary-self-service-commercial-strategy.md`.
+- **Homepage hierarchy:** Business-first H1, metadata, hero/header/closing CTA, first audience card and nav order. Homebrewers remains visible as the secondary route. No fake signup, trial, demo, waitlist, pricing or app URL was introduced.
+- **Accessibility regression caught and fixed:** the new secondary Homebrewers link initially failed axe target-size checks at desktop and mobile. Added a 44px minimum target/padding. Final run #43699871748 passed with **1,574 static validator checks, 0 failures, 78 Playwright tests passed**, including 16 axe WCAG 2.2 AA route/viewport audits and responsive screenshot artifact upload.
+- **Release register:** PR #104 adds `web-stratejisi/26-release-gates-and-public-claims.md`; social raster PNG export, metadata image wiring and final-domain/platform validation remain open.
+- **Social preview:** branded 1200×630 SVG source exists (PR #101). Do not wire OG/Twitter image metadata until a verified raster PNG and final public origin are available.
 - **WP-09 / WP-10:** primary-source and sample-handling/gravity evidence remain research only. No formula, calculator or public technical article is approved. Measurement provenance remains a concept, not an approved schema/API or shipped feature.
-- **Preview:** Vercel Preview is still blocked by the 24-hour Hobby deployment quota; no further retry until the window resets. GitHub Pages remains the fallback preview. Vercel failure is separate from successful GitHub Actions CI.
-- **Manual QA remains open:** real screen-reader testing, human keyboard/focus review, 200% zoom/reflow, final responsive visual review and SVG internal text contrast.
+- **Preview:** Vercel Preview remains blocked by the 24-hour Hobby deployment quota; do not retry until reset. GitHub Pages is the temporary fallback. No Vercel deployment was triggered in this batch.
+- **Manual QA remains open:** real screen-reader testing, human keyboard/focus review, 200% zoom/reflow and final visual review on real devices. Automated axe/Playwright is supplemental, not a substitute.
 - **Commercial decisions open:** production domain/hosting plan; app URL/sign-in/registration; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots; legal/contact content.
 - **Release policy:** batch changes, inspect diffs and CI, merge manually; do not alter Vercel or production settings without explicit approval. No product app/API/Rust or Claude queue changes in this work batch.
+- **PR cleanup:** obsolete PR #107 was replaced by #109; old PR #108 was replaced by #110. Both obsolete PRs are closed, not merged.
 
 
 ## Son devam — 15 Kasım 2026
