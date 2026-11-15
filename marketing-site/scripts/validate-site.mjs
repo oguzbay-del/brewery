@@ -130,10 +130,10 @@ for (const file of htmlFiles) {
   const metaDescriptionTag = html.match(/<meta\b(?=[^>]*\bname=["']description["'])[^>]*>/i)?.[0];
   const metaDescriptionMatch = metaDescriptionTag?.match(/\bcontent=(?:"([^"]*)"|'([^']*)')/i);
   const metaDescription = metaDescriptionMatch?.[1] ?? metaDescriptionMatch?.[2];
-  assert(Boolean(metaDescription?.trim()), \`\${rel}: meta description is not empty\`);
+  assert(Boolean(metaDescription?.trim()), rel + ": meta description is not empty");
   if (metaDescription) {
     const length = decodeHtml(metaDescription).trim().length;
-    assert(length >= 40 && length <= 220, \`\${rel}: meta description is between 40 and 220 characters (found \${length})\`);
+    assert(length >= 40 && length <= 220, rel + ": meta description is between 40 and 220 characters (found " + length + ")");
   }
   const ogTitleCount = (html.match(/property=["']og:title["']/g) || []).length;
   const ogDescriptionCount = (html.match(/property=["']og:description["']/g) || []).length;
