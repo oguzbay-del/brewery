@@ -9,7 +9,7 @@
 
 - **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
 - **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
-- **Main güncel commit:** `91b197425c30fcdd4b0331b98d56d537eb7a7e90` (PR #65 audience visual phase 3 merged).
+- **Main güncel commit:** `8d8826bdf9e574fc24bfbe30cded127ef2c3e1c5` (PR #67 editorial illustration package merged).
 - **Görsel yaklaşımı:** Kullanıcı, konuya uygun çok sayıda özgün grafik/görsel üretimini onayladı. Öncelik özel SVG diyagramlar ve açıklayıcı veri grafikleri; gerektiğinde özgün editoryal illüstrasyonlar. Stok fotoğraf yok; mevcut homepage hero görseli ayrıca onay alınmadan değiştirilmez.
 - **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
 
@@ -581,9 +581,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 ## Handoff update — PR #65 merged
 
 - Main commit: `91b197425c30fcdd4b0331b98d56d537eb7a7e90`.
-- PR #65 added Homebrew ingredient-context and Professional Breweries batch-timeline visuals; CI passed.
-- Total original SVG visuals in marketing site: seven.
-- PR #63 GitHub Pages deployment and main checks completed successfully. PR #65 merge deployment/checks are queued.
+- PR #65 added Homebrew ingredient-context and Professional Breweries batch-timeline visuals; CI and Pages deployment passed.
+- PR #67 replaced the Homebrewers and Breweries hero placeholders with original editorial SVG illustrations; CI passed.
+- Total original SVG assets in marketing site: nine (seven explanatory diagrams plus two audience hero illustrations).
+- PR #63 and #65 GitHub Pages deployments and main checks completed successfully. PR #67 merge deployment/checks are queued.
 - Actual responsive/browser QA remains pending; Vercel preview links are available per PR but have not been visually inspected at desktop/tablet/mobile widths.
 
 
@@ -594,3 +595,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Added responsive figure styling and captions; no stock photos or product UI used.
 - Updated the visual asset library inventory; homepage hero remains unchanged.
 - Branch: `design/editorial-brewing-illustrations`; CI and responsive browser QA required before merge.
+
+
+## Handoff update — PR #67 merged
+
+- Main commit: `8d8826bdf9e574fc24bfbe30cded127ef2c3e1c5`.
+- PR #67 merged after successful CI; both audience hero placeholders now use original editorial vector illustrations.
+- Nine original SVG assets are now in the marketing site: seven technical/workflow diagrams and two hero illustrations.
+- GitHub Pages deployment #43684614831 and main checks #43684614839 are queued.
+- Homepage hero illustration remains unchanged. Responsive visual/browser QA remains pending.
