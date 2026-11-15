@@ -1,5 +1,9 @@
 ## CANONICAL CURRENT STATUS — 15 November 2026
 
+- **GRISTORA WP-16 initial visual exploration:** added editable SVG concept board at `web-stratejisi/assets/gristora-logo-exploration-01.svg` with Editorial Wordmark, Technical Monogram, Grist/Process and Combination directions. Updated logo brief with preliminary design assessment. No logo selected or approved. GitHub issue #145 tracks refinement and final owner review: https://github.com/oguzbay-del/brewery/issues/145.
+- **Brand clearance monitor:** existing weekly automation was updated from the old candidate list to GRISTORA-specific US/UK/Australia trademark, close-variant, company/product and domain checks. No duplicate monitor created.
+- **PR #144 updated:** now includes the initial SVG concept board and logo brief refinement; latest head `fb93588c13c2c2091d7947a24580d4cf6f40b47f`. PR remains open; no CI workflow run was returned for the latest docs-only commit. Do not merge until the repository's expected checks/review are confirmed.
+
 ## GRISTORA brand handoff — 15 November 2026
 
 - User selected **GRISTORA** as the public brand. Use **Brewing Intelligence** as the proposed category descriptor.
