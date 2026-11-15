@@ -585,3 +585,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Total original SVG visuals in marketing site: seven.
 - PR #63 GitHub Pages deployment and main checks completed successfully. PR #65 merge deployment/checks are queued.
 - Actual responsive/browser QA remains pending; Vercel preview links are available per PR but have not been visually inspected at desktop/tablet/mobile widths.
+
+
+## Editorial brewing illustrations — 15 Kasım 2026
+
+- Replaced the Homebrewers hero placeholder with an original vector illustration of a homebrewing workspace (kettle, fermenter, hydrometer, malt and hops).
+- Replaced the Breweries hero placeholder with an original vector illustration of stainless-steel brewery vessels and pipework.
+- Added responsive figure styling and captions; no stock photos or product UI used.
+- Updated the visual asset library inventory; homepage hero remains unchanged.
+- Branch: `design/editorial-brewing-illustrations`; CI and responsive browser QA required before merge.
