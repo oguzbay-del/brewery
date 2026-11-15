@@ -287,3 +287,10 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - Final PR CI passed 63/63 browser tests, including 40 responsive checks, 14 axe scans, three disclosure/skip-link checks, three narrow-desktop proxies and three table-focus checks.
 - Homepage audience card SVGs are documented as original editorial illustrations rather than pending licensed-photo placeholders.
 - Main checks and GitHub Pages deployment are queued after merge; manual screen-reader and actual 200% zoom review remain open.
+
+
+## 7M. FAQ structured data — 15 Kasım 2026
+
+- FAQ route now emits Schema.org FAQPage structured data generated from the same source array as the visible questions and answers.
+- Static validator verifies FAQPage type, question count vs rendered FAQ items, and acceptedAnswer completeness.
+- No search rich-result or ranking guarantee is claimed.
