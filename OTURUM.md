@@ -614,3 +614,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Cleaned the homepage hero illustration's stale placeholder/photography wording without changing its appearance.
 - Updated WP-13 visual QA and visual inventory status; manual visual, keyboard, screen-reader, contrast and zoom review remains a release gate.
 - Branch: `qa/playwright-responsive-smoke`; PR and CI validation pending.
+
+
+## Handoff update — responsive browser QA branch
+
+- Main base commit: `8e9e99310c6bf69dfca92146a5b142bc3a301b23` (PR #68 documentation handoff merged).
+- Added Playwright-based responsive browser checks and screenshot artifacts for the marketing site. PR #69 pending.
+- Nine public SVG assets and the homepage inline SVG are integrated; no photography or product UI has been introduced.
+- Automated checks are not human visual QA. Manual review of screenshots, keyboard focus, screen-reader flow, contrast and 200% zoom remains open.
