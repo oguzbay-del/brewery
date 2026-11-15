@@ -567,3 +567,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR #63 CI passed; GitHub Pages deployment run #43684298501 and main checks run #43684298471 were queued at the time of this handoff update.
 - Vercel PR preview: `https://brewery-git-design-visual-library-phase-2-demleme.vercel.app/`; Vercel preview comment check passed, but actual browser QA has not been completed.
 - Next: complete visual asset backlog in small batches, then run full responsive/browser/accessibility QA before release.
+
+
+## Audience visual assets — phase 3 — 15 Kasım 2026
+
+- Added a Homebrewer ingredient-context diagram: recipe specification → selected inputs → brew-day actuals → batch review.
+- Added a Professional Breweries batch timeline: recipe version → batch plan → production record → vessel events → quality review.
+- Both are explicitly labelled conceptual/roadmap visuals, not released workflows or general ERP claims.
+- Updated the visual asset inventory and moved completed items out of the backlog.
+- Branch: `design/audience-visuals-phase-3`; CI and responsive browser QA required before merge.
