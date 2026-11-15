@@ -81,3 +81,33 @@ Until these are decided, the website must not claim that registration, trial, pu
 4. Update strategic brief, conversion plan, implementation specification and handoff references to remove equal-priority ambiguity.
 5. Add Business-first acquisition intent to content briefs and future SEO planning.
 6. Re-run route, metadata, accessibility and responsive QA. No Vercel deployment is required for this source change.
+
+## 9. Website implementation status — 15 November 2026
+
+The following website changes implement the Business-first direction. They change marketing hierarchy and page descriptions only; they do not change product availability.
+
+| Work | Result | Evidence |
+|---|---|---|
+| Business-first homepage feature order | Brewery-only product areas appear before shared Home/Business areas; the existing feature catalogue remains the source | PR #129 |
+| FAQ audience hierarchy | Professional brewery teams lead the FAQ title, description and introduction; Homebrewers remain a separate secondary path | PR #131 |
+| Brewery landing metadata | Search and social descriptions explain the planned professional brewery workflows and state that the product is in development | PR #134 |
+| Automated browser and static checks | Marketing-site CI, generated-route validation, responsive browser QA and axe checks pass on the deployed code snapshot | CI run #197 |
+| GitHub Pages preview | The PR #134 code snapshot is published successfully | Pages deployment #65 |
+
+Current code snapshot: `2d00b265b5e739100dd90eeda20541d892200557`. GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit; this does not indicate a failed site build.
+
+Navigation accessibility work is in progress in PR #138: desktop and mobile navigation will identify the current page with `aria-current="page"`, including nested feature pages. Do not mark this work complete until its responsive and accessibility CI passes and the PR is merged.
+
+## 10. Remaining release decisions and gates
+
+The following remain intentionally unresolved and must not be replaced with invented defaults:
+
+- Public production domain and commercially appropriate hosting plan.
+- Verified app, sign-in and Business onboarding URLs.
+- Pricing, plans, limits, billing, trial and cancellation terms.
+- Privacy/legal copy, analytics provider, consent and retention.
+- A real, staffed contact route if an assisted path is later approved.
+- Human review of keyboard/focus behavior, screen-reader flow and actual 200% browser zoom.
+- Final-domain canonical, sitemap, robots and social-preview validation.
+
+Until those decisions are approved, keep the site informational and Business-first. Do not add signup, trial, purchase, demo, waitlist or lead-capture CTAs.
