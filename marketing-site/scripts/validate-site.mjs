@@ -258,7 +258,7 @@ for (const file of htmlFiles) {
     const primaryCtaPath = primaryCta ? new URL(primaryCta, pageUrl).pathname : "";
     assert(primaryCtaPath.endsWith("/breweries/"), "homepage primary CTA leads to Professional Breweries");
 
-    const featuredSlugs = [...html.matchAll(/href=["'][^"']*\\/features\\/([^/"']+)\\/["']/g)].map((match) => match[1]);
+    const featuredSlugs = [...html.matchAll(/href=["'][^"']*\/features\/([^/"']+)\/["']/g)].map((match) => match[1]);
     const expectedFeaturedSlugs = [
       "production-management",
       "quality-laboratory",
@@ -321,7 +321,7 @@ for (const file of htmlFiles) {
       .replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim()
   );
   for (const tagName of ["a", "button", "summary"]) {
-    const pattern = new RegExp("<" + tagName + "\\b([^>]*)>([\\s\\S]*?)<\\/" + tagName + ">", "gi");
+    const pattern = new RegExp("<" + tagName + "\\b([^>]*)>([\\s\\S]*?)<\/" + tagName + ">", "gi");
     for (const [, attrs, inner] of html.matchAll(pattern)) {
       assert(hasAccessibleName(attrs, inner), rel + ": " + tagName + " has a non-empty accessible name");
     }
