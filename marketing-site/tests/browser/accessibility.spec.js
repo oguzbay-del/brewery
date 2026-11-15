@@ -80,3 +80,19 @@ for (const route of ["/", "/homebrewers/", "/breweries/"]) {
     expect(dimensions.body).toBeLessThanOrEqual(720);
   });
 }
+
+
+for (const route of ["/homebrewers/", "/breweries/", "/how-it-works/"]) {
+  test(`scrollable table region has a visible keyboard focus indicator on ${route}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    const region = page.locator(".role-table-wrap[tabindex='0']").first();
+    await region.focus();
+    const focusStyle = await region.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { outlineStyle: style.outlineStyle, outlineWidth: style.outlineWidth };
+    });
+    expect(focusStyle.outlineStyle).toBe("solid");
+    expect(Number.parseFloat(focusStyle.outlineWidth)).toBeGreaterThanOrEqual(3);
+  });
+}
