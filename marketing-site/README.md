@@ -21,7 +21,7 @@ Read these canonical documents before changing public brand, copy, metadata or v
 - `../web-stratejisi/43-gristora-public-homepage-copy-blueprint.md`
 - `../web-stratejisi/44-gristora-trademark-counsel-review-brief.md`
 
-GRISTORA is the selected public brand, with the descriptor “Brewing Intelligence”. The owner selected the first logo design shared by the assistant as the direction to refine; it is not yet a production-approved master. See document 37 for the production/QA contract. Do not claim trademark or domain legal clearance. This repository documentation is the website handoff.
+GRISTORA is the selected public brand, with the descriptor “Brewing Intelligence”. The owner selected the first logo design shared by the assistant and approved its vector assets in PR #148. Public routes use `public/brand/gristora-symbol.svg`; the full dark/light lockups and proof are in `public/brand/`. See `BRAND-ASSETS.md` and document 37 for asset usage and production/QA notes. Do not claim trademark or domain legal clearance. This repository documentation is the website handoff.
 
 **Hard boundary:** marketing-site only. Do not change the product application, APIs, Rust engine, data model, iOS app, internal product identifiers, product roadmap or product development queue.
 
