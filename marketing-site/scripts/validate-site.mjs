@@ -228,7 +228,7 @@ for (const file of htmlFiles) {
     "/features/connected-devices/": ["Under consideration", "analytical model 9 is not approved"],
     "/features/inventory-costing/": ["Under consideration", "analytical models 12, 13 and 15 are not approved"],
     "/features/quality-laboratory/": ["Under consideration", "analytical model 10 is not approved"],
-    "/features/reports-insights/": ["Under consideration", "analytical models 10–15 are not approved"],
+    "/features/analytics-reports/": ["Under consideration", "analytical models 10–15 are not approved"],
   };
   if (analyticalClaimGuards[pagePath]) {
     const required = analyticalClaimGuards[pagePath];
