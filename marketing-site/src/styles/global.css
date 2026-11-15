@@ -330,3 +330,9 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .audience-hero-art img { display: block; width: 100%; height: auto; max-height: 390px; object-fit: contain; }
 .audience-hero-art figcaption { padding: 10px 8px 0; color: var(--muted); font-size: 11px; line-height: 1.5; text-align: right; }
 @media (max-width: 760px) { .audience-hero { min-height: 0; } .audience-hero-art { min-height: 0; padding: 8px; } .audience-hero-art figcaption { text-align: left; } }
+
+
+/* Keep detailed SVG labels readable on narrow screens; scroll within the labelled region. */
+.visual-diagram-scroll { overflow-x: auto; overscroll-behavior-inline: contain; }
+.visual-diagram-scroll:focus-visible { outline: 3px solid #0066cc; outline-offset: 4px; }
+@media (max-width: 760px) { .visual-diagram-scroll img { min-width: 780px; } }

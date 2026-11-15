@@ -675,3 +675,15 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Automated WCAG-tagged scans are clean on the seven routes at 1440px and 390px. This is not a WCAG conformance certification or substitute for assistive-technology testing.
 - Main checks #43687858228 and GitHub Pages deployment #43687858222 are queued.
 - Manual release gates remain: screen-reader testing, complete keyboard/focus review, real 200% browser zoom, contrast review of embedded SVG text, and Vercel preview verification.
+
+
+## Visual evidence diagrams — phase 4 — 15 Kasım 2026
+
+- Added a Homebrewer fermentation observation timeline with simulated gravity/temperature values, day markers and explicit source/time context.
+- Added a conceptual equipment calibration record model linking instrument, reference, observed reading, tolerance review and recorded status.
+- Both visuals are explicitly caveated: no product-output, live-integration, automated recommendation or released-feature claim.
+- Integrated into Homebrewers and Technical Principles pages, updated visual inventory and benchmark evidence register.
+- Branch: `design/visual-evidence-phase-4`; CI and screenshot review pending.
+
+
+- The two detailed SVGs now use labelled, keyboard-focusable horizontal scroll regions on narrow screens so chart labels remain readable instead of shrinking to tiny text. Responsive and axe tests will verify no page-level overflow and keyboard access.
