@@ -116,8 +116,6 @@ for (const loc of sitemapLocs) {
 for (const file of htmlFiles) {
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
   if (rel === "404.html") continue;
-  assert(html.includes("GRISTORA"), rel + ": visible GRISTORA brand is present");
-  assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
   assert(sitemap.includes(pageUrl.href), `sitemap lists page: ${pagePath}`);
@@ -133,6 +131,8 @@ for (const file of htmlFiles) {
   const html = await readFile(file, "utf8");
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
   if (rel === "404.html") continue;
+  assert(html.includes("GRISTORA"), rel + ": visible GRISTORA brand is present");
+  assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
   const titleCount = (html.match(/<title>/g) || []).length;
