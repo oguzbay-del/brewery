@@ -58,6 +58,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Brewery Production Software in Development | GRISTORA" />
     <meta name="twitter:description" content="Planned brewing software workflows for professional breweries: recipe review, production planning, batch records, quality and traceability. In development." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
