@@ -65,7 +65,8 @@
 .choice-card strong { max-width: 80%; font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 1.2; }
 .choice-card small { color: var(--muted); font-size: 12px; line-height: 1.7; }
 .choice-meta { margin-top: auto; color: var(--forest); font-size: 11px; font-weight: 700; }
-.choice-card a, .step-helper a, .wizard-summary > a, .compare-all-features a { color: var(--amber); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.choice-links { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 16px; }
+.choice-links a, .step-helper a, .wizard-summary > a, .compare-all-features a { color: var(--amber); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .step-helper { margin: 24px 0 0; color: var(--muted); font-size: 12px; }
 .seat-fixed { display: flex; align-items: center; gap: 20px; padding: 28px; background: #f4f5f0; }
 .seat-fixed strong { font-family: var(--serif); font-size: 56px; font-weight: 400; }
