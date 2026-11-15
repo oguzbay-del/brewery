@@ -15,6 +15,11 @@ The website remains a marketing and self-service discovery surface. It is not th
 - `34-gristora-brand-architecture.md` — brand and public-site architecture.
 - `35-gristora-visual-identity-logo-brief.md` — logo and visual identity brief.
 - `37-gristora-logo-production-and-qa.md` — production assets, vector quality, proof board and acceptance criteria.
+- `38-gristora-public-site-brand-implementation-map.md` — all public brand surfaces and dynamic feature routes.
+- `39-gristora-trademark-domain-preliminary-evidence-log.md` — official and third-party name leads, including C-DAC GistOra Tools and BASF GISTORA records.
+- `40-gristora-preliminary-goods-services-specification.md` — counsel-review class scope.
+- `41-gristora-public-marketing-claims-guardrails.md` — evidence and product-maturity claim restrictions.
+- `42-gristora-marketing-site-ci-artifact-review.md` — existing CI visual QA and legacy social-card assessment.
 - Existing public claim register and feature catalogue.
 - Existing Astro design tokens, accessibility rules and responsive QA.
 
@@ -57,9 +62,9 @@ Do not rename repository folders or product-internal paths as part of this publi
 
 ## 6. Implementation sequence
 
-1. Complete trademark/domain screening and record the decision. Do not present screening as legal clearance.
-2. Review at least three logo routes and select one with the product owner.
-3. Produce final logo assets and brand tokens.
+1. Complete trademark/domain screening and obtain qualified counsel review before treating the name as cleared. Specifically assess C-DAC's GistOra Tools software name (close spelling and software-sector adjacency), the Indonesian BASF GISTORA publication and the separate India BASF index lead. Do not present screening as legal clearance.
+2. Refine the owner's selected first logo design faithfully; do not substitute later exploration routes. Access the exact source artwork before vector tracing, then use document 37 for production and QA.
+3. Obtain owner approval of the faithful master, then produce only the lockups, favicon and social assets supported by that original composition.
 4. Create a dedicated branch for the marketing-site-only change.
 5. Update public copy, brand assets and metadata in one coherent batch.
 6. Update static validators and Playwright checks to reject old public brand strings.
@@ -89,10 +94,10 @@ Do not rename repository folders or product-internal paths as part of this publi
 
 ## 9. Handoff for Claude
 
-Read these four documents before changing the public marketing website:
+Read the canonical brand, production, route-map, trademark, goods/services, claims and CI review documents (33–42) before changing the public marketing website:
 - `web-stratejisi/33-gristora-brand-platform.md`
 - `web-stratejisi/34-gristora-brand-architecture.md`
 - `web-stratejisi/35-gristora-visual-identity-logo-brief.md`
 - `web-stratejisi/36-gristora-public-site-rebrand-plan.md`
 
-The user has selected GRISTORA as the public brand and the first assistant-presented logo design as the visual direction to refine. The exact rendered reference must be accessed before faithful vector tracing; do not fabricate it. Final logo approval and domain clearance remain open. Do not modify product software. Do not apply the public-site rebrand until the logo direction is reviewed and the legal/domain gate is recorded.
+The user has selected GRISTORA as the public brand and the first assistant-presented logo design as the visual direction to refine. The exact rendered reference must be accessed before faithful vector tracing; do not fabricate it. Final logo approval and legal/domain clearance remain open. A material software-sector prior-use lead, C-DAC's GistOra Tools, requires counsel review. Do not modify product software. Do not apply the public-site rebrand until the selected artwork is faithfully approved and the legal/domain gate is recorded.
