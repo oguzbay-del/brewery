@@ -5,8 +5,8 @@ An isolated Astro + TypeScript + static-site project for the Demleme marketing w
 ## Scope
 
 - Responsive homepage.
-- Dedicated `/homebrewers/` and `/breweries/` audience landing pages, with distinct Homebrew learning-loop and Business record-relationship explanations.
-- `/how-it-works/` with separate Home and Business workflows.
+- Dedicated `/breweries/` and `/homebrewers/` audience landing pages. Professional Breweries is the primary commercial path; Homebrewers is distinct and secondary.
+- `/how-it-works/` leads with the Professional Breweries workflow, then explains the separate Homebrewers workflow.
 - `/technical-principles/` and `/faq/` for technical transparency and product-scope answers.
 - Editorial + Technical + Human visual direction.
 - No product application code, product API, product queue, or Claude development task changes.
@@ -18,15 +18,25 @@ npm install
 npm run dev
 ```
 
-Pull requests touching `marketing-site/` run an isolated GitHub Actions check for Astro/TypeScript and static build.
+Pull requests touching `marketing-site/` run the isolated marketing CI: Astro/TypeScript diagnostics, static build, generated-route/metadata/link validation, social-card validation, responsive Playwright and axe accessibility checks. Workflow changes are linted separately with actionlint.
 
-Check and build:
+Check, build and preview:
 
 ```sh
 npm run check
 npm run build
+npm run validate:site
 npm run preview
 ```
+
+Browser QA (install Chromium once per environment):
+
+```sh
+npx playwright install chromium
+npm run test:browser
+```
+
+`npm run validate:site` runs against the generated `dist/` directory, so run it after `npm run build`. The browser suite checks responsive layouts and axe accessibility rules; it does not replace human keyboard, screen-reader, focus, 200% zoom or real-device review.
 
 ## Design notes
 
@@ -36,8 +46,17 @@ npm run preview
 - Product features are presented as planned capabilities, not currently available functionality. Homebrew MVP, Business core, later releases and unapproved ideas are clearly distinguished.
 - The product and website are both in development; no login, subscription, purchase or production workflow is live.
 - No fabricated product screenshots, metrics, testimonials, customer logos or pricing are included.
-- The homepage audience CTAs route to the two dedicated audience pages. App URL and sign-in URL are not yet configured.
+- The homepage primary CTA leads to Professional Breweries; Homebrewers remains available as a separate audience path. App URL and sign-in URL are not yet configured.
 - Colour and spacing values follow the existing `tasarim-sistemi/tokens.json` source. The marketing site applies them in a separate editorial layout.
+
+## Social preview asset
+
+- Editable source: `public/social-card-source.svg`.
+- Generated output: `public/social-card.png` (1200×630), rendered by Resvg as part of `npm run build` before Astro copies public assets.
+- The generated PNG is ignored by Git and must not be committed or edited directly. Change the SVG source and let the build regenerate it.
+- CI validates the PNG signature, exact dimensions and a 512 KiB size ceiling, then uploads the image as a short-lived artifact for visual review.
+- The approved raster uses explicit DejaVu Sans/Serif font families for consistent typography.
+- Do not wire absolute `og:image` or `twitter:image` URLs until the final public origin is approved and the image is reachable over HTTPS. Verify final-domain metadata and platform previews before release.
 
 ## Product content source
 
@@ -70,7 +89,7 @@ The production target is Vercel. Keep the GitHub repository as the source of tru
 3. Select **Astro** as the framework preset.
 4. Use the defaults: install `npm install`, build `npm run build`, output `dist`.
 5. Do not add an Astro server adapter; this site is statically generated.
-6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed.
+6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed. Do not repeatedly retry Preview deployments while the Hobby quota window is active; GitHub Pages is the temporary preview fallback.
 7. Connect the production domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all three pages before switching public traffic.
 
 The Astro config uses the root path on Vercel and `/brewery` only for the GitHub Pages fallback. The robots and sitemap endpoints are generated at build time from the active site/base URL.
@@ -86,7 +105,7 @@ The Astro config uses the root path on Vercel and `/brewery` only for the GitHub
 
 ## Final QA checklist
 
-- Review homepage, audience pages, How It Works, Technical Principles, FAQ and feature details at 1440 / 1024 / 768 / 390 / 320 px.
+- Review homepage, audience pages, How It Works, Technical Principles, FAQ and feature details at 1440 / 1024 / 768 / 390 / 320 px and at 200% zoom.
 - Verify mobile menu, all internal links, keyboard navigation, native FAQ disclosures, sitemap routes and 404 handling.
 - Verify page titles, descriptions, Open Graph, canonical URLs, structured data, robots and sitemap on the production domain.
 - Configure product/app/sign-in URLs only after they are confirmed.
