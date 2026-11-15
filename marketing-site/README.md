@@ -1,6 +1,6 @@
 # GRISTORA public marketing site — product roadmap and feature catalogue
 
-An isolated Astro + TypeScript + static-site project for the GRISTORA public marketing website. The current implementation still contains the legacy Demleme public branding until the planned rebrand work package is approved and completed.
+An isolated Astro + TypeScript + static-site project for the GRISTORA public marketing website. Public content is being rolled out under the GRISTORA identity and continues to state that the product is in development.
 
 ## Brand source of truth
 
@@ -19,7 +19,7 @@ Read these canonical documents before changing public brand, copy, metadata or v
 - `../web-stratejisi/43-gristora-public-homepage-copy-blueprint.md`
 - `../web-stratejisi/44-gristora-trademark-counsel-review-brief.md`
 
-GRISTORA is the selected public brand. Do not use Demleme in public marketing surfaces after WP-17 is implemented. The owner has selected the first logo design shared by the assistant as the direction to refine; it is not yet a production-approved master. See document 37 for the production/QA contract. The exact source artwork must be available before faithful vector tracing. Domain clearance remains open. Do not start the public rebrand before the identity and legal/domain gates are recorded. This repository documentation is the handoff for Claude.
+GRISTORA is the selected public brand, with the descriptor “Brewing Intelligence”. The owner selected the first logo design shared by the assistant as the direction to refine; it is not yet a production-approved master. See document 37 for the production/QA contract. Do not claim trademark or domain legal clearance. This repository documentation is the website handoff.
 
 **Hard boundary:** marketing-site only. Do not change the product application, APIs, Rust engine, data model, iOS app, internal product identifiers, product roadmap or product development queue.
 
@@ -79,7 +79,7 @@ npm run test:browser
 - The generated PNG is ignored by Git and must not be committed or edited directly. Change the SVG source and let the build regenerate it.
 - CI validates the PNG signature, exact dimensions and a 512 KiB size ceiling, then uploads the image as a short-lived artifact for visual review.
 - The approved raster uses explicit DejaVu Sans/Serif font families for consistent typography.
-- Do not wire absolute `og:image` or `twitter:image` URLs until the final public origin is approved and the image is reachable over HTTPS. Verify final-domain metadata and platform previews before release.
+- Public routes reference the generated social-card PNG through the active site origin. Verify preview metadata and final-domain platform previews before release.
 
 ## Product content source
 
@@ -115,7 +115,7 @@ Use a dedicated Vercel project for the marketing site; do not reuse or modify th
 6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed. Do not repeatedly retry Preview deployments while the Hobby quota window is active; GitHub Pages is the temporary preview fallback.
 7. Only after the production host and domain are approved, connect the domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all routes before switching public traffic.
 
-The Astro config uses the root path for Vercel and `/brewery` only for the GitHub Pages fallback. Preview canonical URLs use `VERCEL_URL`; production uses `SITE_URL=https://gristora.com`. The robots and sitemap endpoints are generated at build time from the active site/base URL.
+The Astro config uses the root path for Vercel and `/brewery` only for the GitHub Pages fallback. Preview canonical URLs use `VERCEL_URL`; future production uses `SITE_URL=https://gristora.com`. The robots and sitemap endpoints are generated at build time from the active site/base URL.
 
 **Plan note:** Vercel Hobby is for personal, non-commercial use. Use it for private setup/preview only; upgrade to Pro before operating this commercial marketing site publicly.
 
