@@ -257,6 +257,20 @@ for (const file of htmlFiles) {
     const primaryCta = html.match(/<a class=["']button button-primary["'][^>]*href=["']([^"']+)["']/)?.[1];
     const primaryCtaPath = primaryCta ? new URL(primaryCta, pageUrl).pathname : "";
     assert(primaryCtaPath.endsWith("/breweries/"), "homepage primary CTA leads to Professional Breweries");
+
+    const featuredSlugs = [...html.matchAll(/href=["'][^"']*\\/features\\/([^/"']+)\\/["']/g)].map((match) => match[1]);
+    const expectedFeaturedSlugs = [
+      "production-management",
+      "quality-laboratory",
+      "packaging-compliance",
+      "recipe-design",
+      "brewing-calculations",
+      "water-mash-yeast",
+    ];
+    assert(
+      expectedFeaturedSlugs.every((slug, index) => featuredSlugs[index] === slug),
+      "homepage feature overview prioritises Business-only capabilities before shared capabilities",
+    );
   }
 
   if (pagePath === "/how-it-works/") {
