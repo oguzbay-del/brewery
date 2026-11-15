@@ -2,13 +2,14 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Latest feature merge:** `fd1b1e9556c4f536550c7b88a006a9d4fbd68946` (PR #110). **Current main handoff commit:** `ee9d8fb7f3e43e0fe9a2aa7d7cea844802762293`. No open PRs at this handoff.
+- **Latest feature merge:** `e5c1b1c4a5fbd2e98ea576aea10bd97817832d1f` (PR #112). PR #111 and #112 were manually squash-merged. No open PRs at this handoff.
 - **Social metadata:** PR #103 added metadata validation; PR #105 completed Twitter title/description on all generated routes. Runs #43698119511 and #43698364890 passed, including responsive Playwright QA.
 - **Accessibility validation:** PR #106 strengthened static checks for accessible names, ARIA references, iframe titles and safe new-tab links. Merged as `51184c08d8304f80f8d0bf9a5d2d12b8592410f3`.
 - **Sitemap / robots:** PR #109 added XML namespace/declaration, duplicate/canonical/same-origin/route target checks and exact robots sitemap validation. Merged as `18a9cfb4f7409fe9db94501e050c34e4982b8c7c`. Final CI run #43699516581 passed.
 - **Commercial strategy correction:** PR #110 makes Professional Breweries (Business) the primary commercial audience and self-service acquisition path; Homebrewers (Home) remains a distinct secondary audience. Updated `web-stratejisi/README.md`, `01`, `03`, `07`, `12`, `15`, `16`, `23`, and added `32-brewery-primary-self-service-commercial-strategy.md`.
-- **Homepage hierarchy:** Business-first H1, metadata, hero/header/closing CTA, first audience card and nav order. Homebrewers remains visible as the secondary route. No fake signup, trial, demo, waitlist, pricing or app URL was introduced.
-- **Accessibility regression caught and fixed:** the new secondary Homebrewers link initially failed axe target-size checks at desktop and mobile. Added a 44px minimum target/padding. Final run #43699871748 passed with **1,574 static validator checks, 0 failures, 78 Playwright tests passed**, including 16 axe WCAG 2.2 AA route/viewport audits and responsive screenshot artifact upload.
+- **Strategy consistency:** PR #111 aligned the Homebrewers brief, site architecture, SEO clusters and launch measurement. Business commercial-intent clusters and conversion metrics are primary; Home metrics are separate and secondary.
+- **Global site navigation:** PR #112 reordered desktop/mobile navigation across audience, feature, workflow, technical-principles and FAQ pages. Breweries now precedes Homebrewers; global header CTAs point to the Business journey. Footer positioning is Business-first, while Homebrewers remains available.
+- **Accessibility regression caught and fixed:** the new secondary Homebrewers link initially failed axe target-size checks at desktop and mobile. Added a 44px minimum target/padding. Final run #43699871748 passed with **1,574 static validator checks, 0 failures, 78 Playwright tests passed**, including 16 axe WCAG 2.2 AA route/viewport audits and responsive screenshot artifact upload. PR #112 final run #43700328241 also passed with 1,574 static checks and 78 Playwright tests.
 - **Release register:** PR #104 adds `web-stratejisi/26-release-gates-and-public-claims.md`; social raster PNG export, metadata image wiring and final-domain/platform validation remain open.
 - **Social preview:** branded 1200×630 SVG source exists (PR #101). Do not wire OG/Twitter image metadata until a verified raster PNG and final public origin are available.
 - **WP-09 / WP-10:** primary-source and sample-handling/gravity evidence remain research only. No formula, calculator or public technical article is approved. Measurement provenance remains a concept, not an approved schema/API or shipped feature.
@@ -16,7 +17,7 @@
 - **Manual QA remains open:** real screen-reader testing, human keyboard/focus review, 200% zoom/reflow and final visual review on real devices. Automated axe/Playwright is supplemental, not a substitute.
 - **Commercial decisions open:** production domain/hosting plan; app URL/sign-in/registration; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots; legal/contact content.
 - **Release policy:** batch changes, inspect diffs and CI, merge manually; do not alter Vercel or production settings without explicit approval. No product app/API/Rust or Claude queue changes in this work batch.
-- **PR cleanup:** obsolete PR #107 was replaced by #109; old PR #108 was replaced by #110. Both obsolete PRs are closed, not merged.
+- **PR cleanup:** obsolete PRs #107 and #108 were replaced and closed; no duplicate open branches remain.
 
 
 ## Son devam — 15 Kasım 2026
