@@ -4,6 +4,8 @@ An isolated Astro + TypeScript + static-site project for the GRISTORA public mar
 
 ## Brand source of truth
 
+Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for the active website palette, asset inventory and usage rules.
+
 Read these canonical documents before changing public brand, copy, metadata or visual assets:
 
 - `../web-stratejisi/33-gristora-brand-platform.md`
