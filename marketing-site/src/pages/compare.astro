@@ -11,23 +11,30 @@ const canonicalUrl = new URL(`${base}compare/`, import.meta.env.SITE).href;
 const description = "Compare the planned GRISTORA Homebrewer and Professional Brewery feature paths and their development stages.";
 const rows = [
   { group: "Recipes & formulation", items: [
-    ["Recipe design & management", "recipe-design", "Homebrew MVP", "Business core"],
-    ["Brewing calculations", "brewing-calculations", "Homebrew MVP", "Business core"],
-    ["Water, mash & yeast", "water-mash-yeast", "Homebrew MVP", "Under consideration"],
+    ["Recipe design & management", "recipe-design"],
+    ["Brewing calculations", "brewing-calculations"],
+    ["Water, mash & yeast", "water-mash-yeast"],
   ]},
   { group: "Brew day & batch history", items: [
-    ["Brew day & production records", "brew-day", "Homebrew MVP", "Business core"],
-    ["Fermentation & batch tracking", "fermentation-monitoring", "Homebrew MVP", "Business core"],
-    ["Equipment & calibration", "equipment-calibration", "Homebrew MVP", "Business core"],
-    ["Planning & scheduling", "planning-scheduling", "Homebrew MVP", "Business core"],
+    ["Brew day & production records", "brew-day"],
+    ["Fermentation & batch tracking", "fermentation-monitoring"],
+    ["Equipment & calibration", "equipment-calibration"],
+    ["Planning & scheduling", "planning-scheduling"],
   ]},
   { group: "Professional operations", items: [
-    ["Inventory & ingredient lots", "inventory-costing", "Not in Home path", "Business core"],
-    ["Quality, laboratory & release", "quality-laboratory", "Not in Home path", "Business core"],
-    ["Team roles & approvals", "team-notifications", "Not in Home path", "Business core"],
-    ["Production analytics", "analytics-reports", "Not in Home path", "Business second release"],
+    ["Inventory & ingredient lots", "inventory-costing"],
+    ["Quality, laboratory & release", "quality-laboratory"],
+    ["Team roles & notifications", "team-notifications"],
+    ["Production analytics", "analytics-reports"],
   ]},
 ];
+const stageFor = (slug, audience) => {
+  const feature = features.find((item) => item.slug === slug);
+  if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
+  const stages = feature.stages.filter((stage) => audience === "Homebrewers" ? stage.startsWith("Homebrew") : stage.startsWith("Business"));
+  if (stages.length) return stages.join(" · ");
+  return feature.stages.includes("Under consideration") ? "Shared · under consideration" : "Shared roadmap";
+};
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Function comparison", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 const structuredData = { "@context": "https://schema.org", "@type": "WebPage", name: "Homebrewer vs Professional Brewery feature comparison", description, url: canonicalUrl, inLanguage: "en", isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href } };
@@ -57,7 +64,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
           <table class="comparison-table">
             <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
             <tbody>
-              {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug, homeStage, businessStage]) => <tr><th scope="row"><a href={`${base}features/${slug}/`}>{label} ↗</a></th><td><span class={homeStage === "Not in Home path" ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={businessStage === "Not in Home path" ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>)}</>)}
+              {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}features/${slug}/`}>{label} ↗</a></th><td><span class={homeStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={businessStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
             </tbody>
           </table>
         </div>
