@@ -38,7 +38,7 @@ Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-s
 20. [Teknik içerik ve hesaplayıcı doğrulama backlog'u — WP-09](20-technical-content-calculator-validation.md)
 21. [Sayfa içerik backlog'u ve evidence register — WP-10](21-page-content-evidence-register.md)
 22. [Mevcut site gap analysis ve uygulama sırası — WP-11](22-existing-site-gap-analysis-implementation-sequence.md)
-23. [Uygulama spesifikasyonu ve release gate — WP-12](23-site-revizyonu-ve-uygulama-plani.md)
+23. [Uygulama spesifikasyonu ve release gate — WP-12](23-implementation-spec-release-gate.md)
 24. [FoamByte derin benchmark ve sayfa iyileştirme kararları — WP-13](24-foambyte-benchmark-derinlemesine.md)
 25. [Home / Business içerik ve kopya taslağı — WP-14](25-home-business-content-copy-blueprint.md)
 26. [Lansman karar kaydı — ticari, domain, analytics ve ürün erişimi](26-launch-decision-register.md)
