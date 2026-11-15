@@ -66,3 +66,10 @@
   .hero h1 { font-size: clamp(41px, 11.6vw, 46px); letter-spacing: -1.2px; }
   .hero h1 em { letter-spacing: -1.35px; }
 }
+
+
+/* Brand-board control geometry and hero typography. */
+.hero-actions .button, .hero-actions .hero-secondary { border-radius: 999px; }
+.hero h1 { font-family: var(--display); font-weight: 650; }
+.hero h1 em { font-family: var(--serif); font-weight: 400; }
+.hero-art { border-radius: 18px; }
