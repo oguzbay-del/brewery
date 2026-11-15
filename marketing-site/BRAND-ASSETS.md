@@ -8,7 +8,7 @@
 - Primary audience: Professional Breweries
 - Secondary audience: Homebrewers
 
-The owner selected the first GRISTORA logo direction shown in the supplied brand board. The draft vector reconstruction is tracked separately in PR #148. It is not yet an approved production master; do not imply final logo approval or replace it with unrelated logo explorations.
+The owner selected the first GRISTORA logo direction shown in the supplied brand board and explicitly approved PR #148. The approved vector assets are `public/brand/gristora-logo.svg`, `public/brand/gristora-logo-light.svg`, `public/brand/gristora-symbol.svg` and `public/brand/gristora-logo-proof.svg`. The `*-draft.svg` files remain as review history only; public routes use the approved symbol asset.
 
 ## Approved visual direction and palette
 
@@ -36,7 +36,8 @@ The shared stylesheet exposes these as CSS custom properties. Keep contrast stro
 - `public/social-card.png`: generated during build from the SVG; do not edit or commit generated output.
 - Public routes use the generated 1200×630 social card for large-image Open Graph and Twitter previews, with descriptive image alt text.
 - Preview and non-production hosts emit `noindex` metadata and `Disallow: /`; only `https://gristora.com` is crawlable.
-- Navigation uses a compact preview of the selected emblem beside the GRISTORA wordmark. The emblem is a first-pass vector reconstruction and remains subject to owner review; do not treat it as the approved production master.
+- Navigation and footer use `public/brand/gristora-symbol.svg`, the owner-approved selected emblem, beside the GRISTORA wordmark.
+- The full approved lockups are available for future brand placements; the proof asset includes the supporting line “Clarity for every brew.”
 
 ## Claims and maturity
 
