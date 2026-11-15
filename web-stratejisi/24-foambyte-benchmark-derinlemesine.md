@@ -256,3 +256,6 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 
 - Added a side-by-side Homebrewers / Professional Breweries comparison table to How It Works, covering six dimensions: user, work unit, records, measurement context, key question and scope boundary.
 - The matrix makes the distinction explicit without presenting roadmap items as released features; the table scroll region is keyboard accessible on narrow screens.
+
+
+- Screenshot review of the comparison page identified and corrected the five-item Business workflow's empty sixth grid cell; added an explicit mobile scroll hint to the comparison matrix.
