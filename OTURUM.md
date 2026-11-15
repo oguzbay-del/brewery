@@ -31,6 +31,7 @@
 - 41 — `web-stratejisi/41-gristora-public-marketing-claims-guardrails.md`
 - 42 — `web-stratejisi/42-gristora-marketing-site-ci-artifact-review.md`
 - 43 — `web-stratejisi/43-gristora-public-homepage-copy-blueprint.md`
+- 44 — `web-stratejisi/44-gristora-trademark-counsel-review-brief.md`
 
 ## Open work
 
@@ -42,7 +43,7 @@
 
 ## Research and monitoring
 
-- Preliminary trademark evidence and limitations are in document 39; proposed class wording/logic in document 40; public claim restrictions in document 41.
+- Preliminary trademark evidence and limitations are in document 39; proposed class wording/logic in document 40; public claim restrictions in document 41; existing CI visual review in document 42; homepage copy draft in document 43; counsel brief in document 44.
 - Existing weekly GRISTORA trademark/domain monitor remains the only recurring automation; its prompt was updated on 15 Nov to track the C-DAC GistOra software lead, Indonesian BASF GISTORA gazette application and separate India BASF index lead. Next scheduled check: 16 Nov 2026, 10:00 Europe/Istanbul. Do not create a duplicate.
 - No trademark filing, domain purchase, third-party contact, or public clearance claim is authorised.
 
