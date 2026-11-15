@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
 import "../styles/learning-pages.css";
 
@@ -57,6 +58,7 @@ const structuredData = {
     }))
   ),
 };
+const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "FAQ", url: canonicalUrl }]);
 ---
 <!doctype html>
 <html lang="en">
@@ -76,6 +78,7 @@ const structuredData = {
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="FAQ — Demleme" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
