@@ -35,7 +35,7 @@
 ### Hero
 - Eyebrow: BREWING SOFTWARE · IN DEVELOPMENT
 - Headline: Bring clarity to every batch.
-- Supporting copy: GRISTORA is being designed for professional brewery teams that need clear recipe standards, production context and reliable batch records. Explore the planned workflows and the technical principles behind them.
+- Supporting copy: GRISTORA is being designed for professional brewery teams that need clear recipe standards, production context and consistent batch records. Explore the planned workflows and the technical principles behind them.
 - Primary CTA: Explore professional breweries
 - Secondary CTA: For homebrewers
 - Optional microcopy: A technical brewing workspace in development.
@@ -55,7 +55,7 @@
 ### Technical principles section
 - Eyebrow: THE DETAILS MATTER
 - Headline: Good brewing starts with good information.
-- Copy: Brewing brings together ingredients, process and observation. GRISTORA is being designed to keep that information understandable, connected and useful to the people making each batch.
+- Copy: Brewing brings together ingredients, process and observation. GRISTORA is being designed to keep that information understandable, consistent and useful to the people making each batch.
 - Supporting points:
   - Clear inputs — Keep the details behind a recipe in view.
   - Understandable calculations — Know what a brewing number represents.
@@ -68,7 +68,7 @@
 
 ### Feature overview
 - Eyebrow: THE PRODUCT · IN DEVELOPMENT
-- Headline: More than recipes. A connected brewing workflow.
+- Headline: More than recipes. A clearer brewing workflow.
 - Copy: Explore the planned professional brewery capabilities first, including production planning, quality and materials, supported by shared recipe and brewing workflows.
 - Label every feature card as planned/roadmap content. Do not imply the capability is live.
 
