@@ -2,9 +2,11 @@
 
 An isolated Astro + TypeScript + static-site project for the GRISTORA public marketing website. Public content is being rolled out under the GRISTORA identity and continues to state that the product is in development.
 
-## Brand source of truth
+## Brand and design source of truth
 
-Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for the active website palette, asset inventory and usage rules.
+**Read [`DESIGN.md`](./DESIGN.md) before making any visual or UI change to the public marketing website.** It is the implementation source of truth for the owner-approved GRISTORA brand-board direction and applies only to `marketing-site/`.
+
+Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for approved logo asset filenames, the recorded palette and asset usage rules.
 
 Read these canonical documents before changing public brand, copy, metadata or visual assets:
 
