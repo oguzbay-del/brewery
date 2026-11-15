@@ -1,7 +1,7 @@
 # Demleme — Pazarlama Sitesi Revizyon Planı
 
-**Durum:** PLANLAMA — uygulamaya başlanmayacak.  
-**Onay kapısı:** Kullanıcı açıkça “devam et” demeden tasarım, kodlama, içerik üretimi, sayfa oluşturma veya mevcut sitenin revizyonu yapılmaz. “Devam et” denildiğinde oturum devir protokolü uygulanır ve sıradaki güvenli iş paketi başlatılır.  
+**Durum:** UYGULAMA SÜRÜYOR — 15 Kasım 2026 itibarıyla kullanıcı pazarlama sitesi uygulamasına devam edilmesini onayladı.  
+**Kapsam:** Yalnız pazarlama sitesi ve web stratejisi dokümanları. Ürün uygulaması/API/iOS/Rust ve Claude geliştirme kuyruğu kapsam dışıdır.  
 **Plan sahibi:** Demleme web stratejisi  
 **Referans:** `plan/demleme-plani.md`, `web-stratejisi/`, `karsilastirma/`
 
@@ -13,7 +13,8 @@ Mevcut pazarlama sitesini parça parça yamamak yerine, kullanıcıdan gelecek e
 
 ### Sabit stratejik kararlar
 
-- İki hedef kitle: **Homebrewers (Home)** ve **Professional Breweries (Business)**.
+- Birincil ticari audience: **Professional Breweries (Business)**; ana edinim ve self-service funnel bu segmente odaklanır.
+- İkincil audience: **Homebrewers (Home)**; ayrı ürün yolu ve içerik kitlesi olarak korunur, Business ile eşit ticari öncelik taşımaz.
 - Konumlandırma: teknik; hesaplama doğruluğu, yöntem şeffaflığı, tekrarlanabilirlik ve üretim disiplili.
 - Öncelikli pazarlar: ABD ve İngiltere.
 - Birincil site dili: İngilizce.
@@ -50,10 +51,10 @@ Bu sitemap taslak öneridir; ek kullanıcı girdileri geldikten sonra kesinleşt
 
 | Alan | Amaç | Öncelik |
 |---|---|---|
-| Home | Demleme'nin ne olduğunu anlatmak, iki kitleyi doğru yola yönlendirmek | P0 |
-| Product / Features | Onaylı ürün yol haritasını alanlara göre anlatmak | P0 |
-| Homebrewers | Ev biracısının işleri, problemleri ve planlanan Home modu | P0 |
-| Breweries | Profesyonel üretim ekibinin işleri ve Business modu | P0 |
+| Home | Demleme'yi Professional Breweries için konumlandırmak; Homebrewers'a ikincil yol sunmak | P0 |
+| Breweries | Birincil ticari landing page: profesyonel üretim iş akışları, ürün sınırları ve self-service değerlendirme | P0 — primary |
+| Product / Features | Onaylı ürün yol haritasını Business öncelikli keşif hiyerarşisiyle anlatmak | P0 |
+| Homebrewers | Ayrı Home modu; ikincil audience ve organik içerik yolu | P1 — secondary |
 | How It Works | İki kitle için uçtan uca iş akışlarını anlatmak | P1 |
 | Calculators | Ücretsiz, doğrulanmış etkileşimli bira üretim hesaplayıcıları | P1 |
 | Learn / Knowledge Center | Teknik rehberler, yöntem açıklamaları ve sözlük | P1 |
