@@ -73,3 +73,27 @@ WP-17 remains blocked until:
 - Rebrand plan: `36-gristora-public-site-rebrand-plan.md`
 - Logo production/QA: `37-gristora-logo-production-and-qa.md`
 - Launch decisions: `26-launch-decision-register.md`
+
+
+## 8. Dynamic feature routes — complete current catalogue inventory
+
+The dynamic route source `marketing-site/src/pages/features/[slug].astro` uses `getStaticPaths()` over the 16 entries in `marketing-site/src/data/features.ts`. Each route emits a title, description, canonical URL, Open Graph/Twitter metadata and WebPage/BreadcrumbList JSON-LD. All must be included in WP-17 brand-string scans and generated HTML validation:
+
+1. `/features/recipe-design/`
+2. `/features/brewing-calculations/`
+3. `/features/water-mash-yeast/`
+4. `/features/brew-day/`
+5. `/features/fermentation-monitoring/`
+6. `/features/equipment-calibration/`
+7. `/features/planning-scheduling/`
+8. `/features/inventory-costing/`
+9. `/features/production-management/`
+10. `/features/quality-laboratory/`
+11. `/features/packaging-compliance/`
+12. `/features/team-notifications/`
+13. `/features/connected-devices/`
+14. `/features/imports-exports-tools/`
+15. `/features/platform-security-data/`
+16. `/features/analytics-reports/`
+
+WP-17 must validate every generated feature route, not only the feature directory. Keep all stage labels and the in-development/product-maturity disclosures unchanged unless the product-authoritative source and release evidence change first.
