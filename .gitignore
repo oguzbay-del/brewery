@@ -38,3 +38,10 @@ __pycache__/
 
 # Yerel redis-server dökümü
 dump.rdb
+
+# Demleme marketing-site generated build artifacts
+marketing-site/node_modules/
+marketing-site/dist/
+marketing-site/test-results/
+marketing-site/playwright-report/
+marketing-site/public/social-card.png
