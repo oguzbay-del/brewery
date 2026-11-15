@@ -259,3 +259,10 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 
 
 - Screenshot review of the comparison page identified and corrected the five-item Business workflow's empty sixth grid cell; added an explicit mobile scroll hint to the comparison matrix.
+
+
+## 7I. Audience comparison matrix delivered — 15 Kasım 2026
+
+- PR #75 merged. The homepage links to a six-dimension Homebrewers vs Professional Breweries comparison matrix on How It Works.
+- Responsive/axe/keyboard CI passed 60/60. Screenshot review fixed the five-card Business grid's empty sixth cell and added a mobile scroll hint.
+- Main CI and GitHub Pages deployment are queued after merge.

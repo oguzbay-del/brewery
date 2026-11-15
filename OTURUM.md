@@ -715,3 +715,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - It also exposed the same empty sixth-cell background in the five-step Business workflow on How It Works; changed those cards to separate bordered items with transparent grid gaps.
 - Added a mobile scroll hint for the side-by-side matrix.
 - Re-run responsive/axe checks before merge.
+
+
+## Handoff update — PR #75 merged
+
+- Main commit: `d9b21e30297750f4711de0497da7c541fc289f50`.
+- PR #75 merged after successful Astro/TypeScript, build, static validation and 60/60 responsive/axe/keyboard tests.
+- Added the side-by-side Homebrewers / Professional Breweries matrix to `/how-it-works/#audience-comparison`, with a homepage entry link. Six comparison dimensions are included.
+- Screenshot review fixed the five-step Business workflow's empty grid cell and added a mobile horizontal-scroll hint for the comparison table.
+- Main checks #43688777093 and GitHub Pages deployment #43688777068 are queued.
+- Remaining manual release gates unchanged: screen-reader, full keyboard/focus, real 200% zoom, embedded SVG text contrast, Vercel preview.
