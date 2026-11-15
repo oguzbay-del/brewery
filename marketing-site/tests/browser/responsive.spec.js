@@ -95,3 +95,28 @@ test("breadcrumb links are keyboard reachable on mobile", async ({ page }) => {
   await expect(firstLink).toBeFocused();
   await expect(firstLink).toHaveAttribute("href", /\/$/);
 });
+
+const activeNavigation = [
+  { route: "/homebrewers/", href: "/homebrewers/" },
+  { route: "/breweries/", href: "/breweries/" },
+  { route: "/how-it-works/", href: "/how-it-works/" },
+  { route: "/technical-principles/", href: "/technical-principles/" },
+  { route: "/faq/", href: "/faq/" },
+  { route: "/features/", href: "/features/" },
+  { route: "/features/recipe-design/", href: "/features/" },
+];
+
+for (const item of activeNavigation) {
+  test(`desktop and mobile navigation identify the current page on ${item.route}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(item.route, { waitUntil: "domcontentloaded" });
+
+    const desktopCurrent = page.locator('.desktop-nav a[aria-current="page"]');
+    await expect(desktopCurrent).toHaveCount(1);
+    await expect(desktopCurrent).toHaveAttribute("href", item.href);
+
+    const mobileCurrent = page.locator('.mobile-menu nav a[aria-current="page"]');
+    await expect(mobileCurrent).toHaveCount(1);
+    await expect(mobileCurrent).toHaveAttribute("href", item.href);
+  });
+}
