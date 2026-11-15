@@ -11,7 +11,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "How Demleme is designed to work",
-  description: "Two distinct brewing workflows for homebrewers and professional breweries.",
+  description: "Professional brewery workflows are the primary commercial path, with a separate homebrewing journey.",
   url: canonicalUrl,
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
@@ -42,16 +42,16 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="theme-color" content="#f2f2f7" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="See how Demleme is designed to support two different brewing workflows: homebrewing and professional brewery production records." />
-    <title>Homebrewing & Brewery Workflows | Demleme</title>
+    <meta name="description" content="See how Demleme is designed for professional brewery workflows, with a separate homebrewing journey." />
+    <title>Professional Brewery Workflows & Homebrewing | Demleme</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="Homebrewing & Brewery Workflows | Demleme" />
-    <meta property="og:description" content="Two distinct brewing workflows. One considered approach to technical brewing information." />
+    <meta property="og:title" content="Professional Brewery Workflows & Homebrewing | Demleme" />
+    <meta property="og:description" content="Professional brewery workflows first, with a separate homebrewing path. Both remain in development." />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Homebrewing & Brewery Workflows | Demleme" />
-    <meta name="twitter:description" content="Two distinct brewing workflows. One considered approach to technical brewing information." />
+    <meta name="twitter:title" content="Professional Brewery Workflows & Homebrewing | Demleme" />
+    <meta name="twitter:description" content="Professional brewery workflows first, with a separate homebrewing path. Both remain in development." />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
@@ -70,21 +70,11 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell explain-page-hero">
         <p class="eyebrow"><span class="eyebrow-line"></span> TWO AUDIENCES · TWO WORKFLOWS · IN DEVELOPMENT</p>
         <h1>Different brewing days. <em>Clearer information.</em></h1>
-        <p>Demleme is being designed around the real sequence of decisions, measurements and records behind brewing. Home and Business follow different workflows; neither is presented as a live product today.</p>
-      </section>
-      <section class="explain-audience-section section-pad" id="home-workflow">
-        <div class="shell">
-          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 01 · HOMEBREWERS</p><h2>From recipe idea to <em>batch learning.</em></h2></div><p>For the brewer who designs, makes, measures and reviews their own batches.</p></div>
-          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-learning-loop.svg`} alt="Five-stage homebrewing learning loop: recipe, ingredients, brew day, fermentation and batch review." loading="lazy" /><figcaption>Illustrative workflow · designed around a repeatable learning loop</figcaption></figure>
-          <ol class="explain-flow">
-            {homeSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
-          </ol>
-          <a class="text-link explain-audience-link" href={`${base}homebrewers/`}>Explore the Homebrewers page <span aria-hidden="true">→</span></a>
-        </div>
+        <p>Demleme is being designed first around the decisions, measurements and records of professional brewery teams. Homebrewers have a separate workflow. Both journeys describe planned product scope, not a live service.</p>
       </section>
       <section class="explain-audience-section explain-business-section section-pad" id="business-workflow">
         <div class="shell">
-          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 02 · PROFESSIONAL BREWERIES</p><h2>From recipe review to <em>production records.</em></h2></div><p>For teams that need shared context around recipes, batches, vessels and quality records.</p></div>
+          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 01 · PROFESSIONAL BREWERIES</p><h2>From recipe review to <em>production records.</em></h2></div><p>For teams that need shared context around recipes, batches, vessels and quality records.</p></div>
           <figure class="visual-diagram"><img src={`${base}images/diagrams/brewery-record-chain.svg`} alt="Conceptual brewery record model linking recipe version, batch record, ingredient lots, vessel events and quality records." loading="lazy" /><figcaption>Conceptual record relationships · planned product model, not a live feature claim</figcaption></figure>
           <ol class="explain-flow">
             {businessSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
@@ -93,26 +83,36 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <a class="text-link explain-audience-link" href={`${base}breweries/`}>Explore the Professional Breweries page <span aria-hidden="true">→</span></a>
         </div>
       </section>
+      <section class="explain-audience-section section-pad" id="home-workflow">
+        <div class="shell">
+          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 02 · HOMEBREWERS</p><h2>From recipe idea to <em>batch learning.</em></h2></div><p>For the brewer who designs, makes, measures and reviews their own batches.</p></div>
+          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-learning-loop.svg`} alt="Five-stage homebrewing learning loop: recipe, ingredients, brew day, fermentation and batch review." loading="lazy" /><figcaption>Illustrative workflow · designed around a repeatable learning loop</figcaption></figure>
+          <ol class="explain-flow">
+            {homeSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
+          </ol>
+          <a class="text-link explain-audience-link" href={`${base}homebrewers/`}>Explore the Homebrewers page <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
       <section class="audience-comparison-section section-pad" id="audience-comparison">
         <div class="shell">
           <div class="section-heading">
-            <p class="eyebrow"><span class="eyebrow-line"></span> HOME AND BUSINESS · SIDE BY SIDE</p>
+            <p class="eyebrow"><span class="eyebrow-line"></span> BUSINESS AND HOME · SIDE BY SIDE</p>
             <h2>One product direction. <em>Two distinct workflows.</em></h2>
             <p>This roadmap comparison explains the different information needs and records. It is not a statement that the planned capabilities are already available.</p>
           </div>
           <p class="comparison-scroll-hint">On narrow screens, swipe or scroll horizontally to compare both columns.</p>
-          <div class="role-table-wrap" role="region" aria-label="Scrollable comparison of Homebrewers and Professional Breweries workflows" tabindex="0">
+          <div class="role-table-wrap" role="region" aria-label="Scrollable comparison of Professional Breweries and Homebrewers workflows" tabindex="0">
             <table class="role-table audience-comparison-table">
               <thead>
-                <tr><th scope="col">Dimension</th><th scope="col">Homebrewers</th><th scope="col">Professional Breweries</th></tr>
+                <tr><th scope="col">Dimension</th><th scope="col">Professional Breweries</th><th scope="col">Homebrewers</th></tr>
               </thead>
               <tbody>
-                <tr><th scope="row">Primary user</th><td>An individual brewer making, measuring and reviewing personal batches.</td><td>Brewing teams that need shared production context across recipes, batches, vessels and quality records.</td></tr>
-                <tr><th scope="row">Core unit of work</th><td>A recipe and the personal batch made from it.</td><td>A recipe version and the production batch that references it.</td></tr>
-                <tr><th scope="row">Typical records</th><td>Recipe and targets, ingredients and water, brew-day actuals, fermentation observations, tasting and review.</td><td>Recipe version, batch plan and actuals, ingredient lots, vessel events, quality and laboratory records.</td></tr>
-                <tr><th scope="row">Measurement context</th><td>Manual readings and any validated supported-device inputs, with source, unit and timestamp.</td><td>Production measurements, vessel observations and laboratory results, with method, unit, source and operator context.</td></tr>
-                <tr><th scope="row">Main question</th><td>What happened in this brew, and what might I change next time?</td><td>What happened across this batch, where did actuals differ, and which records explain the outcome?</td></tr>
-                <tr><th scope="row">Scope boundary</th><td>Personal brewing and learning—not professional multi-batch production operations.</td><td>Brewing-specific production records—not sales, orders, shipping, CRM, accounting or a general ERP.</td></tr>
+                <tr><th scope="row">Primary user</th><td>Brewing teams that need shared production context across recipes, batches, vessels and quality records.</td><td>An individual brewer making, measuring and reviewing personal batches.</td></tr>
+                <tr><th scope="row">Core unit of work</th><td>A recipe version and the production batch that references it.</td><td>A recipe and the personal batch made from it.</td></tr>
+                <tr><th scope="row">Typical records</th><td>Recipe version, batch plan and actuals, ingredient lots, vessel events, quality and laboratory records.</td><td>Recipe and targets, ingredients and water, brew-day actuals, fermentation observations, tasting and review.</td></tr>
+                <tr><th scope="row">Measurement context</th><td>Production measurements, vessel observations and laboratory results, with method, unit, source and operator context.</td><td>Manual readings and any validated supported-device inputs, with source, unit and timestamp.</td></tr>
+                <tr><th scope="row">Main question</th><td>What happened across this batch, where did actuals differ, and which records explain the outcome?</td><td>What happened in this brew, and what might I change next time?</td></tr>
+                <tr><th scope="row">Scope boundary</th><td>Brewing-specific production records—not sales, orders, shipping, CRM, accounting or a general ERP.</td><td>Personal brewing and learning—not professional multi-batch production operations.</td></tr>
               </tbody>
             </table>
           </div>
