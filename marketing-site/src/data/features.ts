@@ -29,7 +29,7 @@ export const features: FeaturePage[] = [
     slug: "recipe-design",
     title: "Recipe design & management",
     eyebrow: "RECIPES",
-    summary: "From a guided first recipe to a deeply configurable professional formulation, Demleme is planned around recipes that stay understandable from version to version.",
+    summary: "From a guided first recipe to a deeply configurable professional formulation, GRISTORA is planned around recipes that stay understandable from version to version.",
     audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
@@ -148,7 +148,7 @@ export const features: FeaturePage[] = [
       { heading: "Tank and batch movements", intro: "Model the physical journey of beer through the brewery.", items: ["Tank detail with occupancy, status, pressure limit and cleaning status", "Transfer between vessels with volume and loss records", "Split one batch across multiple tanks", "Merge batches with calculated blend properties", "Capacity conflict checks and tank scheduling"] },
       { heading: "Production records", intro: "Keep the planned process and actual work connected.", items: ["Operator identity, step completion and actual measurements", "Deviation records and corrective decisions", "Batch traceability from ingredients through packaging, with lot-to-batch recall reports", "Multiple operators and simultaneous active batches", "Audit trail for changes to closed production records", "Warnings when a tank without a valid cleaning record is assigned", "Shift handover of open alerts and production notes"] }
     ],
-    note: "Demleme is not planned as an ERP. Sales, orders, distribution, keg tracking, CRM and accounting are outside the product scope."
+    note: "GRISTORA is not planned as an ERP. Sales, orders, distribution, keg tracking, CRM and accounting are outside the product scope."
   },
   {
     slug: "quality-laboratory",
@@ -211,11 +211,11 @@ export const features: FeaturePage[] = [
     slug: "imports-exports-tools",
     title: "Import, export & brewing tools",
     eyebrow: "PORTABILITY AND UTILITIES",
-    summary: "Bring existing recipe work into Demleme, move your data out when needed and use focused brewing tools alongside recipe and batch workflows.",
+    summary: "Bring existing recipe work into GRISTORA, move your data out when needed and use focused brewing tools alongside recipe and batch workflows.",
     audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Homebrew second release"],
     sections: [
-      { heading: "Recipe portability", intro: "The plan includes import paths for established brewing formats.", items: ["BeerXML and BeerJSON import/export", "BeerSmith .bsmx import", "Brewfather and Brewer's Friend recipe exports", "Ingredient, equipment, style and unit matching during import", "Show source-versus-Demleme calculation differences before saving"] },
+      { heading: "Recipe portability", intro: "The plan includes import paths for established brewing formats.", items: ["BeerXML and BeerJSON import/export", "BeerSmith .bsmx import", "Brewfather and Brewer's Friend recipe exports", "Ingredient, equipment, style and unit matching during import", "Show source-versus-GRISTORA calculation differences before saving"] },
       { heading: "Focused brewing tools", intro: "The roadmap includes focused utilities within the relevant recipe or batch context.", items: ["Refractometer correction and gravity tools", "Carbonation and priming calculators for bottles, kegs and casks", "Dilution, volume and unit conversion", "Extract brewing tools for partial boils, top-up water and LME/DME/honey conversions", "Decoction and parti-gyle tools; parti-gyle is planned for a later home release", "No-chill IBU adjustment and bottle/keg carbonation tracking in later Home releases", "Optional recipe transfer to supported brewing controllers in a later Home release"] },
       { heading: "Reports and custom records", intro: "Make useful records portable and printable.", items: ["Brew sheets, tank rounds, fermentation and packaging forms", "Custom brew-sheet fields and layouts in a later home release", "Recipe, batch, equipment, water profile, ingredient, device and support data export", "CSV and JSON exports plus scanned documents and photos in downloadable archives", "Competition-form output and custom recipe/batch fields in a later home release", "Bring in laboratory water reports in a later Home release"] }
     ]
@@ -228,7 +228,7 @@ export const features: FeaturePage[] = [
     audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
-      { heading: "Where Demleme is designed to run", intro: "The product plan defines different roles for each client.", items: ["iPad: full-featured native SwiftUI app", "iPhone: brew day, fermentation, stock and shopping workflows, plus recipe viewing and simple editing", "Web: full-featured React and TypeScript experience for Mac and PC browsers", "Apple Watch is not in the first release; optional support may be considered later", "Android and separate Mac/Windows desktop apps are not in scope"] },
+      { heading: "Where GRISTORA is designed to run", intro: "The product plan defines different roles for each client.", items: ["iPad: full-featured native SwiftUI app", "iPhone: brew day, fermentation, stock and shopping workflows, plus recipe viewing and simple editing", "Web: full-featured React and TypeScript experience for Mac and PC browsers", "Apple Watch is not in the first release; optional support may be considered later", "Android and separate Mac/Windows desktop apps are not in scope"] },
       { heading: "One engine and one source of truth", intro: "The same calculation and business rules are intended to serve every client.", items: ["Rust calculation engine runs server-side; calculation code is not shipped to clients", "Shared API and data model across web and Apple applications", "Online-first operation with a limited downloaded brew-day package for offline timers and measurement entry", "No general offline synchronisation; queued brew-day measurements upload when connectivity returns", "Versioned calculation results and immutable recipe/batch references"] },
       { heading: "Security and data ownership", intro: "Security and portability are planned into the platform.", items: ["Sign in with Apple or Google, with one-time email links as a fallback; no password-based signup", "Passkeys for business administrators, session management and remote sign-out", "Workspace separation, server-side permissions and append-only audit records", "Planned encrypted storage, protected file access and time-limited support access with customer consent; no deployed-security or certification claim is implied", "Export your recipes, batches, measurements, stock, equipment and files; request account deletion"] },
       { heading: "Support and service", intro: "Customer support remains part of the product experience.", items: ["Searchable help and support request inbox", "Customer-visible request history and replies", "Optional, time-limited support access with a reason and audit history", "Internal support workspace separated from the customer application", "System status and support diagnostics"] },
