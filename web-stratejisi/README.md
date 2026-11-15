@@ -38,8 +38,8 @@ Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini t
 22. [Mevcut site gap analysis ve uygulama sırası — WP-11](22-existing-site-gap-analysis-implementation-sequence.md)
 23. [Uygulama spesifikasyonu ve release gate — WP-12](23-implementation-spec-release-gate.md)
 24. [FoamByte derin benchmark ve sayfa iyileştirme kararları — WP-13](24-foambyte-benchmark-derinlemesine.md)
-26. [Lansman karar kaydı — ticari, domain, analytics ve ürün erişimi](26-launch-decision-register.md)
 25. [Home / Business içerik ve kopya taslağı — WP-14](25-home-business-content-copy-blueprint.md)
+26. [Lansman karar kaydı — ticari, domain, analytics ve ürün erişimi](26-launch-decision-register.md)
 
 ## Yayın ilkesi
 Discovery → sitemap → wireframe → görsel tasarım → içerik → geliştirme → QA → lansman. Özellik iddiaları ürünün mevcut kabiliyetleriyle doğrulanmadan yayınlanmaz. Build başarısı, canlı görsel QA veya ürün claim onayı yerine sayılmaz.
