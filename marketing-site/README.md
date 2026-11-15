@@ -36,7 +36,11 @@ GRISTORA is the selected public brand, with the descriptor “Brewing Intelligen
 - Editorial + Technical + Human visual direction.
 - No product application code, product API, product queue, or Claude development task changes.
 
-## Custom domain and production launch\n\nThe owner confirms that `gristora.com` has been purchased. DNS, GitHub Pages domain verification, HTTPS and production launch remain separate checks. Follow [`DOMAIN-SETUP.md`](./DOMAIN-SETUP.md); do not switch the shared Pages deployment from preview mode until those gates and owner launch approval are complete.\n\n## Run locally
+## Custom domain and production launch
+
+The owner confirms that `gristora.com` has been purchased. DNS, domain verification, HTTPS and production launch remain separate checks. Follow [`DOMAIN-SETUP.md`](./DOMAIN-SETUP.md); do not switch the shared Pages deployment from preview mode until those gates and owner launch approval are complete.
+
+## Run locally
 
 ```sh
 npm install
@@ -80,7 +84,7 @@ npm run test:browser
 - Generated output: `public/social-card.png` (1200×630), rendered by Resvg as part of `npm run build` before Astro copies public assets.
 - The generated PNG is ignored by Git and must not be committed or edited directly. Change the SVG source and let the build regenerate it.
 - CI validates the PNG signature, exact dimensions and a 512 KiB size ceiling, then uploads the image as a short-lived artifact for visual review.
-- The approved raster uses explicit DejaVu Sans/Serif font families for consistent typography.
+- The generated raster uses explicit DejaVu Sans/Serif font families for consistent typography.
 - Public routes reference the generated social-card PNG through the active site origin. Verify preview metadata and final-domain platform previews before release.
 
 ## Product content source
