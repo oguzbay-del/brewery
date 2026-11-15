@@ -34,7 +34,7 @@
 ## Open work
 
 1. **WP-16 / Issue #145:** access the exact selected first logo artwork; create faithful editable SVG master and only composition-supported lockups; run document 37 QA; owner approval remains pending.
-2. **Trademark/domain / Issue #146:** official record-by-record searches in US, UK, Australia and WIPO/Madrid; verify GISTORA/BASF watch lead in official IP India register; capture current RDAP/registrar evidence; obtain qualified counsel review. No availability conclusion yet.
+2. **Trademark/domain / Issue #146:** official record-by-record searches in US, UK, Australia and WIPO/Madrid; verify the official Indonesian GISTORA/BASF application `DID2026030217` post-publication status, and separately verify the third-party India lead `7525714` in IP India; capture current RDAP/registrar evidence; obtain qualified counsel review. The Indonesia gazette publication is confirmed (Classes 1/5/31; 9 Apr–9 Jun 2026 publication period), but current status is unknown. No availability conclusion yet.
 3. **Goods/services:** document 40 is a counsel-review draft. Class 42 is likely core for hosted SaaS; Class 9 depends on branded downloadable software; Class 35 is not automatic merely because software supports a brewery's internal operations; Class 41 depends on separately marketed training.
 4. **WP-17:** public-site source rebrand remains gated by exact logo approval and legal/domain review. When authorised, change only `marketing-site/`, update all public routes/metadata/social card/favicon, preserve product maturity disclosures and run the full isolated marketing CI plus manual accessibility/device review.
 5. **WP-18:** final public-domain, hosting, canonical URL, analytics/consent, contact/conversion route and launch QA decisions remain open.
