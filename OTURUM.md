@@ -2,9 +2,10 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Main:** `82de43426e5b9b1dc691f0d7e58ac022126d5426`; PRs #84–#87 merged. PR #87 CI run #124 passed, including Astro/TypeScript, static build, route/metadata/link validation and responsive Playwright QA with screenshots.
-- **Latest PR #87:** added launch decision register, original SVG social-card source, and corrected handoff. Vercel Preview remains blocked by Hobby 24-hour deployment quota; GitHub Pages is fallback preview.
-- **Active branch:** `seo/audience-intent-and-conversion-paths` improves distinct audience search intent and directs each audience page to its own workflow next step. No product app/API/Rust or Claude queue changes.
+- **Main:** `bfa813c44920ac54ae6cf49ccde82ef9052ed95c`; PRs #84–#88 merged. PR #88 CI run #126 passed: Astro/TypeScript, static build, route/metadata/link validation and responsive Playwright QA; screenshot artifact #14153827059.
+- **Latest delivery:** Homebrewers and Brewery pages now have descriptive search/social titles and audience-specific closing CTAs into their matching How It Works sections.
+- **Active branch:** `seo/core-page-search-intent` improves titles for How It Works, Technical Principles and FAQ. No product app/API/Rust or Claude queue changes.
+- **Preview:** GitHub Pages is fallback preview. Vercel Preview remains blocked by the Hobby 24-hour deployment quota; avoid repeated preview attempts.
 - **Homebrewers:** recipe → ingredients/water → calculations → brew day → fermentation observations → review. Technical guides require primary sources and SME review.
 - **Business:** recipe review → production planning → batch records → vessel/fermentation observations → QC/traceability. Keep general ERP exclusions explicit; do not imply released role permissions or compliance.
 - **WP-09 gate:** no public calculator until method/version, authoritative sources, independent golden vectors, boundary/unit/locale/rounding tests, product parity and explicit public-use approval pass.
