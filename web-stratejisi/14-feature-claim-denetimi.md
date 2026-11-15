@@ -68,6 +68,11 @@ A release-stage label such as “Homebrew MVP” is not itself a claim of curren
 | Regulatory content | Tax rates, filing and label rules are market-specific and need official/specialist validation | Publish educational context only; no compliance guarantee or automated filing promise |
 | Security | Detailed architecture exists in product plan | No “certified”, “compliant”, “encrypted end-to-end”, “SLA” or deployed-control claim without implementation evidence |
 | Costing | Recipe/batch cost is planned; accounting and ERP are excluded | Use “ingredient/production cost estimate” only; do not imply accounting, purchasing or financial ledger |
+| Yeast viability and hop-alpha estimates | Analytical model 6 is not approved; copy now separates deterministic inputs/calculations from age-based estimates | Keep age-based estimates under consideration |
+| Device fault diagnosis | Analytical model 9 is not approved; copy now limits committed wording to connection and reading status | Keep automated fault diagnosis under consideration |
+| SPC and cross-batch trends | Analytical model 10 is not approved; copy now separates SPC from release and quality records | Keep SPC and trend analysis under consideration |
+| Inventory and operational forecasts | Analytical models 12–14 are not approved; copy now labels demand, expiry and tank-bottleneck analysis as research ideas | Do not present forecasts or optimisation as committed capabilities |
+| Detailed cost variance | Analytical model 15 is not approved; copy now retains basic costing but labels price/quantity/loss attribution as under consideration | Keep detailed variance attribution under consideration |
 | AI / analytics / sustainability | The plan's 18 analytical models are unapproved. The site now separates yeast viability, device fault detection, SPC, sensory correlations, demand forecasts, expiry risk, tank bottleneck optimisation and detailed cost-variance attribution from committed capabilities | Keep these ideas under consideration until individually approved with scope and release stage |
 
 ## 5. Audience-specific claim boundaries
