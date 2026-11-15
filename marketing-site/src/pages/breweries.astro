@@ -70,7 +70,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
-      <a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol-preview.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
+      <a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
         <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
@@ -203,6 +203,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
       <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={`${base}how-it-works/#business-workflow`}>Explore the brewery workflow <span aria-hidden="true">↗</span></a></div></section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol-preview.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
