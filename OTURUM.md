@@ -649,3 +649,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Added a 720 px narrow-desktop layout proxy on Home, Homebrewers and Breweries. This is not a substitute for testing actual browser zoom at 200%.
 - CI results will determine the next remediation batch; no claim of WCAG conformance until manual review is complete.
 - Branch: `qa/axe-accessibility-audit`; PR and CI pending.
+
+
+## Axe audit findings and first remediation — 15 Kasım 2026
+
+- Initial axe run found two repeated WCAG contrast issues: the 11px homepage hero note and 9px footer metadata used `#77796f` at 3.96–3.98:1 against light backgrounds (AA target 4.5:1).
+- It also found the horizontally scrollable Professional Breweries role table was not keyboard-focusable.
+- Updated those small-text colours to `#66685e` (calculated contrast above 5:1 on both site surfaces); darkened small labels in the homepage hero SVG.
+- Made the role table wrapper a labelled, focusable region and added a visible keyboard focus outline.
+- PR #71 CI is re-running; further axe findings will be fixed before merge.
