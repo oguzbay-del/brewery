@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/learning-pages.css";
 
 const base = import.meta.env.BASE_URL;
@@ -21,6 +22,7 @@ const principles = [
   { number: "05", title: "Validate before estimating", body: "Calculation methods require reference cases and real brewing data. Predictive fermentation and model-driven calibration ideas remain under consideration until their analytical models are approved and validated." },
   { number: "06", title: "Keep people in control", body: "Future estimates may inform a brewer's review; they must not silently change recipes, equipment profiles or process settings. Any action requiring a process change remains subject to explicit user decision." },
 ];
+const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Technical principles", url: canonicalUrl }]);
 ---
 <!doctype html>
 <html lang="en">
@@ -40,6 +42,7 @@ const principles = [
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Technical Principles — Demleme" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
