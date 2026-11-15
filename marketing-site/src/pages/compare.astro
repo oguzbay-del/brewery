@@ -1,0 +1,78 @@
+---
+import "../styles/global.css";
+import "../styles/pricing.css";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
+import { features, type FeatureAudience } from "../data/features";
+
+const base = import.meta.env.BASE_URL;
+const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
+const canonicalUrl = new URL(`${base}compare/`, import.meta.env.SITE).href;
+const description = "Compare the planned GRISTORA Homebrewer and Professional Brewery feature paths and their development stages.";
+const rows: { group: string; items: [string, string][] }[] = [
+  { group: "Recipes & formulation", items: [
+    ["Recipe design & management", "recipe-design"],
+    ["Brewing calculations", "brewing-calculations"],
+    ["Water, mash & yeast", "water-mash-yeast"],
+  ]},
+  { group: "Brew day & batch history", items: [
+    ["Brew day & production records", "brew-day"],
+    ["Fermentation & batch tracking", "fermentation-monitoring"],
+    ["Equipment & calibration", "equipment-calibration"],
+    ["Planning & scheduling", "planning-scheduling"],
+  ]},
+  { group: "Professional operations", items: [
+    ["Inventory & ingredient lots", "inventory-costing"],
+    ["Quality, laboratory & release", "quality-laboratory"],
+    ["Team roles & notifications", "team-notifications"],
+    ["Production analytics", "analytics-reports"],
+  ]},
+];
+const stageFor = (slug: string, audience: FeatureAudience) => {
+  const feature = features.find((item) => item.slug === slug);
+  if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
+  const stages = feature.stages.filter((stage) => audience === "Homebrewers" ? stage.startsWith("Homebrew") || stage === "Later" || stage === "Under consideration" : stage.startsWith("Business") || stage === "Later" || stage === "Under consideration");
+  if (stages.length) return stages.join(" · ");
+  return feature.stages.includes("Under consideration") ? "Shared · under consideration" : "Shared roadmap";
+};
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Function comparison", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+const structuredData = { "@context": "https://schema.org", "@type": "WebPage", name: "Homebrewer vs Professional Brewery feature comparison", description, url: canonicalUrl, inLanguage: "en", isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href } };
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} /><link rel="canonical" href={canonicalUrl} /><link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} /><title>Home vs Brewery Function Comparison | GRISTORA</title>
+    <meta property="og:type" content="website" /><meta property="og:site_name" content="GRISTORA" /><meta property="og:title" content="Home vs Brewery Function Comparison | GRISTORA" /><meta property="og:description" content={description} /><meta property="og:url" content={canonicalUrl} /><meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} /><meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="Home vs Brewery Function Comparison | GRISTORA" /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} /><script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header"><a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`} aria-current="page">Compare</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`}>How it works</a></nav>
+      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`} aria-current="page">Compare</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}get-started/`}>Choose a plan</a></nav></details>
+    </header>
+    <main id="main-content" class="compare-page shell">
+      <Breadcrumbs items={breadcrumbItems} />
+      <section class="pricing-hero compare-hero"><p class="eyebrow"><span class="eyebrow-line"></span> TWO PATHS · ONE BREWING MINDSET</p><h1>Choose the workspace that <em>fits your brew.</em></h1><p class="pricing-lede">Homebrewers and professional breweries share a love of good brewing, but their workflows are different. Compare the planned product scope before choosing a plan.</p><p class="pricing-status"><strong>Roadmap comparison</strong> · These are planned capabilities, not a statement that the product is currently available.</p></section>
+      <section class="compare-table-section section-pad">
+        <div class="comparison-table-wrap" role="region" aria-label="Scrollable Homebrewer and Professional Brewery function comparison" tabindex="0">
+          <table class="comparison-table">
+            <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
+            <tbody>
+              {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}features/${slug}/`}>{label} ↗</a></th><td><span class={homeStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={businessStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
+            </tbody>
+          </table>
+        </div>
+        <p class="pricing-footnote">Feature stages are taken from the current public feature catalogue. “Homebrew MVP”, “Business core” and later stages describe intended release sequencing, not current availability. Open each feature for detailed scope and limitations.</p>
+      </section>
+      <section class="compare-decision section-pad"><div class="compare-decision-grid"><article><p class="eyebrow">HOME BREWERS</p><h2>One person, <em>one brewing journey.</em></h2><p>Choose Home if you brew for yourself and want your recipes, calculations, measurements and batch learning in one personal workspace.</p><a class="button button-primary" href={`${base}get-started/?audience=home`}>Configure Home plan →</a></article><article><p class="eyebrow">PROFESSIONAL BREWERIES</p><h2>Production work, <em>shared by a team.</em></h2><p>Choose Brewery if several people need a shared professional workflow around recipe standards, production planning and batch records.</p><a class="button button-primary" href={`${base}get-started/?audience=business`}>Configure Brewery plan →</a></article></div><p class="compare-all-features"><a href={`${base}features/`}>Browse all feature details and the complete catalogue ↗</a></p></section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+  </body>
+</html>

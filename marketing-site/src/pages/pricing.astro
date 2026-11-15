@@ -1,0 +1,121 @@
+---
+import "../styles/global.css";
+import "../styles/pricing.css";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
+
+const base = import.meta.env.BASE_URL;
+const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
+const canonicalUrl = new URL(`${base}pricing/`, import.meta.env.SITE).href;
+const description = "Explore GRISTORA plans for homebrewers and professional breweries, compare billing terms and configure your intended subscription.";
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Plans & Pricing — GRISTORA",
+  description,
+  url: canonicalUrl,
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
+};
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Plans & pricing", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>Plans & Pricing | GRISTORA Brewing Intelligence</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Plans & Pricing | GRISTORA" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Plans & Pricing | GRISTORA" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation">
+        <a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`}>Compare</a><a href={`${base}pricing/`} aria-current="page">Pricing</a><a href={`${base}how-it-works/`}>How it works</a>
+      </nav>
+      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`}>Compare plans</a><a href={`${base}pricing/`} aria-current="page">Pricing</a><a href={`${base}get-started/`}>Choose a plan</a></nav></details>
+    </header>
+    <main id="main-content">
+      <section class="pricing-hero shell">
+        <Breadcrumbs items={breadcrumbItems} />
+        <p class="eyebrow"><span class="eyebrow-line"></span> PLANS BUILT AROUND HOW YOU BREW</p>
+        <h1>Choose the right <em>brewing workspace.</em></h1>
+        <p class="pricing-lede">A focused plan for the individual brewer. A team plan for professional production. Start by choosing the path that matches your work.</p>
+        <p class="pricing-status" role="status"><strong>Planning preview</strong> · GRISTORA is in development. Prices, registration, trials and card payments are not live yet.</p>
+      </section>
+
+      <section class="plan-cards section-pad">
+        <div class="shell plan-grid">
+          <article class="plan-card plan-home">
+            <p class="eyebrow">01 · HOME BREWERS</p>
+            <h2>One brewer. <em>One plan.</em></h2>
+            <p class="plan-description">A personal workspace for recipes, brewing calculations, brew-day records and learning from each batch.</p>
+            <div class="plan-seat"><strong>1</strong><span>user included</span></div>
+            <ul><li>One individual account</li><li>Homebrewing product path</li><li>3-month introductory trial planned</li><li>Monthly or multi-year billing options</li></ul>
+            <a class="button button-primary" href={`${base}get-started/?audience=home`}>Explore Home plan <span aria-hidden="true">→</span></a>
+            <a class="text-link" href={`${base}homebrewers/`}>Explore the Homebrewer path</a>
+          </article>
+          <article class="plan-card plan-business">
+            <p class="eyebrow">02 · PROFESSIONAL BREWERIES</p>
+            <h2>Built for <em>the whole team.</em></h2>
+            <p class="plan-description">A shared professional workspace planned around recipe standards, production context and batch records.</p>
+            <div class="plan-seat"><strong>5+</strong><span>users · add seats in groups of five</span></div>
+            <ul><li>5, 10, 15 or 20 named users</li><li>Professional Brewery product path</li><li>1-month introductory trial planned</li><li>20+ users: tailored quote by email</li></ul>
+            <a class="button button-primary" href={`${base}get-started/?audience=business`}>Explore Brewery plan <span aria-hidden="true">→</span></a>
+            <a class="text-link" href={`${base}breweries/`}>Explore the Brewery path</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="billing-section section-pad">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> CHOOSE YOUR COMMITMENT</p>
+            <h2>More commitment. <em>More saving.</em></h2>
+            <p>Proposed discounts are shown against the monthly reference rate. Final prices and contract terms will be published before checkout opens.</p>
+          </div>
+          <div class="billing-grid">
+            <article><span>Monthly</span><strong>0% off</strong><small>Pay month to month</small></article>
+            <article><span>Annual</span><strong>15% off</strong><small>One-year commitment</small></article>
+            <article><span>2 years</span><strong>25% off</strong><small>Two-year commitment</small></article>
+            <article><span>3 years</span><strong>35% off</strong><small>Three-year commitment</small></article>
+          </div>
+          <p class="pricing-footnote">Discount percentages are proposed launch settings, not a currently available offer. Currency, tax/VAT and whether multi-year terms are prepaid will be confirmed with final pricing.</p>
+        </div>
+      </section>
+
+      <section class="pricing-compare section-pad">
+        <div class="shell compare-callout">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> BEFORE YOU CHOOSE</p><h2>Compare the two <em>brewing paths.</em></h2><p>See which planned workflows belong to Homebrewers, which are designed for professional teams, and where the feature stages differ.</p></div>
+          <div class="compare-actions"><a class="button button-primary" href={`${base}compare/`}>View function comparison <span aria-hidden="true">↗</span></a><a class="text-link" href={`${base}features/`}>Browse all feature details</a></div>
+        </div>
+      </section>
+
+      <section class="pricing-cta section-pad">
+        <div class="shell pricing-cta-inner"><p class="eyebrow"><span class="eyebrow-line"></span> YOUR NEXT STEP</p><h2>Build your plan, <em>one choice at a time.</em></h2><p>The guided planner helps you choose your audience, team size and billing term. It will not collect payment details or create an account until the real service is ready.</p><a class="button button-primary" href={`${base}get-started/`}>Start plan configuration <span aria-hidden="true">↗</span></a></div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={`${base}compare/`}>Compare paths ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+  </body>
+</html>

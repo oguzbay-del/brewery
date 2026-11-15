@@ -8,6 +8,9 @@ const routes = [
   "/how-it-works/",
   "/technical-principles/",
   "/faq/",
+  "/pricing/",
+  "/get-started/",
+  "/compare/",
   "/features/",
   "/features/recipe-design/",
 ];

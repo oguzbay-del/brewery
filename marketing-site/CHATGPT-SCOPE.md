@@ -6,6 +6,7 @@
 
 - Work only in `marketing-site/` and the website-specific documentation in `web-stratejisi/`.
 - Improve the public marketing website: page structure, copy, responsive design, accessibility, SEO, metadata, visual assets, performance, static build, browser tests and the website's own CI/deployment configuration.
+- Implement owner-authorized public pricing, plan comparison and guided membership-intent pages. Keep actual account provisioning, payment processing and subscription services out of scope unless separately authorized.
 - Update marketing-site documentation and the website handoff when needed.
 - Use the existing product plan and feature catalogue as read-only sources to keep public statements accurate.
 

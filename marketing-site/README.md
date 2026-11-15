@@ -20,6 +20,7 @@ Read these canonical documents before changing public brand, copy, metadata or v
 - `../web-stratejisi/42-gristora-marketing-site-ci-artifact-review.md`
 - `../web-stratejisi/43-gristora-public-homepage-copy-blueprint.md`
 - `../web-stratejisi/44-gristora-trademark-counsel-review-brief.md`
+- `../web-stratejisi/45-gristora-pricing-membership-onboarding-plan.md`
 
 GRISTORA is the selected public brand, with the descriptor “Brewing Intelligence”. The owner selected the first logo design shared by the assistant and approved its vector assets in PR #148. Public routes use `public/brand/gristora-symbol.svg`; the full dark/light lockups and proof are in `public/brand/`. See `BRAND-ASSETS.md` and document 37 for asset usage and production/QA notes. Do not claim trademark or domain legal clearance. This repository documentation is the website handoff.
 
@@ -30,6 +31,7 @@ GRISTORA is the selected public brand, with the descriptor “Brewing Intelligen
 ## Scope
 
 - Responsive homepage.
+- `/pricing/`, `/get-started/` and `/compare/` for the two-audience subscription discovery and configuration preview.
 - Dedicated `/breweries/` and `/homebrewers/` audience landing pages. Professional Breweries is the primary commercial path; Homebrewers is distinct and secondary.
 - `/how-it-works/` leads with the Professional Breweries workflow, then explains the separate Homebrewers workflow.
 - `/technical-principles/` and `/faq/` for technical transparency and product-scope answers.
@@ -74,8 +76,8 @@ npm run test:browser
 - Real homebrewing and brewery photography can replace these illustration slots after usage rights and final assets are confirmed.
 - Product features are presented as planned capabilities, not currently available functionality. Homebrew MVP, Business core, later releases and unapproved ideas are clearly distinguished.
 - The product and website are both in development; no login, subscription, purchase or production workflow is live.
-- No fabricated product screenshots, metrics, testimonials, customer logos or pricing are included.
-- The homepage primary CTA leads to Professional Breweries; Homebrewers remains available as a separate audience path. App URL and sign-in URL are not yet configured.
+- No fabricated product screenshots, metrics, testimonials, customer logos or monetary prices are included. The pricing preview shows proposed term discounts only; final prices and contractual terms remain owner decisions.
+- The homepage primary CTA leads to Professional Breweries; Homebrewers remains available as a separate audience path. Pricing navigation leads to a plan overview, a Home-vs-Brewery feature matrix and an Apple-inspired configuration wizard. The wizard is a non-live preview: no account, trial, card or payment is created. App URL and sign-in URL are not yet configured.
 - Core colour values follow the selected GRISTORA brand board and are documented in `BRAND-ASSETS.md`. Layout spacing and component styling remain isolated to the marketing site.
 
 ## Social preview asset

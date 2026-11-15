@@ -7,6 +7,9 @@ const routes = [
   "/how-it-works/",
   "/technical-principles/",
   "/faq/",
+  "/pricing/",
+  "/get-started/",
+  "/compare/",
   "/features/",
   "/features/recipe-design/",
 ];
@@ -108,6 +111,8 @@ const activeNavigation = [
   { route: "/how-it-works/", href: "/how-it-works/" },
   { route: "/technical-principles/", href: "/technical-principles/" },
   { route: "/faq/", href: "/faq/" },
+  { route: "/pricing/", href: "/pricing/" },
+  { route: "/compare/", href: "/compare/" },
   { route: "/features/", href: "/features/" },
   { route: "/features/recipe-design/", href: "/features/" },
 ];
@@ -126,3 +131,42 @@ for (const item of activeNavigation) {
     await expect(mobileCurrent).toHaveAttribute("href", item.href);
   });
 }
+
+
+test("plan wizard supports Home and Business journeys, terms and review", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/get-started/?audience=home", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('[data-step="1"]')).toBeVisible();
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page.locator('[data-step="2"]')).toBeVisible();
+  await expect(page.locator("#home-seat")).toBeVisible();
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page.locator('[data-step="3"]')).toBeVisible();
+  await page.getByLabel(/Annual billing/).check();
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page.locator('[data-step="4"]')).toBeVisible();
+  await expect(page.locator("#review-audience")).toHaveText("Homebrewer");
+  await expect(page.locator("#review-seats")).toHaveText("1 user");
+  await expect(page.locator("#review-trial")).toHaveText("3 months (planned)");
+
+  await page.goto("/get-started/?audience=business", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page.locator("#business-seats")).toBeVisible();
+  await page.getByLabel(/10/).check();
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await expect(page.locator("#review-audience")).toHaveText("Professional Brewery");
+  await expect(page.locator("#review-seats")).toHaveText("10 users");
+  await expect(page.locator("#review-trial")).toHaveText("1 month (planned)");
+});
+
+test("Business wizard routes teams above 20 seats to custom quote", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/get-started/?audience=business", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.getByLabel(/More than 20 users/).check();
+  await expect(page.locator("#contact-tier")).toBeVisible();
+  await page.getByRole("button", { name: /Review contact request/ }).click();
+  await expect(page.locator('[data-step="4"]')).toBeVisible();
+  await expect(page.locator("#review-seats")).toContainText("custom quote");
+});

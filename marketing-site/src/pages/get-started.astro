@@ -1,0 +1,213 @@
+---
+import "../styles/global.css";
+import "../styles/pricing.css";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
+
+const base = import.meta.env.BASE_URL;
+const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
+const canonicalUrl = new URL(`${base}get-started/`, import.meta.env.SITE).href;
+const description = "Configure a GRISTORA Homebrewer or Professional Brewery plan step by step.";
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Configure your GRISTORA plan",
+  description,
+  url: canonicalUrl,
+  inLanguage: "en",
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
+};
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Plans & pricing", url: new URL(`${base}pricing/`, import.meta.env.SITE).href }, { name: "Configure plan", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>Configure Your Plan | GRISTORA</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Configure Your Plan | GRISTORA" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Configure Your Plan | GRISTORA" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="site-header">
+      <a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`}>Compare</a><a href={`${base}pricing/`}>Pricing</a></nav>
+      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`}>Compare</a><a href={`${base}pricing/`}>Pricing</a></nav></details>
+    </header>
+    <main id="main-content" class="wizard-page shell">
+      <Breadcrumbs items={breadcrumbItems} />
+      <section class="wizard-intro">
+        <p class="eyebrow"><span class="eyebrow-line"></span> YOUR GRISTORA PLAN</p>
+        <h1>A few choices. <em>A clearer fit.</em></h1>
+        <p>Choose your brewing path, set the team size and select a billing term. You can review everything before the payment stage.</p>
+        <p class="pricing-status" role="status"><strong>Configuration preview</strong> · no account or payment is created here. Checkout will be connected in a later release.</p>
+      </section>
+
+      <section class="wizard-layout" aria-label="Plan configuration">
+        <div class="wizard-main">
+          <ol class="wizard-progress" aria-label="Configuration steps">
+            <li class="is-current" data-progress="1"><span>01</span><small>Your path</small></li>
+            <li data-progress="2"><span>02</span><small>Team size</small></li>
+            <li data-progress="3"><span>03</span><small>Billing</small></li>
+            <li data-progress="4"><span>04</span><small>Review</small></li>
+          </ol>
+
+          <form id="plan-wizard" novalidate>
+            <section class="wizard-step" data-step="1">
+              <p class="step-kicker">STEP 01 OF 04</p>
+              <h2 tabindex="-1">How do you <em>brew?</em></h2>
+              <p class="step-description">The right workspace starts with the right kind of brewing.</p>
+              <div class="choice-grid">
+                <label class="choice-card"><input type="radio" name="audience" value="home" aria-label="Homebrewer plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a homebrewer</strong><small>One personal workspace for recipes, brew days and batch learning.</small><span class="choice-meta">1 user · 3-month trial planned</span></label>
+                <label class="choice-card"><input type="radio" name="audience" value="business" aria-label="Professional Brewery plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a professional brewery</strong><small>A team workspace for recipe standards, production context and batch records.</small><span class="choice-meta">5+ users · 1-month trial planned</span></label>
+              </div>
+              <div class="choice-links"><a href={`${base}homebrewers/`}>Explore Homebrewers ↗</a><a href={`${base}breweries/`}>Explore Breweries ↗</a></div>
+              <p class="step-helper">Not sure which path fits? <a href={`${base}compare/`}>Compare Home and Brewery functions</a>.</p>
+            </section>
+
+            <section class="wizard-step" data-step="2" hidden>
+              <p class="step-kicker">STEP 02 OF 04</p>
+              <h2 tabindex="-1">Who needs <em>access?</em></h2>
+              <p class="step-description" id="seat-description">Choose the number of people who need a seat.</p>
+              <div id="home-seat" class="seat-fixed" hidden><strong>1</strong><span>Individual user included in the Home plan.</span></div>
+              <fieldset id="business-seats" class="seat-options" hidden>
+                <legend>Choose your team size</legend>
+                <label><input type="radio" name="seats" value="5" aria-label="5 users" checked /><span>5 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="10" aria-label="10 users" /><span>10 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="15" aria-label="15 users" /><span>15 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="20" aria-label="20 users" /><span>20 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="20+" aria-label="More than 20 users" /><span>20+ <small>contact</small></span></label>
+              </fieldset>
+              <div class="contact-tier" id="contact-tier" hidden><strong>More than 20 people?</strong><p>We’ll prepare a tailored team option. The direct email contact will be published before launch.</p><span>20+ users · contact required</span></div>
+              <p class="step-helper"><a href={`${base}compare/`}>Review the Home and Brewery function comparison</a>.</p>
+            </section>
+
+            <section class="wizard-step" data-step="3" hidden>
+              <p class="step-kicker">STEP 03 OF 04</p>
+              <h2 tabindex="-1">Choose your <em>billing term.</em></h2>
+              <p class="step-description">Longer commitments receive a larger proposed discount against the monthly reference rate.</p>
+              <fieldset class="billing-options">
+                <legend>Billing frequency</legend>
+                <label><input type="radio" name="term" value="monthly" aria-label="Monthly billing" checked /><span><strong>Monthly</strong><small>Flexible month-to-month</small><b>0% saving</b></span></label>
+                <label><input type="radio" name="term" value="annual" aria-label="Annual billing" /><span><strong>Annually</strong><small>One-year commitment</small><b>15% saving</b></span></label>
+                <label><input type="radio" name="term" value="two-year" aria-label="Two-year billing" /><span><strong>2 years</strong><small>Two-year commitment</small><b>25% saving</b></span></label>
+                <label><input type="radio" name="term" value="three-year" aria-label="Three-year billing" /><span><strong>3 years</strong><small>Three-year commitment</small><b>35% saving</b></span></label>
+              </fieldset>
+              <div class="trial-note" id="trial-note">Your planned trial duration will appear here.</div>
+              <div class="contact-tier" id="custom-billing" hidden><strong>Custom team plan</strong><p>For teams above 20, billing terms and pricing are prepared individually. The contact email will be published before launch.</p></div>
+              <p class="step-helper">Discounts are proposed and subject to final price and contract approval.</p>
+            </section>
+
+            <section class="wizard-step" data-step="4" hidden>
+              <p class="step-kicker">STEP 04 OF 04</p>
+              <h2 tabindex="-1">Review your <em>plan.</em></h2>
+              <p class="step-description">Check your configuration before the future secure checkout step.</p>
+              <dl class="review-list"><div><dt>Brewing path</dt><dd id="review-audience">—</dd></div><div><dt>Users</dt><dd id="review-seats">—</dd></div><div><dt>Billing</dt><dd id="review-term">—</dd></div><div><dt>Proposed saving</dt><dd id="review-discount">—</dd></div><div><dt>Trial</dt><dd id="review-trial">—</dd></div><div><dt>Payment method</dt><dd>Credit or debit card (planned)</dd></div><div><dt>Price</dt><dd>To be announced before checkout</dd></div></dl>
+              <div class="checkout-placeholder"><span class="card-mark" aria-hidden="true">▰</span><div><strong>Secure card payment — coming later</strong><p>Payment processing is not connected. No card details are requested or stored on this website.</p></div></div>
+              <p class="step-helper">You can go back to change any choice. <a href={`${base}pricing/`}>Review all plans and terms</a>.</p>
+            </section>
+
+            <div class="wizard-controls"><button type="button" class="wizard-back" id="wizard-back" disabled>Back</button><button type="button" class="button button-primary wizard-next" id="wizard-next" disabled>Continue <span aria-hidden="true">→</span></button></div>
+            <p class="wizard-feedback" id="wizard-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <aside class="wizard-summary" aria-live="polite">
+          <p class="eyebrow">YOUR SELECTION</p><h2>Plan <em>summary</em></h2>
+          <dl><div><dt>Path</dt><dd id="summary-audience">Choose a path</dd></div><div><dt>Users</dt><dd id="summary-seats">—</dd></div><div><dt>Term</dt><dd id="summary-term">Monthly</dd></div><div><dt>Saving</dt><dd id="summary-discount">0%</dd></div></dl>
+          <p class="summary-note">Home: one user, three-month trial. Brewery: five-user minimum, one-month trial.</p>
+          <a href={`${base}compare/`}>Compare planned functions ↗</a>
+        </aside>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Plan configuration preview · No payment collected</span></div></footer>
+    <script>
+      // @ts-nocheck
+      const form = document.querySelector("#plan-wizard");
+      if (form) {
+        let step = 1;
+        const searchAudience = new URLSearchParams(window.location.search).get("audience");
+        const state = { audience: searchAudience === "business" ? "business" : searchAudience === "home" ? "home" : "", seats: "5", term: "monthly" };
+        const discounts = { monthly: "0%", annual: "15%", "two-year": "25%", "three-year": "35%" };
+        const termNames = { monthly: "Monthly", annual: "Annual", "two-year": "2 years", "three-year": "3 years" };
+        const byId = (id) => {
+          const element = document.getElementById(id);
+          if (!element) throw new Error("Missing wizard element: " + id);
+          return element;
+        };
+        const update = () => {
+          form.querySelectorAll("[data-step]").forEach((panel) => { panel.hidden = Number(panel.dataset.step) !== step; });
+          document.querySelectorAll("[data-progress]").forEach((item) => {
+            const n = Number(item.dataset.progress);
+            item.classList.toggle("is-current", n === step);
+            item.classList.toggle("is-complete", n < step);
+            if (n === step) item.setAttribute("aria-current", "step"); else item.removeAttribute("aria-current");
+          });
+          byId("wizard-back").disabled = step === 1;
+          byId("wizard-next").textContent = step === 4 ? "Configuration preview complete" : "Continue →";
+          byId("wizard-next").disabled = step === 4;
+          byId("home-seat").hidden = state.audience !== "home";
+          byId("business-seats").hidden = state.audience !== "business";
+          byId("contact-tier").hidden = state.seats !== "20+";
+          byId("custom-billing").hidden = state.seats !== "20+";
+          form.querySelector(".billing-options").hidden = state.seats === "20+";
+          byId("seat-description").textContent = state.audience === "home" ? "The Home plan is designed for one individual brewer." : "Choose the number of people who need a seat.";
+          byId("trial-note").textContent = state.audience === "home" ? "Your Home plan includes a proposed three-month introductory trial." : "Your Professional Brewery plan includes a proposed one-month introductory trial.";
+          byId("summary-audience").textContent = state.audience ? (state.audience === "home" ? "Homebrewer" : "Professional Brewery") : "Choose a path";
+          byId("summary-seats").textContent = state.audience === "home" ? "1 user" : state.audience === "business" ? (state.seats === "20+" ? "20+ · custom quote" : state.seats + " users") : "—";
+          byId("summary-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
+          byId("summary-discount").textContent = state.seats === "20+" ? "—" : discounts[state.term];
+          byId("review-audience").textContent = state.audience === "home" ? "Homebrewer" : "Professional Brewery";
+          byId("review-seats").textContent = state.audience === "home" ? "1 user" : (state.seats === "20+" ? "20+ users · custom quote" : state.seats + " users");
+          byId("review-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
+          byId("review-discount").textContent = state.seats === "20+" ? "To be agreed" : discounts[state.term];
+          byId("review-trial").textContent = state.audience === "home" ? "3 months (planned)" : "1 month (planned)";
+          byId("wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
+          byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Configuration preview complete" : "Continue →";
+          byId("wizard-feedback").textContent = "";
+        };
+        form.querySelectorAll('input[name="audience"]').forEach((input) => input.addEventListener("change", () => {
+          state.audience = input.value;
+          state.seats = "5";
+          form.querySelector('input[name="seats"][value="5"]').checked = true;
+          update();
+        }));
+        form.querySelectorAll('input[name="seats"]').forEach((input) => input.addEventListener("change", () => { state.seats = input.value; update(); }));
+        form.querySelectorAll('input[name="term"]').forEach((input) => input.addEventListener("change", () => { state.term = input.value; update(); }));
+        byId("wizard-next").addEventListener("click", () => {
+          if (step < 4) {
+            step = step === 2 && state.seats === "20+" ? 4 : step + 1;
+            update();
+            const heading = document.querySelector(".wizard-step:not([hidden]) h2");
+            if (heading) heading.focus();
+          }
+        });
+        byId("wizard-back").addEventListener("click", () => { if (step > 1) { step -= 1; update(); } });
+        if (state.audience) {
+          const selected = form.querySelector('input[name="audience"][value="' + state.audience + '"]');
+          if (selected) selected.checked = true;
+        }
+        update();
+      }
+    </script>
+  </body>
+</html>
