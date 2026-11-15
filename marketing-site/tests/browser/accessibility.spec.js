@@ -60,7 +60,7 @@ test("mobile navigation can be opened with the keyboard", async ({ page }) => {
 test("FAQ disclosure can be opened with the keyboard", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/faq/", { waitUntil: "domcontentloaded" });
-  const firstDetails = page.locator("details").first();
+  const firstDetails = page.locator(".audience-faq-item").first();
   const firstSummary = firstDetails.locator("summary");
   await firstSummary.focus();
   await page.keyboard.press("Enter");
