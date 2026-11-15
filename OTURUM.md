@@ -1,37 +1,49 @@
-## GRISTORA logo decision — 15 November 2026 (current; supersedes older logo-status notes)
+# GRISTORA — Current handoff (15 November 2026)
 
-- The owner selected the **first logo design shown by the assistant** before the message beginning “Paralel çalışmayı sürdürdüm. Bu turda marka dokümantasyonundan çıkıp ilk logo tasarımını…”.
-- This is the fixed visual direction for WP-16. Do not ask the owner to repeat the clarification or upload the artwork again. Do not ask them to choose among the later six exploration variants.
-- The shared reference is https://chatgpt.com/s/m_6af9ac3f07e48191aa8504a2e22a77a9. The GitHub connector cannot retrieve its rendered image; do not guess which later SVG concept is equivalent or fabricate a trace and label it faithful.
-- Continue preparatory brand-system work; exact vector tracing is pending access to the original rendered reference, not pending owner preference.
-- PR #147 was manually squash-merged after its Marketing Site Checks run passed; merge commit: `e34a379370495a68ddcfd1d760a6f9800f50e66b`. No GitHub auto-merge was enabled.
-- Added production/QA specification `web-stratejisi/37-gristora-logo-production-and-qa.md`, public-site implementation map `web-stratejisi/38-gristora-public-site-brand-implementation-map.md`, preliminary trademark/domain evidence log `web-stratejisi/39-gristora-trademark-domain-preliminary-evidence-log.md`, and counsel-review goods/services draft `web-stratejisi/40-gristora-preliminary-goods-services-specification.md`; indexed all in `web-stratejisi/README.md`.
-- PR CI run #219 (`43717341183`) completed successfully, including dependency install, Astro/TypeScript, static build, generated route/metadata/link validation, social preview artifact generation and responsive browser QA. Vercel preview was separately blocked by the existing 24-hour Hobby deployment quota; no preview deployment is claimed.
-- The exact source image remains inaccessible to the repo integration and the shared ChatGPT URL could not be opened by the web fetcher; no logo geometry has been invented and no production master has been approved.
-- Additional classification work: draft 40 treats Class 42 as likely core for hosted SaaS, Class 9 as conditional on branded downloadable software, Class 35 as non-automatic, and Class 41 as conditional on separately marketed training. This is for counsel review, not filing text.
-- Main branch latest documentation update on 15 Nov: `web-stratejisi/README.md` indexes docs 33–40; trademark screening and class assumptions are documented in issues #145/#146 and docs 39–40.
-- Scope remains public GRISTORA brand and marketing website only. Do not rename or modify the product application, APIs, Rust engine, iOS app, internal identifiers, data model, roadmap or product development queue.
-- PR #147 is merged. WP-16 and WP-17 are not complete: exact logo tracing, owner approval, legal/domain clearance and live-site implementation remain open.
+## Fixed decisions and scope
+
+- Public brand: **GRISTORA**. Descriptor: **Brewing Intelligence**.
+- The owner selected the **first logo design shown by the assistant** before the message beginning “Paralel çalışmayı sürdürdüm. Bu turda marka dokümantasyonundan çıkıp ilk logo tasarımını…”. This is the only direction to refine; do not substitute later exploration variants or ask the owner to repeat the decision.
+- Reference: https://chatgpt.com/s/m_6af9ac3f07e48191aa8504a2e22a77a9. The connector and web fetcher cannot retrieve the rendered image. Do not invent its geometry or claim a reconstruction is faithful. Exact tracing is pending access to that source, not pending owner preference.
+- Public website only. Do not rename or modify the product application, APIs, Rust engine, iOS app, data model, internal identifiers, product roadmap or product-development queue.
+- Primary commercial audience: Professional Breweries. Homebrewers is a distinct secondary path. English-first, US/UK initial markets, self-service discovery.
+- The product and public site are in development. No unsupported customer, metric, pricing, trial, signup, integration, production availability, certification, compliance or predictive-AI claims.
+
+## GitHub status
+
+- PR #147 was manually squash-merged: https://github.com/oguzbay-del/brewery/pull/147
+- Merge commit: `e34a379370495a68ddcfd1d760a6f9800f50e66b`.
+- Marketing Site Checks run #219 (`43717341183`) completed successfully: dependency install, Astro/TypeScript, static build, generated routes/metadata/links, social preview artifact and responsive browser QA.
+- Vercel preview was blocked by the existing 24-hour Hobby deployment quota. No live preview/deployment is claimed.
+- No product code or marketing-site source code was changed in this brand/documentation work.
+
+## Canonical GRISTORA documents
+
+- 33 — `web-stratejisi/33-gristora-brand-platform.md`
+- 34 — `web-stratejisi/34-gristora-brand-architecture.md`
+- 35 — `web-stratejisi/35-gristora-visual-identity-logo-brief.md`
+- 36 — `web-stratejisi/36-gristora-public-site-rebrand-plan.md`
+- 37 — `web-stratejisi/37-gristora-logo-production-and-qa.md`
+- 38 — `web-stratejisi/38-gristora-public-site-brand-implementation-map.md`
+- 39 — `web-stratejisi/39-gristora-trademark-domain-preliminary-evidence-log.md`
+- 40 — `web-stratejisi/40-gristora-preliminary-goods-services-specification.md`
+- 41 — `web-stratejisi/41-gristora-public-marketing-claims-guardrails.md`
+
+## Open work
+
+1. **WP-16 / Issue #145:** access the exact selected first logo artwork; create faithful editable SVG master and only composition-supported lockups; run document 37 QA; owner approval remains pending.
+2. **Trademark/domain / Issue #146:** official record-by-record searches in US, UK, Australia and WIPO/Madrid; verify GISTORA/BASF watch lead in official IP India register; capture current RDAP/registrar evidence; obtain qualified counsel review. No availability conclusion yet.
+3. **Goods/services:** document 40 is a counsel-review draft. Class 42 is likely core for hosted SaaS; Class 9 depends on branded downloadable software; Class 35 is not automatic merely because software supports a brewery's internal operations; Class 41 depends on separately marketed training.
+4. **WP-17:** public-site source rebrand remains gated by exact logo approval and legal/domain review. When authorised, change only `marketing-site/`, update all public routes/metadata/social card/favicon, preserve product maturity disclosures and run the full isolated marketing CI plus manual accessibility/device review.
+5. **WP-18:** final public-domain, hosting, canonical URL, analytics/consent, contact/conversion route and launch QA decisions remain open.
+
+## Research and monitoring
+
+- Preliminary trademark evidence and limitations are in document 39; proposed class wording/logic in document 40; public claim restrictions in document 41.
+- Existing weekly GRISTORA trademark/domain monitor remains the only recurring automation. Do not create a duplicate.
+- No trademark filing, domain purchase, third-party contact, or public clearance claim is authorised.
 
 ---
-
-## CANONICAL CURRENT STATUS — 15 November 2026
-
-- **GRISTORA WP-16:** historical exploration boards remain reference material only. The owner has selected the first assistant-presented logo as the direction to refine; it is not yet a production-approved master. The logo production/QA specification and public-site implementation map are recorded in documents 37 and 38. GitHub issue #145 tracks faithful refinement and owner review: https://github.com/oguzbay-del/brewery/issues/145.
-- **Brand clearance monitor:** existing weekly automation was updated from the old candidate list to GRISTORA-specific US/UK/Australia trademark, close-variant, company/product and domain checks. No duplicate monitor created.
-- **PR #144 updated:** now includes the initial SVG concept board and logo brief refinement; latest head `fb93588c13c2c2091d7947a24580d4cf6f40b47f`. PR remains open; no CI workflow run was returned for the latest docs-only commit. Do not merge until the repository's expected checks/review are confirmed.
-
-## GRISTORA brand handoff — 15 November 2026
-
-- User selected **GRISTORA** as the public brand. Use **Brewing Intelligence** as the proposed category descriptor.
-- Public branding must not use the Demleme name. This is a marketing-site brand decision only; it does not rename or alter the software, product app, internal identifiers, API, Rust engine, iOS app or product roadmap.
-- Created canonical docs: `web-stratejisi/33-gristora-brand-platform.md`, `34-gristora-brand-architecture.md`, `35-gristora-visual-identity-logo-brief.md`, `36-gristora-public-site-rebrand-plan.md`.
-- WP-15 brand platform/architecture is active; WP-16 logo exploration is next; WP-17 public marketing-site rebrand follows the logo and legal/domain gates; WP-18 final public-domain launch QA follows.
-- Logo options are not designed or approved yet. Prepare at least three distinct routes and variants; do not pick a final logo without user review.
-- No marketing-site source files or product software files have been changed in this documentation-only batch.
-- Work branch: `marketing/gristora-brand-foundation`. Create a PR and merge manually only after relevant checks and review. Do not use GitHub auto-merge.
-- Next task: logo exploration board, using the canonical logo brief. Do not start WP-17 yet.
-
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
