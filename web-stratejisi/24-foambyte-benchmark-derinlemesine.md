@@ -210,3 +210,11 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - Added primary navigation interaction checks at all five widths.
 - CI uploads full-page screenshots for the homepage and both audience pages at all widths, plus key technical pages at desktop and narrow mobile widths.
 - This is automated browser QA, not a substitute for human visual, keyboard, screen-reader, contrast or zoom review.
+
+
+## 7C. Accessibility automation — 15 Kasım 2026
+
+- Added axe-core Playwright audits for seven routes at 1440 px and 390 px using WCAG 2.0/2.1/2.2 A/AA rule tags.
+- Added keyboard checks for skip-link navigation, mobile menu disclosure and FAQ disclosure.
+- Added a 720 px narrow-desktop layout proxy; actual 200% browser zoom and manual screen-reader review remain open.
+- Automated audit findings are triaged before any accessibility-conformance claim.
