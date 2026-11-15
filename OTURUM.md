@@ -658,3 +658,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Updated those small-text colours to `#66685e` (calculated contrast above 5:1 on both site surfaces); darkened small labels in the homepage hero SVG.
 - Made the role table wrapper a labelled, focusable region and added a visible keyboard focus outline.
 - PR #71 CI is re-running; further axe findings will be fixed before merge.
+
+
+## Follow-up axe finding — Homebrewers table
+
+- Re-run cleared all contrast violations and the Business role-table issue.
+- The Homebrewers page uses the same horizontally scrollable table wrapper and also required keyboard focus; added a descriptive region name and `tabindex=0` there too.
+- Awaiting final axe and keyboard test rerun.
