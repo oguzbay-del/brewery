@@ -2,16 +2,15 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Main:** `d1935b0bb8c70568107535a1f162227b3883abdf` (latest verified merge in this work batch); PRs #84–#89, #91–#92, #94–#96 merged. PRs #90, #93, #97, #98 and #100 were closed as duplicates after their work was consolidated.
-- **SEO:** PR #89 aligned page titles and structured-data names; PR #94 records social preview readiness gaps; PR #95 aligns Twitter titles with page titles. CI run #43696382053 passed, including Astro checks, static build, route/metadata validation and responsive browser QA. Vercel Preview remained blocked by the 24-hour Hobby deployment quota.
-- **WP-09 / WP-10:** PR #91 provides the primary-source register; PR #96 adds fermentation sample-handling evidence; this handoff adds gravity-measurement evidence. Research only: no formula, calculator or public technical article is approved.
-- **Measurement provenance:** conceptual data-contract note is for product/engineering review only; not an approved schema/API or shipped feature.
-- **Open PRs:** none at this handoff snapshot. No product app/API/Rust or Claude queue changes.
-- **Preview:** GitHub Pages is fallback preview. Do not retry Vercel Preview until the quota window resets; avoid repeated attempts.
-- **Commercial decisions open:** app URL/sign-in/registration; production domain/hosting; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots.
-- **Social preview:** dedicated 1200×630 SVG source is merged (PR #101); raster export, metadata wiring and final-domain/platform validation remain.
-- **Manual QA remains open:** real screen-reader testing, full human keyboard/focus, real 200% zoom/reflow and SVG internal text contrast.
-- **Release policy:** batch changes, inspect diffs and CI, merge manually; do not alter Vercel or production settings without explicit approval.
+- **Main:** `5cff7a7ae66375eb45752e2c25bf4ad920230118`. PR #103 (social metadata validation) and PR #104 (release gates/public-claim register) manually squash-merged. No open PRs at this handoff.
+- **Social metadata QA:** PR #103 extends `marketing-site/scripts/validate-site.mjs` to check supported Twitter card values, duplicate/empty social tags, Twitter/Open Graph title consistency, image URL consistency, HTTPS and local image existence. Final GitHub Actions run #43698119511 succeeded: Astro/TypeScript, static build, **site validation**, Chromium installation, responsive Playwright QA and screenshot artifact upload.
+- **Release register:** PR #104 adds `web-stratejisi/26-release-gates-and-public-claims.md`, consolidating product-truth, commercial, hosting/domain, social, privacy, accessibility, responsive QA, content/legal and release-operation gates.
+- **Social preview:** 1200×630 SVG source exists (PR #101). Raster PNG export, image metadata wiring and final-domain/platform validation remain open. Do not use the SVG source as a substitute for a verified raster preview.
+- **WP-09 / WP-10:** primary-source and sample-handling/gravity evidence remain research only. No formula, calculator or public technical article is approved. Measurement provenance remains a concept, not an approved schema/API or shipped feature.
+- **Preview:** Vercel Preview is still blocked by the 24-hour Hobby deployment quota; no further retry until the window resets. GitHub Pages remains the fallback preview. Vercel failure is separate from successful GitHub Actions CI.
+- **Manual QA remains open:** real screen-reader testing, human keyboard/focus review, 200% zoom/reflow, final responsive visual review and SVG internal text contrast.
+- **Commercial decisions open:** production domain/hosting plan; app URL/sign-in/registration; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots; legal/contact content.
+- **Release policy:** batch changes, inspect diffs and CI, merge manually; do not alter Vercel or production settings without explicit approval. No product app/API/Rust or Claude queue changes in this work batch.
 
 
 ## Son devam — 15 Kasım 2026
