@@ -630,3 +630,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - The five-item Business workflow and record-model grids exposed a visually empty sixth cell because the grid container background showed through.
 - Added a Business-only card treatment with explicit gaps and borders; Homebrewer six-step grid and homepage hero remain unchanged.
 - Re-run browser QA and inspect refreshed screenshots before merge.
+
+
+## Handoff update — PR #69 merged
+
+- Main commit: `a3f33aa5905c3df5603fb35dbd9452137975049b`.
+- PR #69 merged after successful Astro/TypeScript checks, production build, static route/metadata/link validation and Playwright Chromium responsive QA.
+- Browser QA: 40/40 tests passed. Seven routes checked at 1440 / 1024 / 768 / 390 / 320 px; image alt attributes/loading, horizontal overflow, browser page errors, and primary navigation interaction covered.
+- Screenshot artifact: `marketing-responsive-qa-screenshots` (23 full-page screenshots, 10.3 MB). First-pass review included Home, Homebrewers and Breweries desktop/mobile; the Business five-card grid's empty background cells were corrected and rechecked.
+- GitHub Pages deployment #43687312428 and main checks #43687312488 are queued.
+- Remaining release gates: manual keyboard/focus review, screen-reader flow, contrast, 200% zoom, and Vercel preview visual verification. Automated Chromium smoke tests do not close those gates.
