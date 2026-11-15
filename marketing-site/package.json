@@ -4,14 +4,16 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npm run render:social-card && astro build",
     "preview": "astro preview",
     "check": "astro check",
     "validate:site": "node scripts/validate-site.mjs",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "render:social-card": "node scripts/render-social-card.mjs"
   },
   "dependencies": {
-    "astro": "^7.4.0"
+    "astro": "^7.4.0",
+    "@resvg/resvg-js": "2.6.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
