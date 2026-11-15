@@ -6,15 +6,15 @@ import { features } from "../../data/features";
 
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}features/`, import.meta.env.SITE).href;
-const description = "Explore Demleme’s planned professional brewery workflows and product capabilities, with a separate Homebrewers path.";
+const description = "Explore GRISTORA’s planned professional brewery workflows and product capabilities, with a separate Homebrewers path.";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
-  name: "Brewery software features and roadmap — Demleme",
+  name: "Brewery software features and roadmap — GRISTORA",
   description,
   url: canonicalUrl,
   inLanguage: "en",
-  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
 };
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Product", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
@@ -28,14 +28,14 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content={description} />
-    <title>Brewery Software Features & Roadmap | Demleme</title>
+    <title>Brewery Software Features & Roadmap | GRISTORA</title>
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="Brewery Software Features & Roadmap | Demleme" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Brewery Software Features & Roadmap | GRISTORA" />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Brewery Software Features & Roadmap | Demleme" />
+    <meta name="twitter:title" content="Brewery Software Features & Roadmap | GRISTORA" />
     <meta name="twitter:description" content={description} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
@@ -43,7 +43,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
-      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <a class="wordmark" href={base} aria-label="GRISTORA home">gristora<span>.</span></a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
         <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
@@ -65,7 +65,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="feature-hero shell">
         <p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT ROADMAP · IN DEVELOPMENT</p>
         <h1>A connected workspace for <em>professional brewing.</em></h1>
-        <p class="feature-lead">Demleme is being designed first around professional brewery workflows: recipe standards, production planning, batch records and quality context. A distinct Homebrewers path remains part of the product roadmap.</p>
+        <p class="feature-lead">GRISTORA is being designed first around professional brewery workflows: recipe standards, production planning, batch records and quality context. A distinct Homebrewers path remains part of the product roadmap.</p>
         <div class="feature-hero-meta"><span>16 product areas</span><span>Business core first · Homebrew MVP separate</span><span>Roadmap-led, not live functionality</span></div>
       </section>
       <section class="feature-directory section-pad">
@@ -91,10 +91,10 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="roadmap-note section-pad">
         <div class="shell roadmap-note-inner">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> HOW TO READ THIS ROADMAP</p><h2>Designed with ambition. <em>Built in stages.</em></h2></div>
-          <div><p>These pages describe the approved product plan, not features available today. Homebrew MVP, Business core and later releases are distinct development stages. Items marked “Under consideration” are research ideas, not commitments.</p><p>Demleme and this website are both in development. No account, subscription, sign-in or production workflow is live yet.</p></div>
+          <div><p>These pages describe the approved product plan, not features available today. Homebrew MVP, Business core and later releases are distinct development stages. Items marked “Under consideration” are research ideas, not commitments.</p><p>GRISTORA and this website are both in development. No account, subscription, sign-in or production workflow is live yet.</p></div>
         </div>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>gristora<span>.</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
