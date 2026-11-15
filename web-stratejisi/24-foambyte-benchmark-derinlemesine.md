@@ -242,3 +242,11 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - Added two more original SVGs: a simulated fermentation-observation timeline for Homebrewers and a conceptual equipment-calibration record model for Technical Principles.
 - Total public original SVG assets: eleven; homepage hero remains an existing inline SVG. Product screenshots and photography remain separately gated.
 - Both new visuals include explicit simulation/conceptual caveats and accessible title/description/alt text.
+
+
+## 7G. Visual phase 4 delivery — 15 Kasım 2026
+
+- PR #73 merged with two new original SVG visuals: a simulated fermentation-observation timeline and conceptual equipment-calibration record model.
+- Total public original SVGs: eleven; homepage hero remains an existing inline SVG. New assets are caveated as simulated/conceptual, not released product output.
+- Detailed diagrams use labelled, keyboard-focusable horizontal scroll regions on narrow screens. Responsive and axe/keyboard tests passed (60/60).
+- Main GitHub Pages deployment and checks are being verified after merge.
