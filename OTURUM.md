@@ -11,8 +11,10 @@
 - PR #85 manuel squash merge edildi: `359396dc0ab0f27b8f747cb8adbe0d70a23eb7ac`. Tüm iç sayfalara Schema.org BreadcrumbList JSON-LD ve canonical/origin/sıra kontrolleri eklendi.
 - PR #85 GitHub Actions Marketing site checks run #116: **success**, Playwright **63/63 passed**; screenshot artifact #14152329367 yüklendi.
 - Vercel Preview otomatik entegrasyon nedeniyle denendi ancak `api-deployments-young-hobby-team-24h` limiti nedeniyle başarısız oldu. Bu GitHub Actions build/test başarısızlığı değildir. Vercel proje/production ayarlarına dokunulmadı.
-- Aktif branch: `ux/visible-breadcrumb-navigation`. İç sayfalarda yapılandırılmış veriyle aynı yolu gösteren erişilebilir, görünür breadcrumb nav component'i ve responsive stilleri eklendi; Playwright breadcrumb görünürlük/klavye testleri eklendi. Henüz PR açılmadı.
-- **Sıradaki adım:** tek batch PR aç; Astro/TypeScript, build, validator, axe ve Playwright testlerini çalıştır; mobil/desktop screenshot'ları gözden geçir. Manuel merge; Vercel kota engeli sürerse Vercel Preview beklemeden GitHub Actions sonucunu ayrı değerlendir.
+- PR #86 açık: `ux/visible-breadcrumb-navigation`. Erişilebilir görünür breadcrumb component'i, responsive stiller, 7 iç rota görünürlük testi ve mobil klavye testi eklendi.
+- GitHub Actions Marketing site checks run #118: **success** — Astro/TypeScript, static build, **684 validator checks**, 16 axe WCAG 2.2 AA scan ve Playwright **78/78 passed**. Screenshot artifact #14152513961 yüklendi; Homebrewers mobile, FAQ mobile ve feature detail desktop screenshot'ları gözden geçirildi, belirgin görsel sorun yok.
+- PR #86 Vercel Preview kota limiti nedeniyle başarısız olabilir; Vercel ayarlarına dokunulmadı. Bu Preview sonucu GitHub Actions testlerinden ayrı.
+- **Sıradaki adım:** PR #86 tam diff ve başarılı CI sonrası manuel merge; Vercel Preview kota engeli sürerken Vercel'i bekleme.
 
 
 ## Güncel yayın durumu — 15 Kasım 2026
