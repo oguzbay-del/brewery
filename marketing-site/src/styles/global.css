@@ -29,7 +29,7 @@ a:focus-visible, summary:focus-visible { outline: 3px solid #0066cc; outline-off
 .site-header { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 0 max(32px, calc((100vw - var(--content)) / 2)); background: var(--page); border-bottom: 1px solid rgba(80, 76, 65, .13); }
 .wordmark { display: inline-flex; flex-direction: column; gap: 4px; font-size: 24px; font-weight: 750; letter-spacing: 2.2px; line-height: 1; color: var(--forest, #183b32); }
 .wordmark::after { content: "BREWING INTELLIGENCE"; font-family: var(--sans); font-size: 7px; font-weight: 650; letter-spacing: 2px; color: var(--muted); }
-.wordmark span { color: var(--amber); }
+.wordmark-text { color: var(--forest); }
 .desktop-nav { display: flex; align-items: center; gap: clamp(24px, 3.2vw, 48px); margin-left: auto; margin-right: 30px; }
 .desktop-nav a, .header-cta { font-size: 13px; font-weight: 600; }
 .desktop-nav a { color: #4e524b; transition: color .2s ease; }
