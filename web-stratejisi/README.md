@@ -40,6 +40,7 @@ Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini t
 24. [FoamByte derin benchmark ve sayfa iyileştirme kararları — WP-13](24-foambyte-benchmark-derinlemesine.md)
 25. [Home / Business içerik ve kopya taslağı — WP-14](25-home-business-content-copy-blueprint.md)
 26. [Lansman karar kaydı — ticari, domain, analytics ve ürün erişimi](26-launch-decision-register.md)
+27. [WP-09 / WP-10 teknik içerik birincil kaynak kaydı](27-wp09-wp10-primary-source-register.md)
 
 ## Yayın ilkesi
 Discovery → sitemap → wireframe → görsel tasarım → içerik → geliştirme → QA → lansman. Özellik iddiaları ürünün mevcut kabiliyetleriyle doğrulanmadan yayınlanmaz. Build başarısı, canlı görsel QA veya ürün claim onayı yerine sayılmaz.
