@@ -13,15 +13,15 @@ export function getStaticPaths() {
 const { feature } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}features/${feature.slug}/`, import.meta.env.SITE).href;
-const description = `${feature.summary} Demleme is in development.`;
+const description = `${feature.summary} GRISTORA is in development.`;
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: `${feature.title} — Demleme`,
+  name: `${feature.title} — GRISTORA`,
   description,
   url: canonicalUrl,
   inLanguage: "en",
-  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
 };
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Product", url: new URL(`${base}features/`, import.meta.env.SITE).href }, { name: feature.title, url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
@@ -35,22 +35,24 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content={description} />
-    <title>{feature.title} — Demleme</title>
+    <title>{feature.title} — GRISTORA</title>
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content={`${feature.title} — Demleme`} />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content={`${feature.title} — GRISTORA`} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content={`${feature.title} — Demleme`} />
+    <meta name="twitter:title" content={`${feature.title} — GRISTORA`} />
     <meta name="twitter:description" content={description} />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
-      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <a class="wordmark" href={base} aria-label="GRISTORA home">GRISTORA</a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
         <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
@@ -116,11 +118,11 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       {feature.note && <section class="feature-caveat"><div class="shell"><p>{feature.note}</p></div></section>}
       <section class="feature-next section-pad">
         <div class="shell feature-next-inner">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See the complete <em>Demleme roadmap.</em></h2></div>
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See the complete <em>GRISTORA roadmap.</em></h2></div>
           <div><p>Explore the other product areas or choose the workspace that matches your brewing.</p><a class="button button-primary" href={`${base}features/`}>Browse all product features <span aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={`${base}features/`}>All features ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>GRISTORA</a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={`${base}features/`}>All features ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
