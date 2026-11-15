@@ -704,7 +704,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Added a side-by-side Homebrewers vs Professional Breweries comparison table to `/how-it-works/`.
 - Six dimensions: primary user, core unit of work, typical records, measurement context, main question and scope boundary.
 - The table is explicitly roadmap/information-needs context, not a feature-availability promise. The mobile table region is labelled and keyboard-focusable.
-- Branch: `content/audience-comparison-matrix`; CI and responsive/axe review pending.
+- PR #75 merged; responsive, axe and keyboard CI passed (60/60).
 
 - Added a homepage text link from the two audience cards to the new side-by-side comparison matrix.
 
@@ -714,14 +714,24 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - First responsive screenshot review confirmed the comparison matrix reads as intended at desktop and mobile widths.
 - It also exposed the same empty sixth-cell background in the five-step Business workflow on How It Works; changed those cards to separate bordered items with transparent grid gaps.
 - Added a mobile scroll hint for the side-by-side matrix.
-- Re-run responsive/axe checks before merge.
+- Re-run responsive/axe checks passed (60/60); see PR #75 handoff.
 
 
 ## Handoff update — PR #75 merged
 
-- Main commit: `d9b21e30297750f4711de0497da7c541fc289f50`.
+- Main commit: `2a1bc325d8827dba11ade7e7c6e19a75d2f0e974` (PR #76 documentation handoff merged).
 - PR #75 merged after successful Astro/TypeScript, build, static validation and 60/60 responsive/axe/keyboard tests.
 - Added the side-by-side Homebrewers / Professional Breweries matrix to `/how-it-works/#audience-comparison`, with a homepage entry link. Six comparison dimensions are included.
 - Screenshot review fixed the five-step Business workflow's empty grid cell and added a mobile horizontal-scroll hint for the comparison table.
-- Main checks #43688777093 and GitHub Pages deployment #43688777068 are queued.
+- Main checks #43688777093 and GitHub Pages deployment #43688777068 completed successfully.
 - Remaining manual release gates unchanged: screen-reader, full keyboard/focus, real 200% zoom, embedded SVG text contrast, Vercel preview.
+
+
+## Handoff update — final status 15 Kasım 2026
+
+- Current main: `2a1bc325d8827dba11ade7e7c6e19a75d2f0e974`.
+- PR #75 comparison matrix and homepage link are merged; 60/60 responsive/axe/keyboard checks passed.
+- Main CI #43688777093 and GitHub Pages deployment #43688777068 succeeded.
+- Vercel Preview continues to fail because the Vercel Hobby build-rate limit is exhausted; this is a hosting-plan limit, not a code/build failure. GitHub Pages is the current working preview.
+- Current public original visuals: eleven SVG files plus the existing inline homepage hero illustration.
+- Remaining manual release gates: screen-reader, complete keyboard/focus review, real 200% browser zoom, contrast review of embedded SVG text, and Vercel preview verification when the build limit resets or hosting is upgraded.

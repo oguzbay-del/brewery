@@ -265,4 +265,11 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 
 - PR #75 merged. The homepage links to a six-dimension Homebrewers vs Professional Breweries comparison matrix on How It Works.
 - Responsive/axe/keyboard CI passed 60/60. Screenshot review fixed the five-card Business grid's empty sixth cell and added a mobile scroll hint.
-- Main CI and GitHub Pages deployment are queued after merge.
+- Main CI #43688777093 and GitHub Pages deployment #43688777068 completed successfully.
+
+
+## 7J. Current preview status — 15 Kasım 2026
+
+- Main build and GitHub Pages deployment succeeded after PR #75.
+- Vercel Preview remains blocked by the Hobby build-rate limit; the GitHub Pages preview is the working deployment until Vercel quota resets or the hosting plan changes.
+- Manual accessibility gates remain open; automated axe/keyboard checks are clean for the covered routes and viewport sizes.
