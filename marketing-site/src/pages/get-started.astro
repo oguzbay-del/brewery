@@ -42,6 +42,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="twitter:title" content="Configure Your Plan | GRISTORA" />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
@@ -59,7 +60,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <p class="eyebrow"><span class="eyebrow-line"></span> YOUR GRISTORA PLAN</p>
         <h1>A few choices. <em>A clearer fit.</em></h1>
         <p>Choose your brewing path, set the team size and select a billing term. You can review everything before the payment stage.</p>
-        <p class="pricing-status" role="status"><strong>Configuration preview</strong> · No account or payment is created here. Checkout will be connected in a later release.</p>
+        <p class="pricing-status" role="status"><strong>Configuration preview</strong> · no account or payment is created here. Checkout will be connected in a later release.</p>
       </section>
 
       <section class="wizard-layout" aria-label="Plan configuration">
@@ -77,8 +78,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <h2 tabindex="-1">How do you <em>brew?</em></h2>
               <p class="step-description">The right workspace starts with the right kind of brewing.</p>
               <div class="choice-grid">
-                <label class="choice-card"><input type="radio" name="audience" value="home" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a homebrewer</strong><small>One personal workspace for recipes, brew days and batch learning.</small><span class="choice-meta">1 user · 3-month trial planned</span></label>
-                <label class="choice-card"><input type="radio" name="audience" value="business" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a professional brewery</strong><small>A team workspace for recipe standards, production context and batch records.</small><span class="choice-meta">5+ users · 1-month trial planned</span></label>
+                <label class="choice-card"><input type="radio" name="audience" value="home" aria-label="Homebrewer plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a homebrewer</strong><small>One personal workspace for recipes, brew days and batch learning.</small><span class="choice-meta">1 user · 3-month trial planned</span></label>
+                <label class="choice-card"><input type="radio" name="audience" value="business" aria-label="Professional Brewery plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a professional brewery</strong><small>A team workspace for recipe standards, production context and batch records.</small><span class="choice-meta">5+ users · 1-month trial planned</span></label>
               </div>
               <div class="choice-links"><a href={`${base}homebrewers/`}>Explore Homebrewers ↗</a><a href={`${base}breweries/`}>Explore Breweries ↗</a></div>
               <p class="step-helper">Not sure which path fits? <a href={`${base}compare/`}>Compare Home and Brewery functions</a>.</p>
@@ -91,11 +92,11 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <div id="home-seat" class="seat-fixed" hidden><strong>1</strong><span>Individual user included in the Home plan.</span></div>
               <fieldset id="business-seats" class="seat-options" hidden>
                 <legend>Choose your team size</legend>
-                <label><input type="radio" name="seats" value="5" checked /><span>5 <small>users</small></span></label>
-                <label><input type="radio" name="seats" value="10" /><span>10 <small>users</small></span></label>
-                <label><input type="radio" name="seats" value="15" /><span>15 <small>users</small></span></label>
-                <label><input type="radio" name="seats" value="20" /><span>20 <small>users</small></span></label>
-                <label><input type="radio" name="seats" value="20+" /><span>20+ <small>contact</small></span></label>
+                <label><input type="radio" name="seats" value="5" aria-label="5 users" checked /><span>5 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="10" aria-label="10 users" /><span>10 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="15" aria-label="15 users" /><span>15 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="20" aria-label="20 users" /><span>20 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="20+" aria-label="More than 20 users" /><span>20+ <small>contact</small></span></label>
               </fieldset>
               <div class="contact-tier" id="contact-tier" hidden><strong>More than 20 people?</strong><p>We’ll prepare a tailored team option. The direct email contact will be published before launch.</p><span>20+ users · contact required</span></div>
               <p class="step-helper"><a href={`${base}compare/`}>Review the Home and Brewery function comparison</a>.</p>
@@ -107,10 +108,10 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <p class="step-description">Longer commitments receive a larger proposed discount against the monthly reference rate.</p>
               <fieldset class="billing-options">
                 <legend>Billing frequency</legend>
-                <label><input type="radio" name="term" value="monthly" checked /><span><strong>Monthly</strong><small>Flexible month-to-month</small><b>0% saving</b></span></label>
-                <label><input type="radio" name="term" value="annual" /><span><strong>Annually</strong><small>One-year commitment</small><b>15% saving</b></span></label>
-                <label><input type="radio" name="term" value="two-year" /><span><strong>2 years</strong><small>Two-year commitment</small><b>25% saving</b></span></label>
-                <label><input type="radio" name="term" value="three-year" /><span><strong>3 years</strong><small>Three-year commitment</small><b>35% saving</b></span></label>
+                <label><input type="radio" name="term" value="monthly" aria-label="Monthly billing" checked /><span><strong>Monthly</strong><small>Flexible month-to-month</small><b>0% saving</b></span></label>
+                <label><input type="radio" name="term" value="annual" aria-label="Annual billing" /><span><strong>Annually</strong><small>One-year commitment</small><b>15% saving</b></span></label>
+                <label><input type="radio" name="term" value="two-year" aria-label="Two-year billing" /><span><strong>2 years</strong><small>Two-year commitment</small><b>25% saving</b></span></label>
+                <label><input type="radio" name="term" value="three-year" aria-label="Three-year billing" /><span><strong>3 years</strong><small>Three-year commitment</small><b>35% saving</b></span></label>
               </fieldset>
               <div class="trial-note" id="trial-note">Your planned trial duration will appear here.</div>
               <div class="contact-tier" id="custom-billing" hidden><strong>Custom team plan</strong><p>For teams above 20, billing terms and pricing are prepared individually. The contact email will be published before launch.</p></div>
