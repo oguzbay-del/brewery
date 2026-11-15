@@ -1,5 +1,9 @@
 # Demleme — Visual Direction & Design System
 
+> **GRISTORA website design update — 15 November 2026:** This document records the earlier Demleme visual exploration and remains useful as historical WP-06 context for editorial clarity, technical evidence, human relevance, truthful product maturity, progressive disclosure, responsive behavior and accessibility. The owner has since approved a distinct GRISTORA brand-board direction for the public marketing website. For implementation of that website, the current source of truth is [`../marketing-site/DESIGN.md`](../marketing-site/DESIGN.md), with approved asset filenames and usage recorded in [`../marketing-site/BRAND-ASSETS.md`](../marketing-site/BRAND-ASSETS.md). Where this older document conflicts with those current website standards, the GRISTORA documents take precedence for `marketing-site/` only. In particular, do not carry forward the older neutral/amber palette, system-font-only direction or modest-radius guidance into the GRISTORA marketing website. This note does not authorize or govern any change to the product application's UI, shared product tokens, architecture or Claude's product-development workstream. The scope of this historical WP-06 document remains the marketing website only.
+>
+> ---
+
 **Work package:** WP-06  
 **Status:** Design specification; not production implementation.  
 **Date:** 14 November 2026  
