@@ -104,10 +104,39 @@ for (const file of htmlFiles) {
   const ogDescriptionCount = (html.match(/property=["']og:description["']/g) || []).length;
   const ogUrlCount = (html.match(/property=["']og:url["']/g) || []).length;
   const twitterCardCount = (html.match(/name=["']twitter:card["']/g) || []).length;
+  const twitterTitleCount = (html.match(/name=["']twitter:title["']/g) || []).length;
+  const twitterDescriptionCount = (html.match(/name=["']twitter:description["']/g) || []).length;
+  const ogImageCount = (html.match(/property=["']og:image["']/g) || []).length;
+  const twitterImageCount = (html.match(/name=["']twitter:image["']/g) || []).length;
   assert(ogTitleCount === 1, rel + ": exactly one Open Graph title");
   assert(ogDescriptionCount === 1, rel + ": exactly one Open Graph description");
   assert(ogUrlCount === 1, rel + ": exactly one Open Graph URL");
   assert(twitterCardCount === 1, rel + ": exactly one Twitter card type");
+  assert(twitterTitleCount <= 1, rel + ": at most one Twitter title");
+  assert(twitterDescriptionCount <= 1, rel + ": at most one Twitter description");
+  assert(ogImageCount <= 1, rel + ": at most one Open Graph image");
+  assert(twitterImageCount <= 1, rel + ": at most one Twitter image");
+  const twitterCard = html.match(/<meta\s+name=["']twitter:card["']\s+content=["']([^"']+)["']/)?.[1];
+  assert(["summary", "summary_large_image"].includes(twitterCard), rel + ": Twitter card uses a supported card type");
+  const ogTitle = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/)?.[1];
+  const twitterTitle = html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([^"']+)["']/)?.[1];
+  if (twitterTitle) assert(Boolean(twitterTitle.trim()), rel + ": Twitter title is not empty");
+  if (ogTitle && twitterTitle) assert(decodeHtml(ogTitle) === decodeHtml(twitterTitle), rel + ": Twitter title matches Open Graph title");
+  const ogDescription = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/)?.[1];
+  const twitterDescription = html.match(/<meta\s+name=["']twitter:description["']\s+content=["']([^"']+)["']/)?.[1];
+  if (ogDescription) assert(Boolean(ogDescription.trim()), rel + ": Open Graph description is not empty");
+  if (twitterDescription) assert(Boolean(twitterDescription.trim()), rel + ": Twitter description is not empty");
+  const ogImage = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/)?.[1];
+  const twitterImage = html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/)?.[1];
+  if (ogImage && twitterImage) assert(new URL(decodeHtml(ogImage), pageUrl).href === new URL(decodeHtml(twitterImage), pageUrl).href, rel + ": Twitter image matches Open Graph image");
+  for (const [label, imageUrl] of [["Open Graph", ogImage], ["Twitter", twitterImage]]) {
+    if (!imageUrl) continue;
+    try {
+      const parsedImage = new URL(decodeHtml(imageUrl), pageUrl);
+      if (parsedImage.origin === siteOrigin) assert(await exists(toDistFile(parsedImage.pathname)), rel + ": " + label + " image target exists");
+      else assert(parsedImage.protocol === "https:", rel + ": " + label + " image uses HTTPS");
+    } catch { failures.push(rel + ": invalid " + label + " image URL"); }
+  }
   assert(html.includes('<html lang="en">'), rel + ": language is declared");
   const canonicalTag = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/)?.[0];
   const canonicalHref = canonicalTag?.match(/\bhref=["']([^"']+)["']/)?.[1];
