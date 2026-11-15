@@ -221,7 +221,22 @@ for (const file of htmlFiles) {
         assert(/professional brewery/i.test(metaDescription || "") && /professional breweries/i.test(ogDescription || "") && /in development/i.test(metaDescription || ""), "Breweries search and social descriptions lead with the professional, in-development workflow");
         assert(/recipe review/i.test(ogDescription || "") && /batch records/i.test(ogDescription || ""), "Breweries social description names the core workflow topics");
       }
-      if (pagePath === "/faq/") {
+    
+  const analyticalClaimGuards = {
+    "/features/brewing-calculations/": ["Under consideration", "analytical model 6 is not approved"],
+    "/features/water-mash-yeast/": ["Under consideration", "analytical model 6 is not approved"],
+    "/features/connected-devices/": ["Under consideration", "analytical model 9 is not approved"],
+    "/features/inventory-costing/": ["Under consideration", "analytical models 12, 13 and 15 are not approved"],
+    "/features/quality-laboratory/": ["Under consideration", "analytical model 10 is not approved"],
+    "/features/analytics-reports/": ["Under consideration", "analytical models 10–15 are not approved"],
+  };
+  if (analyticalClaimGuards[pagePath]) {
+    const required = analyticalClaimGuards[pagePath];
+    const searchableHtml = html.toLowerCase();
+    assert(required.every((phrase) => searchableHtml.includes(phrase.toLowerCase())), rel + ": unapproved analytical models are labelled as under consideration");
+  }
+
+  if (pagePath === "/faq/") {
         const questions = Array.isArray(structured.mainEntity) ? structured.mainEntity : [];
         const visibleFaqCount = (html.match(/<details class=["']audience-faq-item["']/g) || []).length;
         assert(structured["@type"] === "FAQPage", "FAQ route uses FAQPage structured data");

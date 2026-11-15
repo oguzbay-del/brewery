@@ -45,14 +45,14 @@ export const features: FeaturePage[] = [
     eyebrow: "THE CALCULATION ENGINE",
     summary: "A shared, server-side calculation engine is planned for the web and Apple apps, with clear inputs, consistent units and an explanation behind every result.",
     audiences: ["Breweries", "Homebrewers"],
-    stages: ["Homebrew MVP", "Business core", "Business second release"],
+    stages: ["Homebrew MVP", "Business core", "Business second release", "Under consideration"],
     sections: [
       { heading: "Core recipe calculations", intro: "The product plan specifies a broad calculation set for formulation and review.", items: ["Original and final gravity (OG / FG), apparent attenuation and alcohol by volume (ABV)", "Bitterness (IBU), including Tinseth as the default, late additions, whirlpool and hop-stand behaviour", "Colour estimates with selectable calculation approach", "Mash-temperature and yeast-tolerance adjustments to fermentation estimates", "Batch, kettle, trub and volume-chain calculations"] },
-      { heading: "Advanced brewing models", intro: "The engine specification includes specialist methods and configurable assumptions.", items: ["Hop ageing and alpha-acid adjustment; altitude options", "Yeast viability, starter growth and pitching calculations", "Carbonation and priming for bottles and kegs, including keg headspace and pressure limits", "Mead and wine fermentation calculations, with corrected YAN handling", "Extract, partial-boil, dilution and no-chill calculation tools"] },
+      { heading: "Advanced brewing models", intro: "The engine specification includes specialist methods and configurable assumptions.", items: ["Hop-ageing and alpha-acid adjustments using supplied inputs; current-alpha estimates are under consideration because analytical model 6 is not approved", "Starter growth and pitching calculations; age-based yeast viability estimates are under consideration because analytical model 6 is not approved", "Carbonation and priming for bottles and kegs, including keg headspace and pressure limits", "Mead and wine fermentation calculations, with corrected YAN handling", "Extract, partial-boil, dilution and no-chill calculation tools"] },
       { heading: "Explainable results", intro: "Technical transparency is a product principle, not a decorative claim.", items: ["A “How it was calculated” view for key results", "Calculation engine version stored with each saved result", "Consistent SI-based internal values with regional display and unit conversion", "Reference test vectors and golden-recipe validation planned for every engine release"] },
       { heading: "Specialist methods on the roadmap", intro: "Additional methods are separated from the initial calculation set and introduced only after validation.", items: ["No-chill IBU, hop-oil ratios, BU:GU and alternative IBU and colour methods", "Fruit additions, pH temperature correction and total-acidity adjustment for cider and wine", "Sour and mixed fermentation targets and barrel-ageing calculations", "Keg line-balance tools for hose diameter, length and serving pressure", "Method selection and advanced defaults in calculation settings"] }
     ],
-    note: "Calculation methods, defaults and regulatory formulas remain subject to validation against reference recipes and real brew data before launch."
+    note: "Calculation methods, defaults and regulatory formulas remain subject to validation against reference recipes and real brew data before launch. Age-based yeast viability estimates remain under consideration because analytical model 6 is not approved."
   },
   {
     slug: "water-mash-yeast",
@@ -60,11 +60,11 @@ export const features: FeaturePage[] = [
     eyebrow: "PROCESS DESIGN",
     summary: "Plan water chemistry, mash steps and yeast preparation as connected parts of the recipe rather than isolated calculators.",
     audiences: ["Breweries", "Homebrewers"],
-    stages: ["Homebrew MVP"],
+    stages: ["Homebrew MVP", "Under consideration"],
     sections: [
       { heading: "Water profiles", intro: "Build a water profile from source water and a target style or recipe.", items: ["Save source-water and target-water profiles", "Enter a laboratory water report and manage ion concentrations", "Calculate salt additions and acid adjustments", "Review ion balance, hardness and regional hardness units", "Compare water profiles and retain the report used for a recipe"] },
       { heading: "Mash planning", intro: "The mash plan connects ingredient choices, temperatures and volumes.", items: ["Mash schedule with rests, temperatures, durations and infusion steps", "Mash pH estimation using the selected model", "Decoction calculator for mash volume and temperature steps", "Mash water, sparge water and volume calculations", "BIAB-specific equipment and absorption handling"] },
-      { heading: "Yeast preparation", intro: "Keep yeast requirements and fermentation expectations visible.", items: ["Yeast selection, age and viability estimates", "Starter planning, including two-stage starters", "Dry yeast pitching guidance by hectolitre in business mode", "Fermentation profiles and target conditions", "Harvest and generation tracking in the business core; advanced home mode can enable yeast management"] }
+      { heading: "Yeast preparation", intro: "Keep yeast requirements and fermentation expectations visible.", items: ["Yeast selection and age details; age-based viability estimates are under consideration because analytical model 6 is not approved", "Starter planning, including two-stage starters", "Dry yeast pitching guidance by hectolitre in business mode", "Fermentation profiles and target conditions", "Harvest and generation tracking in the business core; advanced home mode can enable yeast management"] }
     ]
   },
   {
@@ -127,12 +127,14 @@ export const features: FeaturePage[] = [
     eyebrow: "MATERIALS AND COST",
     summary: "Manage ingredients from a simple home stock list to professional lot-level traceability, with recipe and batch costs grounded in actual material values.",
     audiences: ["Breweries", "Homebrewers"],
-    stages: ["Homebrew MVP", "Business core", "Business second release"],
+    stages: ["Homebrew MVP", "Business core", "Business second release", "Under consideration"],
     sections: [
       { heading: "Ingredient library", intro: "A shared ingredient catalogue supports recipe design and purchasing.", items: ["Malt, fermentables, hops, yeast, water and miscellaneous ingredients", "Detailed ingredient properties and custom ingredients", "Ingredient substitutions and stock-aware recipe planning", "Ingredient-specific units and regional display", "Custom malt analysis and certificate of analysis (COA) in business mode"] },
-      { heading: "Stock and receiving", intro: "Stock handling scales with the workspace mode.", items: ["Home stock quantities, minimum levels and shopping list", "Business stock lots, supplier details, reservations and FIFO valuation", "Goods receiving, barcode support and stock counts", "Movement ledger for receipts, usage, transfers and adjustments", "Expiry-risk analysis and lot availability for planned production"] },
-      { heading: "Recipe and batch costs", intro: "Understand material cost at the level that matters.", items: ["Optional recipe cost for homebrewers", "Business batch and per-litre cost using FIFO lot prices", "Bottle and serving cost based on package size", "Cost variance analysis by price, quantity and process loss in a later release", "Forecast ingredient demand and suggested reorder timing in the business core"] }
-    ]
+      { heading: "Stock and receiving", intro: "Stock handling scales with the workspace mode.", items: ["Home stock quantities, minimum levels and shopping list", "Business stock lots, supplier details, reservations and FIFO valuation", "Goods receiving, barcode support and stock counts", "Movement ledger for receipts, usage, transfers and adjustments", "Lot availability for planned production"] },
+      { heading: "Recipe and batch costs", intro: "Understand material cost at the level that matters.", items: ["Optional recipe cost for homebrewers", "Business batch and per-litre cost using FIFO lot prices", "Bottle and serving cost based on package size", "Cost estimates based on FIFO lot prices and recorded quantities"] },
+      { heading: "Advanced inventory insights (under consideration)", intro: "These are research ideas only. Analytical models 12, 13 and 15 are not approved for product scope.", items: ["Ingredient demand forecasts and suggested reorder timing (model 12)", "Expiry-risk analysis against FIFO lot dates (model 13)", "Detailed cost-variance attribution by price, quantity and process loss (model 15)"] }
+    ],
+    note: "Ingredient demand forecasts, expiry-risk analysis and detailed cost-variance attribution remain under consideration because analytical models 12, 13 and 15 are not approved."
   },
   {
     slug: "production-management",
@@ -154,12 +156,14 @@ export const features: FeaturePage[] = [
     eyebrow: "QUALITY MANAGEMENT",
     summary: "Professional quality workflows are planned around product specifications, lab results, tasting and a recorded release decision before packaging.",
     audiences: ["Breweries"],
-    stages: ["Business core", "Business second release"],
+    stages: ["Business core", "Business second release", "Under consideration"],
     sections: [
       { heading: "Product specifications", intro: "Define measurable target ranges for each beer.", items: ["Recipe-linked specifications for ABV, OG, FG, IBU, colour and pH", "Dissolved oxygen, turbidity, diacetyl and microbiology parameters", "Out-of-range warnings and deviation records", "Quality review linked to the batch and its recipe version"] },
       { heading: "Laboratory and sensory records", intro: "Keep analytical and tasting results with the batch.", items: ["Laboratory results for pH, dissolved oxygen, CO₂, ABV and microbiology", "Tasting notes, sensory score and descriptive attributes", "Correction records rather than silent edits to historical results", "Sensory panel and triangle-test workflows in a later release"] },
-      { heading: "Release and process control", intro: "Make the decision to package explicit and traceable.", items: ["Quality hold, rejection and release decisions with reasons", "Release approval before packaging in business workflows", "Statistical process control charts for OG, FG, pH, colour and dissolved oxygen", "HACCP checkpoints and dual sign-off in a later release", "Trend and consistency analysis across batches"] }
-    ]
+      { heading: "Release and process control", intro: "Make the decision to package explicit and traceable.", items: ["Quality hold, rejection and release decisions with reasons", "Release approval before packaging in business workflows", "HACCP checkpoints and dual sign-off in a later release"] },
+      { heading: "Statistical process control (under consideration)", intro: "Analytical model 10 is not approved. Statistical process control and cross-batch trend analysis remain research ideas.", items: ["Potential SPC charts for OG, FG, pH, colour and dissolved oxygen", "Potential trend and consistency analysis across batches"] }
+    ],
+    note: "Statistical process control and cross-batch trend analysis remain under consideration because analytical model 10 is not approved."
   },
   {
     slug: "packaging-compliance",
@@ -194,12 +198,14 @@ export const features: FeaturePage[] = [
     eyebrow: "CONNECTED BREWING",
     summary: "The roadmap starts with read-only fermentation device data and grows towards professional sensor and industrial gateway support.",
     audiences: ["Breweries", "Homebrewers"],
-    stages: ["Homebrew MVP", "Business second release", "Later"],
+    stages: ["Homebrew MVP", "Business second release", "Later", "Under consideration"],
     sections: [
-      { heading: "Homebrewing devices", intro: "Connect common fermentation monitors through dedicated adapters.", items: ["Tilt hydrometers, iSpindel and RAPT devices", "Webhook data endpoint for TiltBridge, Pitch and compatible bridges", "Device-specific keys that can be renewed", "Device-to-batch pairing and calibration records", "Detect missing, frozen or implausible sensor readings"] },
-      { heading: "Professional sensors", intro: "The business roadmap adds tank-level monitoring.", items: ["Gravity, pH, dissolved oxygen and pressure readings", "Tank assignment and device health status", "API or CSV ingestion for professional sensors", "Industrial gateway read support for Modbus TCP, OPC UA and MQTT in a later release", "Sending control commands to equipment is explicitly later and requires approval"] },
-      { heading: "Data use and reliability", intro: "Device data should remain useful when a sensor connection is interrupted.", items: ["Buffer sensor readings at the device or gateway and forward when connected", "Show source labels and calibration context alongside measurements", "Keep device adapters independent of any single manufacturer", "Use readings for fermentation trends and configured threshold alerts; model-driven calibration suggestions remain under consideration", "Open API and professional production-data webhooks are planned for Business second release; Homebrew device webhooks are a separate MVP scope", "Industrial gateway read support first; equipment command/control is explicitly a later phase"] }
-    ]
+      { heading: "Homebrewing devices", intro: "Connect common fermentation monitors through dedicated adapters.", items: ["Tilt hydrometers, iSpindel and RAPT devices", "Webhook data endpoint for TiltBridge, Pitch and compatible bridges", "Device-specific keys that can be renewed", "Device-to-batch pairing and calibration records", "Show connection and reading status; automated fault diagnosis is under consideration because analytical model 9 is not approved"] },
+      { heading: "Professional sensors", intro: "The business roadmap adds tank-level monitoring.", items: ["Gravity, pH, dissolved oxygen and pressure readings", "Tank assignment and basic connection status", "API or CSV ingestion for professional sensors", "Industrial gateway read support for Modbus TCP, OPC UA and MQTT in a later release", "Sending control commands to equipment is explicitly later and requires approval"] },
+      { heading: "Data use and reliability", intro: "Device data should remain useful when a sensor connection is interrupted.", items: ["Buffer sensor readings at the device or gateway and forward when connected", "Show source labels and calibration context alongside measurements", "Keep device adapters independent of any single manufacturer", "Use readings for fermentation trends and configured threshold alerts; model-driven calibration suggestions remain under consideration", "Open API and professional production-data webhooks are planned for Business second release; Homebrew device webhooks are a separate MVP scope", "Industrial gateway read support first; equipment command/control is explicitly a later phase"] },
+      { heading: "Device fault detection (under consideration)", intro: "Analytical model 9 is not approved. Automated fault diagnosis is a research idea, not a committed device feature.", items: ["Potentially detect missing, frozen or implausible sensor readings after model approval and validation"] }
+    ],
+    note: "Automated device fault detection remains under consideration because analytical model 9 is not approved."
   },
   {
     slug: "imports-exports-tools",
@@ -234,15 +240,15 @@ export const features: FeaturePage[] = [
     slug: "analytics-reports",
     title: "Reports, insights & sustainability",
     eyebrow: "REPORTING AND INSIGHTS",
-    summary: "The roadmap includes operational reporting and carefully bounded analytical tools, with estimates presented as guidance rather than automatic decisions.",
+    summary: "The roadmap includes operational reporting. Research-only analytical ideas are separated from planned reporting and are not approved product commitments.",
     audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core", "Business second release", "Under consideration"],
     sections: [
       { heading: "Batch and recipe learning", intro: "Use actual results to understand repeatability.", items: ["Plan-versus-actual batch summary and tasting notes", "Compare batches made from the same recipe", "Fermentation finish estimates and model-driven equipment calibration suggestions remain under consideration pending analytical model approval", "Homebrew second-release trends for gravity, efficiency and tasting scores", "Explainable estimates with confidence ranges are under consideration and require analytical model approval and validation"] },
-      { heading: "Brewery reporting", intro: "Business reporting focuses on production and material performance.", items: ["Brewhouse, conversion and lautering efficiency", "Volume loss from brew day through packaging", "FIFO ingredient cost, cost per litre and cost variance", "Tank utilisation, batch throughput and production dashboard metrics", "Lot traceability and recall report from ingredient lot to packaging run"] },
-      { heading: "Advanced operational insights", intro: "Later business reporting expands into quality and resource efficiency.", items: ["Statistical process control (SPC) for production and quality measures", "Sustainability indicators for water, energy and CO₂ per hectolitre", "Ingredient demand and reorder timing forecasts", "Expiry risk and tank capacity bottleneck analysis", "Sensory trend analysis and tasting panel results in later releases"] }
+      { heading: "Brewery reporting", intro: "Business reporting focuses on production and material performance.", items: ["Brewhouse, conversion and lautering efficiency", "Volume loss from brew day through packaging", "FIFO ingredient cost and cost per litre", "Tank utilisation, batch throughput and production dashboard metrics", "Lot traceability and recall report from ingredient lot to packaging run"] },
+      { heading: "Advanced operational insights (under consideration)", intro: "These are research ideas only. Analytical models 10–15 are not approved for product scope.", items: ["Statistical process control (SPC) for production and quality measures (model 10)", "Sensory trend analysis and tasting-panel correlations (model 11)", "Ingredient demand and reorder timing forecasts (model 12)", "Expiry-risk analysis (model 13)", "Tank-capacity bottleneck analysis and automatic placement suggestions (model 14)", "Detailed cost-variance attribution by price, quantity and process loss (model 15)", "Sustainability indicators for water, energy and CO₂ per hectolitre remain subject to product review"] }
     ],
-    note: "Some advanced analytical models in the product plan are explicitly ideas requiring a separate decision. They are not presented as committed functionality."
+    note: "Fermentation forecasts, equipment learning, device fault diagnosis, SPC, sensory correlations, ingredient demand forecasts, expiry-risk analysis, tank bottleneck optimisation and detailed cost-variance attribution are research ideas only. Analytical models 1–3 and 6, 9–15 are not approved for product scope."
   }
 ];
 
