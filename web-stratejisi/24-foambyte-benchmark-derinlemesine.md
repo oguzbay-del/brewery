@@ -155,7 +155,7 @@ FoamByte'ın görsel avantajı yalnız estetik değil, **ürünün nasıl çalı
 | FB-09 | Learn topic hub ve ilk teknik rehberler | P1 | WP-10 evidence register |
 | FB-10 | Calculators hub ve araçlar | HOLD | WP-09 formül doğrulama + public-use approval |
 | FB-11 | Orijinal görsel varlıkların eklenmesi | Kısmen tamamlandı | Dokuz özgün public SVG + inline homepage hero; gerçek fotoğraf ve ürün ekranı ayrı onay bekliyor |
-| FB-12 | Otomatik tarayıcı QA eklendi; manuel görsel QA bekliyor | P0 launch gate | Playwright Chromium 1440/1024/768/390/320 px smoke testleri ve screenshot artefact'ları; insan görsel incelemesi ayrıca gerekli |
+| FB-12 | Otomatik QA ve ilk screenshot incelemesi tamamlandı; kapsamlı manuel review bekliyor | P0 launch gate | 40 Playwright testi başarılı; 23 screenshot üretildi ve ilk tasarım incelemesi yapıldı. Keyboard/focus, screen-reader, contrast, 200% zoom ve Vercel görsel doğrulaması açık |
 | FB-13 | Kısmen tamamlandı | Statik route/SEO/accessibility smoke checks ve Playwright browser smoke tests CI'da. Screen-reader, contrast, keyboard focus, zoom ve manuel erişilebilirlik QA ayrıca gerekli |
 
 ## 7A. Uygulama durumu — 15 Kasım 2026
