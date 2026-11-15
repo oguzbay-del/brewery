@@ -74,18 +74,19 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <form id="plan-wizard" novalidate>
             <section class="wizard-step" data-step="1">
               <p class="step-kicker">STEP 01 OF 04</p>
-              <h2>How do you <em>brew?</em></h2>
+              <h2 tabindex="-1">How do you <em>brew?</em></h2>
               <p class="step-description">The right workspace starts with the right kind of brewing.</p>
               <div class="choice-grid">
-                <label class="choice-card"><input type="radio" name="audience" value="home" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a homebrewer</strong><small>One personal workspace for recipes, brew days and batch learning.</small><span class="choice-meta">1 user · 3-month trial planned</span><a href={`${base}homebrewers/`}>Explore Homebrewers ↗</a></label>
-                <label class="choice-card"><input type="radio" name="audience" value="business" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a professional brewery</strong><small>A team workspace for recipe standards, production context and batch records.</small><span class="choice-meta">5+ users · 1-month trial planned</span><a href={`${base}breweries/`}>Explore Breweries ↗</a></label>
+                <label class="choice-card"><input type="radio" name="audience" value="home" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a homebrewer</strong><small>One personal workspace for recipes, brew days and batch learning.</small><span class="choice-meta">1 user · 3-month trial planned</span></label>
+                <label class="choice-card"><input type="radio" name="audience" value="business" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a professional brewery</strong><small>A team workspace for recipe standards, production context and batch records.</small><span class="choice-meta">5+ users · 1-month trial planned</span></label>
               </div>
+              <div class="choice-links"><a href={`${base}homebrewers/`}>Explore Homebrewers ↗</a><a href={`${base}breweries/`}>Explore Breweries ↗</a></div>
               <p class="step-helper">Not sure which path fits? <a href={`${base}compare/`}>Compare Home and Brewery functions</a>.</p>
             </section>
 
             <section class="wizard-step" data-step="2" hidden>
               <p class="step-kicker">STEP 02 OF 04</p>
-              <h2>Who needs <em>access?</em></h2>
+              <h2 tabindex="-1">Who needs <em>access?</em></h2>
               <p class="step-description" id="seat-description">Choose the number of people who need a seat.</p>
               <div id="home-seat" class="seat-fixed" hidden><strong>1</strong><span>Individual user included in the Home plan.</span></div>
               <fieldset id="business-seats" class="seat-options" hidden>
@@ -102,7 +103,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 
             <section class="wizard-step" data-step="3" hidden>
               <p class="step-kicker">STEP 03 OF 04</p>
-              <h2>Choose your <em>billing term.</em></h2>
+              <h2 tabindex="-1">Choose your <em>billing term.</em></h2>
               <p class="step-description">Longer commitments receive a larger proposed discount against the monthly reference rate.</p>
               <fieldset class="billing-options">
                 <legend>Billing frequency</legend>
@@ -118,7 +119,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 
             <section class="wizard-step" data-step="4" hidden>
               <p class="step-kicker">STEP 04 OF 04</p>
-              <h2>Review your <em>plan.</em></h2>
+              <h2 tabindex="-1">Review your <em>plan.</em></h2>
               <p class="step-description">Check your configuration before the future secure checkout step.</p>
               <dl class="review-list"><div><dt>Brewing path</dt><dd id="review-audience">—</dd></div><div><dt>Users</dt><dd id="review-seats">—</dd></div><div><dt>Billing</dt><dd id="review-term">—</dd></div><div><dt>Proposed saving</dt><dd id="review-discount">—</dd></div><div><dt>Trial</dt><dd id="review-trial">—</dd></div><div><dt>Payment method</dt><dd>Credit or debit card (planned)</dd></div><div><dt>Price</dt><dd>To be announced before checkout</dd></div></dl>
               <div class="checkout-placeholder"><span class="card-mark" aria-hidden="true">▰</span><div><strong>Secure card payment — coming later</strong><p>Payment processing is not connected. No card details are requested or stored on this website.</p></div></div>
