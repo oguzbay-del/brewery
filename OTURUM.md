@@ -547,4 +547,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Integrated the Home and Business diagrams into `/how-it-works/` and the simulated profile into `/technical-principles/`.
 - Accessible alt text and captions included; simulated values labelled as illustrative, not a product output or brewing recommendation.
 - No stock imagery, unapproved product UI, or unsupported capability claims added.
-- Branch: `design/visual-asset-foundation`. Awaiting CI and responsive browser QA.
+- PR #62 merged to main after successful Astro/TypeScript, build and static route/metadata/link validation.
+- GitHub Pages deployment triggered from merge; responsive browser QA remains pending.
+
+
+## Visual asset library — phase 2 — 15 Kasım 2026
+
+- Added target-vs-actual and measurement-source-context SVG diagrams; all example data and conceptual relationships are explicitly labelled.
+- Technical Principles now presents fermentation, target-vs-actual and measurement-source visuals in a responsive gallery.
+- Added `web-stratejisi/21-visual-asset-library.md` with visual classes, asset inventory, evidence rules, accessibility and publication checklist.
+- No product UI, live integration, real batch data, brewing advice or unapproved capability claim is implied.
+- Branch: `design/visual-library-phase-2`; CI and responsive browser QA required before merge.

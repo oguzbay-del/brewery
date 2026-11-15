@@ -316,3 +316,10 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .visual-diagram figcaption { padding: 12px 8px 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
 .technical-visual { padding-block: 24px 48px; }
 @media (max-width: 640px) { .visual-diagram { margin: 24px 0 30px; padding: 8px; } .visual-diagram figcaption { font-size: 11px; } }
+
+
+/* Technical visual library — responsive explanatory graphics */
+.visual-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
+.visual-grid .visual-diagram { margin: 0; min-width: 0; }
+.measurement-visual { margin-top: 22px; }
+@media (max-width: 760px) { .visual-grid { grid-template-columns: 1fr; gap: 16px; } .measurement-visual { margin-top: 16px; } }
