@@ -14,4 +14,11 @@ Ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çal�
 | `araclar/` | `tutarlilik.py`: plan ile konsept arasında ekran sayıları, sekmeler, mod haritası, bağlantılar ve formül göndermeleri; test betiklerini çalıştırır, "doğrulanacak" sayar (`python3 -I araclar/tutarlilik.py`) |
 | `CLAUDE.md` | Claude ile çalışırken uyulan kurallar |
 
+
+## Pazarlama sitesi
+
+`marketing-site/`, Demleme ürün uygulamasından ayrı olan ticari tanıtım ve self-service keşif sitesidir. Birincil hedef profesyonel bira üreticileri; Homebrewers ayrı ve ikincil bir yol olarak ele alınır. Site şu an ürünün kendisi değildir ve geliştirme durumunu açıkça belirtir.
+
+Geliştirme, build, sosyal kart üretimi ve test komutları için [marketing-site/README.md](marketing-site/README.md).
+
 Yayın bağlantıları özeldir; yalnız sahibine ve paylaşılan kişilere açılır.
