@@ -63,15 +63,19 @@ Analytics vendor, consent requirements, event payloads and retention must be app
 
 ## 7. Decisions intentionally still open
 
-- Product launch and Business onboarding date/URL
-- Workspace, seat, batch and feature limits
-- Free tier, trial and pricing
-- Billing provider, tax/invoice and cancellation policy
+The website now has a pricing overview, a two-audience function comparison and a guided plan-configuration preview. Commercial structure is defined as a proposal, but monetary prices and transactional operations remain open.
+
+- Product launch and verified account/onboarding URL
+- Home monthly base price and Business monthly price per seat
+- Approval of proposed term discounts: 15% annual, 25% two-year, 35% three-year
+- Currency, tax/VAT, multi-year prepayment, renewal and cancellation terms
+- Trial activation, card requirement and conversion rules
+- Billing provider, invoices, refunds and payment operations
+- Public sales email for Business teams above 20 seats
 - Business permissions, data ownership, security and support evidence
-- Approved contact route for exceptional enterprise requirements
 - Analytics provider, consent and retention policy
 
-Until these are decided, the website must not claim that registration, trial, purchase, demo, pricing or enterprise support is live.
+The public website must clearly label plan selection, trials and checkout as previews until real account and billing services are approved and available.
 
 ## 8. Immediate website changes
 
@@ -115,3 +119,18 @@ The following remain intentionally unresolved and must not be replaced with inve
 Until those decisions are approved, keep the site informational and Business-first. Do not add signup, trial, purchase, demo, waitlist or lead-capture CTAs.
 
 The feature-claim audit now distinguishes basic planned records/calculations from research-only analytical models. Models 1–3, 6 and 9–15 remain unapproved in the product plan and are labelled “Under consideration” wherever they appear in marketing copy. PR #141 does not approve or change those product decisions.
+
+
+## 11. Pricing and membership implementation — 15 November 2026
+
+The owner has approved the following website-level commercial structure for implementation:
+
+- Homebrewer: one user; proposed three-month introductory trial.
+- Professional Brewery: minimum five users, seat increments of five through 20; teams above 20 follow a custom email enquiry path; proposed one-month introductory trial.
+- Billing choices for both audiences: monthly, annual, two-year and three-year.
+- Proposed discounts versus the monthly reference: 0%, 15%, 25% and 35%, respectively.
+- Pricing overview, Apple-inspired step-by-step configuration wizard and Home-vs-Brewery function comparison are separate public routes.
+
+Implementation plan and dependencies are in `web-stratejisi/45-gristora-pricing-membership-onboarding-plan.md`. The exact monthly price points are intentionally not fabricated: the FoamByte benchmark records Free/Plus and billing transparency but does not contain verified numeric competitor prices. The website preview does not collect cards, create accounts, start trials or process payments. Real billing is a separate future product/infrastructure workstream.
+
+Current work branch: `marketing/gristora-pricing-onboarding`. Merge only after static, generated-route, responsive and accessibility CI pass.
