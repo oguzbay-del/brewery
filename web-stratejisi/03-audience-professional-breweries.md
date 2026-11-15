@@ -1,7 +1,7 @@
 # Audience 2 — Professional Breweries
 
 ## Kitle
-Craft brewery sahipleri, head brewer'lar, üretim yöneticileri ve teknik üretim ekipleri. İlk odak bağımsız küçük/orta ölçekli üreticiler; daha büyük ekipler ikincil segmenttir.
+**Birincil ticari audience ve ilk hedef pazar.** Craft brewery sahipleri, head brewer'lar, üretim yöneticileri ve teknik üretim ekipleri. İlk odak bağımsız küçük/orta ölçekli üreticiler; daha büyük ekipler sonraki segmenttir. Web sitesi edinim, içerik ve ürün değerlendirme kaynaklarında Business kitlesine öncelik verir.
 
 ## İhtiyaçlar
 - Reçeteleri ve üretim parametrelerini standartlaştırmak.
