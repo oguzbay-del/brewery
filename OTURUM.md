@@ -705,3 +705,5 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Six dimensions: primary user, core unit of work, typical records, measurement context, main question and scope boundary.
 - The table is explicitly roadmap/information-needs context, not a feature-availability promise. The mobile table region is labelled and keyboard-focusable.
 - Branch: `content/audience-comparison-matrix`; CI and responsive/axe review pending.
+
+- Added a homepage text link from the two audience cards to the new side-by-side comparison matrix.
