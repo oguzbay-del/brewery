@@ -44,7 +44,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   name: "Frequently Asked Questions — Demleme",
-  description: "Answers about Demleme's development status, audience, product scope and technical roadmap.",
+  description: "Answers for professional brewery teams about Demleme's development status, brewing software scope, roadmap and separate Homebrewers path.",
   url: canonicalUrl,
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
@@ -70,16 +70,16 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="theme-color" content="#f2f2f7" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Answers about Demleme's development status, home and Business audiences, product scope, calculations and roadmap." />
-    <title>Demleme Brewing Software FAQ | Product & Scope</title>
+    <meta name="description" content="Answers for professional brewery teams about Demleme's development status, brewing software scope, roadmap and the separate Homebrewers path." />
+    <title>Demleme Brewing Software FAQ for Breweries | Product Scope</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="Demleme Brewing Software FAQ | Product &amp; Scope" />
-    <meta property="og:description" content="Clear answers about product status, scope and the technical roadmap." />
+    <meta property="og:title" content="Demleme Brewing Software FAQ for Breweries | Product Scope" />
+    <meta property="og:description" content="Clear answers for professional brewery teams on product status, brewing scope and the technical roadmap." />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Demleme Brewing Software FAQ | Product & Scope" />
-    <meta name="twitter:description" content="Clear answers about product status, scope and the technical roadmap." />
+    <meta name="twitter:title" content="Demleme Brewing Software FAQ for Breweries | Product Scope" />
+    <meta name="twitter:description" content="Clear answers for professional brewery teams on product status, brewing scope and the technical roadmap." />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
@@ -98,7 +98,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell explain-page-hero">
         <p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT STATUS · SCOPE · TECHNICAL ROADMAP</p>
         <h1>Good questions deserve <em>clear answers.</em></h1>
-        <p>Demleme is in development. These answers explain what the product is being designed to do, what is outside its scope and what has not yet been released.</p>
+        <p>Professional brewery teams are Demleme's primary audience. Homebrewers have a separate secondary path. Demleme is in development; this site explains the product direction, not the application.</p>
       </section>
       <section class="faq-directory section-pad">
         <div class="shell faq-directory-layout">
