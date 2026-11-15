@@ -66,11 +66,13 @@ const audiences = [
     <meta property="og:description" content="GRISTORA is brewing software in development for professional breweries. Explore the Business workflow, technical approach and product scope." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="en_US" />
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="GRISTORA — Brewing software for professional breweries" />
     <meta name="twitter:description" content="Brewing software in development for professional breweries, with a separate path for homebrewers." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
