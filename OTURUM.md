@@ -15,6 +15,7 @@
 - Merge commit: `e34a379370495a68ddcfd1d760a6f9800f50e66b`.
 - Marketing Site Checks run #219 (`43717341183`) completed successfully: dependency install, Astro/TypeScript, static build, generated routes/metadata/links, social preview artifact and responsive browser QA.
 - Vercel preview was blocked by the existing 24-hour Hobby deployment quota. No live preview/deployment is claimed.
+- CI screenshot artifact was downloaded and spot-checked: homepage 1440/390 px, Breweries 390 px and generated 1200×630 social card. No obvious clipping in those spot-checks; the full responsive suite passed. Existing social card still carries legacy Demleme branding and is not a GRISTORA-approved asset.
 - No product code or marketing-site source code was changed in this brand/documentation work.
 
 ## Canonical GRISTORA documents
@@ -28,6 +29,7 @@
 - 39 — `web-stratejisi/39-gristora-trademark-domain-preliminary-evidence-log.md`
 - 40 — `web-stratejisi/40-gristora-preliminary-goods-services-specification.md`
 - 41 — `web-stratejisi/41-gristora-public-marketing-claims-guardrails.md`
+- 42 — `web-stratejisi/42-gristora-marketing-site-ci-artifact-review.md`
 
 ## Open work
 
