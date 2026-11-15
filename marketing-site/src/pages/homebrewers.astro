@@ -11,11 +11,11 @@ const canonicalUrl = new URL(`${base}homebrewers/`, import.meta.env.SITE).href;
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Homebrewing Software in Development | Demleme",
+  name: "Homebrewing Software in Development | GRISTORA",
   url: canonicalUrl,
   description: "Brewing software in development for homebrewers who want to understand the details behind every batch.",
   inLanguage: "en",
-  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
 };
 const workflow = [
   { number: "01", title: "Shape the recipe", question: "What are you trying to brew?", body: "Start with the style, ingredients, equipment and batch size that define your recipe. Keep the choices and their context together.", feature: "Recipe design & management", href: "recipe-design" },
@@ -26,9 +26,9 @@ const workflow = [
   { number: "06", title: "Review the batch", question: "What would you carry into the next brew?", body: "Bring measurements, recipe context and tasting notes together to understand differences between batches. Advanced analytical insights remain separately gated.", feature: "Reports, insights & sustainability", href: "analytics-reports" },
 ];
 const faqs = [
-  { q: "Is Demleme available to use today?", a: "No. Demleme and this marketing website are in development. The pages describe the product plan, not a live service." },
+  { q: "Is GRISTORA available to use today?", a: "No. GRISTORA and this marketing website are in development. The pages describe the product plan, not a live service." },
   { q: "Which brewing calculations are supported?", a: "The product plan includes gravity, alcohol, bitterness, colour, mash and volume calculations. Methods, defaults and results must pass reference-recipe and real-brew validation before release." },
-  { q: "Does Demleme predict fermentation outcomes?", a: "Final-gravity and fermentation finish-date estimates are under consideration and depend on an analytical model that has not been approved. They are not presented as available features." },
+  { q: "Does GRISTORA predict fermentation outcomes?", a: "Final-gravity and fermentation finish-date estimates are under consideration and depend on an analytical model that has not been approved. They are not presented as available features." },
   { q: "Can I connect a fermentation device?", a: "Device connectivity is part of the product plan. Supported devices, setup instructions and availability will be stated only after implementation and validation." },
   { q: "Can I import or export my existing recipes?", a: "Recipe import and export formats are described in the roadmap. Compatibility and conversion behaviour must be verified before a format is advertised as supported." },
 ];
@@ -43,24 +43,26 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="theme-color" content="#f2f2f7" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Explore Demleme's planned homebrewing workflow: recipe design, ingredients, calculations, brew-day records and batch review." />
-    <title>Homebrewing Software in Development | Demleme</title>
+    <meta name="description" content="Explore GRISTORA's planned homebrewing workflow: recipe design, ingredients, calculations, brew-day records and batch review." />
+    <title>Homebrewing Software in Development | GRISTORA</title>
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="Homebrewing Software in Development | Demleme" />
-    <meta property="og:description" content="A more considered approach to every brew. Explore the Demleme homebrewing roadmap." />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Homebrewing Software in Development | GRISTORA" />
+    <meta property="og:description" content="A more considered approach to every brew. Explore the GRISTORA homebrewing roadmap." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Homebrewing Software in Development | Demleme" />
+    <meta name="twitter:title" content="Homebrewing Software in Development | GRISTORA" />
     <meta name="twitter:description" content="A more considered approach to every brew." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
-      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <a class="wordmark" href={base} aria-label="GRISTORA home">GRISTORA</a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
         <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
@@ -82,7 +84,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR HOME BREWERS · IN DEVELOPMENT</p>
         <h1>A more considered approach to <em>every brew.</em></h1>
-        <p>Demleme is brewing software in development for homebrewers who want to understand the ingredients, calculations and observations behind each batch.</p>
+        <p>GRISTORA is brewing software in development for homebrewers who want to understand the ingredients, calculations and observations behind each batch.</p>
         <a class="button button-primary" href="#homebrewing-workflow">Explore the homebrewing workflow <span aria-hidden="true">↗</span></a>
       </section>
       <!-- IMAGE SLOT: HOMEBREWERS-HERO | Replace only with user-approved or licensed documentary photography. -->
@@ -165,6 +167,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
       <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={`${base}how-it-works/#home-workflow`}>Explore the homebrewing workflow <span aria-hidden="true">↗</span></a></div></section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>GRISTORA</a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
