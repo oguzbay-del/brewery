@@ -133,7 +133,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
         <aside class="wizard-summary" aria-live="polite">
           <p class="eyebrow">YOUR SELECTION</p><h2>Plan <em>summary</em></h2>
-          <dl><div><dt>Path</dt><dd id="summary-audience">Choose a path</dd></div><div><dt>Users</dt><dd id="summary-seats">—</dd></div><div><dt>Term</dt><dd id="summary-term">Monthly</dd></div><div><dt>Saving</dt><dd id="summary-discount">0%</dd></div></dl>
+          <dl><div><dt>Path</dt><dd id="summary-audience">Choose a path</dd></div><div><dt>Users</dt><dd id="summary-seats">—</dd></div><div><dt>Term</dt><dd id="summary-term">Monthly</dd></div><div><dt>Saving</dt><dd id="summary-discount">0%</dd></div><div><dt>Trial</dt><dd id="summary-trial">Choose a path</dd></div></dl>
           <p class="summary-note">Home: one user, three-month trial. Brewery: five-user minimum, one-month trial.</p>
           <a href={`${base}compare/`}>Compare planned functions ↗</a>
         </aside>
@@ -176,6 +176,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           byId("summary-seats").textContent = state.audience === "home" ? "1 user" : state.audience === "business" ? (state.seats === "20+" ? "20+ · custom quote" : state.seats + " users") : "—";
           byId("summary-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
           byId("summary-discount").textContent = state.seats === "20+" ? "—" : discounts[state.term];
+          byId("summary-trial").textContent = state.audience === "home" ? "3 months planned" : state.audience === "business" ? "1 month planned" : "Choose a path";
           byId("review-audience").textContent = state.audience === "home" ? "Homebrewer" : "Professional Brewery";
           byId("review-seats").textContent = state.audience === "home" ? "1 user" : (state.seats === "20+" ? "20+ users · custom quote" : state.seats + " users");
           byId("review-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
@@ -183,7 +184,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           byId("review-trial").textContent = state.audience === "home" ? "3 months (planned)" : "1 month (planned)";
           byId("wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
           byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Configuration preview complete" : "Continue →";
-          byId("wizard-feedback").textContent = "";
+          if (!(step === 4 && state.seats === "20+")) byId("wizard-feedback").textContent = "";
         };
         form.querySelectorAll('input[name="audience"]').forEach((input) => input.addEventListener("change", () => {
           state.audience = input.value;
@@ -197,6 +198,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           if (step < 4) {
             step = step === 2 && state.seats === "20+" ? 4 : step + 1;
             update();
+            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "A team of more than 20 needs a tailored quote. The direct sales email will be published before launch; no request is sent from this preview.";
             const heading = document.querySelector(".wizard-step:not([hidden]) h2");
             if (heading) heading.focus();
           }
