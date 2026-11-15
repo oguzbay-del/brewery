@@ -94,7 +94,7 @@ const faqs = [
             <h2>Connect the decisions with <em>the records.</em></h2>
             <p>Business mode is planned around brewing-specific work. Each workflow below is a product direction, not a statement that the capability is already live.</p>
           </div>
-          <ol class="workflow-grid">
+          <ol class="workflow-grid business-workflow-grid">
             {workflow.map((step) => (
               <li class="workflow-card">
                 <span class="workflow-number">{step.number}</span>
@@ -125,7 +125,7 @@ const faqs = [
             <h2>Follow the context <em>behind each batch.</em></h2>
             <p>The planned record model connects a brewing decision to the work, materials and observations that explain the finished batch. These are intended relationships, not a live database or released workflow.</p>
           </div>
-          <ol class="record-model-flow">
+          <ol class="record-model-flow business-record-flow">
             <li>
               <span class="record-model-index">01 · RECIPE</span>
               <h3>Recipe version</h3>
