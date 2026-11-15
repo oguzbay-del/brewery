@@ -94,8 +94,9 @@ The following website changes implement the Business-first direction. They chang
 | Automated browser and static checks | Marketing-site CI, generated-route validation, responsive browser QA and axe checks pass on the deployed code snapshot | CI run #197 |
 | GitHub Pages preview | The PR #134 code snapshot is published successfully | Pages deployment #65 |
 | Current-page navigation | Desktop/mobile current-page semantics and visible state, including feature detail routes | PR #138; main CI run #43710054711 (85/85); Pages run #43710054632 |
+| Analytical-claim guardrails | Unapproved analytical models are separated from planned feature copy; generated HTML checks enforce the caveats | PR #141; main CI run #43710624091 (85/85, 1,745 static checks); Pages run #43710624041 |
 
-Current main snapshot: `7ac3fbef80ced26b81869a90f7be7f6b57869b8d`. GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit; this does not indicate a failed site build. The current-page navigation update is included in the published main snapshot.
+Current main snapshot: `53af627bdd9881efe3435d3b78a0d355dd2ee6b7`. GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit; this does not indicate a failed site build. The current-page navigation and analytical-claim guardrails are included in the published main snapshot.
 
 Navigation accessibility is complete. PR #138 adds a visible current-page state and `aria-current="page"` to desktop and mobile navigation, including nested feature pages. Main CI run #43710054711 passed 85/85 browser tests and the GitHub Pages deployment run #43710054632 succeeded on the current main commit.
 
@@ -112,3 +113,5 @@ The following remain intentionally unresolved and must not be replaced with inve
 - Final-domain canonical, sitemap, robots and social-preview validation.
 
 Until those decisions are approved, keep the site informational and Business-first. Do not add signup, trial, purchase, demo, waitlist or lead-capture CTAs.
+
+The feature-claim audit now distinguishes basic planned records/calculations from research-only analytical models. Models 1–3, 6 and 9–15 remain unapproved in the product plan and are labelled “Under consideration” wherever they appear in marketing copy. PR #141 does not approve or change those product decisions.
