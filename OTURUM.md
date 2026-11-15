@@ -2,7 +2,7 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Latest main:** `cf796e4876ed557f36d305d5e89e91c03529db00`. PRs #121, #122, #124, #125 and #126 are merged. **Open PRs: 0.**
+- **Latest functional merge:** `cf796e4876ed557f36d305d5e89e91c03529db00` (PR #125); handoff snapshot refreshed after PRs #121, #122, #124, #125 and #126. **Open PRs: 0.**
 - **Business-first regression QA:** PR #121 adds generated-HTML checks for navigation order, primary header/homepage CTA destinations, How It Works section/comparison order, Product directory and FAQ audience hierarchy, and shared feature audience-label order. CI #43702027885 passed **1,642 static checks and 78 Playwright tests**.
 - **Typed feature data:** PR #122 defines closed TypeScript unions for audience labels and roadmap stages, and types the stage-description registry against the same vocabulary.
 - **Feature catalogue integrity:** PR #125 adds build-time checks for valid/unique slugs, unique/non-empty audience and roadmap labels, and non-empty sections. CI #43702595367 passed Astro/TypeScript, static build, generated-site validation, social-card artifact generation and responsive Playwright QA.
