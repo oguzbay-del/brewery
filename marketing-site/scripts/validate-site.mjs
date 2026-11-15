@@ -26,6 +26,16 @@ function decodeHtml(value) {
   return value.replaceAll("&amp;", "&").replaceAll("&#x27;", "'").replaceAll("&quot;", '"');
 }
 
+function getMetaContent(html, attribute, value) {
+  const tags = [...html.matchAll(/<meta\b[^>]*>/gi)].map((match) => match[0]);
+  const tag = tags.find((candidate) => {
+    const match = candidate.match(new RegExp("\\b" + attribute + "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)')", "i"));
+    return (match?.[1] ?? match?.[2]) === value;
+  });
+  const content = tag?.match(/\bcontent\s*=\s*(?:"([^"]*)"|'([^']*)')/i);
+  return content?.[1] ?? content?.[2];
+}
+
 function stripBase(pathname) {
   if (!basePath) return pathname;
   if (pathname === basePath || pathname === `${basePath}/`) return "/";
@@ -127,6 +137,12 @@ for (const file of htmlFiles) {
   assert(titleCount === 1, `${rel}: exactly one title`);
   assert(canonicalCount === 1, `${rel}: exactly one canonical`);
   assert(descriptionCount === 1, `${rel}: exactly one meta description`);
+  const metaDescription = getMetaContent(html, "name", "description");
+  assert(Boolean(metaDescription?.trim()), rel + ": meta description is not empty");
+  if (metaDescription) {
+    const length = decodeHtml(metaDescription).trim().length;
+    assert(length >= 40 && length <= 220, rel + ": meta description is between 40 and 220 characters (found " + length + ")");
+  }
   const ogTitleCount = (html.match(/property=["']og:title["']/g) || []).length;
   const ogDescriptionCount = (html.match(/property=["']og:description["']/g) || []).length;
   const ogUrlCount = (html.match(/property=["']og:url["']/g) || []).length;
@@ -143,18 +159,26 @@ for (const file of htmlFiles) {
   assert(twitterDescriptionCount === 1, rel + ": exactly one Twitter description");
   assert(ogImageCount <= 1, rel + ": at most one Open Graph image");
   assert(twitterImageCount <= 1, rel + ": at most one Twitter image");
-  const twitterCard = html.match(/<meta\s+name=["']twitter:card["']\s+content=["']([^"']+)["']/)?.[1];
+  const twitterCard = getMetaContent(html, "name", "twitter:card");
   assert(["summary", "summary_large_image"].includes(twitterCard), rel + ": Twitter card uses a supported card type");
-  const ogTitle = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/)?.[1];
-  const twitterTitle = html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([^"']+)["']/)?.[1];
+  const ogTitle = getMetaContent(html, "property", "og:title");
+  const twitterTitle = getMetaContent(html, "name", "twitter:title");
   assert(Boolean(twitterTitle?.trim()), rel + ": Twitter title is not empty");
   if (ogTitle && twitterTitle) assert(decodeHtml(ogTitle) === decodeHtml(twitterTitle), rel + ": Twitter title matches Open Graph title");
-  const ogDescription = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/)?.[1];
-  const twitterDescription = html.match(/<meta\s+name=["']twitter:description["']\s+content=["']([^"']+)["']/)?.[1];
-  if (ogDescription) assert(Boolean(ogDescription.trim()), rel + ": Open Graph description is not empty");
+  const ogDescription = getMetaContent(html, "property", "og:description");
+  const twitterDescription = getMetaContent(html, "name", "twitter:description");
+  if (ogDescription) {
+    assert(Boolean(ogDescription.trim()), rel + ": Open Graph description is not empty");
+    const length = decodeHtml(ogDescription).trim().length;
+    assert(length >= 30 && length <= 220, rel + ": Open Graph description is between 30 and 220 characters (found " + length + ")");
+  }
   assert(Boolean(twitterDescription?.trim()), rel + ": Twitter description is not empty");
-  const ogImage = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/)?.[1];
-  const twitterImage = html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/)?.[1];
+  if (twitterDescription) {
+    const length = decodeHtml(twitterDescription).trim().length;
+    assert(length >= 30 && length <= 220, rel + ": Twitter description is between 30 and 220 characters (found " + length + ")");
+  }
+  const ogImage = getMetaContent(html, "property", "og:image");
+  const twitterImage = getMetaContent(html, "name", "twitter:image");
   if (ogImage && twitterImage) assert(new URL(decodeHtml(ogImage), pageUrl).href === new URL(decodeHtml(twitterImage), pageUrl).href, rel + ": Twitter image matches Open Graph image");
   for (const [label, imageUrl] of [["Open Graph", ogImage], ["Twitter", twitterImage]]) {
     if (!imageUrl) continue;
@@ -167,7 +191,7 @@ for (const file of htmlFiles) {
   assert(html.includes('<html lang="en">'), rel + ": language is declared");
   const canonicalTag = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/)?.[0];
   const canonicalHref = canonicalTag?.match(/\bhref=["']([^"']+)["']/)?.[1];
-  const ogUrl = html.match(/<meta\s+property=["']og:url["']\s+content=["']([^"']+)["']/)?.[1];
+  const ogUrl = getMetaContent(html, "property", "og:url");
   assert(Boolean(canonicalHref), rel + ": canonical URL is present");
   if (canonicalHref) {
     const canonical = new URL(decodeHtml(canonicalHref), siteOrigin);
