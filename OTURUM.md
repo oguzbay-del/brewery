@@ -2,14 +2,14 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Main:** `e9ddb0978abe6d77a1ee7b38281de384a6c27375` (latest verified merge in this work batch); PRs #84–#89, #91–#92, #94–#96 merged. PRs #90, #93 and #97 were closed as duplicates after their work was consolidated.
+- **Main:** `d1935b0bb8c70568107535a1f162227b3883abdf` (latest verified merge in this work batch); PRs #84–#89, #91–#92, #94–#96 merged. PRs #90, #93, #97, #98 and #100 were closed as duplicates after their work was consolidated.
 - **SEO:** PR #89 aligned page titles and structured-data names; PR #94 records social preview readiness gaps; PR #95 aligns Twitter titles with page titles. CI run #43696382053 passed, including Astro checks, static build, route/metadata validation and responsive browser QA. Vercel Preview remained blocked by the 24-hour Hobby deployment quota.
 - **WP-09 / WP-10:** PR #91 provides the primary-source register; PR #96 adds fermentation sample-handling evidence; this handoff adds gravity-measurement evidence. Research only: no formula, calculator or public technical article is approved.
 - **Measurement provenance:** conceptual data-contract note is for product/engineering review only; not an approved schema/API or shipped feature.
-- **Open PRs:** #99 (this documentation handoff) and #100 (social-card source artwork). No product app/API/Rust or Claude queue changes.
+- **Open PRs:** none at this handoff snapshot. No product app/API/Rust or Claude queue changes.
 - **Preview:** GitHub Pages is fallback preview. Do not retry Vercel Preview until the quota window resets; avoid repeated attempts.
 - **Commercial decisions open:** app URL/sign-in/registration; production domain/hosting; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots.
-- **Social preview:** no OG/Twitter image metadata is wired; dedicated raster card and final-domain/platform validation remain.
+- **Social preview:** dedicated 1200×630 SVG source is merged (PR #101); raster export, metadata wiring and final-domain/platform validation remain.
 - **Manual QA remains open:** real screen-reader testing, full human keyboard/focus, real 200% zoom/reflow and SVG internal text contrast.
 - **Release policy:** batch changes, inspect diffs and CI, merge manually; do not alter Vercel or production settings without explicit approval.
 
