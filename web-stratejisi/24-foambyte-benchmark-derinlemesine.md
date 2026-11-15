@@ -172,7 +172,7 @@ FoamByte'ın görsel avantajı yalnız estetik değil, **ürünün nasıl çalı
 | FB-08 | Tamamlandı | Feature detail şablonunda inputs/records, outputs, limitations ve evidence status bölümü var; tüm feature sayfaları roadmap olarak işaretli (PR #47/#50). |
 | FB-09 | Beklemede / kanıt kapısı | Learn hub ve teknik rehberler, WP-10'da tanımlı birincil kaynak, yöntem, örnek ve subject-matter review tamamlanmadan yayınlanmayacak. |
 | FB-10 | HOLD | Calculators yalnız WP-09 formül/test vektörü doğrulaması ve public-use approval sonrasında. |
-| FB-11 | HOLD | Gerçek fotoğraf/ürün ekranı eklenmeyecek; kullanıcı onaylı veya lisanslı varlık bekleniyor. |
+| FB-11 | Kısmen tamamlandı | Dokuz özgün public SVG ve homepage inline SVG eklendi; fotoğraf ve gerçek ürün ekranı ayrı onay kapısında. |
 | FB-12 | Otomatik tarayıcı QA eklendi; manuel görsel QA bekliyor | Playwright Chromium testleri 1440/1024/768/390/320 px için eklendi; screenshot artefact'ları CI'da saklanacak. İnsan görsel incelemesi ayrıca gerekli. |
 | FB-13 | Kısmen tamamlandı | Statik route/sitemap/link/metadata/JSON-LD, temel accessibility smoke checks ve Playwright browser smoke testleri CI'a eklendi. Screen-reader, kontrast, focus görünümü, zoom ve manuel keyboard QA ayrıca gerekli. |
 
