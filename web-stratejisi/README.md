@@ -1,6 +1,6 @@
 # GRISTORA — Public marketing site strategy
 
-Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi yazılım uygulamasının kendisi değildir. GRISTORA marka dokümanları bu klasördeki 33–43 numaralı dosyalarda kanonik kayıttır. **Birincil ticari hedef Professional Breweries (Business)**; **Homebrewers (Home)** ikincil audience ve ayrı ürün yoludur.
+Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi yazılım uygulamasının kendisi değildir. GRISTORA marka dokümanları bu klasördeki 33–44 numaralı dosyalarda kanonik kayıttır. **Birincil ticari hedef Professional Breweries (Business)**; **Homebrewers (Home)** ikincil audience ve ayrı ürün yoludur.
 
 ## Kararlar
 - Ticari öncelik: Professional Breweries (Business) — birincil pazar ve edinim hunisi.
@@ -55,6 +55,7 @@ Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-s
 41. [GRISTORA public marketing claims guardrails](41-gristora-public-marketing-claims-guardrails.md)
 42. [GRISTORA marketing-site CI artifact review](42-gristora-marketing-site-ci-artifact-review.md)
 43. [GRISTORA public homepage copy blueprint](43-gristora-public-homepage-copy-blueprint.md)
+44. [GRISTORA trademark counsel review brief](44-gristora-trademark-counsel-review-brief.md)
 
 Marka kararı: GRISTORA. Public sitede Demleme adı kullanılmayacak. Kullanıcının seçtiği ilk logo tasarımı üretim yönüdür; asıl görselden sadık vektör master üretimi ve onayı bekleniyor. Hukuki marka/domain temizliği de tamamlanmadı. WP-17 onay kapıları geçilmeden mevcut public site markasını değiştirme. Ürün uygulamasına ve ürün yazılımına dokunma.
 
