@@ -210,3 +210,21 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - Added primary navigation interaction checks at all five widths.
 - CI uploads full-page screenshots for the homepage and both audience pages at all widths, plus key technical pages at desktop and narrow mobile widths.
 - This is automated browser QA, not a substitute for human visual, keyboard, screen-reader, contrast or zoom review.
+
+
+## 7C. Accessibility automation — 15 Kasım 2026
+
+- Added axe-core Playwright audits for seven routes at 1440 px and 390 px using WCAG 2.0/2.1/2.2 A/AA rule tags.
+- Added keyboard checks for skip-link navigation, mobile menu disclosure and FAQ disclosure.
+- Added a 720 px narrow-desktop layout proxy; actual 200% browser zoom and manual screen-reader review remain open.
+- Automated audit findings are triaged before any accessibility-conformance claim.
+
+
+## 7D. Axe findings and remediation — 15 Kasım 2026
+
+- First axe run found low-contrast 11px hero-note and 9px footer metadata text (3.96–3.98:1, below 4.5:1) and a non-focusable horizontally scrollable role table.
+- Remediation: darker text tokens for these small labels and a labelled/focusable role-table region with visible focus styling.
+- Re-run required; no WCAG conformance claim until all automated and manual checks are complete.
+
+
+- Follow-up axe run isolated the same scrollable-region issue on the Homebrewers record-loop table. Added a labelled focusable region there as well; final rerun required.

@@ -49,13 +49,13 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .button-primary { background: var(--amber-fill); color: var(--amber-ink); transition: background .2s ease, transform .2s ease; }
 .button-primary:hover { background: #d98215; transform: translateY(-2px); }
 .text-link { display: inline-flex; align-items: center; gap: 12px; color: var(--ink); font-size: 12px; font-weight: 700; transition: color .2s ease; }
-.hero-note { display: flex; align-items: center; gap: 12px; margin-top: 58px; color: #77796f; font-size: 11px; }
+.hero-note { display: flex; align-items: center; gap: 12px; margin-top: 58px; color: #66685e; font-size: 11px; }
 .note-rule { width: 38px; height: 1px; background: #b6ad9d; }
 .hero-art { position: relative; min-height: 520px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #e5e5ea; }
 .hero-art::before, .hero-art::after { content: ""; position: absolute; border: 1px solid rgba(92, 91, 77, .18); border-radius: 50%; }
 .hero-art::before { width: 76%; aspect-ratio: 1; }
 .hero-art::after { width: 58%; aspect-ratio: 1; }
-.art-index, .art-caption { position: absolute; z-index: 1; left: 26px; right: 26px; display: flex; justify-content: space-between; color: #77766b; font-family: var(--mono); font-size: 9px; letter-spacing: 1px; }
+.art-index, .art-caption { position: absolute; z-index: 1; left: 26px; right: 26px; display: flex; justify-content: space-between; color: #62645c; font-family: var(--mono); font-size: 9px; letter-spacing: 1px; }
 .art-index { top: 22px; }
 .art-caption { bottom: 20px; font-size: 8px; }
 .brew-illustration { position: relative; z-index: 1; width: 100%; height: auto; max-height: 490px; }
@@ -112,7 +112,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .footer-wordmark { font-size: 25px; }
 .footer-main p { margin: 0; color: var(--muted); font-size: 12px; }
 .back-top { justify-self: end; font-size: 11px; font-weight: 600; }
-.footer-bottom { display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--line); color: #77796f; font-family: var(--mono); font-size: 9px; letter-spacing: .3px; }
+.footer-bottom { display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--line); color: #66685e; font-family: var(--mono); font-size: 9px; letter-spacing: .3px; }
 @media (max-width: 1050px) {
   .shell { width: min(var(--content), calc(100% - 48px)); }
   .site-header { padding-inline: 24px; }
