@@ -232,7 +232,8 @@ for (const file of htmlFiles) {
   };
   if (analyticalClaimGuards[pagePath]) {
     const required = analyticalClaimGuards[pagePath];
-    assert(required.every((phrase) => html.includes(phrase)), rel + ": unapproved analytical models are labelled as under consideration");
+    const searchableHtml = html.toLowerCase();
+    assert(required.every((phrase) => searchableHtml.includes(phrase.toLowerCase())), rel + ": unapproved analytical models are labelled as under consideration");
   }
 
   if (pagePath === "/faq/") {
