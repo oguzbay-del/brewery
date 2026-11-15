@@ -299,12 +299,12 @@ Homepage headline must not carry every feature. The subheadline should identify 
 
 | Cluster | Audience | Pillar page | Supporting content candidates | Search intent | Priority |
 |---|---|---|---|---|---|
-| Homebrewing software | Home | Homebrewers | Recipe management, batch records, brew-day planning | Commercial investigation | P0 |
+| Homebrewing software | Home | Homebrewers | Recipe management, batch records, brew-day planning | Commercial investigation / informational | P1 — secondary |
 | Brewing calculations | Both | Calculators | OG/FG/ABV, IBU, colour, recipe scaling | Utility / informational | P1 after validation |
 | Water and mash | Home + Business | Learn: Water and Mash | Water profiles, mineral additions, mash pH limitations | Informational | P1 |
 | Recipe formulation | Both | Feature / Learn | Recipe scaling, style guides, version comparison | Informational / commercial | P1 |
 | Fermentation | Home + Business | Learn: Fermentation | Gravity readings, temperature, yeast, fermentation records | Informational | P1 |
-| Brewery production software | Business | Breweries | Production planning, tank scheduling, batch records | Commercial investigation | P0 |
+| Brewery production software | Business | Breweries | Production planning, tank scheduling, batch records | Commercial investigation | P0 — primary |
 | Brewery traceability | Business | Use case / Feature | Ingredient lots, batch genealogy, quality records | Commercial / informational | P1 |
 | Brewery quality management | Business | Learn / Feature | QC checks, deviations, release records | Commercial / informational | P1 |
 | Brewing technical methods | Both | Technical Principles | Formula explainers, units, measurement, calibration | Trust / informational | P1 |
@@ -353,7 +353,7 @@ Each content item should have:
 |---:|---|---|---|---|
 | 1 | Homepage messaging brief | Business primary / Home secondary | Defines positioning and routing | Product status and Business-led audience messages |
 | 2 | Professional Breweries messaging brief | Business | Primary commercial journey | Feature status and Business scope |
-| 3 | Breweries messaging brief | Business | Distinct professional proposition | ERP exclusions and Business scope |
+| 3 | Brewery production workflow and record model | Business | Shows the operational value behind the primary proposition | Product-stage and ERP-boundary validation |
 | 4 | How It Works — Home | Home | Converts features into user journey | No fake product UI |
 | 5 | How It Works — Business | Business | Explains production lifecycle | Roadmap stage validation |
 | 6 | Technical Principles | Both | Differentiates technical trust | Evidence and formula references |
