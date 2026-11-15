@@ -10,7 +10,7 @@
 | Product truth | Every feature statement maps to an approved product-plan item and carries the correct maturity label | Ongoing; roadmap language is intentionally explicit |
 | Commercial path | Confirmed product/app URL, sign-in or registration flow, pricing, trial, limits and billing | Blocked on owner decisions |
 | Hosting and domain | Commercially appropriate hosting plan, confirmed production domain, HTTPS and canonical origin | Not ready; Vercel Hobby must not be used for commercial public operation |
-| Search and social | Unique title/description, canonical URL, valid Open Graph/Twitter metadata, raster social image and final-domain validation | Partial; SVG source exists, raster export and metadata image wiring remain open |
+| Search and social | Unique title/description, canonical URL, valid Open Graph/Twitter metadata, raster social image and final-domain validation | Partial; reproducible 1200×630 PNG is generated and validated during build; metadata image wiring and final-domain/platform validation remain open |
 | Privacy and measurement | Approved analytics provider, consent requirements, event taxonomy and privacy copy | Blocked on owner decisions |
 | Accessibility | Automated checks plus human keyboard, screen-reader, focus, zoom and reflow review | Automated checks exist; human review remains open |
 | Responsive QA | Real browser review at 1440, 1024, 768, 390 and 320 CSS px | CI screenshots exist; final manual review remains open |
@@ -32,7 +32,7 @@ A successful CI build is necessary but is not equivalent to a production release
 ## Social preview completion sequence
 
 - [x] Create branded 1200×630 SVG source artwork.
-- [ ] Export a 1200×630 PNG through a reproducible build step or approved design workflow.
+- [x] Export a 1200×630 PNG through the reproducible Resvg build step; CI validates PNG signature, dimensions and file size.
 - [ ] Verify PNG dimensions, file size, contrast and text legibility at small preview sizes.
 - [ ] Add absolute HTTPS `og:image` and `twitter:image` URLs only after the final public origin is confirmed.
 - [ ] Set `twitter:card=summary_large_image` only when the raster image is present and reachable.
