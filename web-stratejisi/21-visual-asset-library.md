@@ -34,15 +34,14 @@ Use original visuals to make brewing workflows, technical concepts and data rela
 | Fermentation profile example | Technical principles | Added, simulated values |
 | Target vs actual example | Technical principles | Added, simulated values |
 | Measurement source and context | Technical principles | Added, conceptual principle |
+| Homebrew ingredient context | Homebrewers | Added, conceptual learning aid |
+| Business batch timeline | Breweries | Added, conceptual Business roadmap |
 
 ## Next visual backlog
 
-1. Ingredient-to-recipe context: malt, hops, yeast and water as inputs; distinguish recipe specification from actual lot usage.
-2. Brew-day timeline: planned steps versus recorded actuals; avoid implying automated process control.
-3. Fermentation observation timeline: gravity, temperature and notes with explicit source and timestamp context; simulated examples only.
-4. Business batch genealogy: recipe version, batch, material lots, vessel events and quality records; roadmap label.
-5. Equipment calibration record: instrument, calibration date, reference method and status; do not depict model-driven recommendations as available.
-6. Original editorial brewing illustrations: mash tun, kettle, fermenter, hydrometer, grain and hops. Keep separate from product UI.
+1. Fermentation observation timeline: gravity, temperature and notes with explicit source and timestamp context; simulated examples only.
+2. Equipment calibration record: instrument, calibration date, reference method and status; do not depict model-driven recommendations as available.
+3. Original editorial brewing illustrations: mash tun, kettle, fermenter, hydrometer, grain and hops. Keep separate from product UI.
 
 ## Publication checklist
 
