@@ -167,7 +167,7 @@ for (const file of htmlFiles) {
   assert(ogImageCount === 1, rel + ": exactly one Open Graph image");
   assert(twitterImageCount === 1, rel + ": exactly one Twitter image");
   const twitterCard = getMetaContent(html, "name", "twitter:card");
-  assert(["summary", "summary_large_image"].includes(twitterCard), rel + ": Twitter card uses a supported card type");
+  assert(twitterCard === "summary_large_image", rel + ": Twitter card uses the large-image format");
   const ogTitle = getMetaContent(html, "property", "og:title");
   const twitterTitle = getMetaContent(html, "name", "twitter:title");
   assert(Boolean(twitterTitle?.trim()), rel + ": Twitter title is not empty");
@@ -186,6 +186,8 @@ for (const file of htmlFiles) {
   }
   const ogImage = getMetaContent(html, "property", "og:image");
   const twitterImage = getMetaContent(html, "name", "twitter:image");
+  assert(getMetaContent(html, "property", "og:image:alt") === "GRISTORA — Brewing Intelligence", rel + ": Open Graph image has descriptive alt text");
+  assert(getMetaContent(html, "name", "twitter:image:alt") === "GRISTORA — Brewing Intelligence", rel + ": Twitter image has descriptive alt text");
   if (ogImage && twitterImage) assert(new URL(decodeHtml(ogImage), pageUrl).href === new URL(decodeHtml(twitterImage), pageUrl).href, rel + ": Twitter image matches Open Graph image");
   for (const [label, imageUrl] of [["Open Graph", ogImage], ["Twitter", twitterImage]]) {
     if (!imageUrl) continue;
