@@ -294,3 +294,10 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - FAQ route now emits Schema.org FAQPage structured data generated from the same source array as the visible questions and answers.
 - Static validator verifies FAQPage type, question count vs rendered FAQ items, and acceptedAnswer completeness.
 - No search rich-result or ranking guarantee is claimed.
+
+
+## 7N. FAQ structured data delivery — 15 Kasım 2026
+
+- PR #80 merged. FAQPage schema is generated from the same 11 visible Q&A entries; static validation ensures the schema count and answer fields match the rendered page.
+- CI passed 63/63 browser tests plus static structured-data validation.
+- Main checks #43689298960 and GitHub Pages deployment #43689298947 are queued. No rich-result or ranking guarantee is claimed.
