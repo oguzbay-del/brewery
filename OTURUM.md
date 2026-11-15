@@ -742,3 +742,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Added explicit Playwright assertions that the horizontally scrollable Homebrewers, Breweries and audience-comparison tables receive a visible 3px keyboard focus outline at mobile width.
 - Updated stale homepage comments: the audience card artwork is original inline SVG, not a pending licensed-photo placeholder.
 - Branch: `qa/keyboard-focus-coverage`; CI and axe rerun pending.
+
+
+## Handoff update — PR #78 merged
+
+- Main commit: `383efc77c03e3d740f1f0054ad6f8628818cecce`.
+- PR #78 added real Tab-navigation checks for the three scrollable table regions (Homebrewers, Breweries and How It Works) and confirmed visible 3px focus outlines.
+- Final PR CI passed 63/63 tests: 40 responsive checks, 14 axe scans, 3 disclosure/skip-link keyboard checks, 3 narrow-desktop layout proxies and 3 table-focus checks.
+- Homepage audience artwork comments now correctly describe the inline SVGs as original editorial illustrations.
+- Main checks #43689057629 and GitHub Pages deployment #43689057632 are queued.
+- Vercel Hobby build-rate-limit remains the only hosting preview blocker; GitHub Pages is the current preview. Manual screen-reader and real 200% zoom review remain open.
