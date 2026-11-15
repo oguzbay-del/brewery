@@ -217,3 +217,20 @@
 .home-record-section .section-heading { max-width: 760px; }
 .home-record-table tbody th { min-width: 170px; }
 .home-record-table tbody td { min-width: 220px; }
+
+
+/* The Business roadmap has five items; separate cards avoid an empty sixth grid cell. */
+.business-workflow-grid,
+.business-record-flow {
+  gap: 16px;
+  border: 0;
+  background: transparent;
+}
+.business-workflow-grid .workflow-card,
+.business-record-flow li {
+  border: 1px solid var(--line);
+}
+@media (max-width: 620px) {
+  .business-workflow-grid,
+  .business-record-flow { gap: 12px; }
+}

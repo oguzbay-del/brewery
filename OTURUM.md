@@ -604,3 +604,29 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Nine original SVG assets are now in the marketing site: seven technical/workflow diagrams and two hero illustrations.
 - GitHub Pages deployment #43684614831 and main checks #43684614839 are queued.
 - Homepage hero illustration remains unchanged. Responsive visual/browser QA remains pending.
+
+
+## Responsive browser QA automation — 15 Kasım 2026
+
+- Added Playwright 1.65.1 and Chromium browser smoke tests to the marketing-site CI workflow.
+- Seven routes are checked at 1440 / 1024 / 768 / 390 / 320 px for overflow, route response, main/H1 structure, image alt/loading and browser page errors.
+- Primary navigation interaction is tested at all five widths. CI retains screenshot artifacts for review.
+- Cleaned the homepage hero illustration's stale placeholder/photography wording without changing its appearance.
+- Updated WP-13 visual QA and visual inventory status; manual visual, keyboard, screen-reader, contrast and zoom review remains a release gate.
+- Branch: `qa/playwright-responsive-smoke`; PR and CI validation pending.
+
+
+## Handoff update — responsive browser QA branch
+
+- Main base commit: `8e9e99310c6bf69dfca92146a5b142bc3a301b23` (PR #68 documentation handoff merged).
+- Added Playwright-based responsive browser checks and screenshot artifacts for the marketing site. PR #69 pending.
+- Nine public SVG assets and the homepage inline SVG are integrated; no photography or product UI has been introduced.
+- Automated checks are not human visual QA. Manual review of screenshots, keyboard focus, screen-reader flow, contrast and 200% zoom remains open.
+
+
+## Screenshot review finding — Business grid refinement
+
+- Inspected the first Playwright screenshot artifact across all five viewport widths.
+- The five-item Business workflow and record-model grids exposed a visually empty sixth cell because the grid container background showed through.
+- Added a Business-only card treatment with explicit gaps and borders; Homebrewer six-step grid and homepage hero remain unchanged.
+- Re-run browser QA and inspect refreshed screenshots before merge.

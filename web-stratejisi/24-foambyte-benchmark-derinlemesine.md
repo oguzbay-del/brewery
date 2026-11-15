@@ -154,9 +154,9 @@ FoamByte'ın görsel avantajı yalnız estetik değil, **ürünün nasıl çalı
 | FB-08 | Feature detail şablonuna evidence / limits / inputs-outputs ekle | P1 | PR #40 claim-safe katalog merge ve WP-03 |
 | FB-09 | Learn topic hub ve ilk teknik rehberler | P1 | WP-10 evidence register |
 | FB-10 | Calculators hub ve araçlar | HOLD | WP-09 formül doğrulama + public-use approval |
-| FB-11 | Gerçek görsel varlıkların seçimi/değişimi | HOLD | Kullanıcı tarafından sağlanan veya açıkça onaylanan varlık |
-| FB-12 | Responsive visual QA | P0 launch gate | Preview erişimi; 1440/1024/768/390/320 |
-| FB-13 | A11y, internal links, metadata, schema ve sitemap QA | P0 launch gate | WP-08 checklist ve kanıt kaydı |
+| FB-11 | Orijinal görsel varlıkların eklenmesi | Kısmen tamamlandı | Dokuz özgün public SVG + inline homepage hero; gerçek fotoğraf ve ürün ekranı ayrı onay bekliyor |
+| FB-12 | Otomatik tarayıcı QA eklendi; manuel görsel QA bekliyor | P0 launch gate | Playwright Chromium 1440/1024/768/390/320 px smoke testleri ve screenshot artefact'ları; insan görsel incelemesi ayrıca gerekli |
+| FB-13 | Kısmen tamamlandı | Statik route/SEO/accessibility smoke checks ve Playwright browser smoke tests CI'da. Screen-reader, contrast, keyboard focus, zoom ve manuel erişilebilirlik QA ayrıca gerekli |
 
 ## 7A. Uygulama durumu — 15 Kasım 2026
 
@@ -172,9 +172,9 @@ FoamByte'ın görsel avantajı yalnız estetik değil, **ürünün nasıl çalı
 | FB-08 | Tamamlandı | Feature detail şablonunda inputs/records, outputs, limitations ve evidence status bölümü var; tüm feature sayfaları roadmap olarak işaretli (PR #47/#50). |
 | FB-09 | Beklemede / kanıt kapısı | Learn hub ve teknik rehberler, WP-10'da tanımlı birincil kaynak, yöntem, örnek ve subject-matter review tamamlanmadan yayınlanmayacak. |
 | FB-10 | HOLD | Calculators yalnız WP-09 formül/test vektörü doğrulaması ve public-use approval sonrasında. |
-| FB-11 | HOLD | Gerçek fotoğraf/ürün ekranı eklenmeyecek; kullanıcı onaylı veya lisanslı varlık bekleniyor. |
-| FB-12 | Beklemede / release gate | 1440/1024/768/390/320 px gerçek browser QA; Vercel Preview build-rate-limit nedeniyle ertelendi. |
-| FB-13 | Kısmen tamamlandı | Statik route/sitemap/link/metadata/JSON-LD ve temel accessibility smoke checks CI'da var (PR #48/#51/#57). Keyboard, screen-reader, contrast, focus ve responsive browser QA hâlâ açık. |
+| FB-11 | Kısmen tamamlandı | Dokuz özgün public SVG ve homepage inline SVG eklendi; fotoğraf ve gerçek ürün ekranı ayrı onay kapısında. |
+| FB-12 | Otomatik tarayıcı QA eklendi; manuel görsel QA bekliyor | Playwright Chromium testleri 1440/1024/768/390/320 px için eklendi; screenshot artefact'ları CI'da saklanacak. İnsan görsel incelemesi ayrıca gerekli. |
+| FB-13 | Kısmen tamamlandı | Statik route/sitemap/link/metadata/JSON-LD, temel accessibility smoke checks ve Playwright browser smoke testleri CI'a eklendi. Screen-reader, kontrast, focus görünümü, zoom ve manuel keyboard QA ayrıca gerekli. |
 
 GitHub Pages geçici preview olarak yayınlanıyor: https://oguzbay-del.github.io/brewery/. GitHub Actions run #77 ve Pages deployment run #28 başarılı. Bu başarı gerçek tarayıcı görsel QA yerine geçmez. Vercel Preview yeniden kullanılabilir olduğunda ayrı QA kaydı tamamlanmadan public release kapatılmaz.
 
@@ -201,3 +201,12 @@ GitHub Pages geçici preview olarak yayınlanıyor: https://oguzbay-del.github.i
 ## 10. Değişiklik ve yayın sınırı
 
 Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da marketing-site uygulamasına açıkça devam etme onayı verdi. Ürün app/API değişikliği, calculator launch, fotoğraf satın alma/üretme, analytics ve production deployment bu onayın dışındadır. Vercel Preview ve gerçek tarayıcı QA, Vercel yeniden kullanılabilir olduğunda tamamlanacak release gate olarak kalır.
+
+
+## 7B. Responsive browser QA automation — 15 Kasım 2026
+
+- Added Playwright Chromium smoke coverage for seven key routes at 1440, 1024, 768, 390 and 320 CSS pixels.
+- Checks include HTTP success, one main landmark and H1, image alt text and successful image decoding, browser page errors, and document/body horizontal overflow.
+- Added primary navigation interaction checks at all five widths.
+- CI uploads full-page screenshots for the homepage and both audience pages at all widths, plus key technical pages at desktop and narrow mobile widths.
+- This is automated browser QA, not a substitute for human visual, keyboard, screen-reader, contrast or zoom review.
