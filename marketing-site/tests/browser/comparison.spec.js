@@ -4,8 +4,8 @@ test("comparison page explains stage labels and provides plan entry points", asy
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/compare/", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Choose the workspace that fits your brew/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View plans & pricing/i })).toHaveAttribute("href", "/brewery/pricing/");
-  await expect(page.getByRole("link", { name: /Configure a plan/i })).toHaveAttribute("href", "/brewery/get-started/");
+  await expect(page.getByRole("link", { name: /View plans & pricing/i })).toHaveAttribute("href", "/pricing/");
+  await expect(page.getByRole("link", { name: /Configure a plan/i })).toHaveAttribute("href", "/get-started/");
   await expect(page.getByText(/How to read this table/i)).toBeVisible();
   await expect(page.getByRole("table")).toHaveAccessibleName(/Comparison of planned GRISTORA product areas/i);
 });
