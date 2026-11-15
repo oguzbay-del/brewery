@@ -143,6 +143,9 @@ for (const file of htmlFiles) {
   assert(descriptionCount === 1, `${rel}: exactly one meta description`);
   const metaDescription = getMetaContent(html, "name", "description");
   assert(Boolean(metaDescription?.trim()), rel + ": meta description is not empty");
+  const robotsMeta = getMetaContent(html, "name", "robots");
+  const isCanonicalProduction = siteOrigin === "https://gristora.com";
+  assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
   if (metaDescription) {
     const length = decodeHtml(metaDescription).trim().length;
     assert(length >= 40 && length <= 220, rel + ": meta description is between 40 and 220 characters (found " + length + ")");
@@ -393,16 +396,21 @@ assert(/<details class=["']mobile-menu["']/.test(notFoundHtml), "404 page provid
 assert(/<nav aria-label=["']Mobile navigation["']/.test(notFoundHtml), "404 mobile navigation has an accessible name");
 
 const robots = await readFile(robotsPath, "utf8");
-const sitemapDirective = robots.match(/^Sitemap:\s*(\S+)\s*$/im)?.[1];
-assert(Boolean(sitemapDirective), "robots.txt references sitemap with a valid directive");
-if (sitemapDirective) {
-  try {
-    const robotsSitemapUrl = new URL(sitemapDirective);
-    assert(robotsSitemapUrl.origin === siteOrigin && robotsSitemapUrl.pathname === basePath + "/sitemap.xml", "robots.txt sitemap directive matches the generated sitemap URL");
-  } catch { failures.push("robots.txt contains an invalid sitemap URL"); }
-}
+const isCanonicalProduction = siteOrigin === "https://gristora.com";
 assert(/^User-agent:\s*\*/im.test(robots), "robots.txt declares the wildcard user agent");
-assert(/^Allow:\s*\//im.test(robots), "robots.txt explicitly allows crawling");
+if (isCanonicalProduction) {
+  const sitemapDirective = robots.match(/^Sitemap:\s*(\S+)\s*$/im)?.[1];
+  assert(Boolean(sitemapDirective), "production robots.txt references sitemap with a valid directive");
+  if (sitemapDirective) {
+    try {
+      const robotsSitemapUrl = new URL(sitemapDirective);
+      assert(robotsSitemapUrl.origin === siteOrigin && robotsSitemapUrl.pathname === basePath + "/sitemap.xml", "robots.txt sitemap directive matches the generated sitemap URL");
+    } catch { failures.push("robots.txt contains an invalid sitemap URL"); }
+  }
+  assert(/^Allow:\s*\//im.test(robots), "production robots.txt explicitly allows crawling");
+} else {
+  assert(/^Disallow:\s*\/$/im.test(robots), "preview robots.txt blocks all crawling");
+}
 
 console.log(`Static site validation: ${checks.length} checks passed, ${failures.length} failures.`);
 if (failures.length) {
