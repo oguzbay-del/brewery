@@ -8,34 +8,51 @@ const base = import.meta.env.BASE_URL;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="A technical brewing workspace for professional breweries." />
+    <meta name="description" content="Explore Demleme, brewing software in development for professional breweries, with a focus on recipe decisions and production records." />
     <title>For Professional Breweries — Demleme</title>
   </head>
   <body>
     <header class="site-header">
       <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
-      <a class="header-cta" href={`${base}#audience-paths`}>All brewing paths <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}breweries`} aria-current="page">Breweries</a><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}#approach`}>Our approach</a></nav>
+      <a class="header-cta" href="#brewery-workflows">Explore workflows <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}breweries`}>Breweries</a><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}#approach`}>Our approach</a></nav></details>
     </header>
     <main>
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR PROFESSIONAL BREWERIES</p>
-        <h1>Consistency is built <em>batch by batch.</em></h1>
-        <p>Explore a technical approach to recipe and batch information for professional brewing teams. Keep the focus on clear terminology, repeatable methods and informed review.</p>
-        <a class="button button-primary" href={`${base}#audience-paths`}>Explore Demleme <span aria-hidden="true">↗</span></a>
+        <h1>Build consistency around <em>better production records.</em></h1>
+        <p>Demleme is being developed for professional brewing teams that need a clearer view of recipe decisions, batch information and production records. Explore the intended workflow and assess whether its scope fits the way your brewery works.</p>
+        <a class="button button-primary" href="#brewery-workflows">Explore brewery workflows <span aria-hidden="true">↗</span></a>
       </section>
       <!-- IMAGE SLOT: BREWERIES-HERO | Replace placeholder with licensed documentary-style photo of a professional brewery floor or team. -->
       <section class="shell audience-hero">
         <div class="image-placeholder" data-image-slot="breweries-hero"><strong>IMAGE PLACEHOLDER · BREWERIES-HERO</strong><span>Professional brewing team, stainless vessels or a working production floor</span></div>
       </section>
-      <section class="audience-page-section section-pad">
-        <div class="shell audience-page-grid">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> BUILT AROUND THE WORK</p><h2>Make production information easier to work with.</h2><p>Professional brewing depends on repeatable methods and shared understanding. Technical information should be clear to the people who use it, from planning through batch review.</p></div>
-          <div><ul class="audience-page-list"><li>Recipe and batch information</li><li>Calculations, units and terminology</li><li>Repeatable methods and batch review</li></ul><p class="audience-page-note">Areas of focus for brewery teams — with product capabilities described only when verified.</p></div>
+      <section class="audience-page-section section-pad" id="brewery-workflows">
+        <div class="shell">
+          <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> A SHARED VIEW OF THE BATCH</p><h2>Connect the decisions <em>with the records.</em></h2><p>Professional brewing involves shared decisions across roles. Demleme's intended business workflow is organised around the information teams need to review and keep in context.</p></div>
+          <div class="audience-page-grid">
+            <div><h3>01 — Recipe review</h3><p>Understand the recipe definition and target values a team is working from.</p><h3>02 — Production planning</h3><p>Explore how approved planning information may inform work before a batch begins. Planning capabilities remain subject to product-stage confirmation.</p><h3>03 — Batch records</h3><p>Consider which planned and actual values need to be recorded and reviewed in the context of a production batch.</p></div>
+            <div><h3>04 — Fermentation and vessel observations</h3><p>Understand the intended relationship between observations, a batch and a vessel, subject to confirmed product scope.</p><h3>05 — Quality and traceability</h3><p>Explore the role of quality results, ingredient lots and their relationships. Do not assume unverified quality or traceability workflows are available.</p></div>
+          </div>
+          <p class="audience-page-note">This describes the intended workflow, not a claim that every capability is currently available. Product areas must be read with their individual development-stage labels.</p>
         </div>
       </section>
-      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={base}>Back to Demleme <span aria-hidden="true">↗</span></a></div></section>
+      <section class="technical-section">
+        <div class="shell technical-layout">
+          <div class="technical-mark" aria-hidden="true"><span>DM</span><i></i><span>03</span></div>
+          <div class="technical-copy"><p class="eyebrow"><span class="eyebrow-line"></span> FOR BREWING TEAMS</p><h2>Different roles. A clearer <em>production picture.</em></h2><p>Head brewers, production operators and quality roles ask different questions of the same batch. The product direction focuses on making recipe intent, production information and observations easier to understand together.</p><a class="text-link" href={`${base}#approach`}>Explore the technical approach <span aria-hidden="true">→</span></a></div>
+          <div class="technical-note"><span class="note-kicker">IN DEVELOPMENT</span><p>Role-based permissions, approval workflows and audit capabilities must not be assumed until explicitly confirmed.</p><span class="note-foot">DEMLEME / PROFESSIONAL BREWERIES</span></div>
+        </div>
+      </section>
+      <section class="audience-page-section section-pad">
+        <div class="shell audience-page-grid">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT SCOPE</p><h2>A brewing workspace, <em>not a general ERP.</em></h2><p>Demleme focuses on brewing-related recipe, batch and production information. It is not positioned as a system for running every part of a brewery business.</p></div>
+          <div><ul class="audience-page-list"><li>Not sales or customer order management</li><li>Not distribution or shipping management</li><li>Not keg tracking</li><li>Not CRM or accounting</li></ul><p class="audience-page-note">Evaluate Demleme against brewing workflows, not as a replacement for a general ERP or business-management system.</p></div>
+        </div>
+      </section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> PROFESSIONAL BREWERIES</p><h2>Start with the work <em>your team does.</em></h2><p>Demleme is in development. Explore the product approach and review the scope before considering a future self-service path.</p><a class="button button-primary" href={`${base}#approach`}>Understand the product approach <span aria-hidden="true">↗</span></a></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Technical brewing software for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
