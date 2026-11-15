@@ -23,6 +23,8 @@ GRISTORA is the selected public brand. Do not use Demleme in public marketing su
 
 **Hard boundary:** marketing-site only. Do not change the product application, APIs, Rust engine, data model, iOS app, internal product identifiers, product roadmap or product development queue.
 
+**ChatGPT assignment rule:** `CHATGPT-SCOPE.md` defines the separate ChatGPT workstream, forbidden product areas, website quality gates and the stop condition. It does not change Claude's product-development instructions or task queue.
+
 ## Scope
 
 - Responsive homepage.
