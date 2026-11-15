@@ -127,7 +127,7 @@ for (const file of htmlFiles) {
   assert(titleCount === 1, `${rel}: exactly one title`);
   assert(canonicalCount === 1, `${rel}: exactly one canonical`);
   assert(descriptionCount === 1, `${rel}: exactly one meta description`);
-  const metaDescription = html.match(/<meta\\s+name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1];
+  const metaDescription = html.match(/<meta\s+name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1];
   assert(Boolean(metaDescription?.trim()), `${rel}: meta description is not empty`);
   if (metaDescription) {
     const length = decodeHtml(metaDescription).trim().length;
@@ -297,7 +297,7 @@ for (const file of htmlFiles) {
       .replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim()
   );
   for (const tagName of ["a", "button", "summary"]) {
-    const pattern = new RegExp("<" + tagName + "\\b([^>]*)>([\\s\\S]*?)<\\/" + tagName + ">", "gi");
+    const pattern = new RegExp("<" + tagName + "\\b([^>]*)>([\s\\S]*?)<\\/" + tagName + ">", "gi");
     for (const [, attrs, inner] of html.matchAll(pattern)) {
       assert(hasAccessibleName(attrs, inner), rel + ": " + tagName + " has a non-empty accessible name");
     }
