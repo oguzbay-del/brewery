@@ -80,3 +80,33 @@ for (const route of ["/", "/homebrewers/", "/breweries/"]) {
     expect(dimensions.body).toBeLessThanOrEqual(720);
   });
 }
+
+
+for (const route of ["/homebrewers/", "/breweries/", "/how-it-works/"]) {
+  test(`scrollable table region has a visible keyboard focus indicator on ${route}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    let foundRegion = false;
+    let focusStyle = null;
+    for (let index = 0; index < 40; index += 1) {
+      await page.keyboard.press("Tab");
+      const focused = await page.evaluate(() => {
+        const element = document.activeElement;
+        const style = getComputedStyle(element);
+        return {
+          isRegion: element?.classList?.contains("role-table-wrap") ?? false,
+          outlineStyle: style.outlineStyle,
+          outlineWidth: style.outlineWidth,
+        };
+      });
+      if (focused.isRegion) {
+        foundRegion = true;
+        focusStyle = focused;
+        break;
+      }
+    }
+    expect(foundRegion, `Keyboard can reach the scrollable table on ${route}`).toBeTruthy();
+    expect(focusStyle.outlineStyle).toBe("solid");
+    expect(Number.parseFloat(focusStyle.outlineWidth)).toBeGreaterThanOrEqual(3);
+  });
+}
