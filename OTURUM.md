@@ -2,7 +2,7 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Latest feature merge:** `e5c1b1c4a5fbd2e98ea576aea10bd97817832d1f` (PR #112). PR #111 and #112 were manually squash-merged. No open PRs at this handoff.
+- **Latest feature merge:** `e5c1b1c4a5fbd2e98ea576aea10bd97817832d1f` (PR #112). **Current main handoff commit:** `9cd7c9d08d721120b29330ddb6145bcc512ab159`. PR #111 and #112 were manually squash-merged. No open PRs at this handoff.
 - **Social metadata:** PR #103 added metadata validation; PR #105 completed Twitter title/description on all generated routes. Runs #43698119511 and #43698364890 passed, including responsive Playwright QA.
 - **Accessibility validation:** PR #106 strengthened static checks for accessible names, ARIA references, iframe titles and safe new-tab links. Merged as `51184c08d8304f80f8d0bf9a5d2d12b8592410f3`.
 - **Sitemap / robots:** PR #109 added XML namespace/declaration, duplicate/canonical/same-origin/route target checks and exact robots sitemap validation. Merged as `18a9cfb4f7409fe9db94501e050c34e4982b8c7c`. Final CI run #43699516581 passed.
