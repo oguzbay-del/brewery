@@ -116,18 +116,18 @@ for (const file of htmlFiles) {
   assert(twitterDescriptionCount <= 1, rel + ": at most one Twitter description");
   assert(ogImageCount <= 1, rel + ": at most one Open Graph image");
   assert(twitterImageCount <= 1, rel + ": at most one Twitter image");
-  const twitterCard = html.match(/<meta\\s+name=["']twitter:card["']\\s+content=["']([^"']+)["']/)?.[1];
+  const twitterCard = html.match(/<meta\s+name=["']twitter:card["']\s+content=["']([^"']+)["']/)?.[1];
   assert(["summary", "summary_large_image"].includes(twitterCard), rel + ": Twitter card uses a supported card type");
-  const ogTitle = html.match(/<meta\\s+property=["']og:title["']\\s+content=["']([^"']+)["']/)?.[1];
-  const twitterTitle = html.match(/<meta\\s+name=["']twitter:title["']\\s+content=["']([^"']+)["']/)?.[1];
+  const ogTitle = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/)?.[1];
+  const twitterTitle = html.match(/<meta\s+name=["']twitter:title["']\s+content=["']([^"']+)["']/)?.[1];
   if (twitterTitle) assert(Boolean(twitterTitle.trim()), rel + ": Twitter title is not empty");
   if (ogTitle && twitterTitle) assert(decodeHtml(ogTitle) === decodeHtml(twitterTitle), rel + ": Twitter title matches Open Graph title");
-  const ogDescription = html.match(/<meta\\s+property=["']og:description["']\\s+content=["']([^"']+)["']/)?.[1];
-  const twitterDescription = html.match(/<meta\\s+name=["']twitter:description["']\\s+content=["']([^"']+)["']/)?.[1];
+  const ogDescription = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/)?.[1];
+  const twitterDescription = html.match(/<meta\s+name=["']twitter:description["']\s+content=["']([^"']+)["']/)?.[1];
   if (ogDescription) assert(Boolean(ogDescription.trim()), rel + ": Open Graph description is not empty");
   if (twitterDescription) assert(Boolean(twitterDescription.trim()), rel + ": Twitter description is not empty");
-  const ogImage = html.match(/<meta\\s+property=["']og:image["']\\s+content=["']([^"']+)["']/)?.[1];
-  const twitterImage = html.match(/<meta\\s+name=["']twitter:image["']\\s+content=["']([^"']+)["']/)?.[1];
+  const ogImage = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/)?.[1];
+  const twitterImage = html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/)?.[1];
   if (ogImage && twitterImage) assert(new URL(decodeHtml(ogImage), pageUrl).href === new URL(decodeHtml(twitterImage), pageUrl).href, rel + ": Twitter image matches Open Graph image");
   for (const [label, imageUrl] of [["Open Graph", ogImage], ["Twitter", twitterImage]]) {
     if (!imageUrl) continue;
