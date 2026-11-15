@@ -5,6 +5,7 @@ import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import { features } from "../../data/features";
 
 const base = import.meta.env.BASE_URL;
+const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}features/`, import.meta.env.SITE).href;
 const description = "Explore GRISTORA’s planned professional brewery workflows and product capabilities, with a separate Homebrewers path.";
 const structuredData = {
@@ -25,6 +26,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f2f2f7" />
+    <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content={description} />
