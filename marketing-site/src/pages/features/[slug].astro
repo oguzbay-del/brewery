@@ -1,5 +1,6 @@
 ---
 import "../../styles/global.css";
+import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import "../../styles/learning-pages.css";
 import "../../styles/faq-evidence.css";
 import { features, stageDescriptions } from "../../data/features";
@@ -21,6 +22,7 @@ const structuredData = {
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
 };
+const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Product", url: new URL(`${base}features/`, import.meta.env.SITE).href }, { name: feature.title, url: canonicalUrl }]);
 ---
 <!doctype html>
 <html lang="en">
@@ -39,6 +41,7 @@ const structuredData = {
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
