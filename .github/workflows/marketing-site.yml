@@ -36,3 +36,15 @@ jobs:
         run: npm run build
       - name: Validate generated routes, metadata and links
         run: npm run validate:site
+      - name: Install Chromium for responsive browser QA
+        run: npx playwright install --with-deps chromium
+      - name: Run responsive browser QA
+        run: npm run test:browser
+      - name: Upload responsive QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: marketing-responsive-qa-screenshots
+          path: marketing-site/test-results/*.png
+          if-no-files-found: ignore
+          retention-days: 14
