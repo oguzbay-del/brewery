@@ -1,5 +1,7 @@
 # Lansman, ölçüm ve karar listesi
 
+> **Commercial-priority update (15 November 2026):** Business is the primary acquisition and conversion funnel. Homebrewers is a separate secondary audience; report its metrics independently and do not blend its traffic into the primary Business conversion rate.
+
 ## Fazlar
 1. Discovery: ürün kabiliyetleri, mevcut arayüz ve tasarım sistemi eşlemesi.
 2. Information architecture: sitemap, kullanıcı akışları ve sayfa amaçları.
@@ -11,16 +13,15 @@
 
 ## Ölçüm panosu
 - Organic, direct ve referral traffic.
-- Home vs Business sayfa etkileşimi.
-- Audience bazında CTA tıklama oranı.
-- Signup start/completion.
-- İlk değer anı: first recipe / first batch.
-- Audience bazında activation.
-- Trial-to-paid veya free-to-paid.
+- Business-first acquisition: Breweries landing-page sessions, engaged visits and progression to Business feature/workflow content.
+- Business CTA click-through, then account/workspace start and completion only after real onboarding is live.
+- Business first-value milestone: first meaningful recipe or batch record; team activation and paid conversion when product/billing are live.
+- Homebrewers traffic, engagement, CTA and activation reported as a separate secondary funnel.
+- Trial-to-paid or free-to-paid only after trial/pricing and payment flows are approved and operational.
 - Ülke, cihaz ve kanal bazında dönüşüm.
 
 ## A/B test adayları
-Ana sayfa headline, audience kart sırası, CTA metni, ürün ekranı/teknik illüstrasyon ve landing page uzunluğu.
+Business-first homepage headline and CTA, Breweries-first audience-card order, Business landing-page messaging, and Homebrewers secondary-link treatment. Product screenshots remain gated by verified assets.
 
 ## Açık kararlar
 1. Fiyatlandırma, trial ve ücretsiz plan.
