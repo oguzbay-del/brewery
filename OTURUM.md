@@ -2,10 +2,11 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Main:** `0fb08a15ed0c1678853b95f7808345cacd49b0e6`; PRs #84–#89 and #91 merged. PR #90 was closed as a duplicate after its changes were rebased into #91.
+- **Main:** `1aa715d8af8699213b58ad75780397a0d1874d6f`; PRs #84–#89 and #91–#92 merged. PR #90 was closed as a duplicate after its changes were rebased into #91.
 - **Latest SEO delivery:** PR #89 aligns Homebrewers, Breweries, How It Works, Technical Principles and FAQ titles/social metadata, including matching WebPage structured-data names. CI run #43694495801 passed.
-- **Latest technical research delivery:** PR #91 adds the WP-09/WP-10 primary-source register (ASBC, NIST and UK HMRC) and indexes it. Research candidates only; no formula, calculator or publication approval is implied.
-- **Open PRs:** none at this snapshot. No product app/API/Rust or Claude queue changes.
+- **Latest technical research delivery:** PR #91 adds the WP-09/WP-10 primary-source register (ASBC, NIST and UK HMRC); PR #93 adds a gravity-measurement evidence note for WP-10. Both are research only; no formula, calculator or publication approval is implied.
+- **Latest handoff sync:** PR #92 updated the canonical status section.
+- **Open PRs:** #93 (WP-10 gravity-measurement evidence note) and #94 (SEO/social-preview readiness audit). No product app/API/Rust or Claude queue changes.
 - **Preview:** GitHub Pages is fallback preview. Vercel Preview remains blocked by the Hobby 24-hour deployment quota; avoid repeated preview attempts.
 - **Homebrewers:** recipe → ingredients/water → calculations → brew day → fermentation observations → review. Technical guides require primary sources and SME review.
 - **Business:** recipe review → production planning → batch records → vessel/fermentation observations → QC/traceability. Keep general ERP exclusions explicit; do not imply released role permissions or compliance.
