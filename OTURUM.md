@@ -735,3 +735,10 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Vercel Preview continues to fail because the Vercel Hobby build-rate limit is exhausted; this is a hosting-plan limit, not a code/build failure. GitHub Pages is the current working preview.
 - Current public original visuals: eleven SVG files plus the existing inline homepage hero illustration.
 - Remaining manual release gates: screen-reader, complete keyboard/focus review, real 200% browser zoom, contrast review of embedded SVG text, and Vercel preview verification when the build limit resets or hosting is upgraded.
+
+
+## Keyboard focus coverage — 15 Kasım 2026
+
+- Added explicit Playwright assertions that the horizontally scrollable Homebrewers, Breweries and audience-comparison tables receive a visible 3px keyboard focus outline at mobile width.
+- Updated stale homepage comments: the audience card artwork is original inline SVG, not a pending licensed-photo placeholder.
+- Branch: `qa/keyboard-focus-coverage`; CI and axe rerun pending.
