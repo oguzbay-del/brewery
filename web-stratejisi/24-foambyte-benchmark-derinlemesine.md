@@ -228,3 +228,10 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 
 
 - Follow-up axe run isolated the same scrollable-region issue on the Homebrewers record-loop table. Added a labelled focusable region there as well; final rerun required.
+
+
+## 7E. Accessibility automation results — 15 Kasım 2026
+
+- PR #71 final CI passed 60/60 browser tests: 40 responsive checks, 14 axe scans (seven routes at desktop/mobile), three keyboard interaction checks and three 720px layout proxies.
+- Axe findings remediated: hero note and footer metadata contrast now exceed 5:1; Homebrewers and Breweries horizontal tables are labelled/focusable regions with visible focus treatment.
+- Automated axe scans are clean for the covered WCAG A/AA tags. This is not a WCAG conformance certification; manual screen-reader, full keyboard, real 200% zoom and SVG text contrast review remain open.
