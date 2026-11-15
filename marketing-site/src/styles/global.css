@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=Plus+Jakarta+Sans:wght@400;500;600;650;700;800&display=swap');
 :root {
   color-scheme: light;
   --page: #F7F6F3;
@@ -373,7 +374,6 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 
 
 /* GRISTORA approved brand-board alignment — shared visual system. */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=Plus+Jakarta+Sans:wght@400;500;600;650;700;800&display=swap');
 :root {
   --radius-card: 18px;
   --radius-panel: 24px;
