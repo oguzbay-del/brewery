@@ -1,6 +1,6 @@
 # GRISTORA public marketing site — product roadmap and feature catalogue
 
-An isolated Astro + TypeScript + static-site project for the GRISTORA public marketing website. The current implementation still contains the legacy Demleme public branding until the planned rebrand work package is approved and completed.
+An isolated Astro + TypeScript + static-site project for the GRISTORA public marketing website. The current implementation is being rolled out under the GRISTORA identity. Public content remains explicit that the product is in development.
 
 ## Brand source of truth
 
@@ -19,7 +19,7 @@ Read these canonical documents before changing public brand, copy, metadata or v
 - `../web-stratejisi/43-gristora-public-homepage-copy-blueprint.md`
 - `../web-stratejisi/44-gristora-trademark-counsel-review-brief.md`
 
-GRISTORA is the selected public brand. Do not use Demleme in public marketing surfaces after WP-17 is implemented. The owner has selected the first logo design shared by the assistant as the direction to refine; it is not yet a production-approved master. See document 37 for the production/QA contract. The exact source artwork must be available before faithful vector tracing. Domain clearance remains open. Do not start the public rebrand before the identity and legal/domain gates are recorded. This repository documentation is the handoff for Claude.
+GRISTORA is the selected public brand, with the descriptor “Brewing Intelligence”. The owner selected the first logo design shared by the assistant as the direction to refine; it is not yet a production-approved master. See document 37 for the production/QA contract. Do not claim trademark or domain legal clearance. This repository documentation is the website handoff.
 
 **Hard boundary:** marketing-site only. Do not change the product application, APIs, Rust engine, data model, iOS app, internal product identifiers, product roadmap or product development queue.
 
@@ -79,7 +79,7 @@ npm run test:browser
 - The generated PNG is ignored by Git and must not be committed or edited directly. Change the SVG source and let the build regenerate it.
 - CI validates the PNG signature, exact dimensions and a 512 KiB size ceiling, then uploads the image as a short-lived artifact for visual review.
 - The approved raster uses explicit DejaVu Sans/Serif font families for consistent typography.
-- Do not wire absolute `og:image` or `twitter:image` URLs until the final public origin is approved and the image is reachable over HTTPS. Verify final-domain metadata and platform previews before release.
+- Public routes now reference the generated social-card PNG through the active site origin. Verify preview metadata and final-domain platform previews before release.
 
 ## Product content source
 
@@ -105,17 +105,17 @@ Keep the slot ID when replacing an image. Add final assets under `public/images/
 
 ## Vercel preview and production gate
 
-Vercel is currently integrated for preview. The commercial production host, plan and public domain are not approved yet. Keep the GitHub repository as the source of truth.
+Vercel is the intended preview and future production host for the marketing website only. Production deployment is deferred by owner instruction. Keep the GitHub repository as the source of truth.
 
-1. Import `oguzbay-del/brewery` into Vercel.
+1. Create a **dedicated marketing project** from `oguzbay-del/brewery`; never reuse the product's Vercel project.
 2. Set **Root Directory** to `marketing-site`.
 3. Select **Astro** as the framework preset.
-4. Use the defaults: install `npm install`, build `npm run build`, output `dist`.
+4. Use install `npm install`, build `npm run build`, output `dist`.
 5. Do not add an Astro server adapter; this site is statically generated.
-6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed. Do not repeatedly retry Preview deployments while the Hobby quota window is active; GitHub Pages is the temporary preview fallback.
-7. Only after the production host and domain are approved, connect the domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all routes before switching public traffic.
+6. Preview builds use `VERCEL_URL` for their own canonical origin. Production later uses `SITE_URL=https://gristora.com` and `SITE_BASE=/`.
+7. Production deployment and DNS are intentionally deferred. Do not configure the custom domain or switch public traffic until explicitly requested.
 
-The Astro config uses the root path for the Vercel preview and `/brewery` only for the GitHub Pages fallback. The robots and sitemap endpoints are generated at build time from the active site/base URL.
+The Astro config uses the root path for Vercel and `/brewery` only for the GitHub Pages fallback. Preview canonical URLs use `VERCEL_URL`; the future production origin is supplied through `SITE_URL`. Robots and sitemap are generated from the active site/base URL.
 
 **Plan note:** Vercel Hobby is for personal, non-commercial use. Use it for private setup/preview only; upgrade to Pro before operating this commercial marketing site publicly.
 
