@@ -44,6 +44,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Brewing Calculations & Measurement Principles | GRISTORA" />
     <meta name="twitter:description" content="Methods, units, measurements and validation—explained with their limits." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
