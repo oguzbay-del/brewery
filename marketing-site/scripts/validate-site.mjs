@@ -85,7 +85,7 @@ const siteOrigin = firstLoc ? new URL(decodeHtml(firstLoc)).origin : "https://ex
 
 const requiredRoutes = [
   "/", "/homebrewers/", "/breweries/", "/features/",
-  "/how-it-works/", "/technical-principles/", "/faq/",
+  "/how-it-works/", "/technical-principles/", "/faq/", "/pricing/", "/get-started/", "/compare/",
 ];
 for (const route of requiredRoutes) {
   const routeUrl = new URL(`${basePath}${route}`, siteOrigin);
@@ -132,6 +132,9 @@ for (const file of htmlFiles) {
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
   if (rel === "404.html") continue;
   assert(html.includes("GRISTORA"), rel + ": visible GRISTORA brand is present");
+  if (["pricing/index.html", "get-started/index.html", "compare/index.html"].includes(rel)) {
+    assert(html.includes("no account or payment") || html.includes("not live yet") || html.includes("not a statement that the product is currently available"), rel + ": commercial preview does not imply live checkout");
+  }
   assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
