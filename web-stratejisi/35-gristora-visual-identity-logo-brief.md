@@ -85,3 +85,24 @@ Her rota 1–5 arası şu ölçütlerle değerlendirilir; skorlar tasarım karar
 - Seçilen yönün SVG master'ını üret; raster export build ile türet.
 - Logo finalleşmeden marketing-site public assets ve mevcut hero kompozisyonu değiştirilmez.
 - Kullanıcı onayı olmadan tek bir logoyu final kabul etme.
+
+
+## 8. Initial concept board — 15 November 2026
+
+An initial vector exploration board is available at [assets/gristora-logo-exploration-01.svg](assets/gristora-logo-exploration-01.svg). It contains three distinct creative directions plus a combination lockup:
+
+- **A / Editorial Wordmark:** strongest premium/editorial direction; very legible and least dependent on a symbol. Needs custom letterform refinement and wordmark distinctiveness review.
+- **B / Technical Monogram:** compact G-based mark; promising for favicon and social avatar. Current sketch risks resembling generic circular/industrial marks; simplify and test silhouette.
+- **C / Grist Process:** ties more clearly to process/material and measurement. Current sketch is more abstract; test whether the symbol reads as a G and whether it stays distinct at 16 px.
+- **D / Combination:** joins a G symbol with the wordmark; useful as a system, but only if the symbol is independently strong.
+
+### Preliminary creative score (not legal clearance)
+
+| Route | Premium B2B | Small-size use | Brewing relevance | Distinctiveness potential | Current view |
+|---|---:|---:|---:|---:|---|
+| A | 5 | 4 | 2 | 4 | Best master wordmark foundation |
+| B | 4 | 5 | 3 | 3 | Best favicon/avatar direction |
+| C | 4 | 3 | 4 | 4 | Best sector/process story |
+| D | 4 | 4 | 3 | 4 | Best complete identity system if symbol is refined |
+
+Scores are subjective design hypotheses. Do not use as research findings. Next iteration should develop A, B and C separately, remove any leaf/hop-like ambiguity, test black/white and tiny sizes, and create a typographic-only option. No route is approved.
