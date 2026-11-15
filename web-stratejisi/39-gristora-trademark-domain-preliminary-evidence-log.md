@@ -27,18 +27,31 @@ Official source guidance:
 - WIPO check-availability guidance: https://www.wipo.int/en/web/madrid-system/check-availability
 - WIPO FAQ explains that absence from the Global Brand Database does not establish availability and recommends national-office searches: https://www.wipo.int/en/web/global-brand-database/faqs_branddb
 
-## 3. Third-party watch lead — not a confirmed conflict
+## 3. GISTORA / BASF — official Indonesia gazette lead and separate India index lead
 
-A third-party index surfaced a listing for the word mark **GISTORA**, shown as:
+### Indonesia — official gazette publication
+
+The Indonesian Directorate General of Intellectual Property (DGIP) official Series-A Trade Mark Gazette No. 68/P-M/I/IV/A/2026 identifies a **GISTORA** word-mark application by **BASF SE**:
+- Application number: `DID2026030217`
+- Filing/receipt date shown: 7 April 2026
+- Classes: 1, 5 and 31
+- Applicant: BASF SE, Ludwigshafen, Germany
+- Gazette publication period: 9 April 2026 – 9 June 2026
+- Official gazette PDF: https://dgip.go.id/uploads/berita_resmi/file/2879c93281a46699d12445ac5d5d5ae2.pdf
+- The gazette contents list GISTORA and the classes at PDF page 2; the individual record appears on PDF page 19.
+
+Classification: **Officially published application / watch lead**. The available gazette establishes publication, not the current post-publication status, registration, opposition outcome or enforceability. The listed goods are agricultural chemicals, pesticides and agricultural/horticultural/forestry products (Classes 1, 5 and 31), not the planned software/SaaS classes. The close spelling/phonetic resemblance still warrants counsel review; do not infer a conflict or clearance from class numbers alone.
+
+### India — separate third-party index lead
+
+A third-party index separately surfaced a listing for the word mark **GISTORA**, shown as:
 - Proprietor: BASF SE
 - Application date shown: 12 February 2026
 - Classes shown: 1, 5 and 31
 - Status shown by the third-party page: “Ready for Examination”
 - Third-party listing: https://www.quickcompany.in/trademarks/7525714-36b6-gistora
 
-Classification: **Watch / verify in official register**.
-
-This is not an official-register extract and is not a confirmed conflict with GRISTORA. The listed classes appear distinct from the initial software-focused classes, but phonetic similarity and actual goods/services overlap require official record verification and qualified counsel review. Official IP India search entry point: https://www.ipindia.gov.in/trade-marks-before-you-apply-search-existing-trademarks
+This India lead is not the same evidence as the Indonesian DGIP gazette entry. The QuickCompany listing is not an official-register extract and needs official IP India record verification. Official IP India search entry point: https://www.ipindia.gov.in/trade-marks-before-you-apply-search-existing-trademarks
 
 ## 4. Domain evidence
 
@@ -58,7 +71,8 @@ Classification: **Unknown / live registrar verification required**. Do not infer
 | GRISTORA — UK | Unknown | Search UK IPO word/phrase variants and review goods/services and status. |
 | GRISTORA — Australia | Unknown | Search IP Australia variants and image similarity when the final logo is ready. |
 | GRISTORA — WIPO/Madrid | Unknown | Search Global Brand Database and Madrid Monitor, then verify national designations. |
-| GISTORA — BASF lead | Watch / unverified | Obtain official IP India record and assess phonetic similarity and scope with counsel. |
+| GISTORA — BASF, Indonesia | Official gazette publication; current status unknown | Verify post-publication status/opposition/registration in DGIP; assess phonetic similarity and scope with counsel. |
+| GISTORA — BASF, India | Third-party index lead; official record not captured | Verify application 7525714 in IP India; do not treat QuickCompany status as authoritative. |
 | `gristora.com` | Unknown | Current ICANN/RDAP and registrar lookup. |
 | `gristora.ai`, `gristora.io` | Unknown | Current registry/registrar lookup. |
 
