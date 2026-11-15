@@ -10,11 +10,11 @@ const canonicalUrl = new URL(`${base}how-it-works/`, import.meta.env.SITE).href;
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "How Demleme is designed to work",
+  name: "How GRISTORA is designed to work",
   description: "Professional brewery workflows are the primary commercial path, with a separate homebrewing journey.",
   url: canonicalUrl,
   inLanguage: "en",
-  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
 };
 const homeSteps = [
   { title: "Recipe design", body: "Define the beer, style, ingredients, equipment and batch size.", href: "features/recipe-design/", label: "Recipe design" },
@@ -42,23 +42,25 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="theme-color" content="#f2f2f7" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="See how Demleme is designed for professional brewery workflows, with a separate homebrewing journey." />
-    <title>Professional Brewery Workflows & Homebrewing | Demleme</title>
+    <meta name="description" content="See how GRISTORA is designed for professional brewery workflows, with a separate homebrewing journey." />
+    <title>Professional Brewery Workflows & Homebrewing | GRISTORA</title>
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="Professional Brewery Workflows & Homebrewing | Demleme" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Professional Brewery Workflows & Homebrewing | GRISTORA" />
     <meta property="og:description" content="Professional brewery workflows first, with a separate homebrewing path. Both remain in development." />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Professional Brewery Workflows & Homebrewing | Demleme" />
+    <meta name="twitter:title" content="Professional Brewery Workflows & Homebrewing | GRISTORA" />
     <meta name="twitter:description" content="Professional brewery workflows first, with a separate homebrewing path. Both remain in development." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
-      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <a class="wordmark" href={base} aria-label="GRISTORA home">GRISTORA</a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a><a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a><a href={`${base}homebrewers/`} aria-current={Astro.url.pathname === `${base}homebrewers/` ? "page" : undefined}>Homebrewers</a><a href={`${base}how-it-works/`} aria-current={Astro.url.pathname === `${base}how-it-works/` ? "page" : undefined}>How it works</a><a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
       </nav>
@@ -70,7 +72,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell explain-page-hero">
         <p class="eyebrow"><span class="eyebrow-line"></span> TWO AUDIENCES · TWO WORKFLOWS · IN DEVELOPMENT</p>
         <h1>Different brewing days. <em>Clearer information.</em></h1>
-        <p>Demleme is being designed first around the decisions, measurements and records of professional brewery teams. Homebrewers have a separate workflow. Both journeys describe planned product scope, not a live service.</p>
+        <p>GRISTORA is being designed first around the decisions, measurements and records of professional brewery teams. Homebrewers have a separate workflow. Both journeys describe planned product scope, not a live service.</p>
       </section>
       <section class="explain-audience-section explain-business-section section-pad" id="business-workflow">
         <div class="shell">
@@ -79,7 +81,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <ol class="explain-flow">
             {businessSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
           </ol>
-          <div class="scope-inline"><strong>Scope boundary</strong><p>Demleme is not a general ERP. Sales, customer orders, distribution/shipping, keg tracking, CRM and accounting are outside the product scope.</p></div>
+          <div class="scope-inline"><strong>Scope boundary</strong><p>GRISTORA is not a general ERP. Sales, customer orders, distribution/shipping, keg tracking, CRM and accounting are outside the product scope.</p></div>
           <a class="text-link explain-audience-link" href={`${base}breweries/`}>Explore the Professional Breweries page <span aria-hidden="true">→</span></a>
         </div>
       </section>
@@ -121,6 +123,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
       <section class="explain-disclaimer section-pad"><div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT MATURITY</p><h2>A workflow describes <em>the design intent.</em></h2><p>All capabilities on this page are part of the product plan unless explicitly identified otherwise. They are not a statement of current availability. Development stage, technical validation and product approval determine what can be released.</p><a class="button button-primary" href={`${base}technical-principles/`}>Read the technical principles <span aria-hidden="true">↗</span></a></div></section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>GRISTORA</a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
