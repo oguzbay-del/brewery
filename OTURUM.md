@@ -2,7 +2,9 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Latest main:** `e5cea4fa5ef10ae0d930842c867ff9639226ac7a` (PR #127). PRs #113, #115, #116, #118, #119, #120, #121, #122, #124, #125, #126 and #127 are merged. **Open PRs: 0.**
+- **Homepage Business feature priority:** PR #129 moves brewery-only capabilities ahead of shared Home/Business features in the six-card homepage overview, without changing feature stages or product claims. GitHub Actions run #188 passed all build, generated-site, responsive browser QA and screenshot-artifact steps. The Vercel status remains blocked by the existing Hobby build-rate-limit gate; this is separate from GitHub Actions. Squash merge: `7e81cbdc2124fc6c5dac40f91c4de51146aa3639`.
+
+- **Latest main:** `7e81cbdc2124fc6c5dac40f91c4de51146aa3639` (PR #129, squash merge). PRs #113, #115, #116, #118, #119, #120, #121, #122, #124, #125, #126, #127, #128 and #129 are merged. **Open PRs: 0 at the time of this handoff.**
 - **Business-first regression QA:** PR #121 adds generated-HTML checks for navigation order, primary header/homepage CTA destinations, How It Works section/comparison order, Product directory and FAQ audience hierarchy, and shared feature audience-label order. CI #43702027885 passed **1,642 static checks and 78 Playwright tests**.
 - **Typed feature data:** PR #122 defines closed TypeScript unions for audience labels and roadmap stages, and types the stage-description registry against the same vocabulary.
 - **Feature catalogue integrity:** PR #125 adds build-time checks for valid/unique slugs, unique/non-empty audience and roadmap labels, and non-empty sections. CI #43702595367 passed Astro/TypeScript, static build, generated-site validation, social-card artifact generation and responsive Playwright QA.
