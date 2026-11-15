@@ -622,3 +622,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Added Playwright-based responsive browser checks and screenshot artifacts for the marketing site. PR #69 pending.
 - Nine public SVG assets and the homepage inline SVG are integrated; no photography or product UI has been introduced.
 - Automated checks are not human visual QA. Manual review of screenshots, keyboard focus, screen-reader flow, contrast and 200% zoom remains open.
+
+
+## Screenshot review finding — Business grid refinement
+
+- Inspected the first Playwright screenshot artifact across all five viewport widths.
+- The five-item Business workflow and record-model grids exposed a visually empty sixth cell because the grid container background showed through.
+- Added a Business-only card treatment with explicit gaps and borders; Homebrewer six-step grid and homepage hero remain unchanged.
+- Re-run browser QA and inspect refreshed screenshots before merge.
