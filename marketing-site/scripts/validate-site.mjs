@@ -378,11 +378,11 @@ for (const file of htmlFiles) {
 
 
 const notFoundHtml = await readFile(path.join(dist, "404.html"), "utf8");
-const notFoundDesktopNav = notFoundHtml.match(/<nav class=["']desktop-nav["'][^>]*>([\\s\\S]*?)<\\/nav>/)?.[1] || "";
+const notFoundDesktopNav = notFoundHtml.match(/<nav class=["']desktop-nav["'][^>]*>([\s\S]*?)<\/nav>/)?.[1] || "";
 const notFoundBreweriesIndex = notFoundDesktopNav.indexOf(">Breweries<");
 const notFoundHomebrewersIndex = notFoundDesktopNav.indexOf(">Homebrewers<");
 assert(notFoundBreweriesIndex >= 0 && notFoundHomebrewersIndex > notFoundBreweriesIndex, "404 page keeps Professional Breweries before Homebrewers");
-assert(/<a class=["']header-cta["'][^>]*href=["'][^"']*\\/breweries\\//.test(notFoundHtml), "404 page primary header CTA leads to Professional Breweries");
+assert(/<a class=["']header-cta["'][^>]*href=["'][^"']*\/breweries\//.test(notFoundHtml), "404 page primary header CTA leads to Professional Breweries");
 assert(/<details class=["']mobile-menu["']/.test(notFoundHtml), "404 page provides the responsive mobile navigation");
 assert(/<nav aria-label=["']Mobile navigation["']/.test(notFoundHtml), "404 mobile navigation has an accessible name");
 
