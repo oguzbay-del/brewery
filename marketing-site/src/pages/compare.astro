@@ -22,16 +22,15 @@ const rows = [
     ["Planning & scheduling", "planning-scheduling", "Homebrew MVP", "Business core"],
   ]},
   { group: "Professional operations", items: [
-    ["Inventory & ingredient lots", "inventory-lots", "Not in Home path", "Business core"],
+    ["Inventory & ingredient lots", "inventory-costing", "Not in Home path", "Business core"],
     ["Quality, laboratory & release", "quality-laboratory", "Not in Home path", "Business core"],
-    ["Team roles & approvals", "team-roles", "Not in Home path", "Business core"],
+    ["Team roles & approvals", "team-notifications", "Not in Home path", "Business core"],
     ["Production analytics", "analytics-reports", "Not in Home path", "Business second release"],
   ]},
 ];
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Function comparison", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 const structuredData = { "@context": "https://schema.org", "@type": "WebPage", name: "Homebrewer vs Professional Brewery feature comparison", description, url: canonicalUrl, inLanguage: "en", isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href } };
-const featureExists = (slug) => features.some((feature) => feature.slug === slug);
 ---
 <!doctype html>
 <html lang="en">
