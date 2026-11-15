@@ -779,3 +779,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Current preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit, not by site build/test failures.
 - Visual inventory: eleven public original SVG assets plus the existing inline homepage hero and audience-card illustrations.
 - Browser QA: 63/63 responsive, axe and keyboard tests passed. Remaining manual release gates: screen-reader, full keyboard/focus review, actual 200% browser zoom, and embedded SVG text contrast review.
+
+
+## Handoff update — PR #82 merged
+
+- Current main commit: `f584e389d5a3296f52a0656b657f1a3eb6e81f1d`.
+- PR #82 synchronized the handoff and benchmark documents after the FAQPage structured-data release.
+- Main build, static validation, 63/63 responsive/axe/keyboard tests and GitHub Pages deployment #43689298947 all succeeded on PR #80's code commit.
+- GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel preview remains blocked by the Hobby build-rate limit.
+- Remaining manual gates: screen-reader testing and real 200% browser zoom; embedded SVG text contrast review is not covered by axe's full SVG rendering analysis.
