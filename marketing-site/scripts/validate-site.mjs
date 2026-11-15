@@ -195,6 +195,38 @@ for (const file of htmlFiles) {
   assert(navTags.length > 0 && navTags.every((attrs) => /aria-label=["'][^"']+["']|aria-labelledby=["'][^"']+["']/.test(attrs)), `${rel}: navigation landmarks have accessible names`);
   const imageTags = [...html.matchAll(/<img\b([^>]*)>/g)].map((match) => match[1]);
   assert(imageTags.every((attrs) => /\balt=["'][^"']*["']/.test(attrs)), `${rel}: every image has an alt attribute`);
+  const elementTags = [...html.matchAll(/<([a-z][a-z0-9:-]*)\b([^>]*)>/gi)];
+  const idsForAria = new Set(idList);
+  for (const [, tagName, rawAttrs] of elementTags) {
+    const attrMap = Object.fromEntries([...rawAttrs.matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)].map((m) => [m[1].toLowerCase(), m[2] ?? m[3] ?? ""]));
+    for (const refAttr of ["aria-labelledby", "aria-describedby", "aria-controls", "aria-owns", "aria-details", "aria-errormessage"]) {
+      if (!attrMap[refAttr]) continue;
+      for (const refId of attrMap[refAttr].trim().split(/\s+/)) assert(idsForAria.has(refId), rel + ": " + tagName + " " + refAttr + " reference exists: " + refId);
+    }
+    if (tagName.toLowerCase() === "iframe") assert(Boolean(attrMap.title?.trim()), rel + ": iframe has a descriptive title");
+    if (attrMap.target === "_blank") assert(/\bnoopener\b/.test(attrMap.rel || "") && /\bnoreferrer\b/.test(attrMap.rel || ""), rel + ": new-tab link protects opener and referrer");
+  }
+  const hasAccessibleName = (attrs, inner) => Boolean(
+    /\baria-label(?:ledby)?\s*=|\btitle\s*=/.test(attrs) ||
+    inner.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ").replace(/&nbsp;|&#160;/g, " ")
+      .replace(/&[a-z#0-9]+;/gi, " ").replace(/\s+/g, " ").trim()
+  );
+  for (const tagName of ["a", "button", "summary"]) {
+    const pattern = new RegExp("<" + tagName + "\\b([^>]*)>([\\s\\S]*?)<\\/" + tagName + ">", "gi");
+    for (const [, attrs, inner] of html.matchAll(pattern)) {
+      assert(hasAccessibleName(attrs, inner), rel + ": " + tagName + " has a non-empty accessible name");
+    }
+  }
+  for (const [, attrs] of html.matchAll(/<input\b([^>]*)>/gi)) {
+    const type = attrs.match(/\btype=["']([^"']+)["']/i)?.[1]?.toLowerCase() || "text";
+    if (type === "hidden") continue;
+    const id = attrs.match(/\bid=["']([^"']+)["']/i)?.[1];
+    const hasLabel = id ? [...html.matchAll(/<label\b([^>]*)>/gi)].some(([, labelAttrs]) => labelAttrs.match(/\bfor=["']([^"']+)["']/i)?.[1] === id) : false;
+    const hasAria = /\baria-label(?:ledby)?\s*=/.test(attrs);
+    const hasButtonValue = ["button", "submit", "reset"].includes(type) && /\bvalue=["'][^"']+["']/.test(attrs);
+    assert(Boolean(hasLabel || hasAria || hasButtonValue), rel + ": input " + type + " has an accessible name");
+  }
   const attrs = [...html.matchAll(/\b(?:href|src)=["']([^"']+)["']/g)].map((match) => decodeHtml(match[1]));
   for (const raw of attrs) {
     if (!raw || raw.startsWith("data:") || raw.startsWith("mailto:") || raw.startsWith("tel:") || raw.startsWith("javascript:")) continue;
