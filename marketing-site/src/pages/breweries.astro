@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
 import { features } from "../data/features";
 
@@ -34,6 +35,7 @@ const faqs = [
   { q: "Are APIs, webhooks and integrations available today?", a: "No public availability claim is made. Professional open API and production-data webhooks are planned for a later Business release; Homebrew device webhook scope is separate." },
   { q: "How are roles, permissions and approvals handled?", a: "Role-based workflows and approvals appear in the product plan. Their exact behaviour and availability must be verified before they are described as supported." },
 ];
+const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Breweries", url: canonicalUrl }]);
 ---
 <!doctype html>
 <html lang="en">
@@ -55,6 +57,7 @@ const faqs = [
     <meta name="twitter:title" content="For Professional Breweries — Demleme" />
     <meta name="twitter:description" content="A clearer view of recipe decisions and production records." />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>

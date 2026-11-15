@@ -5,11 +5,21 @@
 **Kural:** Bu dosya kısa tutulur. Her anlamlı iş tamamlandığında ve oturum kapatılırken güncellenir.
 
 
+## Son devam — 15 Kasım 2026
+
+- PR #84 manuel squash merge edildi: `a94c64e5c1a9d2b6980bc6f18bcc9318de87c377`. GitHub/Vercel batch çalışma politikası `web-stratejisi/25-github-vercel-batched-deployment-policy.md` içinde kalıcı.
+- PR #84 için Vercel GitHub entegrasyonu otomatik Preview oluşturdu ve Ready bildirdi; bu, kullanıcının kota koruma hedefiyle uyumsuz otomatik entegrasyon davranışı. Gelecek işlerde Preview tetiklememek için PR açmadan önce değişiklikleri tek batch'te biriktir. Vercel proje ayarları/production deployment davranışı kullanıcı onayı olmadan değiştirilmez.
+- PR #85 açık: `seo/breadcrumb-structured-data-batch`. Sayfa şablonları için Schema.org BreadcrumbList verisi ve statik validator kontrolleri eklendi; merge edilmedi.
+- Yeni doğrulama: tüm iç sayfaların BreadcrumbList içermesi, öğe pozisyonlarının sıralı olması ve son URL'nin canonical URL ile eşleşmesi.
+- GitHub Actions Marketing site checks run #114: **success** — Astro/TypeScript, static build, route/metadata/link/BreadcrumbList validation ve Playwright responsive browser QA; **63/63 test geçti**. Screenshot artifact #14152667630 yüklendi. Bu değişiklik görsel düzeni değiştirmedi.
+- PR #85 için Vercel Preview, `api-deployments-young-hobby-team-24h` build-rate-limit hatasıyla başarısız; bu GitHub Actions/site build hatası değildir. Vercel ayarlarına dokunulmadı. GitHub Pages yalnız main push'ta deploy olur.
+
+
 ## Güncel yayın durumu — 15 Kasım 2026
 
 - **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
 - **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
-- **Main güncel commit:** `8d8826bdf9e574fc24bfbe30cded127ef2c3e1c5` (PR #67 editorial illustration package merged).
+- **Main güncel commit:** `a94c64e5c1a9d2b6980bc6f18bcc9318de87c377` (PR #84 batched GitHub/Vercel policy merged).
 - **Görsel yaklaşımı:** Kullanıcı, konuya uygun çok sayıda özgün grafik/görsel üretimini onayladı. Öncelik özel SVG diyagramlar ve açıklayıcı veri grafikleri; gerektiğinde özgün editoryal illüstrasyonlar. Stok fotoğraf yok; mevcut homepage hero görseli ayrıca onay alınmadan değiştirilmez.
 - **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
 

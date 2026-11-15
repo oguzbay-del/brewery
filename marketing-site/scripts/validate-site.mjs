@@ -118,6 +118,19 @@ for (const file of htmlFiles) {
     assert(canonical.origin === siteOrigin && canonical.pathname === pageUrl.pathname, rel + ": canonical URL matches page path");
     if (ogUrl) assert(new URL(decodeHtml(ogUrl), siteOrigin).href === canonical.href, rel + ": Open Graph URL matches canonical");
   }
+  if (pagePath !== "/") {
+    const jsonLdBlocks = [...html.matchAll(/<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
+    const breadcrumb = jsonLdBlocks.map((block) => { try { return JSON.parse(block); } catch { return null; } }).find((item) => item?.["@type"] === "BreadcrumbList");
+    assert(Boolean(breadcrumb), rel + ": BreadcrumbList structured data exists");
+    if (breadcrumb) {
+      const items = breadcrumb.itemListElement || [];
+      assert(items.length >= 2 && items.every((item, index) => item["@type"] === "ListItem" && item.position === index + 1 && typeof item.name === "string" && typeof item.item === "string"), rel + ": breadcrumb items have ordered names and URLs");
+      const breadcrumbUrls = items.map((item) => { try { return new URL(item.item); } catch { return null; } });
+      assert(breadcrumbUrls.every((url) => url?.origin === siteOrigin), rel + ": breadcrumb URLs are absolute and stay on the site origin");
+      assert(breadcrumbUrls[0]?.href === new URL(`${basePath}/`, siteOrigin).href, rel + ": first breadcrumb points to the site home");
+      assert(items.at(-1)?.item === pageUrl.href, rel + ": final breadcrumb points to the canonical page URL");
+    }
+  }
   const jsonLd = html.match(/<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/)?.[1];
   assert(Boolean(jsonLd), rel + ": JSON-LD structured data exists");
   if (jsonLd) {

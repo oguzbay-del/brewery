@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
 import "../styles/learning-pages.css";
 
@@ -29,6 +30,7 @@ const businessSteps = [
   { title: "Vessel observations", body: "Keep fermentation and vessel observations in context with the batch. Automated predictions remain gated.", href: "features/fermentation-monitoring/", label: "Fermentation & tracking" },
   { title: "Quality and traceability", body: "Relate quality results and material lots to the production record, subject to product and regulatory validation.", href: "features/quality-laboratory/", label: "Quality & laboratory" },
 ];
+const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "How it works", url: canonicalUrl }]);
 ---
 <!doctype html>
 <html lang="en">
@@ -48,6 +50,7 @@ const businessSteps = [
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="How It Works — Demleme" />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>

@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
 import { features } from "../data/features";
 
@@ -30,6 +31,7 @@ const faqs = [
   { q: "Can I connect a fermentation device?", a: "Device connectivity is part of the product plan. Supported devices, setup instructions and availability will be stated only after implementation and validation." },
   { q: "Can I import or export my existing recipes?", a: "Recipe import and export formats are described in the roadmap. Compatibility and conversion behaviour must be verified before a format is advertised as supported." },
 ];
+const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Homebrewers", url: canonicalUrl }]);
 ---
 <!doctype html>
 <html lang="en">
@@ -51,6 +53,7 @@ const faqs = [
     <meta name="twitter:title" content="For Homebrewers — Demleme" />
     <meta name="twitter:description" content="A more considered approach to every brew." />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
