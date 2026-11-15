@@ -9,8 +9,8 @@
 
 - **Hosting:** Vercel aktif preview/dağıtım hedefi; GitHub Pages yedek yayın. Ticari/public launch henüz yapılmadı.
 - **Vercel adresi:** https://brewery-rho.vercel.app (mevcut site preview/deployment adresi).
-- **Main güncel commit:** `b88b7d0a86dac3f4db9b88bd773d8800c4cf0c03` (WP-13 implementation status updated).
-- **Fotoğraflar:** Kullanıcı henüz fotoğraf sağlamadı. Yeni fotoğraf üretme, stok fotoğraf seçme veya otomatik görsel ekleme. Beş `data-image-slot` alanı ve SVG/yer tutucular korunacak; yalnız kullanıcı varlığı/izniyle değiştirilecek.
+- **Main güncel commit:** `85547a0a4cd33d2209a6dee9b32b7b764d3904d1` (PR #63 visual library phase 2 merged).
+- **Görsel yaklaşımı:** Kullanıcı, konuya uygun çok sayıda özgün grafik/görsel üretimini onayladı. Öncelik özel SVG diyagramlar ve açıklayıcı veri grafikleri; gerektiğinde özgün editoryal illüstrasyonlar. Stok fotoğraf yok; mevcut homepage hero görseli ayrıca onay alınmadan değiştirilmez.
 - **Görsel QA:** Gerçek masaüstü/mobil tarayıcı QA henüz tamamlanmış değil. CI build başarısı görsel QA yerine geçmez.
 
 
@@ -19,7 +19,7 @@
 
 - Kullanıcı, Vercel çalışmasa da marketing-site kod işlerinin GitHub üzerinden sürdürülmesini ve Vercel geri geldiğinde Preview/browser QA yapılmasını açıkça onayladı.
 - Geçici preview: https://oguzbay-del.github.io/brewery/ — Pages build ve statik validator başarılı; bu URL'nin gerçek tarayıcı render QA'sı henüz yapılmadı.
-- Vercel Preview, Hobby build-rate-limit nedeniyle hâlâ failure. Bu nedenle Vercel görsel QA ertelendi; public release gate olarak korunuyor.
+- PR #63 Vercel Preview kontrolü başarılı ve geri bildirim sayısı sıfır; GitHub Pages deploy #62 sonrası başarılı. Gerçek masaüstü/tablet/mobil görsel QA henüz yapılmadı ve public release gate olarak korunuyor.
 - PR #52 merge: Business için Recipe version → Batch record → Ingredient lots → Vessel events → Quality records ilişkisini anlatan, aşama etiketli record model.
 - PR #53 merge: Homebrewer için Recipe/targets → Ingredients/water → Brew-day actuals → Fermentation observations → Tasting/review kayıt döngüsü.
 - PR #57 merge: duplicate ID, tek H1/main landmark, skip-link, nav accessible name ve image alt attribute statik smoke kontrolleri; README içindeki hatalı literal \\n satır sonları düzeltildi.
@@ -557,4 +557,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Technical Principles now presents fermentation, target-vs-actual and measurement-source visuals in a responsive gallery.
 - Added `web-stratejisi/21-visual-asset-library.md` with visual classes, asset inventory, evidence rules, accessibility and publication checklist.
 - No product UI, live integration, real batch data, brewing advice or unapproved capability claim is implied.
-- Branch: `design/visual-library-phase-2`; CI and responsive browser QA required before merge.
+- PR #63 merged to main after successful Astro/TypeScript, build and static route/metadata/link validation. GitHub Pages deployment for the merge is queued; responsive browser QA remains pending.
+
+
+## Handoff update — PR #63 merged
+
+- Main commit: `85547a0a4cd33d2209a6dee9b32b7b764d3904d1`.
+- PR #62 and #63 are merged. Main now contains five original SVG visuals and the visual asset library guide.
+- PR #63 CI passed; GitHub Pages deployment run #43684298501 and main checks run #43684298471 were queued at the time of this handoff update.
+- Vercel PR preview: `https://brewery-git-design-visual-library-phase-2-demleme.vercel.app/`; Vercel preview comment check passed, but actual browser QA has not been completed.
+- Next: complete visual asset backlog in small batches, then run full responsive/browser/accessibility QA before release.
