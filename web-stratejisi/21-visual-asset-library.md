@@ -1,6 +1,6 @@
 # Demleme visual asset library and publishing rules
 
-**Status:** Active visual direction; individual product screenshots, photography and analytical examples require separate approval.
+**Status:** Active. Nine original public SVG assets plus the homepage's inline editorial SVG are integrated. Product screenshots and photography require separate approval.
 
 ## Purpose
 
@@ -11,8 +11,8 @@ Use original visuals to make brewing workflows, technical concepts and data rela
 - Editorial and technical, with warm off-white surfaces, charcoal typography and restrained amber accents.
 - Simple geometry, clear labels, generous whitespace and consistent line weights.
 - Prefer custom SVG for diagrams and simple charts: responsive, lightweight, crisp at every viewport and accessible through title, description, alt text and a nearby caption.
-- Use original photographic or rendered illustrations selectively for emotional/product context; do not use generic stock imagery.
-- Keep the homepage hero illustration unchanged unless separately approved.
+- Use original illustrations selectively for emotional/product context; do not use generic stock imagery.
+- Keep the homepage hero artwork visually unchanged unless separately approved.
 
 ## Approved visual classes
 
@@ -24,16 +24,15 @@ Use original visuals to make brewing workflows, technical concepts and data rela
 | Measurement diagrams | Explain manual, instrument and connected-device source differences | Do not imply every source or integration is currently supported |
 | Equipment / ingredient illustrations | Add relevant editorial context | Original assets only; no implied product functionality |
 | Product screenshots | Demonstrate actual UI | Capture from approved build only; verify feature availability and redact personal/customer data |
+| Photography | Add genuine brewery/homebrew context | Original or properly licensed assets only; no stock imagery without approval |
 
-## Initial asset inventory
-
-| Asset | Page | Status |
-|---|---|---|
-| Homebrewing workspace illustration | Homebrewers hero | Added, original editorial vector artwork |
-| Professional brewery vessels illustration | Breweries hero | Added, original editorial vector artwork |
+## Current asset inventory
 
 | Asset | Page | Status |
 |---|---|---|
+| Homepage brewing kettle / hydrometer / grain illustration | Home | Existing inline SVG, retained unchanged visually |
+| Homebrewing workspace illustration | Homebrewers | Added, original editorial vector artwork |
+| Professional brewery vessels illustration | Breweries | Added, original editorial vector artwork |
 | Homebrewing learning loop | How it works | Added, illustrative workflow |
 | Professional brewery record relationships | How it works | Added, conceptual planned model |
 | Fermentation profile example | Technical principles | Added, simulated values |
@@ -44,10 +43,9 @@ Use original visuals to make brewing workflows, technical concepts and data rela
 
 ## Next visual backlog
 
-1. Fermentation observation timeline: gravity, temperature and notes with explicit source and timestamp context; simulated examples only.
+1. Fermentation observation timeline: gravity, temperature and notes with explicit source and timestamp context; simulated values only. Avoid implying live device integration.
 2. Equipment calibration record: instrument, calibration date, reference method and status; do not depict model-driven recommendations as available.
-1. Equipment calibration record: instrument, calibration date, reference method and status; do not depict model-driven recommendations as available.
-2. Additional ingredient and equipment editorial illustrations only where they add context; avoid decorative repetition.
+3. Product screenshots only after an approved, functioning product build exists and each depicted capability is confirmed.
 
 ## Publication checklist
 
