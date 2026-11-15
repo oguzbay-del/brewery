@@ -218,6 +218,49 @@ for (const file of htmlFiles) {
   assert((html.match(/<h1(?:\s|>)/g) || []).length === 1, `${rel}: exactly one primary heading`);
   assert((html.match(/<main(?:\s|>)/g) || []).length === 1, `${rel}: exactly one main landmark`);
   assert(/<a[^>]*class=["']skip-link["'][^>]*href=["']#main-content["']/.test(html), `${rel}: skip link targets main content`);
+  const desktopNav = html.match(/<nav class=["']desktop-nav["'][^>]*>([\s\S]*?)<\/nav>/)?.[1] || "";
+  const breweriesNavIndex = desktopNav.indexOf(">Breweries<");
+  const homebrewersNavIndex = desktopNav.indexOf(">Homebrewers<");
+  assert(breweriesNavIndex >= 0 && homebrewersNavIndex > breweriesNavIndex, rel + ": Professional Breweries precedes Homebrewers in desktop navigation");
+
+  const headerCta = html.match(/<a class=["']header-cta["'][^>]*href=["']([^"']+)["']/)?.[1];
+  if (pagePath !== "/breweries/") {
+    const headerCtaPath = headerCta ? new URL(headerCta, pageUrl).pathname : "";
+    assert(headerCtaPath.endsWith("/breweries/"), rel + ": primary header CTA leads to Professional Breweries");
+  }
+
+  if (pagePath === "/") {
+    const primaryCta = html.match(/<a class=["']button button-primary["'][^>]*href=["']([^"']+)["']/)?.[1];
+    const primaryCtaPath = primaryCta ? new URL(primaryCta, pageUrl).pathname : "";
+    assert(primaryCtaPath.endsWith("/breweries/"), "homepage primary CTA leads to Professional Breweries");
+  }
+
+  if (pagePath === "/how-it-works/") {
+    const businessSectionIndex = html.indexOf('id="business-workflow"');
+    const homeSectionIndex = html.indexOf('id="home-workflow"');
+    const comparison = html.match(/<table class=["']role-table audience-comparison-table["']>([\s\S]*?)<\/table>/)?.[1] || "";
+    const businessColumnIndex = comparison.indexOf(">Professional Breweries<");
+    const homeColumnIndex = comparison.indexOf(">Homebrewers<");
+    assert(businessSectionIndex >= 0 && homeSectionIndex > businessSectionIndex, "How It Works presents Professional Breweries before Homebrewers");
+    assert(businessColumnIndex >= 0 && homeColumnIndex > businessColumnIndex, "audience comparison presents Professional Breweries first");
+  }
+
+  if (pagePath === "/features/") {
+    assert(html.includes("professional brewery workflows") && html.includes("distinct Homebrewers path"), "product directory copy establishes Business-first hierarchy and separate Homebrewers path");
+  }
+
+  if (pagePath === "/faq/") {
+    assert(html.includes("primary commercial audience") && html.includes("distinct secondary audience"), "FAQ states primary and secondary audience priority");
+  }
+
+  if (pagePath.startsWith("/features/")) {
+    const featureTags = html.match(/<div class=["']feature-tags["']>([\s\S]*?)<\/div>/)?.[1] || "";
+    const breweryTagIndex = featureTags.indexOf(">Breweries<");
+    const homeTagIndex = featureTags.indexOf(">Homebrewers<");
+    if (breweryTagIndex >= 0 && homeTagIndex >= 0) {
+      assert(breweryTagIndex < homeTagIndex, rel + ": shared feature labels list Breweries before Homebrewers");
+    }
+  }
   const navTags = [...html.matchAll(/<nav\b([^>]*)>/g)].map((match) => match[1]);
   assert(navTags.length > 0 && navTags.every((attrs) => /aria-label=["'][^"']+["']|aria-labelledby=["'][^"']+["']/.test(attrs)), `${rel}: navigation landmarks have accessible names`);
   const imageTags = [...html.matchAll(/<img\b([^>]*)>/g)].map((match) => match[1]);
