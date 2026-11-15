@@ -127,6 +127,12 @@ for (const file of htmlFiles) {
   assert(titleCount === 1, `${rel}: exactly one title`);
   assert(canonicalCount === 1, `${rel}: exactly one canonical`);
   assert(descriptionCount === 1, `${rel}: exactly one meta description`);
+  const metaDescription = html.match(/<meta\\s+name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1];
+  assert(Boolean(metaDescription?.trim()), `${rel}: meta description is not empty`);
+  if (metaDescription) {
+    const length = decodeHtml(metaDescription).trim().length;
+    assert(length >= 40 && length <= 220, `${rel}: meta description is between 40 and 220 characters (found ${length})`);
+  }
   const ogTitleCount = (html.match(/property=["']og:title["']/g) || []).length;
   const ogDescriptionCount = (html.match(/property=["']og:description["']/g) || []).length;
   const ogUrlCount = (html.match(/property=["']og:url["']/g) || []).length;
@@ -151,8 +157,16 @@ for (const file of htmlFiles) {
   if (ogTitle && twitterTitle) assert(decodeHtml(ogTitle) === decodeHtml(twitterTitle), rel + ": Twitter title matches Open Graph title");
   const ogDescription = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/)?.[1];
   const twitterDescription = html.match(/<meta\s+name=["']twitter:description["']\s+content=["']([^"']+)["']/)?.[1];
-  if (ogDescription) assert(Boolean(ogDescription.trim()), rel + ": Open Graph description is not empty");
+  if (ogDescription) {
+    assert(Boolean(ogDescription.trim()), rel + ": Open Graph description is not empty");
+    const length = decodeHtml(ogDescription).trim().length;
+    assert(length >= 30 && length <= 220, rel + ": Open Graph description is between 30 and 220 characters (found " + length + ")");
+  }
   assert(Boolean(twitterDescription?.trim()), rel + ": Twitter description is not empty");
+  if (twitterDescription) {
+    const length = decodeHtml(twitterDescription).trim().length;
+    assert(length >= 30 && length <= 220, rel + ": Twitter description is between 30 and 220 characters (found " + length + ")");
+  }
   const ogImage = html.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/)?.[1];
   const twitterImage = html.match(/<meta\s+name=["']twitter:image["']\s+content=["']([^"']+)["']/)?.[1];
   if (ogImage && twitterImage) assert(new URL(decodeHtml(ogImage), pageUrl).href === new URL(decodeHtml(twitterImage), pageUrl).href, rel + ": Twitter image matches Open Graph image");
