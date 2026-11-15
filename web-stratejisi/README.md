@@ -46,3 +46,5 @@ Discovery → sitemap → wireframe → görsel tasarım → içerik → gelişt
 
 27. [WP-09 / WP-10 teknik içerik birincil kaynak kaydı](27-wp09-wp10-primary-source-register.md)
 30. [WP-10 fermentation sample handling evidence](30-wp10-fermentation-sample-handling-evidence.md)
+28. [WP-10 gravity measurement evidence note](28-wp10-gravity-measurement-evidence-note.md)
+31. [Measurement record provenance — conceptual data contract](31-measurement-record-provenance-concept.md)
