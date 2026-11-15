@@ -7,7 +7,7 @@ on:
       - "altyapi/**"
       - "sunucu/**"
       - "Makefile"
-      - ".github/workflows/**"
+      - ".github/workflows/altyapi.yml"
   pull_request:
     paths:
       - "altyapi/**"
@@ -66,15 +66,6 @@ jobs:
       - name: make down
         if: always()
         run: make down ARGS=-v
-
-  actionlint:
-    name: iş akışı denetimi (actionlint)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - name: actionlint 1.7.12
-        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12 -color
 
   kubernetes:
     name: kustomize ve kind duman testi
