@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="620" viewBox="0 0 540 310" role="img" aria-labelledby="title desc">
+<title id="title">GRISTORA — Brewing Intelligence, light background draft</title>
+<desc id="desc">Light-background draft of the selected GRISTORA emblem and stacked wordmark, using forest green and amber. Final owner approval is pending.</desc>
+<g fill="#0B2F26">
+  <path d="M322 22H251C218 22 195 49 195 85c0 35 25 64 58 65v-21c-21-2-36-20-36-43 0-24 18-41 40-41h42c10 0 19-7 23-23Z"/>
+  <text x="29" y="248" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="66" font-weight="500" letter-spacing="8.2">GRISTORA</text>
+</g>
+<g fill="#F4A261">
+  <path d="M261 68h64c-1 14-12 22-25 22h-39c3-11 9-18 17-22Z"/>
+  <path d="M262 112c10-12 21-17 36-17l-36 32Z"/>
+  <path d="M263 150c5-17 21-36 41-50l18-3c-2 23-22 49-43 53Z"/>
+  <text x="50" y="293" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="10.55">BREWING INTELLIGENCE</text>
+</g>
+</svg>
