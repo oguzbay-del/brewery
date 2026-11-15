@@ -67,6 +67,8 @@ const audiences = [
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="GRISTORA — Brewing software for professional breweries" />
     <meta name="twitter:description" content="Brewing software in development for professional breweries, with a separate path for homebrewers." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
