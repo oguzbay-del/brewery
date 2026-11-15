@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
 import { features } from "../data/features";
@@ -35,7 +36,8 @@ const faqs = [
   { q: "Are APIs, webhooks and integrations available today?", a: "No public availability claim is made. Professional open API and production-data webhooks are planned for a later Business release; Homebrew device webhook scope is separate." },
   { q: "How are roles, permissions and approvals handled?", a: "Role-based workflows and approvals appear in the product plan. Their exact behaviour and availability must be verified before they are described as supported." },
 ];
-const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Breweries", url: canonicalUrl }]);
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Breweries", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 ---
 <!doctype html>
 <html lang="en">
@@ -80,6 +82,7 @@ const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, i
         </nav></details>
     </header>
     <main id="main-content">
+      <Breadcrumbs items={breadcrumbItems} />
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR PROFESSIONAL BREWERIES · IN DEVELOPMENT</p>
         <h1>From recipe review to <em>production records.</em></h1>
