@@ -111,6 +111,8 @@ const activeNavigation = [
   { route: "/how-it-works/", href: "/how-it-works/" },
   { route: "/technical-principles/", href: "/technical-principles/" },
   { route: "/faq/", href: "/faq/" },
+  { route: "/pricing/", href: "/pricing/" },
+  { route: "/compare/", href: "/compare/" },
   { route: "/features/", href: "/features/" },
   { route: "/features/recipe-design/", href: "/features/" },
 ];
