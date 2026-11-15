@@ -1,46 +1,52 @@
-# Self-service ticari akış
+# Self-service ticari akış ve paket seçimi
 
 ## Ticari öncelik
-**Professional Breweries (Business) birincil ticari segmenttir.** Ana sayfa, içerik mimarisi, edinim kanalları ve ürün değerlendirme hunisi öncelikle bağımsız küçük/orta ölçekli bira üreticilerine göre düzenlenir. Homebrewers ayrı bir ikincil audience ve ürün yoludur; Business ile eşit ticari öncelikte değildir.
+**Professional Breweries birincil ticari segmenttir.** Homebrewers ayrı ve tam bir ürün yolu olarak korunur; ana sayfa, edinim ve Business dönüşüm hiyerarşisi Professional Breweries'i öne çıkarır.
 
-## Prensip
-Ziyaretçi ürünü kendi başına keşfeder, iş akışının uygunluğunu değerlendirir ve ürün erişimi açıldığında kendi kendine başlar. Demo satış sürecinin varsayılan adımı değildir. Satış görüşmesi gerektiren kurumsal ihtiyaçlar için ileride ayrı bir destek yolu değerlendirilebilir; mevcut olmayan iletişim veya demo akışı varmış gibi gösterilmez.
+## Keşiften satın almaya hedef yolculuk
+1. **Discover:** Search/content entry → homepage veya ilgili audience page.
+2. **Understand:** `/breweries/` veya `/homebrewers/` üzerinden hedef kitle ve workflow seçimi.
+3. **Evaluate:** `/features/`, `/compare/`, How It Works, Technical Principles ve FAQ.
+4. **Configure:** `/pricing/` plan özetinden `/get-started/` adım adım plan sihirbazına.
+5. **Review:** Kullanıcı tipi, koltuk sayısı, ödeme dönemi, önerilen indirim ve deneme süresinin özeti.
+6. **Checkout:** Gelecek faz. Şimdilik gerçek hesap açma, trial başlatma, kart verisi veya ödeme yok.
+7. **Activate/convert:** Yalnız ürün onboarding ve billing altyapısı gerçek anlamda devreye girdikten sonra.
 
-## Birincil Business funnel
-Professional brewery araması / içerik girişi → Breweries landing page → recipe, production ve batch workflow açıklaması → kapsam, ürün aşaması ve sınırların değerlendirilmesi → ürün erişimi açıldığında self-service account/workspace oluşturma → ilk anlamlı recipe/batch kaydı → ekip aktivasyonu → paket/ödeme.
+## Paket mimarisi
+- **Homebrewer:** 1 kullanıcı; 3 aylık deneme süresi planlanıyor.
+- **Professional Brewery:** en az 5 kullanıcı; 5'erli artışlarla 5 / 10 / 15 / 20 kullanıcı; 1 aylık deneme süresi planlanıyor.
+- **20 üzeri kullanıcı:** standart self-service koltuk seçimi yerine özel teklif ve e-posta iletişimi. Genel satış e-posta adresi yayına çıkmadan önce yapılandırılmalı.
+- Her iki segment: aylık, yıllık, 2 yıllık ve 3 yıllık dönem seçimi.
+- Sihirbazda gösterilecek önerilen indirim: aylık %0, yıllık %15, 2 yıllık %25, 3 yıllık %35. Bunlar nihai sözleşme değil, launch pricing önerisidir.
 
-Ürün hesabı henüz canlı değilken funnel keşif ve değerlendirme aşamasında biter. CTA yalnız gerçek sayfalara yönelir; sahte kayıt, trial, satın alma, demo veya waitlist oluşturulmaz.
+## Fiyat ve ödeme durumu
+Önceki FoamByte benchmark'ı (WP-13) Free/Plus plan yapısı ve fiyat/plan/billing şeffaflığına dikkat çeker; repoda doğrulanmış rakip fiyat tutarları bulunmaz. Bu nedenle Home aylık fiyatı ve Business kullanıcı başı aylık fiyatı uydurulmaz. Para birimi, vergi/VAT, çok yıllı peşin ödeme/yenileme, iptal ve iade kuralları sahibi tarafından onaylanana kadar tutar gösterilmez.
 
-## İkincil Home funnel
-Homebrewers sayfası → Home modunun recipe-to-batch learning loop'unu anlama → ilgili teknik rehber veya doğrulanmış ücretsiz araç → ürün erişimi açıldığında self-service başlangıç → ilk recipe ve batch değerlendirmesi.
+Ödeme niyeti kredi/banka kartı olarak gösterilir; ancak provider SDK, kart alanı, tokenizasyon, checkout, abonelik, tahsilat, trial entitlement veya webhook bu website-only iş paketine dahil değildir. Site üzerinde konfigürasyon önizlemesi, gerçek satın alma gibi sunulmaz.
 
-Home içerikleri organik arama ve ürün topluluğu için değerlidir; Business edinim mesajını veya ana sayfa önceliğini gölgelememelidir.
+## Fonksiyon karşılaştırması
+`/compare/` Home ve Business kapsamını aynı tabloda gösterir. Her satır canonical feature detail sayfasına gider. Aşama etiketleri mevcut feature catalogue ile tutarlı olmalı; "Homebrew MVP" ve "Business core" canlı kullanılabilirlik anlamına gelmez. `/features/` detay kapsamının kaynağı olmaya devam eder.
 
-## Ana sayfa ve navigasyon önceliği
-- Hero birincil CTA: **Explore professional breweries** → `/breweries/`.
-- İkincil metin bağlantısı: **For homebrewers** → `/homebrewers/`.
-- Audience kartlarında Breweries ilk sırada ve birincil görsel hiyerarşide; Homebrewers ikinci sırada.
-- Header'da Breweries, Homebrewers'tan önce görünür.
-- Genel CTA, ürün erişimi yokken **Explore breweries** veya **Explore Business workflows** gibi gerçek bir bilgi hedefine gider.
-- Gerçek self-service onboarding açıldığında CTA **Get started with Business** olarak güncellenebilir; hedef URL ve onboarding doğrulanmadan değiştirilmez.
+## Site hiyerarşisi
+- Ana navigasyonda Pricing erişilebilir.
+- Pricing sayfasında iki ayrı plan kartı, deneme süresi, ödeme dönemi ve proposed discount görünür.
+- Pricing ve wizard içinden function comparison bağlantısı bulunur.
+- Breweries ve Homebrewers audience sayfaları kendi plan yapılandırma yoluna yönlendirir.
+- Business birincil commercial CTA olarak kalır; Home yolu gizlenmez.
 
-## Açık ticari kararlar
-- Ücretsiz plan ve trial olacak mı?
-- Home ve Business ayrı paket mi?
-- Kullanıcı, workspace, batch veya özellik limitleri neler?
-- Aylık/yıllık ödeme ve para birimleri?
-- Ödeme sağlayıcısı, vergi/fatura kapsamı?
-- İade, iptal ve destek politikası?
-- Business onboarding hangi adımları self-service tamamlayabilir; hangi adımlar insan desteği gerektirir?
+## Ürün olgunluğu / güven
+GRISTORA in development. Plan, trial, checkout, account ve ödeme işlemleri canlı değildir. Fiyatlandırma sayfaları ürün özelliği, müşteri, SLA, güvenlik sertifikası veya ödeme sağlayıcısı iddiası üretmez. Site yalnızca plan seçimi ve kullanıcı niyetini gösteren statik bir preview sağlar.
 
-Bu kararlar verilmeden fiyat, paket ve ödeme akışı kesinleştirilmez.
+## Sonraki fazlar
+- **Website (current):** pricing page, audience chooser, seat selector, term discounts, summary, compare table, responsive/accessible QA.
+- **Product/Billing (future, separate):** auth, workspace creation, trial start/expiry, seat entitlements, subscription state, payment provider, card security/3DS, tax, invoices, cancellation, refunds, renewals, webhook reconciliation and support.
+- **Launch operations:** approved price list, contact email, terms/privacy, currency/tax, jurisdiction review and app URL.
 
-## CTA standardı
-- Birincil mevcut CTA: Explore professional breweries / Explore Business workflows.
-- İkincil mevcut CTA: Explore Homebrewing.
-- Ürün erişimi doğrulandığında: Get started with Business / Create Business account.
-- İkincil ürün keşfi: Explore features / Review product scope.
-- Book a demo varsayılan CTA değildir ve gerçek, onaylı bir süreç olmadan kullanılmaz.
-
-## Dönüşüm ölçümü
-Business ana metrikleri: Breweries landing-page girişleri, Business CTA tıklamaları, ürün erişimi açıldığında hesap/workspace başlatma ve tamamlama, ilk recipe/batch, ekip aktivasyonu ve ücretli dönüşüm. Home funnel ayrı raporlanır. Analitik ve consent mevzuata uygun tasarlanır; sağlayıcı ve event toplama kullanıcı onayı olmadan eklenmez.
+## Açık owner decisions
+1. Home aylık tutar ve Business kullanıcı başı aylık tutar.
+2. %15 / %25 / %35 indirimlerin onayı ve hesaplama temeli.
+3. USD/GBP ve diğer para birimi politikası, VAT/sales tax gösterimi.
+4. 2/3 yıllık dönemlerin peşin mi yıllık mı tahsil edileceği; yenileme ve fiyat sabitleme.
+5. Trial başlangıcı, kart zorunluluğu, deneme sonunda ücretli dönüşüm ve iptal.
+6. 20+ kullanıcı için yayınlanacak sales e-posta adresi.
+7. Ödeme sağlayıcısı, 3DS/SCA, iade, fatura ve abonelik yaşam döngüsü.
