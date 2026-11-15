@@ -4,12 +4,12 @@
 - This is the fixed visual direction for WP-16. Do not ask the owner to repeat the clarification or upload the artwork again. Do not ask them to choose among the later six exploration variants.
 - The shared reference is https://chatgpt.com/s/m_6af9ac3f07e48191aa8504a2e22a77a9. The GitHub connector cannot retrieve its rendered image; do not guess which later SVG concept is equivalent or fabricate a trace and label it faithful.
 - Continue preparatory brand-system work; exact vector tracing is pending access to the original rendered reference, not pending owner preference.
-- PR #147 contains the preference record and current preparation docs. Branch `marketing/gristora-preferred-logo-direction` is 10 commits ahead of `main`, 0 behind (latest commit `4f43b0885f731fdc288026f43355bfd6736769ce`).
-- Added production/QA specification `web-stratejisi/37-gristora-logo-production-and-qa.md` and public-site implementation map `web-stratejisi/38-gristora-public-site-brand-implementation-map.md`; indexed both in `web-stratejisi/README.md` and updated the marketing-site handoff and WP-17 plan.
-- The first PR CI run (#219 / `43717341183`) has passed dependency install, Astro/TypeScript, static build, generated route/metadata/link validation and social preview artifact generation; responsive browser QA is still running. Vercel preview remains blocked by the existing 24-hour Hobby deployment quota.
+- PR #147 was manually squash-merged after its Marketing Site Checks run passed; merge commit: `e34a379370495a68ddcfd1d760a6f9800f50e66b`. No GitHub auto-merge was enabled.
+- Added production/QA specification `web-stratejisi/37-gristora-logo-production-and-qa.md`, public-site implementation map `web-stratejisi/38-gristora-public-site-brand-implementation-map.md`, and preliminary trademark/domain evidence log `web-stratejisi/39-gristora-trademark-domain-preliminary-evidence-log.md`; indexed all in `web-stratejisi/README.md` and updated the marketing-site handoff and WP-17 plan.
+- PR CI run #219 (`43717341183`) completed successfully, including dependency install, Astro/TypeScript, static build, generated route/metadata/link validation, social preview artifact generation and responsive browser QA. Vercel preview was separately blocked by the existing 24-hour Hobby deployment quota; no preview deployment is claimed.
 - The exact source image remains inaccessible to the repo integration; no logo geometry has been invented and no production master has been approved.
 - Scope remains public GRISTORA brand and marketing website only. Do not rename or modify the product application, APIs, Rust engine, iOS app, internal identifiers, data model, roadmap or product development queue.
-- Merge manually only after review and required checks; no GitHub auto-merge.
+- PR #147 is merged. WP-16 and WP-17 are not complete: exact logo tracing, owner approval, legal/domain clearance and live-site implementation remain open.
 
 ---
 
