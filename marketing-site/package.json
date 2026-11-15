@@ -7,13 +7,15 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "validate:site": "node scripts/validate-site.mjs"
+    "validate:site": "node scripts/validate-site.mjs",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "astro": "^7.4.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "@playwright/test": "1.65.1",
     "typescript": "^5.9.3"
   }
 }
