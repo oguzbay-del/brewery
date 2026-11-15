@@ -21,7 +21,7 @@ export const features: FeaturePage[] = [
     title: "Recipe design & management",
     eyebrow: "RECIPES",
     summary: "From a guided first recipe to a deeply configurable professional formulation, Demleme is planned around recipes that stay understandable from version to version.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
       { heading: "Start the way that suits you", intro: "Four entry points lead into one consistent recipe workflow.", items: ["Start from a blank recipe with style- and target-led ingredient suggestions", "Use style-based starter templates and adapt them to your equipment and batch size", "Copy an existing recipe or create a deliberate new version", "Import BeerXML, BeerJSON, BeerSmith .bsmx, Brewfather and Brewer's Friend exports with ingredient, equipment, style and unit matching"] },
@@ -35,7 +35,7 @@ export const features: FeaturePage[] = [
     title: "Brewing calculations",
     eyebrow: "THE CALCULATION ENGINE",
     summary: "A shared, server-side calculation engine is planned for the web and Apple apps, with clear inputs, consistent units and an explanation behind every result.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core", "Business second release"],
     sections: [
       { heading: "Core recipe calculations", intro: "The product plan specifies a broad calculation set for formulation and review.", items: ["Original and final gravity (OG / FG), apparent attenuation and alcohol by volume (ABV)", "Bitterness (IBU), including Tinseth as the default, late additions, whirlpool and hop-stand behaviour", "Colour estimates with selectable calculation approach", "Mash-temperature and yeast-tolerance adjustments to fermentation estimates", "Batch, kettle, trub and volume-chain calculations"] },
@@ -50,7 +50,7 @@ export const features: FeaturePage[] = [
     title: "Water, mash & yeast",
     eyebrow: "PROCESS DESIGN",
     summary: "Plan water chemistry, mash steps and yeast preparation as connected parts of the recipe rather than isolated calculators.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP"],
     sections: [
       { heading: "Water profiles", intro: "Build a water profile from source water and a target style or recipe.", items: ["Save source-water and target-water profiles", "Enter a laboratory water report and manage ion concentrations", "Calculate salt additions and acid adjustments", "Review ion balance, hardness and regional hardness units", "Compare water profiles and retain the report used for a recipe"] },
@@ -63,7 +63,7 @@ export const features: FeaturePage[] = [
     title: "Brew day & production records",
     eyebrow: "BREW DAY",
     summary: "A brew-day workspace is planned to keep the recipe plan separate from what actually happened, while remaining usable beside wet equipment and paper records.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
       { heading: "A guided brew-day timeline", intro: "Move through a clear sequence on phone, tablet or web.", items: ["Full-screen step-by-step iPhone workflow and a detailed iPad/web step list", "Optional timers, start/finish controls and editable actual times", "Next-step guidance, target values and measurement entry", "Apple Live Activity, Dynamic Island and time-sensitive notifications planned for supported devices", "Multiple batches can run at the same time"] },
@@ -76,7 +76,7 @@ export const features: FeaturePage[] = [
     title: "Fermentation & batch tracking",
     eyebrow: "FERMENTATION",
     summary: "Follow each batch from brew day through fermentation, conditioning and packaging, using device readings or manual measurements.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
       { heading: "A complete batch timeline", intro: "Each brew has its own record and stage history.", items: ["Track planned, brewing, fermenting, conditioning, ready-to-package, packaged and closed stages", "Run multiple batches and fermenters concurrently", "Keep measurements, notes, photos and events on the batch timeline", "Compare plan and actual values in the batch summary", "Record tasting notes and use them to inform future recipe work"] },
@@ -91,7 +91,7 @@ export const features: FeaturePage[] = [
     title: "Equipment & calibration",
     eyebrow: "EQUIPMENT",
     summary: "Equipment profiles are intended to reflect the real behaviour of a home setup or professional brewhouse, and improve through measured batch outcomes.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
       { heading: "Equipment profiles", intro: "Set up the equipment that shapes every calculation.", items: ["Guided equipment setup for a first profile", "Mash tun, kettle, fermenter and packaging vessel details", "Volume losses, grain absorption, evaporation, dead space and cooling shrinkage", "Multiple brewhouses and vessel profiles for business workspaces", "Equipment-specific recipe scaling and efficiency assumptions"] },
@@ -104,7 +104,7 @@ export const features: FeaturePage[] = [
     title: "Planning & scheduling",
     eyebrow: "PLAN THE WORK",
     summary: "Plan backwards from a target packaging date, understand the time required for each step and see how batches fit around equipment availability.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core", "Business second release"],
     sections: [
       { heading: "Calendar and backward planning", intro: "Work from the date you want the beer ready.", items: ["Plan brew day, fermentation steps, dry hop, cooling and packaging dates", "Schedule reminders from fermentation profiles", "Estimate heating and cooling time from power, volume and cooling equipment", "Use past equipment performance to improve timing estimates", "Business tank calendar with capacity and occupancy conflict warnings"] },
@@ -117,7 +117,7 @@ export const features: FeaturePage[] = [
     title: "Inventory, ingredients & costing",
     eyebrow: "MATERIALS AND COST",
     summary: "Manage ingredients from a simple home stock list to professional lot-level traceability, with recipe and batch costs grounded in actual material values.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core", "Business second release"],
     sections: [
       { heading: "Ingredient library", intro: "A shared ingredient catalogue supports recipe design and purchasing.", items: ["Malt, fermentables, hops, yeast, water and miscellaneous ingredients", "Detailed ingredient properties and custom ingredients", "Ingredient substitutions and stock-aware recipe planning", "Ingredient-specific units and regional display", "Custom malt analysis and certificate of analysis (COA) in business mode"] },
@@ -171,7 +171,7 @@ export const features: FeaturePage[] = [
     title: "Teams, roles & notifications",
     eyebrow: "PEOPLE AND WORKFLOWS",
     summary: "One workspace supports a solo brewer and a multi-role production team, with notifications routed to the right person and actions recorded.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
       { heading: "Home and business workspaces", intro: "The workspace chooses Home or Business mode without splitting the underlying recipe and batch history.", items: ["Select a mode during onboarding and change it later in workspace settings", "Home mode keeps advanced business fields out of the way", "Optional invitations to collaborate on a recipe or batch in Home mode", "Switching modes preserves recipes and history; hidden business records are not deleted"] },
@@ -184,7 +184,7 @@ export const features: FeaturePage[] = [
     title: "Connected devices & integrations",
     eyebrow: "CONNECTED BREWING",
     summary: "The roadmap starts with read-only fermentation device data and grows towards professional sensor and industrial gateway support.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business second release", "Later"],
     sections: [
       { heading: "Homebrewing devices", intro: "Connect common fermentation monitors through dedicated adapters.", items: ["Tilt hydrometers, iSpindel and RAPT devices", "Webhook data endpoint for TiltBridge, Pitch and compatible bridges", "Device-specific keys that can be renewed", "Device-to-batch pairing and calibration records", "Detect missing, frozen or implausible sensor readings"] },
@@ -197,7 +197,7 @@ export const features: FeaturePage[] = [
     title: "Import, export & brewing tools",
     eyebrow: "PORTABILITY AND UTILITIES",
     summary: "Bring existing recipe work into Demleme, move your data out when needed and use focused brewing tools alongside recipe and batch workflows.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Homebrew second release"],
     sections: [
       { heading: "Recipe portability", intro: "The plan includes import paths for established brewing formats.", items: ["BeerXML and BeerJSON import/export", "BeerSmith .bsmx import", "Brewfather and Brewer's Friend recipe exports", "Ingredient, equipment, style and unit matching during import", "Show source-versus-Demleme calculation differences before saving"] },
@@ -210,7 +210,7 @@ export const features: FeaturePage[] = [
     title: "Platform, security & data ownership",
     eyebrow: "PLATFORM",
     summary: "The product is planned as one connected system across Apple devices and desktop web, with a shared server-side engine and explicit data ownership controls.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
       { heading: "Where Demleme is designed to run", intro: "The product plan defines different roles for each client.", items: ["iPad: full-featured native SwiftUI app", "iPhone: brew day, fermentation, stock and shopping workflows, plus recipe viewing and simple editing", "Web: full-featured React and TypeScript experience for Mac and PC browsers", "Apple Watch is not in the first release; optional support may be considered later", "Android and separate Mac/Windows desktop apps are not in scope"] },
@@ -226,7 +226,7 @@ export const features: FeaturePage[] = [
     title: "Reports, insights & sustainability",
     eyebrow: "REPORTING AND INSIGHTS",
     summary: "The roadmap includes operational reporting and carefully bounded analytical tools, with estimates presented as guidance rather than automatic decisions.",
-    audiences: ["Homebrewers", "Breweries"],
+    audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core", "Business second release", "Under consideration"],
     sections: [
       { heading: "Batch and recipe learning", intro: "Use actual results to understand repeatability.", items: ["Plan-versus-actual batch summary and tasting notes", "Compare batches made from the same recipe", "Fermentation finish estimates and model-driven equipment calibration suggestions remain under consideration pending analytical model approval", "Homebrew second-release trends for gravity, efficiency and tasting scores", "Explainable estimates with confidence ranges are under consideration and require analytical model approval and validation"] },
