@@ -111,3 +111,10 @@ for (const route of ["/homebrewers/", "/breweries/", "/how-it-works/"]) {
     expect(Number.parseFloat(focusStyle.outlineWidth)).toBeGreaterThanOrEqual(3);
   });
 }
+
+test("reduced-motion preference disables smooth scrolling", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const scrollBehavior = await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior);
+  expect(scrollBehavior).toBe("auto");
+});
