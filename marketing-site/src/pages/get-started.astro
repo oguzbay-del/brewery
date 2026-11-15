@@ -94,6 +94,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <label><input type="radio" name="seats" value="10" /><span>10 <small>users</small></span></label>
                 <label><input type="radio" name="seats" value="15" /><span>15 <small>users</small></span></label>
                 <label><input type="radio" name="seats" value="20" /><span>20 <small>users</small></span></label>
+                <label><input type="radio" name="seats" value="20+" /><span>20+ <small>contact</small></span></label>
               </fieldset>
               <div class="contact-tier" id="contact-tier" hidden><strong>More than 20 people?</strong><p>We’ll prepare a tailored team option. The direct email contact will be published before launch.</p><span>20+ users · contact required</span></div>
               <p class="step-helper"><a href={`${base}compare/`}>Review the Home and Brewery function comparison</a>.</p>
@@ -111,6 +112,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <label><input type="radio" name="term" value="three-year" /><span><strong>3 years</strong><small>Three-year commitment</small><b>35% saving</b></span></label>
               </fieldset>
               <div class="trial-note" id="trial-note">Your planned trial duration will appear here.</div>
+              <div class="contact-tier" id="custom-billing" hidden><strong>Custom team plan</strong><p>For teams above 20, billing terms and pricing are prepared individually. The contact email will be published before launch.</p></div>
               <p class="step-helper">Discounts are proposed and subject to final price and contract approval.</p>
             </section>
 
@@ -157,25 +159,25 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           $("#wizard-next").disabled = step === 4;
           $("#home-seat").hidden = state.audience !== "home";
           $("#business-seats").hidden = state.audience !== "business";
-          $("#contact-tier").hidden = true;
+          $("#contact-tier").hidden = state.seats !== "20+";\n          $("#custom-billing").hidden = state.seats !== "20+";\n          form.querySelector(".billing-options").hidden = state.seats === "20+";
           $("#seat-description").textContent = state.audience === "home" ? "The Home plan is designed for one individual brewer." : "Choose the number of people who need a seat.";
           $("#trial-note").textContent = state.audience === "home" ? "Your Home plan includes a proposed three-month introductory trial." : "Your Professional Brewery plan includes a proposed one-month introductory trial.";
           $("#summary-audience").textContent = state.audience ? (state.audience === "home" ? "Homebrewer" : "Professional Brewery") : "Choose a path";
-          $("#summary-seats").textContent = state.audience === "home" ? "1 user" : state.audience === "business" ? state.seats + " users" : "—";
+          $("#summary-seats").textContent = state.audience === "home" ? "1 user" : state.audience === "business" ? (state.seats === "20+" ? "20+ · custom quote" : state.seats + " users") : "—";
           $("#summary-term").textContent = termNames[state.term];
           $("#summary-discount").textContent = discounts[state.term];
           $("#review-audience").textContent = state.audience === "home" ? "Homebrewer" : "Professional Brewery";
-          $("#review-seats").textContent = state.audience === "home" ? "1 user" : state.seats + " users";
+          $("#review-seats").textContent = state.audience === "home" ? "1 user" : (state.seats === "20+" ? "20+ users · custom quote" : state.seats + " users");
           $("#review-term").textContent = termNames[state.term];
           $("#review-discount").textContent = discounts[state.term];
           $("#review-trial").textContent = state.audience === "home" ? "3 months (planned)" : "1 month (planned)";
-          $("#wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
+          $("#wizard-next").disabled = step === 4 || (step === 1 && !state.audience);\n          $("#wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Configuration preview complete" : "Continue →";
           $("#wizard-feedback").textContent = "";
         };
         form.querySelectorAll('input[name="audience"]').forEach((input) => input.addEventListener("change", () => { state.audience = input.value; update(); }));
         form.querySelectorAll('input[name="seats"]').forEach((input) => input.addEventListener("change", () => { state.seats = input.value; update(); }));
         form.querySelectorAll('input[name="term"]').forEach((input) => input.addEventListener("change", () => { state.term = input.value; update(); }));
-        $("#wizard-next").addEventListener("click", () => { if (step < 4) { step += 1; update(); document.querySelector(".wizard-step:not([hidden]) h2")?.focus?.(); } });
+        $("#wizard-next").addEventListener("click", () => { if (step < 4) { step = step === 2 && state.seats === "20+" ? 4 : step + 1; update(); document.querySelector(".wizard-step:not([hidden]) h2")?.focus?.(); } });
         $("#wizard-back").addEventListener("click", () => { if (step > 1) { step -= 1; update(); } });
         if (state.audience) { const selected = form.querySelector('input[name="audience"][value="' + state.audience + '"]'); if (selected) selected.checked = true; }
         update();
