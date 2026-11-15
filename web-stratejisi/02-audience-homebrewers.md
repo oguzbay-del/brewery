@@ -1,4 +1,7 @@
-# Audience 1 — Homebrewers
+# Audience — Homebrewers (secondary audience)
+
+## Audience priority
+Homebrewers is a distinct secondary audience and product path. Professional Breweries (Business) is the primary commercial market and receives homepage, acquisition and conversion priority. This page remains a complete Home-specific journey.
 
 ## Kitle
 Evde bira üreten bireyler: yeni başlayanlar, deneyimli homebrewers ve teknik olarak derinleşmek isteyen ileri seviye kullanıcılar.
@@ -24,16 +27,16 @@ Destek mesajları:
 - Learn from measured results and improve the next batch.
 
 ## Landing page akışı
-1. Hero: evde bira için net fayda ve Get started CTA.
+1. Hero: evde bira için net fayda ve Homebrewers keşif CTA'sı.
 2. Reçete tasarımı.
 3. Hesaplama güveni ve sonuçların açıklanması.
 4. Demleme günü planlama ve ölçüm kaydı.
 5. Reçete sürümleri/parti geçmişi — yalnız doğrulanırsa.
-6. Onboarding ve self-service CTA.
+6. Ürün erişimi açıldığında self-service onboarding; erişim açılana kadar yalnız gerçek bilgi hedeflerine giden CTA.
 7. FAQ: platform, çevrimdışı kullanım, veri aktarımı ve fiyat.
 
 ## Görsel yön
 Kişisel ama çocukça olmayan; ev tipi ekipman, malzeme detayları, reçete ve ölçüm görselleri. Profesyonel tesis görselleri ana görsel dil olmamalı.
 
 ## CTA
-Birincil: **Get started**. İkincil: **Explore brewing features**.
+Bu audience sayfasındaki CTA: **Explore homebrewing**. Ürün erişimi açılana kadar Get started, trial veya kayıt vaadi verilmez. Business ana ticari CTA'sıdır.
