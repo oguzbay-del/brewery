@@ -3,7 +3,7 @@ import "../styles/global.css";
 import "../styles/pricing.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
-import { features } from "../data/features";
+import { features, type FeatureAudience } from "../data/features";
 
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
@@ -28,7 +28,7 @@ const rows = [
     ["Production analytics", "analytics-reports"],
   ]},
 ];
-const stageFor = (slug, audience) => {
+const stageFor = (slug: string, audience: FeatureAudience) => {
   const feature = features.find((item) => item.slug === slug);
   if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
   const stages = feature.stages.filter((stage) => audience === "Homebrewers" ? stage.startsWith("Homebrew") || stage === "Later" || stage === "Under consideration" : stage.startsWith("Business") || stage === "Later" || stage === "Under consideration");
