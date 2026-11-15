@@ -1,9 +1,11 @@
 # Site haritası ve sayfa briefleri
 
+> **Commercial hierarchy (15 November 2026):** Professional Breweries (Business) is the primary commercial audience. Homebrewers (Home) remains a distinct secondary audience. The homepage, navigation, content investment and primary CTA lead with Breweries. This note supersedes older equal-priority language in this early architecture draft.
+
 ## Önerilen sitemap
 - `/` — Ana sayfa
-- `/homebrewing` — Homebrewers landing page
-- `/breweries` — Professional Breweries landing page
+- `/breweries/` — primary commercial landing page for Professional Breweries
+- `/homebrewers/` — distinct secondary Homebrewers landing page
 - `/platform` — Ortak teknik kabiliyetler
 - `/calculations` — Hesaplama yaklaşımı
 - `/features` — Doğrulanmış özellik kataloğu
@@ -15,7 +17,7 @@
 - `/login` ve `/app` — uygulamaya geçiş
 
 ## Ana sayfa
-Amaç: beş saniyede ürünü anlatmak ve ziyaretçiyi doğru audience sayfasına yönlendirmek. Bölümler: header, hero, Home/Breweries kartları, ortak teknik faydalar, ürün ekranları, hesaplama güveni, kaynaklar, FAQ, final CTA.
+Amaç: beş saniyede ürünü anlatmak ve ziyaretçiyi doğru audience sayfasına yönlendirmek. Bölümler: header, Business-first hero, Breweries/Homebrewers kartları, ortak teknik faydalar, ürün ekranları, hesaplama güveni, kaynaklar, FAQ, final CTA.
 
 ## Homebrewing sayfası
 Ev üreticilerinin ihtiyaçlarına, örneklerine, ev tipi ekipman görsellerine ve Home modunda başlangıca odaklanır.
@@ -36,4 +38,4 @@ Paket, fiyat, trial, ödeme sağlayıcısı ve limitler henüz karara bağlanmad
 Eğitici içerik ve organik arama. Herkese açık tarif paylaşım topluluğu vaat edilmez.
 
 ## Navigasyon
-Product, Homebrewers, Breweries, Resources, Pricing, Sign in. Pricing hazır değilse menüden çıkar. Mobilde iki audience seçimi kolay erişilebilir olmalı.
+Product, Breweries, Homebrewers, Resources. Pricing and Sign in remain hidden until real commercial and account destinations are approved. Business is listed first; Homebrewers remains directly accessible.
