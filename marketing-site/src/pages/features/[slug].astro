@@ -1,5 +1,6 @@
 ---
 import "../../styles/global.css";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import "../../styles/learning-pages.css";
 import "../../styles/faq-evidence.css";
@@ -22,7 +23,8 @@ const structuredData = {
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
 };
-const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Product", url: new URL(`${base}features/`, import.meta.env.SITE).href }, { name: feature.title, url: canonicalUrl }]);
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Product", url: new URL(`${base}features/`, import.meta.env.SITE).href }, { name: feature.title, url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 ---
 <!doctype html>
 <html lang="en">
@@ -64,8 +66,8 @@ const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, i
         </nav></details>
     </header>
     <main id="main-content">
+      <Breadcrumbs items={breadcrumbItems} />
       <section class="feature-detail-hero shell">
-        <a class="feature-back-link" href={`${base}features/`}>← All product areas</a>
         <p class="eyebrow"><span class="eyebrow-line"></span> {feature.eyebrow} · PRODUCT ROADMAP</p>
         <h1>{feature.title}</h1>
         <p class="feature-lead">{feature.summary}</p>
