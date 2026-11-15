@@ -10,7 +10,8 @@ if (!/<svg\b[^>]*\bwidth=["']1200["'][^>]*\bheight=["']630["']/.test(svg)) {
 }
 const renderer = new Resvg(svg, {
   fitTo: { mode: "original" },
-  font: { loadSystemFonts: true },
+  font: { loadSystemFonts: true, defaultFontFamily: "DejaVu Sans" },
+  textRendering: 1,
 });
 const png = renderer.render().asPng();
 if (png.length === 0) throw new Error("Social card renderer returned an empty PNG");
