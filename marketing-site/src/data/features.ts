@@ -254,6 +254,7 @@ export const stageDescriptions: Record<FeatureStage, string> = {
   "Later": "Listed as a later possibility in the product plan; not part of the initial release.",
   "Under consideration": "A research idea only. It is not an approved product commitment."
 };
+
 const seenFeatureSlugs = new Set<string>();
 for (const feature of features) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(feature.slug)) {
@@ -273,4 +274,3 @@ for (const feature of features) {
     throw new Error(`Feature ${feature.slug} must have non-empty content sections`);
   }
 }
-
