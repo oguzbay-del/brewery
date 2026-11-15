@@ -35,7 +35,7 @@ The shared stylesheet exposes these as CSS custom properties. Keep contrast stro
 - `public/social-card-source.svg`: editable 1200×630 social preview source.
 - `public/social-card.png`: generated during build from the SVG; do not edit or commit generated output.
 - Public routes use the generated social card for Open Graph and Twitter previews.
-- Current text wordmark in navigation is a typographic fallback while the selected logo vector awaits approval.
+- Navigation uses a compact preview of the selected emblem beside the GRISTORA wordmark. The emblem is a first-pass vector reconstruction and remains subject to owner review; do not treat it as the approved production master.
 
 ## Claims and maturity
 
