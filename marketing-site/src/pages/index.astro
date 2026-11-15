@@ -3,7 +3,9 @@ import "../styles/global.css";
 import "../styles/home-hero-refinement.css";
 import { features } from "../data/features";
 
-const featuredAreas = features.slice(0, 6);
+const businessSpecificAreas = features.filter((feature) => feature.audiences.length === 1 && feature.audiences.includes("Breweries"));
+const sharedBusinessAreas = features.filter((feature) => feature.audiences.length > 1 && feature.audiences.includes("Breweries"));
+const featuredAreas = [...businessSpecificAreas, ...sharedBusinessAreas].slice(0, 6);
 
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(base, import.meta.env.SITE).href;
@@ -286,7 +288,7 @@ const audiences = [
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT, IN DEPTH</p>
             <h2>More than recipes. <em>A connected brewing workflow.</em></h2>
-            <p>Explore the planned product areas—from calculations and brew day to fermentation, inventory and professional production.</p>
+            <p>Explore the planned Business capabilities first, including production, quality and materials, followed by shared recipe and brewing workflows.</p>
           </div>
           <div class="audience-feature-grid">
             {featuredAreas.map((feature) => (
