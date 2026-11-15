@@ -355,3 +355,18 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .breadcrumbs [aria-current="page"] { color: var(--ink); font-weight: 600; }
 .breadcrumbs a:focus-visible { outline: 2px solid #0066cc; outline-offset: 3px; border-radius: 2px; }
 @media (max-width: 620px) { .breadcrumbs { padding-top: 12px; padding-bottom: 6px; font-size: 10px; } .breadcrumbs li + li::before { margin-inline: 7px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
