@@ -370,3 +370,60 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
     scroll-behavior: auto !important;
   }
 }
+
+
+/* GRISTORA approved brand-board alignment — shared visual system. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&family=Plus+Jakarta+Sans:wght@400;500;600;650;700;800&display=swap');
+:root {
+  --radius-card: 18px;
+  --radius-panel: 24px;
+  --radius-control: 999px;
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --display: "Plus Jakarta Sans", "Inter", sans-serif;
+}
+body { font-family: var(--sans); }
+h1, h2 { font-family: var(--display); font-weight: 650; letter-spacing: -1.2px; }
+h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; }
+.site-header { background: var(--page); }
+.wordmark { gap: 11px; }
+.brand-symbol { width: 34px; height: 42px; }
+.wordmark-text { font-family: var(--display); font-weight: 700; letter-spacing: 2.4px; }
+.header-cta { border-radius: var(--radius-control); padding: 12px 21px; }
+.button, .hero-actions .hero-secondary { border-radius: var(--radius-control); }
+.hero { overflow: hidden; padding-inline: clamp(26px, 4vw, 54px); border-radius: var(--radius-panel); background: var(--forest); color: var(--page); }
+.hero h1 { font-family: var(--display); font-weight: 650; letter-spacing: -1.8px; }
+.hero h1 em { font-family: var(--serif); font-weight: 400; }
+.hero-intro { color: #e1e9e4; }
+.hero-note { color: #e1d8c9; }
+.hero-art { border-radius: var(--radius-card); background: #eee9df; }
+.audience-image, .audience-hero-art, .image-placeholder { border-radius: var(--radius-card); }
+.audience-card, .feature-card, .workflow-card, .explain-flow-item, .principle-card,
+.stage-grid article, .plan-card, .wizard-main, .wizard-summary, .choice-card,
+.principle-grid, .feature-card-grid, .audience-feature-link, .faq-directory-aside,
+.feature-roadmap-aside, .visual-diagram, .audience-page-note, .pricing-status,
+.compare-stage-key, .role-table-wrap, .record-model-stage {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+.audience-grid, .feature-card-grid, .workflow-grid, .explain-flow,
+.principle-grid, .stage-grid { gap: 16px; border: 0; background: transparent; }
+.feature-card, .workflow-card, .explain-flow-item, .principle-card, .stage-grid article {
+  border: 1px solid var(--line);
+}
+.feature-card { padding: 30px; }
+.audience-copy h3, .feature-card h2, .workflow-card h3, .principle-card h2 {
+  font-family: var(--display); font-weight: 650; letter-spacing: -.5px;
+}
+.plan-card { border-radius: var(--radius-panel); }
+.plan-grid { gap: 20px; }
+.plan-card .button { border-radius: var(--radius-control); }
+.billing-grid { gap: 12px; border: 0; }
+.billing-grid article { border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); }
+.scope-inline, .audience-page-note, .faq-directory-aside { border-radius: var(--radius-card); }
+.technical-section { background: var(--forest); }
+.closing-section { background: #eee9df; }
+.site-footer { background: var(--page); }
+@media (max-width: 760px) {
+  .hero { margin-inline: 12px; padding-inline: 22px; border-radius: 20px; }
+  .audience-grid, .feature-card-grid, .workflow-grid, .explain-flow, .principle-grid, .stage-grid { gap: 12px; }
+}
