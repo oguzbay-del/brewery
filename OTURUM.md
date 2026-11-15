@@ -2,14 +2,15 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Main:** `bfa813c44920ac54ae6cf49ccde82ef9052ed95c`; PRs #84–#88 merged. PR #88 CI run #126 passed: Astro/TypeScript, static build, route/metadata/link validation and responsive Playwright QA; screenshot artifact #14153827059.
-- **Latest delivery:** Homebrewers and Brewery pages now have descriptive search/social titles and audience-specific closing CTAs into their matching How It Works sections.
-- **Active branch:** `seo/core-page-search-intent` improves titles for How It Works, Technical Principles and FAQ. No product app/API/Rust or Claude queue changes.
+- **Main:** `0fb08a15ed0c1678853b95f7808345cacd49b0e6`; PRs #84–#89 and #91 merged. PR #90 was closed as a duplicate after its changes were rebased into #91.
+- **Latest SEO delivery:** PR #89 aligns Homebrewers, Breweries, How It Works, Technical Principles and FAQ titles/social metadata, including matching WebPage structured-data names. CI run #43694495801 passed.
+- **Latest technical research delivery:** PR #91 adds the WP-09/WP-10 primary-source register (ASBC, NIST and UK HMRC) and indexes it. Research candidates only; no formula, calculator or publication approval is implied.
+- **Open PRs:** none at this snapshot. No product app/API/Rust or Claude queue changes.
 - **Preview:** GitHub Pages is fallback preview. Vercel Preview remains blocked by the Hobby 24-hour deployment quota; avoid repeated preview attempts.
 - **Homebrewers:** recipe → ingredients/water → calculations → brew day → fermentation observations → review. Technical guides require primary sources and SME review.
 - **Business:** recipe review → production planning → batch records → vessel/fermentation observations → QC/traceability. Keep general ERP exclusions explicit; do not imply released role permissions or compliance.
 - **WP-09 gate:** no public calculator until method/version, authoritative sources, independent golden vectors, boundary/unit/locale/rounding tests, product parity and explicit public-use approval pass.
-- **WP-10 gate:** Learn/technical guides remain held until primary sources, worked examples, limitations, reviewer role and product-stage approval are recorded.
+- **WP-10 gate:** Learn/technical guides remain held until primary sources, worked examples, limitations, reviewer role and product-stage approval are recorded. PR #91 is source discovery, not SME or product approval.
 - **Commercial decisions open:** app URL/sign-in/registration; production domain/hosting; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots.
 - **Social preview:** SVG source exists, but no OG/Twitter image metadata is wired; raster export and platform compatibility still need validation.
 - **Manual QA remains open:** real screen-reader testing, full human keyboard/focus review, actual 200% zoom/reflow and SVG internal-text contrast. Automated checks do not replace these.
