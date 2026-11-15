@@ -1,5 +1,17 @@
 ## CANONICAL CURRENT STATUS — 15 November 2026
 
+## GRISTORA brand handoff — 15 November 2026
+
+- User selected **GRISTORA** as the public brand. Use **Brewing Intelligence** as the proposed category descriptor.
+- Public branding must not use the Demleme name. This is a marketing-site brand decision only; it does not rename or alter the software, product app, internal identifiers, API, Rust engine, iOS app or product roadmap.
+- Created canonical docs: `web-stratejisi/33-gristora-brand-platform.md`, `34-gristora-brand-architecture.md`, `35-gristora-visual-identity-logo-brief.md`, `36-gristora-public-site-rebrand-plan.md`.
+- WP-15 brand platform/architecture is active; WP-16 logo exploration is next; WP-17 public marketing-site rebrand follows the logo and legal/domain gates; WP-18 final public-domain launch QA follows.
+- Logo options are not designed or approved yet. Prepare at least three distinct routes and variants; do not pick a final logo without user review.
+- No marketing-site source files or product software files have been changed in this documentation-only batch.
+- Work branch: `marketing/gristora-brand-foundation`. Create a PR and merge manually only after relevant checks and review. Do not use GitHub auto-merge.
+- Next task: logo exploration board, using the canonical logo brief. Do not start WP-17 yet.
+
+
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
 - **Professional Breweries landing metadata:** PR #134 improves the Brewery page's Open Graph/Twitter descriptions and makes the meta description explicit that the planned workflows remain in development. Added generated-HTML assertions for brewery-first audience and workflow topics. GitHub Actions run #196 passed Astro/TypeScript, static build, 1,738 static validation checks and responsive browser QA. Vercel Preview was blocked by the existing Hobby build-rate-limit gate. Squash merge: `2d00b265b5e739100dd90eeda20541d892200557`.\n- **FAQ Business-first SEO:** PR #131 aligns FAQ title, meta description, Open Graph/Twitter metadata, structured data and page introduction with professional breweries as the primary commercial audience; Homebrewers remain a separate secondary path. Added generated-HTML regression checks. GitHub Actions run #192 passed Astro/TypeScript, static build, generated-site validation, social preview generation and responsive browser QA. Vercel Preview remains blocked by the existing Hobby build-rate-limit gate. Squash merge: `bcbeab686cfd111798dac47f2abb100a6799b669`.
