@@ -1,15 +1,16 @@
 :root {
   color-scheme: light;
-  --page: #f2f2f7;
-  --surface: #ffffff;
-  --ink: #000000;
-  --muted: rgba(60, 60, 67, .75);
-  --soft: #e5e5ea;
-  --line: rgba(60, 60, 67, .18);
-  --amber: #985600;
-  --amber-fill: #e8901f;
-  --amber-ink: #1a1206;
-  --olive: #737d5c;
+  --page: #f3eee2;
+  --forest: #183b32;
+  --surface: #faf8f1;
+  --ink: #172522;
+  --muted: #59645d;
+  --soft: #e4dfd3;
+  --line: rgba(23, 37, 34, .18);
+  --amber: #a45e35;
+  --amber-fill: #c47b48;
+  --amber-ink: #172522;
+  --olive: #75846e;
   --serif: Georgia, "Times New Roman", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --mono: "SFMono-Regular", Consolas, monospace;
@@ -26,7 +27,8 @@ a:focus-visible, summary:focus-visible { outline: 3px solid #0066cc; outline-off
 #main-content { scroll-margin-top: 24px; }
 .shell { width: min(var(--content), calc(100% - 64px)); margin-inline: auto; }
 .site-header { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 0 max(32px, calc((100vw - var(--content)) / 2)); background: var(--page); border-bottom: 1px solid rgba(80, 76, 65, .13); }
-.wordmark { font-size: 28px; font-weight: 700; letter-spacing: -1.9px; line-height: 1; }
+.wordmark { display: inline-flex; flex-direction: column; gap: 4px; font-size: 24px; font-weight: 750; letter-spacing: 2.2px; line-height: 1; color: var(--forest, #183b32); }
+.wordmark::after { content: "BREWING INTELLIGENCE"; font-family: var(--sans); font-size: 7px; font-weight: 650; letter-spacing: 2px; color: var(--muted); }
 .wordmark span { color: var(--amber); }
 .desktop-nav { display: flex; align-items: center; gap: clamp(24px, 3.2vw, 48px); margin-left: auto; margin-right: 30px; }
 .desktop-nav a, .header-cta { font-size: 13px; font-weight: 600; }
