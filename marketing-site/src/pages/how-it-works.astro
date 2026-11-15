@@ -60,10 +60,10 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <header class="site-header">
       <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
       <nav class="desktop-nav" aria-label="Main navigation">
-        <a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`} aria-current="page">How it works</a><a href={`${base}technical-principles/`}>Principles</a><a href={`${base}faq/`}>FAQ</a>
+        <a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}how-it-works/`} aria-current="page">How it works</a><a href={`${base}technical-principles/`}>Principles</a><a href={`${base}faq/`}>FAQ</a>
       </nav>
-      <a class="header-cta" href={`${base}#audience-paths`}>Find your path <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`}>How it works</a><a href={`${base}technical-principles/`}>Technical principles</a><a href={`${base}faq/`}>FAQ</a></nav></details>
+      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}how-it-works/`}>How it works</a><a href={`${base}technical-principles/`}>Technical principles</a><a href={`${base}faq/`}>FAQ</a></nav></details>
     </header>
     <main id="main-content">
       <Breadcrumbs items={breadcrumbItems} />
@@ -121,6 +121,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
       <section class="explain-disclaimer section-pad"><div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT MATURITY</p><h2>A workflow describes <em>the design intent.</em></h2><p>All capabilities on this page are part of the product plan unless explicitly identified otherwise. They are not a statement of current availability. Development stage, technical validation and product approval determine what can be released.</p><a class="button button-primary" href={`${base}technical-principles/`}>Read the technical principles <span aria-hidden="true">↗</span></a></div></section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
