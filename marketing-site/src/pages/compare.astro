@@ -64,7 +64,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
       <section class="compare-stage-key" aria-label="How to read the comparison"><p><strong>How to read this table</strong></p><ul><li><span class="stage-pill">MVP / Core</span> Intended in an initial product stage</li><li><span class="stage-pill">Later</span> Planned for a subsequent stage</li><li><span class="stage-muted">Under consideration / Not in scope</span> Not a committed release capability</li></ul></section>
       <section class="compare-table-section section-pad">
         <div class="comparison-table-wrap" role="region" aria-label="Scrollable Homebrewer and Professional Brewery function comparison" tabindex="0">
-          <table class="comparison-table">
+          <table class="comparison-table" aria-label="Comparison of planned GRISTORA product areas for Homebrewers and Professional Breweries">
             <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
             <tbody>
               {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}features/${slug}/`}>{label} ↗</a></th><td><span class={homeStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={businessStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
