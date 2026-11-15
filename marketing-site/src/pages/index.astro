@@ -184,7 +184,7 @@ const audiences = [
           <div class="audience-grid">
             {audiences.map((audience) => (
               <article class="audience-card" id={audience.id}>
-                <!-- IMAGE SLOT: AUDIENCE-HOMEBREWERS / AUDIENCE-BREWERIES | Replace each SVG with its matching licensed photograph. -->
+                <!-- Original inline SVG editorial illustrations for both audience paths; retain slot identifiers for future approved asset replacement. -->
                 <div class:list={["audience-image", audience.visual]} data-image-slot={`audience-${audience.id}`}>
                   {audience.visual === "home" ? (
                     <svg viewBox="0 0 600 320" aria-hidden="true">
