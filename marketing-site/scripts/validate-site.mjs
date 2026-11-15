@@ -69,11 +69,23 @@ for (const route of requiredRoutes) {
   assert(sitemap.includes(`${siteOrigin}${basePath}${route}`), `sitemap includes: ${route}`);
 }
 
-const sitemapLocs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((match) => decodeHtml(match[1]));
+const sitemapLocs = [...sitemap.matchAll(/<loc>(.*?)<\\/loc>/g)].map((match) => decodeHtml(match[1]));
+assert(sitemap.startsWith('<?xml version="1.0"'), "sitemap declares XML encoding");
+assert(sitemap.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'), "sitemap uses the standard XML namespace");
+assert(sitemapLocs.length > 0, "sitemap contains at least one URL");
+assert(new Set(sitemapLocs).size === sitemapLocs.length, "sitemap contains no duplicate URLs");
 for (const loc of sitemapLocs) {
-  const url = new URL(loc);
-  const file = toDistFile(url.pathname);
-  assert(await exists(file), `sitemap target exists: ${url.pathname}`);
+  try {
+    const url = new URL(loc);
+    assert(url.origin === siteOrigin, "sitemap URL stays on the canonical site origin: " + loc);
+    assert(!url.search && !url.hash, "sitemap URL has no query string or fragment: " + loc);
+    assert(url.pathname === "/" || url.pathname.endsWith("/"), "sitemap route uses a trailing slash: " + loc);
+    assert(!url.pathname.endsWith("/404.html"), "sitemap excludes the not-found page");
+    const file = toDistFile(url.pathname);
+    assert(await exists(file), "sitemap target exists: " + url.pathname);
+  } catch {
+    failures.push("sitemap contains an invalid absolute URL: " + loc);
+  }
 }
 
 for (const file of htmlFiles) {
@@ -247,7 +259,16 @@ for (const file of htmlFiles) {
 }
 
 const robots = await readFile(robotsPath, "utf8");
-assert(robots.includes("Sitemap:"), "robots.txt references sitemap");
+const sitemapDirective = robots.match(/^Sitemap:\s*(\S+)\s*$/im)?.[1];
+assert(Boolean(sitemapDirective), "robots.txt references sitemap with a valid directive");
+if (sitemapDirective) {
+  try {
+    const robotsSitemapUrl = new URL(sitemapDirective);
+    assert(robotsSitemapUrl.origin === siteOrigin && robotsSitemapUrl.pathname === basePath + "/sitemap.xml", "robots.txt sitemap directive matches the generated sitemap URL");
+  } catch { failures.push("robots.txt contains an invalid sitemap URL"); }
+}
+assert(/^User-agent:\s*\*/im.test(robots), "robots.txt declares the wildcard user agent");
+assert(/^Allow:\s*\//im.test(robots), "robots.txt explicitly allows crawling");
 
 console.log(`Static site validation: ${checks.length} checks passed, ${failures.length} failures.`);
 if (failures.length) {
