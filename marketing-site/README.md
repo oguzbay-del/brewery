@@ -105,7 +105,7 @@ Keep the slot ID when replacing an image. Add final assets under `public/images/
 
 ## Vercel preview and production gate
 
-Vercel is currently integrated for preview. The commercial production host, plan and public domain are not approved yet. Keep the GitHub repository as the source of truth.
+Use a dedicated Vercel project for the marketing site; do not reuse or modify the product's Vercel project. The commercial production host, plan and public domain are not approved until the owner completes the steps in [`DOMAIN-SETUP.md`](./DOMAIN-SETUP.md). Keep the GitHub repository as the source of truth.
 
 1. Import `oguzbay-del/brewery` into Vercel.
 2. Set **Root Directory** to `marketing-site`.
@@ -115,7 +115,7 @@ Vercel is currently integrated for preview. The commercial production host, plan
 6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed. Do not repeatedly retry Preview deployments while the Hobby quota window is active; GitHub Pages is the temporary preview fallback.
 7. Only after the production host and domain are approved, connect the domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all routes before switching public traffic.
 
-The Astro config uses the root path for the Vercel preview and `/brewery` only for the GitHub Pages fallback. The robots and sitemap endpoints are generated at build time from the active site/base URL.
+The Astro config uses the root path for Vercel and `/brewery` only for the GitHub Pages fallback. Preview canonical URLs use `VERCEL_URL`; production uses `SITE_URL=https://gristora.com`. The robots and sitemap endpoints are generated at build time from the active site/base URL.
 
 **Plan note:** Vercel Hobby is for personal, non-commercial use. Use it for private setup/preview only; upgrade to Pro before operating this commercial marketing site publicly.
 
