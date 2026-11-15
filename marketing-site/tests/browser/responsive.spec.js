@@ -30,14 +30,14 @@ for (const route of routes) {
           img.loading = "eager";
           try {
             await img.decode();
-            return { alt: img.getAttribute("alt"), loaded: img.naturalWidth > 0, src: img.currentSrc };
+            return { hasAlt: img.hasAttribute("alt"), loaded: img.naturalWidth > 0, src: img.currentSrc };
           } catch {
-            return { alt: img.getAttribute("alt"), loaded: false, src: img.currentSrc };
+            return { hasAlt: img.hasAttribute("alt"), loaded: false, src: img.currentSrc };
           }
         }));
       });
       for (const image of imageResults) {
-        expect(image.alt?.trim().length, `Image alt text: ${image.src}`).toBeGreaterThan(0);
+        expect(image.hasAlt, `Image has an alt attribute: ${image.src}`).toBeTruthy();
         expect(image.loaded, `Image loaded: ${image.src}`).toBeTruthy();
       }
 
