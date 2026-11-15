@@ -1,4 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#e8901f"/>
-  <text x="32" y="47" text-anchor="middle" fill="#1a1206" font-family="Georgia,serif" font-size="46" font-weight="700">D</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title"><title id="title">GRISTORA</title><rect width="64" height="64" rx="14" fill="#183b32"/><path d="M45 18.5A21 21 0 1 0 49 34H31v-8h27v8c0 15.5-11.5 27-27 27A29 29 0 1 1 54 18.5z" fill="#f3eee2"/><path d="M34 34h17" stroke="#c47b48" stroke-width="5" stroke-linecap="round"/></svg>
