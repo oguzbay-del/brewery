@@ -10,7 +10,7 @@
 
 ## 1. Objective
 
-Deliver one coherent, technically credible Demleme marketing website for two clearly separated audiences: Homebrewers and Professional Breweries. The website explains and positions the product; it is not the product application.
+Deliver one coherent, technically credible Demleme marketing website with **Professional Breweries as the primary commercial audience** and **Homebrewers as a distinct secondary audience**. The website explains and positions the product; it is not the product application.
 
 The target experience is:
 - technically precise and transparent;
@@ -25,7 +25,7 @@ The target experience is:
 
 | Area | Decision |
 |---|---|
-| Audiences | Homebrewers and Professional Breweries |
+| Commercial audience priority | Professional Breweries primary; Homebrewers secondary, with distinct journeys for both |
 | Positioning | Technical |
 | Markets | United States and United Kingdom first |
 | Language | English-first; US editorial default |
@@ -63,7 +63,7 @@ No empty route, placeholder category or thin SEO page should be published.
 
 ### Global shell
 - Header, mobile menu, footer, breadcrumbs and metadata handled consistently.
-- Homebrewers and Breweries visible as primary audience paths.
+- Professional Breweries is the primary homepage path and first audience card; Homebrewers remains clearly available as the secondary path.
 - No dead navigation or placeholder social links.
 - No pricing or account CTA until real destinations exist.
 
