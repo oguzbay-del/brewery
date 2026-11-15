@@ -80,9 +80,9 @@ Search the `data-image-slot` attributes or `IMAGE SLOT:` comments to find every 
 
 Keep the slot ID when replacing an image. Add final assets under `public/images/`, use descriptive filenames, and confirm usage rights before publishing. Do not use product UI screenshots unless supplied and verified.
 
-## Vercel deployment
+## Vercel preview and production gate
 
-The production target is Vercel. Keep the GitHub repository as the source of truth.
+Vercel is currently integrated for preview. The commercial production host, plan and public domain are not approved yet. Keep the GitHub repository as the source of truth.
 
 1. Import `oguzbay-del/brewery` into Vercel.
 2. Set **Root Directory** to `marketing-site`.
@@ -90,9 +90,9 @@ The production target is Vercel. Keep the GitHub repository as the source of tru
 4. Use the defaults: install `npm install`, build `npm run build`, output `dist`.
 5. Do not add an Astro server adapter; this site is statically generated.
 6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed. Do not repeatedly retry Preview deployments while the Hobby quota window is active; GitHub Pages is the temporary preview fallback.
-7. Connect the production domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all three pages before switching public traffic.
+7. Only after the production host and domain are approved, connect the domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all routes before switching public traffic.
 
-The Astro config uses the root path on Vercel and `/brewery` only for the GitHub Pages fallback. The robots and sitemap endpoints are generated at build time from the active site/base URL.
+The Astro config uses the root path for the Vercel preview and `/brewery` only for the GitHub Pages fallback. The robots and sitemap endpoints are generated at build time from the active site/base URL.
 
 **Plan note:** Vercel Hobby is for personal, non-commercial use. Use it for private setup/preview only; upgrade to Pro before operating this commercial marketing site publicly.
 
@@ -101,7 +101,7 @@ The Astro config uses the root path on Vercel and `/brewery` only for the GitHub
 - **Project website:** https://oguzbay-del.github.io/brewery/
 - Workflow: `.github/workflows/marketing-site-pages.yml`.
 - The workflow sets `GITHUB_PAGES=true` to build with the `/brewery` base path.
-- GitHub Pages is the temporary preview fallback while Vercel is rate-limited. Vercel Preview and final responsive browser QA remain mandatory before public release.
+- GitHub Pages is the temporary preview fallback while Vercel is rate-limited. Before public release, complete final responsive browser QA on the approved production preview environment.
 
 ## Final QA checklist
 
