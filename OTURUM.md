@@ -825,3 +825,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Main build, static validation, 63/63 responsive/axe/keyboard tests and GitHub Pages deployment #43689298947 all succeeded on PR #80's code commit.
 - GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel preview remains blocked by the Hobby build-rate limit.
 - Remaining manual gates: screen-reader testing and real 200% browser zoom; embedded SVG text contrast review is not covered by axe's full SVG rendering analysis.
+
+## Handoff update — PR #138 and strategy sync — 15 November 2026
+
+- Current main: `7ac3fbef80ced26b81869a90f7be7f6b57869b8d`.
+- PR #138 merged: desktop and mobile navigation now expose the current page with `aria-current="page"`; the current item also has a visible accent style. Nested feature detail pages identify Product as the active section.
+- PR #138 browser QA: 85/85 tests passed, including responsive checks and automated WCAG 2.2 AA scans. Static validation: 1,739 checks passed.
+- Main CI run #43710054711 succeeded. GitHub Pages deployment #43710054632 succeeded on the same main commit.
+- PR #139 merged the Business-first strategy implementation status and updated the strategy index.
+- GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit.
+- Manual release gates remain: screen-reader testing, complete keyboard/focus review, real 200% browser zoom, final-domain metadata/social preview validation, production hosting/domain, product onboarding URL, pricing, privacy/consent and legal/contact decisions.
