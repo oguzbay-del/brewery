@@ -1,6 +1,19 @@
-# Demleme marketing site — product roadmap and feature catalogue
+# GRISTORA public marketing site — product roadmap and feature catalogue
 
-An isolated Astro + TypeScript + static-site project for the Demleme marketing website.
+An isolated Astro + TypeScript + static-site project for the GRISTORA public marketing website. The current implementation still contains the legacy Demleme public branding until the planned rebrand work package is approved and completed.
+
+## Brand source of truth
+
+Read these canonical documents before changing public brand, copy, metadata or visual assets:
+
+- `../web-stratejisi/33-gristora-brand-platform.md`
+- `../web-stratejisi/34-gristora-brand-architecture.md`
+- `../web-stratejisi/35-gristora-visual-identity-logo-brief.md`
+- `../web-stratejisi/36-gristora-public-site-rebrand-plan.md`
+
+GRISTORA is the selected public brand. Do not use Demleme in public marketing surfaces after WP-17 is implemented. The logo route and domain are not approved yet. Do not start the public rebrand before the identity and legal/domain gates are recorded. This repository documentation is the handoff for Claude.
+
+**Hard boundary:** marketing-site only. Do not change the product application, APIs, Rust engine, data model, iOS app, internal product identifiers, product roadmap or product development queue.
 
 ## Scope
 
