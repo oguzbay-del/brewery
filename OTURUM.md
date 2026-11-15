@@ -2,23 +2,16 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Main:** `0fb08a15ed0c1678853b95f7808345cacd49b0e6`; PRs #84–#89 and #91 merged. PR #90 was closed as a duplicate after its changes were rebased into #91.
-- **Latest SEO delivery:** PR #89 aligns Homebrewers, Breweries, How It Works, Technical Principles and FAQ titles/social metadata, including matching WebPage structured-data names. CI run #43694495801 passed.
-- **Latest technical research delivery:** PR #91 adds the WP-09/WP-10 primary-source register (ASBC, NIST and UK HMRC) and indexes it. Research candidates only; no formula, calculator or publication approval is implied.
-- **Open PRs:** none at this snapshot. No product app/API/Rust or Claude queue changes.
+- **Main:** `cbd9a9f3e8fd33143f3dada8ea530d083b06ae50` (latest verified merge in this work batch); PRs #84–#89, #91–#92, #94 and #96 merged. PR #90 was closed as a duplicate.
+- **SEO:** PR #89 aligned page titles and structured-data names; PR #94 records social preview readiness gaps. PR #95 fixes the remaining Twitter title mismatches and is awaiting responsive browser QA.
+- **WP-09 / WP-10:** PR #91 provides the source register; PR #96 adds fermentation sample-handling evidence. The gravity evidence note is being rebased after concurrent merges. Research only: no formula, calculator or public article is approved.
+- **Measurement provenance:** conceptual data-contract note is being rebased; not an approved schema/API or shipped feature.
+- **Open PRs:** #93 (rebase required), #95 (code fix / CI), #97 (rebase required). No product app/API/Rust or Claude queue changes.
 - **Preview:** GitHub Pages is fallback preview. Vercel Preview remains blocked by the Hobby 24-hour deployment quota; avoid repeated preview attempts.
-- **Homebrewers:** recipe → ingredients/water → calculations → brew day → fermentation observations → review. Technical guides require primary sources and SME review.
-- **Business:** recipe review → production planning → batch records → vessel/fermentation observations → QC/traceability. Keep general ERP exclusions explicit; do not imply released role permissions or compliance.
-- **WP-09 gate:** no public calculator until method/version, authoritative sources, independent golden vectors, boundary/unit/locale/rounding tests, product parity and explicit public-use approval pass.
-- **WP-10 gate:** Learn/technical guides remain held until primary sources, worked examples, limitations, reviewer role and product-stage approval are recorded. PR #91 is source discovery, not SME or product approval.
 - **Commercial decisions open:** app URL/sign-in/registration; production domain/hosting; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots.
-- **Social preview:** SVG source exists, but no OG/Twitter image metadata is wired; raster export and platform compatibility still need validation.
-- **Manual QA remains open:** real screen-reader testing, full human keyboard/focus review, actual 200% zoom/reflow and SVG internal-text contrast. Automated checks do not replace these.
-- **Release policy:** grouped PRs, CI and diff review, manual merge only; no auto-merge. Do not alter Vercel project/production settings or publish production without explicit approval.
-
-**Son güncelleme:** 2026-11-15  
-**Amaç:** Yeni ChatGPT veya Claude oturumunun bağlamı yeniden araştırmadan devralması.  
-**Kural:** Bu dosya kısa tutulur. Her anlamlı iş tamamlandığında ve oturum kapatılırken güncellenir.
+- **Social preview:** no OG/Twitter image metadata is wired; dedicated raster card and final-domain/platform validation remain.
+- **Manual QA remains open:** real screen-reader testing, full human keyboard/focus, real 200% zoom/reflow and SVG internal text contrast.
+- **Release policy:** batch changes, inspect diffs and CI, merge manually; do not alter Vercel or production settings without explicit approval.
 
 
 ## Son devam — 15 Kasım 2026
