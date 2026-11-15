@@ -16,14 +16,14 @@
     <path d="M85 327v22M155 327v22"/>
   </g>
   <g transform="translate(88 102)">
-    <text x="0" y="0" fill="#000000" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="-1.8">Demleme</text>
+    <text x="0" y="0" fill="#000000" font-family="DejaVu Sans" font-size="28" font-weight="700" letter-spacing="-1.8">Demleme</text>
     <rect x="0" y="55" width="54" height="4" fill="#e8901f"/>
-    <text x="0" y="145" fill="#000000" font-family="Georgia, 'Times New Roman', serif" font-size="66" font-weight="400">Brewing,</text>
+    <text x="0" y="145" fill="#000000" font-family="DejaVu Serif" font-size="66" font-weight="400">Brewing,</text>
     <text x="0" y="222" fill="#985600" font-family="Georgia, 'Times New Roman', serif" font-size="66" font-weight="400">considered.</text>
-    <text x="2" y="290" fill="#50505a" font-family="Arial, Helvetica, sans-serif" font-size="24">Brewing software in development</text>
-    <text x="2" y="332" fill="#686873" font-family="Arial, Helvetica, sans-serif" font-size="18">For homebrewers and professional breweries</text>
+    <text x="2" y="290" fill="#50505a" font-family="DejaVu Sans" font-size="24">Brewing software in development</text>
+    <text x="2" y="332" fill="#686873" font-family="DejaVu Sans" font-size="18">Professional breweries · Homebrewers</text>
   </g>
-  <g fill="#777781" font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="2">
+  <g fill="#777781" font-family="DejaVu Sans" font-size="13" letter-spacing="2">
     <text x="88" y="566">RECIPES  ·  MEASUREMENTS  ·  BATCH CONTEXT</text>
     <text x="1110" y="566" text-anchor="end">DEMLEME</text>
   </g>
