@@ -9,17 +9,17 @@ const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}faq/`, import.meta.env.SITE).href;
 const groups = [
   {
-    title: "About Demleme",
+    title: "About GRISTORA",
     items: [
-      { q: "What is Demleme?", a: "Demleme is brewing software in development, with professional breweries as its primary commercial audience and a separate Homebrewers path. This website explains the product direction; it is not the product application." },
-      { q: "Who is Demleme being designed for?", a: "Professional brewery teams are the primary commercial audience. Homebrewers remain a distinct secondary audience, with their own recipe, brew-day and batch-review journey." },
-      { q: "Can I use Demleme today?", a: "No. Demleme is in development and is not currently available as a production service. No signup, trial or live production workflow is being offered from this website." },
+      { q: "What is GRISTORA?", a: "GRISTORA is brewing software in development, with professional breweries as its primary commercial audience and a separate Homebrewers path. This website explains the product direction; it is not the product application." },
+      { q: "Who is GRISTORA being designed for?", a: "Professional brewery teams are the primary commercial audience. Homebrewers remain a distinct secondary audience, with their own recipe, brew-day and batch-review journey." },
+      { q: "Can I use GRISTORA today?", a: "No. GRISTORA is in development and is not currently available as a production service. No signup, trial or live production workflow is being offered from this website." },
     ],
   },
   {
     title: "Product scope",
     items: [
-      { q: "Does Demleme replace a brewery ERP?", a: "No. Demleme is focused on brewing-related recipe, batch and production information. It is not a general ERP." },
+      { q: "Does GRISTORA replace a brewery ERP?", a: "No. GRISTORA is focused on brewing-related recipe, batch and production information. It is not a general ERP." },
       { q: "Does it manage sales, orders, distribution or keg tracking?", a: "No. Sales, customer orders, distribution and shipping, keg tracking, CRM and accounting are outside the stated product scope." },
       { q: "Which capabilities are available versus planned?", a: "The product pages describe roadmap capabilities and their intended development stages. A planned item is not currently available. Each capability must pass implementation, testing and any required technical validation before it can be described as released." },
     ],
@@ -28,7 +28,7 @@ const groups = [
     title: "Technical questions",
     items: [
       { q: "Are brewing calculators available on the website?", a: "No public calculator tools are being offered in this release. Calculation methods, defaults, units and reference results must be validated before a calculator is published." },
-      { q: "Does Demleme predict final gravity or fermentation finish dates?", a: "Those analytical estimates are under consideration and depend on models that have not been approved. They are not available capabilities or product commitments." },
+      { q: "Does GRISTORA predict final gravity or fermentation finish dates?", a: "Those analytical estimates are under consideration and depend on models that have not been approved. They are not available capabilities or product commitments." },
       { q: "Are APIs, webhooks and device integrations available?", a: "No public availability claim is made. Professional open API and production-data webhooks are planned for a later Business release; Homebrew device webhook scope is separate. Supported integrations will be documented after implementation and testing." },
       { q: "Where can I read about methods and limitations?", a: "The Technical Principles page explains the intended approach to methods, units, measurements and validation. Individual feature pages describe their planned scope and limitations." },
     ],
@@ -36,18 +36,18 @@ const groups = [
   {
     title: "Commercial information",
     items: [
-      { q: "What does Demleme cost? Is there a free plan or trial?", a: "Pricing, subscription structure, free-tier limits and trial terms have not been approved for public promotion. No price or trial offer is currently published." },
+      { q: "What does GRISTORA cost? Is there a free plan or trial?", a: "Pricing, subscription structure, free-tier limits and trial terms have not been approved for public promotion. No price or trial offer is currently published." },
     ],
   },
 ];
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  name: "Frequently Asked Questions — Demleme",
-  description: "Answers for professional brewery teams about Demleme's development status, brewing software scope, roadmap and separate Homebrewers path.",
+  name: "Frequently Asked Questions — GRISTORA",
+  description: "Answers for professional brewery teams about GRISTORA's development status, brewing software scope, roadmap and separate Homebrewers path.",
   url: canonicalUrl,
   inLanguage: "en",
-  isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
   mainEntity: groups.flatMap((group) =>
     group.items.map((item) => ({
       "@type": "Question",
@@ -70,23 +70,25 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="theme-color" content="#f2f2f7" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Answers for professional brewery teams about Demleme's development status, brewing software scope, roadmap and the separate Homebrewers path." />
-    <title>Demleme Brewing Software FAQ for Breweries | Product Scope</title>
+    <meta name="description" content="Answers for professional brewery teams about GRISTORA's development status, brewing software scope, roadmap and the separate Homebrewers path." />
+    <title>GRISTORA Brewing Software FAQ for Breweries | Product Scope</title>
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="Demleme Brewing Software FAQ for Breweries | Product Scope" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="GRISTORA Brewing Software FAQ for Breweries | Product Scope" />
     <meta property="og:description" content="Clear answers for professional brewery teams on product status, brewing scope and the technical roadmap." />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Demleme Brewing Software FAQ for Breweries | Product Scope" />
+    <meta name="twitter:title" content="GRISTORA Brewing Software FAQ for Breweries | Product Scope" />
     <meta name="twitter:description" content="Clear answers for professional brewery teams on product status, brewing scope and the technical roadmap." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
-      <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
+      <a class="wordmark" href={base} aria-label="GRISTORA home">GRISTORA</a>
       <nav class="desktop-nav" aria-label="Main navigation">
         <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a><a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a><a href={`${base}homebrewers/`} aria-current={Astro.url.pathname === `${base}homebrewers/` ? "page" : undefined}>Homebrewers</a><a href={`${base}how-it-works/`} aria-current={Astro.url.pathname === `${base}how-it-works/` ? "page" : undefined}>How it works</a><a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
       </nav>
@@ -98,7 +100,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell explain-page-hero">
         <p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT STATUS · SCOPE · TECHNICAL ROADMAP</p>
         <h1>Good questions deserve <em>clear answers.</em></h1>
-        <p>Professional brewery teams are Demleme's primary audience. Homebrewers have a separate secondary path. Demleme is in development; this site explains the product direction, not the application.</p>
+        <p>Professional brewery teams are GRISTORA's primary audience. Homebrewers have a separate secondary path. GRISTORA is in development; this site explains the product direction, not the application.</p>
       </section>
       <section class="faq-directory section-pad">
         <div class="shell faq-directory-layout">
@@ -114,6 +116,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>GRISTORA</a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>
