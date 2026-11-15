@@ -60,10 +60,11 @@ test("mobile navigation can be opened with the keyboard", async ({ page }) => {
 test("FAQ disclosure can be opened with the keyboard", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });
   await page.goto("/faq/", { waitUntil: "domcontentloaded" });
-  const firstSummary = page.locator("details summary").first();
+  const firstDetails = page.locator("details").first();
+  const firstSummary = firstDetails.locator("summary");
   await firstSummary.focus();
   await page.keyboard.press("Enter");
-  await expect(firstSummary.locator("..")).toHaveAttribute("open", "");
+  await expect(firstDetails).toHaveAttribute("open", "");
 });
 
 for (const route of ["/", "/homebrewers/", "/breweries/"]) {
