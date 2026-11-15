@@ -86,6 +86,31 @@ const businessSteps = [
           <a class="text-link explain-audience-link" href={`${base}breweries/`}>Explore the Professional Breweries page <span aria-hidden="true">→</span></a>
         </div>
       </section>
+      <section class="audience-comparison-section section-pad" id="audience-comparison">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> HOME AND BUSINESS · SIDE BY SIDE</p>
+            <h2>One product direction. <em>Two distinct workflows.</em></h2>
+            <p>This roadmap comparison explains the different information needs and records. It is not a statement that the planned capabilities are already available.</p>
+          </div>
+          <div class="role-table-wrap" role="region" aria-label="Scrollable comparison of Homebrewers and Professional Breweries workflows" tabindex="0">
+            <table class="role-table audience-comparison-table">
+              <thead>
+                <tr><th scope="col">Dimension</th><th scope="col">Homebrewers</th><th scope="col">Professional Breweries</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Primary user</th><td>An individual brewer making, measuring and reviewing personal batches.</td><td>Brewing teams that need shared production context across recipes, batches, vessels and quality records.</td></tr>
+                <tr><th scope="row">Core unit of work</th><td>A recipe and the personal batch made from it.</td><td>A recipe version and the production batch that references it.</td></tr>
+                <tr><th scope="row">Typical records</th><td>Recipe and targets, ingredients and water, brew-day actuals, fermentation observations, tasting and review.</td><td>Recipe version, batch plan and actuals, ingredient lots, vessel events, quality and laboratory records.</td></tr>
+                <tr><th scope="row">Measurement context</th><td>Manual readings and any validated supported-device inputs, with source, unit and timestamp.</td><td>Production measurements, vessel observations and laboratory results, with method, unit, source and operator context.</td></tr>
+                <tr><th scope="row">Main question</th><td>What happened in this brew, and what might I change next time?</td><td>What happened across this batch, where did actuals differ, and which records explain the outcome?</td></tr>
+                <tr><th scope="row">Scope boundary</th><td>Personal brewing and learning—not professional multi-batch production operations.</td><td>Brewing-specific production records—not sales, orders, shipping, CRM, accounting or a general ERP.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="record-model-note">All examples describe intended information needs. Availability depends on product stage, technical validation and release approval.</p>
+        </div>
+      </section>
       <section class="explain-disclaimer section-pad"><div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT MATURITY</p><h2>A workflow describes <em>the design intent.</em></h2><p>All capabilities on this page are part of the product plan unless explicitly identified otherwise. They are not a statement of current availability. Development stage, technical validation and product approval determine what can be released.</p><a class="button button-primary" href={`${base}technical-principles/`}>Read the technical principles <span aria-hidden="true">↗</span></a></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
