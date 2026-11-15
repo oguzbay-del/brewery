@@ -629,7 +629,7 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Inspected the first Playwright screenshot artifact across all five viewport widths.
 - The five-item Business workflow and record-model grids exposed a visually empty sixth cell because the grid container background showed through.
 - Added a Business-only card treatment with explicit gaps and borders; Homebrewer six-step grid and homepage hero remain unchanged.
-- Re-run browser QA and inspect refreshed screenshots before merge.
+- Re-run browser QA passed (40/40); refreshed Business desktop/mobile screenshots confirm the empty grid cells are gone.
 
 
 ## Handoff update — PR #69 merged
