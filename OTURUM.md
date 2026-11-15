@@ -640,3 +640,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Screenshot artifact: `marketing-responsive-qa-screenshots` (23 full-page screenshots, 10.3 MB). First-pass review included Home, Homebrewers and Breweries desktop/mobile; the Business five-card grid's empty background cells were corrected and rechecked.
 - GitHub Pages deployment #43687312428 and main checks #43687312488 are queued.
 - Remaining release gates: manual keyboard/focus review, screen-reader flow, contrast, 200% zoom, and Vercel preview visual verification. Automated Chromium smoke tests do not close those gates.
+
+
+## Accessibility audit automation — 15 Kasım 2026
+
+- Added axe-core Playwright checks against WCAG 2.0/2.1/2.2 A/AA tags for seven public routes at desktop (1440 px) and mobile (390 px).
+- Added keyboard checks for skip-link navigation, mobile menu disclosure and FAQ disclosure.
+- Added a 720 px narrow-desktop layout proxy on Home, Homebrewers and Breweries. This is not a substitute for testing actual browser zoom at 200%.
+- CI results will determine the next remediation batch; no claim of WCAG conformance until manual review is complete.
+- Branch: `qa/axe-accessibility-audit`; PR and CI pending.
