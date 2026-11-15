@@ -835,3 +835,14 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - PR #139 merged the Business-first strategy implementation status and updated the strategy index.
 - GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit.
 - Manual release gates remain: screen-reader testing, complete keyboard/focus review, real 200% browser zoom, final-domain metadata/social preview validation, production hosting/domain, product onboarding URL, pricing, privacy/consent and legal/contact decisions.
+
+## Handoff update — PR #141 analytical-claim guardrails — 15 November 2026
+
+- Current main: `53af627bdd9881efe3435d3b78a0d355dd2ee6b7`.
+- PR #141 merged: unapproved analytical-model ideas are no longer presented as committed product features in yeast, device, quality, inventory, cost and reporting copy.
+- The affected feature pages explicitly label yeast viability/hop-alpha estimates, device fault diagnosis, SPC, sensory correlations, ingredient-demand forecasts, expiry risk, tank bottleneck optimisation and detailed cost-variance attribution as “Under consideration”.
+- Product-plan decisions remain unchanged: analytical models 1–3, 6 and 9–15 are still unapproved. The copy does not promote them as available or committed capabilities.
+- Static validation: 1,745 checks passed, 0 failures. Responsive and automated WCAG 2.2 AA browser suite: 85/85 passed.
+- Main CI run #43710624091 succeeded. GitHub Pages deployment #43710624041 succeeded on the same main commit.
+- GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit.
+- Remaining release gates are unchanged: human screen-reader/keyboard/200% zoom review, final production domain and hosting, app onboarding URL, pricing, privacy/consent and legal/contact decisions.
