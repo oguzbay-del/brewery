@@ -339,3 +339,15 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 
 
 .audience-compare-link { margin: 24px 0 0; text-align: center; }
+
+
+/* Accessible, low-emphasis breadcrumb navigation above page introductions. */
+.breadcrumbs { padding-top: 18px; padding-bottom: 10px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.breadcrumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0; margin: 0; padding: 0; list-style: none; }
+.breadcrumbs li { display: inline-flex; align-items: center; min-width: 0; }
+.breadcrumbs li + li::before { content: "/"; margin: 0 10px; color: #9a998f; }
+.breadcrumbs a { color: var(--muted); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; }
+.breadcrumbs a:hover, .breadcrumbs a:focus-visible { color: var(--ink); text-decoration-color: currentColor; }
+.breadcrumbs [aria-current="page"] { color: var(--ink); font-weight: 600; }
+.breadcrumbs a:focus-visible { outline: 2px solid #0066cc; outline-offset: 3px; border-radius: 2px; }
+@media (max-width: 620px) { .breadcrumbs { padding-top: 12px; padding-bottom: 6px; font-size: 10px; } .breadcrumbs li + li::before { margin-inline: 7px; } }

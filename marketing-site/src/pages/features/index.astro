@@ -1,5 +1,6 @@
 ---
 import "../../styles/global.css";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import { features } from "../../data/features";
 
@@ -15,7 +16,8 @@ const structuredData = {
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "Demleme", url: new URL(base, import.meta.env.SITE).href },
 };
-const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Product", url: canonicalUrl }]);
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Product", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 ---
 <!doctype html>
 <html lang="en">
@@ -57,6 +59,7 @@ const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, i
         </nav></details>
     </header>
     <main id="main-content">
+      <Breadcrumbs items={breadcrumbItems} />
       <section class="feature-hero shell">
         <p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT ROADMAP · IN DEVELOPMENT</p>
         <h1>A connected brewing workspace, <em>from recipe to release.</em></h1>

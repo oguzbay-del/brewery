@@ -8,6 +8,7 @@ const routes = [
   "/technical-principles/",
   "/faq/",
   "/features/",
+  "/features/recipe-design/",
 ];
 const widths = [1440, 1024, 768, 390, 320];
 const screenshotRoutes = new Set(["/", "/homebrewers/", "/breweries/"]);
@@ -72,3 +73,25 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     }
   });
 }
+
+for (const route of routes.filter((item) => item !== "/")) {
+  test(`visible breadcrumb navigation is complete on ${route}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+    await expect(breadcrumb).toBeVisible();
+    await expect(breadcrumb.getByRole("link").first()).toHaveAttribute("href", /\/$/);
+    await expect(breadcrumb.locator('[aria-current="page"]')).toBeVisible();
+    await expect(breadcrumb.locator("li").last()).toContainText(/.+/);
+  });
+}
+
+test("breadcrumb links are keyboard reachable on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/features/recipe-design/", { waitUntil: "domcontentloaded" });
+  const breadcrumb = page.getByRole("navigation", { name: "Breadcrumb" });
+  const firstLink = breadcrumb.getByRole("link").first();
+  await firstLink.focus();
+  await expect(firstLink).toBeFocused();
+  await expect(firstLink).toHaveAttribute("href", /\/$/);
+});

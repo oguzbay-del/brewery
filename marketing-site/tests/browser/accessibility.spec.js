@@ -9,6 +9,7 @@ const routes = [
   "/technical-principles/",
   "/faq/",
   "/features/",
+  "/features/recipe-design/",
 ];
 const viewports = [
   { name: "desktop", width: 1440 },

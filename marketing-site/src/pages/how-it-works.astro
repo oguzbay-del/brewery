@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
 import "../styles/learning-pages.css";
@@ -30,7 +31,8 @@ const businessSteps = [
   { title: "Vessel observations", body: "Keep fermentation and vessel observations in context with the batch. Automated predictions remain gated.", href: "features/fermentation-monitoring/", label: "Fermentation & tracking" },
   { title: "Quality and traceability", body: "Relate quality results and material lots to the production record, subject to product and regulatory validation.", href: "features/quality-laboratory/", label: "Quality & laboratory" },
 ];
-const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "How it works", url: canonicalUrl }]);
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "How it works", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 ---
 <!doctype html>
 <html lang="en">
@@ -63,6 +65,7 @@ const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, i
       <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`}>How it works</a><a href={`${base}technical-principles/`}>Technical principles</a><a href={`${base}faq/`}>FAQ</a></nav></details>
     </header>
     <main id="main-content">
+      <Breadcrumbs items={breadcrumbItems} />
       <section class="shell explain-page-hero">
         <p class="eyebrow"><span class="eyebrow-line"></span> TWO AUDIENCES · TWO WORKFLOWS · IN DEVELOPMENT</p>
         <h1>Different brewing days. <em>Clearer information.</em></h1>
