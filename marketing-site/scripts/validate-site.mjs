@@ -121,8 +121,22 @@ for (const file of htmlFiles) {
   const jsonLd = html.match(/<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/)?.[1];
   assert(Boolean(jsonLd), rel + ": JSON-LD structured data exists");
   if (jsonLd) {
-    try { JSON.parse(jsonLd); assert(true, rel + ": JSON-LD is valid JSON"); }
-    catch { failures.push(rel + ": JSON-LD is invalid JSON"); }
+    try {
+      const structured = JSON.parse(jsonLd);
+      assert(true, rel + ": JSON-LD is valid JSON");
+      if (pagePath === "/faq/") {
+        const questions = Array.isArray(structured.mainEntity) ? structured.mainEntity : [];
+        const visibleFaqCount = (html.match(/<details class=["']audience-faq-item["']/g) || []).length;
+        assert(structured["@type"] === "FAQPage", "FAQ route uses FAQPage structured data");
+        assert(questions.length === visibleFaqCount && visibleFaqCount > 0, "FAQ schema question count matches visible FAQ items");
+        assert(questions.every((item) =>
+          item["@type"] === "Question" &&
+          typeof item.name === "string" &&
+          item.acceptedAnswer?.["@type"] === "Answer" &&
+          typeof item.acceptedAnswer.text === "string"
+        ), "FAQ schema questions and accepted answers are complete");
+      }
+    } catch { failures.push(rel + ": JSON-LD is invalid JSON"); }
   }
 
   for (const phrase of forbidden) {
