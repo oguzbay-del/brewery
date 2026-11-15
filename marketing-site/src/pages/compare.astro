@@ -9,7 +9,7 @@ const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}compare/`, import.meta.env.SITE).href;
 const description = "Compare the planned GRISTORA Homebrewer and Professional Brewery feature paths and their development stages.";
-const rows = [
+const rows: { group: string; items: [string, string][] }[] = [
   { group: "Recipes & formulation", items: [
     ["Recipe design & management", "recipe-design"],
     ["Brewing calculations", "brewing-calculations"],
