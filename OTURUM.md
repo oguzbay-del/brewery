@@ -687,3 +687,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 
 
 - The two detailed SVGs now use labelled, keyboard-focusable horizontal scroll regions on narrow screens so chart labels remain readable instead of shrinking to tiny text. Responsive and axe tests will verify no page-level overflow and keyboard access.
+
+
+## Handoff update — PR #73 merged
+
+- Main commit: `205e67dbcd6272eb122705f8292f2796eb7a0137`.
+- PR #73 merged after successful responsive and axe/keyboard CI: 60/60 tests passed.
+- Added two original SVG assets: Homebrewers fermentation observation timeline and Technical Principles equipment calibration record model. Total public original SVGs: eleven, plus the existing inline homepage hero illustration.
+- The two detailed diagrams use labelled, keyboard-focusable horizontal scroll regions on narrow screens to preserve label readability; responsive overflow and axe checks passed.
+- GitHub Pages deployment #43688305665 and main checks #43688305663 are in progress.
+- Manual screen-reader, full keyboard/focus, real 200% browser zoom, embedded SVG text contrast and Vercel preview verification remain release gates.
