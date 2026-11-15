@@ -1,7 +1,7 @@
 # Demleme — Feature Catalogue Product-Claim Audit
 
 **Work package:** WP-03  
-**Status:** Source mapping complete; a small number of roadmap contradictions require product-owner resolution before copy is treated as final.  
+**Status:** Source mapping complete; marketing copy uses conservative “Under consideration” labels for unapproved analytical models. Product-plan contradictions still require product-owner resolution before those models can be committed.  
 **Date:** 14 November 2026  
 **Sources of truth:** `plan/demleme-plani.md`, `marketing-site/src/data/features.ts`, `marketing-site/src/pages/features/[slug].astro`.  
 **Scope:** Marketing claims only. No product implementation or product roadmap changes.
@@ -59,8 +59,8 @@ A release-stage label such as “Homebrew MVP” is not itself a claim of curren
 
 | Area | Current risk | Required treatment |
 |---|---|---|
-| Fermentation forecast | Feature content mentions estimated FG and finish date with confidence range; product plan's analytical models section says these models are not approved | Remove from committed/planned copy or relabel “under consideration” until product owner approval |
-| Expected-curve deviation | Alert is listed in additional features but cross-referenced to analytical model 2 with approval pending | Keep as under consideration until one status is resolved |
+| Fermentation forecast | Marketing copy now labels FG and finish-date estimates as under consideration; analytical model 1 remains unapproved | Keep the label until the product owner resolves the product-plan contradiction |
+| Expected-curve deviation | Marketing copy now labels curve-deviation and stuck-fermentation warnings as under consideration; analytical model 2 remains unapproved | Keep the label until the product owner resolves the product-plan contradiction |
 | Equipment calibration | Additional-features table includes calibration in Home MVP; analytical model 3 says not approved | Resolve contradiction in product plan; marketing must not decide the product status |
 | Mash pH | Calculator/model is listed but model choice and validation remain open | Say “estimate” only with model/source/limitations; no accuracy claim |
 | Calculations | Product plan specifies test vectors and golden recipes as release gates | Each public calculator requires independent reference examples, boundary tests, units, rounding and formula explanation |
@@ -68,7 +68,7 @@ A release-stage label such as “Homebrew MVP” is not itself a claim of curren
 | Regulatory content | Tax rates, filing and label rules are market-specific and need official/specialist validation | Publish educational context only; no compliance guarantee or automated filing promise |
 | Security | Detailed architecture exists in product plan | No “certified”, “compliant”, “encrypted end-to-end”, “SLA” or deployed-control claim without implementation evidence |
 | Costing | Recipe/batch cost is planned; accounting and ERP are excluded | Use “ingredient/production cost estimate” only; do not imply accounting, purchasing or financial ledger |
-| AI / analytics / sustainability | Several concepts remain ideas or under consideration | Keep outside committed feature cards unless approved with scope and release stage |
+| AI / analytics / sustainability | The plan's 18 analytical models are unapproved. The site now separates yeast viability, device fault detection, SPC, sensory correlations, demand forecasts, expiry risk, tank bottleneck optimisation and detailed cost-variance attribution from committed capabilities | Keep these ideas under consideration until individually approved with scope and release stage |
 
 ## 5. Audience-specific claim boundaries
 
@@ -131,6 +131,6 @@ Until resolved, copy must use the more conservative status.
 
 ## 8. Result and next step
 
-WP-03 source mapping is complete. The 16 feature pages broadly align to product-plan domains and the stage labels in the current feature data. The critical remaining work is to resolve the three analytical/calibration status contradictions and validate calculator/device/regulatory claims before content expansion.
+WP-03 source mapping is complete. The marketing catalogue now labels analytical models 1–3, 6, 9–15 as under consideration where they appear in feature copy. It does not present them as approved capabilities. The product plan still contains conflicts between the “additional features” table and the separate unapproved-model list; only the product owner can resolve those decisions. Continue to validate calculator, device, regulatory and security claims before content expansion.
 
 **Next package:** WP-04 — separate Home and Business sitemap, user journeys and CTA map. WP-04 can proceed using conservative status labels; unresolved product decisions above remain explicit constraints and must not be silently assumed.
