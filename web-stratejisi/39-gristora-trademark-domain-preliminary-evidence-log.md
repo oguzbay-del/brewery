@@ -42,6 +42,17 @@ The Indonesian Directorate General of Intellectual Property (DGIP) official Seri
 
 Classification: **Officially published application / watch lead**. The available gazette establishes publication, not the current post-publication status, registration, opposition outcome or enforceability. The listed goods are agricultural chemicals, pesticides and agricultural/horticultural/forestry products (Classes 1, 5 and 31), not the planned software/SaaS classes. The close spelling/phonetic resemblance still warrants counsel review; do not infer a conflict or clearance from class numbers alone.
 
+### India — official C-DAC software name / prior-use lead
+
+The Indian Centre for Development of Advanced Computing (C-DAC) currently lists **GistOra Tools** on its official website:
+- Official product page: https://www.cdac.gov.in/index.aspx?id=mc_ilf_gistora
+- Official product catalogue: https://www.cdac.gov.in/index.aspx?id=mlc_gist_products
+- C-DAC describes GistOra Tools as a server-side database application development tool for Indian-language applications; the page says it works within the Oracle environment and supports desktop/LAN and web applications.
+
+Classification: **Material name-similarity / prior software-use lead — verify with counsel**.
+
+This is a closer commercial-sector adjacency than the BASF agricultural mark because it is a software product using the name “GistOra”. The spelling differs from GRISTORA by the initial “R”, but the sound and visual structure are close. The C-DAC page is live and official, but it does not establish current commercial activity, ownership/licensing rights, trademark registration, scope of use, or enforceable rights in any target territory. No official C-DAC trademark record has been captured. Counsel should assess historical/current use, Indian trademark register records, international rights, and likelihood-of-confusion risk before GRISTORA is treated as cleared.
+
 ### India — separate third-party index lead
 
 A third-party index separately surfaced a listing for the word mark **GISTORA**, shown as:
@@ -71,6 +82,7 @@ Classification: **Unknown / live registrar verification required**. Do not infer
 | GRISTORA — UK | Unknown | Search UK IPO word/phrase variants and review goods/services and status. |
 | GRISTORA — Australia | Unknown | Search IP Australia variants and image similarity when the final logo is ready. |
 | GRISTORA — WIPO/Madrid | Unknown | Search Global Brand Database and Madrid Monitor, then verify national designations. |
+| GistOra Tools — C-DAC, India | Official C-DAC software product listing; current commercial activity and trademark rights unknown | Counsel to verify prior/current use and Indian/international trademark rights; assess software-sector similarity. |
 | GISTORA — BASF, Indonesia | Official gazette publication; current status unknown | Verify post-publication status/opposition/registration in DGIP; assess phonetic similarity and scope with counsel. |
 | GISTORA — BASF, India | Third-party index lead; official record not captured | Verify application 7525714 in IP India; do not treat QuickCompany status as authoritative. |
 | `gristora.com` | Unknown | Current ICANN/RDAP and registrar lookup. |
