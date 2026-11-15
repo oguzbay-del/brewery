@@ -44,15 +44,15 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content="Explore Demleme's planned homebrewing workflow: recipe design, ingredients, calculations, brew-day records and batch review." />
-    <title>For Homebrewers — Demleme</title>
+    <title>Homebrewing Software in Development | Demleme</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="For Homebrewers — Demleme" />
+    <meta property="og:title" content="Homebrewing Software in Development | Demleme" />
     <meta property="og:description" content="A more considered approach to every brew. Explore the Demleme homebrewing roadmap." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="For Homebrewers — Demleme" />
+    <meta name="twitter:title" content="Homebrewing Software in Development | Demleme" />
     <meta name="twitter:description" content="A more considered approach to every brew." />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
@@ -163,7 +163,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           </div>
         </div>
       </section>
-      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={base}>Explore both brewing paths <span aria-hidden="true">↗</span></a></div></section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={`${base}how-it-works/#home-workflow`}>Explore the homebrewing workflow <span aria-hidden="true">↗</span></a></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
