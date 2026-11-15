@@ -45,3 +45,4 @@ Bu klasör, Demleme ürününün pazarlama ve self-service edinim web sitesini t
 Discovery → sitemap → wireframe → görsel tasarım → içerik → geliştirme → QA → lansman. Özellik iddiaları ürünün mevcut kabiliyetleriyle doğrulanmadan yayınlanmaz. Build başarısı, canlı görsel QA veya ürün claim onayı yerine sayılmaz.
 
 27. [WP-09 / WP-10 teknik içerik birincil kaynak kaydı](27-wp09-wp10-primary-source-register.md)
+30. [WP-10 fermentation sample handling evidence](30-wp10-fermentation-sample-handling-evidence.md)
