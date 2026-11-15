@@ -218,7 +218,7 @@ for (const file of htmlFiles) {
       const structured = JSON.parse(jsonLd);
       assert(true, rel + ": JSON-LD is valid JSON");
       if (pagePath === "/breweries/") {
-        assert(/professional breweries/i.test(metaDescription || "") && /professional breweries/i.test(ogDescription || "") && /in development/i.test(metaDescription || ""), "Breweries search and social descriptions lead with the professional, in-development workflow");
+        assert(/professional brewery/i.test(metaDescription || "") && /professional breweries/i.test(ogDescription || "") && /in development/i.test(metaDescription || ""), "Breweries search and social descriptions lead with the professional, in-development workflow");
         assert(/recipe review/i.test(ogDescription || "") && /batch records/i.test(ogDescription || ""), "Breweries social description names the core workflow topics");
       }
       if (pagePath === "/faq/") {
