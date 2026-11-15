@@ -34,7 +34,8 @@ The shared stylesheet exposes these as CSS custom properties. Keep contrast stro
 - `public/favicon.svg`: GRISTORA monogram/favicon using forest and amber.
 - `public/social-card-source.svg`: editable 1200×630 social preview source.
 - `public/social-card.png`: generated during build from the SVG; do not edit or commit generated output.
-- Public routes use the generated social card for Open Graph and Twitter previews.
+- Public routes use the generated 1200×630 social card for large-image Open Graph and Twitter previews, with descriptive image alt text.
+- Preview and non-production hosts emit `noindex` metadata and `Disallow: /`; only `https://gristora.com` is crawlable.
 - Navigation uses a compact preview of the selected emblem beside the GRISTORA wordmark. The emblem is a first-pass vector reconstruction and remains subject to owner review; do not treat it as the approved production master.
 
 ## Claims and maturity
