@@ -684,3 +684,6 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Both visuals are explicitly caveated: no product-output, live-integration, automated recommendation or released-feature claim.
 - Integrated into Homebrewers and Technical Principles pages, updated visual inventory and benchmark evidence register.
 - Branch: `design/visual-evidence-phase-4`; CI and screenshot review pending.
+
+
+- The two detailed SVGs now use labelled, keyboard-focusable horizontal scroll regions on narrow screens so chart labels remain readable instead of shrinking to tiny text. Responsive and axe tests will verify no page-level overflow and keyboard access.
