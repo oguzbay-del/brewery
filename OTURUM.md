@@ -42,7 +42,7 @@
 ## Research and monitoring
 
 - Preliminary trademark evidence and limitations are in document 39; proposed class wording/logic in document 40; public claim restrictions in document 41.
-- Existing weekly GRISTORA trademark/domain monitor remains the only recurring automation. Do not create a duplicate.
+- Existing weekly GRISTORA trademark/domain monitor remains the only recurring automation; its prompt was updated on 15 Nov to track the C-DAC GistOra software lead, Indonesian BASF GISTORA gazette application and separate India BASF index lead. Next scheduled check: 16 Nov 2026, 10:00 Europe/Istanbul. Do not create a duplicate.
 - No trademark filing, domain purchase, third-party contact, or public clearance claim is authorised.
 
 ---
