@@ -665,3 +665,13 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Re-run cleared all contrast violations and the Business role-table issue.
 - The Homebrewers page uses the same horizontally scrollable table wrapper and also required keyboard focus; added a descriptive region name and `tabindex=0` there too.
 - Awaiting final axe and keyboard test rerun.
+
+
+## Handoff update — PR #71 merged
+
+- Main commit: `b8520a2806938664f114218fe88eb1a82cbbfde8`.
+- PR #71 merged after all CI checks passed, including 40 responsive route/viewport checks, 14 axe WCAG A/AA route scans, 3 keyboard interaction tests and 3 narrow-desktop (720px) layout proxy tests: 60/60 total.
+- Axe findings fixed: small hero-note/footer metadata text contrast raised from 3.96–3.98:1 to above 5:1; both Homebrewers and Breweries horizontally scrollable tables are now labelled, focusable regions with visible focus styling.
+- Automated WCAG-tagged scans are clean on the seven routes at 1440px and 390px. This is not a WCAG conformance certification or substitute for assistive-technology testing.
+- Main checks #43687858228 and GitHub Pages deployment #43687858222 are queued.
+- Manual release gates remain: screen-reader testing, complete keyboard/focus review, real 200% browser zoom, contrast review of embedded SVG text, and Vercel preview verification.
