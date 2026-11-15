@@ -316,3 +316,24 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - PR #82 merged; current main commit is `f584e389d5a3296f52a0656b657f1a3eb6e81f1d`.
 - PR #80 code passed main checks and GitHub Pages deployment; Vercel remains blocked by the Hobby build-rate limit.
 - Manual screen-reader and actual 200% zoom review remain open.
+
+
+## 7Q. Audience-intent metadata and next-step conversion paths — 15 November 2026
+
+### Findings
+- The Homebrewers and Professional Breweries pages already had distinct workflows, audience-specific FAQs, product-stage caveats and separate feature collections. These are retained.
+- Both closing CTAs previously sent visitors back to the generic homepage with the same label. That discarded audience context at the end of each page and weakened the next-step path.
+- Both page titles were generic audience labels rather than descriptive search-intent titles. The descriptions were already roadmap-safe and remain unchanged.
+- Social preview metadata remains incomplete: the source artwork is SVG-only. Do not publish it as an Open Graph/Twitter image until a raster export (PNG/JPEG) and real platform preview compatibility are checked.
+
+### Implemented in the audience-intent batch
+- Homebrewers title/OG/Twitter title now uses “Homebrewing Software in Development | Demleme”.
+- Professional Breweries title/OG/Twitter title now uses “Brewery Production Software in Development | Demleme”.
+- Homebrewers closing CTA now goes to the Home workflow section at `/how-it-works/#home-workflow`.
+- Professional Breweries closing CTA now goes to the Business workflow section at `/how-it-works/#business-workflow`.
+- No pricing, signup, demo, trial, availability, integrations or compliance claims were added. Page descriptions and product-stage caveats remain intact.
+
+### Validation required
+- Static metadata/route/link validator and Playwright responsive checks must pass.
+- Verify the two anchor targets remain present and visible.
+- Human visual QA, screen-reader, full keyboard and 200% zoom remain separate release gates.

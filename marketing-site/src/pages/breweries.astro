@@ -48,15 +48,15 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content="Explore Demleme's planned professional brewery workflows: recipe review, production planning, batch records, quality and traceability." />
-    <title>For Professional Breweries — Demleme</title>
+    <title>Brewery Production Software in Development | Demleme</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Demleme" />
-    <meta property="og:title" content="For Professional Breweries — Demleme" />
+    <meta property="og:title" content="Brewery Production Software in Development | Demleme" />
     <meta property="og:description" content="A clearer view of recipe decisions and production records." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="For Professional Breweries — Demleme" />
+    <meta name="twitter:title" content="Brewery Production Software in Development | Demleme" />
     <meta name="twitter:description" content="A clearer view of recipe decisions and production records." />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
@@ -195,7 +195,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="audience-faq-list">{faqs.map((faq) => <details class="audience-faq-item"><summary>{faq.q}</summary><p>{faq.a}</p></details>)}</div>
         </div>
       </section>
-      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={base}>Explore both brewing paths <span aria-hidden="true">↗</span></a></div></section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE DETAILS MATTER</p><h2>Build a clearer view of <em>every batch.</em></h2><a class="button button-primary" href={`${base}how-it-works/#business-workflow`}>Explore the brewery workflow <span aria-hidden="true">↗</span></a></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Brewing software in development for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>

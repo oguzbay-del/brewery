@@ -1,22 +1,18 @@
-# Aktif çalışma oturumu
-
 ## CANONICAL CURRENT STATUS — 15 November 2026
 
-> This section supersedes older dated snapshots below. Older entries are retained as history, not as the current state.
+> This section supersedes older dated snapshots below. Older entries are historical records.
 
-- **Main:** `5666f995c051345f7d9cce580d4ce0319a3d0aad`; PRs #84, #85 and #86 are merged. PR #87 is the current grouped documentation/asset PR; no other open PRs were present at batch start.
-- **Latest delivery:** PR #86 visible accessible breadcrumbs. CI: 78/78 Playwright tests, 684 static validator checks, 16 axe WCAG 2.2 AA scans; screenshot artifact #14152513961.
-- **Preview:** GitHub Pages `https://oguzbay-del.github.io/brewery/` is the current fallback preview. Vercel `https://brewery-rho.vercel.app` remains subject to the Hobby 24-hour deployment quota; avoid repeated previews.
-- **Active batch:** `docs/parallel-readiness-batch` adds a launch-decision register and original social preview artwork. WP-09–WP-13 documents already exist on main. No product app/API/Rust or Claude queue changes.
-- **Content audit:** FoamByte has a more complete public conversion experience (live product UI, pricing, calculators and testimonials). Demleme should not imitate unsupported claims; its differentiator is distinct Home/Business workflows, technical evidence, maturity labels and transparent scope.
-- **Homebrewers journey:** recipe → ingredients/water → calculations → brew day → fermentation observations → review. Technical guides need primary sources and SME review.
-- **Business journey:** recipe review → production planning → batch records → vessel/fermentation observations → QC/traceability. Keep ERP exclusions visible; do not imply released role permissions or compliance.
-- **WP-09 gate:** no public calculator until formula/method/version, authoritative sources, independent golden vectors, boundary/unit/locale/rounding tests, product parity and explicit public-use approval pass.
+- **Main:** `82de43426e5b9b1dc691f0d7e58ac022126d5426`; PRs #84–#87 merged. PR #87 CI run #124 passed, including Astro/TypeScript, static build, route/metadata/link validation and responsive Playwright QA with screenshots.
+- **Latest PR #87:** added launch decision register, original SVG social-card source, and corrected handoff. Vercel Preview remains blocked by Hobby 24-hour deployment quota; GitHub Pages is fallback preview.
+- **Active branch:** `seo/audience-intent-and-conversion-paths` improves distinct audience search intent and directs each audience page to its own workflow next step. No product app/API/Rust or Claude queue changes.
+- **Homebrewers:** recipe → ingredients/water → calculations → brew day → fermentation observations → review. Technical guides require primary sources and SME review.
+- **Business:** recipe review → production planning → batch records → vessel/fermentation observations → QC/traceability. Keep general ERP exclusions explicit; do not imply released role permissions or compliance.
+- **WP-09 gate:** no public calculator until method/version, authoritative sources, independent golden vectors, boundary/unit/locale/rounding tests, product parity and explicit public-use approval pass.
 - **WP-10 gate:** Learn/technical guides remain held until primary sources, worked examples, limitations, reviewer role and product-stage approval are recorded.
-- **Commercial decisions open:** app URL/sign-in/registration; production domain and hosting; pricing/free tier/trial/limits/billing; analytics and consent provider/events; approved photography/product screenshots. No destinations or values are invented.
-- **Manual QA excluded from autonomous batch:** real screen-reader testing, full human keyboard/focus review, actual 200% zoom/reflow and SVG internal-text contrast. Automated axe/Playwright checks do not replace these.
+- **Commercial decisions open:** app URL/sign-in/registration; production domain/hosting; pricing/free tier/trial/limits/billing; analytics/consent provider/events; approved photography/product screenshots.
+- **Social preview:** SVG source exists, but no OG/Twitter image metadata is wired; raster export and platform compatibility still need validation.
+- **Manual QA remains open:** real screen-reader testing, full human keyboard/focus review, actual 200% zoom/reflow and SVG internal-text contrast. Automated checks do not replace these.
 - **Release policy:** grouped PRs, CI and diff review, manual merge only; no auto-merge. Do not alter Vercel project/production settings or publish production without explicit approval.
-
 
 **Son güncelleme:** 2026-11-15  
 **Amaç:** Yeni ChatGPT veya Claude oturumunun bağlamı yeniden araştırmadan devralması.  
