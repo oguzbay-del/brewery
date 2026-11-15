@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1040" viewBox="0 0 1600 1040">
+<defs>
+ <linearGradient id="forest" x2="1" y2="1"><stop stop-color="#102923"/><stop offset="1" stop-color="#203d34"/></linearGradient>
+ <style>
+ .sans{font-family:Inter,Arial,sans-serif}.serif{font-family:Georgia,'Times New Roman',serif}
+ .ink{fill:#142b25}.muted{fill:#68736d}.cream{fill:#f5f1e8}.gold{fill:#c88b4b}
+ .label{font:600 17px Inter,Arial,sans-serif;letter-spacing:2.4px}.small{font:14px Inter,Arial,sans-serif}
+ </style>
+</defs>
+<rect width="1600" height="1040" fill="#f5f1e8"/>
+<text x="72" y="76" class="sans ink" font-size="20" font-weight="700" letter-spacing="5">GRISTORA / IDENTITY EXPLORATION 01</text>
+<text x="72" y="116" class="sans muted" font-size="15">Three visual routes · concept stage · not approved artwork</text>
+<rect x="72" y="156" width="1456" height="300" rx="18" fill="url(#forest)"/>
+<text x="112" y="202" class="sans cream label">ROUTE A / EDITORIAL WORDMARK</text>
+<text x="800" y="315" text-anchor="middle" class="serif cream" font-size="112" letter-spacing="3">GRISTORA</text>
+<path d="M570 345 H1030" stroke="#c88b4b" stroke-width="2"/>
+<text x="800" y="388" text-anchor="middle" class="sans cream" font-size="19" letter-spacing="7">BREWING INTELLIGENCE</text>
+<text x="112" y="425" class="serif cream" font-size="20" font-style="italic">Clarity for every brew.</text>
+<rect x="72" y="490" width="456" height="360" rx="18" fill="#fffdf8" stroke="#ddd7ca"/>
+<text x="108" y="538" class="sans ink label">ROUTE B / TECHNICAL MONOGRAM</text>
+<g transform="translate(300 665)">
+ <circle r="82" fill="none" stroke="#17372e" stroke-width="14"/>
+ <path d="M18 -55 A60 60 0 1 0 18 55" fill="none" stroke="#17372e" stroke-width="16" stroke-linecap="round"/>
+ <path d="M10 -9 L54 -9 L27 17 L-3 17 Z" fill="#c88b4b"/>
+ <path d="M-8 25 L30 25 L4 50 L-24 50 Z" fill="#c88b4b"/>
+</g>
+<text x="300" y="790" text-anchor="middle" class="sans ink" font-size="34" font-weight="650" letter-spacing="2">GRISTORA</text>
+<text x="300" y="820" text-anchor="middle" class="sans muted" font-size="12" letter-spacing="3">BREWING INTELLIGENCE</text>
+<rect x="572" y="490" width="456" height="360" rx="18" fill="#fffdf8" stroke="#ddd7ca"/>
+<text x="608" y="538" class="sans ink label">ROUTE C / GRIST PROCESS</text>
+<g transform="translate(800 665)">
+ <path d="M-70 -66 H48 Q68 -66 68 -46 Q68 -26 48 -26 H-12 Q-42 -26 -42 2 Q-42 30 -12 30 H68" fill="none" stroke="#17372e" stroke-width="20" stroke-linecap="round"/>
+ <path d="M-2 -8 L52 -8 L22 20 L-20 20 Z" fill="#c88b4b"/>
+ <circle cx="-45" cy="57" r="7" fill="#c88b4b"/><circle cx="-19" cy="68" r="5" fill="#c88b4b"/><circle cx="8" cy="61" r="6" fill="#c88b4b"/>
+</g>
+<text x="800" y="790" text-anchor="middle" class="sans ink" font-size="34" font-weight="650" letter-spacing="2">GRISTORA</text>
+<text x="800" y="820" text-anchor="middle" class="sans muted" font-size="12" letter-spacing="3">BREWING INTELLIGENCE</text>
+<rect x="1072" y="490" width="456" height="360" rx="18" fill="#fffdf8" stroke="#ddd7ca"/>
+<text x="1108" y="538" class="sans ink label">ROUTE D / COMBINATION</text>
+<g transform="translate(1300 665)">
+ <path d="M0 -68 A68 68 0 1 0 0 68" fill="none" stroke="#17372e" stroke-width="18" stroke-linecap="round"/>
+ <path d="M0 -24 H58 L25 5 H-12 Z" fill="#c88b4b"/>
+ <path d="M-8 18 H43 L12 46 H-30 Z" fill="#c88b4b"/>
+</g>
+<text x="1300" y="790" text-anchor="middle" class="sans ink" font-size="34" font-weight="650" letter-spacing="2">GRISTORA</text>
+<text x="1300" y="820" text-anchor="middle" class="sans muted" font-size="12" letter-spacing="3">BREWING INTELLIGENCE</text>
+<text x="72" y="918" class="sans ink label">STARTING PALETTE</text>
+<g class="sans small">
+ <rect x="72" y="944" width="38" height="38" rx="8" fill="#17372e"/><text x="122" y="968" class="ink">Forest #17372E</text>
+ <rect x="310" y="944" width="38" height="38" rx="8" fill="#c88b4b"/><text x="360" y="968" class="ink">Malt copper #C88B4B</text>
+ <rect x="610" y="944" width="38" height="38" rx="8" fill="#f5f1e8" stroke="#c9c2b5"/><text x="660" y="968" class="ink">Warm ivory #F5F1E8</text>
+ <rect x="920" y="944" width="38" height="38" rx="8" fill="#68736d"/><text x="970" y="968" class="ink">Slate #68736D</text>
+</g>
+<text x="1528" y="1014" text-anchor="end" class="sans muted" font-size="12">Concepts for review only · trademark and visual similarity checks pending</text>
+</svg>
