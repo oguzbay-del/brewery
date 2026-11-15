@@ -93,10 +93,11 @@ The following website changes implement the Business-first direction. They chang
 | Brewery landing metadata | Search and social descriptions explain the planned professional brewery workflows and state that the product is in development | PR #134 |
 | Automated browser and static checks | Marketing-site CI, generated-route validation, responsive browser QA and axe checks pass on the deployed code snapshot | CI run #197 |
 | GitHub Pages preview | The PR #134 code snapshot is published successfully | Pages deployment #65 |
+| Current-page navigation | Desktop/mobile current-page semantics and visible state, including feature detail routes | PR #138; main CI run #43710054711 (85/85); Pages run #43710054632 |
 
-Current code snapshot: `2d00b265b5e739100dd90eeda20541d892200557`. GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit; this does not indicate a failed site build.
+Current main snapshot: `7ac3fbef80ced26b81869a90f7be7f6b57869b8d`. GitHub Pages preview: https://oguzbay-del.github.io/brewery/ . Vercel Preview remains blocked by the Hobby build-rate limit; this does not indicate a failed site build. The current-page navigation update is included in the published main snapshot.
 
-Navigation accessibility work is in progress in PR #138: desktop and mobile navigation will identify the current page with `aria-current="page"`, including nested feature pages. Do not mark this work complete until its responsive and accessibility CI passes and the PR is merged.
+Navigation accessibility is complete. PR #138 adds a visible current-page state and `aria-current="page"` to desktop and mobile navigation, including nested feature pages. Main CI run #43710054711 passed 85/85 browser tests and the GitHub Pages deployment run #43710054632 succeeded on the current main commit.
 
 ## 10. Remaining release decisions and gates
 
