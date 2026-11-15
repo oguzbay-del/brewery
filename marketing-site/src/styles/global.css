@@ -7,7 +7,7 @@
   --muted: #475569;
   --soft: #E8E7E3;
   --line: rgba(11, 47, 38, .18);
-  --amber: #F4A261;
+  --amber: #8B4A1F; /* accessible text tone; decorative amber remains --amber-fill */
   --amber-fill: #F4A261;
   --amber-ink: #0B2F26;
   --olive: #7A8B75;
