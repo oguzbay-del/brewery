@@ -273,3 +273,9 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - Main build and GitHub Pages deployment succeeded after PR #75.
 - Vercel Preview remains blocked by the Hobby build-rate limit; the GitHub Pages preview is the working deployment until Vercel quota resets or the hosting plan changes.
 - Manual accessibility gates remain open; automated axe/keyboard checks are clean for the covered routes and viewport sizes.
+
+
+## 7K. Keyboard focus indicator coverage — 15 Kasım 2026
+
+- Added Playwright checks for visible keyboard focus on the three scrollable table regions (Homebrewers, Breweries, How It Works comparison) at 390px.
+- Clarified homepage audience visuals are original inline SVG illustrations, not pending photo placeholders.
