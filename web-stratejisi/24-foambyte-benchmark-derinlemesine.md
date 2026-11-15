@@ -301,3 +301,11 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - PR #80 merged. FAQPage schema is generated from the same 11 visible Q&A entries; static validation ensures the schema count and answer fields match the rendered page.
 - CI passed 63/63 browser tests plus static structured-data validation.
 - Main checks #43689298960 and GitHub Pages deployment #43689298947 are queued. No rich-result or ranking guarantee is claimed.
+
+
+## 7O. Current deployment verification — 15 Kasım 2026
+
+- PR #80 is merged; FAQPage structured data and its content-matching validator are in main.
+- Main checks #43689298960 and GitHub Pages deployment #43689298947 succeeded.
+- GitHub Pages is the working preview; Vercel remains limited by the Hobby build-rate quota.
+- 63/63 browser tests passed. Manual screen-reader and real 200% zoom review remain open.
