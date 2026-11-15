@@ -125,6 +125,9 @@ for (const file of htmlFiles) {
     if (breadcrumb) {
       const items = breadcrumb.itemListElement || [];
       assert(items.length >= 2 && items.every((item, index) => item["@type"] === "ListItem" && item.position === index + 1 && typeof item.name === "string" && typeof item.item === "string"), rel + ": breadcrumb items have ordered names and URLs");
+      const breadcrumbUrls = items.map((item) => { try { return new URL(item.item); } catch { return null; } });
+      assert(breadcrumbUrls.every((url) => url?.origin === siteOrigin), rel + ": breadcrumb URLs are absolute and stay on the site origin");
+      assert(breadcrumbUrls[0]?.href === new URL(`${basePath}/`, siteOrigin).href, rel + ": first breadcrumb points to the site home");
       assert(items.at(-1)?.item === pageUrl.href, rel + ": final breadcrumb points to the canonical page URL");
     }
   }
