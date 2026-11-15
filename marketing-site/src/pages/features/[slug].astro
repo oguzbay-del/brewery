@@ -42,6 +42,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={`${feature.title} — Demleme`} />
+    <meta name="twitter:description" content={description} />
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </head>
