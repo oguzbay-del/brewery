@@ -1,5 +1,7 @@
 # Demleme — Content and Messaging Architecture
 
+> **Commercial-priority update (15 November 2026):** Professional Breweries (Business) is the primary commercial audience; Homebrewers (Home) is a distinct secondary audience. Business problem clusters, homepage hierarchy and self-service conversion receive first priority. Keep both value propositions and workflows separate; do not interpret “two audiences” as equal go-to-market priority. This note supersedes older equal-priority wording in this document.
+
 **Work package:** WP-05  
 **Status:** Messaging strategy and content briefs complete; production copy and implementation remain separate approval gates.  
 **Date:** 14 November 2026  
@@ -124,12 +126,12 @@ Homepage headline must not carry every feature. The subheadline should identify 
 ### 4.1 Home page — `/`
 
 **Intent:** Brand/category discovery and audience routing.  
-**Primary audience:** Both.  
+**Primary commercial audience:** Professional Breweries (Business). **Secondary audience:** Homebrewers (Home).  
 **Primary message:** Brewing-specific software with clear workflows for homebrewers and professional breweries.  
 **Required sections:** Hero, audience split, lifecycle overview, feature groups, technical principles, Learn/Calculators, product status, FAQ preview.  
 **Proof:** Product-plan alignment; no customer proof required.  
 **SEO focus:** Demleme brewing software; brewing software for homebrewers and breweries (natural language only).  
-**CTA:** Explore Homebrewers / Explore Breweries.  
+**CTA:** Primary — Explore professional breweries. Secondary — Explore homebrewing.  
 **Do not:** Make pricing, launch, customer or availability claims.
 
 ### 4.2 Homebrewers — `/homebrewers/`
@@ -349,8 +351,8 @@ Each content item should have:
 
 | Order | Page / asset | Audience | Why first | Gate |
 |---:|---|---|---|---|
-| 1 | Homepage messaging brief | Both | Defines positioning and routing | Product status and two audience messages |
-| 2 | Homebrewers messaging brief | Home | Primary audience journey | Feature status and Home scope |
+| 1 | Homepage messaging brief | Business primary / Home secondary | Defines positioning and routing | Product status and Business-led audience messages |
+| 2 | Professional Breweries messaging brief | Business | Primary commercial journey | Feature status and Business scope |
 | 3 | Breweries messaging brief | Business | Distinct professional proposition | ERP exclusions and Business scope |
 | 4 | How It Works — Home | Home | Converts features into user journey | No fake product UI |
 | 5 | How It Works — Business | Business | Explains production lifecycle | Roadmap stage validation |
