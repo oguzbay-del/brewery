@@ -19,6 +19,7 @@
 | United Kingdom | [UK IPO search for a trade mark](https://www.gov.uk/search-for-trademark) | Official service allows searches by keyword, phrase, image, owner and number. | No record-level GRISTORA result captured in this log. |
 | Australia | [IP Australia Trade Mark Search](https://search.ipaustralia.gov.au/trademarks/) | Official service recommends searching spelling variants and sound-alikes, and supports image similarity. | No record-level GRISTORA result captured in this log. |
 | International | [WIPO Global Brand Database](https://www.wipo.int/en/web/global-brand-database/index) and [WIPO search guidance](https://www.wipo.int/en/web/madrid-system/check-availability) | WIPO recommends exact/close spelling, phonetic/conceptual, image and related goods/services searches, plus national registers where collections may be incomplete. | No record-level GRISTORA result captured in this log. |
+| Türkiye | [TÜRKPATENT Trademark Search](https://www.turkpatent.gov.tr/en/research) | Official search interface supports mark name, applicant, bulletin number and Nice-class queries, with downloadable result exports. | Search entry point verified; no record-level GRISTORA result captured in this pass. |
 
 Official source guidance:
 - USPTO search help: https://tmsearch.uspto.gov/?page=help
@@ -26,6 +27,8 @@ Official source guidance:
 - IP Australia Trade Mark Search: https://search.ipaustralia.gov.au/trademarks/
 - WIPO check-availability guidance: https://www.wipo.int/en/web/madrid-system/check-availability
 - WIPO FAQ explains that absence from the Global Brand Database does not establish availability and recommends national-office searches: https://www.wipo.int/en/web/global-brand-database/faqs_branddb
+- TÜRKPATENT official trademark search entry point: https://www.turkpatent.gov.tr/en/research
+- USPTO official clearance-search guidance: https://www.uspto.gov/trademarks/search/federal-trademark-searching
 
 ## 3. GISTORA / BASF — official Indonesia gazette lead and separate India index lead
 
@@ -82,6 +85,7 @@ Classification: **Unknown / live registrar verification required**. Do not infer
 | GRISTORA — UK | Unknown | Search UK IPO word/phrase variants and review goods/services and status. |
 | GRISTORA — Australia | Unknown | Search IP Australia variants and image similarity when the final logo is ready. |
 | GRISTORA — WIPO/Madrid | Unknown | Search Global Brand Database and Madrid Monitor, then verify national designations. |
+| GRISTORA — Türkiye | Unknown | Search exact/phonetic variants and related services in TÜRKPATENT; capture export/reference IDs. |
 | GistOra Tools — C-DAC, India | Official C-DAC software product listing; current commercial activity and trademark rights unknown | Counsel to verify prior/current use and Indian/international trademark rights; assess software-sector similarity. |
 | GISTORA — BASF, Indonesia | Official gazette publication; current status unknown | Verify post-publication status/opposition/registration in DGIP; assess phonetic similarity and scope with counsel. |
 | GISTORA — BASF, India | Third-party index lead; official record not captured | Verify application 7525714 in IP India; do not treat QuickCompany status as authoritative. |
@@ -101,3 +105,14 @@ Before relying on the mark:
 6. Obtain explicit owner approval before any filing, purchase, contact or public clearance claim.
 
 The existing weekly GRISTORA monitor remains the only recurring monitoring process; do not create a duplicate automation.
+
+
+## 7. Second-pass official source verification — 15 November 2026
+
+- TÜRKPATENT's official search page is confirmed as the national entry point. It supports searches by trademark name, applicant, announcement/registration bulletin and Nice class, and advertises export of up to 500 results: https://www.turkpatent.gov.tr/en/research . The interactive query was not completed to an exportable record-level result in this pass; Türkiye remains **unknown**, not cleared.
+- USPTO's official guidance confirms that clearance should include exact wording, alternate spellings/pronunciations and related goods/services, and that a same-class-only search can miss related goods/services: https://www.uspto.gov/trademarks/search/federal-trademark-searching . This is methodology guidance, not a GRISTORA result.
+- IP Australia's official portal was reachable but its interactive result count did not resolve in the captured page; no GRISTORA result is claimed: https://search.ipaustralia.gov.au/trademarks/ .
+- UK IPO's official search entry point was reconfirmed; no record-level GRISTORA result was captured: https://www.gov.uk/search-for-trademark .
+- Direct RDAP attempts for `gristora.com` did not return a usable registry response through the current research path. Domain status remains **unknown**; no availability conclusion is made.
+
+This pass adds official search entry points only. It does not change the conditional-hold recommendation, establish a conflict, or establish legal clearance. Interactive register evidence and qualified counsel review remain outstanding.
