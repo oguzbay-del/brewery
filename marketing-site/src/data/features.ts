@@ -254,3 +254,23 @@ export const stageDescriptions: Record<FeatureStage, string> = {
   "Later": "Listed as a later possibility in the product plan; not part of the initial release.",
   "Under consideration": "A research idea only. It is not an approved product commitment."
 };
+
+const seenFeatureSlugs = new Set<string>();
+for (const feature of features) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(feature.slug)) {
+    throw new Error(`Invalid feature slug: ${feature.slug}`);
+  }
+  if (seenFeatureSlugs.has(feature.slug)) {
+    throw new Error(`Duplicate feature slug: ${feature.slug}`);
+  }
+  seenFeatureSlugs.add(feature.slug);
+  if (feature.audiences.length === 0 || new Set(feature.audiences).size !== feature.audiences.length) {
+    throw new Error(`Feature ${feature.slug} must have unique audience labels`);
+  }
+  if (feature.stages.length === 0 || new Set(feature.stages).size !== feature.stages.length) {
+    throw new Error(`Feature ${feature.slug} must have unique roadmap stages`);
+  }
+  if (feature.sections.length === 0 || feature.sections.some((section) => !section.heading.trim() || section.items.length === 0)) {
+    throw new Error(`Feature ${feature.slug} must have non-empty content sections`);
+  }
+}
