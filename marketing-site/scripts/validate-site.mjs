@@ -121,6 +121,8 @@ for (const file of htmlFiles) {
   assert(sitemap.includes(pageUrl.href), `sitemap lists page: ${pagePath}`);
 }
 const forbidden = [
+  "Demleme",
+  "demleme.",
   "A complete toolkit for your next brew",
   "selected advanced features available to enable",
   "From formulation to production control",
@@ -129,6 +131,8 @@ for (const file of htmlFiles) {
   const html = await readFile(file, "utf8");
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
   if (rel === "404.html") continue;
+  assert(html.includes("GRISTORA"), rel + ": visible GRISTORA brand is present");
+  assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
   const titleCount = (html.match(/<title>/g) || []).length;
@@ -139,6 +143,9 @@ for (const file of htmlFiles) {
   assert(descriptionCount === 1, `${rel}: exactly one meta description`);
   const metaDescription = getMetaContent(html, "name", "description");
   assert(Boolean(metaDescription?.trim()), rel + ": meta description is not empty");
+  const robotsMeta = getMetaContent(html, "name", "robots");
+  const isCanonicalProduction = siteOrigin === "https://gristora.com";
+  assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
   if (metaDescription) {
     const length = decodeHtml(metaDescription).trim().length;
     assert(length >= 40 && length <= 220, rel + ": meta description is between 40 and 220 characters (found " + length + ")");
@@ -157,10 +164,10 @@ for (const file of htmlFiles) {
   assert(twitterCardCount === 1, rel + ": exactly one Twitter card type");
   assert(twitterTitleCount === 1, rel + ": exactly one Twitter title");
   assert(twitterDescriptionCount === 1, rel + ": exactly one Twitter description");
-  assert(ogImageCount <= 1, rel + ": at most one Open Graph image");
-  assert(twitterImageCount <= 1, rel + ": at most one Twitter image");
+  assert(ogImageCount === 1, rel + ": exactly one Open Graph image");
+  assert(twitterImageCount === 1, rel + ": exactly one Twitter image");
   const twitterCard = getMetaContent(html, "name", "twitter:card");
-  assert(["summary", "summary_large_image"].includes(twitterCard), rel + ": Twitter card uses a supported card type");
+  assert(twitterCard === "summary_large_image", rel + ": Twitter card uses the large-image format");
   const ogTitle = getMetaContent(html, "property", "og:title");
   const twitterTitle = getMetaContent(html, "name", "twitter:title");
   assert(Boolean(twitterTitle?.trim()), rel + ": Twitter title is not empty");
@@ -179,6 +186,8 @@ for (const file of htmlFiles) {
   }
   const ogImage = getMetaContent(html, "property", "og:image");
   const twitterImage = getMetaContent(html, "name", "twitter:image");
+  assert(getMetaContent(html, "property", "og:image:alt") === "GRISTORA — Brewing Intelligence", rel + ": Open Graph image has descriptive alt text");
+  assert(getMetaContent(html, "name", "twitter:image:alt") === "GRISTORA — Brewing Intelligence", rel + ": Twitter image has descriptive alt text");
   if (ogImage && twitterImage) assert(new URL(decodeHtml(ogImage), pageUrl).href === new URL(decodeHtml(twitterImage), pageUrl).href, rel + ": Twitter image matches Open Graph image");
   for (const [label, imageUrl] of [["Open Graph", ogImage], ["Twitter", twitterImage]]) {
     if (!imageUrl) continue;
@@ -378,6 +387,8 @@ for (const file of htmlFiles) {
 
 
 const notFoundHtml = await readFile(path.join(dist, "404.html"), "utf8");
+assert(notFoundHtml.includes("GRISTORA"), "404 page displays GRISTORA brand");
+assert(!/demleme/i.test(notFoundHtml), "404 page contains no legacy Demleme brand");
 const notFoundDesktopNav = notFoundHtml.match(/<nav class=["']desktop-nav["'][^>]*>([\s\S]*?)<\/nav>/)?.[1] || "";
 const notFoundBreweriesIndex = notFoundDesktopNav.indexOf(">Breweries<");
 const notFoundHomebrewersIndex = notFoundDesktopNav.indexOf(">Homebrewers<");
@@ -387,21 +398,26 @@ assert(/<details class=["']mobile-menu["']/.test(notFoundHtml), "404 page provid
 assert(/<nav aria-label=["']Mobile navigation["']/.test(notFoundHtml), "404 mobile navigation has an accessible name");
 
 const robots = await readFile(robotsPath, "utf8");
-const sitemapDirective = robots.match(/^Sitemap:\s*(\S+)\s*$/im)?.[1];
-assert(Boolean(sitemapDirective), "robots.txt references sitemap with a valid directive");
-if (sitemapDirective) {
-  try {
-    const robotsSitemapUrl = new URL(sitemapDirective);
-    assert(robotsSitemapUrl.origin === siteOrigin && robotsSitemapUrl.pathname === basePath + "/sitemap.xml", "robots.txt sitemap directive matches the generated sitemap URL");
-  } catch { failures.push("robots.txt contains an invalid sitemap URL"); }
-}
+const isCanonicalProduction = siteOrigin === "https://gristora.com";
 assert(/^User-agent:\s*\*/im.test(robots), "robots.txt declares the wildcard user agent");
-assert(/^Allow:\s*\//im.test(robots), "robots.txt explicitly allows crawling");
+if (isCanonicalProduction) {
+  const sitemapDirective = robots.match(/^Sitemap:\s*(\S+)\s*$/im)?.[1];
+  assert(Boolean(sitemapDirective), "production robots.txt references sitemap with a valid directive");
+  if (sitemapDirective) {
+    try {
+      const robotsSitemapUrl = new URL(sitemapDirective);
+      assert(robotsSitemapUrl.origin === siteOrigin && robotsSitemapUrl.pathname === basePath + "/sitemap.xml", "robots.txt sitemap directive matches the generated sitemap URL");
+    } catch { failures.push("robots.txt contains an invalid sitemap URL"); }
+  }
+  assert(/^Allow:\s*\//im.test(robots), "production robots.txt explicitly allows crawling");
+} else {
+  assert(/^Disallow:\s*\/$/im.test(robots), "preview robots.txt blocks all crawling");
+}
 
 console.log(`Static site validation: ${checks.length} checks passed, ${failures.length} failures.`);
 if (failures.length) {
   for (const failure of failures) console.error(`FAIL: ${failure}`);
   process.exitCode = 1;
 } else {
-  console.log("Routes, sitemap targets, metadata, local links, anchors and legacy-claim checks passed.");
+  console.log("Routes, sitemap targets, GRISTORA brand, social metadata, local links, anchors and legacy-claim checks passed.");
 }

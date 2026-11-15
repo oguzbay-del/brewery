@@ -1,15 +1,16 @@
 :root {
   color-scheme: light;
-  --page: #f2f2f7;
-  --surface: #ffffff;
-  --ink: #000000;
-  --muted: rgba(60, 60, 67, .75);
-  --soft: #e5e5ea;
-  --line: rgba(60, 60, 67, .18);
-  --amber: #985600;
-  --amber-fill: #e8901f;
-  --amber-ink: #1a1206;
-  --olive: #737d5c;
+  --page: #F7F6F3;
+  --forest: #0B2F26;
+  --surface: #FFFFFF;
+  --ink: #0B2F26;
+  --muted: #475569;
+  --soft: #E8E7E3;
+  --line: rgba(11, 47, 38, .18);
+  --amber: #8B4A1F; /* accessible text tone; decorative amber remains --amber-fill */
+  --amber-fill: #F4A261;
+  --amber-ink: #0B2F26;
+  --olive: #7A8B75;
   --serif: Georgia, "Times New Roman", serif;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --mono: "SFMono-Regular", Consolas, monospace;
@@ -26,8 +27,10 @@ a:focus-visible, summary:focus-visible { outline: 3px solid #0066cc; outline-off
 #main-content { scroll-margin-top: 24px; }
 .shell { width: min(var(--content), calc(100% - 64px)); margin-inline: auto; }
 .site-header { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 0 max(32px, calc((100vw - var(--content)) / 2)); background: var(--page); border-bottom: 1px solid rgba(80, 76, 65, .13); }
-.wordmark { font-size: 28px; font-weight: 700; letter-spacing: -1.9px; line-height: 1; }
-.wordmark span { color: var(--amber); }
+.wordmark { display: inline-flex; flex-direction: row; align-items: center; gap: 9px; color: var(--forest); text-decoration: none; }
+.brand-symbol { display: block; flex: 0 0 auto; width: 31px; height: 40px; object-fit: contain; }
+.wordmark-text { display: flex; flex-direction: column; gap: 4px; font-size: 21px; font-weight: 650; letter-spacing: 2px; line-height: 1; color: var(--forest); }
+.wordmark-text::after { content: "BREWING INTELLIGENCE"; font-family: var(--sans); font-size: 6.5px; font-weight: 650; letter-spacing: 1.5px; color: var(--muted); }
 .desktop-nav { display: flex; align-items: center; gap: clamp(24px, 3.2vw, 48px); margin-left: auto; margin-right: 30px; }
 .desktop-nav a, .header-cta { font-size: 13px; font-weight: 600; }
 .desktop-nav a { color: #4e524b; transition: color .2s ease; }
@@ -352,3 +355,18 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .breadcrumbs [aria-current="page"] { color: var(--ink); font-weight: 600; }
 .breadcrumbs a:focus-visible { outline: 2px solid #0066cc; outline-offset: 3px; border-radius: 2px; }
 @media (max-width: 620px) { .breadcrumbs { padding-top: 12px; padding-bottom: 6px; font-size: 10px; } .breadcrumbs li + li::before { margin-inline: 7px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
