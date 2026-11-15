@@ -110,7 +110,7 @@ const faqs = [
       <section class="role-section section-pad">
         <div class="shell">
           <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> PEOPLE AND INFORMATION</p><h2>Different roles. <em>Shared production context.</em></h2><p>These are audience needs that inform the product design—not a claim that role permissions or approval queues are currently available.</p></div>
-          <div class="role-table-wrap">
+          <div class="role-table-wrap" role="region" aria-label="Scrollable brewery role information table" tabindex="0">
             <table class="role-table">
               <thead><tr><th scope="col">Role</th><th scope="col">Primary information need</th><th scope="col">Editorial emphasis</th></tr></thead>
               <tbody>{roles.map((item) => <tr><th scope="row">{item.role}</th><td>{item.need}</td><td>{item.focus}</td></tr>)}</tbody>
