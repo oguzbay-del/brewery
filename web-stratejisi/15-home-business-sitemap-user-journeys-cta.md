@@ -1,5 +1,7 @@
 # Demleme — Home & Business Sitemap, User Journeys and CTA Architecture
 
+> **Commercial-priority update (15 November 2026):** Professional Breweries (Business) is the primary commercial audience and self-service acquisition path. Homebrewers (Home) remains a distinct secondary audience. The route and journey design below still applies to both; where priority, homepage order, content investment or conversion measurement is unspecified, Business takes precedence. This decision supersedes older wording that implied equal commercial priority.
+
 **Work package:** WP-04  
 **Status:** Strategy proposal complete; product-owner and user review gates remain open.  
 **Date:** 14 November 2026  
@@ -28,9 +30,9 @@
 
 | Level | Route | Page / content | Primary audience | Priority | State / dependency |
 |---|---|---|---|---|---|
-| 0 | `/` | Home: product positioning and audience routing | Both | P0 | Existing; revise after strategy approval |
-| 1 | `/homebrewers/` | Homebrewers overview | Home | P0 | Existing; deepen workflow and proof |
-| 1 | `/breweries/` | Professional Breweries overview | Business | P0 | Existing; deepen operations and scope |
+| 0 | `/` | Home: Business-first product positioning and secondary Home route | Business primary / Home secondary | P0 | Existing; revise to commercial strategy |
+| 1 | `/homebrewers/` | Homebrewers overview | Home | P1 — secondary | Existing; retain separate journey |
+| 1 | `/breweries/` | Professional Breweries overview | Business | P0 — primary | Primary commercial landing page; deepen operations and scope |
 | 1 | `/features/` | Feature directory with audience filters | Both | P0 | Existing; claim audit required |
 | 2 | `/features/[slug]/` | Individual capability pages | Both / Business | P0 | Existing; preserve roadmap status |
 | 1 | `/how-it-works/` | Two distinct end-to-end workflow overviews | Both | P1 | New |
