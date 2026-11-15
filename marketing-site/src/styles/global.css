@@ -323,3 +323,10 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .visual-grid .visual-diagram { margin: 0; min-width: 0; }
 .measurement-visual { margin-top: 22px; }
 @media (max-width: 760px) { .visual-grid { grid-template-columns: 1fr; gap: 16px; } .measurement-visual { margin-top: 16px; } }
+
+
+/* Original editorial artwork for audience hero panels */
+.audience-hero-art { min-height: 440px; margin: 0; padding: 18px; display: flex; flex-direction: column; justify-content: center; background: #f4eee3; border: 1px solid var(--line); }
+.audience-hero-art img { display: block; width: 100%; height: auto; max-height: 390px; object-fit: contain; }
+.audience-hero-art figcaption { padding: 10px 8px 0; color: var(--muted); font-size: 11px; line-height: 1.5; text-align: right; }
+@media (max-width: 760px) { .audience-hero { min-height: 0; } .audience-hero-art { min-height: 0; padding: 8px; } .audience-hero-art figcaption { text-align: left; } }
