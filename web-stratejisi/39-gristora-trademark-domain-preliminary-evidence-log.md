@@ -8,7 +8,7 @@
 
 - Candidate word mark: **GRISTORA**
 - Close variants to assess: GRISTOR, GISTORA, GRISTORA-like spelling, spacing and phonetic variants.
-- Initial goods/services focus: Nice Classes 9 (software), 42 (SaaS/software services) and 35 (business services), with adjacent classes assessed against actual planned use.
+- Preliminary goods/services scope (see document 40): Class 42 likely core for hosted SaaS; Class 9 conditional on GRISTORA-branded downloadable software; Class 35 only if actual business-management/administration services are offered; Class 41 only if separately marketed training is offered. Assess adjacent classes against actual planned use.
 - Initial commercial markets: United States and United Kingdom; Australia and WIPO/Madrid also included in the screening scope. EUIPO and Türkiye are additional expansion/relevant-market checks.
 
 ## 2. Official search sources identified
