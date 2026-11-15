@@ -17,16 +17,26 @@
 
 ## Parallel work packages
 
-| ID | Package | Deliverable | Files owned | Dependencies | Gate |
+| ID | Package | Deliverable | Files owned | Dependencies | Gate | Status |
 |---|---|---|---|---|---|
-| W7 | Homepage commercial entry | Add clear pricing and compare entry points without displacing Business-first positioning | `marketing-site/src/pages/index.astro` | W0 baseline | CI + responsive |
-| W8 | Wizard clarity | Show trial in persistent summary; explain 20+ custom quote without pretending a live request was sent | `marketing-site/src/pages/get-started.astro` | W0 baseline | CI + wizard browser tests |
-| W9 | Comparison comprehension | Explain stage labels, accessible table caption, pricing/configuration links and mobile behavior | `marketing-site/src/pages/compare.astro`, `src/styles/comparison.css` | Read-only feature catalogue | CI + accessibility + responsive |
+| W7 | Homepage commercial entry | Add clear pricing and compare entry points without displacing Business-first positioning | `marketing-site/src/pages/index.astro` | W0 baseline | CI + responsive | **Merged PR #156** |
+| W8 | Wizard clarity | Show trial in persistent summary; explain 20+ custom quote without pretending a live request was sent | `marketing-site/src/pages/get-started.astro` | W0 baseline | CI + wizard browser tests | **Merged PR #157** |
+| W9 | Comparison comprehension | Explain stage labels, accessible table caption, pricing/configuration links and mobile behavior | `marketing-site/src/pages/compare.astro`, `src/styles/comparison.css` | Read-only feature catalogue | CI + accessibility + responsive | **Merged PR #158** |
 | W10 | Funnel analytics specification | Define privacy-conscious events and measurement plan only; no tracking SDK until consent/legal review | website-specific documentation | W7–W9 merged | Documentation review |
 | W11 | Content consistency audit | Check every public route for consistent development, trial, price, payment and availability disclosures | website routes + audit report | W7–W9 merged | Route crawl + copy review |
 | W12 | Final website release readiness | Full links, metadata, structured data, sitemap, robots, 404, visual QA, accessibility and performance pass | marketing site only | W10–W11 | All CI gates green |
 
 W7, W8 and W9 are intentionally parallel and own separate route files. W10 can be drafted in parallel but should consume the final wording and event destinations from W7–W9. W11 begins after those merges to avoid auditing stale content. W12 is the final sequential release gate.
+
+## Execution log — 15 November 2026
+
+- PR #156 merged: homepage closing CTA now links directly to Plans & Pricing and the Home vs Brewery function comparison.
+- PR #157 merged: wizard summary includes the planned trial duration; 20+ teams see an explicit custom-quote handoff and a clear statement that no email request is sent from the preview.
+- PR #158 merged: comparison page includes a stage legend, explicit accessible table name/caption, direct plan links, and responsive horizontal table behavior. An initial accessibility-name test failed; the table was given an explicit accessible name and the complete CI then passed.
+- PR #159 merged: this parallel follow-through handoff plan is linked from `marketing-site/README.md`.
+- Final main SHA for this batch: `6f510c3cdac695d32d3d46cc682685b7bb923617`.
+- Main Marketing site checks: success. GitHub Pages preview deployment: success. Responsive screenshots reviewed at desktop and mobile widths.
+- Production domain, DNS and Vercel remain intentionally untouched.
 
 ## Future, owner-dependent decisions (not blockers for preview development)
 
