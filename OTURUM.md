@@ -707,3 +707,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Branch: `content/audience-comparison-matrix`; CI and responsive/axe review pending.
 
 - Added a homepage text link from the two audience cards to the new side-by-side comparison matrix.
+
+
+## Comparison page screenshot review — 15 Kasım 2026
+
+- First responsive screenshot review confirmed the comparison matrix reads as intended at desktop and mobile widths.
+- It also exposed the same empty sixth-cell background in the five-step Business workflow on How It Works; changed those cards to separate bordered items with transparent grid gaps.
+- Added a mobile scroll hint for the side-by-side matrix.
+- Re-run responsive/axe checks before merge.
