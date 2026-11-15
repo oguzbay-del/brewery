@@ -229,7 +229,7 @@ for (const file of htmlFiles) {
           typeof item.acceptedAnswer.text === "string"
         ), "FAQ schema questions and accepted answers are complete");
         assert(/professional brewery teams/i.test(metaDescription || "") && /professional brewery teams/i.test(ogDescription || ""), "FAQ search and social descriptions lead with professional brewery teams");
-        const faqIntro = html.match(/<section class=["']shell explain-page-hero["']>([\\s\\S]*?)<\\/section>/)?.[1] || "";
+        const faqIntro = html.match(/<section class=["']shell explain-page-hero["']>([\s\S]*?)<\/section>/)?.[1] || "";
         assert(/primary audience/i.test(faqIntro) && /secondary path/i.test(faqIntro), "FAQ introduction states the Business-first audience hierarchy");
       }
     } catch { failures.push(rel + ": JSON-LD is invalid JSON"); }
