@@ -752,3 +752,11 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Homepage audience artwork comments now correctly describe the inline SVGs as original editorial illustrations.
 - Main checks #43689057629 and GitHub Pages deployment #43689057632 are queued.
 - Vercel Hobby build-rate-limit remains the only hosting preview blocker; GitHub Pages is the current preview. Manual screen-reader and real 200% zoom review remain open.
+
+
+## FAQ structured data — 15 Kasım 2026
+
+- Changed the FAQ route JSON-LD from generic WebPage to FAQPage with Question / acceptedAnswer entries generated directly from the visible FAQ content.
+- Extended the static site validator to ensure the FAQ schema question count matches the rendered FAQ items and every answer is present.
+- No FAQ rich-result or ranking guarantee is claimed; this is structured semantic metadata.
+- Branch: `seo/faq-structured-data`; CI and axe/browser checks pending.
