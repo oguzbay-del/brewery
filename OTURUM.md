@@ -760,3 +760,12 @@ Her anlamlı işten sonra bu dosyayı güncelle:
 - Extended the static site validator to ensure the FAQ schema question count matches the rendered FAQ items and every answer is present.
 - No FAQ rich-result or ranking guarantee is claimed; this is structured semantic metadata.
 - Branch: `seo/faq-structured-data`; CI and axe/browser checks pending.
+
+
+## Handoff update — PR #80 merged
+
+- Main commit: `56e44fd988a2eb6abee75bffee2ad717cbc04f00`.
+- PR #80 merged with FAQPage JSON-LD generated from the visible FAQ data and static validation that question count/answers match the rendered content.
+- PR CI #43689184058 passed: Astro/TypeScript, build, static validator, 40 responsive checks, 14 axe scans, 3 disclosure/skip-link keyboard checks, 3 narrow-desktop proxies and 3 table-focus checks (63/63 browser tests).
+- Main checks #43689298960 and GitHub Pages deployment #43689298947 are queued.
+- No FAQ rich-result or ranking guarantee is claimed. Manual screen-reader and actual 200% zoom checks remain open.
