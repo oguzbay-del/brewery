@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Demleme — Brewing software in development</title>
+  <desc id="desc">A minimal branded social preview with the Demleme wordmark and an abstract brewing vessel illustration.</desc>
+  <rect width="1200" height="630" fill="#f2f2f7"/>
+  <path d="M0 0H1200V630H0Z" fill="none" stroke="#d8d8df" stroke-width="2"/>
+  <g fill="none" stroke="#d7d7df" stroke-width="2">
+    <circle cx="920" cy="315" r="225"/>
+    <circle cx="920" cy="315" r="175"/>
+    <circle cx="920" cy="315" r="125"/>
+  </g>
+  <g transform="translate(800 142)" stroke="#985600" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M70 36h100l-10 38v210c0 25-18 43-42 43h-6c-24 0-42-18-42-43V74z" fill="#e8901f" fill-opacity=".16"/>
+    <path d="M57 74h126M76 145h88M76 220h88"/>
+    <path d="M120 36V8M98 8h44"/>
+    <path d="M170 104h25v92h-25"/>
+    <path d="M85 327v22M155 327v22"/>
+  </g>
+  <g transform="translate(88 102)">
+    <text x="0" y="0" fill="#000000" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="-1.8">Demleme</text>
+    <rect x="0" y="55" width="54" height="4" fill="#e8901f"/>
+    <text x="0" y="145" fill="#000000" font-family="Georgia, 'Times New Roman', serif" font-size="66" font-weight="400">Brewing,</text>
+    <text x="0" y="222" fill="#985600" font-family="Georgia, 'Times New Roman', serif" font-size="66" font-weight="400">considered.</text>
+    <text x="2" y="290" fill="#50505a" font-family="Arial, Helvetica, sans-serif" font-size="24">Brewing software in development</text>
+    <text x="2" y="332" fill="#686873" font-family="Arial, Helvetica, sans-serif" font-size="18">For homebrewers and professional breweries</text>
+  </g>
+  <g fill="#777781" font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="2">
+    <text x="88" y="566">RECIPES  ·  MEASUREMENTS  ·  BATCH CONTEXT</text>
+    <text x="1110" y="566" text-anchor="end">DEMLEME</text>
+  </g>
+</svg>
