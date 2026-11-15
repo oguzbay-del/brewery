@@ -139,76 +139,76 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
     </main>
     <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Plan configuration preview · No payment collected</span></div></footer>
-    <script>
-      /** @type {HTMLFormElement | null} */
-      const form = document.querySelector("#plan-wizard");
+    <script lang="ts">
+      type Audience = "home" | "business" | "";
+      type BillingTerm = "monthly" | "annual" | "two-year" | "three-year";
+      const form = document.querySelector<HTMLFormElement>("#plan-wizard");
       if (form) {
         let step = 1;
         const searchAudience = new URLSearchParams(window.location.search).get("audience");
-        const state = { audience: searchAudience === "business" ? "business" : searchAudience === "home" ? "home" : "", seats: "5", term: "monthly" };
-        /** @type {Record<string, string>} */
-        const discounts = { monthly: "0%", annual: "15%", "two-year": "25%", "three-year": "35%" };
-        /** @type {Record<string, string>} */
-        const termNames = { monthly: "Monthly", annual: "Annual", "two-year": "2 years", "three-year": "3 years" };
-        /** @param {string} selector @returns {HTMLElement} */
-        const $ = (selector) => /** @type {HTMLElement} */ (document.querySelector(selector));
-        const update = () => {
-          form.querySelectorAll("[data-step]").forEach((panel) => {
-            const element = /** @type {HTMLElement} */ (panel);
-            element.hidden = Number(element.dataset.step) !== step;
-          });
-          document.querySelectorAll("[data-progress]").forEach((item) => {
-            const element = /** @type {HTMLElement} */ (item);
-            const n = Number(element.dataset.progress);
-            element.classList.toggle("is-current", n === step);
-            element.classList.toggle("is-complete", n < step);
-            if (n === step) element.setAttribute("aria-current", "step"); else element.removeAttribute("aria-current");
-          });
-          /** @type {HTMLButtonElement} */ ($("#wizard-back")).disabled = step === 1;
-          $("#wizard-next").textContent = step === 4 ? "Configuration preview complete" : "Continue →";
-          /** @type {HTMLButtonElement} */ ($("#wizard-next")).disabled = step === 4;
-          $("#home-seat").hidden = state.audience !== "home";
-          $("#business-seats").hidden = state.audience !== "business";
-          $("#contact-tier").hidden = state.seats !== "20+";
-          $("#custom-billing").hidden = state.seats !== "20+";
-          /** @type {HTMLFieldSetElement} */ (form.querySelector(".billing-options")).hidden = state.seats === "20+";
-          $("#seat-description").textContent = state.audience === "home" ? "The Home plan is designed for one individual brewer." : "Choose the number of people who need a seat.";
-          $("#trial-note").textContent = state.audience === "home" ? "Your Home plan includes a proposed three-month introductory trial." : "Your Professional Brewery plan includes a proposed one-month introductory trial.";
-          $("#summary-audience").textContent = state.audience ? (state.audience === "home" ? "Homebrewer" : "Professional Brewery") : "Choose a path";
-          $("#summary-seats").textContent = state.audience === "home" ? "1 user" : state.audience === "business" ? (state.seats === "20+" ? "20+ · custom quote" : state.seats + " users") : "—";
-          $("#summary-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
-          $("#summary-discount").textContent = state.seats === "20+" ? "—" : discounts[state.term];
-          $("#review-audience").textContent = state.audience === "home" ? "Homebrewer" : "Professional Brewery";
-          $("#review-seats").textContent = state.audience === "home" ? "1 user" : (state.seats === "20+" ? "20+ users · custom quote" : state.seats + " users");
-          $("#review-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
-          $("#review-discount").textContent = state.seats === "20+" ? "To be agreed" : discounts[state.term];
-          $("#review-trial").textContent = state.audience === "home" ? "3 months (planned)" : "1 month (planned)";
-          /** @type {HTMLButtonElement} */ ($("#wizard-next")).disabled = step === 4 || (step === 1 && !state.audience);
-          $("#wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Configuration preview complete" : "Continue →";
-          $("#wizard-feedback").textContent = "";
+        const state: { audience: Audience; seats: string; term: BillingTerm } = {
+          audience: searchAudience === "business" ? "business" : searchAudience === "home" ? "home" : "",
+          seats: "5",
+          term: "monthly",
         };
-        /** @type {NodeListOf<HTMLInputElement>} */
-        const audienceInputs = form.querySelectorAll('input[name="audience"]');
-        /** @type {NodeListOf<HTMLInputElement>} */
-        const seatInputs = form.querySelectorAll('input[name="seats"]');
-        /** @type {NodeListOf<HTMLInputElement>} */
-        const termInputs = form.querySelectorAll('input[name="term"]');
-        audienceInputs.forEach((input) => input.addEventListener("change", () => { state.audience = input.value; update(); }));
-        seatInputs.forEach((input) => input.addEventListener("change", () => { state.seats = input.value; update(); }));
-        termInputs.forEach((input) => input.addEventListener("change", () => { state.term = input.value; update(); }));
-        $("#wizard-next").addEventListener("click", () => {
+        const discounts: Record<BillingTerm, string> = { monthly: "0%", annual: "15%", "two-year": "25%", "three-year": "35%" };
+        const termNames: Record<BillingTerm, string> = { monthly: "Monthly", annual: "Annual", "two-year": "2 years", "three-year": "3 years" };
+        const byId = <T extends HTMLElement = HTMLElement>(id: string): T => {
+          const element = document.getElementById(id);
+          if (!element) throw new Error(`Missing wizard element: ${id}`);
+          return element as T;
+        };
+        const update = () => {
+          form.querySelectorAll<HTMLElement>("[data-step]").forEach((panel) => {
+            panel.hidden = Number(panel.dataset.step) !== step;
+          });
+          document.querySelectorAll<HTMLElement>("[data-progress]").forEach((item) => {
+            const n = Number(item.dataset.progress);
+            item.classList.toggle("is-current", n === step);
+            item.classList.toggle("is-complete", n < step);
+            if (n === step) item.setAttribute("aria-current", "step"); else item.removeAttribute("aria-current");
+          });
+          byId<HTMLButtonElement>("wizard-back").disabled = step === 1;
+          byId<HTMLButtonElement>("wizard-next").textContent = step === 4 ? "Configuration preview complete" : "Continue →";
+          byId<HTMLButtonElement>("wizard-next").disabled = step === 4;
+          byId("home-seat").hidden = state.audience !== "home";
+          byId("business-seats").hidden = state.audience !== "business";
+          byId("contact-tier").hidden = state.seats !== "20+";
+          byId("custom-billing").hidden = state.seats !== "20+";
+          form.querySelector<HTMLFieldSetElement>(".billing-options")!.hidden = state.seats === "20+";
+          byId("seat-description").textContent = state.audience === "home" ? "The Home plan is designed for one individual brewer." : "Choose the number of people who need a seat.";
+          byId("trial-note").textContent = state.audience === "home" ? "Your Home plan includes a proposed three-month introductory trial." : "Your Professional Brewery plan includes a proposed one-month introductory trial.";
+          byId("summary-audience").textContent = state.audience ? (state.audience === "home" ? "Homebrewer" : "Professional Brewery") : "Choose a path";
+          byId("summary-seats").textContent = state.audience === "home" ? "1 user" : state.audience === "business" ? (state.seats === "20+" ? "20+ · custom quote" : state.seats + " users") : "—";
+          byId("summary-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
+          byId("summary-discount").textContent = state.seats === "20+" ? "—" : discounts[state.term];
+          byId("review-audience").textContent = state.audience === "home" ? "Homebrewer" : "Professional Brewery";
+          byId("review-seats").textContent = state.audience === "home" ? "1 user" : (state.seats === "20+" ? "20+ users · custom quote" : state.seats + " users");
+          byId("review-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
+          byId("review-discount").textContent = state.seats === "20+" ? "To be agreed" : discounts[state.term];
+          byId("review-trial").textContent = state.audience === "home" ? "3 months (planned)" : "1 month (planned)";
+          byId<HTMLButtonElement>("wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
+          byId<HTMLButtonElement>("wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Configuration preview complete" : "Continue →";
+          byId("wizard-feedback").textContent = "";
+        };
+        form.querySelectorAll<HTMLInputElement>('input[name="audience"]').forEach((input) => input.addEventListener("change", () => {
+          state.audience = input.value as Audience;
+          state.seats = "5";
+          form.querySelector<HTMLInputElement>('input[name="seats"][value="5"]')!.checked = true;
+          update();
+        }));
+        form.querySelectorAll<HTMLInputElement>('input[name="seats"]').forEach((input) => input.addEventListener("change", () => { state.seats = input.value; update(); }));
+        form.querySelectorAll<HTMLInputElement>('input[name="term"]').forEach((input) => input.addEventListener("change", () => { state.term = input.value as BillingTerm; update(); }));
+        byId<HTMLButtonElement>("wizard-next").addEventListener("click", () => {
           if (step < 4) {
             step = step === 2 && state.seats === "20+" ? 4 : step + 1;
             update();
-            /** @type {HTMLElement | null} */
-            const heading = document.querySelector(".wizard-step:not([hidden]) h2");
-            heading?.focus();
+            document.querySelector<HTMLElement>(".wizard-step:not([hidden]) h2")?.focus();
           }
         });
-        $("#wizard-back").addEventListener("click", () => { if (step > 1) { step -= 1; update(); } });
+        byId<HTMLButtonElement>("wizard-back").addEventListener("click", () => { if (step > 1) { step -= 1; update(); } });
         if (state.audience) {
-          /** @type {HTMLInputElement | null} */
-          const selected = form.querySelector('input[name="audience"][value="' + state.audience + '"]');
+          const selected = form.querySelector<HTMLInputElement>('input[name="audience"][value="' + state.audience + '"]');
           if (selected) selected.checked = true;
         }
         update();
