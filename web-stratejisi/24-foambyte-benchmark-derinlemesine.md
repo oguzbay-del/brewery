@@ -225,3 +225,6 @@ Bu doküman strateji/benchmark çıktısıdır. Kullanıcı 15 Kasım 2026'da ma
 - First axe run found low-contrast 11px hero-note and 9px footer metadata text (3.96–3.98:1, below 4.5:1) and a non-focusable horizontally scrollable role table.
 - Remediation: darker text tokens for these small labels and a labelled/focusable role-table region with visible focus styling.
 - Re-run required; no WCAG conformance claim until all automated and manual checks are complete.
+
+
+- Follow-up axe run isolated the same scrollable-region issue on the Homebrewers record-loop table. Added a labelled focusable region there as well; final rerun required.
