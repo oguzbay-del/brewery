@@ -8,34 +8,45 @@ const base = import.meta.env.BASE_URL;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="A technical brewing workspace for homebrewers who care about the details." />
+    <meta name="description" content="Brewing software in development for homebrewers who want to understand recipes, calculations and every batch." />
     <title>For Homebrewers — Demleme</title>
   </head>
   <body>
     <header class="site-header">
       <a class="wordmark" href={base} aria-label="Demleme home">demleme<span>.</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav>
+      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}breweries`}>Breweries</a><a href={`${base}homebrewers`} aria-current="page">Homebrewers</a><a href={`${base}#approach`}>Our approach</a></nav>
       <a class="header-cta" href={`${base}#audience-paths`}>All brewing paths <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}breweries`}>Breweries</a><a href={`${base}#approach`}>Our approach</a></nav></details>
+      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}breweries`}>Breweries</a><a href={`${base}homebrewers`}>Homebrewers</a><a href={`${base}#approach`}>Our approach</a></nav></details>
     </header>
     <main>
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR HOME BREWERS</p>
-        <h1>Make every brew a <em>learning experience.</em></h1>
-        <p>Explore the technical details behind recipes, ingredients and brewing notes. Demleme is being shaped for brewers who want to understand their process, not just follow a set of numbers.</p>
-        <a class="button button-primary" href={`${base}#audience-paths`}>Explore Demleme <span aria-hidden="true">↗</span></a>
+        <h1>Make every brew more <em>considered.</em></h1>
+        <p>Demleme is brewing software in development for homebrewers who want to understand the ingredients, calculations and observations behind each batch.</p>
+        <a class="button button-primary" href="#brewing-process">Explore the brewing process <span aria-hidden="true">↗</span></a>
       </section>
       <!-- IMAGE SLOT: HOMEBREWERS-HERO | Replace placeholder with licensed documentary-style photo of a homebrewer working on a batch. -->
       <section class="shell audience-hero">
         <div class="image-placeholder" data-image-slot="homebrewers-hero"><strong>IMAGE PLACEHOLDER · HOMEBREWERS-HERO</strong><span>Homebrewer measuring, preparing ingredients or working beside a small-batch setup</span></div>
       </section>
-      <section class="audience-page-section section-pad">
-        <div class="shell audience-page-grid">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> A MORE CONSIDERED PROCESS</p><h2>Know what goes into every decision.</h2><p>Homebrewing is part craft, part measurement. A useful workspace should make the details easier to follow without getting between you and the brew.</p></div>
-          <div><ul class="audience-page-list"><li>Recipe details and ingredient context</li><li>Brewing calculations and clear terminology</li><li>Batch observations and process learning</li></ul><p class="audience-page-note">Areas of focus: clarity, consistency and curiosity — not complexity for its own sake.</p></div>
+      <section class="audience-page-section section-pad" id="brewing-process">
+        <div class="shell">
+          <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> THE WORK BEHIND A BREW</p><h2>A brew is a series of <em>connected decisions.</em></h2><p>From the first recipe idea to the notes you keep afterwards, each step adds context to the next.</p></div>
+          <div class="audience-page-grid">
+            <div><h3>01 — Recipe design</h3><p>Set out the recipe intent and understand the ingredients and parameters that shape it.</p><h3>02 — Ingredients and water</h3><p>Keep ingredient choices and water assumptions part of the brewing picture.</p><h3>03 — Brewing calculations</h3><p>Understand what gravity, volume and bitterness estimates represent, including their inputs and limitations.</p></div>
+            <div><h3>04 — Brew-day measurements</h3><p>Consider the relationship between planned values and the observations recorded during a brew.</p><h3>05 — Fermentation records</h3><p>Give measurements and notes their batch context without implying unverified predictions or automation.</p><h3>06 — Batch review</h3><p>Use what you observed to inform the questions you ask of your next recipe.</p></div>
+          </div>
+          <p class="audience-page-note">These are product areas and workflow goals, not a statement that every capability is available today.</p>
         </div>
       </section>
-      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><a class="button button-primary" href={base}>Back to Demleme <span aria-hidden="true">↗</span></a></div></section>
+      <section class="technical-section">
+        <div class="shell technical-layout">
+          <div class="technical-mark" aria-hidden="true"><span>DM</span><i></i><span>02</span></div>
+          <div class="technical-copy"><p class="eyebrow"><span class="eyebrow-line"></span> TECHNICAL CLARITY</p><h2>Understand the number, <em>not just the result.</em></h2><p>When a calculation or technical guide is published, its method should make the inputs, units, assumptions, example and limitations clear. That is the standard Demleme is working towards.</p><a class="text-link" href={`${base}#approach`}>Explore our approach <span aria-hidden="true">→</span></a></div>
+          <div class="technical-note"><span class="note-kicker">IN DEVELOPMENT</span><p>Product areas are labelled by stage so you can distinguish what is available from what is planned or still being evaluated.</p><span class="note-foot">DEMLEME / HOMEBREWING</span></div>
+        </div>
+      </section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> THE CRAFT IS IN THE DETAILS</p><h2>Keep learning with <em>every batch.</em></h2><p>Demleme is in development. Explore the product approach and the separate path for professional breweries.</p><a class="button button-primary" href={base}>Back to Demleme <span aria-hidden="true">↗</span></a></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}>demleme<span>.</span></a><p>Technical brewing software for people who care about the details.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} Demleme</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
