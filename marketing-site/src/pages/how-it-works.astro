@@ -68,6 +68,7 @@ const businessSteps = [
       <section class="explain-audience-section section-pad" id="home-workflow">
         <div class="shell">
           <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 01 · HOMEBREWERS</p><h2>From recipe idea to <em>batch learning.</em></h2></div><p>For the brewer who designs, makes, measures and reviews their own batches.</p></div>
+          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-learning-loop.svg`} alt="Five-stage homebrewing learning loop: recipe, ingredients, brew day, fermentation and batch review." loading="lazy" /><figcaption>Illustrative workflow · designed around a repeatable learning loop</figcaption></figure>
           <ol class="explain-flow">
             {homeSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
           </ol>
@@ -77,6 +78,7 @@ const businessSteps = [
       <section class="explain-audience-section explain-business-section section-pad" id="business-workflow">
         <div class="shell">
           <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 02 · PROFESSIONAL BREWERIES</p><h2>From recipe review to <em>production records.</em></h2></div><p>For teams that need shared context around recipes, batches, vessels and quality records.</p></div>
+          <figure class="visual-diagram"><img src={`${base}images/diagrams/brewery-record-chain.svg`} alt="Conceptual brewery record model linking recipe version, batch record, ingredient lots, vessel events and quality records." loading="lazy" /><figcaption>Conceptual record relationships · planned product model, not a live feature claim</figcaption></figure>
           <ol class="explain-flow">
             {businessSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
           </ol>

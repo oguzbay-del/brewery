@@ -309,3 +309,10 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
   .mobile-menu nav { position: absolute; z-index: 5; top: 54px; right: -4px; width: min(300px, calc(100vw - 48px)); display: flex; flex-direction: column; padding: 14px 18px 18px; background: var(--surface); border: 1px solid var(--line); }
   .mobile-menu nav a { min-height: 48px; display: flex; align-items: center; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 600; }
 }
+
+/* Original explanatory SVG assets */
+.visual-diagram { margin: 34px 0 42px; padding: 14px; border: 1px solid var(--line); background: #f7f5f0; }
+.visual-diagram img { display: block; width: 100%; height: auto; }
+.visual-diagram figcaption { padding: 12px 8px 4px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.technical-visual { padding-block: 24px 48px; }
+@media (max-width: 640px) { .visual-diagram { margin: 24px 0 30px; padding: 8px; } .visual-diagram figcaption { font-size: 11px; } }
