@@ -120,3 +120,20 @@ A second editable vector board is available at [assets/gristora-logo-exploration
 - **C2 Abstract Grain Geometry:** geometric material reference without literal malt/hop illustration; test for unintended leaf/seed associations and 16 px clarity.
 
 These are six exploratory sketches, not finished logo masters. The next design pass should normalize optical weight, refine geometry and typography, create light/dark and monochrome exports, and compare silhouettes. No public-site asset should be replaced until owner approval and legal/domain review.
+
+
+## 10. Owner-preferred direction — 15 November 2026
+
+The owner has identified the first GRISTORA design shared at [this ChatGPT reference](https://chatgpt.com/s/m_6af9ac3f07e48191aa8504a2e22a77a9) as the preferred visual direction and has authorized using it as the basis for further work.
+
+This preference supersedes the earlier instruction to treat all exploratory routes as equally active. The next iteration must:
+
+- Preserve the first design's recognizable composition, typography, symbol and overall character; do not replace it with a different creative route.
+- Refine only what is needed for professional vector quality: geometry, kerning, spacing, optical balance, alignment and responsive lockups.
+- Prepare monochrome, light/dark, header, social avatar and favicon-size tests from that same design.
+- Keep any secondary symbol subordinate to the selected primary design unless the reference itself makes it a co-equal element.
+- Keep the artwork labelled as the **owner-preferred direction**, not a final approved master, until the exact reference artwork has been inspected and the final vector proof is reviewed.
+
+The owner has already clarified the reference as the first logo shown by the assistant before the statement “Paralel çalışmayı sürdürdüm. Bu turda marka dokümantasyonundan çıkıp ilk logo tasarımını, GitHub iş takibini ve marka izleme sürecini de ilerlettim.” Do not ask the owner to repeat this clarification or upload the artwork again. The shared-chat URL remains the authoritative visual reference, but the repository connector cannot retrieve its rendered image. Do not substitute any of the later A/B/C exploration sketches or invent geometry and claim it is the selected artwork. Continue all preparatory identity-system work that does not require tracing unavailable pixels; keep the preferred design direction fixed and record the exact-vector trace as blocked only by reference-image access, not by an unresolved owner decision.
+
+**Scope:** GRISTORA public brand and marketing website only. The product application, APIs, Rust engine, iOS app, internal identifiers, data model and product roadmap remain unchanged.

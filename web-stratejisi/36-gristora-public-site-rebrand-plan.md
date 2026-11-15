@@ -1,6 +1,6 @@
 # GRISTORA — Public marketing site rebrand plan
 
-**Status:** Planned. Do not change the public website brand until the logo and identity direction is reviewed and the name-clearance gate is addressed.  
+**Status:** Planned / gated. The owner has selected the first shared GRISTORA logo design as the direction to refine. Do not change the public website brand until that exact artwork is faithfully refined and approved, and the name-clearance gate is addressed.  
 **Scope:** `marketing-site/` only. Do not change the product application or software.
 
 ## 1. Objective
@@ -13,7 +13,8 @@ The website remains a marketing and self-service discovery surface. It is not th
 
 - `33-gristora-brand-platform.md` — canonical brand platform.
 - `34-gristora-brand-architecture.md` — brand and public-site architecture.
-- `35-gristora-visual-identity-logo-brief.md` — logo and visual identity deliverables.
+- `35-gristora-visual-identity-logo-brief.md` — logo and visual identity brief.
+- `37-gristora-logo-production-and-qa.md` — production assets, vector quality, proof board and acceptance criteria.
 - Existing public claim register and feature catalogue.
 - Existing Astro design tokens, accessibility rules and responsive QA.
 
@@ -81,8 +82,8 @@ Do not rename repository folders or product-internal paths as part of this publi
 
 | WP | Work | Dependency | Status |
 |---|---|---|---|
-| WP-15 | Approve brand platform and brand architecture | User's GRISTORA decision | active |
-| WP-16 | Explore logo routes and prepare visual identity options | WP-15 | todo |
+| WP-15 | Approve brand platform and brand architecture | User's GRISTORA decision | documented |
+| WP-16 | Refine owner-selected first logo design and complete visual QA | WP-15 + exact reference artwork | in progress |
 | WP-17 | Apply approved GRISTORA identity to the public marketing website | WP-15, WP-16, legal/domain gate | todo |
 | WP-18 | Final public-domain, social preview and launch QA | WP-17 and launch decisions | todo |
 
@@ -94,4 +95,4 @@ Read these four documents before changing the public marketing website:
 - `web-stratejisi/35-gristora-visual-identity-logo-brief.md`
 - `web-stratejisi/36-gristora-public-site-rebrand-plan.md`
 
-The user has selected GRISTORA as the public brand. The user has not approved a logo route or final domain. The next task is logo exploration, not product software modification. Do not apply the public-site rebrand until the logo direction is reviewed and the legal/domain gate is recorded.
+The user has selected GRISTORA as the public brand and the first assistant-presented logo design as the visual direction to refine. The exact rendered reference must be accessed before faithful vector tracing; do not fabricate it. Final logo approval and domain clearance remain open. Do not modify product software. Do not apply the public-site rebrand until the logo direction is reviewed and the legal/domain gate is recorded.

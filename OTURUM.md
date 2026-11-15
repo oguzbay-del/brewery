@@ -1,6 +1,21 @@
+## GRISTORA logo decision — 15 November 2026 (current; supersedes older logo-status notes)
+
+- The owner selected the **first logo design shown by the assistant** before the message beginning “Paralel çalışmayı sürdürdüm. Bu turda marka dokümantasyonundan çıkıp ilk logo tasarımını…”.
+- This is the fixed visual direction for WP-16. Do not ask the owner to repeat the clarification or upload the artwork again. Do not ask them to choose among the later six exploration variants.
+- The shared reference is https://chatgpt.com/s/m_6af9ac3f07e48191aa8504a2e22a77a9. The GitHub connector cannot retrieve its rendered image; do not guess which later SVG concept is equivalent or fabricate a trace and label it faithful.
+- Continue preparatory brand-system work; exact vector tracing is pending access to the original rendered reference, not pending owner preference.
+- PR #147 contains the preference record and current preparation docs. Branch `marketing/gristora-preferred-logo-direction` is 10 commits ahead of `main`, 0 behind (latest commit `4f43b0885f731fdc288026f43355bfd6736769ce`).
+- Added production/QA specification `web-stratejisi/37-gristora-logo-production-and-qa.md` and public-site implementation map `web-stratejisi/38-gristora-public-site-brand-implementation-map.md`; indexed both in `web-stratejisi/README.md` and updated the marketing-site handoff and WP-17 plan.
+- The first PR CI run (#219 / `43717341183`) has passed dependency install, Astro/TypeScript, static build, generated route/metadata/link validation and social preview artifact generation; responsive browser QA is still running. Vercel preview remains blocked by the existing 24-hour Hobby deployment quota.
+- The exact source image remains inaccessible to the repo integration; no logo geometry has been invented and no production master has been approved.
+- Scope remains public GRISTORA brand and marketing website only. Do not rename or modify the product application, APIs, Rust engine, iOS app, internal identifiers, data model, roadmap or product development queue.
+- Merge manually only after review and required checks; no GitHub auto-merge.
+
+---
+
 ## CANONICAL CURRENT STATUS — 15 November 2026
 
-- **GRISTORA WP-16 initial visual exploration:** added editable SVG concept board at `web-stratejisi/assets/gristora-logo-exploration-01.svg` with Editorial Wordmark, Technical Monogram, Grist/Process and Combination directions. Updated logo brief with preliminary design assessment. No logo selected or approved. GitHub issue #145 tracks refinement and final owner review: https://github.com/oguzbay-del/brewery/issues/145.
+- **GRISTORA WP-16:** historical exploration boards remain reference material only. The owner has selected the first assistant-presented logo as the direction to refine; it is not yet a production-approved master. The logo production/QA specification and public-site implementation map are recorded in documents 37 and 38. GitHub issue #145 tracks faithful refinement and owner review: https://github.com/oguzbay-del/brewery/issues/145.
 - **Brand clearance monitor:** existing weekly automation was updated from the old candidate list to GRISTORA-specific US/UK/Australia trademark, close-variant, company/product and domain checks. No duplicate monitor created.
 - **PR #144 updated:** now includes the initial SVG concept board and logo brief refinement; latest head `fb93588c13c2c2091d7947a24580d4cf6f40b47f`. PR remains open; no CI workflow run was returned for the latest docs-only commit. Do not merge until the repository's expected checks/review are confirmed.
 
