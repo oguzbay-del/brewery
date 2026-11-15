@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/learning-pages.css";
 
@@ -22,7 +23,8 @@ const principles = [
   { number: "05", title: "Validate before estimating", body: "Calculation methods require reference cases and real brewing data. Predictive fermentation and model-driven calibration ideas remain under consideration until their analytical models are approved and validated." },
   { number: "06", title: "Keep people in control", body: "Future estimates may inform a brewer's review; they must not silently change recipes, equipment profiles or process settings. Any action requiring a process change remains subject to explicit user decision." },
 ];
-const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Technical principles", url: canonicalUrl }]);
+const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Technical principles", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 ---
 <!doctype html>
 <html lang="en">
@@ -55,6 +57,7 @@ const breadcrumbData = buildBreadcrumbList([{ name: "Home", url: new URL(base, i
       <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}how-it-works/`}>How it works</a><a href={`${base}technical-principles/`}>Technical principles</a><a href={`${base}faq/`}>FAQ</a></nav></details>
     </header>
     <main id="main-content">
+      <Breadcrumbs items={breadcrumbItems} />
       <section class="shell explain-page-hero">
         <p class="eyebrow"><span class="eyebrow-line"></span> METHODS · MEASUREMENTS · VALIDATION</p>
         <h1>Technical clarity is <em>part of the craft.</em></h1>
