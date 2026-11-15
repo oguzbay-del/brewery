@@ -17,6 +17,7 @@ Read these canonical documents before changing public brand, copy, metadata or v
 - `../web-stratejisi/41-gristora-public-marketing-claims-guardrails.md`
 - `../web-stratejisi/42-gristora-marketing-site-ci-artifact-review.md`
 - `../web-stratejisi/43-gristora-public-homepage-copy-blueprint.md`
+- `../web-stratejisi/44-gristora-trademark-counsel-review-brief.md`
 
 GRISTORA is the selected public brand. Do not use Demleme in public marketing surfaces after WP-17 is implemented. The owner has selected the first logo design shared by the assistant as the direction to refine; it is not yet a production-approved master. See document 37 for the production/QA contract. The exact source artwork must be available before faithful vector tracing. Domain clearance remains open. Do not start the public rebrand before the identity and legal/domain gates are recorded. This repository documentation is the handoff for Claude.
 
