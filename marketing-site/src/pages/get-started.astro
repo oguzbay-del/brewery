@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import "../styles/pricing.css";
+import "../styles/stitch-layout.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 
@@ -54,7 +55,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
       <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`}>Compare</a><a href={`${base}pricing/`}>Pricing</a></nav></details>
     </header>
-    <main id="main-content" class="wizard-page shell">
+    <main id="main-content" class="wizard-page start-page shell">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="wizard-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> YOUR GRISTORA PLAN</p>

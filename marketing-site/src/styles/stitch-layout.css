@@ -413,3 +413,55 @@
 @media (max-width: 620px) {
   .compare-page .compare-decision-grid article::before { height: 64px; }
 }
+
+/* Get started page (Stitch "Configure plan") */
+.start-page .wizard-intro .eyebrow { display: inline-flex; padding: 6px 14px; border-radius: 999px; background: var(--amber-tint); color: var(--amber); }
+.start-page .wizard-intro .eyebrow-line { width: 7px; height: 7px; border-radius: 50%; background: var(--amber-fill); }
+.start-page .wizard-intro h1 { font-family: var(--display); font-weight: 700; }
+.start-page .wizard-intro h1 em { color: var(--amber); }
+.start-page .wizard-progress { padding-block: 22px; border-block: 1px solid var(--line); margin-bottom: 36px; }
+.start-page .wizard-progress li { flex-direction: row; align-items: center; gap: 12px; padding-top: 0; border-top: 0; flex-wrap: wrap; }
+.start-page .wizard-progress li span { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--soft); color: var(--ink); font-size: 11px; font-weight: 700; }
+.start-page .wizard-progress li small { font-size: 13px; }
+.start-page .wizard-progress li.is-current span, .start-page .wizard-progress li.is-complete span { background: var(--forest); color: var(--sx-on-dark); }
+.start-page .wizard-main { border: 0; border-radius: var(--radius-panel); box-shadow: var(--card-shadow); }
+.start-page .wizard-step h2 { font-family: var(--display); font-weight: 600; letter-spacing: -.5px; }
+.start-page .wizard-step h2 em { font-family: var(--display); font-style: normal; color: var(--ink); }
+.start-page .choice-card, .start-page .billing-options label span, .start-page .seat-options label span { border-radius: var(--radius-card); background: var(--page); border-color: rgba(11, 47, 38, .12); }
+.start-page .choice-card strong, .start-page .billing-options strong { font-family: var(--display); font-weight: 600; }
+.start-page .seat-options label span { font-family: var(--display); font-weight: 600; }
+.start-page .choice-card:has(input:checked), .start-page .seat-options input:checked + span, .start-page .billing-options input:checked + span { background: var(--sx-soft); }
+.start-page .billing-options { grid-template-columns: 1fr; gap: 12px; }
+.start-page .billing-options label span { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; row-gap: 2px; align-items: center; padding: 18px 20px 18px 56px; }
+.start-page .billing-options input:checked + span { padding: 17px 19px 17px 55px; }
+.start-page .billing-options label span::before { content: ""; position: absolute; left: 20px; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; border: 2px solid var(--line); background: var(--sx-card); }
+.start-page .billing-options input:checked + span::before { border: 5px solid var(--forest); }
+.start-page .billing-options strong { grid-column: 1; }
+.start-page .billing-options small { grid-column: 1; }
+.start-page .billing-options b { grid-column: 2; grid-row: 1 / span 2; margin: 0; padding: 4px 12px; border-radius: 999px; background: var(--amber-tint); color: var(--amber); }
+.start-page .trial-note { border-radius: var(--radius-card); background: var(--sx-soft); }
+.start-page .contact-tier { border-radius: var(--radius-card); }
+.start-page #custom-billing { background: var(--forest); color: var(--sx-on-dark); padding: 18px 22px; }
+.start-page #custom-billing p, .start-page #custom-billing strong { color: var(--sx-on-dark); }
+.start-page .seat-fixed { border-radius: var(--radius-card); background: var(--sx-soft); }
+.start-page .seat-fixed strong { font-family: var(--display); font-weight: 600; }
+.start-page .step-kicker { color: var(--amber); }
+.start-page .wizard-back { border-radius: 999px; padding: 12px 24px; }
+.start-page .wizard-summary { background: var(--sx-card); color: var(--ink); border-radius: var(--radius-panel); box-shadow: var(--card-shadow); }
+.start-page .wizard-summary .eyebrow { color: var(--amber); }
+.start-page .wizard-summary h2 { font-family: var(--display); font-weight: 600; color: var(--ink); }
+.start-page .wizard-summary h2 em { font-family: var(--display); font-style: normal; color: var(--ink); }
+.start-page .wizard-summary dt { color: var(--muted); }
+.start-page .wizard-summary dd { color: var(--ink); }
+.start-page .wizard-summary dl div { border-bottom-color: rgba(11, 47, 38, .08); }
+.start-page .wizard-summary .summary-note { padding: 16px; border-radius: var(--radius-card); background: var(--sx-soft); color: var(--muted); font-size: 12.5px; }
+.start-page .wizard-summary > a { color: var(--amber); }
+@media (max-width: 620px) {
+  .start-page .wizard-progress { gap: 10px 6px; }
+  .start-page .wizard-progress li { gap: 6px; }
+  .start-page .wizard-progress li span { width: 26px; height: 26px; }
+  .start-page .wizard-progress li small { font-size: 11px; }
+  .start-page .billing-options label span { padding: 14px 14px 14px 46px; min-height: 0; }
+  .start-page .billing-options input:checked + span { padding: 13px 13px 13px 45px; }
+  .start-page .billing-options label span::before { left: 14px; }
+}
