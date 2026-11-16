@@ -1,1 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc"><title id="title">GRISTORA — Brewing Intelligence</title><desc id="desc">A premium editorial identity for brewing intelligence, with a precise abstract vessel and measurement motif.</desc><rect width="1200" height="630" fill="#F7F6F3"/><path d="M0 0H1200V14H0Z" fill="#0B2F26"/><g fill="none" stroke="#d8d7d2" stroke-width="2"><circle cx="925" cy="315" r="250"/><circle cx="925" cy="315" r="205"/><circle cx="925" cy="315" r="160"/></g><g transform="translate(805 112)" fill="none" stroke="#0B2F26" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M65 65h170l-14 305q-71 43-142 0z"/><path d="M54 65h192M84 158h132M78 245h144"/><path d="M150 65V15m-26 0h52"/><path d="M150 110v180" stroke="#F4A261" stroke-width="4"/><path d="M135 288l15 18 15-18" stroke="#F4A261" stroke-width="4"/><path d="M42 380h216" stroke-width="3"/></g><g transform="translate(84 95)"><text x="0" y="0" fill="#0B2F26" font-family="Arial,sans-serif" font-size="28" font-weight="700" letter-spacing="5">GRISTORA</text><rect x="0" y="38" width="58" height="4" fill="#F4A261"/><text x="0" y="164" fill="#0B2F26" font-family="Georgia,serif" font-size="76">Brewing</text><text x="0" y="248" fill="#0B2F26" font-family="Georgia,serif" font-size="76" font-style="italic">Intelligence.</text><text x="2" y="315" fill="#475569" font-family="Arial,sans-serif" font-size="25">A considered workspace for better brewing.</text><text x="2" y="362" fill="#475569" font-family="Arial,sans-serif" font-size="19">Professional breweries · Homebrewers</text></g><text x="84" y="575" fill="#475569" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">RECIPE  /  PROCESS  /  MEASUREMENT  /  BATCH CONTEXT</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">GRISTORA — Brewing Intelligence</title>
+  <desc id="desc">The approved GRISTORA logo and emblem, with the message Brewing, understood. for brewing software in development.</desc>
+
+  <rect width="1200" height="630" fill="#F7F6F3"/>
+  <path d="M0 0H1200V14H0Z" fill="#0B2F26"/>
+
+  <!-- The approved light-background GRISTORA lockup, preserved as supplied. -->
+  <svg x="84" y="48" width="250" height="144" viewBox="0 0 540 310">
+    <g fill="#0B2F26">
+      <path d="M322 22H251C218 22 195 49 195 85c0 35 25 64 58 65v-21c-21-2-36-20-36-43 0-24 18-41 40-41h42c10 0 19-7 23-23Z"/>
+      <text x="29" y="248" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="66" font-weight="500" letter-spacing="8.2">GRISTORA</text>
+    </g>
+    <g fill="#F4A261">
+      <path d="M261 68h64c-1 14-12 22-25 22h-39c3-11 9-18 17-22Z"/>
+      <path d="M262 112c10-12 21-17 36-17l-36 32Z"/>
+      <path d="M263 150c5-17 21-36 41-50l18-3c-2 23-22 49-43 53Z"/>
+      <text x="50" y="293" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="10.55">BREWING INTELLIGENCE</text>
+    </g>
+  </svg>
+
+  <g fill="none" stroke="#D8D7D2" stroke-width="2">
+    <circle cx="930" cy="320" r="250"/>
+    <circle cx="930" cy="320" r="205"/>
+    <circle cx="930" cy="320" r="160"/>
+  </g>
+
+  <!-- Large supporting use of the approved GRISTORA emblem, not a generic brewing illustration. -->
+  <g transform="translate(820 190) scale(2.05)">
+    <path d="M126 4H62C25 4 4 30 4 70c0 39 26 69 64 71v-25c-24-2-41-21-41-46 0-26 19-45 44-45h48c2-5 5-12 7-21Z" fill="#0B2F26"/>
+    <path d="M69 48h61c-1 14-12 22-25 22H66c1-9 1-16 3-22Z" fill="#F4A261"/>
+    <path d="M70 91c10-12 21-17 36-17L70 106Z" fill="#F4A261"/>
+    <path d="M71 129c5-17 21-36 41-50l18-3c-2 23-22 49-43 53Z" fill="#F4A261"/>
+  </g>
+
+  <g transform="translate(84 278)">
+    <text x="0" y="0" fill="#0B2F26" font-family="Plus Jakarta Sans, Inter, Arial, sans-serif" font-size="62" font-weight="700" letter-spacing="-1.8">Brewing,</text>
+    <text x="0" y="76" fill="#985600" font-family="Georgia, serif" font-size="68" font-style="italic">understood.</text>
+    <text x="2" y="132" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="24">Brewing software in development</text>
+    <text x="2" y="176" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="19">Professional breweries · Homebrewers</text>
+  </g>
+
+  <text x="84" y="575" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="14" letter-spacing="3">RECIPES  /  MEASUREMENTS  /  BATCH CONTEXT</text>
+</svg>
