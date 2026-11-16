@@ -4,7 +4,7 @@ import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import "../../styles/learning-pages.css";
 import "../../styles/faq-evidence.css";
-import { features, stageDescriptions } from "../../data/features";
+import { features } from "../../data/features";
 
 export function getStaticPaths() {
   return features.map((feature) => ({ params: { slug: feature.slug }, props: { feature } }));
@@ -14,7 +14,7 @@ const { feature } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}features/${feature.slug}/`, import.meta.env.SITE).href;
-const description = `${feature.summary} GRISTORA is in development.`;
+const description = feature.summary;
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
@@ -76,12 +76,11 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <main id="main-content">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="feature-detail-hero shell">
-        <p class="eyebrow"><span class="eyebrow-line"></span> {feature.eyebrow} · PRODUCT ROADMAP</p>
+        <p class="eyebrow"><span class="eyebrow-line"></span> {feature.eyebrow}</p>
         <h1>{feature.title}</h1>
         <p class="feature-lead">{feature.summary}</p>
         <div class="feature-tags">
           {feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}
-          <span class="feature-tag feature-tag-status">Roadmap scope</span>
         </div>
       </section>
       <section class="feature-detail-body section-pad">
@@ -97,36 +96,29 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <aside class="feature-roadmap-aside">
             <p class="eyebrow">AUDIENCE</p>
             <p>{feature.audiences.join(" · ")}</p>
-            <div class="aside-divider"></div>
-            <p class="eyebrow">PLANNED DEVELOPMENT STAGES</p>
-            {feature.stages.map((stage) => <div class="stage-item"><strong>{stage}</strong><p>{stageDescriptions[stage]}</p></div>)}
-            <div class="aside-divider"></div>
-            <p class="feature-aside-note">This is a roadmap description, not a statement that the feature is currently available. Scope and release timing may evolve during development and validation.</p>
           </aside>
         </div>
       </section>
       <section class="feature-evidence-section section-pad">
         <div class="shell feature-evidence-layout">
           <div>
-            <p class="eyebrow"><span class="eyebrow-line"></span> INPUTS · RECORDS · LIMITATIONS</p>
-            <h2>Understand the intended <em>scope.</em></h2>
+            <p class="eyebrow"><span class="eyebrow-line"></span> INPUTS · RECORDS · OUTPUTS</p>
+            <h2>Inputs, records and <em>outputs.</em></h2>
           </div>
           <div class="feature-evidence-content">
-            <p><strong>Inputs and records:</strong> The intended inputs depend on the feature and release stage. They may include recipe definitions, ingredient and equipment information, measurements, material records or team-entered observations where those workflows are in scope.</p>
-            <p><strong>Intended outputs:</strong> Depending on the feature, the roadmap may describe calculations, recipe versions, schedules, batch records, measurement history or review context. This page does not imply that any of those outputs are currently available.</p>
-            <p><strong>Limitations:</strong> Formula defaults, supported formats, device compatibility, permissions, regulatory workflows and integrations require feature-specific implementation and validation. Fermentation predictions and model-driven calibration remain under consideration.</p>
-            <p><strong>Evidence status:</strong> This description reflects the product roadmap. Public validation reports and release evidence will be added only when the relevant method or workflow has been tested and approved.</p>
+            <p><strong>Inputs and records:</strong> Inputs depend on the feature. They include recipe definitions, ingredient and equipment information, measurements, material records or team-entered observations.</p>
+            <p><strong>Outputs:</strong> Depending on the feature, outputs include calculations, recipe versions, schedules, batch records, measurement history or review context.</p>
           </div>
         </div>
       </section>
       {feature.note && <section class="feature-caveat"><div class="shell"><p>{feature.note}</p></div></section>}
       <section class="feature-next section-pad">
         <div class="shell feature-next-inner">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See the complete <em>GRISTORA roadmap.</em></h2></div>
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See the complete <em>GRISTORA product.</em></h2></div>
           <div><p>Explore the other product areas or choose the workspace that matches your brewing.</p><a class="button button-primary" href={`${base}features/`}>Browse all product features <span aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={`${base}features/`}>All features ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={`${base}features/`}>All features ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>

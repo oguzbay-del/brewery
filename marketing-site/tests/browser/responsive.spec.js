@@ -147,8 +147,8 @@ test("plan wizard supports Home and Business journeys, terms and review", async 
   await expect(page.locator('[data-step="4"]')).toBeVisible();
   await expect(page.locator("#review-audience")).toHaveText("Homebrewer");
   await expect(page.locator("#review-seats")).toHaveText("1 user");
-  await expect(page.locator("#review-trial")).toHaveText("3 months (planned)");
-  await expect(page.locator("#summary-trial")).toHaveText("3 months planned");
+  await expect(page.locator("#review-trial")).toHaveText("3 months");
+  await expect(page.locator("#summary-trial")).toHaveText("3 months");
 
   await page.goto("/get-started/?audience=business", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /Continue/ }).click();
@@ -158,8 +158,8 @@ test("plan wizard supports Home and Business journeys, terms and review", async 
   await page.getByRole("button", { name: /Continue/ }).click();
   await expect(page.locator("#review-audience")).toHaveText("Professional Brewery");
   await expect(page.locator("#review-seats")).toHaveText("10 users");
-  await expect(page.locator("#review-trial")).toHaveText("1 month (planned)");
-  await expect(page.locator("#summary-trial")).toHaveText("1 month planned");
+  await expect(page.locator("#review-trial")).toHaveText("1 month");
+  await expect(page.locator("#summary-trial")).toHaveText("1 month");
 });
 
 test("Business wizard routes teams above 20 seats to custom quote", async ({ page }) => {
@@ -171,6 +171,6 @@ test("Business wizard routes teams above 20 seats to custom quote", async ({ pag
   await page.getByRole("button", { name: /Review contact request/ }).click();
   await expect(page.locator('[data-step="4"]')).toBeVisible();
   await expect(page.locator("#review-seats")).toContainText("custom quote");
-  await expect(page.locator("#wizard-feedback")).toContainText("no request is sent");
+  await expect(page.locator("#wizard-feedback")).toContainText("tailored quote");
   await expect(page.locator("#summary-seats")).toContainText("custom quote");
 });

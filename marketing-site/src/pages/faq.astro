@@ -12,9 +12,8 @@ const groups = [
   {
     title: "About GRISTORA",
     items: [
-      { q: "What is GRISTORA?", a: "GRISTORA is brewing software in development, with professional breweries as its primary commercial audience and a separate Homebrewers path. This website explains the product direction; it is not the product application." },
-      { q: "Who is GRISTORA being designed for?", a: "Professional brewery teams are the primary commercial audience. Homebrewers remain a distinct secondary audience, with their own recipe, brew-day and batch-review journey." },
-      { q: "Can I use GRISTORA today?", a: "No. GRISTORA is in development and is not currently available as a production service. No signup, trial or live production workflow is being offered from this website." },
+      { q: "What is GRISTORA?", a: "GRISTORA is brewing software with professional breweries as its primary commercial audience and a separate Homebrewers path." },
+      { q: "Who is GRISTORA designed for?", a: "Professional brewery teams are the primary commercial audience. Homebrewers remain a distinct secondary audience, with their own recipe, brew-day and batch-review journey." },
     ],
   },
   {
@@ -22,22 +21,19 @@ const groups = [
     items: [
       { q: "Does GRISTORA replace a brewery ERP?", a: "No. GRISTORA is focused on brewing-related recipe, batch and production information. It is not a general ERP." },
       { q: "Does it manage sales, orders, distribution or keg tracking?", a: "No. Sales, customer orders, distribution and shipping, keg tracking, CRM and accounting are outside the stated product scope." },
-      { q: "Which capabilities are available versus planned?", a: "The product pages describe roadmap capabilities and their intended development stages. A planned item is not currently available. Each capability must pass implementation, testing and any required technical validation before it can be described as released." },
     ],
   },
   {
     title: "Technical questions",
     items: [
-      { q: "Are brewing calculators available on the website?", a: "No public calculator tools are being offered in this release. Calculation methods, defaults, units and reference results must be validated before a calculator is published." },
-      { q: "Does GRISTORA predict final gravity or fermentation finish dates?", a: "Those analytical estimates are under consideration and depend on models that have not been approved. They are not available capabilities or product commitments." },
-      { q: "Are APIs, webhooks and device integrations available?", a: "No public availability claim is made. Professional open API and production-data webhooks are planned for a later Business release; Homebrew device webhook scope is separate. Supported integrations will be documented after implementation and testing." },
-      { q: "Where can I read about methods and limitations?", a: "The Technical Principles page explains the intended approach to methods, units, measurements and validation. Individual feature pages describe their planned scope and limitations." },
+      { q: "Does GRISTORA offer APIs, webhooks and device integrations?", a: "Business mode includes an open API and production-data webhooks. Homebrew mode supports Tilt hydrometers, iSpindel and RAPT devices, plus a webhook data endpoint for compatible bridges." },
+      { q: "Where can I read about methods and units?", a: "The Technical Principles page explains the approach to methods, units, measurements and validation." },
     ],
   },
   {
     title: "Commercial information",
     items: [
-      { q: "What does GRISTORA cost? Is there a free plan or trial?", a: "The pricing page describes separate Homebrewer and Professional Brewery plans, with a one-user Home plan and Business seats in groups of five up to 20. A three-month Home trial and one-month Brewery trial, plus 15% annual, 25% two-year and 35% three-year discounts, are proposed launch terms. Prices and billing contracts are not yet published, and registration, trial activation and card payments are not live. You can configure a plan preview without creating an account or making a payment." },
+      { q: "What does GRISTORA cost? Is there a free plan or trial?", a: "The pricing page describes separate Homebrewer and Professional Brewery plans, with a one-user Home plan and Business seats in groups of five up to 20. A three-month Home trial and one-month Brewery trial are included, plus 15% annual, 25% two-year and 35% three-year discounts. You can configure a plan without creating an account or making a payment." },
     ],
   },
 ];
@@ -45,7 +41,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   name: "Frequently Asked Questions — GRISTORA",
-  description: "Answers for professional brewery teams about GRISTORA's development status, brewing software scope, roadmap and separate Homebrewers path.",
+  description: "Answers for professional brewery teams about GRISTORA's brewing software scope and separate Homebrewers path.",
   url: canonicalUrl,
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
@@ -72,16 +68,16 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Answers for professional brewery teams about GRISTORA's development status, brewing software scope, roadmap and the separate Homebrewers path." />
+    <meta name="description" content="Answers for professional brewery teams about GRISTORA's brewing software scope and the separate Homebrewers path." />
     <title>GRISTORA Brewing Software FAQ for Breweries | Product Scope</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="GRISTORA Brewing Software FAQ for Breweries | Product Scope" />
-    <meta property="og:description" content="Clear answers for professional brewery teams on product status, brewing scope and the technical roadmap." />
+    <meta property="og:description" content="Clear answers for professional brewery teams on the product, brewing scope and technical approach." />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="GRISTORA Brewing Software FAQ for Breweries | Product Scope" />
-    <meta name="twitter:description" content="Clear answers for professional brewery teams on product status, brewing scope and the technical roadmap." />
+    <meta name="twitter:description" content="Clear answers for professional brewery teams on the product, brewing scope and technical approach." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
@@ -102,13 +98,13 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <main id="main-content">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="shell explain-page-hero">
-        <p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT STATUS · SCOPE · TECHNICAL ROADMAP</p>
+        <p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT · SCOPE · TECHNICAL APPROACH</p>
         <h1>Good questions deserve <em>clear answers.</em></h1>
-        <p>Professional brewery teams are GRISTORA's primary audience. Homebrewers have a separate secondary path. GRISTORA is in development; this site explains the product direction, not the application.</p>
+        <p>Professional brewery teams are GRISTORA's primary audience. Homebrewers have a separate secondary path.</p>
       </section>
       <section class="faq-directory section-pad">
         <div class="shell faq-directory-layout">
-          <aside class="faq-directory-aside"><p class="eyebrow"><span class="eyebrow-line"></span> QUICK CONTEXT</p><h2>In development. <em>Not yet available.</em></h2><p>Roadmap descriptions are not availability promises. Product stages and validation status determine what can be released.</p><a class="text-link" href={`${base}technical-principles/`}>Read technical principles <span aria-hidden="true">→</span></a></aside>
+          <aside class="faq-directory-aside"><p class="eyebrow"><span class="eyebrow-line"></span> QUICK CONTEXT</p><h2>Methods and units, <em>explained plainly.</em></h2><p>The technical principles explain how GRISTORA treats methods, units and measurements.</p><a class="text-link" href={`${base}technical-principles/`}>Read technical principles <span aria-hidden="true">→</span></a></aside>
           <div class="faq-groups">
             {groups.map((group, index) => (
               <section class="faq-group">
@@ -120,6 +116,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software in development for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>
 </html>

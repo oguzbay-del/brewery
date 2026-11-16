@@ -59,8 +59,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="wizard-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> YOUR GRISTORA PLAN</p>
         <h1>A few choices. <em>A clearer fit.</em></h1>
-        <p>Choose your brewing path, set the team size and select a billing term. You can review everything before the payment stage.</p>
-        <p class="pricing-status" role="status"><strong>Configuration preview</strong> · no account or payment is created here. Checkout will be connected in a later release.</p>
+        <p>Choose your brewing path, set the team size and select a billing term. You can review everything before you finish.</p>
       </section>
 
       <section class="wizard-layout" aria-label="Plan configuration">
@@ -78,8 +77,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <h2 tabindex="-1">How do you <em>brew?</em></h2>
               <p class="step-description">The right workspace starts with the right kind of brewing.</p>
               <div class="choice-grid">
-                <label class="choice-card"><input type="radio" name="audience" value="home" aria-label="Homebrewer plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a homebrewer</strong><small>One personal workspace for recipes, brew days and batch learning.</small><span class="choice-meta">1 user · 3-month trial planned</span></label>
-                <label class="choice-card"><input type="radio" name="audience" value="business" aria-label="Professional Brewery plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a professional brewery</strong><small>A team workspace for recipe standards, production context and batch records.</small><span class="choice-meta">5+ users · 1-month trial planned</span></label>
+                <label class="choice-card"><input type="radio" name="audience" value="home" aria-label="Homebrewer plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a homebrewer</strong><small>One personal workspace for recipes, brew days and batch learning.</small><span class="choice-meta">1 user · 3-month trial</span></label>
+                <label class="choice-card"><input type="radio" name="audience" value="business" aria-label="Professional Brewery plan" /><span class="choice-check" aria-hidden="true">✓</span><strong>I'm a professional brewery</strong><small>A team workspace for recipe standards, production context and batch records.</small><span class="choice-meta">5+ users · 1-month trial</span></label>
               </div>
               <div class="choice-links"><a href={`${base}homebrewers/`}>Explore Homebrewers ↗</a><a href={`${base}breweries/`}>Explore Breweries ↗</a></div>
               <p class="step-helper">Not sure which path fits? <a href={`${base}compare/`}>Compare Home and Brewery functions</a>.</p>
@@ -98,14 +97,14 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <label><input type="radio" name="seats" value="20" aria-label="20 users" /><span>20 <small>users</small></span></label>
                 <label><input type="radio" name="seats" value="20+" aria-label="More than 20 users" /><span>20+ <small>contact</small></span></label>
               </fieldset>
-              <div class="contact-tier" id="contact-tier" hidden><strong>More than 20 people?</strong><p>We’ll prepare a tailored team option. The direct email contact will be published before launch.</p><span>20+ users · contact required</span></div>
+              <div class="contact-tier" id="contact-tier" hidden><strong>More than 20 people?</strong><p>We’ll prepare a tailored team option.</p><span>20+ users · contact required</span></div>
               <p class="step-helper"><a href={`${base}compare/`}>Review the Home and Brewery function comparison</a>.</p>
             </section>
 
             <section class="wizard-step" data-step="3" hidden>
               <p class="step-kicker">STEP 03 OF 04</p>
               <h2 tabindex="-1">Choose your <em>billing term.</em></h2>
-              <p class="step-description">Longer commitments receive a larger proposed discount against the monthly reference rate.</p>
+              <p class="step-description">Longer commitments receive a larger discount against the monthly reference rate.</p>
               <fieldset class="billing-options">
                 <legend>Billing frequency</legend>
                 <label><input type="radio" name="term" value="monthly" aria-label="Monthly billing" checked /><span><strong>Monthly</strong><small>Flexible month-to-month</small><b>0% saving</b></span></label>
@@ -113,17 +112,15 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <label><input type="radio" name="term" value="two-year" aria-label="Two-year billing" /><span><strong>2 years</strong><small>Two-year commitment</small><b>25% saving</b></span></label>
                 <label><input type="radio" name="term" value="three-year" aria-label="Three-year billing" /><span><strong>3 years</strong><small>Three-year commitment</small><b>35% saving</b></span></label>
               </fieldset>
-              <div class="trial-note" id="trial-note">Your planned trial duration will appear here.</div>
-              <div class="contact-tier" id="custom-billing" hidden><strong>Custom team plan</strong><p>For teams above 20, billing terms and pricing are prepared individually. The contact email will be published before launch.</p></div>
-              <p class="step-helper">Discounts are proposed and subject to final price and contract approval.</p>
+              <div class="trial-note" id="trial-note">Your trial duration will appear here.</div>
+              <div class="contact-tier" id="custom-billing" hidden><strong>Custom team plan</strong><p>For teams above 20, billing terms and pricing are prepared individually.</p></div>
             </section>
 
             <section class="wizard-step" data-step="4" hidden>
               <p class="step-kicker">STEP 04 OF 04</p>
               <h2 tabindex="-1">Review your <em>plan.</em></h2>
-              <p class="step-description">Check your configuration before the future secure checkout step.</p>
-              <dl class="review-list"><div><dt>Brewing path</dt><dd id="review-audience">—</dd></div><div><dt>Users</dt><dd id="review-seats">—</dd></div><div><dt>Billing</dt><dd id="review-term">—</dd></div><div><dt>Proposed saving</dt><dd id="review-discount">—</dd></div><div><dt>Trial</dt><dd id="review-trial">—</dd></div><div><dt>Payment method</dt><dd>Credit or debit card (planned)</dd></div><div><dt>Price</dt><dd>To be announced before checkout</dd></div></dl>
-              <div class="checkout-placeholder"><span class="card-mark" aria-hidden="true">▰</span><div><strong>Secure card payment — coming later</strong><p>Payment processing is not connected. No card details are requested or stored on this website.</p></div></div>
+              <p class="step-description">Check your configuration.</p>
+              <dl class="review-list"><div><dt>Brewing path</dt><dd id="review-audience">—</dd></div><div><dt>Users</dt><dd id="review-seats">—</dd></div><div><dt>Billing</dt><dd id="review-term">—</dd></div><div><dt>Saving</dt><dd id="review-discount">—</dd></div><div><dt>Trial</dt><dd id="review-trial">—</dd></div><div><dt>Payment method</dt><dd>Credit or debit card</dd></div></dl>
               <p class="step-helper">You can go back to change any choice. <a href={`${base}pricing/`}>Review all plans and terms</a>.</p>
             </section>
 
@@ -135,11 +132,11 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <p class="eyebrow">YOUR SELECTION</p><h2>Plan <em>summary</em></h2>
           <dl><div><dt>Path</dt><dd id="summary-audience">Choose a path</dd></div><div><dt>Users</dt><dd id="summary-seats">—</dd></div><div><dt>Term</dt><dd id="summary-term">Monthly</dd></div><div><dt>Saving</dt><dd id="summary-discount">0%</dd></div><div><dt>Trial</dt><dd id="summary-trial">Choose a path</dd></div></dl>
           <p class="summary-note">Home: one user, three-month trial. Brewery: five-user minimum, one-month trial.</p>
-          <a href={`${base}compare/`}>Compare planned functions ↗</a>
+          <a href={`${base}compare/`}>Compare functions ↗</a>
         </aside>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Plan configuration preview · No payment collected</span></div></footer>
+    <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Plan configuration</span></div></footer>
     <script>
       // @ts-nocheck
       const form = document.querySelector("#plan-wizard");
@@ -163,7 +160,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
             if (n === step) item.setAttribute("aria-current", "step"); else item.removeAttribute("aria-current");
           });
           byId("wizard-back").disabled = step === 1;
-          byId("wizard-next").textContent = step === 4 ? "Configuration preview complete" : "Continue →";
+          byId("wizard-next").textContent = step === 4 ? "Review complete" : "Continue →";
           byId("wizard-next").disabled = step === 4;
           byId("home-seat").hidden = state.audience !== "home";
           byId("business-seats").hidden = state.audience !== "business";
@@ -171,19 +168,19 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           byId("custom-billing").hidden = state.seats !== "20+";
           form.querySelector(".billing-options").hidden = state.seats === "20+";
           byId("seat-description").textContent = state.audience === "home" ? "The Home plan is designed for one individual brewer." : "Choose the number of people who need a seat.";
-          byId("trial-note").textContent = state.audience === "home" ? "Your Home plan includes a proposed three-month introductory trial." : "Your Professional Brewery plan includes a proposed one-month introductory trial.";
+          byId("trial-note").textContent = state.audience === "home" ? "Your Home plan includes a three-month introductory trial." : "Your Professional Brewery plan includes a one-month introductory trial.";
           byId("summary-audience").textContent = state.audience ? (state.audience === "home" ? "Homebrewer" : "Professional Brewery") : "Choose a path";
           byId("summary-seats").textContent = state.audience === "home" ? "1 user" : state.audience === "business" ? (state.seats === "20+" ? "20+ · custom quote" : state.seats + " users") : "—";
           byId("summary-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
           byId("summary-discount").textContent = state.seats === "20+" ? "—" : discounts[state.term];
-          byId("summary-trial").textContent = state.audience === "home" ? "3 months planned" : state.audience === "business" ? "1 month planned" : "Choose a path";
+          byId("summary-trial").textContent = state.audience === "home" ? "3 months" : state.audience === "business" ? "1 month" : "Choose a path";
           byId("review-audience").textContent = state.audience === "home" ? "Homebrewer" : "Professional Brewery";
           byId("review-seats").textContent = state.audience === "home" ? "1 user" : (state.seats === "20+" ? "20+ users · custom quote" : state.seats + " users");
           byId("review-term").textContent = state.seats === "20+" ? "Custom quote" : termNames[state.term];
           byId("review-discount").textContent = state.seats === "20+" ? "To be agreed" : discounts[state.term];
-          byId("review-trial").textContent = state.audience === "home" ? "3 months (planned)" : "1 month (planned)";
+          byId("review-trial").textContent = state.audience === "home" ? "3 months" : "1 month";
           byId("wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
-          byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Configuration preview complete" : "Continue →";
+          byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Review complete" : "Continue →";
           if (!(step === 4 && state.seats === "20+")) byId("wizard-feedback").textContent = "";
         };
         form.querySelectorAll('input[name="audience"]').forEach((input) => input.addEventListener("change", () => {
@@ -198,7 +195,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           if (step < 4) {
             step = step === 2 && state.seats === "20+" ? 4 : step + 1;
             update();
-            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "A team of more than 20 needs a tailored quote. The direct sales email will be published before launch; no request is sent from this preview.";
+            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "A team of more than 20 needs a tailored quote.";
             const heading = document.querySelector(".wizard-step:not([hidden]) h2");
             if (heading) heading.focus();
           }

@@ -1,5 +1,9 @@
 # GRISTORA — Public marketing claims and content guardrails
 
+## Ürün sahibi kararı, 16 Kasım 2026
+
+Ürün sahibi kararı (16 Kasım 2026, Oğuz): herkese açık site ürün olgunluğu uyarılarını göstermez. Ürün–site tutarlılığını ürün sahibi doğrular. Bu karar, aşağıdaki "uyarılar görünür kalmalı" kuralının yerine geçer. Müşteri, ölçü, fiyat, entegrasyon, sertifika, uyumluluk ve tahmin/AI iddiası ekleme yasağı geçerlidir.
+
 **Status:** WP-17 preparation; source audit of current `main` branch on 15 November 2026.  
 **Scope:** Public marketing content only. This is not product specification authority and does not approve release claims.
 

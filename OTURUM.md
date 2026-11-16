@@ -2,6 +2,7 @@
 
 ## Fixed decisions and scope
 
+- **Owner decision (Oğuz, 16 Nov 2026):** the public site shows no product-maturity disclaimers; product–site consistency is verified by the owner (doc 41 updated). Disclaimers removed from `marketing-site/` pages, features data, SVG diagrams, social card and validator/test assertions. Results: `astro check` 0 errors, build complete, `validate:site` 2292 checks passed, Playwright 116 passed. Next step: owner review of the live copy.
 - Public brand: **GRISTORA**. Descriptor: **Brewing Intelligence**.
 - The owner selected the **first logo design shown by the assistant** before the message beginning “Paralel çalışmayı sürdürdüm. Bu turda marka dokümantasyonundan çıkıp ilk logo tasarımını…”. This is the only direction to refine; do not substitute later exploration variants or ask the owner to repeat the decision.
 - Reference: https://chatgpt.com/s/m_6af9ac3f07e48191aa8504a2e22a77a9. The connector and web fetcher cannot retrieve the rendered image. Do not invent its geometry or claim a reconstruction is faithful. Exact tracing is pending access to that source, not pending owner preference.

@@ -132,9 +132,6 @@ for (const file of htmlFiles) {
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
   if (rel === "404.html") continue;
   assert(html.includes("GRISTORA"), rel + ": visible GRISTORA brand is present");
-  if (["pricing/index.html", "get-started/index.html", "compare/index.html"].includes(rel)) {
-    assert(html.includes("no account or payment") || html.includes("not live yet") || html.includes("not a statement that the product is currently available"), rel + ": commercial preview does not imply live checkout");
-  }
   assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
@@ -230,24 +227,10 @@ for (const file of htmlFiles) {
       const structured = JSON.parse(jsonLd);
       assert(true, rel + ": JSON-LD is valid JSON");
       if (pagePath === "/breweries/") {
-        assert(/professional brewery/i.test(metaDescription || "") && /professional breweries/i.test(ogDescription || "") && /in development/i.test(metaDescription || ""), "Breweries search and social descriptions lead with the professional, in-development workflow");
+        assert(/professional brewery/i.test(metaDescription || "") && /professional breweries/i.test(ogDescription || ""), "Breweries search and social descriptions lead with the professional workflow");
         assert(/recipe review/i.test(ogDescription || "") && /batch records/i.test(ogDescription || ""), "Breweries social description names the core workflow topics");
       }
     
-  const analyticalClaimGuards = {
-    "/features/brewing-calculations/": ["Under consideration", "analytical model 6 is not approved"],
-    "/features/water-mash-yeast/": ["Under consideration", "analytical model 6 is not approved"],
-    "/features/connected-devices/": ["Under consideration", "analytical model 9 is not approved"],
-    "/features/inventory-costing/": ["Under consideration", "analytical models 12, 13 and 15 are not approved"],
-    "/features/quality-laboratory/": ["Under consideration", "analytical model 10 is not approved"],
-    "/features/analytics-reports/": ["Under consideration", "analytical models 10–15 are not approved"],
-  };
-  if (analyticalClaimGuards[pagePath]) {
-    const required = analyticalClaimGuards[pagePath];
-    const searchableHtml = html.toLowerCase();
-    assert(required.every((phrase) => searchableHtml.includes(phrase.toLowerCase())), rel + ": unapproved analytical models are labelled as under consideration");
-  }
-
   if (pagePath === "/faq/") {
         const questions = Array.isArray(structured.mainEntity) ? structured.mainEntity : [];
         const visibleFaqCount = (html.match(/<details class=["']audience-faq-item["']/g) || []).length;
