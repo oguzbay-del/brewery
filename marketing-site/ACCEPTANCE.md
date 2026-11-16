@@ -11,11 +11,11 @@ This is the current release-readiness record for W12. A previous W12 preview art
 
 Run on this branch and record the resulting GitHub Actions run:
 
-- [ ] Astro / TypeScript diagnostics: `npm run check`.
-- [ ] Static build and generated 1200 × 630 social card: `npm run build`.
-- [ ] Generated-route, metadata, structured-data, sitemap, robots, image and internal-link validation: `npm run validate:site`.
-- [ ] Responsive Playwright and axe checks: `npm run test:browser`.
-- [ ] Review the uploaded responsive screenshots and social-card artifact from this exact run.
+- [x] Astro / TypeScript diagnostics: `npm run check` (run #320 passed).
+- [x] Static build and generated 1200 × 630 social card: `npm run build` (run #320 passed; 61,499-byte PNG artifact).
+- [x] Generated-route, metadata, structured-data, sitemap, robots, image and internal-link validation: `npm run validate:site` (run #320 passed).
+- [x] Responsive Playwright and axe checks: `npm run test:browser` (run #320 passed).
+- [x] Review the uploaded responsive screenshots and social-card artifact from this exact run (31 responsive PNGs; approved-lockup social card visually reviewed).
 
 The current validator checks required routes, sitemap coverage and uniqueness, canonical origin, preview-vs-production robots policy, page titles/descriptions, Open Graph and Twitter metadata, JSON-LD, breadcrumb structure, approved public brand, product-maturity disclosures, accessible landmarks/names, image alt attributes, ARIA references, duplicate IDs, primary audience ordering, local links and fragment targets, and 404 navigation.
 
@@ -64,9 +64,9 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 
 | Evidence | Result |
 |---|---|
-| Current-main CI run | Baseline run #318 passed on pre-social-card-refinement code; PR #167 rerun pending |
-| Responsive screenshot artifact | Baseline artifact #14240524463 (31 PNGs) reviewed in a visual contact sheet and sampled page screenshots; PR #167 rerun pending |
-| Social-card artifact | Baseline artifact #14240084163 passed generation/size checks; updated approved-lockup source in PR #167 pending rerender |
+| Current-main CI run | **Run #320 passed** at `5256af23d58af21367aca55a3ab91f4279e51216`; Astro check, build, validator and browser/axe suite all green |
+| Responsive screenshot artifact | **#14241682202** (31 PNGs); contact sheet and sampled page screenshots reviewed |
+| Social-card artifact | **#14240883513** (1200 × 630, 61,499 bytes); approved lockup and emblem visually reviewed |
 | GitHub Pages preview deployment | Pending |
 | Manual visual review | Sample review: home 1440/390/320, breweries 1440/390, pricing 390, compare 390 and social card; no obvious clipping. Full route-by-route review pending |
 | Keyboard / screen-reader / 200% zoom | Pending |
