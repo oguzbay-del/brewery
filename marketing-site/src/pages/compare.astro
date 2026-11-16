@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import "../styles/pricing.css";
 import "../styles/comparison.css";
+import "../styles/stitch-layout.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import { features, type FeatureAudience } from "../data/features";
@@ -56,10 +57,12 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
       <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
       <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`} aria-current="page">Compare</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}get-started/`}>Choose a plan</a></nav></details>
     </header>
-    <main id="main-content" class="compare-page shell">
-      <Breadcrumbs items={breadcrumbItems} />
-      <section class="pricing-hero compare-hero"><p class="eyebrow"><span class="eyebrow-line"></span> TWO PATHS · ONE BREWING MINDSET</p><h1>Choose the workspace that <em>fits your brew.</em></h1><p class="pricing-lede">Homebrewers and professional breweries share a love of good brewing, but their workflows are different. Compare the product scope before choosing a plan.</p><div class="compare-hero-actions"><a class="button button-primary" href={`${base}pricing/`}>View plans & pricing ↗</a><a class="text-link" href={`${base}get-started/`}>Configure a plan →</a></div></section>
+    <main id="main-content" class="compare-page">
+      <section class="pricing-hero compare-hero shell">
+        <Breadcrumbs items={breadcrumbItems} />
+        <p class="eyebrow"><span class="eyebrow-line"></span> TWO PATHS · ONE BREWING MINDSET</p><h1>Choose the workspace that <em>fits your brew.</em></h1><p class="pricing-lede">Homebrewers and professional breweries share a love of good brewing, but their workflows are different. Compare the product scope before choosing a plan.</p><div class="compare-hero-actions"><a class="button button-primary" href={`${base}pricing/`}>View plans & pricing ↗</a><a class="text-link" href={`${base}get-started/`}>Configure a plan →</a></div></section>
       <section class="compare-table-section section-pad">
+        <div class="shell">
         <div class="comparison-table-wrap" role="region" aria-label="Scrollable Homebrewer and Professional Brewery function comparison" tabindex="0">
           <table class="comparison-table" aria-label="Comparison of GRISTORA product areas for Homebrewers and Professional Breweries">
             <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
@@ -69,8 +72,9 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
           </table>
         </div>
         <p class="pricing-footnote">Open each feature for detailed scope.</p>
+        </div>
       </section>
-      <section class="compare-decision section-pad"><div class="compare-decision-grid"><article><p class="eyebrow">HOME BREWERS</p><h2>One person, <em>one brewing journey.</em></h2><p>Choose Home if you brew for yourself and want your recipes, calculations, measurements and batch learning in one personal workspace.</p><a class="button button-primary" href={`${base}get-started/?audience=home`}>Configure Home plan →</a></article><article><p class="eyebrow">PROFESSIONAL BREWERIES</p><h2>Production work, <em>shared by a team.</em></h2><p>Choose Brewery if several people need a shared professional workflow around recipe standards, production planning and batch records.</p><a class="button button-primary" href={`${base}get-started/?audience=business`}>Configure Brewery plan →</a></article></div><p class="compare-all-features"><a href={`${base}features/`}>Browse all feature details and the complete catalogue ↗</a></p></section>
+      <section class="compare-decision section-pad"><div class="shell"><div class="compare-decision-grid"><article><p class="eyebrow">HOME BREWERS</p><h2>One person, <em>one brewing journey.</em></h2><p>Choose Home if you brew for yourself and want your recipes, calculations, measurements and batch learning in one personal workspace.</p><a class="button button-primary" href={`${base}get-started/?audience=home`}>Configure Home plan →</a></article><article><p class="eyebrow">PROFESSIONAL BREWERIES</p><h2>Production work, <em>shared by a team.</em></h2><p>Choose Brewery if several people need a shared professional workflow around recipe standards, production planning and batch records.</p><a class="button button-primary" href={`${base}get-started/?audience=business`}>Configure Brewery plan →</a></article></div><p class="compare-all-features"><a href={`${base}features/`}>Browse all feature details and the complete catalogue ↗</a></p></div></section>
     </main>
     <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
   </body>

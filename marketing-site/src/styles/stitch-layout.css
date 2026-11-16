@@ -386,3 +386,30 @@
   .principles-page .validation-layout li { padding: 18px 18px 18px 64px; }
   .principles-page .validation-layout li::before { left: 18px; }
 }
+
+/* Compare page (Stitch "Function comparison") */
+.compare-page .compare-hero h1 { font-family: var(--display); font-weight: 700; }
+.compare-page .compare-hero h1 em { display: block; }
+.compare-page .compare-hero .eyebrow { display: inline-flex; padding: 6px 14px; border-radius: 999px; background: var(--soft); color: var(--ink); }
+.compare-page .compare-hero .eyebrow-line { display: none; }
+.compare-page .compare-table-section { background: var(--sx-band); }
+.compare-page .comparison-table-wrap { border: 0; border-radius: var(--radius-panel); background: var(--sx-card); box-shadow: var(--card-shadow); }
+.compare-page .comparison-table thead th { background: var(--sx-soft); color: var(--ink); font-family: var(--display); font-size: 13px; padding-block: 20px; }
+.compare-page .comparison-table th, .compare-page .comparison-table td { border-bottom-color: rgba(11, 47, 38, .08); }
+.compare-page .comparison-group th { background: var(--sx-soft); color: var(--forest); }
+.compare-page .comparison-table tbody th { font-size: 13px; }
+.compare-page .stage-pill { padding: 5px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+.compare-page .stage-muted { display: inline-block; padding: 5px 12px; border-radius: 999px; background: var(--sx-soft); font-size: 11px; }
+.compare-page .compare-table-section .pricing-footnote { margin-top: 16px; }
+.compare-page .compare-decision { background: var(--page); }
+.compare-page .compare-decision-grid article { display: flex; flex-direction: column; border-radius: var(--radius-panel); background: var(--sx-card); box-shadow: var(--card-shadow); }
+.compare-page .compare-decision-grid article::before { content: ""; order: 1; height: 96px; margin-bottom: 28px; border-radius: var(--radius-card); background: var(--sx-soft); border: 1px dashed var(--line); }
+.compare-page .compare-decision-grid article > * { order: 2; }
+.compare-page .compare-decision-grid article .eyebrow { order: 0; }
+.compare-page .compare-decision-grid article h2 { font-family: var(--display); font-weight: 700; }
+.compare-page .compare-decision-grid article h2 em { display: block; font-family: var(--serif); font-weight: 400; }
+.compare-page .compare-decision-grid article .button { order: 3; margin-top: auto; justify-content: center; }
+.compare-page .compare-all-features { text-align: center; }
+@media (max-width: 620px) {
+  .compare-page .compare-decision-grid article::before { height: 64px; }
+}
