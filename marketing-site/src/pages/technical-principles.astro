@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/learning-pages.css";
+import "../styles/stitch-layout.css";
 
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
@@ -63,7 +64,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
       <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a><a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a><a href={`${base}homebrewers/`} aria-current={Astro.url.pathname === `${base}homebrewers/` ? "page" : undefined}>Homebrewers</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`} aria-current={Astro.url.pathname === `${base}how-it-works/` ? "page" : undefined}>How it works</a><a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Technical principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a></nav></details>
     </header>
-    <main id="main-content">
+    <main id="main-content" class="principles-page">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="shell explain-page-hero">
         <p class="eyebrow"><span class="eyebrow-line"></span> METHODS · MEASUREMENTS · VALIDATION</p>

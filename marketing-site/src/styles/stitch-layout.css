@@ -341,3 +341,48 @@
   .faq-page .audience-faq-list { grid-template-columns: 1fr; }
   .faq-page .audience-faq-item summary { font-size: 17px; }
 }
+
+/* Technical principles page (Stitch "Technical principles") */
+.principles-page .explain-page-hero { max-width: none; padding-block: 72px 80px; }
+.principles-page .explain-page-hero h1 { max-width: 820px; font-family: var(--display); font-weight: 700; }
+.principles-page .principles-section { background: var(--sx-band); }
+.principles-page .principles-section .section-heading { max-width: 760px; }
+.principles-page .principles-section .section-heading h2, .principles-page .validation-layout h2 { font-family: var(--display); font-weight: 700; }
+.principles-page .principle-grid { gap: 20px; border: 0; background: none; }
+.principles-page .principle-card { min-height: 0; padding: 28px; border-radius: var(--radius-panel); background: var(--sx-card); box-shadow: var(--card-shadow); }
+.principles-page .principle-card > span { font-family: var(--display); font-size: 22px; font-weight: 600; letter-spacing: 0; }
+.principles-page .principle-card h2 { margin: 18px 0 10px; font-family: var(--display); font-size: 21px; font-weight: 600; letter-spacing: -.3px; line-height: 1.25; }
+.principles-page .principle-card p { margin: 0; font-size: 14px; line-height: 1.65; }
+.principles-page .validation-section { background: var(--page); }
+.principles-page .validation-layout { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 64px; align-items: start; }
+.principles-page .validation-layout > div:first-child { position: sticky; top: 30px; }
+.principles-page .validation-layout h2 { font-size: clamp(34px, 4vw, 50px); line-height: 1.1; }
+.principles-page .validation-layout > div:last-child > p { margin: 0 0 20px; color: var(--muted); font-size: 16px; line-height: 1.65; }
+.principles-page .validation-layout ul { gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: ev; }
+.principles-page .validation-layout li {
+  position: relative; counter-increment: ev; padding: 20px 24px 20px 72px; border-radius: var(--radius-card);
+  background: var(--sx-card); box-shadow: var(--card-shadow); color: var(--ink); font-size: 15px; font-weight: 600; line-height: 1.5;
+}
+.principles-page .validation-layout li::before {
+  content: counter(ev); position: absolute; left: 24px; top: 50%; display: grid; place-items: center; width: 30px; height: 30px; margin-top: -15px;
+  border-radius: 50%; background: var(--sx-soft); color: var(--amber); font-family: var(--display); font-size: 13px; font-weight: 700;
+}
+.principles-page .technical-visual .visual-diagram { border: 0; border-radius: var(--radius-panel); background: var(--sx-card); box-shadow: var(--card-shadow); }
+.principles-page .explain-disclaimer { background: var(--forest); }
+.principles-page .explain-disclaimer .eyebrow { color: var(--sx-amber-on-dark); }
+.principles-page .explain-disclaimer .eyebrow-line { background: var(--sx-amber-on-dark); }
+.principles-page .explain-disclaimer h2 { color: var(--sx-on-dark); font-family: var(--display); font-weight: 700; }
+.principles-page .explain-disclaimer h2 em { color: var(--sx-amber-on-dark); }
+.principles-page .explain-disclaimer .shell > p:not(.eyebrow) { color: var(--sx-on-dark-muted); }
+.principles-page .explain-disclaimer .text-link { color: var(--sx-on-dark); }
+.principles-page .explain-disclaimer .text-link:hover { color: var(--sx-amber-on-dark); }
+.principles-page .explain-disclaimer :focus-visible { outline-color: var(--sx-amber-on-dark); }
+@media (max-width: 900px) {
+  .principles-page .validation-layout { grid-template-columns: 1fr; gap: 28px; }
+  .principles-page .validation-layout > div:first-child { position: static; }
+}
+@media (max-width: 760px) {
+  .principles-page .explain-page-hero { padding-block: 44px 48px; }
+  .principles-page .validation-layout li { padding: 18px 18px 18px 64px; }
+  .principles-page .validation-layout li::before { left: 18px; }
+}
