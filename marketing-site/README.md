@@ -6,7 +6,7 @@ An isolated Astro + TypeScript + static-site project for the GRISTORA public mar
 
 **Read [`DESIGN.md`](./DESIGN.md) before making any visual or UI change to the public marketing website.** It is the implementation source of truth for the owner-approved GRISTORA brand-board direction and applies only to `marketing-site/`.
 
-Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for approved logo asset filenames, the recorded palette and asset usage rules.
+Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for approved logo asset filenames, the recorded palette and asset usage rules. Track final release-readiness evidence in [`ACCEPTANCE.md`](./ACCEPTANCE.md); W12 must pass against the current `main` baseline, not an outdated preview branch.
 
 Read these canonical documents before changing public brand, copy, metadata or visual assets:
 
