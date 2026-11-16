@@ -24,8 +24,10 @@ Read these canonical documents before changing public brand, copy, metadata or v
 - `../web-stratejisi/44-gristora-trademark-counsel-review-brief.md`
 - `../web-stratejisi/45-gristora-pricing-membership-onboarding-plan.md`
 - `../web-stratejisi/46-gristora-marketing-website-parallel-follow-through.md`
+- `../web-stratejisi/47-gristora-marketing-funnel-measurement-spec.md`
+- `../web-stratejisi/48-gristora-marketing-content-consistency-audit.md`
 
-GRISTORA is the selected public brand, with the descriptor “Brewing Intelligence”. The owner selected the first logo design shared by the assistant and approved its vector assets in PR #148. Public routes use `public/brand/gristora-symbol.svg`; the full dark/light lockups and proof are in `public/brand/`. See `BRAND-ASSETS.md` and document 37 for asset usage and production/QA notes. Do not claim trademark or domain legal clearance. This repository documentation is the website handoff.
+GRISTORA is the selected public brand, with the descriptor “Brewing Intelligence”. The owner selected the first logo design shared by the assistant and approved its vector assets in PR #148. Public routes use `public/brand/gristora-symbol.svg`; the full dark/light lockups and proof are in `public/brand/`. See `BRAND-ASSETS.md` and document 37 for asset usage and production/QA notes. Do not claim trademark or domain legal clearance.
 
 **Hard boundary:** marketing-site only. Do not change the product application, APIs, Rust engine, data model, iOS app, internal product identifiers, product roadmap or product development queue.
 
@@ -143,7 +145,6 @@ The Astro config uses the root path for Vercel and `/brewery` only for the GitHu
 - Verify mobile menu, all internal links, keyboard navigation, native FAQ disclosures, sitemap routes and 404 handling.
 - Verify page titles, descriptions, Open Graph, canonical URLs, structured data, robots and sitemap on the production domain.
 - Configure product/app/sign-in URLs only after they are confirmed.
-
 
 ## Search metadata
 
