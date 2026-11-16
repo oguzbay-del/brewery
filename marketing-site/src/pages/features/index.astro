@@ -1,5 +1,6 @@
 ---
 import "../../styles/global.css";
+import "../../styles/stitch-layout.css";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import { features } from "../../data/features";
@@ -66,7 +67,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Technical principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
         </nav></details>
     </header>
-    <main id="main-content">
+    <main id="main-content" class="features-page">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="feature-hero shell">
         <p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT</p>
