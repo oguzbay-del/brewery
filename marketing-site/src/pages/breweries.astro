@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
 import "../styles/audience-pages.css";
+import "../styles/stitch-layout.css";
 import "../styles/pricing.css";
 import { features } from "../data/features";
 
@@ -89,6 +90,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </nav></details>
     </header>
     <main id="main-content">
+      <div class="sx-audience-band">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR PROFESSIONAL BREWERIES · IN DEVELOPMENT</p>
@@ -100,6 +102,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell audience-hero">
         <figure class="audience-hero-art"><img src={`${base}images/illustrations/professional-brewery-vessels.svg`} alt="Original illustration of stainless-steel brewery vessels connected by production pipes." loading="eager" /><figcaption>A professional brewing environment · original illustration</figcaption></figure>
       </section>
+      </div>
       <section class="audience-page-section section-pad" id="brewery-workflow">
         <div class="shell">
           <div class="section-heading">
