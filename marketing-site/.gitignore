@@ -1,0 +1,3 @@
+# Local build products (not tracked; CI runs npm install)
+.astro/
+package-lock.json
