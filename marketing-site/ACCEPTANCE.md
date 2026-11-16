@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Scope:** `marketing-site/` only  
-**Baseline:** `main` at `f277d1bff4debb9259aa7855a9613e1b71dac60e` (16 November 2026)  
+**Baseline:** `main` at `2b8588f2179e25fa3d8c7079424de01075ecb5fe` (16 November 2026)  
 **Production:** Intentionally deferred; this gate validates the noindex preview only.
 
 This is the current release-readiness record for W12. A previous W12 preview artifact was built from a branch that was seven commits behind `main`, before the final Stitch visual refinement and locally bundled fonts. Do not use that older screenshot set as visual approval for the current site. This branch exists to run the acceptance workflow against the current `main` baseline.
@@ -11,11 +11,11 @@ This is the current release-readiness record for W12. A previous W12 preview art
 
 Run on this branch and record the resulting GitHub Actions run:
 
-- [ ] Astro / TypeScript diagnostics: `npm run check`.
-- [ ] Static build and generated 1200 × 630 social card: `npm run build`.
-- [ ] Generated-route, metadata, structured-data, sitemap, robots, image and internal-link validation: `npm run validate:site`.
-- [ ] Responsive Playwright and axe checks: `npm run test:browser`.
-- [ ] Review the uploaded responsive screenshots and social-card artifact from this exact run.
+- [x] Astro / TypeScript diagnostics: `npm run check` (run #320 passed).
+- [x] Static build and generated 1200 × 630 social card: `npm run build` (run #320 passed; 61,499-byte PNG artifact).
+- [x] Generated-route, metadata, structured-data, sitemap, robots, image and internal-link validation: `npm run validate:site` (run #320 passed).
+- [x] Responsive Playwright and axe checks: `npm run test:browser` (run #320 passed).
+- [x] Review the uploaded responsive screenshots and social-card artifact from this exact run (31 responsive PNGs; approved-lockup social card visually reviewed).
 
 The current validator checks required routes, sitemap coverage and uniqueness, canonical origin, preview-vs-production robots policy, page titles/descriptions, Open Graph and Twitter metadata, JSON-LD, breadcrumb structure, approved public brand, product-maturity disclosures, accessible landmarks/names, image alt attributes, ARIA references, duplicate IDs, primary audience ordering, local links and fragment targets, and 404 navigation.
 
@@ -28,6 +28,7 @@ Review screenshots from the current run, not a stale branch artifact.
 - [ ] Pricing, comparison and plan configurator at desktop and mobile widths.
 - [ ] How It Works, Technical Principles, FAQ and feature directory/detail at desktop and mobile widths.
 - [ ] Confirm the approved GRISTORA logo remains intact; forest-green / stone-beige / amber palette, Plus Jakarta Sans / Inter typography, light editorial hero, rounded panels and pill controls are consistent with `DESIGN.md`.
+- [ ] Confirm the social card uses the supplied approved full logo lockup and emblem; do not recreate the wordmark with ordinary text or substitute a generic brewing-vessel icon.
 - [ ] Confirm Professional Breweries remains the primary path and Homebrewers the distinct secondary path.
 - [ ] Confirm illustrations remain clearly illustrative; no fabricated product UI, unlicensed photography or unsupported customer proof.
 - [ ] Confirm no clipped content, horizontal page overflow, awkward wrapping or unusable controls.
@@ -63,11 +64,11 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 
 | Evidence | Result |
 |---|---|
-| Current-main CI run | Pending |
-| Responsive screenshot artifact | Pending |
-| Social-card artifact | Pending |
+| Current-main CI run | **Run #320 passed** at `5256af23d58af21367aca55a3ab91f4279e51216`; Astro check, build, validator and browser/axe suite all green |
+| Responsive screenshot artifact | **#14241682202** (31 PNGs); contact sheet and sampled page screenshots reviewed |
+| Social-card artifact | **#14240883513** (1200 × 630, 61,499 bytes); approved lockup and emblem visually reviewed |
 | GitHub Pages preview deployment | Pending |
-| Manual visual review | Pending |
+| Manual visual review | Sample review: home 1440/390/320, breweries 1440/390, pricing 390, compare 390 and social card; no obvious clipping. Full route-by-route review pending |
 | Keyboard / screen-reader / 200% zoom | Pending |
 | Performance review | Pending |
 | Production launch | Deferred by owner decision |
