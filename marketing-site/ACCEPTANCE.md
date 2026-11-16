@@ -2,7 +2,7 @@
 
 **Status:** In progress  
 **Scope:** `marketing-site/` only  
-**Baseline:** `main` at `f277d1bff4debb9259aa7855a9613e1b71dac60e` (16 November 2026)  
+**Baseline:** `main` at `2b8588f2179e25fa3d8c7079424de01075ecb5fe` (16 November 2026)  
 **Production:** Intentionally deferred; this gate validates the noindex preview only.
 
 This is the current release-readiness record for W12. A previous W12 preview artifact was built from a branch that was seven commits behind `main`, before the final Stitch visual refinement and locally bundled fonts. Do not use that older screenshot set as visual approval for the current site. This branch exists to run the acceptance workflow against the current `main` baseline.
@@ -28,6 +28,7 @@ Review screenshots from the current run, not a stale branch artifact.
 - [ ] Pricing, comparison and plan configurator at desktop and mobile widths.
 - [ ] How It Works, Technical Principles, FAQ and feature directory/detail at desktop and mobile widths.
 - [ ] Confirm the approved GRISTORA logo remains intact; forest-green / stone-beige / amber palette, Plus Jakarta Sans / Inter typography, light editorial hero, rounded panels and pill controls are consistent with `DESIGN.md`.
+- [ ] Confirm the social card uses the supplied approved full logo lockup and emblem; do not recreate the wordmark with ordinary text or substitute a generic brewing-vessel icon.
 - [ ] Confirm Professional Breweries remains the primary path and Homebrewers the distinct secondary path.
 - [ ] Confirm illustrations remain clearly illustrative; no fabricated product UI, unlicensed photography or unsupported customer proof.
 - [ ] Confirm no clipped content, horizontal page overflow, awkward wrapping or unusable controls.
@@ -63,11 +64,11 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 
 | Evidence | Result |
 |---|---|
-| Current-main CI run | Pending |
-| Responsive screenshot artifact | Pending |
-| Social-card artifact | Pending |
+| Current-main CI run | Baseline run #318 passed on pre-social-card-refinement code; PR #167 rerun pending |
+| Responsive screenshot artifact | Baseline artifact #14240524463 (31 PNGs) reviewed in a visual contact sheet and sampled page screenshots; PR #167 rerun pending |
+| Social-card artifact | Baseline artifact #14240084163 passed generation/size checks; updated approved-lockup source in PR #167 pending rerender |
 | GitHub Pages preview deployment | Pending |
-| Manual visual review | Pending |
+| Manual visual review | Sample review: home 1440/390/320, breweries 1440/390, pricing 390, compare 390 and social card; no obvious clipping. Full route-by-route review pending |
 | Keyboard / screen-reader / 200% zoom | Pending |
 | Performance review | Pending |
 | Production launch | Deferred by owner decision |
