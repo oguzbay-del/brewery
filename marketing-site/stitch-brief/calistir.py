@@ -44,7 +44,7 @@ def main():
     ds_id = ds["designSystems"][0]["name"] if ds.get("designSystems") else None
     log(f"start: {len(jobs)} jobs, {len(done)} done, design system {ds_id}")
     for j in jobs:
-        if j["key"] in done:
+        if done.get(j["key"], {}).get("ok"):
             continue
         args = dict(j["args"], projectId=PROJECT)
         if j["tool"] == "generate_screen_from_text" and ds_id:
@@ -53,14 +53,23 @@ def main():
             t0 = time.time()
             try:
                 out = call(j["tool"], args)
-                done[j["key"]] = {"ok": True, "s": int(time.time() - t0), "out": out[:400]}
-                log(f"OK   {j['key']} ({int(time.time()-t0)} s)")
+                ids = []
+                try:
+                    for c in json.loads(out).get("outputComponents", []):
+                        for sc in c.get("design", {}).get("screens", []):
+                            ids.append(sc.get("name"))
+                except ValueError:
+                    pass
+                done[j["key"]] = {"ok": bool(ids), "s": int(time.time() - t0), "screens": ids, "out": out[:300]}
+                log(f"{'OK  ' if ids else 'NOID'} {j['key']} ({int(time.time()-t0)} s)")
                 break
             except (TimeoutError, urllib.error.URLError, ConnectionError) as e:
-                # Stitch can finish the job after a timeout. Do not repeat it: that makes duplicates.
-                done[j["key"]] = {"ok": None, "err": f"timeout/connection: {e}"[:300]}
-                log(f"WAIT {j['key']}: {e} (may still finish in Stitch)")
-                break
+                # The connection can drop before Stitch answers. Try once more; a duplicate is better than a gap.
+                log(f"DROP {j['key']} try {attempt}: {e}")
+                if attempt == 2:
+                    done[j["key"]] = {"ok": None, "err": f"connection: {e}"[:300]}
+                time.sleep(60)
+                continue
             except Exception as e:
                 log(f"ERR  {j['key']} try {attempt}: {e}")
                 if attempt == 2:
