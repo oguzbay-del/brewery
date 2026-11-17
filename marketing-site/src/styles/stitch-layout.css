@@ -203,7 +203,8 @@
 .pricing-page .plan-card h2 { font-family: var(--display); font-weight: 700; }
 .pricing-page .plan-description { min-height: 0; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
 .pricing-page .plan-card ul { width: 100%; font-size: 14px; color: var(--ink); }
-.pricing-page .plan-card::after { content: ""; order: 5; width: 100%; height: 96px; margin: 0 0 28px; border-radius: var(--radius-card); background: var(--sx-soft); border: 1px solid var(--line); }
+.pricing-page .plan-card::after { content: none; }
+.pricing-page .pricing-pending { order: 5; margin: 0 0 24px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--sx-soft); color: var(--muted); font-size: 13px; line-height: 1.5; }
 .pricing-page .plan-card .button { order: 6; margin-top: auto; }
 .pricing-page .plan-card .text-link { order: 7; }
 .pricing-page .billing-section { background: var(--page); }
@@ -222,7 +223,7 @@
 .pricing-page .pricing-cta :focus-visible { outline-color: var(--sx-amber-on-dark); }
 @media (max-width: 760px) {
   .pricing-page .compare-callout { padding: 28px 22px; gap: 24px; }
-  .pricing-page .plan-card::after { height: 72px; }
+  .pricing-page .pricing-pending { margin-bottom: 20px; }
 }
 
 /* How it works page (Stitch "How it works") */
