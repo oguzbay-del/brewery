@@ -3,6 +3,7 @@ import "../../styles/global.css";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import "../../styles/learning-pages.css";
+import "../../styles/stitch-layout.css";
 import "../../styles/faq-evidence.css";
 import { features } from "../../data/features";
 
@@ -73,30 +74,27 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Technical principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
         </nav></details>
     </header>
-    <main id="main-content">
+    <main id="main-content" class="feature-detail">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="feature-detail-hero shell">
         <p class="eyebrow"><span class="eyebrow-line"></span> {feature.eyebrow}</p>
         <h1>{feature.title}</h1>
         <p class="feature-lead">{feature.summary}</p>
-        <div class="feature-tags">
-          {feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}
+        <div class="fd-chip-rows">
+          <div class="fd-chip-row"><span class="fd-chip-label">For</span><div class="feature-tags">{feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}</div></div>
+          <div class="fd-chip-row"><span class="fd-chip-label">Roadmap stage</span><div class="fd-stages">{feature.stages.map((stage) => <span class="feature-tag">{stage}</span>)}</div></div>
         </div>
       </section>
       <section class="feature-detail-body section-pad">
-        <div class="shell feature-detail-layout">
-          <div class="feature-detail-sections">
-            {feature.sections.map((section, index) => (
-              <section class="feature-detail-section">
-                <span class="feature-card-index">{String(index + 1).padStart(2, "0")}</span>
-                <div><h2>{section.heading}</h2><p>{section.intro}</p><ul>{section.items.map((item) => <li>{item}</li>)}</ul></div>
-              </section>
-            ))}
-          </div>
-          <aside class="feature-roadmap-aside">
-            <p class="eyebrow">AUDIENCE</p>
-            <p>{feature.audiences.join(" · ")}</p>
-          </aside>
+        <div class="shell fd-section-grid">
+          {feature.sections.map((section, index) => (
+            <section class="fd-card">
+              <span class="feature-card-index">{String(index + 1).padStart(2, "0")}</span>
+              <h2>{section.heading}</h2>
+              <p>{section.intro}</p>
+              <ul class="fd-checklist">{section.items.map((item) => <li>{item}</li>)}</ul>
+            </section>
+          ))}
         </div>
       </section>
       <section class="feature-evidence-section section-pad">
@@ -111,11 +109,11 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           </div>
         </div>
       </section>
-      {feature.note && <section class="feature-caveat"><div class="shell"><p>{feature.note}</p></div></section>}
-      <section class="feature-next section-pad">
+      {feature.note && <section class="feature-caveat fd-note"><div class="shell"><p>{feature.note}</p></div></section>}
+      <section class="feature-next fd-band section-pad">
         <div class="shell feature-next-inner">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See the complete <em>GRISTORA product.</em></h2></div>
-          <div><p>Explore the other product areas or choose the workspace that matches your brewing.</p><a class="button button-primary" href={`${base}features/`}>Browse all product features <span aria-hidden="true">↗</span></a></div>
+          <div><p>Explore the other product areas or choose the workspace that matches your brewing.</p><div class="fd-band-actions"><a class="button button-primary" href={`${base}features/`}>Browse all product features <span aria-hidden="true">↗</span></a><a class="fd-band-link" href={`${base}how-it-works/`}>How it works <span aria-hidden="true">↗</span></a></div></div>
         </div>
       </section>
     </main>
