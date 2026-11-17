@@ -1,0 +1,306 @@
+{
+ "mobile-Homebrewers": {
+  "ok": true,
+  "s": 61,
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"2660691161676570295\",\"outputComponents\":[{\"text\":\"### Homebrewers & Pilot \u2014 GRISTORA Mobile (390px Viewport) Architecture\\n\\nTo translate the desktop **Homebrewers & Pilot** experience (`Homebrewers & Pilot \u2014 GRISTORA`) into the mobile responsive view in strict accordance with the **Brewing Intelligence** design system and the project rules:\\n\\n---\\n"
+ },
+ "mobile-Function comparison": {
+  "ok": true,
+  "s": 93,
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"9201469170709039203\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/6f7185aaa7f248a09f3eb0ef3810b923\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/6f7185aaa7f248a09f3eb0ef3810b923:download\"},\"htmlCode\":{\"name\":\"projects/9024853279551774830/files/92ac75f66dca47f"
+ },
+ "404-DESKTOP": {
+  "ok": true,
+  "screens": [
+   "projects/9024853279551774830/screens/9fff715541c646d38e54d03cd5d1fc6b"
+  ]
+ },
+ "mobile-FAQ": {
+  "ok": true,
+  "s": 78,
+  "screens": [
+   "projects/9024853279551774830/screens/ddbd0c7070da49c1a5f014fbf20601bf"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"15823914659674599262\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/f508ce6f8fe44d4182a871b815e033c9\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/f508ce6f8fe44"
+ },
+ "feature-recipe-design-DESKTOP": {
+  "ok": true,
+  "s": 61,
+  "screens": [
+   "projects/9024853279551774830/screens/7c247a10c9a7415292c8d4f29615b269"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"13899382083323464056\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/698620ab2b074d1a9b8dcb8d4f295276\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/698620ab2b074"
+ },
+ "feature-recipe-design-MOBILE": {
+  "ok": true,
+  "s": 66,
+  "screens": [
+   "projects/9024853279551774830/screens/dfe49f3b4790429d800aecf1dd67b84b"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"17073986506027548686\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/06053de4d5a84ceab66b1c66b175fea3\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/06053de4d5a84"
+ },
+ "feature-brewing-calculations-DESKTOP": {
+  "ok": true,
+  "s": 66,
+  "screens": [
+   "projects/9024853279551774830/screens/ffec4ed880154c7cb84e442d73121129"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"16143527948381822164\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/15cff9fb9e8640cd8c94980172d15d9b\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/15cff9fb9e864"
+ },
+ "feature-brewing-calculations-MOBILE": {
+  "ok": true,
+  "s": 56,
+  "screens": [
+   "projects/9024853279551774830/screens/051fcd1223324b128fc78b067bb33a37"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"197707636967185542\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/6a8252c3f0d641d799df3157c08fd57b\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/6a8252c3f0d641d"
+ },
+ "feature-water-mash-yeast-DESKTOP": {
+  "ok": true,
+  "s": 50,
+  "screens": [
+   "projects/9024853279551774830/screens/58228520763a48bcace748df6f65821e"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"435558384087055870\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/4f3d28c479264a33a06e31689b174c1a\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/4f3d28c479264a3"
+ },
+ "feature-water-mash-yeast-MOBILE": {
+  "ok": true,
+  "s": 53,
+  "screens": [
+   "projects/9024853279551774830/screens/a7182d0bb1304acfa6d34f2771e5b974"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"2465420769950799833\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/83cada25408342a28fd438260e6805ca\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/83cada25408342"
+ },
+ "feature-brew-day-DESKTOP": {
+  "ok": true,
+  "s": 44,
+  "screens": [
+   "projects/9024853279551774830/screens/93f858cf07224b3686547cbff5c40c12"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"13314620869013831258\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/2aae3a934c724783b70b7da74071ec62\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/2aae3a934c724"
+ },
+ "feature-brew-day-MOBILE": {
+  "ok": true,
+  "s": 63,
+  "screens": [
+   "projects/9024853279551774830/screens/33c54d7b28684f72bde9fdac4fd0b026"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"6324613082324510101\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/098ea117892c4bd0af0026d0e71e741a\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/098ea117892c4b"
+ },
+ "feature-fermentation-monitoring-DESKTOP": {
+  "ok": true,
+  "s": 55,
+  "screens": [
+   "projects/9024853279551774830/screens/e4749c9ddbfa47ed9e8ff83ccdd5ccd1"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"16306128996759584658\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/4cb920db56974903873912c291ceec44\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/4cb920db56974"
+ },
+ "feature-fermentation-monitoring-MOBILE": {
+  "ok": true,
+  "s": 60,
+  "screens": [
+   "projects/9024853279551774830/screens/46b4324b39134fb2bbbc381759a8af65"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"6920306410024209831\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/34bc8ecaeab74dc1980f0132f0171f3e\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/34bc8ecaeab74d"
+ },
+ "feature-equipment-calibration-DESKTOP": {
+  "ok": true,
+  "s": 64,
+  "screens": [
+   "projects/9024853279551774830/screens/cbdd71ac28f2465da1e8a396c6ddc739"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"10160706653790840253\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/fe45e36b42ae4f2b9a5ae75a9254ec1c\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/fe45e36b42ae4"
+ },
+ "feature-equipment-calibration-MOBILE": {
+  "ok": true,
+  "s": 68,
+  "screens": [
+   "projects/9024853279551774830/screens/c309b41c62ef4395a2635f91cd05ffc9"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"12859834265006039840\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/904c5d68d28a4cf28b8295913e3ae3bc\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/904c5d68d28a4"
+ },
+ "feature-planning-scheduling-DESKTOP": {
+  "ok": true,
+  "s": 50,
+  "screens": [
+   "projects/9024853279551774830/screens/6e3bdaa316fb4fff85dd793a589121c7"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"5911068240335140420\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/35513d2a498d4a0bb6234f1516277c2b\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/35513d2a498d4a"
+ },
+ "feature-planning-scheduling-MOBILE": {
+  "ok": true,
+  "s": 100,
+  "screens": [
+   "projects/9024853279551774830/screens/7ab70074b3514683855bf7eaf2ca62b5"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"11183125908075067569\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/1897c957eaa34fab9a31dc595838d48a\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/1897c957eaa34"
+ },
+ "feature-inventory-costing-DESKTOP": {
+  "ok": true,
+  "s": 85,
+  "screens": [
+   "projects/9024853279551774830/screens/682771e6b4644a9e944193f0f7addbe5"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"3507293440787395363\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/6c886c082be04560bf98ca085cbd61f2\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/6c886c082be045"
+ },
+ "feature-inventory-costing-MOBILE": {
+  "ok": true,
+  "s": 101,
+  "screens": [
+   "projects/9024853279551774830/screens/fef70b0b944c480db74fe4ecac55e5bb"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"5857281035576739423\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/fa00773ecc244e57a762e76fa983d4a3\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/fa00773ecc244e"
+ },
+ "feature-production-management-DESKTOP": {
+  "ok": true,
+  "s": 89,
+  "screens": [
+   "projects/9024853279551774830/screens/5b522367053d4304bbc26847bbee5b63"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"6226981422039486269\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/6ccab496b92c434e96bfb0bca4f35a0d\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/6ccab496b92c43"
+ },
+ "feature-production-management-MOBILE": {
+  "ok": true,
+  "s": 86,
+  "screens": [
+   "projects/9024853279551774830/screens/004a55d9651c49739c8faf8fca235505"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"9211602268446708558\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/b63aa42de84c49a1a5d90b0f891cd6e5\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/b63aa42de84c49"
+ },
+ "feature-quality-laboratory-DESKTOP": {
+  "ok": true,
+  "s": 85,
+  "screens": [
+   "projects/9024853279551774830/screens/b97fbc51c2434030a3f92eb2338f34fc"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"1906727534029619800\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/0d89431842b84ea6a12560946a676fb9\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/0d89431842b84e"
+ },
+ "feature-quality-laboratory-MOBILE": {
+  "ok": true,
+  "s": 94,
+  "screens": [
+   "projects/9024853279551774830/screens/44d6a475403645f49b427232f79937a3"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"3074658856978856207\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/5255d702867f4868aea825279e346461\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/5255d702867f48"
+ },
+ "feature-packaging-compliance-DESKTOP": {
+  "ok": true,
+  "s": 100,
+  "screens": [
+   "projects/9024853279551774830/screens/4ad1ae049b9f46bc95ac43a210879148"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"17191167122584493119\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/598474006b7241e18ccbaefba99147d2\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/598474006b724"
+ },
+ "feature-packaging-compliance-MOBILE": {
+  "ok": true,
+  "s": 141,
+  "screens": [
+   "projects/9024853279551774830/screens/59580308a988486c98348cf11d20bbb9"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"17687409673142596181\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/c3d1993fcc484a81983728d2bad0849c\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/c3d1993fcc484"
+ },
+ "feature-team-notifications-DESKTOP": {
+  "ok": true,
+  "s": 100,
+  "screens": [
+   "projects/9024853279551774830/screens/7838cfb8459c4aedb3204e0d06da360b"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"5312950576531269496\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/f47ee0982dd84412b39df361c723cbff\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/f47ee0982dd844"
+ },
+ "feature-team-notifications-MOBILE": {
+  "ok": true,
+  "s": 84,
+  "screens": [
+   "projects/9024853279551774830/screens/6c1368158a754fe4865d35057f337625"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"13070479778360349699\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/215f039da7bf4e2ea6c74814ac7280d1\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/215f039da7bf4"
+ },
+ "feature-connected-devices-DESKTOP": {
+  "ok": true,
+  "s": 128,
+  "screens": [
+   "projects/9024853279551774830/screens/bf28294233d74e77af04fc9b6885367c"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"11316661350339938118\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/78e05fa1432d42928e3e217093866e38\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/78e05fa1432d4"
+ },
+ "feature-connected-devices-MOBILE": {
+  "ok": true,
+  "s": 97,
+  "screens": [
+   "projects/9024853279551774830/screens/2ee1807bd1d4487aa55d3d0fdf354802"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"3557865991638297600\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/637cd7f3e1824012828498de8ed46749\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/637cd7f3e18240"
+ },
+ "feature-imports-exports-tools-DESKTOP": {
+  "ok": true,
+  "s": 105,
+  "screens": [
+   "projects/9024853279551774830/screens/5636753a705c4e68a7701081f44e99cd"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"2305632399212307265\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/7580620d7bc94f779e4df04c985d09b7\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/7580620d7bc94f"
+ },
+ "feature-imports-exports-tools-MOBILE": {
+  "ok": true,
+  "s": 175,
+  "screens": [
+   "projects/9024853279551774830/screens/b7a8c7a721a14eed91e992730082cf00"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"9180013774121447679\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/52ba6cd640e54694943b913dada70244\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/52ba6cd640e546"
+ },
+ "feature-platform-security-data-DESKTOP": {
+  "ok": true,
+  "s": 117,
+  "screens": [
+   "projects/9024853279551774830/screens/cc51217133d34077b53729e0027fb114"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"4918355584540746915\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/9a2168beb9574aa7b05dbbb9a872582b\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/9a2168beb9574a"
+ },
+ "feature-platform-security-data-MOBILE": {
+  "ok": true,
+  "s": 122,
+  "screens": [
+   "projects/9024853279551774830/screens/5b73b0543ff146f2bf7e8ba45cffb478"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"6004731048017493207\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/0a528dfbf9d14a339e0d21e0d4da9c1d\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/0a528dfbf9d14a"
+ },
+ "feature-analytics-reports-DESKTOP": {
+  "ok": true,
+  "s": 84,
+  "screens": [
+   "projects/9024853279551774830/screens/aebba238b8744cb7b7001234f279fcf2"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"9532335761507926982\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/af9843d2eb30487392c62d571804652e\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/af9843d2eb3048"
+ },
+ "feature-analytics-reports-MOBILE": {
+  "ok": true,
+  "s": 93,
+  "screens": [
+   "projects/9024853279551774830/screens/fdb3c9cd2551418b8b67f92f80dc3006"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"13976529203557135319\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/23cbb392b69a4abbb887c4284bbf62e9\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/23cbb392b69a4"
+ },
+ "directory-DESKTOP": {
+  "ok": true,
+  "s": 94,
+  "screens": [
+   "projects/9024853279551774830/screens/14cba47c46e243e3b468b876202d1687"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"2893718104725629475\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/faf191b7dd8545bbbf078cfe98786fca\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/faf191b7dd8545"
+ },
+ "directory-MOBILE": {
+  "ok": true,
+  "s": 119,
+  "screens": [
+   "projects/9024853279551774830/screens/57cd3cb61dfc43af873d8b555577deca"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"4271098958515100938\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/030a5797671047c3af56a653bef6d55a\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/030a5797671047"
+ },
+ "404-MOBILE": {
+  "ok": true,
+  "s": 70,
+  "screens": [
+   "projects/9024853279551774830/screens/862e1f3c0bf44d898b716461c64d217d"
+  ],
+  "out": "{\"projectId\":\"9024853279551774830\",\"sessionId\":\"345348885308005311\",\"outputComponents\":[{\"design\":{\"screens\":[{\"screenshot\":{\"name\":\"projects/9024853279551774830/files/1511840dd766417dab0d6e3efc4f7a3f\",\"downloadUrl\":\"https://stitch.googleapis.com/v1/projects/9024853279551774830/files/1511840dd766417"
+ }
+}
