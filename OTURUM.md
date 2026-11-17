@@ -53,6 +53,8 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
+- **Stitch port of feature pages (17 Nov 2026, Claude):** commit `dde4111` ports the Stitch layout to the 16 `/features/{slug}/` pages (one template), the feature directory (filter chips, works without JavaScript) and the 404 page. Copy did not change. Checks: astro check 0 errors, validate:site 2311/2311, Playwright 116/116, no horizontal overflow at 400 and 1280 px. The branch `claude/tender-hypatia-qrwtys` is not merged. Next step: owner visual review, then a PR to `main`.
+
 - **Stitch overnight brief (16 Nov 2026, Claude, owner request):** `marketing-site/stitch-brief/STITCH-GECE-TALIMATI.md` has 11 copy-paste Stitch prompts: mobile versions of 10 pages, the 16 `/features/{slug}/` pages (approved copy from `features.ts`, word for word), the feature directory, the 404 page and a consistency pass. Each prompt repeats the visual tokens and the document 41 forbidden list. The file does not contain the API key. Next step: the owner runs the batches in Stitch, then Claude ports the result to Astro.
 - Update: `stitch-brief/calistir.py` runs the 39 jobs in `jobs.json` one by one through the Stitch MCP, without an LLM (resumable, state in `durum.json`). It started on 16 Nov 22:44 UTC in the cloud container. To run it again: `STITCH_API_KEY=... python3 -I calistir.py`. Next step: Claude reads the new screens and ports them to Astro.
 - **Stitch run complete (17 Nov 2026 02:37 UTC):** 39/39 jobs produced screens. `list_screens` does not show the new screens; their IDs are in `marketing-site/stitch-brief/ekranlar.json`. Use `get_screen` with these IDs for the Astro port. `watchdog.sh` restarts `calistir.py` when it stops.
