@@ -1,3 +1,5 @@
 nohup.out
 durum.json
 calistir.log
+watchdog.out
+__pycache__/
