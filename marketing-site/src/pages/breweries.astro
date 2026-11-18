@@ -1,4 +1,6 @@
 ---
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import "../styles/global.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
@@ -70,24 +72,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <header class="site-header">
-      <a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation">
-        <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
-        <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
-        <a href={`${base}homebrewers/`} aria-current={Astro.url.pathname === `${base}homebrewers/` ? "page" : undefined}>Homebrewers</a>
-        <a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`} aria-current={Astro.url.pathname === `${base}how-it-works/` ? "page" : undefined}>How it works</a>
-        <a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
-      </nav>
-      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation">
-          <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
-          <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
-          <a href={`${base}homebrewers/`} aria-current={Astro.url.pathname === `${base}homebrewers/` ? "page" : undefined}>Homebrewers</a>
-          <a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`} aria-current={Astro.url.pathname === `${base}how-it-works/` ? "page" : undefined}>How it works</a>
-          <a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Technical principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
-        </nav></details>
-    </header>
+    <SiteHeader current="breweries" />
     <main id="main-content">
       <div class="sx-audience-band">
       <Breadcrumbs items={breadcrumbItems} />
@@ -97,9 +82,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <p>GRISTORA is built for professional brewing teams that need a clearer view of recipe decisions, batch information and production records.</p>
         <a class="button button-primary" href="#brewery-workflow">Explore the brewery workflow <span aria-hidden="true">↗</span></a>
       </section>
-      <!-- IMAGE SLOT: BREWERIES-HERO | Replace only with user-approved or licensed documentary photography. -->
       <section class="shell audience-hero">
-        <figure class="audience-hero-art"><img src={`${base}images/illustrations/professional-brewery-vessels.svg`} alt="Original illustration of stainless-steel brewery vessels connected by production pipes." loading="eager" /><figcaption>A professional brewing environment · original illustration</figcaption></figure>
+        <figure class="audience-hero-art"><img src={`${base}images/illustrations/professional-brewery-vessels.svg`} width="1200" height="600" alt="Original illustration of stainless-steel brewery vessels connected by production pipes." loading="eager" /><figcaption>A professional brewing environment · original illustration</figcaption></figure>
       </section>
       </div>
       <section class="audience-page-section section-pad" id="brewery-workflow">
@@ -168,7 +152,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
             </li>
           </ol>
           <p class="record-model-note">Traceability depends on the records captured and the supported lot relationships.</p>
-          <figure class="visual-diagram"><img src={`${base}images/diagrams/business-batch-timeline.svg`} alt="Professional brewery batch timeline connecting recipe version, batch plan, production record, vessel events and quality review." loading="lazy" /><figcaption>Business batch context</figcaption></figure>
+          <figure class="visual-diagram"><img src={`${base}images/diagrams/business-batch-timeline.svg`} width="960" height="500" alt="Professional brewery batch timeline connecting recipe version, batch plan, production record, vessel events and quality review." loading="lazy" /><figcaption>Business batch context</figcaption></figure>
         </div>
       </section>
       <section class="audience-feature-section section-pad">
@@ -211,6 +195,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+    <SiteFooter />
   </body>
 </html>

@@ -189,22 +189,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 }
 
 
-/* Reusable, explicitly temporary photo slots. Replace the inner placeholder with an <img> or <picture>; retain data-image-slot for asset tracking. */
-.image-placeholder {
-  min-height: 280px;
-  display: grid;
-  place-content: center;
-  gap: 10px;
-  padding: 28px;
-  border: 1px dashed rgba(80, 76, 65, .42);
-  background: #e5e5ea;
-  color: #55574f;
-  text-align: center;
-}
-.image-placeholder strong { font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; }
-.image-placeholder span { max-width: 34ch; font-size: 12px; color: var(--muted); }
 .audience-hero { min-height: 440px; }
-.audience-hero .image-placeholder { min-height: 440px; }
 .audience-page-intro { max-width: 760px; padding-block: 92px 56px; }
 .audience-page-intro h1 { max-width: 760px; }
 .audience-page-intro > p:not(.eyebrow) { max-width: 620px; color: var(--muted); font-size: 18px; line-height: 1.8; }
@@ -219,7 +204,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .page-back { display: inline-flex; margin-top: 28px; color: var(--amber); font-size: 12px; font-weight: 700; }
 @media (max-width: 760px) {
   .audience-page-intro { padding-block: 60px 36px; }
-  .audience-hero, .audience-hero .image-placeholder { min-height: 280px; }
+  .audience-hero { min-height: 280px; }
   .audience-page-grid { grid-template-columns: 1fr; gap: 28px; }
 }
 
@@ -416,7 +401,7 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; 
 .hero-actions .hero-secondary:hover { border-color: transparent; background: #dedcd6; color: var(--ink); }
 
 /* Cards and panels: rounded white surfaces with a soft border and shadow. */
-.audience-image, .audience-hero-art, .image-placeholder { border-radius: var(--radius-card); }
+.audience-image, .audience-hero-art { border-radius: var(--radius-card); }
 .audience-card, .feature-card, .workflow-card, .explain-flow-item, .principle-card,
 .stage-grid article, .plan-card, .wizard-main, .wizard-summary, .choice-card,
 .audience-feature-link, .faq-directory-aside, .feature-roadmap-aside, .visual-diagram,

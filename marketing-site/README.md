@@ -104,17 +104,30 @@ npm run test:browser
 
 ## Image replacement map
 
-Search the `data-image-slot` attributes or `IMAGE SLOT:` comments to find every temporary visual:
+All visuals are original SVG files in `public/`. To replace one, keep the file name or update the `src` and the `width` and `height` attributes in the page.
 
-| Slot | File / location | Replace with |
+| Image | File | Used in |
 |---|---|---|
-| `home-hero` | `src/pages/index.astro` hero-art | Wide editorial brewing-process photo |
-| `audience-homebrewers` | `src/pages/index.astro` audience card | Homebrew setup / brewer at work |
-| `audience-breweries` | `src/pages/index.astro` audience card | Professional brewery / stainless tanks |
-| `homebrewers-hero` | `src/pages/homebrewers.astro` | Homebrewer working on a batch |
-| `breweries-hero` | `src/pages/breweries.astro` | Professional brewery team / production floor |
+| Homebrewing bench illustration | `public/images/illustrations/homebrewing-workspace.svg` | `src/pages/homebrewers.astro` hero |
+| Professional brewery vessels illustration | `public/images/illustrations/professional-brewery-vessels.svg` | `src/pages/breweries.astro` hero |
+| Homebrewer audience image | `public/audience/homebrewer.svg` | `src/pages/compare.astro` |
+| Professional brewery audience image | `public/audience/professional-brewery.svg` | `src/pages/compare.astro` |
+| Brewery record chain diagram | `public/images/diagrams/brewery-record-chain.svg` | `src/pages/how-it-works.astro` |
+| Homebrew learning loop diagram | `public/images/diagrams/homebrew-learning-loop.svg` | `src/pages/how-it-works.astro` |
+| Business batch timeline diagram | `public/images/diagrams/business-batch-timeline.svg` | `src/pages/breweries.astro` |
+| Homebrew ingredient context diagram | `public/images/diagrams/homebrew-ingredient-context.svg` | `src/pages/homebrewers.astro` |
+| Fermentation observation timeline diagram | `public/images/diagrams/fermentation-observation-timeline.svg` | `src/pages/homebrewers.astro` |
+| Fermentation profile example | `public/images/diagrams/fermentation-profile-example.svg` | `src/pages/technical-principles.astro` |
+| Target versus actual example | `public/images/diagrams/target-vs-actual-example.svg` | `src/pages/technical-principles.astro` |
+| Measurement source context diagram | `public/images/diagrams/measurement-source-context.svg` | `src/pages/technical-principles.astro` |
+| Calibration record model diagram | `public/images/diagrams/calibration-record-model.svg` | `src/pages/technical-principles.astro` |
+| GRISTORA symbol | `public/brand/gristora-symbol.svg` | `src/components/SiteHeader.astro`, `src/components/SiteFooter.astro`, 404 page |
 
-Keep the slot ID when replacing an image. Add final assets under `public/images/`, use descriptive filenames, and confirm usage rights before publishing. Do not use product UI screenshots unless supplied and verified.
+Every `<img>` has intrinsic `width` and `height` attributes that match the file viewBox. Confirm usage rights before you publish new assets. Do not use product UI screenshots unless supplied and verified.
+
+## Layout
+
+The site follows the approved Stitch layout. `src/styles/stitch-layout.css` holds the Stitch page patterns and tokens (`--sx-*`), with rules scoped by page class such as `.features-page`, `.feature-detail-page` and `.not-found-page`. `src/components/SiteHeader.astro` (nav set B, with a `current` prop for `aria-current`) and `src/components/SiteFooter.astro` (with back-link props) are shared by every page. Change the navigation or footer in those two components only.
 
 ## Vercel preview and production gate
 

@@ -167,3 +167,58 @@
 - Fetched the current Vercel feature-branch preview directly: homepage and `/pricing/` both returned HTTP 200. Both responses include `noindex, nofollow` metadata and `X-Robots-Tag: noindex`. Preview build source is the documentation-only guardrail branch; no marketing page code changed.
 - Vercel preview deployment for the guardrail branch is READY with `target: null`; it is a preview deployment, unlike the automatically generated main-branch production-target deployments recorded above.
 - PR #172 CI is still running at this checkpoint. Do not merge it to main until the production auto-deploy guard is reviewed.
+
+
+## Stitch / GitHub / GitHub Pages alignment — 18 November 2026 (Claude session)
+
+**Branch:** `claude/gallant-einstein-x1zlsu` (one consolidated branch). It contains PR #173 (compare illustrations, Lighthouse CI) and PR #172 (Vercel guardrail docs), plus the alignment work below. One PR supersedes #172 and #173. Nothing is merged to `main`.
+
+### Stitch status
+- Access: the Stitch MCP HTTP endpoint (`https://stitch.googleapis.com/mcp`), called with the owner's API key from the session scratchpad. The key is **not** in the repository. **The owner must rotate this key**, because it was pasted in chat.
+- Project: `projects/9024853279551774830` "GRISTORA Marketing Website Implementation" (created 2026-11-15, updated 2026-11-18T15:34Z). Design system: "Brewing Intelligence" (forest `#0B2F26`, amber `#F4A261`, page `#F7F6F3`, Plus Jakarta Sans + Inter, radius 18/24). The tokens match `global.css` and `stitch-layout.css`.
+- 97 items: 73 page screens and 24 non-page items (text extracts, PR summaries, logos, brand books). Stitch has no "approved" flag and no screen timestamps. Several pages have 2–3 versions. The "current" version was chosen by list order and by the nav that matches the latest screens (low confidence for duplicate feature screens). Only read/list/download tools were used; nothing in Stitch was changed.
+- Stitch navigation "set B" (Product, Breweries, Homebrewers, Pricing, How it works, Principles, FAQ + "Explore breweries") is on the latest screens (Compare, FAQ, Product directory, Feature detail, 404, Pricing alt). The older "set A" (Platform & Intelligence, Sign In, Request Demo, telemetry footers) is on the early Homepage/Breweries/Homebrewers/Pricing/Platform/Trust screens. Its copy breaks document 41 and was not used.
+
+### Differences found and eliminated
+| Difference | Action |
+|---|---|
+| Compare, Pricing and Get started had a different nav (extra "Compare", no How it works/Principles/FAQ); no Stitch source | Shared `SiteHeader.astro` with set B on all 12 pages; `aria-current` on every matching page |
+| Footer had 4 variants; Compare, Get started and 404 had only the bottom bar | Shared `SiteFooter.astro` (index keeps its "Back to top" footer). Get started right text "Plan configuration" → "Made for the craft of brewing." |
+| 16 `/features/{slug}/` pages and 404 were not ported to the Stitch layout | Ported (`.feature-detail-page`, `.not-found-page` in `stitch-layout.css`); no new copy. 404 got a meta description and the title "Page not found \| GRISTORA" |
+| Empty dashed frame on How it works (`.explain-flow::after`) | Removed; item 5 spans two columns |
+| Empty dashed frames on Compare audience cards | PR #173 SVG illustrations; the black pipework bar in `professional-brewery.svg` (missing `fill="none"`) is fixed |
+| No `<img>` had width/height (Lighthouse `unsized-images`, CLS) | Intrinsic width/height on every image |
+| Duplicate sentence in the Recipe design summary (`src/data/features.ts`) | Duplicate removed |
+| Dead placeholder CSS (`.image-placeholder`, `.checkout-placeholder`, compare `::before`) and stale README "Image replacement map" | Removed / rewritten; README has a Layout section |
+| actionlint failed on PR #173 (SC2034, unused `attempt`) | Fixed |
+
+Accepted and not changed (owner may decide): Stitch hairlines are slate (`#E2E8F0`), the site uses green-tinted rgba; Stitch cards have a border and no shadow; Stitch uses Newsreader italic, the site uses Georgia; small spacing differences (section padding 96/64 vs 108/68, content width 1280 vs 1240). Stitch-only pages without a route: Platform & Intelligence, Trust/Security/Legal Center (they need approved copy). Routes without a Stitch screen: How it works, Technical principles, Get started.
+
+### Checks (local, branch tip)
+- `astro check` 0 errors · build 27 pages · `validate:site` 2304/2304 · Playwright 117/117 (3 runs).
+- Test change: the 720 px overflow test now measures after `load`, because intrinsic image sizes make a pre-CSS layout wider. The Compare nav assertion was replaced by a "no current link on /compare/ and /get-started/" test.
+- Lighthouse 12.8.2 (before the header/image changes; CI re-runs it on the PR):
+
+| Route | Mobile P/A/BP/SEO | Desktop |
+|---|---|---|
+| / | 99/100/100/100 | 100/100/100/100 |
+| /compare/ | 99/100/100/100 | 100/100/100/100 |
+| /pricing/ | 99/100/100/100 | 100/100/100/100 |
+| /how-it-works/ | 99/100/100/100 | 100/100/100/100 |
+
+  Mobile LCP 1.7–1.8 s, TBT 0 ms, CLS ≤ 0.008. The render-blocking CSS insight was not changed (inlining CSS can damage visual fidelity).
+
+### GitHub Pages status
+- Live: https://oguzbay-del.github.io/brewery/ — deployed by run [#44398637250](https://github.com/oguzbay-del/brewery/actions/runs/44398637250) from `b92d3774`. The marketing-site source is the same as on `main` `05d2bd96`.
+- Verified on 18 Nov: 26/26 sitemap routes HTTP 200; 0/26 content differences from a local build of `main`; 19/19 assets 200; 0 console errors, 0 failed requests and 0 horizontal overflow at 1280 and 400 px; canonical = og:url on every route; `noindex, nofollow` and `Disallow: /`.
+- The workflow builds `marketing-site/` with `GITHUB_PAGES=true` (base `/brewery/`) only on a push to `main` or `workflow_dispatch`. **The branch changes are not on Pages yet.**
+
+### Vercel boundary (blocker for the merge)
+- Do not merge to `main` without owner approval. A merge to `main` makes the Vercel Git integration create a `target: production` deployment (SSO protected, no custom domain, `live: false`; see PR #172). This session has no Vercel access and did not change Vercel settings, domains or DNS.
+- The single branch push creates at most one Vercel preview (`target: null`).
+
+### Next steps
+1. Owner: review the PR and its CI (marketing checks + Lighthouse summary).
+2. Owner decision: merge with the known Vercel production-target side effect, or first disable automatic production deployments in Vercel (Settings › Git) and then merge.
+3. After the merge: confirm that the Pages workflow run is green, then repeat the live check (26 routes, assets, console, Compare SVGs, header on Compare/Pricing/Get started).
+4. Owner: rotate the Stitch API key. Optional: decide on the accepted token differences and on the Stitch-only pages.

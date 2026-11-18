@@ -1,4 +1,6 @@
 ---
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import "../styles/global.css";
 import "../styles/pricing.css";
 import "../styles/comparison.css";
@@ -52,11 +54,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <header class="site-header"><a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`} aria-current="page">Compare</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`}>How it works</a></nav>
-      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`} aria-current="page">Compare</a><a href={`${base}pricing/`}>Pricing</a><a href={`${base}get-started/`}>Choose a plan</a></nav></details>
-    </header>
+    <SiteHeader />
     <main id="main-content" class="compare-page">
       <section class="pricing-hero compare-hero shell">
         <Breadcrumbs items={breadcrumbItems} />
@@ -76,6 +74,6 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
       </section>
       <section class="compare-decision section-pad"><div class="shell"><div class="compare-decision-grid"><article><p class="eyebrow">HOME BREWERS</p><figure class="compare-audience-visual"><img src={`${base}audience/homebrewer.svg`} alt="Illustration of a home brewer’s small-batch setup with a kettle, glass fermenter, ingredients and recipe notebook." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>SMALL-BATCH · PERSONAL WORKSPACE</figcaption></figure><h2>One person, <em>one brewing journey.</em></h2><p>Choose Home if you brew for yourself and want your recipes, calculations, measurements and batch learning in one personal workspace.</p><a class="button button-primary" href={`${base}get-started/?audience=home`}>Configure Home plan →</a></article><article><p class="eyebrow">PROFESSIONAL BREWERIES</p><figure class="compare-audience-visual"><img src={`${base}audience/professional-brewery.svg`} alt="Illustration of a professional brewery with stainless-steel brewing tanks and connected pipework." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>PRODUCTION · SHARED BY A TEAM</figcaption></figure><h2>Production work, <em>shared by a team.</em></h2><p>Choose Brewery if several people need a shared professional workflow around recipe standards, production planning and batch records.</p><a class="button button-primary" href={`${base}get-started/?audience=business`}>Configure Brewery plan →</a></article></div><p class="compare-all-features"><a href={`${base}features/`}>Browse all feature details and the complete catalogue ↗</a></p></div></section>
     </main>
-    <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+    <SiteFooter />
   </body>
 </html>

@@ -29,7 +29,7 @@ export const features: FeaturePage[] = [
     slug: "recipe-design",
     title: "Recipe design & management",
     eyebrow: "RECIPES",
-    summary: "From a guided first recipe to a deeply configurable professional formulation, GRISTORA keeps recipes understandable from version to version. Recipes stay understandable from version to version.",
+    summary: "From a guided first recipe to a deeply configurable professional formulation, GRISTORA keeps recipes understandable from version to version.",
     audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [

@@ -127,3 +127,10 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Live feature-branch preview: homepage and `/pricing/` both returned HTTP 200. Both include `noindex, nofollow` and response header `X-Robots-Tag: noindex`.
 - Pricing content explicitly discloses that monetary prices await commercial approval, planned trials are not active in preview, discounts are proposed/not approved, and checkout is not connected.
 - The guardrail branch's Vercel deployment is READY with `target: null` (preview). Its PR CI was still running at time of note.
+
+
+## Stitch alignment — 18 November 2026
+
+- Compared with Stitch project `9024853279551774830` (read only). The shared `SiteHeader`/`SiteFooter` use the Stitch "set B" navigation on all pages. Feature detail and 404 pages use the Stitch layout. Every `<img>` has intrinsic dimensions. The empty dashed frame on How it works is removed.
+- Local evidence: astro check 0 errors, validate:site 2304/2304, Playwright 117/117, Lighthouse mobile 99/100/100/100 and desktop 100/100/100/100 on Home, Compare, Pricing and How it works.
+- Still open: manual keyboard/screen-reader/200% zoom review; Pages re-verification after the owner-approved merge. Details: `web-stratejisi/49-gristora-session-handoff.md`.

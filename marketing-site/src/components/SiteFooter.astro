@@ -1,0 +1,10 @@
+---
+// Shared footer. `backText` and `backHref` set the back link.
+interface Props {
+  backText?: string;
+  backHref?: string;
+}
+const base = import.meta.env.BASE_URL;
+const { backText = "Home ↑", backHref = base } = Astro.props;
+---
+<footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" width="130" height="160" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={backHref}>{backText}</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
