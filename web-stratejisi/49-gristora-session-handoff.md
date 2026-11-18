@@ -96,3 +96,12 @@
 - PR #170 belge workflow run #44396154481 başarılı. PR #170 preview HTTP 200 döndü; bu preview dokümantasyon branch'inin kendi bazını gösterir ve PR #169 homepage düzeltmesini içermez. Bu nedenle PR #169 için görsel onay kaynağı olarak kullanılmamalıdır.
 - Vercel preview HTML yanıtları noindex/canonical meta alanları içeriyor; production deploy yapılmadı.
 - Kalan işler: Stitch aktarımının kullanıcı ortamında gerçek commit/PR ile doğrulanması; iki PR'ın görsel tarayıcı/cihaz QA'sı; kullanıcı merge kararı. Bu oturumda merge veya production deploy yapılmadı.
+
+
+## Merge and continuation update (19 November 2026)
+
+- PR #169 merged into main via squash. Merge commit: 03bde32bd189f1798cacc32d574b075f3bc7540c.
+- PR #170 merged into main via squash. Merge commit: 6bb362ce6f2e2ef01e422654f77f16d0b061d3f2.
+- Main now points to 6bb362ce6f2e2ef01e422654f77f16d0b061d3f2. Both PRs are closed as merged.
+- No production deployment was initiated.
+- Next work remains within marketing-site only: run post-merge checks against main; perform visual/mobile QA against a preview built from the merged main; review Stitch/GitHub design parity only if a real Stitch export or connected workflow is available. Do not modify copy or pages outside explicit approval.
