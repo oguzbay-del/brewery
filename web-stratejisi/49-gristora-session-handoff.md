@@ -120,3 +120,14 @@
 - Pricing page explicitly says monetary prices await commercial approval and trial terms are not active in preview. Keep this distinction; do not present them as live commercial offers.
 - Stitch parity is still not verifiable from this ChatGPT environment: no Stitch tool/connector is available. Do not claim Stitch was updated or synchronized. Compare only against an actual user-provided Stitch export/reference.
 - Production launch remains deferred. Continue only inside `marketing-site/` and its acceptance/handoff docs; do not alter product code or Claude's work.
+
+
+## Final checkpoint — 19 November 2026
+
+- Documentation PR [#171](https://github.com/oguzbay-del/brewery/pull/171) merged into `main` via squash. Merge commit: `b92d3774e8fec92d74a66b31d1f4cc79c76615bb`.
+- PR #171 latest CI run [#44398381059](https://github.com/oguzbay-del/brewery/actions/runs/44398381059) passed. Exact Playwright result: **116 passed**; Astro/TypeScript, static build, generated-site validation and screenshot artifact upload also passed.
+- Main now points to `b92d3774e8fec92d74a66b31d1f4cc79c76615bb`. PRs #169, #170 and #171 are merged.
+- Visual QA sample expanded to homepage 320/390/1440, Breweries 390/1440, Homebrewers 390, Pricing 390, Compare 390/1440, How It Works 390, FAQ 390, Technical Principles 390, Features 390, recipe-design detail 390, get-started 390 and the social card. No obvious page-level horizontal overflow or broken stacking in the reviewed captures.
+- Compare-page audience cards intentionally render dashed empty media frames through CSS pseudo-elements; they are not failed network images. They remain an unfinished visual treatment and need owner-approved imagery or removal/replacement before final public launch.
+- GitHub Pages currently publishes a publicly accessible `noindex, nofollow` copy at `https://oguzbay-del.github.io/brewery/` because `actions/deploy-pages` uses `preview: false`. It is not a private/ephemeral preview. The custom `gristora.com` production domain was not deployed. Keep this visibility distinction explicit.
+- Remaining gates: complete manual keyboard/screen-reader/200% zoom review; run performance/Lighthouse review; verify the GitHub Pages URL's live HTTP/content response; obtain the actual Stitch export/reference or connected Stitch workflow for design parity. Do not change the Compare visual treatment, disable Pages, or deploy the custom domain without explicit owner approval.
