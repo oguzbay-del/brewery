@@ -87,7 +87,7 @@
 Ürün geliştirme kaynağı `gelistirme/DURUM.md` ve ürün planıdır. 18 Kasım 2026 itibarıyla `gelistirme/DURUM.md` Stage 2 (Core API and data) gösteriyor. Bu bilgi pazarlama sitesinde olgunluk etiketi olarak gösterilmez. Ürün kodu veya roadmap'i bu pazarlama çalışması kapsamında değiştirilmez.
 
 
-## Oturum devamı — doğrulama notu (18 Kasım 2026, 23:xx TRT)
+## Oturum devamı — doğrulama notu (18 Kasım 2026, 23:59 TRT)
 
 - Güncel main: 4a6d27bf52eca12140b1ec9985bd18cc2db87e14 (Stitch homepage PR #168).
 - PR #169 ve #170 hâlâ açık; ikisi de manuel kullanıcı kararı olmadan merge edilmeyecek.
