@@ -48,12 +48,13 @@
 - Yalnızca onaylanan üç ifadeyi kaldır.
 - Kaldırma; sayfa yapısını, dört kartlık Stitch bölümünü, diğer bölümleri veya diğer sayfaları değiştirmemeli.
 - Commit: `ef7897e27a2f1fde87f48f76edff56556e7a08f0`
-- PR/CI durumu: bu oturum sonunda doldurulacak.
+- PR: [#169](https://github.com/oguzbay-del/brewery/pull/169) — açık; CI ve preview doğrulaması bekleniyor.
 
 ### B. Ürün fikir havuzu
 - Branch: `docs/gristora-session-and-product-ideas-2026-11-18`
 - Dosya: `plan/urun-fikirleri-eklenebilecek-ozellikler.md`
 - Fikir havuzu mevcut ürün kapsamı değildir; ürün roadmap'ine otomatik aktarılmaz.
+- PR: [#170](https://github.com/oguzbay-del/brewery/pull/170) — açık; CI ve preview doğrulaması bekleniyor.
 
 ### C. Oturum handoff ve yapılacaklar
 - Bu dosya: `web-stratejisi/49-gristora-session-handoff.md`
@@ -63,8 +64,8 @@
 ## Devam edilecek yapılacaklar
 
 - [ ] Ana sayfa değişikliğinin tam olarak yalnızca onaylanan ifadeleri kaldırdığını doğrula.
-- [ ] Ürün fikir havuzunun ayrı doküman olarak kaydedildiğini doğrula.
-- [ ] Bu handoff dosyasını PR numarası ve commit bilgileriyle güncelle.
+- [x] Ürün fikir havuzu ayrı doküman olarak kaydedildi.
+- [x] Bu handoff dosyası PR numaraları ve branch bilgileriyle güncellendi.
 - [ ] Her PR için CI sonucunu kontrol et.
 - [ ] GitHub Pages preview'ı kontrol et; production deploy yapma.
 - [ ] Stitch bağlantı/aktarım yolunu doğrula; bağlantı doğrulanmadan Stitch senkronizasyonu iddia etme.
