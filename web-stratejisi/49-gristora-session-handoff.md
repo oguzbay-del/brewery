@@ -48,7 +48,7 @@
 - Yalnızca onaylanan üç ifadeyi kaldır.
 - Kaldırma; sayfa yapısını, dört kartlık Stitch bölümünü, diğer bölümleri veya diğer sayfaları değiştirmemeli.
 - Güncel branch commit: `9095502148cf6a677ac04978531156dbc3416361`
-- PR: [#169](https://github.com/oguzbay-del/brewery/pull/169) — açık; Vercel preview hazır. İlk doğrulama, kısa meta açıklaması ve kaldırılan başlığa bağlı aria-labelledby nedeniyle başarısız oldu; ikisi düzeltildi. Son run #44395865907'de Astro/TypeScript, build ve site validation başarılı; responsive browser QA devam ediyor.
+- PR: [#169](https://github.com/oguzbay-del/brewery/pull/169) — açık; Vercel preview hazır. İlk doğrulamada kısa meta açıklaması ve kaldırılan başlığa bağlı aria-labelledby hataları bulundu; ikisi düzeltildi. Son run #44395865907'de Astro/TypeScript, static build, site validation ve responsive browser QA başarılı.
 - Preview: https://brewery-git-work-gristora-homepage-copy-removal-3330b2-demleme.vercel.app
 
 ### B. Ürün fikir havuzu
@@ -76,7 +76,7 @@
 - [x] Ana sayfa değişikliğinde onaylanan ifadelerin kaldırıldığını ve hedef ifadelerin kalmadığını metin taramasıyla doğrula.
 - [x] Ürün fikir havuzu ayrı doküman olarak kaydedildi.
 - [x] Bu handoff dosyası PR numaraları ve branch bilgileriyle güncellendi.
-- [ ] PR #169 responsive browser QA'nın tamamlanmasını doğrula; Astro/TypeScript, static build ve 2,290 site validation kontrolü başarılı. PR #170 belge testi başarılı.
+- [x] PR #169 CI tamamlandı: Astro/TypeScript, static build, site validation ve responsive browser QA başarılı. PR #170 belge testi başarılı.
 - [x] Her iki PR için Vercel preview dağıtımının hazır olduğunu doğrula; production deploy yapılmadı. Görsel tarayıcı QA'sı ayrıca yapılmalı.
 - [ ] Google Stitch için ChatGPT'de doğrudan bağlantı/connector bulunmadı; harici MCP bağlantısı veya Stitch export/import akışı kullanıcı ortamında doğrulanmalı. Senkronizasyon iddia etme.
 - [ ] Kullanıcı onayı olmadan merge etme.
