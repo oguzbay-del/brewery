@@ -150,3 +150,20 @@
 - Reports are published to the GitHub Actions step summary and uploaded as `gristora-lighthouse-reports` for 14 days.
 - Audits run against the locally served built Astro preview on the GitHub Actions runner. This avoids Vercel deployment quotas and does not require exposing the SSO-protected Vercel preview.
 - Current PR branch is updated in one workflow/documentation commit. Await CI output before recording scores or deciding optimizations.
+## Deployment guard investigation — 19 November 2026
+
+- Latest main CI after PR #171: marketing checks [#44398637229](https://github.com/oguzbay-del/brewery/actions/runs/44398637229) and GitHub Pages workflow [#44398637250](https://github.com/oguzbay-del/brewery/actions/runs/44398637250) both completed successfully for commit `b92d3774e8fec92d74a66b31d1f4cc79c76615bb`.
+- Important correction to the prior "no production deployment" wording: the Vercel Git integration automatically created a deployment with `target: production` for the docs-only main commit `b92d377...`, and again for the latest handoff-only main commit `05d2bd96...`. The latest deployment is READY at `brewery-33oa7zrx5-demleme.vercel.app` and has aliases `brewery-rho.vercel.app`, `brewery-demleme.vercel.app`, `brewery-git-main-demleme.vercel.app`.
+- Vercel project `brewery` reports SSO protection enabled for all deployments except custom domains, no custom domains attached, and `live: false`. The deployment is marked production by Vercel, but the project protection state means do not describe it as an unrestricted public launch. This was an automatic Git integration consequence of merging/pushing to `main`, not an intentional manual production promotion.
+- GitHub Pages is separately publicly accessible at `https://oguzbay-del.github.io/brewery/` and the workflow uses `preview: false`; generated robots policy is `noindex, nofollow` with `Disallow: /`.
+- The configured custom domain `gristora.com` is not attached to this Vercel project in the domain list. No DNS or custom-domain launch was performed.
+- Guardrail: until the owner authorizes launch, avoid further pushes/merges to `main` because they trigger Vercel `target: production` deployments. Continue work on feature branches and preview deployments. Before any further main merge, the Vercel Git production-branch / auto-deploy configuration needs owner-approved adjustment. No rollback, domain change, project setting change or deployment cancellation was attempted.
+- External live HTTP checks could not be completed from the current runtime (DNS resolution unavailable); use the GitHub Pages and Vercel dashboards/browser from an environment with network access for the final HTTP response check.
+
+
+### Additional QA sample — 19 November 2026
+
+- Expanded visual review: Homebrewers mobile (390 px), Breweries desktop (1440 px) and Pricing mobile (390 px). No obvious clipping or page-level horizontal overflow in these samples; pricing disclosures are visible, including monetary pricing pending commercial approval, trials not active in preview, proposed discounts not final, and no checkout connected.
+- Fetched the current Vercel feature-branch preview directly: homepage and `/pricing/` both returned HTTP 200. Both responses include `noindex, nofollow` metadata and `X-Robots-Tag: noindex`. Preview build source is the documentation-only guardrail branch; no marketing page code changed.
+- Vercel preview deployment for the guardrail branch is READY with `target: null`; it is a preview deployment, unlike the automatically generated main-branch production-target deployments recorded above.
+- PR #172 CI is still running at this checkpoint. Do not merge it to main until the production auto-deploy guard is reviewed.

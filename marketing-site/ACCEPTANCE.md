@@ -112,3 +112,18 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - The audit runs against the built Astro static preview, not the production domain, for Home, Compare, Pricing and How it works in mobile and desktop modes.
 - Captures Performance, Accessibility, Best Practices and SEO categories; publishes a score table in the GitHub Actions run summary and uploads full HTML/JSON reports as a 14-day artifact.
 - Initial measurements are pending the PR workflow run. No performance score is claimed until the runner completes and reports are reviewed.
+## Deployment guard investigation — 19 November 2026
+
+- Post-merge main workflows [marketing CI #44398637229](https://github.com/oguzbay-del/brewery/actions/runs/44398637229) and [GitHub Pages #44398637250](https://github.com/oguzbay-del/brewery/actions/runs/44398637250) both passed for commit `b92d3774e8fec92d74a66b31d1f4cc79c76615bb`.
+- **Deployment boundary correction:** Vercel Git integration automatically created READY deployments with `target: production` after documentation-only commits landed on `main`. Latest deployment: `brewery-33oa7zrx5-demleme.vercel.app`, aliases `brewery-rho.vercel.app`, `brewery-demleme.vercel.app`, `brewery-git-main-demleme.vercel.app`. Vercel project details report SSO protection enabled for all deployments except custom domains, no custom domains attached, and `live: false`. This is not an unrestricted public custom-domain launch, but it is a Vercel production-target deployment and must not be described as "no production deployment."
+- GitHub Pages is a separate public `noindex, nofollow` deployment at `https://oguzbay-del.github.io/brewery/`; its workflow uses `preview: false`.
+- No `gristora.com` custom domain is attached to the Vercel project; no DNS/custom-domain launch, rollback, deployment cancellation or Vercel settings change was performed.
+- **Guardrail:** avoid further merges/pushes to `main` until the Vercel Git production-branch/automatic-deployment behavior is reviewed and adjusted with owner approval. Use feature branches and preview deployments for continued work. Live HTTP checks were blocked by DNS resolution failure in the current runtime and remain pending.
+
+
+### Additional QA sample — 19 November 2026
+
+- Reviewed screenshots for Homebrewers mobile (390 px), Breweries desktop (1440 px) and Pricing mobile (390 px). No obvious clipping/page-level horizontal overflow in these samples.
+- Live feature-branch preview: homepage and `/pricing/` both returned HTTP 200. Both include `noindex, nofollow` and response header `X-Robots-Tag: noindex`.
+- Pricing content explicitly discloses that monetary prices await commercial approval, planned trials are not active in preview, discounts are proposed/not approved, and checkout is not connected.
+- The guardrail branch's Vercel deployment is READY with `target: null` (preview). Its PR CI was still running at time of note.
