@@ -74,3 +74,25 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 | Production launch | Deferred by owner decision |
 
 **Stop condition:** once W12 is complete and no critical/high-severity website defects remain, close this workstream. Do not expand into product engineering, external brand research or production launch.
+
+
+## Post-merge QA evidence — 19 November 2026
+
+| Evidence | Result |
+|---|---|
+| Main source tested | Marketing source tree from PR #169 merge commit `03bde32bd189f1798cacc32d574b075f3bc7540c`; current main at QA start `fc5be28070686aaa43140b2ca801e01f4697294a` (later commits were documentation-only) |
+| Marketing CI | [Run #44397172981](https://github.com/oguzbay-del/brewery/actions/runs/44397172981) — **passed** |
+| GitHub Pages deployment | [Run #44397173007](https://github.com/oguzbay-del/brewery/actions/runs/44397173007) — build and deploy jobs **passed**. `actions/deploy-pages` ran with `preview: false`, publishing a publicly accessible GitHub Pages copy at `https://oguzbay-del.github.io/brewery/`; it is configured `noindex, nofollow` and is separate from the custom production domain `gristora.com` |
+| Responsive screenshots | Artifact #14471831688 — 31 PNGs; sample visual review started |
+| Social card | Artifact #14471001544 — generated 1200 × 630 PNG visually inspected; logo lockup and approved palette treatment appear consistent |
+| Responsive coverage | 11 routes × 5 viewport widths (1440, 1024, 768, 390, 320); document/body overflow assertions passed |
+| Accessibility automation | WCAG 2.2 AA axe-tag audit on 11 routes at desktop/mobile; suite passed. Keyboard skip link, mobile nav, FAQ disclosure, reduced-motion and focusable scroll region checks are included |
+| Visual review sample | Homepage desktop/mobile, Breweries mobile, Pricing mobile, Compare desktop/mobile, How It Works mobile and social card reviewed; no obvious clipping in sampled layouts |
+| Open visual item | `/compare/` audience decision cards show two large empty dashed media frames at desktop and mobile. Needs owner-approved imagery or a deliberate non-image treatment; no asset invented/added |
+| Manual accessibility | Keyboard-only full-site, screen-reader and 200% zoom review still pending |
+| Stitch parity | Not verified: no active Stitch connector/export available in this environment |
+| Production launch | Deferred; no production deployment initiated |
+
+The mobile comparison table is intentionally horizontally scrollable within its labelled, keyboard-focusable region; this is not page-level horizontal overflow. The pricing preview keeps commercial pricing unannounced and explicitly states that proposed trials are not active. Do not treat either as a live offer. The GitHub Pages workflow uses `preview: false`; therefore the GitHub Pages URL is public (although noindex), not a private/ephemeral preview. The custom production domain remains untouched.
+
+**Acceptance remains in progress.** Do not close W12 until the empty media-frame decision, remaining route-by-route visual review, manual accessibility/zoom review, preview HTTP/content check and performance review are resolved or explicitly accepted by the owner.
