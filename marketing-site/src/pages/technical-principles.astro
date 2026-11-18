@@ -1,4 +1,5 @@
 ---
+import FontPreload from "../components/FontPreload.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import "../styles/global.css";
@@ -34,6 +35,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <FontPreload />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#F7F6F3" />
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />

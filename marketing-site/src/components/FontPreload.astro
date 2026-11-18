@@ -1,0 +1,7 @@
+---
+// Preload the two Latin variable fonts. A late font swap re-wraps hero headings and shifts the layout (CLS).
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import jakartaLatin from "@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url";
+---
+<link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
+<link rel="preload" href={jakartaLatin} as="font" type="font/woff2" crossorigin />

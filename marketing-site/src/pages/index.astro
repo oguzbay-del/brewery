@@ -1,4 +1,5 @@
 ---
+import FontPreload from "../components/FontPreload.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import "../styles/global.css";
 import "../styles/home-hero-refinement.css";
@@ -28,6 +29,7 @@ const structuredData = {
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <FontPreload />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#F7F6F3" />
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
