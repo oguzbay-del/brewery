@@ -142,3 +142,11 @@
 - The configured custom domain `gristora.com` is not attached to this Vercel project in the domain list. No DNS or custom-domain launch was performed.
 - Guardrail: until the owner authorizes launch, avoid further pushes/merges to `main` because they trigger Vercel `target: production` deployments. Continue work on feature branches and preview deployments. Before any further main merge, the Vercel Git production-branch / auto-deploy configuration needs owner-approved adjustment. No rollback, domain change, project setting change or deployment cancellation was attempted.
 - External live HTTP checks could not be completed from the current runtime (DNS resolution unavailable); use the GitHub Pages and Vercel dashboards/browser from an environment with network access for the final HTTP response check.
+
+
+### Additional QA sample — 19 November 2026
+
+- Expanded visual review: Homebrewers mobile (390 px), Breweries desktop (1440 px) and Pricing mobile (390 px). No obvious clipping or page-level horizontal overflow in these samples; pricing disclosures are visible, including monetary pricing pending commercial approval, trials not active in preview, proposed discounts not final, and no checkout connected.
+- Fetched the current Vercel feature-branch preview directly: homepage and `/pricing/` both returned HTTP 200. Both responses include `noindex, nofollow` metadata and `X-Robots-Tag: noindex`. Preview build source is the documentation-only guardrail branch; no marketing page code changed.
+- Vercel preview deployment for the guardrail branch is READY with `target: null`; it is a preview deployment, unlike the automatically generated main-branch production-target deployments recorded above.
+- PR #172 CI is still running at this checkpoint. Do not merge it to main until the production auto-deploy guard is reviewed.
