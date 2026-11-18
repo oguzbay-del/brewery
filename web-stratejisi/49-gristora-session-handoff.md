@@ -48,27 +48,37 @@
 - Yalnızca onaylanan üç ifadeyi kaldır.
 - Kaldırma; sayfa yapısını, dört kartlık Stitch bölümünü, diğer bölümleri veya diğer sayfaları değiştirmemeli.
 - Commit: `ef7897e27a2f1fde87f48f76edff56556e7a08f0`
-- PR: [#169](https://github.com/oguzbay-del/brewery/pull/169) — açık; CI ve preview doğrulaması bekleniyor.
+- PR: [#169](https://github.com/oguzbay-del/brewery/pull/169) — açık; Vercel preview hazır, Marketing site checks build işi son kontrolde çalışıyor.
+- Preview: https://brewery-git-work-gristora-homepage-copy-removal-3330b2-demleme.vercel.app
 
 ### B. Ürün fikir havuzu
 - Branch: `docs/gristora-session-and-product-ideas-2026-11-18`
 - Dosya: `plan/urun-fikirleri-eklenebilecek-ozellikler.md`
 - Fikir havuzu mevcut ürün kapsamı değildir; ürün roadmap'ine otomatik aktarılmaz.
-- PR: [#170](https://github.com/oguzbay-del/brewery/pull/170) — açık; CI ve preview doğrulaması bekleniyor.
+- PR: [#170](https://github.com/oguzbay-del/brewery/pull/170) — açık; tutarlılık/formül kontrolü başarılı, Vercel preview hazır.
+- Preview: https://brewery-git-docs-gristora-session-and-product-id-69d6ef-demleme.vercel.app
 
 ### C. Oturum handoff ve yapılacaklar
 - Bu dosya: `web-stratejisi/49-gristora-session-handoff.md`
 - Her oturum sonunda tamamlanan işleri, açık işleri, PR/commit/CI/preview bağlantılarını ve kullanıcı kararlarını güncelle.
 - Yeni oturumda kullanıcı “buradan devam et” derse önce bu dosyayı, ardından GitHub güncel durumunu oku.
 
+## Paralel çalışma planı
+
+- **Track A — Homepage:** yalnızca onaylanan ifadelerin kaldırılması. PR #169.
+- **Track B — Product ideas register:** 10 maddelik fikir havuzunu ayrı `plan/` dokümanına kaydetme. PR #170.
+- **Track C — Session continuity:** bu dosya ve sonraki oturumların buradan devam etmesi. PR #170.
+- **Track D — Stitch/GitHub alignment:** tasarım aktarımını commit/PR ile doğrulama. ChatGPT'de doğrudan Stitch bağlantısı yok; kullanıcı ortamında MCP veya dışa/içe aktarma akışı doğrulanmadan tamamlandı sayılmaz.
+- **Track E — Final site QA:** ürün tamamlanıp yayın öncesi onay verildiğinde sayfaları, responsive düzeni, linkleri, metadata'yı ve gerçek ürün kapsamıyla tutarlılığı denetleme. Şimdilik beklemede; mevcut sayfaları değiştirme.
+
 ## Devam edilecek yapılacaklar
 
-- [ ] Ana sayfa değişikliğinin tam olarak yalnızca onaylanan ifadeleri kaldırdığını doğrula.
+- [x] Ana sayfa değişikliğinde onaylanan ifadelerin kaldırıldığını ve hedef ifadelerin kalmadığını metin taramasıyla doğrula.
 - [x] Ürün fikir havuzu ayrı doküman olarak kaydedildi.
 - [x] Bu handoff dosyası PR numaraları ve branch bilgileriyle güncellendi.
-- [ ] Her PR için CI sonucunu kontrol et.
-- [ ] GitHub Pages preview'ı kontrol et; production deploy yapma.
-- [ ] Stitch bağlantı/aktarım yolunu doğrula; bağlantı doğrulanmadan Stitch senkronizasyonu iddia etme.
+- [ ] PR #169 build kontrolünün tamamlanmasını doğrula; PR #170 test kontrolü başarılı.
+- [x] Her iki PR için Vercel preview dağıtımının hazır olduğunu doğrula; production deploy yapılmadı. Görsel tarayıcı QA'sı ayrıca yapılmalı.
+- [ ] Google Stitch için ChatGPT'de doğrudan bağlantı/connector bulunmadı; harici MCP bağlantısı veya Stitch export/import akışı kullanıcı ortamında doğrulanmalı. Senkronizasyon iddia etme.
 - [ ] Kullanıcı onayı olmadan merge etme.
 - [ ] Kullanıcı onayı olmadan yeni sayfa metinleri veya ürün vaatleri değiştirme.
 
