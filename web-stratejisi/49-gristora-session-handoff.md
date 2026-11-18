@@ -141,3 +141,12 @@
 - Scope: only `marketing-site/src/pages/compare.astro`, `marketing-site/src/styles/stitch-layout.css`, the two new audience SVGs, this acceptance record and this handoff file. No product code, API, Rust, iOS, roadmap, Vercel settings, DNS or production deployment touched.
 - Changes are consolidated into one commit to limit preview/deployment churn. No merge is authorized. Visual and automated QA are pending until the consolidated PR checks finish.
 - Continue outstanding QA in parallel: manual keyboard/screen-reader/200% zoom review and Lighthouse/performance review. Do not mark W12 complete prematurely.
+
+
+## Lighthouse audit implementation — 19 November 2026
+
+- Added Lighthouse CLI 12.8.2 to the marketing-site PR workflow (ephemeral CI install; no production dependency or package lock change).
+- Audit matrix: Home, Compare, Pricing and How it works × mobile and desktop; categories: Performance, Accessibility, Best Practices and SEO.
+- Reports are published to the GitHub Actions step summary and uploaded as `gristora-lighthouse-reports` for 14 days.
+- Audits run against the locally served built Astro preview on the GitHub Actions runner. This avoids Vercel deployment quotas and does not require exposing the SSO-protected Vercel preview.
+- Current PR branch is updated in one workflow/documentation commit. Await CI output before recording scores or deciding optimizations.

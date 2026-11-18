@@ -104,3 +104,11 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Added two original, locally hosted SVG illustrations: `public/audience/homebrewer.svg` and `public/audience/professional-brewery.svg`; no external image requests, stock-photo licensing dependency, customer logos or product UI claims.
 - The illustrations use the existing forest/stone/amber palette and 16:9 editorial composition. Meaningful alt text, explicit dimensions, lazy loading and async decoding are included.
 - Automated build, route validation, responsive screenshot review and accessibility checks for this change remain pending. W12 stays **in progress** until evidence is recorded.
+
+
+## Lighthouse performance audit — 19 November 2026
+
+- Added a repeatable Lighthouse CI audit to the marketing-site pull-request workflow.
+- The audit runs against the built Astro static preview, not the production domain, for Home, Compare, Pricing and How it works in mobile and desktop modes.
+- Captures Performance, Accessibility, Best Practices and SEO categories; publishes a score table in the GitHub Actions run summary and uploads full HTML/JSON reports as a 14-day artifact.
+- Initial measurements are pending the PR workflow run. No performance score is claimed until the runner completes and reports are reviewed.

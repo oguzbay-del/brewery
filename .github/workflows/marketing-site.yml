@@ -55,3 +55,79 @@ jobs:
           path: marketing-site/test-results/**/*.png
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Start local static preview for Lighthouse
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4321 > /tmp/gristora-preview.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4321/ > /dev/null; then
+              echo "Static preview is ready."
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/gristora-preview.log
+          exit 1
+      - name: Run Lighthouse mobile and desktop audits
+        run: |
+          mkdir -p lighthouse-reports
+          run_audit() {
+            local name="$1"
+            local route="$2"
+            local device="$3"
+            local preset_args=()
+            if [ "$device" = "desktop" ]; then
+              preset_args+=(--preset=desktop)
+            fi
+            npx --yes lighthouse@12.8.2 "http://127.0.0.1:4321${route}" \
+              --only-categories=performance,accessibility,best-practices,seo \
+              --output=html --output=json \
+              --output-path="./lighthouse-reports/${name}-${device}" \
+              --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" \
+              "${preset_args[@]}"
+          }
+          run_audit home / mobile
+          run_audit home / desktop
+          run_audit compare /compare/ mobile
+          run_audit compare /compare/ desktop
+          run_audit pricing /pricing/ mobile
+          run_audit pricing /pricing/ desktop
+          run_audit how-it-works /how-it-works/ mobile
+          run_audit how-it-works /how-it-works/ desktop
+      - name: Publish Lighthouse score summary
+        if: always()
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          import path from "node:path";
+          const dir = "lighthouse-reports";
+          const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((name) => name.endsWith(".report.json")) : [];
+          const lines = [
+            "## Lighthouse audit",
+            "",
+            "| Page | Device | Performance | Accessibility | Best practices | SEO |",
+            "|---|---|---:|---:|---:|---:|"
+          ];
+          for (const file of files.sort()) {
+            try {
+              const report = JSON.parse(fs.readFileSync(path.join(dir, file), "utf8"));
+              const scores = ["performance", "accessibility", "best-practices", "seo"].map((key) =>
+                report.categories?.[key]?.score == null ? "—" : Math.round(report.categories[key].score * 100)
+              );
+              const [page, device] = file.replace(".report.json", "").split(/-(?=[^-]+$)/);
+              lines.push(`| ${page} | ${device} | ${scores.join(" | ")} |`);
+            } catch (error) {
+              lines.push(`| ${file} | — | Report parse error | — | — | — |`);
+            }
+          }
+          if (files.length === 0) lines.push("| No completed reports | — | — | — | — | — |");
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
+          NODE
+      - name: Upload Lighthouse HTML and JSON reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gristora-lighthouse-reports
+          path: marketing-site/lighthouse-reports/
+          if-no-files-found: warn
+          retention-days: 14
