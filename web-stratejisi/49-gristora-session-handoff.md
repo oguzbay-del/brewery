@@ -105,3 +105,18 @@
 - Main now points to 6bb362ce6f2e2ef01e422654f77f16d0b061d3f2. Both PRs are closed as merged.
 - No production deployment was initiated.
 - Next work remains within marketing-site only: run post-merge checks against main; perform visual/mobile QA against a preview built from the merged main; review Stitch/GitHub design parity only if a real Stitch export or connected workflow is available. Do not modify copy or pages outside explicit approval.
+
+
+## Post-merge QA continuation — 19 November 2026
+
+- PR #169 and #170 are merged. Current main at QA start: `fc5be28070686aaa43140b2ca801e01f4697294a`. The marketing-site source tested below is the same source tree introduced by PR #169 merge commit `03bde32bd189f1798cacc32d574b075f3bc7540c`; subsequent commits were documentation-only.
+- Marketing site CI run [#44397172981](https://github.com/oguzbay-del/brewery/actions/runs/44397172981) completed successfully. Astro/TypeScript check, static build, generated route/metadata/link validation, Chromium responsive tests and screenshot upload all succeeded.
+- GitHub Pages preview workflow [#44397173007](https://github.com/oguzbay-del/brewery/actions/runs/44397173007) completed successfully, including the Pages deploy job. This is the repository's `/brewery`-base-path, noindex preview; no production domain/deployment was initiated.
+- Responsive QA artifact: `marketing-responsive-qa-screenshots` (#14471831688; 31 PNGs). Social card artifact: `marketing-social-card-png` (#14471001544).
+- Visual samples reviewed: homepage desktop/mobile, professional breweries mobile, pricing mobile, comparison desktop/mobile, how-it-works mobile and the generated social card. Homepage hierarchy/palette and mobile stacking look coherent; no obvious clipping was seen in reviewed pages. Browser tests assert no horizontal document/body overflow across 11 routes at 1440/1024/768/390/320 px.
+- Visual issue recorded for follow-up: the two audience decision cards at the bottom of `/compare/` contain large empty dashed visual frames on both desktop and mobile. They read as missing media/placeholders. Do not invent or add imagery without owner-approved assets/direction; track as an open visual decision.
+- The mobile comparison table intentionally scrolls horizontally inside its labelled, keyboard-focusable region; the page itself does not overflow. Automated test covers the scroll container.
+- Automated axe suite covers WCAG 2.2 AA tags at desktop and mobile for 11 routes; keyboard skip-link/mobile menu/FAQ disclosure, reduced-motion and scroll-region focus checks are included. Manual keyboard, screen-reader and 200% zoom checks remain outstanding.
+- Pricing page explicitly says monetary prices await commercial approval and trial terms are not active in preview. Keep this distinction; do not present them as live commercial offers.
+- Stitch parity is still not verifiable from this ChatGPT environment: no Stitch tool/connector is available. Do not claim Stitch was updated or synchronized. Compare only against an actual user-provided Stitch export/reference.
+- Production launch remains deferred. Continue only inside `marketing-site/` and its acceptance/handoff docs; do not alter product code or Claude's work.
