@@ -71,6 +71,7 @@
 /* Cards */
 .sx-card-grid { display: grid; gap: 20px; }
 .sx-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sx-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .sx-card {
   display: flex; flex-direction: column; padding: 28px; border-radius: var(--radius-panel);
   background: var(--sx-card); box-shadow: var(--card-shadow); color: var(--ink);
@@ -173,6 +174,7 @@
   .sx-hero-grid { grid-template-columns: 1fr; gap: 64px; }
   .sx-panel { max-width: 620px; }
   .sx-cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sx-cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sx-cta-inner { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
@@ -181,7 +183,7 @@
   .sx-panel { padding: 24px; }
   .sx-panel-float { left: 16px; bottom: -20px; }
   .sx-heading-split { grid-template-columns: 1fr; gap: 8px; }
-  .sx-cols-3, .sx-audience-grid { grid-template-columns: 1fr; }
+  .sx-cols-3, .sx-cols-4, .sx-audience-grid { grid-template-columns: 1fr; }
   .sx-audience { padding: 26px 22px; }
   .sx-quote { padding: 44px 26px; }
   .sx-cta { padding-block: 64px; }
