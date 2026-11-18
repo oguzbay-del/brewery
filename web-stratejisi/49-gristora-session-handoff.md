@@ -222,3 +222,8 @@ Accepted and not changed (owner may decide): Stitch hairlines are slate (`#E2E8F
 2. Owner decision: merge with the known Vercel production-target side effect, or first disable automatic production deployments in Vercel (Settings › Git) and then merge.
 3. After the merge: confirm that the Pages workflow run is green, then repeat the live check (26 routes, assets, console, Compare SVGs, header on Compare/Pricing/Get started).
 4. Owner: rotate the Stitch API key. Optional: decide on the accepted token differences and on the Stitch-only pages.
+
+### Merge and post-merge verification — 18 November 2026
+- Owner approved the merge. PR #174 squash-merged: `9ed69e33aaa341c318543386df9ed7e44d7e4225`. PR #172 and #173 are closed as superseded. Vercel created its automatic production-target deployment for this commit (accepted by the owner); no Vercel setting was changed.
+- GitHub Pages run [#44417047215](https://github.com/oguzbay-del/brewery/actions/runs/44417047215) is green. Live check after the deploy: 26/26 routes HTTP 200, 0 content differences from a local Pages build of `9ed69e3`, 20/20 assets 200, 0 console errors, 0 failed requests and 0 horizontal overflow at 1280/400 px, canonical = og:url on every route.
+- CI Lighthouse on #174 showed a regression on Pricing desktop: Performance 83, CLS 0.347 (before: 100, CLS 0.038). The cause is a late web-font swap that re-wraps the hero heading and moves the plan cards. Fix: `FontPreload.astro` preloads the Inter and Plus Jakarta Sans Latin files on every page. Local Lighthouse after the fix: 100/100/100/100 and CLS 0 on all 8 audits. The fix is in a follow-up PR.
