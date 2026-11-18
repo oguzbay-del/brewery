@@ -96,3 +96,12 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 The mobile comparison table is intentionally horizontally scrollable within its labelled, keyboard-focusable region; this is not page-level horizontal overflow. The pricing preview keeps commercial pricing unannounced and explicitly states that proposed trials are not active. Do not treat either as a live offer. The GitHub Pages workflow uses `preview: false`; therefore the GitHub Pages URL is public (although noindex), not a private/ephemeral preview. The custom production domain remains untouched.
 
 **Acceptance remains in progress.** Do not close W12 until the empty media-frame decision, remaining route-by-route visual review, manual accessibility/zoom review, preview HTTP/content check and performance review are resolved or explicitly accepted by the owner.
+
+
+## Deployment guard investigation — 19 November 2026
+
+- Post-merge main workflows [marketing CI #44398637229](https://github.com/oguzbay-del/brewery/actions/runs/44398637229) and [GitHub Pages #44398637250](https://github.com/oguzbay-del/brewery/actions/runs/44398637250) both passed for commit `b92d3774e8fec92d74a66b31d1f4cc79c76615bb`.
+- **Deployment boundary correction:** Vercel Git integration automatically created READY deployments with `target: production` after documentation-only commits landed on `main`. Latest deployment: `brewery-33oa7zrx5-demleme.vercel.app`, aliases `brewery-rho.vercel.app`, `brewery-demleme.vercel.app`, `brewery-git-main-demleme.vercel.app`. Vercel project details report SSO protection enabled for all deployments except custom domains, no custom domains attached, and `live: false`. This is not an unrestricted public custom-domain launch, but it is a Vercel production-target deployment and must not be described as "no production deployment."
+- GitHub Pages is a separate public `noindex, nofollow` deployment at `https://oguzbay-del.github.io/brewery/`; its workflow uses `preview: false`.
+- No `gristora.com` custom domain is attached to the Vercel project; no DNS/custom-domain launch, rollback, deployment cancellation or Vercel settings change was performed.
+- **Guardrail:** avoid further merges/pushes to `main` until the Vercel Git production-branch/automatic-deployment behavior is reviewed and adjusted with owner approval. Use feature branches and preview deployments for continued work. Live HTTP checks were blocked by DNS resolution failure in the current runtime and remain pending.
