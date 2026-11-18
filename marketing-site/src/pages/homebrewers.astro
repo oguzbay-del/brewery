@@ -1,4 +1,6 @@
 ---
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import "../styles/global.css";
 import Breadcrumbs from "../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../data/breadcrumbs";
@@ -65,24 +67,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <header class="site-header">
-      <a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation">
-        <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
-        <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
-        <a href={`${base}homebrewers/`} aria-current={Astro.url.pathname === `${base}homebrewers/` ? "page" : undefined}>Homebrewers</a>
-        <a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`} aria-current={Astro.url.pathname === `${base}how-it-works/` ? "page" : undefined}>How it works</a>
-        <a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
-      </nav>
-      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Toggle navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation">
-          <a href={`${base}features/`} aria-current={Astro.url.pathname.startsWith(`${base}features/`) ? "page" : undefined}>Product</a>
-          <a href={`${base}breweries/`} aria-current={Astro.url.pathname === `${base}breweries/` ? "page" : undefined}>Breweries</a>
-          <a href={`${base}homebrewers/`} aria-current={Astro.url.pathname === `${base}homebrewers/` ? "page" : undefined}>Homebrewers</a>
-          <a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`} aria-current={Astro.url.pathname === `${base}how-it-works/` ? "page" : undefined}>How it works</a>
-          <a href={`${base}technical-principles/`} aria-current={Astro.url.pathname === `${base}technical-principles/` ? "page" : undefined}>Technical principles</a><a href={`${base}faq/`} aria-current={Astro.url.pathname === `${base}faq/` ? "page" : undefined}>FAQ</a>
-        </nav></details>
-    </header>
+    <SiteHeader current="homebrewers" />
     <main id="main-content">
       <div class="sx-audience-band">
       <Breadcrumbs items={breadcrumbItems} />
@@ -92,9 +77,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <p>GRISTORA is brewing software for homebrewers who want to understand the ingredients, calculations and observations behind each batch.</p>
         <a class="button button-primary" href="#homebrewing-workflow">Explore the homebrewing workflow <span aria-hidden="true">↗</span></a>
       </section>
-      <!-- IMAGE SLOT: HOMEBREWERS-HERO | Replace only with user-approved or licensed documentary photography. -->
       <section class="shell audience-hero">
-        <figure class="audience-hero-art"><img src={`${base}images/illustrations/homebrewing-workspace.svg`} alt="Original illustration of a homebrewing bench with a stainless brew kettle, glass fermenter, hydrometer, malt and hops." loading="eager" /><figcaption>Homebrewing, from ingredients to fermentation · original illustration</figcaption></figure>
+        <figure class="audience-hero-art"><img src={`${base}images/illustrations/homebrewing-workspace.svg`} width="1200" height="600" alt="Original illustration of a homebrewing bench with a stainless brew kettle, glass fermenter, hydrometer, malt and hops." loading="eager" /><figcaption>Homebrewing, from ingredients to fermentation · original illustration</figcaption></figure>
       </section>
       </div>
       <section class="audience-page-section section-pad" id="homebrewing-workflow">
@@ -137,8 +121,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
             </table>
           </div>
           <p class="record-model-note">The Homebrew path is centred on an individual brewer's recipe, measurements and learning loop. Professional lot traceability, vessel occupancy, shift handover and quality-release workflows belong to Business mode.</p>
-          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-ingredient-context.svg`} alt="Homebrew path from recipe ingredient specification through selected inputs and brew-day quantities to batch review." loading="lazy" /><figcaption>Ingredient context across a homebrew batch</figcaption></figure>
-          <figure class="visual-diagram visual-diagram-scroll" role="region" aria-label="Scrollable fermentation observation timeline" tabindex="0"><img src={`${base}images/diagrams/fermentation-observation-timeline.svg`} alt="Six-point fermentation observation timeline with example values showing specific gravity, temperature and notes at each day, with timestamp and manual sample context." loading="lazy" /><figcaption>Swipe or scroll to inspect each observation · example values</figcaption></figure>
+          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-ingredient-context.svg`} width="960" height="460" alt="Homebrew path from recipe ingredient specification through selected inputs and brew-day quantities to batch review." loading="lazy" /><figcaption>Ingredient context across a homebrew batch</figcaption></figure>
+          <figure class="visual-diagram visual-diagram-scroll" role="region" aria-label="Scrollable fermentation observation timeline" tabindex="0"><img src={`${base}images/diagrams/fermentation-observation-timeline.svg`} width="1100" height="500" alt="Six-point fermentation observation timeline with example values showing specific gravity, temperature and notes at each day, with timestamp and manual sample context." loading="lazy" /><figcaption>Swipe or scroll to inspect each observation · example values</figcaption></figure>
         </div>
       </section>
       <section class="audience-feature-section section-pad">
@@ -183,6 +167,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={base}>Home ↑</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+    <SiteFooter />
   </body>
 </html>

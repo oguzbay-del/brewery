@@ -112,7 +112,6 @@ const activeNavigation = [
   { route: "/technical-principles/", href: "/technical-principles/" },
   { route: "/faq/", href: "/faq/" },
   { route: "/pricing/", href: "/pricing/" },
-  { route: "/compare/", href: "/compare/" },
   { route: "/features/", href: "/features/" },
   { route: "/features/recipe-design/", href: "/features/" },
 ];
@@ -132,6 +131,15 @@ for (const item of activeNavigation) {
   });
 }
 
+// The approved Stitch navigation (set B) has no Compare link, so Compare and Get started have no current link.
+for (const route of ["/compare/", "/get-started/"]) {
+  test(`navigation has no current link on ${route}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator('.desktop-nav a[aria-current="page"]')).toHaveCount(0);
+    await expect(page.locator('.mobile-menu nav a[aria-current="page"]')).toHaveCount(0);
+  });
+}
 
 test("plan wizard supports Home and Business journeys, terms and review", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 900 });

@@ -1,4 +1,5 @@
 ---
+import SiteHeader from "../components/SiteHeader.astro";
 import "../styles/global.css";
 import "../styles/home-hero-refinement.css";
 import "../styles/stitch-layout.css";
@@ -54,29 +55,7 @@ const structuredData = {
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <header class="site-header" id="top">
-      <a class="wordmark" href="#top" aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation">
-        <a href={`${base}features/`}>Product</a>
-        <a href={`${base}breweries/`}>Breweries</a>
-        <a href={`${base}homebrewers/`}>Homebrewers</a>
-        <a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`}>How it works</a>
-        <a href={`${base}technical-principles/`}>Principles</a><a href={`${base}faq/`}>FAQ</a>
-      </nav>
-      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu">
-        <summary aria-label="Open navigation menu">
-          <span></span><span></span>
-        </summary>
-        <nav aria-label="Mobile navigation">
-          <a href={`${base}features/`}>Product</a>
-          <a href={`${base}breweries/`}>Breweries</a>
-          <a href={`${base}homebrewers/`}>Homebrewers</a>
-          <a href={`${base}pricing/`}>Pricing</a><a href={`${base}how-it-works/`}>How it works</a>
-          <a href={`${base}technical-principles/`}>Technical principles</a><a href={`${base}faq/`}>FAQ</a>
-        </nav>
-      </details>
-    </header>
+    <SiteHeader home />
 
     <main id="main-content">
       <section class="sx-hero">
@@ -241,7 +220,7 @@ const structuredData = {
 
     <footer class="site-footer">
       <div class="shell footer-main">
-        <a class="wordmark footer-wordmark" href="#top"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
+        <a class="wordmark footer-wordmark" href="#top"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} width="130" height="160" alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
 
         <a class="back-top" href="#top">Back to top ↑</a>
       </div>

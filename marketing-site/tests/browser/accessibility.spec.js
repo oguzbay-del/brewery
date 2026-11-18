@@ -74,7 +74,8 @@ test("FAQ disclosure can be opened with the keyboard", async ({ page }) => {
 for (const route of ["/", "/homebrewers/", "/breweries/"]) {
   test(`narrow desktop layout proxy (720px) remains usable on ${route}`, async ({ page }) => {
     await page.setViewportSize({ width: 720, height: 900 });
-    await page.goto(route, { waitUntil: "domcontentloaded" });
+    // Measure after stylesheets load: images carry intrinsic width/height (CLS), so pre-CSS layout is wider.
+    await page.goto(route, { waitUntil: "load" });
     const dimensions = await page.evaluate(() => ({
       viewport: window.innerWidth,
       document: document.documentElement.scrollWidth,

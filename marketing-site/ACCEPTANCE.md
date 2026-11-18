@@ -96,3 +96,41 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 The mobile comparison table is intentionally horizontally scrollable within its labelled, keyboard-focusable region; this is not page-level horizontal overflow. The pricing preview keeps commercial pricing unannounced and explicitly states that proposed trials are not active. Do not treat either as a live offer. The GitHub Pages workflow uses `preview: false`; therefore the GitHub Pages URL is public (although noindex), not a private/ephemeral preview. The custom production domain remains untouched.
 
 **Acceptance remains in progress.** Do not close W12 until the empty media-frame decision, remaining route-by-route visual review, manual accessibility/zoom review, preview HTTP/content check and performance review are resolved or explicitly accepted by the owner.
+
+
+## Compare audience imagery — 19 November 2026
+
+- Owner approved filling the two empty audience media frames on `/compare/`.
+- Added two original, locally hosted SVG illustrations: `public/audience/homebrewer.svg` and `public/audience/professional-brewery.svg`; no external image requests, stock-photo licensing dependency, customer logos or product UI claims.
+- The illustrations use the existing forest/stone/amber palette and 16:9 editorial composition. Meaningful alt text, explicit dimensions, lazy loading and async decoding are included.
+- Automated build, route validation, responsive screenshot review and accessibility checks for this change remain pending. W12 stays **in progress** until evidence is recorded.
+
+
+## Lighthouse performance audit — 19 November 2026
+
+- Added a repeatable Lighthouse CI audit to the marketing-site pull-request workflow.
+- The audit runs against the built Astro static preview, not the production domain, for Home, Compare, Pricing and How it works in mobile and desktop modes.
+- Captures Performance, Accessibility, Best Practices and SEO categories; publishes a score table in the GitHub Actions run summary and uploads full HTML/JSON reports as a 14-day artifact.
+- Initial measurements are pending the PR workflow run. No performance score is claimed until the runner completes and reports are reviewed.
+## Deployment guard investigation — 19 November 2026
+
+- Post-merge main workflows [marketing CI #44398637229](https://github.com/oguzbay-del/brewery/actions/runs/44398637229) and [GitHub Pages #44398637250](https://github.com/oguzbay-del/brewery/actions/runs/44398637250) both passed for commit `b92d3774e8fec92d74a66b31d1f4cc79c76615bb`.
+- **Deployment boundary correction:** Vercel Git integration automatically created READY deployments with `target: production` after documentation-only commits landed on `main`. Latest deployment: `brewery-33oa7zrx5-demleme.vercel.app`, aliases `brewery-rho.vercel.app`, `brewery-demleme.vercel.app`, `brewery-git-main-demleme.vercel.app`. Vercel project details report SSO protection enabled for all deployments except custom domains, no custom domains attached, and `live: false`. This is not an unrestricted public custom-domain launch, but it is a Vercel production-target deployment and must not be described as "no production deployment."
+- GitHub Pages is a separate public `noindex, nofollow` deployment at `https://oguzbay-del.github.io/brewery/`; its workflow uses `preview: false`.
+- No `gristora.com` custom domain is attached to the Vercel project; no DNS/custom-domain launch, rollback, deployment cancellation or Vercel settings change was performed.
+- **Guardrail:** avoid further merges/pushes to `main` until the Vercel Git production-branch/automatic-deployment behavior is reviewed and adjusted with owner approval. Use feature branches and preview deployments for continued work. Live HTTP checks were blocked by DNS resolution failure in the current runtime and remain pending.
+
+
+### Additional QA sample — 19 November 2026
+
+- Reviewed screenshots for Homebrewers mobile (390 px), Breweries desktop (1440 px) and Pricing mobile (390 px). No obvious clipping/page-level horizontal overflow in these samples.
+- Live feature-branch preview: homepage and `/pricing/` both returned HTTP 200. Both include `noindex, nofollow` and response header `X-Robots-Tag: noindex`.
+- Pricing content explicitly discloses that monetary prices await commercial approval, planned trials are not active in preview, discounts are proposed/not approved, and checkout is not connected.
+- The guardrail branch's Vercel deployment is READY with `target: null` (preview). Its PR CI was still running at time of note.
+
+
+## Stitch alignment — 18 November 2026
+
+- Compared with Stitch project `9024853279551774830` (read only). The shared `SiteHeader`/`SiteFooter` use the Stitch "set B" navigation on all pages. Feature detail and 404 pages use the Stitch layout. Every `<img>` has intrinsic dimensions. The empty dashed frame on How it works is removed.
+- Local evidence: astro check 0 errors, validate:site 2304/2304, Playwright 117/117, Lighthouse mobile 99/100/100/100 and desktop 100/100/100/100 on Home, Compare, Pricing and How it works.
+- Still open: manual keyboard/screen-reader/200% zoom review; Pages re-verification after the owner-approved merge. Details: `web-stratejisi/49-gristora-session-handoff.md`.

@@ -1,4 +1,6 @@
 ---
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
 import "../styles/global.css";
 import "../styles/pricing.css";
 import "../styles/stitch-layout.css";
@@ -49,12 +51,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <header class="site-header">
-      <a class="wordmark" href={base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" /><span class="wordmark-text">GRISTORA</span></a>
-      <nav class="desktop-nav" aria-label="Main navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`}>Compare</a><a href={`${base}pricing/`}>Pricing</a></nav>
-      <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
-      <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href={`${base}features/`}>Product</a><a href={`${base}breweries/`}>Breweries</a><a href={`${base}homebrewers/`}>Homebrewers</a><a href={`${base}compare/`}>Compare</a><a href={`${base}pricing/`}>Pricing</a></nav></details>
-    </header>
+    <SiteHeader />
     <main id="main-content" class="wizard-page start-page shell">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="wizard-intro">
@@ -137,7 +134,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </aside>
       </section>
     </main>
-    <footer class="site-footer"><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Plan configuration</span></div></footer>
+    <SiteFooter />
     <script>
       // @ts-nocheck
       const form = document.querySelector("#plan-wizard");

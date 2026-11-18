@@ -92,10 +92,7 @@
 .review-list div, .wizard-summary dl div { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--line); }
 .review-list dt, .wizard-summary dt { color: var(--muted); font-size: 12px; }
 .review-list dd, .wizard-summary dd { margin: 0; text-align: right; font-size: 12px; font-weight: 700; }
-.checkout-placeholder { display: flex; gap: 16px; align-items: flex-start; margin-top: 24px; padding: 18px; background: #f1f1ed; }
 .card-mark { color: var(--amber); font-size: 25px; }
-.checkout-placeholder strong { font-size: 13px; }
-.checkout-placeholder p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
 .wizard-controls { display: flex; justify-content: space-between; gap: 16px; margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--line); }
 .wizard-back { padding: 12px 18px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 12px; font-weight: 700; cursor: pointer; }
 .wizard-back:disabled { opacity: .35; cursor: not-allowed; }

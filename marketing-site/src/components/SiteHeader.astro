@@ -1,0 +1,27 @@
+---
+// Shared header, Stitch nav set B. `current` marks the matching link with aria-current="page".
+// `home` makes the wordmark an in-page link to #top (home page only).
+interface Props {
+  current?: "product" | "breweries" | "homebrewers" | "pricing" | "how-it-works" | "principles" | "faq";
+  home?: boolean;
+}
+const { current, home = false } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const links = [
+  { id: "product", href: `${base}features/`, label: "Product", mobile: "Product" },
+  { id: "breweries", href: `${base}breweries/`, label: "Breweries", mobile: "Breweries" },
+  { id: "homebrewers", href: `${base}homebrewers/`, label: "Homebrewers", mobile: "Homebrewers" },
+  { id: "pricing", href: `${base}pricing/`, label: "Pricing", mobile: "Pricing" },
+  { id: "how-it-works", href: `${base}how-it-works/`, label: "How it works", mobile: "How it works" },
+  { id: "principles", href: `${base}technical-principles/`, label: "Principles", mobile: "Technical principles" },
+  { id: "faq", href: `${base}faq/`, label: "FAQ", mobile: "FAQ" },
+];
+---
+<header class="site-header" id={home ? "top" : undefined}>
+  <a class="wordmark" href={home ? "#top" : base} aria-label="GRISTORA home"><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" width="130" height="160" /><span class="wordmark-text">GRISTORA</span></a>
+  <nav class="desktop-nav" aria-label="Main navigation">
+    {links.map((link) => <a href={link.href} aria-current={current === link.id ? "page" : undefined}>{link.label}</a>)}
+  </nav>
+  <a class="header-cta" href={`${base}breweries/`}>Explore breweries <span aria-hidden="true">↗</span></a>
+  <details class="mobile-menu"><summary aria-label="Open navigation menu"><span></span><span></span></summary><nav aria-label="Mobile navigation">{links.map((link) => <a href={link.href} aria-current={current === link.id ? "page" : undefined}>{link.mobile}</a>)}</nav></details>
+</header>
