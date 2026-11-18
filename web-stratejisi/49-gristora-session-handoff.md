@@ -131,3 +131,13 @@
 - Compare-page audience cards intentionally render dashed empty media frames through CSS pseudo-elements; they are not failed network images. They remain an unfinished visual treatment and need owner-approved imagery or removal/replacement before final public launch.
 - GitHub Pages currently publishes a publicly accessible `noindex, nofollow` copy at `https://oguzbay-del.github.io/brewery/` because `actions/deploy-pages` uses `preview: false`. It is not a private/ephemeral preview. The custom `gristora.com` production domain was not deployed. Keep this visibility distinction explicit.
 - Remaining gates: complete manual keyboard/screen-reader/200% zoom review; run performance/Lighthouse review; verify the GitHub Pages URL's live HTTP/content response; obtain the actual Stitch export/reference or connected Stitch workflow for design parity. Do not change the Compare visual treatment, disable Pages, or deploy the custom domain without explicit owner approval.
+
+
+## Compare audience imagery update — 19 November 2026
+
+- Owner approved adding visuals to the two audience decision cards at the bottom of `/compare/`.
+- Working branch: `work/gristora-compare-audience-visuals-2026-11-19`. This branch is based directly on the current `main` tip `05d2bd96c8cc88c0a37932906f242333940c2e8e`; PR #172 remains open and unchanged.
+- Added original local SVG artwork for the Homebrewer and Professional Brewery cards under `marketing-site/public/audience/`; replaced the empty dashed CSS pseudo-elements with semantic figures and responsive image styling.
+- Scope: only `marketing-site/src/pages/compare.astro`, `marketing-site/src/styles/stitch-layout.css`, the two new audience SVGs, this acceptance record and this handoff file. No product code, API, Rust, iOS, roadmap, Vercel settings, DNS or production deployment touched.
+- Changes are consolidated into one commit to limit preview/deployment churn. No merge is authorized. Visual and automated QA are pending until the consolidated PR checks finish.
+- Continue outstanding QA in parallel: manual keyboard/screen-reader/200% zoom review and Lighthouse/performance review. Do not mark W12 complete prematurely.

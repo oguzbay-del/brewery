@@ -96,3 +96,11 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 The mobile comparison table is intentionally horizontally scrollable within its labelled, keyboard-focusable region; this is not page-level horizontal overflow. The pricing preview keeps commercial pricing unannounced and explicitly states that proposed trials are not active. Do not treat either as a live offer. The GitHub Pages workflow uses `preview: false`; therefore the GitHub Pages URL is public (although noindex), not a private/ephemeral preview. The custom production domain remains untouched.
 
 **Acceptance remains in progress.** Do not close W12 until the empty media-frame decision, remaining route-by-route visual review, manual accessibility/zoom review, preview HTTP/content check and performance review are resolved or explicitly accepted by the owner.
+
+
+## Compare audience imagery — 19 November 2026
+
+- Owner approved filling the two empty audience media frames on `/compare/`.
+- Added two original, locally hosted SVG illustrations: `public/audience/homebrewer.svg` and `public/audience/professional-brewery.svg`; no external image requests, stock-photo licensing dependency, customer logos or product UI claims.
+- The illustrations use the existing forest/stone/amber palette and 16:9 editorial composition. Meaningful alt text, explicit dimensions, lazy loading and async decoding are included.
+- Automated build, route validation, responsive screenshot review and accessibility checks for this change remain pending. W12 stays **in progress** until evidence is recorded.
