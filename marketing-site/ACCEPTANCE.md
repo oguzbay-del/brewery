@@ -105,3 +105,11 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - GitHub Pages is a separate public `noindex, nofollow` deployment at `https://oguzbay-del.github.io/brewery/`; its workflow uses `preview: false`.
 - No `gristora.com` custom domain is attached to the Vercel project; no DNS/custom-domain launch, rollback, deployment cancellation or Vercel settings change was performed.
 - **Guardrail:** avoid further merges/pushes to `main` until the Vercel Git production-branch/automatic-deployment behavior is reviewed and adjusted with owner approval. Use feature branches and preview deployments for continued work. Live HTTP checks were blocked by DNS resolution failure in the current runtime and remain pending.
+
+
+### Additional QA sample — 19 November 2026
+
+- Reviewed screenshots for Homebrewers mobile (390 px), Breweries desktop (1440 px) and Pricing mobile (390 px). No obvious clipping/page-level horizontal overflow in these samples.
+- Live feature-branch preview: homepage and `/pricing/` both returned HTTP 200. Both include `noindex, nofollow` and response header `X-Robots-Tag: noindex`.
+- Pricing content explicitly discloses that monetary prices await commercial approval, planned trials are not active in preview, discounts are proposed/not approved, and checkout is not connected.
+- The guardrail branch's Vercel deployment is READY with `target: null` (preview). Its PR CI was still running at time of note.
