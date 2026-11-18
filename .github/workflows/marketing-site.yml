@@ -59,7 +59,7 @@ jobs:
       - name: Start local static preview for Lighthouse
         run: |
           npm run preview -- --host 127.0.0.1 --port 4321 > /tmp/gristora-preview.log 2>&1 &
-          for attempt in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:4321/ > /dev/null; then
               echo "Static preview is ready."
               exit 0
