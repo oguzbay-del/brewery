@@ -85,3 +85,14 @@
 ## Ürün olgunluğu — yalnızca iç çalışma bağlamı
 
 Ürün geliştirme kaynağı `gelistirme/DURUM.md` ve ürün planıdır. 18 Kasım 2026 itibarıyla `gelistirme/DURUM.md` Stage 2 (Core API and data) gösteriyor. Bu bilgi pazarlama sitesinde olgunluk etiketi olarak gösterilmez. Ürün kodu veya roadmap'i bu pazarlama çalışması kapsamında değiştirilmez.
+
+
+## Oturum devamı — doğrulama notu (18 Kasım 2026, 23:xx TRT)
+
+- Güncel main: 4a6d27bf52eca12140b1ec9985bd18cc2db87e14 (Stitch homepage PR #168).
+- PR #169 ve #170 hâlâ açık; ikisi de manuel kullanıcı kararı olmadan merge edilmeyecek.
+- PR #169 son Marketing site checks run #44395865907 başarılı. Vercel preview HTTP 200 döndü.
+- PR #169 preview HTML kontrolünde onaylanan üç ifade bulunmadı; Stitch'in dört kartı (Recipe standards, Understandable calculations, Production context, Useful records) korundu. Bu, HTML smoke check'tir; görsel/cihaz üzerinde manuel QA yerine geçmez.
+- PR #170 belge workflow run #44396154481 başarılı. PR #170 preview HTTP 200 döndü; bu preview dokümantasyon branch'inin kendi bazını gösterir ve PR #169 homepage düzeltmesini içermez. Bu nedenle PR #169 için görsel onay kaynağı olarak kullanılmamalıdır.
+- Vercel preview HTML yanıtları noindex/canonical meta alanları içeriyor; production deploy yapılmadı.
+- Kalan işler: Stitch aktarımının kullanıcı ortamında gerçek commit/PR ile doğrulanması; iki PR'ın görsel tarayıcı/cihaz QA'sı; kullanıcı merge kararı. Bu oturumda merge veya production deploy yapılmadı.
