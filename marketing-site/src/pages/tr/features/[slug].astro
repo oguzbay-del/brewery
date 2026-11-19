@@ -1,0 +1,112 @@
+---
+import FontPreload from "../../../components/FontPreload.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../../data/breadcrumbs";
+import "../../../styles/learning-pages.css";
+import "../../../styles/faq-evidence.css";
+import "../../../styles/stitch-layout.css";
+import { featuresTr, audienceLabelTr } from "../../../data/features.tr";
+
+export function getStaticPaths() {
+  return featuresTr.map((feature) => ({ params: { slug: feature.slug }, props: { feature } }));
+}
+
+const { feature } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}tr/features/${feature.slug}/`, import.meta.env.SITE).href;
+const description = feature.summary;
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: `${feature.title} — GRISTORA`,
+  description,
+  url: canonicalUrl,
+  inLanguage: "tr",
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
+};
+const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Ürün", url: new URL(`${base}tr/features/`, import.meta.env.SITE).href }, { name: feature.title, url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+const audienceText = feature.audiences.map((audience) => audienceLabelTr[audience]);
+---
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <FontPreload />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>{feature.title} — GRISTORA</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content={`${feature.title} — GRISTORA`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={`${feature.title} — GRISTORA`} />
+    <meta name="twitter:description" content={description} />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Ana içeriğe geç</a>
+    <SiteHeader current="product" lang="tr" />
+    <main id="main-content" class="feature-detail-page">
+      <Breadcrumbs items={breadcrumbItems} />
+      <section class="feature-detail-hero shell">
+        <p class="eyebrow feature-detail-chip"><span class="eyebrow-line"></span> {feature.eyebrow}</p>
+        <h1>{feature.title}</h1>
+        <p class="feature-lead">{feature.summary}</p>
+        <div class="feature-tags">
+          {audienceText.map((audience) => <span class="feature-tag">{audience}</span>)}
+        </div>
+      </section>
+      <section class="feature-detail-body section-pad">
+        <div class="shell feature-detail-layout">
+          <div class="feature-detail-sections">
+            {feature.sections.map((section, index) => (
+              <section class="feature-detail-section">
+                <span class="feature-card-index">{String(index + 1).padStart(2, "0")}</span>
+                <div><h2>{section.heading}</h2><p>{section.intro}</p><ul>{section.items.map((item) => <li>{item}</li>)}</ul></div>
+              </section>
+            ))}
+          </div>
+          <aside class="feature-roadmap-aside">
+            <p class="eyebrow">HEDEF KİTLE</p>
+            <p>{audienceText.join(" · ")}</p>
+          </aside>
+        </div>
+      </section>
+      <section class="feature-evidence-section section-pad">
+        <div class="shell feature-evidence-layout">
+          <div>
+            <p class="eyebrow"><span class="eyebrow-line"></span> GİRDİLER · KAYITLAR · ÇIKTILAR</p>
+            <h2>Girdiler, kayıtlar ve <em>çıktılar.</em></h2>
+          </div>
+          <div class="feature-evidence-content">
+            <p><strong>Girdiler ve kayıtlar:</strong> Girdiler özelliğe göre değişir. Reçete tanımlarını, malzeme ve ekipman bilgilerini, ölçümleri, malzeme kayıtlarını ya da ekibin girdiği gözlemleri içerir.</p>
+            <p><strong>Çıktılar:</strong> Özelliğe bağlı olarak çıktılar hesaplamaları, reçete sürümlerini, çizelgeleri, parti kayıtlarını, ölçüm geçmişini ya da inceleme bağlamını içerir.</p>
+          </div>
+        </div>
+      </section>
+      {feature.note && <section class="feature-caveat"><div class="shell"><p>{feature.note}</p></div></section>}
+      <section class="feature-next section-pad">
+        <div class="shell feature-next-inner">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> KEŞFETMEYE DEVAM EDİN</p><h2>Tüm <em>GRISTORA ürününü</em> görün.</h2></div>
+          <div><p>Diğer ürün alanlarını keşfedin ya da demlemenize uyan çalışma alanını seçin.</p><a class="button button-primary" href={`${base}tr/features/`}>Tüm ürün özelliklerine göz atın <span aria-hidden="true">↗</span></a></div>
+        </div>
+      </section>
+    </main>
+    <SiteFooter lang="tr" backText="Tüm özellikler ↑" backHref={`${base}tr/features/`} />
+  </body>
+</html>
