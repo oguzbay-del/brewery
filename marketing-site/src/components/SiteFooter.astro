@@ -3,8 +3,12 @@
 interface Props {
   backText?: string;
   backHref?: string;
+  lang?: "en" | "tr";
 }
 const base = import.meta.env.BASE_URL;
-const { backText = "Home ↑", backHref = base } = Astro.props;
+const { lang = "en" } = Astro.props;
+const tr = lang === "tr";
+const root = tr ? `${base}tr/` : base;
+const { backText = tr ? "Ana sayfa ↑" : "Home ↑", backHref = root } = Astro.props;
 ---
-<footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={base}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" width="130" height="160" /><span class="wordmark-text">GRISTORA</span></a><p>Brewing software for professional breweries, with a separate Homebrewers path.</p><a class="back-top" href={backHref}>{backText}</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>Made for the craft of brewing.</span></div></footer>
+<footer class="site-footer"><div class="shell footer-main"><a class="wordmark footer-wordmark" href={root}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" width="130" height="160" /><span class="wordmark-text">GRISTORA</span></a><p>{tr ? "Profesyonel bira üreticileri için demleme yazılımı; ev biracıları için ayrı bir yol." : "Brewing software for professional breweries, with a separate Homebrewers path."}</p><a class="back-top" href={backHref}>{backText}</a></div><div class="shell footer-bottom"><span>© {new Date().getFullYear()} GRISTORA</span><span>{tr ? "Bira yapma zanaatı için." : "Made for the craft of brewing."}</span></div></footer>

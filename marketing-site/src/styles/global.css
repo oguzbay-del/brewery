@@ -431,3 +431,8 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; 
 @media (max-width: 760px) {
   .audience-grid, .feature-card-grid, .workflow-grid, .explain-flow, .principle-grid, .stage-grid { gap: 12px; }
 }
+
+/* Turkish preview: language link to the English page. */
+.lang-switch { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--forest); padding: 8px 10px; border: 1px solid rgba(80, 76, 65, .25); border-radius: 2px; text-decoration: none; }
+.lang-switch:hover { color: var(--amber); }
+@media (max-width: 1100px) { .lang-switch { margin-left: auto; } }

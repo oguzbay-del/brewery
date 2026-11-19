@@ -118,6 +118,11 @@ for (const file of htmlFiles) {
   if (rel === "404.html") continue;
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
+  // Turkish preview pages (/tr/) are noindex and stay out of the sitemap (owner decision, 19 Nov 2026).
+  if (pagePath.startsWith("/tr/")) {
+    assert(!sitemap.includes(pageUrl.href), `sitemap excludes Turkish preview page: ${pagePath}`);
+    continue;
+  }
   assert(sitemap.includes(pageUrl.href), `sitemap lists page: ${pagePath}`);
 }
 const forbidden = [
@@ -145,7 +150,12 @@ for (const file of htmlFiles) {
   assert(Boolean(metaDescription?.trim()), rel + ": meta description is not empty");
   const robotsMeta = getMetaContent(html, "name", "robots");
   const isCanonicalProduction = siteOrigin === "https://gristora.com";
-  assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
+  if (rel.startsWith("tr/")) {
+    assert(robotsMeta === "noindex, nofollow", rel + ": Turkish preview page is always noindex");
+    assert(/<html lang="tr"/.test(html), rel + ": Turkish preview page declares lang=\"tr\"");
+  } else {
+    assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
+  }
   if (metaDescription) {
     const length = decodeHtml(metaDescription).trim().length;
     assert(length >= 40 && length <= 220, rel + ": meta description is between 40 and 220 characters (found " + length + ")");
