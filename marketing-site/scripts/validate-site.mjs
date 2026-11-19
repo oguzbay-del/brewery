@@ -137,7 +137,9 @@ for (const file of htmlFiles) {
   const rel = path.relative(dist, file).replaceAll(path.sep, "/");
   if (rel === "404.html") continue;
   assert(html.includes("GRISTORA"), rel + ": visible GRISTORA brand is present");
-  assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
+  const isTr = rel.startsWith("tr/");
+  // "demleme" is the ordinary Turkish word for brewing, so the legacy-brand check skips /tr/ pages.
+  if (!isTr) assert(!/demleme/i.test(html), rel + ": legacy Demleme brand is absent");
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
   const titleCount = (html.match(/<title>/g) || []).length;
@@ -207,7 +209,7 @@ for (const file of htmlFiles) {
       else assert(parsedImage.protocol === "https:", rel + ": " + label + " image uses HTTPS");
     } catch { failures.push(rel + ": invalid " + label + " image URL"); }
   }
-  assert(html.includes('<html lang="en">'), rel + ": language is declared");
+  assert(html.includes(isTr ? '<html lang="tr">' : '<html lang="en">'), rel + ": language is declared");
   const canonicalTag = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/)?.[0];
   const canonicalHref = canonicalTag?.match(/\bhref=["']([^"']+)["']/)?.[1];
   const ogUrl = getMetaContent(html, "property", "og:url");
@@ -226,7 +228,7 @@ for (const file of htmlFiles) {
       assert(items.length >= 2 && items.every((item, index) => item["@type"] === "ListItem" && item.position === index + 1 && typeof item.name === "string" && typeof item.item === "string"), rel + ": breadcrumb items have ordered names and URLs");
       const breadcrumbUrls = items.map((item) => { try { return new URL(item.item); } catch { return null; } });
       assert(breadcrumbUrls.every((url) => url?.origin === siteOrigin), rel + ": breadcrumb URLs are absolute and stay on the site origin");
-      assert(breadcrumbUrls[0]?.href === new URL(`${basePath}/`, siteOrigin).href, rel + ": first breadcrumb points to the site home");
+      assert(breadcrumbUrls[0]?.href === new URL(`${basePath}/${isTr ? "tr/" : ""}`, siteOrigin).href, rel + ": first breadcrumb points to the site home");
       assert(items.at(-1)?.item === pageUrl.href, rel + ": final breadcrumb points to the canonical page URL");
     }
   }
@@ -260,6 +262,7 @@ for (const file of htmlFiles) {
   }
 
   for (const phrase of forbidden) {
+    if (isTr && phrase.toLowerCase().startsWith("demleme")) continue;
     assert(!html.toLowerCase().includes(phrase.toLowerCase()), `${rel}: no unsafe legacy claim “${phrase}”`);
   }
 
@@ -270,8 +273,8 @@ for (const file of htmlFiles) {
   assert((html.match(/<main(?:\s|>)/g) || []).length === 1, `${rel}: exactly one main landmark`);
   assert(/<a[^>]*class=["']skip-link["'][^>]*href=["']#main-content["']/.test(html), `${rel}: skip link targets main content`);
   const desktopNav = html.match(/<nav class=["']desktop-nav["'][^>]*>([\s\S]*?)<\/nav>/)?.[1] || "";
-  const breweriesNavIndex = desktopNav.indexOf(">Breweries<");
-  const homebrewersNavIndex = desktopNav.indexOf(">Homebrewers<");
+  const breweriesNavIndex = desktopNav.indexOf(isTr ? ">Bira üreticileri<" : ">Breweries<");
+  const homebrewersNavIndex = desktopNav.indexOf(isTr ? ">Ev biracıları<" : ">Homebrewers<");
   assert(breweriesNavIndex >= 0 && homebrewersNavIndex > breweriesNavIndex, rel + ": Professional Breweries precedes Homebrewers in desktop navigation");
 
   const headerCta = html.match(/<a class=["']header-cta["'][^>]*href=["']([^"']+)["']/)?.[1];

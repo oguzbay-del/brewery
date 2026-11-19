@@ -1,8 +1,8 @@
 ---
 type BreadcrumbItem = { name: string; url: string };
-const { items } = Astro.props as { items: BreadcrumbItem[] };
+const { items, lang = "en" } = Astro.props as { items: BreadcrumbItem[]; lang?: "en" | "tr" };
 ---
-<nav class="breadcrumbs shell" aria-label="Breadcrumb">
+<nav class="breadcrumbs shell" aria-label={lang === "tr" ? "Sayfa yolu" : "Breadcrumb"}>
   <ol>
     {items.map((item, index) => (
       <li>
