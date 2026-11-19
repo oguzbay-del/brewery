@@ -219,7 +219,7 @@ for (const file of htmlFiles) {
     assert(canonical.origin === siteOrigin && canonical.pathname === pageUrl.pathname, rel + ": canonical URL matches page path");
     if (ogUrl) assert(new URL(decodeHtml(ogUrl), siteOrigin).href === canonical.href, rel + ": Open Graph URL matches canonical");
   }
-  if (pagePath !== "/") {
+  if (pagePath !== "/" && pagePath !== "/tr/") {
     const jsonLdBlocks = [...html.matchAll(/<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/g)].map((match) => match[1]);
     const breadcrumb = jsonLdBlocks.map((block) => { try { return JSON.parse(block); } catch { return null; } }).find((item) => item?.["@type"] === "BreadcrumbList");
     assert(Boolean(breadcrumb), rel + ": BreadcrumbList structured data exists");
