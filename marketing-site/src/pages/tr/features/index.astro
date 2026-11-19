@@ -1,0 +1,87 @@
+---
+import FontPreload from "../../../components/FontPreload.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import "../../../styles/global.css";
+import "../../../styles/stitch-layout.css";
+import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../../data/breadcrumbs";
+import { featuresTr } from "../../../data/features.tr";
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}tr/features/`, import.meta.env.SITE).href;
+const description = "GRISTORA’nın profesyonel bira üreticisi iş akışlarını ve ürün yeteneklerini keşfedin; Ev biracıları için ayrı bir yol da sunulur.";
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Bira üretim yazılımı özellikleri — GRISTORA",
+  description,
+  url: canonicalUrl,
+  inLanguage: "tr",
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
+};
+const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Ürün", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+---
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <FontPreload />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>Bira Üretim Yazılımı Özellikleri | GRISTORA</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Bira Üretim Yazılımı Özellikleri | GRISTORA" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bira Üretim Yazılımı Özellikleri | GRISTORA" />
+    <meta name="twitter:description" content={description} />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Ana içeriğe geç</a>
+    <SiteHeader current="product" lang="tr" />
+    <main id="main-content" class="features-page">
+      <Breadcrumbs items={breadcrumbItems} />
+      <section class="feature-hero shell">
+        <p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜN</p>
+        <h1>Profesyonel demleme için <em>bağlantılı bir çalışma alanı.</em></h1>
+        <p class="feature-lead">GRISTORA önce profesyonel bira üreticisi iş akışları etrafında tasarlanır: reçete standartları, üretim planlaması, parti kayıtları ve kalite bağlamı. Ev biracıları için ayrı bir yol da ürünün parçasıdır.</p>
+        <div class="feature-hero-meta"><span>16 ürün alanı</span><span>Önce işletme · Ev biracıları yolu ayrı</span></div>
+      </section>
+      <section class="feature-directory section-pad">
+        <div class="shell">
+          <div class="section-heading feature-section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜNÜ KEŞFEDİN</p>
+            <h2>Demleme akışının her parçasının <em>bir yeri var.</em></h2>
+            <p>Her alanın kendi sayfasında iş akışları, ayrıntılı yetenekler ve hedef kitle yer alır.</p>
+          </div>
+          <div class="feature-card-grid">
+            {featuresTr.map((feature, index) => (
+              <a class="feature-card" href={`${base}tr/features/${feature.slug}/`}>
+                <span class="feature-card-index">{String(index + 1).padStart(2, "0")}</span>
+                <span class="feature-card-eyebrow">{feature.eyebrow}</span>
+                <h2>{feature.title}</h2>
+                <p>{feature.summary}</p>
+                <span class="feature-card-link">Ayrıntıları keşfedin <span aria-hidden="true">↗</span></span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+    <SiteFooter lang="tr" />
+  </body>
+</html>
