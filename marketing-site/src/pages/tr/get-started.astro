@@ -1,0 +1,212 @@
+---
+import FontPreload from "../../components/FontPreload.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import "../../styles/global.css";
+import "../../styles/pricing.css";
+import "../../styles/stitch-layout.css";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../data/breadcrumbs";
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}tr/get-started/`, import.meta.env.SITE).href;
+const description = "GRISTORA Ev biracısı veya Profesyonel bira üreticisi planını adım adım yapılandırın.";
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "GRISTORA planınızı yapılandırın",
+  description,
+  url: canonicalUrl,
+  inLanguage: "tr",
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
+};
+const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Planlar ve fiyatlandırma", url: new URL(`${base}tr/pricing/`, import.meta.env.SITE).href }, { name: "Planı yapılandırın", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+---
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <FontPreload />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>Planınızı Yapılandırın | GRISTORA</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Planınızı Yapılandırın | GRISTORA" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Planınızı Yapılandırın | GRISTORA" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Ana içeriğe geç</a>
+    <SiteHeader lang="tr" />
+    <main id="main-content" class="wizard-page start-page shell">
+      <Breadcrumbs items={breadcrumbItems} />
+      <section class="wizard-intro">
+        <p class="eyebrow"><span class="eyebrow-line"></span> GRISTORA PLANINIZ</p>
+        <h1>Birkaç seçim. <em>Daha net bir uyum.</em></h1>
+        <p>Demleme yolunuzu seçin, ekip büyüklüğünü belirleyin ve bir faturalama süresi seçin. Bu yalnızca bir yapılandırma önizlemesidir; hesap, deneme, ödeme veya talep oluşturulmaz.</p>
+      </section>
+
+      <section class="wizard-layout" aria-label="Plan yapılandırması">
+        <div class="wizard-main">
+          <ol class="wizard-progress" aria-label="Yapılandırma adımları">
+            <li class="is-current" data-progress="1"><span>01</span><small>Yolunuz</small></li>
+            <li data-progress="2"><span>02</span><small>Ekip büyüklüğü</small></li>
+            <li data-progress="3"><span>03</span><small>Faturalama</small></li>
+            <li data-progress="4"><span>04</span><small>Gözden geçirme</small></li>
+          </ol>
+
+          <form id="plan-wizard" novalidate>
+            <section class="wizard-step" data-step="1">
+              <p class="step-kicker">ADIM 01 / 04</p>
+              <h2 tabindex="-1">Nasıl <em>demliyorsunuz?</em></h2>
+              <p class="step-description">Doğru çalışma alanı, doğru bira yapma biçimiyle başlar.</p>
+              <div class="choice-grid">
+                <label class="choice-card"><input type="radio" name="audience" value="home" aria-label="Ev biracısı planı" /><span class="choice-check" aria-hidden="true">✓</span><strong>Ev biracısıyım</strong><small>Reçeteler, demleme günleri ve parti öğrenimi için tek bir kişisel çalışma alanı.</small><span class="choice-meta">1 kullanıcı · planlanan 3 aylık deneme (etkin değil)</span></label>
+                <label class="choice-card"><input type="radio" name="audience" value="business" aria-label="Profesyonel bira üreticisi planı" /><span class="choice-check" aria-hidden="true">✓</span><strong>Profesyonel bir bira üreticisiyim</strong><small>Reçete standartları, üretim bağlamı ve parti kayıtları için bir ekip çalışma alanı.</small><span class="choice-meta">5+ kullanıcı · planlanan 1 aylık deneme (etkin değil)</span></label>
+              </div>
+              <div class="choice-links"><a href={`${base}tr/homebrewers/`}>Ev biracılarını keşfedin ↗</a><a href={`${base}tr/breweries/`}>Bira üreticilerini keşfedin ↗</a></div>
+              <p class="step-helper">Hangi yolun uygun olduğundan emin değil misiniz? <a href={`${base}tr/compare/`}>Ev ve bira üreticisi işlevlerini karşılaştırın</a>.</p>
+            </section>
+
+            <section class="wizard-step" data-step="2" hidden>
+              <p class="step-kicker">ADIM 02 / 04</p>
+              <h2 tabindex="-1">Kimin <em>erişime ihtiyacı var?</em></h2>
+              <p class="step-description" id="seat-description">Koltuğa ihtiyaç duyan kişi sayısını seçin.</p>
+              <div id="home-seat" class="seat-fixed" hidden><strong>1</strong><span>Ev planına dahil bireysel kullanıcı.</span></div>
+              <fieldset id="business-seats" class="seat-options" hidden>
+                <legend>Ekip büyüklüğünüzü seçin</legend>
+                <label><input type="radio" name="seats" value="5" aria-label="5 kullanıcı" checked /><span>5 <small>kullanıcı</small></span></label>
+                <label><input type="radio" name="seats" value="10" aria-label="10 kullanıcı" /><span>10 <small>kullanıcı</small></span></label>
+                <label><input type="radio" name="seats" value="15" aria-label="15 kullanıcı" /><span>15 <small>kullanıcı</small></span></label>
+                <label><input type="radio" name="seats" value="20" aria-label="20 kullanıcı" /><span>20 <small>kullanıcı</small></span></label>
+                <label><input type="radio" name="seats" value="20+" aria-label="20'den fazla kullanıcı" /><span>20+ <small>iletişim</small></span></label>
+              </fieldset>
+              <div class="contact-tier" id="contact-tier" hidden><strong>20'den fazla kişi mi?</strong><p>Size özel bir ekip seçeneği hazırlarız.</p><span>20+ kullanıcı · iletişim gerekir</span></div>
+              <p class="step-helper"><a href={`${base}tr/compare/`}>Ev ve bira üreticisi işlev karşılaştırmasını inceleyin</a>.</p>
+            </section>
+
+            <section class="wizard-step" data-step="3" hidden>
+              <p class="step-kicker">ADIM 03 / 04</p>
+              <h2 tabindex="-1"><em>Faturalama süresini</em> seçin.</h2>
+              <p class="step-description">Daha uzun taahhütler, aylık referans fiyata göre daha büyük indirim alır.</p>
+              <fieldset class="billing-options">
+                <legend>Faturalama sıklığı</legend>
+                <label><input type="radio" name="term" value="monthly" aria-label="Aylık faturalama" checked /><span><strong>Aylık</strong><small>Esnek, ay ay</small><b>%0 tasarruf</b></span></label>
+                <label><input type="radio" name="term" value="annual" aria-label="Yıllık faturalama" /><span><strong>Yıllık</strong><small>Bir yıllık taahhüt</small><b>%15 tasarruf</b></span></label>
+                <label><input type="radio" name="term" value="two-year" aria-label="İki yıllık faturalama" /><span><strong>2 yıl</strong><small>İki yıllık taahhüt</small><b>%25 tasarruf</b></span></label>
+                <label><input type="radio" name="term" value="three-year" aria-label="Üç yıllık faturalama" /><span><strong>3 yıl</strong><small>Üç yıllık taahhüt</small><b>%35 tasarruf</b></span></label>
+              </fieldset>
+              <div class="trial-note" id="trial-note">Yalnızca önerilen deneme koşulları; bu önizlemede hiçbir deneme etkin değildir.</div>
+              <div class="contact-tier" id="custom-billing" hidden><strong>Özel ekip planı</strong><p>20'nin üzerindeki ekipler için faturalama koşulları ve fiyatlandırma ayrı ayrı hazırlanır.</p></div>
+            </section>
+
+            <section class="wizard-step" data-step="4" hidden>
+              <p class="step-kicker">ADIM 04 / 04</p>
+              <h2 tabindex="-1"><em>Planınızı</em> gözden geçirin.</h2>
+              <p class="step-description">Yapılandırmanızı kontrol edin.</p>
+              <dl class="review-list"><div><dt>Demleme yolu</dt><dd id="review-audience">—</dd></div><div><dt>Kullanıcılar</dt><dd id="review-seats">—</dd></div><div><dt>Faturalama</dt><dd id="review-term">—</dd></div><div><dt>Tasarruf</dt><dd id="review-discount">—</dd></div><div><dt>Deneme</dt><dd id="review-trial">—</dd></div><div><dt>Öngörülen ödeme yöntemi</dt><dd>Kredi veya banka kartı · burada toplanmaz</dd></div></dl>
+              <p class="step-helper">Herhangi bir seçimi değiştirmek için geri dönebilirsiniz. <a href={`${base}tr/pricing/`}>Tüm planları ve koşulları inceleyin</a>.</p>
+            </section>
+
+            <div class="wizard-controls"><button type="button" class="wizard-back" id="wizard-back" disabled>Geri</button><button type="button" class="button button-primary wizard-next" id="wizard-next" disabled>Devam <span aria-hidden="true">→</span></button></div>
+            <p class="wizard-feedback" id="wizard-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <aside class="wizard-summary" aria-live="polite">
+          <p class="eyebrow">SEÇİMİNİZ</p><h2>Plan <em>özeti</em></h2>
+          <dl><div><dt>Yol</dt><dd id="summary-audience">Bir yol seçin</dd></div><div><dt>Kullanıcılar</dt><dd id="summary-seats">—</dd></div><div><dt>Süre</dt><dd id="summary-term">Aylık</dd></div><div><dt>Tasarruf</dt><dd id="summary-discount">%0</dd></div><div><dt>Deneme</dt><dd id="summary-trial">Bir yol seçin</dd></div></dl>
+          <p class="summary-note">Yalnızca önerilen koşullar: Ev için planlanan üç aylık, bira üreticisi için planlanan bir aylık deneme vardır. Bu önizlemede iki deneme de etkin değildir.</p>
+          <a href={`${base}tr/compare/`}>İşlevleri karşılaştırın ↗</a>
+        </aside>
+      </section>
+    </main>
+    <SiteFooter lang="tr" />
+    <script>
+      // @ts-nocheck
+      const form = document.querySelector("#plan-wizard");
+      if (form) {
+        let step = 1;
+        const searchAudience = new URLSearchParams(window.location.search).get("audience");
+        const state = { audience: searchAudience === "business" ? "business" : searchAudience === "home" ? "home" : "", seats: "5", term: "monthly" };
+        const discounts = { monthly: "%0", annual: "%15", "two-year": "%25", "three-year": "%35" };
+        const termNames = { monthly: "Aylık", annual: "Yıllık", "two-year": "2 yıl", "three-year": "3 yıl" };
+        const byId = (id) => {
+          const element = document.getElementById(id);
+          if (!element) throw new Error("Missing wizard element: " + id);
+          return element;
+        };
+        const update = () => {
+          form.querySelectorAll("[data-step]").forEach((panel) => { panel.hidden = Number(panel.dataset.step) !== step; });
+          document.querySelectorAll("[data-progress]").forEach((item) => {
+            const n = Number(item.dataset.progress);
+            item.classList.toggle("is-current", n === step);
+            item.classList.toggle("is-complete", n < step);
+            if (n === step) item.setAttribute("aria-current", "step"); else item.removeAttribute("aria-current");
+          });
+          byId("wizard-back").disabled = step === 1;
+          byId("wizard-next").textContent = step === 4 ? "Gözden geçirme tamamlandı" : "Devam →";
+          byId("wizard-next").disabled = step === 4;
+          byId("home-seat").hidden = state.audience !== "home";
+          byId("business-seats").hidden = state.audience !== "business";
+          byId("contact-tier").hidden = state.seats !== "20+";
+          byId("custom-billing").hidden = state.seats !== "20+";
+          form.querySelector(".billing-options").hidden = state.seats === "20+";
+          byId("seat-description").textContent = state.audience === "home" ? "Ev planı, tek bir bireysel demleyici için tasarlanmıştır." : "Koltuğa ihtiyaç duyan kişi sayısını seçin.";
+          byId("trial-note").textContent = state.audience === "home" ? "Planlanan Ev denemesi: üç ay. Bu önizlemede etkin değil." : "Planlanan Profesyonel bira üreticisi denemesi: bir ay. Bu önizlemede etkin değil.";
+          byId("summary-audience").textContent = state.audience ? (state.audience === "home" ? "Ev biracısı" : "Profesyonel bira üreticisi") : "Bir yol seçin";
+          byId("summary-seats").textContent = state.audience === "home" ? "1 kullanıcı" : state.audience === "business" ? (state.seats === "20+" ? "20+ · özel teklif" : state.seats + " kullanıcı") : "—";
+          byId("summary-term").textContent = state.seats === "20+" ? "Özel teklif" : termNames[state.term];
+          byId("summary-discount").textContent = state.seats === "20+" ? "—" : discounts[state.term];
+          byId("summary-trial").textContent = state.audience === "home" ? "3 ay" : state.audience === "business" ? "1 ay" : "Bir yol seçin";
+          byId("review-audience").textContent = state.audience === "home" ? "Ev biracısı" : "Profesyonel bira üreticisi";
+          byId("review-seats").textContent = state.audience === "home" ? "1 kullanıcı" : (state.seats === "20+" ? "20+ kullanıcı · özel teklif" : state.seats + " kullanıcı");
+          byId("review-term").textContent = state.seats === "20+" ? "Özel teklif" : termNames[state.term];
+          byId("review-discount").textContent = state.seats === "20+" ? "Üzerinde anlaşılacak" : discounts[state.term];
+          byId("review-trial").textContent = state.audience === "home" ? "3 ay" : "1 ay";
+          byId("wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
+          byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "İletişim talebini gözden geçirin →" : step === 4 ? "Gözden geçirme tamamlandı" : "Devam →";
+          if (!(step === 4 && state.seats === "20+")) byId("wizard-feedback").textContent = "";
+        };
+        form.querySelectorAll('input[name="audience"]').forEach((input) => input.addEventListener("change", () => {
+          state.audience = input.value;
+          state.seats = "5";
+          form.querySelector('input[name="seats"][value="5"]').checked = true;
+          update();
+        }));
+        form.querySelectorAll('input[name="seats"]').forEach((input) => input.addEventListener("change", () => { state.seats = input.value; update(); }));
+        form.querySelectorAll('input[name="term"]').forEach((input) => input.addEventListener("change", () => { state.term = input.value; update(); }));
+        byId("wizard-next").addEventListener("click", () => {
+          if (step < 4) {
+            step = step === 2 && state.seats === "20+" ? 4 : step + 1;
+            update();
+            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "20'den fazla kişilik bir ekip, size özel bir teklif gerektirir.";
+            const heading = document.querySelector(".wizard-step:not([hidden]) h2");
+            if (heading) heading.focus();
+          }
+        });
+        byId("wizard-back").addEventListener("click", () => { if (step > 1) { step -= 1; update(); } });
+        if (state.audience) {
+          const selected = form.querySelector('input[name="audience"][value="' + state.audience + '"]');
+          if (selected) selected.checked = true;
+        }
+        update();
+      }
+    </script>
+  </body>
+</html>

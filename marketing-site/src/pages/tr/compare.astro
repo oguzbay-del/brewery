@@ -1,0 +1,82 @@
+---
+import FontPreload from "../../components/FontPreload.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import "../../styles/global.css";
+import "../../styles/pricing.css";
+import "../../styles/comparison.css";
+import "../../styles/stitch-layout.css";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../data/breadcrumbs";
+import type { FeatureAudience } from "../../data/features";
+import { featuresTr as features } from "../../data/features.tr";
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}tr/compare/`, import.meta.env.SITE).href;
+const description = "GRISTORA'nın Ev biracısı ve Profesyonel bira üreticisi özellik yollarını karşılaştırın.";
+const rows: { group: string; items: [string, string][] }[] = [
+  { group: "Reçeteler ve formülasyon", items: [
+    ["Reçete tasarımı ve yönetimi", "recipe-design"],
+    ["Demleme hesaplamaları", "brewing-calculations"],
+    ["Su, mayşe ve maya", "water-mash-yeast"],
+  ]},
+  { group: "Demleme günü ve parti geçmişi", items: [
+    ["Demleme günü ve üretim kayıtları", "brew-day"],
+    ["Fermantasyon ve parti takibi", "fermentation-monitoring"],
+    ["Ekipman ve kalibrasyon", "equipment-calibration"],
+    ["Planlama ve çizelgeleme", "planning-scheduling"],
+  ]},
+  { group: "Profesyonel operasyonlar", items: [
+    ["Envanter ve malzeme lotları", "inventory-costing"],
+    ["Kalite, laboratuvar ve onay", "quality-laboratory"],
+    ["Ekip rolleri ve bildirimler", "team-notifications"],
+    ["Üretim analitiği", "analytics-reports"],
+  ]},
+];
+const stageFor = (slug: string, audience: FeatureAudience) => {
+  const feature = features.find((item) => item.slug === slug);
+  if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Ev yolunda yok" : "Bira üreticisi yolunda yok";
+  return "Dahil";
+};
+const isMissing = (stage: string) => stage.endsWith("yolunda yok");
+const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "İşlev karşılaştırması", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+const structuredData = { "@context": "https://schema.org", "@type": "WebPage", name: "Ev biracısı ve Profesyonel bira üreticisi özellik karşılaştırması", description, url: canonicalUrl, inLanguage: "tr", isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href } };
+---
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <FontPreload /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content="noindex, nofollow" /><link rel="canonical" href={canonicalUrl} /><link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} /><title>Ev ve Bira Üreticisi İşlev Karşılaştırması | GRISTORA</title>
+    <meta property="og:type" content="website" /><meta property="og:site_name" content="GRISTORA" /><meta property="og:title" content="Ev ve Bira Üreticisi İşlev Karşılaştırması | GRISTORA" /><meta property="og:description" content={description} /><meta property="og:url" content={canonicalUrl} /><meta property="og:locale" content="tr_TR" /><meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} /><meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="Ev ve Bira Üreticisi İşlev Karşılaştırması | GRISTORA" /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} /><script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Ana içeriğe geç</a>
+    <SiteHeader lang="tr" />
+    <main id="main-content" class="compare-page">
+      <section class="pricing-hero compare-hero shell">
+        <Breadcrumbs items={breadcrumbItems} />
+        <p class="eyebrow"><span class="eyebrow-line"></span> İKİ YOL · TEK DEMLEME ANLAYIŞI</p><h1>Demlemenize <em>uyan çalışma alanını seçin.</em></h1><p class="pricing-lede">Ev biracıları ve profesyonel bira üreticileri iyi bira yapma tutkusunu paylaşır, ancak iş akışları farklıdır. Bir plan seçmeden önce ürün kapsamını karşılaştırın.</p><div class="compare-hero-actions"><a class="button button-primary" href={`${base}tr/pricing/`}>Planlar ve fiyatlandırma ↗</a><a class="text-link" href={`${base}tr/get-started/`}>Plan yapılandırın →</a></div></section>
+      <section class="compare-table-section section-pad">
+        <div class="shell">
+        <div class="comparison-table-wrap" role="region" aria-label="Ev biracısı ve Profesyonel bira üreticisi işlevlerinin kaydırılabilir karşılaştırması" tabindex="0">
+          <table class="comparison-table" aria-label="GRISTORA ürün alanlarının Ev biracıları ve Profesyonel bira üreticileri için karşılaştırması">
+            <thead><tr><th scope="col">Ürün alanı</th><th scope="col">Ev biracısı · 1 kullanıcı</th><th scope="col">Profesyonel bira üreticisi · 5+ kullanıcı</th></tr></thead>
+            <tbody>
+              {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}tr/features/${slug}/`}>{label} ↗</a></th><td><span class={isMissing(homeStage) ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={isMissing(businessStage) ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
+            </tbody>
+          </table>
+        </div>
+        <p class="pricing-footnote">Ayrıntılı kapsam için her özelliği açın.</p>
+        </div>
+      </section>
+      <section class="compare-decision section-pad"><div class="shell"><div class="compare-decision-grid"><article><p class="eyebrow">EV BİRACILARI</p><figure class="compare-audience-visual"><img src={`${base}audience/homebrewer.svg`} alt="Bir ev biracısının küçük partilik düzeninin; kazan, cam fermantör, malzemeler ve reçete defteriyle illüstrasyonu." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>KÜÇÜK PARTİ · KİŞİSEL ÇALIŞMA ALANI</figcaption></figure><h2>Bir kişi, <em>bir demleme yolculuğu.</em></h2><p>Kendiniz için demliyorsanız ve reçetelerinizi, hesaplamalarınızı, ölçümlerinizi ve parti öğrenimlerinizi tek bir kişisel çalışma alanında istiyorsanız Ev'i seçin.</p><a class="button button-primary" href={`${base}tr/get-started/?audience=home`}>Ev planını yapılandırın →</a></article><article><p class="eyebrow">PROFESYONEL BİRA ÜRETİCİLERİ</p><figure class="compare-audience-visual"><img src={`${base}audience/professional-brewery.svg`} alt="Paslanmaz çelik demleme tankları ve birbirine bağlı boru tesisatı olan profesyonel bir bira üretim tesisinin illüstrasyonu." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>ÜRETİM · BİR EKİP TARAFINDAN PAYLAŞILIR</figcaption></figure><h2>Üretim işi, <em>bir ekip tarafından paylaşılır.</em></h2><p>Birkaç kişinin reçete standartları, üretim planlaması ve parti kayıtları etrafında paylaşılan profesyonel bir iş akışına ihtiyacı varsa Bira üreticisi'ni seçin.</p><a class="button button-primary" href={`${base}tr/get-started/?audience=business`}>Bira üreticisi planını yapılandırın →</a></article></div><p class="compare-all-features"><a href={`${base}tr/features/`}>Tüm özellik ayrıntılarına ve eksiksiz kataloğa göz atın ↗</a></p></div></section>
+    </main>
+    <SiteFooter lang="tr" />
+  </body>
+</html>

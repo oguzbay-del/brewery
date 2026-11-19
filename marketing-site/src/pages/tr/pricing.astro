@@ -1,0 +1,120 @@
+---
+import FontPreload from "../../components/FontPreload.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import "../../styles/global.css";
+import "../../styles/pricing.css";
+import "../../styles/stitch-layout.css";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../data/breadcrumbs";
+
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}tr/pricing/`, import.meta.env.SITE).href;
+const description = "GRISTORA'nın ev biracıları ve profesyonel bira üreticileri için planlarını keşfedin, faturalama sürelerini karşılaştırın ve aboneliğinizi yapılandırın.";
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Planlar ve Fiyatlandırma — GRISTORA",
+  description,
+  url: canonicalUrl,
+  inLanguage: "tr",
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
+};
+const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Planlar ve fiyatlandırma", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+---
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <FontPreload />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content={description} />
+    <title>Planlar ve Fiyatlandırma | GRISTORA Brewing Intelligence</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Planlar ve Fiyatlandırma | GRISTORA" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Planlar ve Fiyatlandırma | GRISTORA" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Ana içeriğe geç</a>
+    <SiteHeader current="pricing" lang="tr" />
+    <main id="main-content" class="pricing-page">
+      <section class="pricing-hero shell">
+        <Breadcrumbs items={breadcrumbItems} />
+        <p class="eyebrow"><span class="eyebrow-line"></span> BİRA YAPIŞ ŞEKLİNİZE GÖRE PLANLAR</p>
+        <h1>Size uygun <em>demleme çalışma alanını seçin.</em></h1>
+        <p class="pricing-lede">Bireysel demleyici için odaklı bir plan. Profesyonel üretim için bir ekip planı. Çalışmanıza uyan yolu seçerek başlayın.</p>
+      </section>
+
+      <section class="plan-cards section-pad">
+        <div class="shell plan-grid">
+          <article class="plan-card plan-home">
+            <p class="eyebrow">01 · EV BİRACILARI</p>
+            <h2>Bir demleyici. <em>Bir plan.</em></h2>
+            <p class="plan-description">Reçeteler, demleme hesaplamaları, demleme günü kayıtları ve her partiden öğrenmek için kişisel bir çalışma alanı.</p>
+            <div class="plan-seat"><strong>1</strong><span>kullanıcı dahil</span></div>
+            <ul><li>Bir bireysel hesap</li><li>Ev demlemesi ürün yolu</li><li>Planlanan 3 aylık deneme · önizlemede etkin değil</li><li>Aylık veya çok yıllı faturalama seçenekleri</li></ul>
+            <p class="pricing-pending">Parasal fiyatlandırma, ticari onaydan sonra duyurulacaktır.</p>
+            <a class="button button-primary" href={`${base}tr/get-started/?audience=home`}>Ev planını keşfedin <span aria-hidden="true">→</span></a>
+            <a class="text-link" href={`${base}tr/homebrewers/`}>Ev biracısı yolunu keşfedin</a>
+          </article>
+          <article class="plan-card plan-business">
+            <p class="eyebrow">02 · PROFESYONEL BİRA ÜRETİCİLERİ</p>
+            <h2>Tüm ekip için <em>geliştirildi.</em></h2>
+            <p class="plan-description">Reçete standartları, üretim bağlamı ve parti kayıtları etrafında kurulmuş, paylaşılan profesyonel bir çalışma alanı.</p>
+            <div class="plan-seat"><strong>5+</strong><span>kullanıcı · koltuklar beşli gruplar halinde eklenir</span></div>
+            <ul><li>5, 10, 15 veya 20 adlandırılmış kullanıcı</li><li>Profesyonel bira üreticisi ürün yolu</li><li>Planlanan 1 aylık deneme · önizlemede etkin değil</li><li>20+ kullanıcı: e-postayla özel teklif</li></ul>
+            <p class="pricing-pending">Parasal fiyatlandırma, ticari onaydan sonra duyurulacaktır.</p>
+            <a class="button button-primary" href={`${base}tr/get-started/?audience=business`}>Bira üreticisi planını keşfedin <span aria-hidden="true">→</span></a>
+            <a class="text-link" href={`${base}tr/breweries/`}>Bira üreticisi yolunu keşfedin</a>
+          </article>
+        </div>
+      </section>
+
+      <section class="billing-section section-pad">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> TAAHHÜDÜNÜZÜ SEÇİN</p>
+            <h2>Daha uzun taahhüt. <em>Daha fazla tasarruf.</em></h2>
+            <p>Önerilen indirimler, aylık referans fiyata göre gösterilir. Nihai ticari koşullar henüz onaylanmamıştır.</p>
+          </div>
+          <div class="billing-grid">
+            <article><span>Aylık</span><strong>%0 indirim</strong><small>Ay ay ödeyin</small></article>
+            <article><span>Yıllık</span><strong>%15 indirim</strong><small>Bir yıllık taahhüt</small></article>
+            <article><span>2 yıl</span><strong>%25 indirim</strong><small>İki yıllık taahhüt</small></article>
+            <article><span>3 yıl</span><strong>%35 indirim</strong><small>Üç yıllık taahhüt</small></article>
+          </div>
+          <p class="pricing-footnote">Para birimi, vergi/KDV ve çok yıllı ödeme koşulları lansman kararları olarak kalmaktadır. Bu önizlemede bağlı bir ödeme sayfası yoktur.</p>
+        </div>
+      </section>
+
+      <section class="pricing-compare section-pad">
+        <div class="shell compare-callout">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> SEÇMEDEN ÖNCE</p><h2>İki <em>demleme yolunu</em> karşılaştırın.</h2><p>Hangi iş akışlarının ev biracılarına ait olduğunu ve hangilerinin profesyonel ekipler için tasarlandığını görün.</p></div>
+          <div class="compare-actions"><a class="button button-primary" href={`${base}tr/compare/`}>İşlev karşılaştırmasını görün <span aria-hidden="true">↗</span></a><a class="text-link" href={`${base}tr/features/`}>Tüm özellik ayrıntılarına göz atın</a></div>
+        </div>
+      </section>
+
+      <section class="pricing-cta section-pad">
+        <div class="shell pricing-cta-inner"><p class="eyebrow"><span class="eyebrow-line"></span> SIRADAKİ ADIMINIZ</p><h2>Planınızı, <em>her seferinde tek bir seçimle kurun.</em></h2><p>Rehberli planlayıcı; kitlenizi, ekip büyüklüğünüzü ve faturalama sürenizi seçmenize yardımcı olur.</p><a class="button button-primary" href={`${base}tr/get-started/`}>Plan yapılandırmasına başlayın <span aria-hidden="true">↗</span></a></div>
+      </section>
+    </main>
+    <SiteFooter lang="tr" backText="Yolları karşılaştırın ↑" backHref={`${base}tr/compare/`} />
+  </body>
+</html>

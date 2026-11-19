@@ -1,0 +1,173 @@
+---
+import FontPreload from "../../components/FontPreload.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import "../../styles/global.css";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../data/breadcrumbs";
+import "../../styles/audience-pages.css";
+import "../../styles/stitch-layout.css";
+import "../../styles/pricing.css";
+import { featuresTr as features } from "../../data/features.tr";
+
+const homeAreas = features.filter((feature) => feature.audiences.includes("Homebrewers"));
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(`${base}tr/homebrewers/`, import.meta.env.SITE).href;
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Ev Demlemesi Yazılımı | GRISTORA",
+  url: canonicalUrl,
+  description: "Her partinin ardındaki ayrıntıları anlamak isteyen ev biracıları için demleme yazılımı.",
+  inLanguage: "tr",
+  isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
+};
+const workflow = [
+  { number: "01", title: "Reçeteyi şekillendirin", question: "Ne demlemeye çalışıyorsunuz?", body: "Reçetenizi tanımlayan stil, malzeme, ekipman ve parti büyüklüğüyle başlayın. Seçimleri bağlamlarıyla birlikte tutun.", feature: "Reçete tasarımı ve yönetimi", href: "recipe-design" },
+  { number: "02", title: "Malzemeyi ve suyu anlayın", question: "Partiye ne giriyor?", body: "Fermente edilebilir malzemeleri, şerbetçiotunu, mayayı, su varsayımlarını ve mayşe seçimlerini aynı reçete görünümüne getirin.", feature: "Su, mayşe ve maya", href: "water-mash-yeast" },
+  { number: "03", title: "Sayıları anlamlandırın", question: "Tahminler reçetenizle nasıl ilişkili?", body: "Demleme hesaplamaları açık girdiler, birimler, yöntemler ve varsayımlar kullanır.", feature: "Demleme hesaplamaları", href: "brewing-calculations" },
+  { number: "04", title: "Demleme gününü kaydedin", question: "Gerçekte ne oldu?", body: "İş akışı, reçete hedeflerini demleme sırasında kaydedilen fiili miktarlardan, sürelerden, sıcaklıklardan ve ölçümlerden ayırır.", feature: "Demleme günü ve üretim kayıtları", href: "brew-day" },
+  { number: "05", title: "Fermantasyonu izleyin", question: "Zaman içinde neyi gözlemliyorsunuz?", body: "Parti zaman çizelgeleri elle girilen ya da bağlı cihazlardan gelen okumaları tutar.", feature: "Fermantasyon ve parti takibi", href: "fermentation-monitoring" },
+  { number: "06", title: "Partiyi gözden geçirin", question: "Bir sonraki demlemeye neyi taşırsınız?", body: "Partiler arasındaki farkları anlamak için ölçümleri, reçete bağlamını ve tadım notlarını bir araya getirin.", feature: "Raporlar, içgörüler ve sürdürülebilirlik", href: "analytics-reports" },
+];
+const faqs = [
+  { q: "Hangi demleme hesaplamaları destekleniyor?", a: "GRISTORA; yoğunluk, alkol, acılık, renk, mayşe ve hacim hesaplamalarını açık girdiler, birimler ve yöntemlerle destekler." },
+  { q: "Bir fermantasyon cihazı bağlayabilir miyim?", a: "GRISTORA; Tilt hidrometreleri, iSpindel ve RAPT cihazlarını, ayrıca TiltBridge, Pitch ve uyumlu köprüler için bir webhook veri uç noktasını destekler." },
+  { q: "Mevcut reçetelerimi içe veya dışa aktarabilir miyim?", a: "GRISTORA; BeerXML ve BeerJSON içe ve dışa aktarır, BeerSmith .bsmx, Brewfather ve Brewer's Friend reçetelerini içe aktarır." },
+];
+const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Ev biracıları", url: canonicalUrl }];
+const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
+---
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <FontPreload />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#F7F6F3" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="description" content="GRISTORA'nın ev demlemesi iş akışını keşfedin: reçete tasarımı, malzemeler, hesaplamalar, demleme günü kayıtları ve parti incelemesi." />
+    <title>Ev Demlemesi Yazılımı | GRISTORA</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GRISTORA" />
+    <meta property="og:title" content="Ev Demlemesi Yazılımı | GRISTORA" />
+    <meta property="og:description" content="Her demlemeye daha özenli bir yaklaşım. GRISTORA ev demlemesi iş akışını keşfedin." />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="tr_TR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ev Demlemesi Yazılımı | GRISTORA" />
+    <meta name="twitter:description" content="Her demlemeye daha özenli bir yaklaşım." />
+    <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
+    <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Ana içeriğe geç</a>
+    <SiteHeader current="homebrewers" lang="tr" />
+    <main id="main-content">
+      <div class="sx-audience-band">
+      <Breadcrumbs items={breadcrumbItems} />
+      <section class="shell audience-page-intro">
+        <p class="eyebrow"><span class="eyebrow-line"></span> EV BİRACILARI İÇİN</p>
+        <h1>Her demlemeye <em>daha özenli bir yaklaşım.</em></h1>
+        <p>GRISTORA, her partinin ardındaki malzemeleri, hesaplamaları ve gözlemleri anlamak isteyen ev biracıları için demleme yazılımıdır.</p>
+        <a class="button button-primary" href="#homebrewing-workflow">Ev demlemesi iş akışını keşfedin <span aria-hidden="true">↗</span></a>
+      </section>
+      <section class="shell audience-hero">
+        <figure class="audience-hero-art"><img src={`${base}images/illustrations/homebrewing-workspace.svg`} width="1200" height="600" alt="Paslanmaz çelik bir demleme kazanı, cam bir fermantör, hidrometre, malt ve şerbetçiotu bulunan bir ev demleme tezgahının özgün illüstrasyonu." loading="eager" /><figcaption>Malzemeden fermantasyona ev demlemesi · özgün illüstrasyon</figcaption></figure>
+      </section>
+      </div>
+      <section class="audience-page-section section-pad" id="homebrewing-workflow">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> EV DEMLEMESİ İŞ AKIŞI</p>
+            <h2>Bir demleme, birbirine bağlı <em>kararlar dizisidir.</em></h2>
+            <p>İşi reçete fikrinden parti incelemesine kadar izleyin.</p>
+          </div>
+          <ol class="workflow-grid">
+            {workflow.map((step) => (
+              <li class="workflow-card">
+                <span class="workflow-number">{step.number}</span>
+                <h3>{step.title}</h3>
+                <p class="workflow-question">{step.question}</p>
+                <p>{step.body}</p>
+                <a href={`${base}tr/features/${step.href}/`}>{step.feature} <span aria-hidden="true">↗</span></a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section class="home-record-section section-pad">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> EV DEMLEMESİ KAYIT DÖNGÜSÜ</p>
+            <h2>Demlemenizin hikayesini <em>bir arada tutun.</em></h2>
+            <p>Bir ev biracısı için işe yarar geçmiş reçeteyle başlar ve yol boyunca alınan ölçümler ve kararlarla sürer.</p>
+          </div>
+          <div class="role-table-wrap" role="region" aria-label="Kaydırılabilir ev demlemesi kayıt döngüsü tablosu" tabindex="0">
+            <table class="role-table home-record-table">
+              <thead><tr><th scope="col">Demlemenin bölümü</th><th scope="col">Kayıtta neler olmalı</th><th scope="col">Neyi anlamanıza yardımcı olur</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Reçete ve hedefler</th><td>Reçete sürümü, stil, parti büyüklüğü, ekipman varsayımları ve hedef değerler.</td><td>Hangi plandan yola çıktığınızı ve ne yapmayı amaçladığınızı.</td></tr>
+                <tr><th scope="row">Malzemeler ve su</th><td>Malzeme seçimleri, miktarlar, kaynak su bilgisi ve seçilen düzeltmeler.</td><td>Hangi girdilerin reçeteyi ve hesaplanan beklentileri şekillendirdiğini.</td></tr>
+                <tr><th scope="row">Demleme günü fiili değerleri</th><td>Ölçülen hacimler, sıcaklıklar, süreler, eklemeler ve plandan farklar.</td><td>Gerçek demlemenin reçete varsayımlarından nerede ayrıldığını.</td></tr>
+                <tr><th scope="row">Fermantasyon gözlemleri</th><td>Elle girilen ya da desteklenen cihazlardan gelen yoğunluk ve sıcaklık okumaları, kaynakları belirtilerek.</td><td>Partinin zaman içinde nasıl değiştiğini.</td></tr>
+                <tr><th scope="row">Tadım ve inceleme</th><td>Paketleme bağlamı, tadım notları ve özgün hedeflerle bir karşılaştırma.</td><td>Ne öğrendiğinizi ve bir dahaki sefere neyi değiştirmek isteyebileceğinizi.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="record-model-note">Ev demlemesi yolu, bireysel bir demleyicinin reçetesi, ölçümleri ve öğrenme döngüsü etrafında kuruludur. Profesyonel lot izlenebilirliği, tank doluluğu, vardiya devri ve kalite onayı iş akışları İşletme moduna aittir.</p>
+          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-ingredient-context.svg`} width="960" height="460" alt="Reçete malzeme tanımından seçilen girdilere ve demleme günü miktarlarına, oradan parti incelemesine uzanan ev demlemesi yolu." loading="lazy" /><figcaption>Bir ev demlemesi partisinde malzeme bağlamı</figcaption></figure>
+          <figure class="visual-diagram visual-diagram-scroll" role="region" aria-label="Kaydırılabilir fermantasyon gözlem zaman çizelgesi" tabindex="0"><img src={`${base}images/diagrams/fermentation-observation-timeline.svg`} width="1100" height="500" alt="Her gün için özgül yoğunluğu, sıcaklığı ve notları gösteren, zaman damgası ve elle alınan numune bağlamıyla örnek değerler içeren altı noktalı fermantasyon gözlem zaman çizelgesi." loading="lazy" /><figcaption>Her gözlemi incelemek için kaydırın · örnek değerler</figcaption></figure>
+        </div>
+      </section>
+      <section class="audience-feature-section section-pad">
+        <div class="shell">
+          <div class="section-heading">
+            <p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜN ALANLARI</p>
+            <h2>Demlemenin ardındaki işi <em>keşfedin.</em></h2>
+            <p>Her yetenek, hedef kitlesiyle birlikte anlatılır.</p>
+          </div>
+          <div class="audience-feature-grid">
+            {homeAreas.map((feature) => (
+              <a class="audience-feature-link" href={`${base}tr/features/${feature.slug}/`}>
+                <span>{feature.eyebrow}</span><strong>{feature.title}</strong><small>Yetenekleri keşfedin ↗</small>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section class="technical-clarity-section section-pad">
+        <div class="shell technical-clarity-grid">
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> TEKNİK NETLİK</p><h2>Yalnızca sonucu değil, <em>sayıyı anlayın.</em></h2></div>
+          <div><p>Bir hesaplama ya da teknik rehber; yöntemini, girdilerini, birimlerini, varsayımlarını, çalışılmış örneğini ve sınırlamalarını birlikte açıklar.</p><p>Her hesaplama yöntemini, girdilerini ve birimlerini gösterir.</p><a class="text-link" href={`${base}tr/features/brewing-calculations/`}>Demleme hesaplamaları hakkında okuyun <span aria-hidden="true">→</span></a></div>
+        </div>
+      </section>
+      <section class="audience-faq-section section-pad">
+        <div class="shell audience-faq-layout">
+          <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> EV BİRACISI SSS</p><h2>Meraklı demleyiciler için <em>net yanıtlar.</em></h2></div>
+          <div class="audience-faq-list">
+            {faqs.map((faq) => <details class="audience-faq-item"><summary>{faq.q}</summary><p>{faq.a}</p></details>)}
+          </div>
+        </div>
+      </section>
+      <section class="closing-section section-pad"><div class="shell closing-inner"><p class="eyebrow"><span class="eyebrow-line"></span> ZANAAT DETAYLARDA</p><h2>Her partiyle <em>öğrenmeye devam edin.</em></h2><a class="button button-primary" href={`${base}tr/how-it-works/#home-workflow`}>Ev demlemesi iş akışını keşfedin <span aria-hidden="true">↗</span></a></div></section>
+
+      <section class="pricing-cta section-pad">
+        <div class="shell pricing-cta-inner">
+          <p class="eyebrow"><span class="eyebrow-line"></span> PLANINIZI SEÇİN</p>
+          <h2>Size uygun <em>demleme çalışma alanını bulun.</em></h2>
+          <p>Ev biracısı ve Profesyonel bira üreticisi yollarını karşılaştırın, ardından bir planı adım adım yapılandırın.</p>
+          <a class="button button-primary" href={`${base}tr/pricing/`}>Planlar ve fiyatlandırma <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href={`${base}tr/compare/`}>İşlevleri karşılaştırın <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+    </main>
+    <SiteFooter lang="tr" />
+  </body>
+</html>
