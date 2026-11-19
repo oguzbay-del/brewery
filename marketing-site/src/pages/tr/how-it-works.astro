@@ -15,7 +15,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "GRISTORA nasıl çalışır",
-  description: "Profesyonel bira üreticisi iş akışları birincil ticari yoldur; ev demlemesi için ayrı bir yolculuk vardır.",
+  description: "Profesyonel bira üreticisi iş akışları birincil ticari yoldur; evde bira yapımı için ayrı bir yolculuk vardır.",
   url: canonicalUrl,
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
@@ -23,7 +23,7 @@ const structuredData = {
 const homeSteps = [
   { title: "Reçete tasarımı", body: "Birayı, stili, malzemeleri, ekipmanı ve parti büyüklüğünü tanımlayın.", href: "features/recipe-design/", label: "Reçete tasarımı" },
   { title: "Malzemeler ve su", body: "Fermente edilebilir malzemeleri, şerbetçiotunu, mayayı, suyu ve mayşe varsayımlarını tek bir reçete bağlamına getirin.", href: "features/water-mash-yeast/", label: "Su, mayşe ve maya" },
-  { title: "Hesaplamalar", body: "Tahminleri açık yöntemler, girdiler, birimler ve varsayımlar üzerinden anlayın.", href: "features/brewing-calculations/", label: "Demleme hesaplamaları" },
+  { title: "Hesaplamalar", body: "Tahminleri açık yöntemler, girdiler, birimler ve varsayımlar üzerinden anlayın.", href: "features/brewing-calculations/", label: "Bira hesaplamaları" },
   { title: "Demleme günü", body: "Planlanan hedefleri fiili miktarlardan, sürelerden, sıcaklıklardan ve ölçümlerden ayrı tutun.", href: "features/brew-day/", label: "Demleme günü kayıtları" },
   { title: "Fermantasyon", body: "Parti gözlemlerini ve elle girilen ya da bağlı cihazlardan gelen okumaları parti geçmişine ekleyin.", href: "features/fermentation-monitoring/", label: "Fermantasyon" },
   { title: "Parti incelemesi", body: "Bir sonraki reçete sürümüne yön vermek için fiili sonuçları ve tadım notlarını gözden geçirin.", href: "features/analytics-reports/", label: "Parti içgörüleri" },
@@ -48,17 +48,17 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content="noindex, nofollow" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="GRISTORA'nın profesyonel bira üreticisi iş akışları için nasıl tasarlandığını ve ev demlemesi için ayrı bir yolculuğa sahip olduğunu görün." />
-    <title>Profesyonel Bira Üreticisi İş Akışları ve Ev Demlemesi | GRISTORA</title>
+    <meta name="description" content="GRISTORA'nın profesyonel bira üreticisi iş akışları için nasıl tasarlandığını ve evde bira yapımı için ayrı bir yolculuğa sahip olduğunu görün." />
+    <title>Profesyonel Bira Üreticisi İş Akışları ve Evde Bira Yapımı | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
-    <meta property="og:title" content="Profesyonel Bira Üreticisi İş Akışları ve Ev Demlemesi | GRISTORA" />
-    <meta property="og:description" content="Önce profesyonel bira üreticisi iş akışları, ardından ayrı bir ev demlemesi yolu." />
+    <meta property="og:title" content="Profesyonel Bira Üreticisi İş Akışları ve Evde Bira Yapımı | GRISTORA" />
+    <meta property="og:description" content="Önce profesyonel bira üreticisi iş akışları, ardından ayrı bir evde bira yapımı yolu." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Profesyonel Bira Üreticisi İş Akışları ve Ev Demlemesi | GRISTORA" />
-    <meta name="twitter:description" content="Önce profesyonel bira üreticisi iş akışları, ardından ayrı bir ev demlemesi yolu." />
+    <meta name="twitter:title" content="Profesyonel Bira Üreticisi İş Akışları ve Evde Bira Yapımı | GRISTORA" />
+    <meta name="twitter:description" content="Önce profesyonel bira üreticisi iş akışları, ardından ayrı bir evde bira yapımı yolu." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
@@ -89,8 +89,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
       <section class="explain-audience-section section-pad" id="home-workflow">
         <div class="shell">
-          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 02 · EV BİRACILARI</p><h2>Reçete fikrinden <em>parti öğrenimine.</em></h2></div><p>Kendi partilerini tasarlayan, yapan, ölçen ve gözden geçiren demleyici için.</p></div>
-          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-learning-loop.svg`} width="960" height="520" alt="Beş aşamalı ev demlemesi öğrenme döngüsü: reçete, malzemeler, demleme günü, fermantasyon ve parti incelemesi." loading="lazy" /><figcaption>Tekrarlanabilir bir öğrenme döngüsü</figcaption></figure>
+          <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 02 · EV BİRACILARI</p><h2>Reçete fikrinden <em>parti öğrenimine.</em></h2></div><p>Kendi partilerini tasarlayan, yapan, ölçen ve gözden geçiren biracı için.</p></div>
+          <figure class="visual-diagram"><img src={`${base}images/diagrams/homebrew-learning-loop.svg`} width="960" height="520" alt="Beş aşamalı evde bira yapımı öğrenme döngüsü: reçete, malzemeler, demleme günü, fermantasyon ve parti incelemesi." loading="lazy" /><figcaption>Tekrarlanabilir bir öğrenme döngüsü</figcaption></figure>
           <ol class="explain-flow">
             {homeSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}tr/${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
           </ol>
@@ -111,12 +111,12 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <tr><th scope="col">Boyut</th><th scope="col">Profesyonel bira üreticileri</th><th scope="col">Ev biracıları</th></tr>
               </thead>
               <tbody>
-                <tr><th scope="row">Birincil kullanıcı</th><td>Reçeteler, partiler, tanklar ve kalite kayıtları arasında ortak üretim bağlamına ihtiyaç duyan demleme ekipleri.</td><td>Kendi partilerini yapan, ölçen ve gözden geçiren bireysel bir demleyici.</td></tr>
+                <tr><th scope="row">Birincil kullanıcı</th><td>Reçeteler, partiler, tanklar ve kalite kayıtları arasında ortak üretim bağlamına ihtiyaç duyan bira üretim ekipleri.</td><td>Kendi partilerini yapan, ölçen ve gözden geçiren bireysel bir biracı.</td></tr>
                 <tr><th scope="row">Temel iş birimi</th><td>Bir reçete sürümü ve ona başvuran üretim partisi.</td><td>Bir reçete ve ondan yapılan kişisel parti.</td></tr>
                 <tr><th scope="row">Tipik kayıtlar</th><td>Reçete sürümü, parti planı ve fiili değerler, malzeme lotları, tank olayları, kalite ve laboratuvar kayıtları.</td><td>Reçete ve hedefler, malzemeler ve su, demleme günü fiili değerleri, fermantasyon gözlemleri, tadım ve inceleme.</td></tr>
                 <tr><th scope="row">Ölçüm bağlamı</th><td>Üretim ölçümleri, tank gözlemleri ve laboratuvar sonuçları; yöntem, birim, kaynak ve operatör bağlamıyla.</td><td>Elle girilen okumalar ve doğrulanmış desteklenen cihaz girdileri; kaynak, birim ve zaman damgasıyla.</td></tr>
-                <tr><th scope="row">Ana soru</th><td>Bu parti boyunca ne oldu, fiili değerler nerede farklılaştı ve hangi kayıtlar sonucu açıklıyor?</td><td>Bu demlemede ne oldu ve bir dahaki sefere neyi değiştirebilirim?</td></tr>
-                <tr><th scope="row">Kapsam sınırı</th><td>Demlemeye özgü üretim kayıtları; satış, sipariş, sevkiyat, CRM, muhasebe veya genel amaçlı ERP değil.</td><td>Kişisel demleme ve öğrenme; profesyonel çok partili üretim operasyonları değil.</td></tr>
+                <tr><th scope="row">Ana soru</th><td>Bu parti boyunca ne oldu, fiili değerler nerede farklılaştı ve hangi kayıtlar sonucu açıklıyor?</td><td>Bu partide ne oldu ve bir dahaki sefere neyi değiştirebilirim?</td></tr>
+                <tr><th scope="row">Kapsam sınırı</th><td>Bira üretimine özgü kayıtlar; satış, sipariş, sevkiyat, CRM, muhasebe veya genel amaçlı ERP değil.</td><td>Kişisel bira yapımı ve öğrenme; profesyonel çok partili üretim operasyonları değil.</td></tr>
               </tbody>
             </table>
           </div>

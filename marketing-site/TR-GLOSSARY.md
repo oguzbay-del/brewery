@@ -15,13 +15,18 @@ The Turkish site is a preview at `/tr/`. It is not indexed (owner decision, 19 N
 
 ## Terms
 
+Use "demleme" only in "demleme günü" (brew day). For brewing in general, use "bira üretimi" or "bira yapımı". Do not use "fermantasyon" for brewing in general. Fermentation is one stage only. (Owner decision, 19 Nov 2026.)
+
 | English | Turkish |
 | --- | --- |
 | Professional Breweries / Breweries (audience) | Profesyonel bira üreticileri / Bira üreticileri |
 | Homebrewers | Ev biracıları |
 | brewery | bira üretim tesisi (işletme bağlamında: bira üreticisi) |
 | brewhouse | demhane |
+| brewing (general) | bira üretimi (İşletme), bira yapımı (Ev) |
 | brew day | demleme günü |
+| brewer | biracı |
+| head brewer | baş biracı |
 | batch | parti |
 | recipe / recipe version | reçete / reçete sürümü |
 | mash / mashing | mayşe / mayşeleme |

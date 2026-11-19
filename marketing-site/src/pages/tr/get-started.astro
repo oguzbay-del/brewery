@@ -59,7 +59,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="wizard-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> GRISTORA PLANINIZ</p>
         <h1>Birkaç seçim. <em>Daha net bir uyum.</em></h1>
-        <p>Demleme yolunuzu seçin, ekip büyüklüğünü belirleyin ve bir faturalama süresi seçin. Bu yalnızca bir yapılandırma önizlemesidir; hesap, deneme, ödeme veya talep oluşturulmaz.</p>
+        <p>Yolunuzu seçin, ekip büyüklüğünü belirleyin ve bir faturalama süresi seçin. Bu yalnızca bir yapılandırma önizlemesidir; hesap, deneme, ödeme veya talep oluşturulmaz.</p>
       </section>
 
       <section class="wizard-layout" aria-label="Plan yapılandırması">
@@ -74,7 +74,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <form id="plan-wizard" novalidate>
             <section class="wizard-step" data-step="1">
               <p class="step-kicker">ADIM 01 / 04</p>
-              <h2 tabindex="-1">Nasıl <em>demliyorsunuz?</em></h2>
+              <h2 tabindex="-1">Nasıl <em>bira yapıyorsunuz?</em></h2>
               <p class="step-description">Doğru çalışma alanı, doğru bira yapma biçimiyle başlar.</p>
               <div class="choice-grid">
                 <label class="choice-card"><input type="radio" name="audience" value="home" aria-label="Ev biracısı planı" /><span class="choice-check" aria-hidden="true">✓</span><strong>Ev biracısıyım</strong><small>Reçeteler, demleme günleri ve parti öğrenimi için tek bir kişisel çalışma alanı.</small><span class="choice-meta">1 kullanıcı · planlanan 3 aylık deneme (etkin değil)</span></label>
@@ -120,7 +120,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <p class="step-kicker">ADIM 04 / 04</p>
               <h2 tabindex="-1"><em>Planınızı</em> gözden geçirin.</h2>
               <p class="step-description">Yapılandırmanızı kontrol edin.</p>
-              <dl class="review-list"><div><dt>Demleme yolu</dt><dd id="review-audience">—</dd></div><div><dt>Kullanıcılar</dt><dd id="review-seats">—</dd></div><div><dt>Faturalama</dt><dd id="review-term">—</dd></div><div><dt>Tasarruf</dt><dd id="review-discount">—</dd></div><div><dt>Deneme</dt><dd id="review-trial">—</dd></div><div><dt>Öngörülen ödeme yöntemi</dt><dd>Kredi veya banka kartı · burada toplanmaz</dd></div></dl>
+              <dl class="review-list"><div><dt>Yol</dt><dd id="review-audience">—</dd></div><div><dt>Kullanıcılar</dt><dd id="review-seats">—</dd></div><div><dt>Faturalama</dt><dd id="review-term">—</dd></div><div><dt>Tasarruf</dt><dd id="review-discount">—</dd></div><div><dt>Deneme</dt><dd id="review-trial">—</dd></div><div><dt>Öngörülen ödeme yöntemi</dt><dd>Kredi veya banka kartı · burada toplanmaz</dd></div></dl>
               <p class="step-helper">Herhangi bir seçimi değiştirmek için geri dönebilirsiniz. <a href={`${base}tr/pricing/`}>Tüm planları ve koşulları inceleyin</a>.</p>
             </section>
 
@@ -167,7 +167,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           byId("contact-tier").hidden = state.seats !== "20+";
           byId("custom-billing").hidden = state.seats !== "20+";
           form.querySelector(".billing-options").hidden = state.seats === "20+";
-          byId("seat-description").textContent = state.audience === "home" ? "Ev planı, tek bir bireysel demleyici için tasarlanmıştır." : "Koltuğa ihtiyaç duyan kişi sayısını seçin.";
+          byId("seat-description").textContent = state.audience === "home" ? "Ev planı, tek bir bireysel biracı için tasarlanmıştır." : "Koltuğa ihtiyaç duyan kişi sayısını seçin.";
           byId("trial-note").textContent = state.audience === "home" ? "Planlanan Ev denemesi: üç ay. Bu önizlemede etkin değil." : "Planlanan Profesyonel bira üreticisi denemesi: bir ay. Bu önizlemede etkin değil.";
           byId("summary-audience").textContent = state.audience ? (state.audience === "home" ? "Ev biracısı" : "Profesyonel bira üreticisi") : "Bir yol seçin";
           byId("summary-seats").textContent = state.audience === "home" ? "1 kullanıcı" : state.audience === "business" ? (state.seats === "20+" ? "20+ · özel teklif" : state.seats + " kullanıcı") : "—";

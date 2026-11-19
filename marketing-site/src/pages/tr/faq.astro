@@ -15,21 +15,21 @@ const groups = [
   {
     title: "GRISTORA hakkında",
     items: [
-      { q: "GRISTORA nedir?", a: "GRISTORA, birincil ticari kitlesi profesyonel bira üreticileri olan ve ayrı bir Ev biracıları yolu bulunan demleme yazılımıdır." },
+      { q: "GRISTORA nedir?", a: "GRISTORA, birincil ticari kitlesi profesyonel bira üreticileri olan ve ayrı bir Ev biracıları yolu bulunan bira üretim yazılımıdır." },
       { q: "GRISTORA kimler için tasarlandı?", a: "Profesyonel bira üreticisi ekipleri birincil ticari kitledir. Ev biracıları, kendi reçete, demleme günü ve parti incelemesi yolculuğuyla ayrı bir ikincil kitle olarak kalır." },
     ],
   },
   {
     title: "Ürün kapsamı",
     items: [
-      { q: "GRISTORA bir bira üreticisi ERP'sinin yerini alır mı?", a: "Hayır. GRISTORA, demlemeyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP değildir." },
+      { q: "GRISTORA bir bira üreticisi ERP'sinin yerini alır mı?", a: "Hayır. GRISTORA, bira üretimiyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP değildir." },
       { q: "Satış, sipariş, dağıtım veya fıçı takibini yönetir mi?", a: "Hayır. Satış, müşteri siparişleri, dağıtım ve sevkiyat, fıçı takibi, CRM ve muhasebe belirtilen ürün kapsamının dışındadır." },
     ],
   },
   {
     title: "Teknik sorular",
     items: [
-      { q: "GRISTORA API, webhook ve cihaz entegrasyonları sunar mı?", a: "İşletme modu açık bir API ve üretim verisi webhook'ları içerir. Ev demlemesi modu Tilt hidrometrelerini, iSpindel ve RAPT cihazlarını, ayrıca uyumlu köprüler için bir webhook veri uç noktasını destekler." },
+      { q: "GRISTORA API, webhook ve cihaz entegrasyonları sunar mı?", a: "İşletme modu açık bir API ve üretim verisi webhook'ları içerir. Ev modu Tilt hidrometrelerini, iSpindel ve RAPT cihazlarını, ayrıca uyumlu köprüler için bir webhook veri uç noktasını destekler." },
       { q: "Yöntemler ve birimler hakkında nereden okuyabilirim?", a: "Teknik ilkeler sayfası; yöntemlere, birimlere, ölçümlere ve doğrulamaya yaklaşımı açıklar." },
     ],
   },
@@ -44,7 +44,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   name: "Sıkça Sorulan Sorular — GRISTORA",
-  description: "Profesyonel bira üreticisi ekipleri için GRISTORA'nın demleme yazılımı kapsamı ve ayrı Ev biracıları yoluna dair yanıtlar.",
+  description: "Profesyonel bira üreticisi ekipleri için GRISTORA'nın bira üretim yazılımı kapsamı ve ayrı Ev biracıları yoluna dair yanıtlar.",
   url: canonicalUrl,
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
@@ -72,17 +72,17 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content="noindex, nofollow" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Profesyonel bira üreticisi ekipleri için GRISTORA'nın demleme yazılımı kapsamına ve ayrı Ev biracıları yoluna dair yanıtlar." />
-    <title>Bira Üreticileri için GRISTORA Demleme Yazılımı SSS | Ürün Kapsamı</title>
+    <meta name="description" content="Profesyonel bira üreticisi ekipleri için GRISTORA'nın bira üretim yazılımı kapsamına ve ayrı Ev biracıları yoluna dair yanıtlar." />
+    <title>Bira Üreticileri için GRISTORA Bira Üretim Yazılımı SSS | Ürün Kapsamı</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
-    <meta property="og:title" content="Bira Üreticileri için GRISTORA Demleme Yazılımı SSS | Ürün Kapsamı" />
-    <meta property="og:description" content="Profesyonel bira üreticisi ekipleri için ürün, demleme kapsamı ve teknik yaklaşım hakkında net yanıtlar." />
+    <meta property="og:title" content="Bira Üreticileri için GRISTORA Bira Üretim Yazılımı SSS | Ürün Kapsamı" />
+    <meta property="og:description" content="Profesyonel bira üreticisi ekipleri için ürün, bira üretim kapsamı ve teknik yaklaşım hakkında net yanıtlar." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Bira Üreticileri için GRISTORA Demleme Yazılımı SSS | Ürün Kapsamı" />
-    <meta name="twitter:description" content="Profesyonel bira üreticisi ekipleri için ürün, demleme kapsamı ve teknik yaklaşım hakkında net yanıtlar." />
+    <meta name="twitter:title" content="Bira Üreticileri için GRISTORA Bira Üretim Yazılımı SSS | Ürün Kapsamı" />
+    <meta name="twitter:description" content="Profesyonel bira üreticisi ekipleri için ürün, bira üretim kapsamı ve teknik yaklaşım hakkında net yanıtlar." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />

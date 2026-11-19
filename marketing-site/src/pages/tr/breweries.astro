@@ -18,7 +18,7 @@ const structuredData = {
   "@type": "WebPage",
   name: "Bira Üretim Yazılımı | GRISTORA",
   url: canonicalUrl,
-  description: "Reçete kararları ve üretim kayıtlarıyla çalışan profesyonel ekipler için demleme yazılımı.",
+  description: "Reçete kararları ve üretim kayıtlarıyla çalışan profesyonel ekipler için bira üretim yazılımı.",
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
 };
@@ -30,14 +30,14 @@ const workflow = [
   { number: "05", title: "Kalite ile izlenebilirliği bağlayın", question: "Bir sonuç, kendi parti ve malzeme bağlamında anlaşılabilir mi?", body: "İşletme modu kalite kayıtlarını, malzeme lotu ilişkilerini ve onay iş akışlarını içerir.", feature: "Kalite, laboratuvar ve onay", href: "quality-laboratory" },
 ];
 const roles = [
-  { role: "Baş demleyici", need: "Reçete amacı, hedef değerler ve parti incelemesi", focus: "Reçete kararları ve tutarlılık" },
+  { role: "Baş biracı", need: "Reçete amacı, hedef değerler ve parti incelemesi", focus: "Reçete kararları ve tutarlılık" },
   { role: "Üretim operatörü", need: "Planlanan ve fiili değerler ile süreç gözlemleri", focus: "Net kayıtlar ve vardiya devri" },
   { role: "Kalite rolü", need: "Ölçümler, test sonuçları ve izlenebilirlik bağlamı", focus: "Kanıt, inceleme ve onay kayıtları" },
 ];
 const faqs = [
-  { q: "GRISTORA bir bira üreticisi ERP'sinin yerini alır mı?", a: "Hayır. GRISTORA, demlemeyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır." },
+  { q: "GRISTORA bir bira üreticisi ERP'sinin yerini alır mı?", a: "Hayır. GRISTORA, bira üretimiyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır." },
   { q: "Satış, sipariş, dağıtım veya fıçı takibini yönetir mi?", a: "Hayır. Satış, müşteri siparişleri, dağıtım ve sevkiyat, fıçı takibi, CRM ve muhasebe belirtilen ürün kapsamının dışındadır." },
-  { q: "GRISTORA API ve webhook sunar mı?", a: "İşletme modu açık bir API ve üretim verisi webhook'ları içerir. Ev demlemesi cihaz webhook kapsamı ayrıdır." },
+  { q: "GRISTORA API ve webhook sunar mı?", a: "İşletme modu açık bir API ve üretim verisi webhook'ları içerir. Ev modu cihaz webhook kapsamı ayrıdır." },
   { q: "Roller, izinler ve onaylar nasıl ele alınır?", a: "İşletme modu rol tabanlı iş akışlarını ve onay kuyruklarını içerir." },
 ];
 const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Bira üreticileri", url: canonicalUrl }];
@@ -58,12 +58,12 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="Bira Üretim Yazılımı | GRISTORA" />
-    <meta property="og:description" content="Profesyonel bira üreticileri için demleme yazılımı iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
+    <meta property="og:description" content="Profesyonel bira üreticileri için bira üretim yazılımı iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Bira Üretim Yazılımı | GRISTORA" />
-    <meta name="twitter:description" content="Profesyonel bira üreticileri için demleme yazılımı iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
+    <meta name="twitter:description" content="Profesyonel bira üreticileri için bira üretim yazılımı iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
@@ -80,19 +80,19 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> PROFESYONEL BİRA ÜRETİCİLERİ İÇİN</p>
         <h1>Reçete incelemesinden <em>üretim kayıtlarına.</em></h1>
-        <p>GRISTORA, reçete kararlarına, parti bilgisine ve üretim kayıtlarına daha net bir bakış isteyen profesyonel demleme ekipleri için geliştirilmektedir.</p>
+        <p>GRISTORA, reçete kararlarına, parti bilgisine ve üretim kayıtlarına daha net bir bakış isteyen profesyonel bira üretim ekipleri için geliştirilmektedir.</p>
         <a class="button button-primary" href="#brewery-workflow">Bira üreticisi iş akışını keşfedin <span aria-hidden="true">↗</span></a>
       </section>
       <section class="shell audience-hero">
-        <figure class="audience-hero-art"><img src={`${base}images/illustrations/professional-brewery-vessels.svg`} width="1200" height="600" alt="Üretim boruları ile birbirine bağlı paslanmaz çelik bira tanklarının özgün illüstrasyonu." loading="eager" /><figcaption>Profesyonel bir demleme ortamı · özgün illüstrasyon</figcaption></figure>
+        <figure class="audience-hero-art"><img src={`${base}images/illustrations/professional-brewery-vessels.svg`} width="1200" height="600" alt="Üretim boruları ile birbirine bağlı paslanmaz çelik bira tanklarının özgün illüstrasyonu." loading="eager" /><figcaption>Profesyonel bir bira üretim ortamı · özgün illüstrasyon</figcaption></figure>
       </section>
       </div>
       <section class="audience-page-section section-pad" id="brewery-workflow">
         <div class="shell">
           <div class="section-heading">
-            <p class="eyebrow"><span class="eyebrow-line"></span> PROFESYONEL DEMLEME İŞ AKIŞI</p>
+            <p class="eyebrow"><span class="eyebrow-line"></span> PROFESYONEL BİRA ÜRETİM İŞ AKIŞI</p>
             <h2>Kararları kayıtlarla <em>birbirine bağlayın.</em></h2>
-            <p>İşletme modu, demlemeye özgü işler etrafında kurulmuştur.</p>
+            <p>İşletme modu, bira üretimine özgü işler etrafında kurulmuştur.</p>
           </div>
           <ol class="workflow-grid business-workflow-grid">
             {workflow.map((step) => (
@@ -123,7 +123,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> KAYIT MODELİ</p>
             <h2>Her partinin arkasındaki <em>bağlamı izleyin.</em></h2>
-            <p>Kayıt modeli, bir demleme kararını bitmiş partiyi açıklayan işlere, malzemelere ve gözlemlere bağlar.</p>
+            <p>Kayıt modeli, bir üretim kararını bitmiş partiyi açıklayan işlere, malzemelere ve gözlemlere bağlar.</p>
           </div>
           <ol class="record-model-flow business-record-flow">
             <li>
@@ -160,7 +160,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <div class="shell">
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> İŞLETME MODU ÜRÜN ALANLARI</p>
-            <h2>Demleme operasyonları, <em>net sınırlarla.</em></h2>
+            <h2>Bira üretim operasyonları, <em>net sınırlarla.</em></h2>
             <p>İşletme modu yeteneklerini keşfedin.</p>
           </div>
           <div class="audience-feature-grid">
@@ -174,8 +174,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
       <section class="erp-boundary-section section-pad">
         <div class="shell erp-boundary-inner">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜN KAPSAMI</p><h2>Bir demleme çalışma alanı, <em>genel amaçlı ERP değil.</em></h2></div>
-          <div><p>GRISTORA, demlemeyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır ve şunları yönettiğini iddia etmez:</p><ul><li>Satış veya müşteri siparişleri</li><li>Dağıtım, sevkiyat veya teslimat operasyonları</li><li>Fıçı takibi</li><li>CRM veya muhasebe</li></ul><p>Bu sistemleri kendi uzman araçlarında tutun; GRISTORA'nın kapsamı demleme işine odaklı kalır.</p></div>
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜN KAPSAMI</p><h2>Bir bira çalışma alanı, <em>genel amaçlı ERP değil.</em></h2></div>
+          <div><p>GRISTORA, bira üretimiyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır ve şunları yönettiğini iddia etmez:</p><ul><li>Satış veya müşteri siparişleri</li><li>Dağıtım, sevkiyat veya teslimat operasyonları</li><li>Fıçı takibi</li><li>CRM veya muhasebe</li></ul><p>Bu sistemleri kendi uzman araçlarında tutun; GRISTORA'nın kapsamı bira üretimine odaklı kalır.</p></div>
         </div>
       </section>
       <section class="audience-faq-section section-pad">
@@ -189,7 +189,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="pricing-cta section-pad">
         <div class="shell pricing-cta-inner">
           <p class="eyebrow"><span class="eyebrow-line"></span> PLANINIZI SEÇİN</p>
-          <h2>Size uygun <em>demleme çalışma alanını bulun.</em></h2>
+          <h2>Size uygun <em>bira çalışma alanını bulun.</em></h2>
           <p>Ev biracısı ve Profesyonel bira üreticisi yollarını karşılaştırın, ardından bir planı adım adım yapılandırın.</p>
           <a class="button button-primary" href={`${base}tr/pricing/`}>Planlar ve fiyatlandırma <span aria-hidden="true">↗</span></a>
           <a class="text-link" href={`${base}tr/compare/`}>İşlevleri karşılaştırın <span aria-hidden="true">→</span></a>
