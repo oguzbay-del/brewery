@@ -13,7 +13,7 @@ const tr = lang === "tr";
 const root = tr ? `${base}tr/` : base;
 const pathWithoutBase = Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : Astro.url.pathname.slice(1);
 const languageHref = tr
-  ? Astro.url.pathname.replace(`${base}tr/`, base)
+  ? `${base}${pathWithoutBase.replace(/^tr\//, "")}`
   : `${base}tr/${pathWithoutBase}`;
 const linksEn = [
   { id: "product", href: `${base}features/`, label: "Product", mobile: "Product" },
