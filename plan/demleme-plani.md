@@ -11,7 +11,7 @@ Oct 31, 2026 · @Oguz
 | Segmentler | Ev modu ve İşletme modu; tek uygulama, aynı veri modeli |
 | Kapsam | Tarif, demleme, fermantasyon, üretim, envanter, maliyet, mevzuat raporları |
 | Kapsam dışı | ERP katmanı: satış, sipariş, dağıtım, fıçının müşteride takibi ve depozitosu, CRM, muhasebe. Topluluk ve herkese açık tarif paylaşımı (kullanıcılar mevcut platformları kullanır; bizde içe ve dışa aktarma var) |
-| Platformlar | iPad (tam), iPhone (demleme günü odaklı), web (Windows, macOS, Linux ve ChromeOS tarayıcıları, tam). Apple Watch ileride opsiyonel |
+| Platformlar | iPad (tam), iPhone (veri görüntüleme, demleme günü ve saha işleri), web (Windows, macOS, Linux ve ChromeOS tarayıcıları, tam). Apple Watch ileride opsiyonel |
 | Desteklenmeyen | Android, ayrı Mac ve Windows uygulaması; Apple Watch şimdilik yok (tasarımı konseptte duruyor, ileride opsiyonel eklenebilir) |
 | Mimari | Apple: native SwiftUI. Web: React + TypeScript. Hesap motoru: Rust, yalnız sunucuda, ayrı servis; istemciler tek API ile kullanır. Altı katman, Kubernetes üzerinde, bulut sağlayıcıdan bağımsız |
 | Tasarım | Apple tasarım ilkeleri (HIG); her ekran benzer işi yapan bir Apple uygulamasından fikir alıyor. Uygulamanın (iOS ve web) tasarım sistemi ile pazarlama sitesinin tasarımı ayrıdır; ortak olan yalnız ad, logo, uygulama simgesi ve marka vurgu rengi |
@@ -69,6 +69,7 @@ Mod çalışma alanı bazında seçilir. **Açık:** modda tam çalışır. **Sa
 | Onay kutusu, kalite, sapma kaydı | Kapalı | Açık |  | Kalite |
 | Tank detayı, tank hareketi, günlük tank turu | Kapalı | Açık | Ev'de birden fazla fermentor parti listesinde izlenir | Üretim |
 | Fıçı ve kap takibi (QR etiket, tarama, lot bağı) | Kapalı | Açık | İşletme 2. sürüm; fıçının müşteride takibi ve depozito yok | Üretim |
+| Saha görünümü (iPhone: tank, lot, fıçı tarama) | Kapalı | Açık | Yalnız iPhone; Saha yetkisi; İşletme 2. sürüm | Üretim |
 | Lot izlenebilirlik, etiket bilgisi, raporlar ve mevzuat raporu | Kapalı | Açık | Mevzuat raporu ve etiket İşletme 2. sürüm | Kalite; Vergi ve uyum |
 | Maliyet | Sade (tarif maliyeti, isteğe bağlı) | Açık (parti ve litre, FIFO) | Parti maliyeti Ev'de açılabilir | Maliyet ve raporlar (Ev'de sade: Çekirdek) |
 | **Sistem** |  |  |  |  |
@@ -113,16 +114,30 @@ Apple cihazları native SwiftUI, masaüstü web; hepsi sunucudaki tek hesap moto
 | Platform | Kapsam | Teknoloji |
 | --- | --- | --- |
 | iPad | Tam özellik | SwiftUI |
-| iPhone | Demleme günü, fermantasyon, stok ve alışveriş tam; tarif görüntüleme ve basit düzenleme | SwiftUI |
+| iPhone | Veri görüntüleme ve sahadaki kısa işler: demleme günü, ölçüm, Saha taraması (tank, lot, fıçı), mal kabul, alışveriş listesi; tarif salt okunur; tasarım, planlama ve yönetim yok (aşağıda › iPhone kapsamı) | SwiftUI |
 | Apple Watch | Şimdilik yok; ileride opsiyonel (sayaç, hop alarmı, adım onayı; tasarımı konseptte hazır) | SwiftUI watchOS (ileride) |
 | Web (Mac ve PC) | iPad ile aynı, tam özellik; güncel Chrome, Edge, Safari ve Firefox (Windows, macOS, Linux, ChromeOS) | React + TypeScript |
 | Mac uygulaması, Android | Yok | – |
 
-- **Hesap motoru:** Rust ile bir kez yazılır ve yalnız sunucuda çalışır. Tarif hesabı, ölçekleme, su ve pH, maliyet, vergi gibi tüm hesaplar ve kayıt oluşturma işleri internetle yapılır. Sık yapılan küçük sorgular (liste, arama, malzeme bilgisi) önbellekten hemen gösterilir ve arkada sunucudan tazelenir; tarif düzenlerken değişiklikler kısa aralıklarla toplu gönderilir.
-- **Veri:** tek kaynak sunucudaki veritabanıdır; cihazda çevrimdışı senkron yok, yalnız salt okunur önbellek tutulur. Tek istisna demleme günü: parti başlatılınca demleme paketi (tarif, adımlar, sayaçlar, hedef değerler) cihaza indirilir; sayaç, adım onayı ve ölçüm girişi internetsiz çalışır. Girilen ölçümler gönderim kuyruğunda bekler, bağlantı gelince gönderilir. Bağlantı yokken hesap gerektiren işler (ör. gerçek değerlerle OG/ABV yeniden hesabı) bağlantıyı bekler.
-- **Apple'a özgü:** Live Activity ve Dynamic Island, zamana duyarlı bildirimler, VisionKit belge tarama, Bluetooth (Tilt).
-- **iPad uygulamasının Apple Silicon Mac'lerde çalışması** App Store Connect'te kapatılır; Mac'te tek deneyim web olur.
-- **Maliyet:** arayüz iki kez yazılır (SwiftUI + React); web ve Apple arasında özellik eşitliği için ortak tasarım sistemi ve ekran spesifikasyonları gerekir.
+### iPhone kapsamı
+
+iPhone veri görür ve sahadaki kısa işleri yapar; tasarım, planlama, yönetim ve geniş tablo isteyen işler iPad ve web'dedir (Oğuz, 20 Kasım 2026). Cihaz ayrımı yalnız arayüzdür: API cihaza göre ayrım yapmaz, yetkiyi sunucu denetler.
+
+| iPhone'da | Ekranlar ve işler |
+| --- | --- |
+| Tam (kısa işler) | Demleme günü ve Live Activity; kâğıt tarama ve adımı kapatma; ölçüm girişi; araçlar; Bugün (görev kapatma); Saha: tank, lot ve fıçı tarama, seri tarama; CIP adımları; barkodla mal kabul ve sayım; alışveriş listesi; cihaz eşleştirme (Bluetooth); bildirim kutusu; Ev'de tarif sihirbazı, ekipman sihirbazı ve hızlı parti başlatma; ilk açılış, giriş, hesap, abonelik (StoreKit), yardım; davet kabulü; arama |
+| Salt görüntüleme | Tarif ve alt sekmeleri (su, mash, fermantasyon profili, kaynatma, mead); malzeme detayı; stil kılavuzu; "Nasıl hesaplandı"; fermantasyon; parti özeti (tadım notu eklenir); üretim panosu; tank detayı; takvim (liste); onay bekleyenler; maya yönetimi; rapor özetleri; lot izlenebilirlik |
+| Yok (iPad ve web) | Tarif editörü, karşılaştırma, ölçekleme, içe aktarma eşleştirmesi, kendi malzemen, su raporu, uyarı kuralları; parti planlama ve tank ataması; Bugün düzenleme; operatör görünümü; onay ve serbest bırakma; kalite; ambalaj kaydı; tank hareketi; sapma analizi; etiket; tank turu çıktısı; fıçı listesi ve QR etiket yazdırma; kullanıcı daveti ve roller; denetim kaydı; ekipman, kaplar, kalibrasyon; çalışma alanı ayarları |
+
+- **Saha görünümü (İşletme 2. sürüm):** iPhone'da tek tarama ekranı tank, lot ve fıçı QR'ını okur; okunan koda göre kart ve kısa eylemler açılır (tank: ölçüm gir, adımı kapat; lot: stoktan düş, sayım, kullanıldığı partiler; fıçı: durum). Seri taramada birden çok fıçıya tek durum verilir. Kontrol Merkezi, kilit ekranı, Eylem düğmesi ve Siri'den ("Fıçı tara") açılır. Tedarikçi barkodu (GS1) mal kabulde okunur.
+- **QR kodu:** opak koddur, çalışma alanı veya iç kimlik taşımaz; sunucu kodu hedefe (fıçı, tank, lot) çözer ve yetkiyi denetler. Tank ve lot etiketi iPad ve web'den yazdırılır.
+- **Ev modunda:** iPhone tek cihaz olabilir; bu yüzden tarif sihirbazı, ekipman sihirbazı ve hızlı parti başlatma iPhone'da kalır. Ayrıntılı düzenleme iPad ve web'dedir.
+
+* **Hesap motoru:** Rust ile bir kez yazılır ve yalnız sunucuda çalışır. Tarif hesabı, ölçekleme, su ve pH, maliyet, vergi gibi tüm hesaplar ve kayıt oluşturma işleri internetle yapılır. Sık yapılan küçük sorgular (liste, arama, malzeme bilgisi) önbellekten hemen gösterilir ve arkada sunucudan tazelenir; tarif düzenlerken değişiklikler kısa aralıklarla toplu gönderilir.
+* **Veri:** tek kaynak sunucudaki veritabanıdır; cihazda çevrimdışı senkron yok, yalnız salt okunur önbellek tutulur. Tek istisna demleme günü: parti başlatılınca demleme paketi (tarif, adımlar, sayaçlar, hedef değerler) cihaza indirilir; sayaç, adım onayı ve ölçüm girişi internetsiz çalışır. Girilen ölçümler gönderim kuyruğunda bekler, bağlantı gelince gönderilir. Bağlantı yokken hesap gerektiren işler (ör. gerçek değerlerle OG/ABV yeniden hesabı) bağlantıyı bekler.
+* **Apple'a özgü:** Live Activity ve Dynamic Island, zamana duyarlı bildirimler, VisionKit belge tarama, Bluetooth (Tilt).
+* **iPad uygulamasının Apple Silicon Mac'lerde çalışması** App Store Connect'te kapatılır; Mac'te tek deneyim web olur.
+* **Maliyet:** arayüz iki kez yazılır (SwiftUI + React); web ve Apple arasında özellik eşitliği için ortak tasarım sistemi ve ekran spesifikasyonları gerekir.
 
 &#91;embedded content: mimari · Apple ve web istemcileri, sunucuda hesap ve veri, demleme günü yerelde\]
 
@@ -493,7 +508,7 @@ Editör Numbers gibi çalışır: tablo değişince tüm değerler sunucuda yeni
 - **Tarif kontrolü:** sorun, nedeni ve tek dokunuşla düzeltme (ör. "Mash pH 5.62, 3.5 mL %88 laktik ekle").
 - **Kaynatma zaman çizelgesi:** iMovie gibi; hop eklemeleri sürüklenebilir klipler, IBU sunucudan güncellenir. iPhone'da salt okunur liste.
 - **Dönüşümler:** all grain ↔ extract, ölçekleme (hacim, verim, ekipman), malzeme ikamesi.
-- **iPhone:** görüntüleme ve basit düzenleme (miktar, süre); gruplu liste, kaydırarak düzenle/sil, alttan açılan seçici.
+- **iPhone:** salt okunur görüntüleme (gruplu liste); düzenleme iPad ve web'de (iPhone kapsamı).
 
 ### Stil kılavuzları
 
@@ -547,7 +562,7 @@ Dört kap türü var: şişe, kutu, keg ve cask. Tür; karbonasyon yöntemini, a
 - **Ev modu:** fermantasyondaki "Şişele / fıçıla" eylemi yalnız şişe ve keg sunar; priming veya basınç kap türüne göre önerilir.
 - **Karbonasyon önerisi:** şişe → priming, kutu → karbonatlı dolum, keg → basınç, cask → cask priming. Kullanıcı değiştirebilir.
 - **Vergi ve raporlar:** fıçı indirimi uygunluğu kap türü ve hacminden; depozito ve EPR raporu kap sayısı, malzeme ve ağırlıktan gelir.
-- **Fıçı ve kap takibi (İşletme 2. sürüm):** iade edilen keg ve cask için seri numaralı QR etiket (PDF; yıkamaya dayanıklı etiket malzemesini kullanıcı seçer). iPhone veya iPad ile tarama: dolum (ambalaj kaydına bağlanır), temizlendi, dışarıda, geri döndü, bakım. Geri çağırmada lot → fıçı seri numaraları. Fıçının hangi müşteride olduğu, depozito ve geciken fıçı uyarısı kapsam dışı (ERP).
+- **Fıçı ve kap takibi (İşletme 2. sürüm):** iade edilen keg ve cask için seri numaralı QR etiket (PDF; yıkamaya dayanıklı etiket malzemesini kullanıcı seçer). iPhone'da Saha görünümüyle tarama: dolum (ambalaj kaydına bağlanır), temizlendi, dışarıda, geri döndü, bakım. Geri çağırmada lot → fıçı seri numaraları. Fıçının hangi müşteride olduğu, depozito ve geciken fıçı uyarısı kapsam dışı (ERP).
 
 ## Apple tasarım ilkeleri
 
@@ -562,10 +577,10 @@ Her ekran benzer işi yapan bir Apple uygulamasının desenini kullanır; web ay
 | Manuel giriş | Sağlık "Veri Ekle", Takvim | Saat ve sürenin elle girilmesi ve düzenlenmesi |
 | Fermantasyon | Sağlık | Öne Çıkanlar, özet kartları, G/H/A grafik, widget |
 | Üretim panosu | Ev, Takvim, Anımsatıcılar | Tank kutucukları, haftalık takvim, aşama sütunları |
-| Malzeme listesi (iPhone) | Ayarlar, Anımsatıcılar | Gruplu liste, kaydır-düzenle, sheet seçici |
+| Malzeme listesi (iPhone) | Ayarlar, Anımsatıcılar | Gruplu liste, salt okunur; düzenleme iPad ve web'de |
 | Belge tarama | Notlar, Dosyalar | VisionKit tarayıcı |
 
-- **Yerleşim:** iPad'de NavigationSplitView + Inspector; iPhone'da en fazla 5 sekme, büyük başlık; seçiciler sheet.
+- **Yerleşim:** iPad'de NavigationSplitView + Inspector; iPhone'da en fazla 5 sekme (İşletmede Saha rolünde: Tara, Bugün, Fıçılar, Bildirimler), büyük başlık; seçiciler sheet.
 - **Görsel dil:** SF Pro, sayılarda tabular rakam, SF Symbols, sistem renkleri (gri zeminler, yeşil, kırmızı, mavi) + tek vurgu rengi amber, Dynamic Type.
 - **Tema:** Açık ve koyu tema; varsayılan "Sistem" (iOS ve tarayıcı ayarını izler). Ayarlar › Görünüm'den Açık veya Koyu seçilebilir; seçim cihaz başına. Her renk iki tema için ayrı tanımlanır.
 - **Renk ve karşıtlık:** Amber iki tonda. Yazı ve ikonlarda koyu amber: açık temada #985600 (beyaz üzerinde 5.7:1, gri zemin ve düğme zemininde en az 4.6:1). Geniş alanlarda (sayaç halkası, büyük düğmeler, sıradaki adım kartı, seçili kenar çubuğu, grafik çubukları, takvim şeritleri) parlak amber #E8901F; üzerindeki yazı koyu (#1A1206, 7.5:1). Koyu temada ikisi de #F0A03C (yaklaşık 8:1). Küçük yazıda en az 4.5:1. iOS "Karşıtlığı Artır" açıkken iki ton da koyu ambere döner, üstündeki yazı beyaz olur.
@@ -886,6 +901,7 @@ Tarif sürümleri kendiliğinden çoğalmamalı (Grainfather'da birikmiş sürü
 | Kalite (QA) | Spesifikasyon, laboratuvar, tadım, serbest bırakma | Kalite kuyruğu |
 | Depo | Mal kabul, lot, sayım, stok hareketi | Stok |
 | İzleyici / Denetçi | Salt okunur; raporlar ve denetim kaydı | Pano |
+| Saha (iPhone) | Fıçı, tank ve lot tarama; fıçı durumu; yetkisi varsa ölçüm ve stok hareketi | Tara |
 
 ### Yetki matrisi (varsayılan)
 
@@ -904,6 +920,11 @@ Tarif sürümleri kendiliğinden çoğalmamalı (Grainfather'da birikmiş sürü
 | Raporlar ve dışa aktarma | ✓ | ✓ | – | ✓ | ✓ | ✓ |
 | Ekipman ve profil ayarları | ✓ | ✓ | – | – | – | – |
 | Kullanıcı, rol, yetki yönetimi | ✓ | – | – | – | – | – |
+| Saha görünümü (iPhone tarama) | ✓ | ✓ | ✓ | ✓ | ✓ | – |
+| Fıçı durumu değiştir (tarama, seri tarama) | ✓ | ✓ | ✓ | – | ✓ | – |
+| Fıçı ekle, emekliye ayır; QR etiket yazdır (fıçı, tank, lot) | ✓ | ✓ | – | – | ✓ | – |
+
+Saha rolü yalnız "Saha görünümü" ve "Fıçı durumu değiştir" yetkilerini alır; yönetici gerekirse ölçüm veya stok hareketi yetkisi ekler. Taramadan açılan eylemler (ölçüm, adım kapatma, stoktan düşme, sayım) bu tablodaki yetkilere bağlıdır; tarama tek başına yetki vermez.
 
 ### Ayarlarda yönetim
 
@@ -917,6 +938,7 @@ Tarif sürümleri kendiliğinden çoğalmamalı (Grainfather'da birikmiş sürü
 - **Açılış ekranı ve sekmeler** role göre: operatöre "Bugün", brewmaster'a üretim panosu, kaliteye kalite kuyruğu.
 - **Yetkisi olmayan işlem gizlenir veya salt okunur görünür;** maliyet alanları yetkisi olmayana hiç gösterilmez.
 - **Onay gereken işlemler** yetkili kişiye bildirim olarak düşer (tarif onayı, serbest bırakma).
+- **Cihaza göre:** iPhone'da yalnız "iPhone kapsamı" tablosundaki ekranlar görünür; Saha rolünde iPhone açılışı Tara ekranıdır. Bu ayrım yetki değildir: aynı istek iPhone'dan da web'den de aynı yetki denetiminden geçer.
 
 ### Ortak cihaz modu
 
@@ -981,7 +1003,7 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 
 ## Ekran listesi
 
-Konseptte 63 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşamalarında 20, Apple Watch ekranı ileride opsiyonel; bu 20 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında; destek paneli ayrıca İç kullanım grubunda (sayıya girmez). Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
+Konseptte 64 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşamalarında 21, Apple Watch ekranı ileride opsiyonel; bu 21 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında; destek paneli ayrıca İç kullanım grubunda (sayıya girmez). Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
 
 | Ekran | Durum | Segment | Gerektiği aşama |
 | --- | --- | --- | --- |
@@ -1008,6 +1030,7 @@ Konseptte 63 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşa
 | Kalite: spesifikasyon, laboratuvar, serbest bırakma | Tasarlandı | İşletme | İşletme çekirdek |
 | CIP kaydı ve ambalaj kaydı | Tasarlandı | İşletme | İşletme çekirdek |
 | Fıçılar (liste, fıçı detayı, QR tarama, etiket yazdırma) | Tasarlandı | İşletme | İşletme 2. sürüm |
+| Saha (iPhone): tank, lot ve fıçı tarama; seri tarama | Tasarlandı | İşletme | İşletme 2. sürüm |
 | Maya yönetimi (hasat, jenerasyon) | Tasarlandı | İşletme | İşletme çekirdek |
 | Raporlar, panolar, mevzuat raporu | Tasarlandı | İşletme | İşletme 2. sürüm |
 | Fermantasyon profili editörü | Tasarlandı | İkisi | Ev MVP |
@@ -1119,6 +1142,7 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | AuditLog | Kim, ne zaman, önceki ve yeni değer; EditSession (yumuşak kilit) ile birlikte |
 | PackageType, PackagingRun | Kap tanımı (tür: şişe / kutu / keg / cask, hacim, tek kullanımlık mi, malzeme, ağırlık); ambalaj kaydı satırları (parti, kap, adet, litre, lot, karbonasyon yöntemi) |
 | Container, ContainerEvent | Fıçı ve kap varlığı: kap tanımı (PackageType), seri numarası, QR kodu, durum (temiz / dolu / dışarıda / kirli / bakımda / emekli), son dolum (PackagingRun satırı ve lot); olay defteri (tarama, kim, ne zaman, önceki ve yeni durum, not). Müşteri alanı yok; "dışarıda" için serbest not |
+| ScanCode | QR kodu: opak kod → hedef (fıçı, tank, lot), oluşturma ve yeniden basım zamanı, iptal; kod çalışma alanı veya iç kimlik taşımaz |
 | Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
 | CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
 | UserIdentity | Giriş kimlikleri: sağlayıcı (Apple / Google / e-posta), sağlayıcıdaki kalıcı kimlik, bağlanma zamanı; bir kullanıcıda birden çok; passkey kayıtları |

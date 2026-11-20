@@ -58,6 +58,8 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
+- **iPhone scope and field view (20 Nov 2026, Oğuz decision, Claude):** the iPhone shows data and does short field tasks; design, planning and management are on the iPad and the web (plan › iPhone kapsamı). New: the field view "Saha" (tank, lot and container scan, batch scan), the role "Saha" and three permissions. Concept: 64 screens, a device split block in the mode pane, six iPhone frames replaced with notes, the recipe editor on the iPhone is read only. Checks: `araclar/tutarlilik.py` clean, no overflow at 1280 and 400 px. Next step: none.
+
 - **Keg tracking (20 Nov 2026, Oğuz decision, Claude):** light keg and cask tracking with QR labels is in scope for Business version 2 (Production module). Customer keg tracking, deposits and overdue alerts stay out of scope. Updated: plan (source doc and copy), concept screen "Fıçılar" (63 screens), `CLAUDE.md`, `karsilastirma/breww-2026-11.md`, tasks K1–K4 in `gelistirme/ISLER.md`, docs 41 and 46, and the scope text on 8 marketing pages (EN and TR). Checks: `araclar/tutarlilik.py` clean, validate:site 4384/4384, concept has no overflow at 1280 and 400 px. Next step: none for this item; the product queue in `gelistirme/DURUM.md` does not change.
 
 - **Product development (20 Nov 2026, Claude):** T2.19, T2.20, T2.21, T2.22, T2.28, T2.38, T2.39 are done and on `main`. Decisions: Paddle (O6), GRISTORA product brand tasks G1–G8, bring-your-own-agent MCP tasks M1–M5, competitor decisions, no own model training. Next step: open a new session and continue from `gelistirme/DURUM.md` (parallel chains are listed there).

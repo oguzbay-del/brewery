@@ -129,7 +129,7 @@ The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus 
 | Stage | Content | Gate |
 |---|---|---|
 | 3 Web | Home MVP screens | Playwright, accessibility |
-| 4 iOS | SwiftUI, brew day package, Live Activity | macOS CI is green; device test (Oğuz) |
+| 4 iOS | SwiftUI, brew day package, Live Activity; the iPhone shows only the screens in plan › iPhone kapsamı | macOS CI is green; device test (Oğuz) |
 | 5 Home MVP beta | Cloud setup, beta | Interviews and golden test are complete; independent security review |
 | 6 Business | Business screens | Step by step |
 
@@ -143,7 +143,7 @@ Decision (Oğuz, 2026-11-20): the product has modules (plan › Modüller): Core
 | P2 | Tier matrix draft with the modules (Home and Business tiers, limits for devices, users and storage; no limit on export); agree with the pricing of the marketing site (`web-stratejisi/45-*`) | Draft in plan › Deneme süresi; O8 can decide | P1 | 5 | Claude | Opus | todo |
 | P3 | Module state in the clients: settings screen (modules of the workspace), hidden navigation for modules that are off, an upgrade message; update the concept, the screen list and the design system | Playwright and iOS UI tests; `araclar/tutarlilik.py` is clean | P1 | 5 | Claude | Sonnet | todo |
 
-## Keg and container tracking (stage 6, Business version 2)
+## Keg tracking and the field view (stage 6, Business version 2)
 
 Decision (Oğuz, 2026-11-20): Business mode gets a light keg and cask tracking feature in the Production module (plan › Ambalaj ve kap türleri). Each returnable container has a serial number and a QR label. A scan changes the status. A fill links the container to the packaging run and the lot.
 
@@ -151,14 +151,16 @@ Rules:
 - Do not add customers, deposits or overdue alerts. These are ERP functions and are out of scope.
 - The status "out" has a free text note only. Do not link it to a customer record.
 - Do not put the workspace ID or other internal IDs in the QR code. Use an opaque code.
+- The QR code of a tank and a lot uses the same opaque code (`ScanCode`).
+- The field view is on the iPhone only. The device split is a user interface rule. The API does not check the device. The server checks the permission.
 - Do not start these tasks before stage 6.
 
 | Task | Description | Done criterion | Depends on | Stage | Owner | Model | Status |
 |---|---|---|---|---|---|---|---|
-| K1 | Data model for `Container` and `ContainerEvent` (plan › Veri modeli): serial number, opaque QR code, `PackageType`, status (clean, filled, out, dirty, maintenance, retired), last fill (packaging run row and lot), event log (scan, user, time, old and new status, note); migration and row level security | Migration tests; a container of a different workspace is not visible; a dirty container cannot be filled | T2.35 | 6 | Claude | Opus (design), Sonnet (migration) | todo |
-| K2 | API endpoints: list with status counts, detail, bulk create with serial numbers, status change from a scan, retire; a fill from a packaging run row; recall query from a lot to the container list; label PDF (QR code, serial number, size) | Endpoint and contract tests; the recall query gives each filled container of the lot; the OpenAPI document shows the Production module | K1 | 6 | Claude | Sonnet | todo |
+| K1 | Data model for `Container`, `ContainerEvent` and `ScanCode` (plan › Veri modeli): serial number, opaque QR code for containers, tanks and lots, `PackageType`, status (clean, filled, out, dirty, maintenance, retired), last fill (packaging run row and lot), event log (scan, user, time, old and new status, note); migration, row level security, and the permissions "field view", "change container status" and "manage containers and labels" with the role "Saha" (plan › Yetki matrisi) | Migration tests; a container of a different workspace is not visible; a dirty container cannot be filled | T2.35 | 6 | Claude | Opus (design), Sonnet (migration) | todo |
+| K2 | API endpoints: resolve a scanned code to its target (container, tank or lot) with the permitted actions; list with status counts, detail, bulk create with serial numbers, status change from a scan and from a batch scan, retire; a fill from a packaging run row; recall query from a lot to the container list; label PDF for containers, tanks and lots (QR code, serial number, size) | Endpoint and contract tests; an unknown or revoked code gives 404; a user without the permission does not get the action; the recall query gives each filled container of the lot; the OpenAPI document shows the Production module | K1 | 6 | Claude | Sonnet | todo |
 | K3 | Web screen "Fıçılar" (concept pane `kg`): list, status counts, detail with the event log, label print | Playwright and accessibility tests | K2 | 6 | Claude | Sonnet | todo |
-| K4 | iOS: QR scan with VisionKit, a sheet with the status actions, iPad list and detail | iOS UI tests on macOS CI; device test (Oğuz) | K2 | 6 | Claude | Sonnet | todo |
+| K4 | iOS field view on the iPhone (concept pane `sh`): one scan screen for tank, lot and container codes, a card with the permitted actions, batch scan, the tabs for the role "Saha", Control Center and Siri shortcuts (App Intents); the iPad shows the list and the detail only | iOS UI tests on macOS CI; device test (Oğuz) | K2 | 6 | Claude | Sonnet | todo |
 
 ## Bring your own agent: MCP (stage 5 and Home version 2)
 

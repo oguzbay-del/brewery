@@ -205,6 +205,7 @@ BILINEN = {
     "İlk açılış": "ob", "Su ve mash pH": "wa", "İçe aktarma eşleştirme": "im",
     "Onay kutusu": "ap", "Kullanıcı davet akışı": "us",
     "Ortak cihazda kullanıcı değiştirme": "us", "Lot izlenebilirlik raporu": "lt",
+    "Saha (iPhone)": "sh",
 }
 puan = {}
 for e in ekranlar:

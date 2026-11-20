@@ -453,7 +453,7 @@ table.cmp td:first-child{font-weight:600}
 <section>
   <span class="eyebrow">Apple'dan alınan fikirler</span>
   <h2>Her ekranın Apple'daki karşılığı</h2>
-  <p class="lead">Plandaki 63 ekranın hepsi (ortak cihazda kullanıcı değiştirme ve davet tek satırda); turuncu nokta sonradan eklenen ekran ve eşleştirmeler. Fikir alınır, görünüm kopyalanmaz: Apple'ın standart bileşenleri (liste, Inspector, sheet, Swift Charts, StoreKit) kullanılır.</p>
+  <p class="lead">Plandaki 64 ekranın hepsi (ortak cihazda kullanıcı değiştirme ve davet tek satırda); turuncu nokta sonradan eklenen ekran ve eşleştirmeler. Fikir alınır, görünüm kopyalanmaz: Apple'ın standart bileşenleri (liste, Inspector, sheet, Swift Charts, StoreKit) kullanılır.</p>
   <div class="scroller" style="border-radius:14px"><table class="cmp">
     <thead><tr><th>Bizim ekran</th><th>Apple uygulaması</th><th>Aldığımız fikir</th></tr></thead>
     <tbody>
@@ -492,6 +492,7 @@ table.cmp td:first-child{font-weight:600}
       <tr><td>Kalite</td><td>Sağlık aralık grafikleri</td><td>Spesifikasyon bandı ve ölçüm noktaları; banttan çıkan nokta kırmızı</td></tr>
       <tr><td>CIP ve ambalaj<span class="newdot" role="img" aria-label="yeni"></span></td><td>Anımsatıcılar</td><td>Alt görevli kontrol listesi; her adım kim ve ne zaman ile işaretlenir</td></tr>
       <tr><td>Fıçılar<span class="newdot" role="img" aria-label="yeni"></span></td><td>Bul (öğeler), Kamera kod tarayıcı</td><td>Durum sayaçlı liste; kodu tara, alt sayfada tek dokunuşla durum değiştir</td></tr>
+      <tr><td>Saha (iPhone)<span class="newdot" role="img" aria-label="yeni"></span></td><td>Kamera kod tarayıcı, Kontrol Merkezi denetimleri, Cüzdan kartı</td><td>Tek tarama ekranı; okunan koda göre kart (tank, lot, fıçı) ve o kartın kısa eylemleri; Kontrol Merkezi ve Eylem düğmesinden açılır</td></tr>
       <tr><td>Maya yönetimi<span class="newdot" role="img" aria-label="yeni"></span></td><td>Sağlık eğilimleri, Bul</td><td>Canlılık düşüşü eğilim kartı; slurry hangi kapta, kaçıncı nesil, Bul'daki öğe listesi gibi</td></tr>
       <tr><td>Raporlar</td><td>Sağlık özet kartları, Ekran Süresi</td><td>Haftalık özet, önceki dönemle karşılaştırma</td></tr>
       <tr><td>Tank hareketi<span class="newdot" role="img" aria-label="yeni"></span></td><td>Dosyalar taşı/kopyala, iPad sürükle-bırak</td><td>Partiyi bir tanktan diğerine sürükle; hedef dolu ya da kirliyse bırakılamaz</td></tr>
@@ -602,6 +603,7 @@ table.cmp td:first-child{font-weight:600}
     <button role="tab" id="tab-qa" aria-selected="false" aria-controls="pane-qa">Kalite<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-cip" aria-selected="false" aria-controls="pane-cip">CIP ve ambalaj<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-kg" aria-selected="false" aria-controls="pane-kg">Fıçılar<span class="newdot" role="img" aria-label="yeni"></span></button>
+    <button role="tab" id="tab-sh" aria-selected="false" aria-controls="pane-sh">Saha (iPhone)<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-ym" aria-selected="false" aria-controls="pane-ym">Maya yönetimi<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-rp" aria-selected="false" aria-controls="pane-rp">Raporlar<span class="newdot" role="img" aria-label="yeni"></span></button>
     <button role="tab" id="tab-mv" aria-selected="false" aria-controls="pane-mv">Tank hareketi<span class="newdot" role="img" aria-label="yeni"></span></button>
@@ -738,30 +740,20 @@ table.cmp td:first-child{font-weight:600}
         <div class="inspo"><span class="chip">İlham: <b>Numbers</b> Inspector</span><span class="chip"><b>Notlar</b> kenar çubuğu</span><span class="chip">Web'de aynı düzen ve klavye kısayolları</span></div>
       </div>
       <div>
-        <div class="devlabel">iPHONE · görüntüleme ve basit düzenleme</div>
+        <div class="devlabel">iPHONE · görüntüleme (salt okunur)</div>
         <div class="iphone"><div class="scr">
           <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
-          <div class="nav"><span>‹ Tarifler</span><span class="t"></span><span>Düzenle</span></div>
+          <div class="nav"><span>‹ Tarifler</span><span class="t"></span><span>Paylaş</span></div>
           <div class="large">Citra Pale Ale</div>
           <div class="stats"><div class="stat"><small>OG</small><b>1.052</b></div><div class="stat"><small>IBU</small><b>38</b></div><div class="stat"><small>SRM</small><b>7</b></div><div class="stat"><small>ABV</small><b>5.4</b></div></div>
           <div class="body">
-            <div><div class="ghead">Malt</div><div class="group">
-              <div class="cell"><span class="swatch" style="background:#f2d27a"></span><span>Pale Ale malt<span class="sub">%85.7 · 3 °L</span></span><span class="v">4.50 kg</span></div>
-              <div class="swipe"><div class="cell"><span class="swatch" style="background:#d9a54c"></span><span>Munich<span class="sub">%8.6 · 9 °L</span></span><span class="v">0.45 kg</span></div><span class="act" style="background:var(--blue)">Düzenle</span><span class="act" style="background:var(--red)">Sil</span></div>
-            </div></div>
-            <div class="callout warn"><svg class="ico"><use href="#i-warn"/></svg><span>Mash pH 5.62 · laktik asit öner</span></div>
-          </div>
-          <div class="sheet">
-            <div class="grab"></div>
-            <div class="row" style="justify-content:space-between"><b style="font-size:17px">Malt ekle</b><span style="color:var(--tint);font-weight:600">Bitti</span></div>
-            <div class="search"><svg class="ico"><use href="#i-search"/></svg>crystal</div>
-            <div class="group" style="background:var(--fill2)">
-              <div class="cell"><span class="swatch" style="background:#b8742a"></span>Crystal 40<span class="v" style="color:var(--green)">stokta 1.2 kg</span></div>
-              <div class="cell"><span class="swatch" style="background:#9a5a20"></span>Crystal 60<span class="v">stok yok</span></div>
-            </div>
+            <div><div class="ghead">Malt</div><div class="group"><div class="cell"><span>Pale Ale malt<span class="sub">%85.7 · 3 °L</span></span><span class="v">4.50 kg</span></div><div class="cell"><span>Munich<span class="sub">%8.6 · 9 °L</span></span><span class="v">0.45 kg</span></div></div></div>
+            <div><div class="ghead">Hop</div><div class="group"><div class="cell"><span>Citra<span class="sub">60 dk · %12.0</span></span><span class="v">20 g</span></div><div class="cell"><span>Citra<span class="sub">dry hop · 3 gün</span></span><span class="v">60 g</span></div></div></div>
+            <button class="btn fill big">Demlemeyi başlat</button>
+            <p style="font-size:12px;color:var(--label2)">Tarifi düzenlemek için iPad veya web'de aç.</p>
           </div>
         </div></div>
-        <div class="inspo"><span class="chip">İlham: <b>Ayarlar</b> gruplu liste</span><span class="chip"><b>Anımsatıcılar</b> kaydır-düzenle</span><span class="chip">Orta yükseklikte <b>sheet</b></span></div>
+        <div class="inspo"><span class="chip">İlham: <b>Notlar</b> salt okunur görünüm</span><span class="chip">Değerlere dokununca "Nasıl hesaplandı" açılır</span></div>
       </div>
     </div>
   </div>
@@ -1176,23 +1168,7 @@ table.cmp td:first-child{font-weight:600}
         </div></div></div>
         <div class="inspo"><span class="chip">İlham: <b>Paylaş</b> menüsü ve <b>Dosyalar</b>; <b>Fotoğraflar</b> içe aktarmada önizleyip seçme</span><span class="chip">BeerXML, BeerJSON, BeerSmith .bsmx, Brewfather, Brewer's Friend</span><span class="chip">Kaynak dosya tarife ek olarak saklanır</span></div>
       </div>
-      <div>
-        <div class="devlabel">iPHONE · Dosyalar'dan veya paylaşımdan açma</div>
-        <div class="iphone"><div class="scr">
-          <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
-          <div class="nav"><span>Vazgeç</span><span class="t">İçe aktar</span><span></span></div>
-          <div class="body">
-            <div class="hcard"><div class="k"><svg class="ico"><use href="#i-book"/></svg>Hazy IPA</div><p>BeerSmith 3 · 21 L · 1.065 · 44 IBU</p></div>
-            <div class="group">
-              <div class="cell"><svg class="ico" style="color:var(--green)"><use href="#i-checkc"/></svg>6 malzeme eşleşti</div>
-              <div class="cell"><svg class="ico" style="color:var(--yellow)"><use href="#i-warn"/></svg>2 malzeme onay bekliyor<span class="chev">›</span></div>
-              <div class="cell"><svg class="ico" style="color:var(--blue)"><use href="#i-plus"/></svg>1 yeni malzeme<span class="chev">›</span></div>
-              <div class="cell">Ekipman<span class="pick">Grainfather G30 ›</span></div>
-            </div>
-          </div>
-          <div style="padding:8px 16px 26px"><button class="btn fill big">İçe aktar</button></div>
-        </div></div>
-      </div>
+      <div><div class="devlabel">iPHONE · yok</div><div class="note"><h3>Eşleştirme iPad ve web'de</h3><p>Paylaş menüsüyle iPhone'a gelen dosya taslak olarak kaydedilir; malzeme eşleştirmesi iPad ve web'de bitirilir.</p></div></div>
     </div>
   </div>
 
@@ -1509,26 +1485,7 @@ table.cmp td:first-child{font-weight:600}
         </div></div></div>
         <div class="inspo"><span class="chip">İlham: <b>Denetim Merkezi</b> özelleştirme (eksi/artı listesi), <b>Fitness</b> "Özeti Düzenle"</span><span class="chip">Kayıtlı görünüm: <b>Anımsatıcılar</b> akıllı listeleri</span><span class="chip">Aynı düzenleme Üretim panosunda da var; web'de sürükle bırak</span></div>
       </div>
-      <div>
-        <div class="devlabel">iPHONE · Bugün'ü düzenle</div>
-        <div class="iphone"><div class="scr">
-          <div class="status"><span>08:12</span><span class="island"></span><span>%96</span></div>
-          <div class="nav"><span>Vazgeç</span><span class="t">Bugün'ü düzenle</span><span style="font-weight:600">Bitti</span></div>
-          <div class="body">
-            <div><div class="ghead">GÖSTERİLEN</div><div class="group">
-              <div class="cell"><span class="edm rm">−</span><span>Görevler</span><span class="grip">≡</span></div>
-              <div class="cell"><span class="edm rm">−</span><span>Gecikenler</span><span class="grip">≡</span></div>
-              <div class="cell"><span class="edm rm">−</span><span>Vardiya devri</span><span class="grip">≡</span></div>
-            </div></div>
-            <div><div class="ghead">EKLENEBİLİR</div><div class="group">
-              <div class="cell"><span class="edm ad">+</span><span>Uyarılar</span></div>
-              <div class="cell"><span class="edm ad">+</span><span>Tanklar</span></div>
-              <div class="cell"><span class="edm ad">+</span><span>Onay bekleyenler</span></div>
-            </div></div>
-            <p style="font-size:12px;color:var(--label2)">iPhone ve iPad düzeni ayrı tutulur.</p>
-          </div>
-        </div></div>
-      </div>
+      <div><div class="devlabel">iPHONE · yok</div><div class="note"><h3>Düzenleme iPad ve web'de</h3><p>iPhone'da Bugün listesi görünür ve görev kapatılır; kart ekleme ve sıralama iPad ve web'de yapılır.</p></div></div>
     </div>
   </div>
 
@@ -1561,14 +1518,14 @@ table.cmp td:first-child{font-weight:600}
               </table>
               <div class="callout ok"><svg class="ico"><use href="#i-checkc"/></svg><span>Tarif kontrolü temiz · stil aralığında · stok yeterli</span></div>
               <div class="group"><div class="cell" style="color:var(--label2)">Not ekle (isteğe bağlı)</div></div>
-              <div class="row"><button class="btn">Düzeltme iste</button><button class="btn fill">Onayla</button></div>
+              <div class="row"><button class="btn">Düzeltme iste</button><button class="btn fill">iPad'de aç</button></div>
             </div>
           </div>
         </div></div></div>
         <div class="inspo"><span class="chip">İlham: <b>Mail</b> gelen kutusu</span><span class="chip">Onay yetkisi role bağlı; karar denetim kaydına yazılır</span></div>
       </div>
       <div>
-        <div class="devlabel">iPHONE · bildirimden onay</div>
+        <div class="devlabel">iPHONE · bildirim (onay iPad ve web'de)</div>
         <div class="lock" style="margin-top:0"><div class="scr" style="height:440px">
           <div class="clock" style="margin-top:20px">09:41</div><div class="date">Cumartesi 31 Ekim</div>
           <div class="la" style="margin-top:auto">
@@ -1723,7 +1680,7 @@ table.cmp td:first-child{font-weight:600}
         <div class="inspo"><span class="chip">İlham: <b>Bul</b> öğe listesi, <b>Kamera</b> kod tarayıcı</span><span class="chip">Kirli fıçı doldurulamaz; dolum ambalaj kaydına ve lota bağlanır</span><span class="chip">Geri çağırmada lot → fıçı seri numaraları</span><span class="chip">Müşteri ve depozito yok: "dışarıda" yalnız serbest not</span></div>
       </div>
       <div>
-        <div class="devlabel">iPHONE · QR tarama</div>
+        <div class="devlabel">iPHONE · Saha › fıçı tarandı</div>
         <div class="iphone"><div class="scr">
           <div class="status"><span>10:07</span><span class="island"></span><span>%84</span></div>
           <div class="nav"><span>‹ Fıçılar</span><span class="t">Tara</span><span>Bitti</span></div>
@@ -1737,6 +1694,14 @@ table.cmp td:first-child{font-weight:600}
         </div></div>
       </div>
     </div>
+  </div>
+
+
+  <!-- FIELD VIEW (iPhone) -->
+  <div id="pane-sh" role="tabpanel" aria-labelledby="tab-sh" hidden>
+    <p class="lead" style="margin-bottom:14px">İşletme modunda iPhone'un saha görünümü: tek tarama ekranı tank, lot ve fıçı QR'ını okur, okunan koda göre kart ve kısa eylemler açılır. Sekmeler: Tara, Bugün, Fıçılar, Bildirimler. Eylemler kullanıcının yetkisine bağlıdır; tarama yetki vermez.</p>
+    <div class="strip"><div><div class="devlabel">1 · TANK TARANDI</div><div class="iphone mini"><div class="scr" style="height:auto;padding-bottom:14px"><div class="status"><span>07:52</span><span class="island"></span><span>%80</span></div><div class="nav"><span>Saha</span><span class="t">Tara</span><span>Bitti</span></div><div class="body"><div style="height:96px;border-radius:12px;background:#1c1c1e;display:grid;place-items:center"><div style="width:64px;height:64px;border:3px solid var(--tint);border-radius:12px"></div></div><div style="display:grid;gap:2px"><span style="font-size:12px;color:var(--label2);font-weight:600">TANK QR · FV4 · 10 hL</span><span style="font-size:18px;font-weight:700">Citra Pale Ale #12 · gün 5</span></div><div class="group"><div class="cell">Son SG<span class="v">1.013 · 21 °C</span></div><div class="cell">Sonraki iş<span class="v">Dry hop · 10:00</span></div></div><button class="btn fill big">Ölçüm gir</button><div class="row"><button class="btn sm">Adımı kapat</button><button class="btn sm">Tank detayı</button></div></div></div></div></div><div><div class="devlabel">2 · LOT TARANDI</div><div class="iphone mini"><div class="scr" style="height:auto;padding-bottom:14px"><div class="status"><span>08:15</span><span class="island"></span><span>%80</span></div><div class="nav"><span>Saha</span><span class="t">Tara</span><span>Bitti</span></div><div class="body"><div style="height:96px;border-radius:12px;background:#1c1c1e;display:grid;place-items:center"><div style="width:64px;height:64px;border:3px solid var(--tint);border-radius:12px"></div></div><div style="display:grid;gap:2px"><span style="font-size:12px;color:var(--label2);font-weight:600">LOT QR · MALT · L-2611-04</span><span style="font-size:18px;font-weight:700">Pale Ale malt · 25 kg</span></div><div class="group"><div class="cell">Stokta<span class="v">8 çuval</span></div><div class="cell">Ayrılmış<span class="v">#13 · 4.5 kg</span></div><div class="cell">COA<span class="v">var</span></div></div><button class="btn fill big">Stoktan düş</button><div class="row"><button class="btn sm">Sayım</button><button class="btn sm">Kullanıldığı partiler</button></div></div></div></div></div><div><div class="devlabel">3 · SERİ TARAMA (FIÇI)</div><div class="iphone mini"><div class="scr" style="height:auto;padding-bottom:14px"><div class="status"><span>10:20</span><span class="island"></span><span>%80</span></div><div class="nav"><span>Saha</span><span class="t">Seri tarama</span><span>Bitti</span></div><div class="body"><div style="height:96px;border-radius:12px;background:#1c1c1e;display:grid;place-items:center"><div style="width:64px;height:64px;border:3px solid var(--tint);border-radius:12px"></div></div><div style="display:grid;gap:2px"><span style="font-size:12px;color:var(--label2);font-weight:600">7 FIÇI TARANDI</span><span style="font-size:18px;font-weight:700">Yeni durum: temiz</span></div><div class="group"><div class="cell"><span class="mono" style="white-space:nowrap">K30-0098</span><span class="v">kirli → temiz</span></div><div class="cell"><span class="mono" style="white-space:nowrap">K30-0112</span><span class="v">kirli → temiz</span></div><div class="cell"><span class="mono" style="white-space:nowrap">K50-0004</span><span class="v">kirli → temiz</span></div><div class="cell"><span class="sub">+4 fıçı</span></div></div><button class="btn fill big">7 fıçıyı kaydet</button></div></div></div></div></div>
+    <div class="inspo"><span class="chip">İlham: <b>Kamera</b> kod tarayıcı, <b>Kontrol Merkezi</b> denetimi, Eylem düğmesi</span><span class="chip">Kontrol Merkezi, kilit ekranı ve Siri: "Fıçı tara"</span><span class="chip">Tedarikçi barkodu (GS1) mal kabulde okunur</span><span class="chip">Yetkisi olmayan eylem görünmez</span></div>
   </div>
 
   <!-- YEAST MANAGEMENT -->
@@ -2360,23 +2325,7 @@ table.cmp td:first-child{font-weight:600}
         </div></div></div>
         <div class="inspo"><span class="chip">İlham: <b>Ayarlar</b> listesi + ayrıntı, <b>Kişiler</b> kartı</span><span class="chip">Vergi ve rapor uygunluğu girilen alanlardan hesaplanır, elle seçilmez</span><span class="chip">Ambalaj kaydında kap bu listeden seçilir</span></div>
       </div>
-      <div>
-        <div class="devlabel">iPHONE · Ev modunda</div>
-        <div class="iphone"><div class="scr">
-          <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
-          <div class="nav"><span>‹ Ekipman</span><span class="t">Kaplar</span><span style="font-weight:600">+</span></div>
-          <div class="body">
-            <div><div class="ghead">ŞİŞE</div><div class="group">
-              <div class="cell"><span>Şişe 0,5 L<span class="sub">varsayılan priming</span></span><span class="chev">›</span></div>
-              <div class="cell"><span>Şişe 0,33 L<span class="sub">varsayılan priming</span></span><span class="chev">›</span></div>
-            </div></div>
-            <div><div class="ghead">KEG</div><div class="group">
-              <div class="cell"><span>Corny 19 L<span class="sub">varsayılan basınçla</span></span><span class="chev">›</span></div>
-            </div></div>
-            <p style="font-size:12px;color:var(--label2)">Kutu ve cask İşletme modunda. "Şişele / fıçıla" bu listeden seçer.</p>
-          </div>
-        </div></div>
-      </div>
+      <div><div class="devlabel">iPHONE · yok</div><div class="note"><h3>Kap tanımı iPad ve web'de</h3><p>Kaplar Ayarlar › Ekipman ve tanklar altında tanımlanır. iPhone'da "Şişele / fıçıla" eylemi bu listeden seçer.</p></div></div>
     </div>
   </div>
 
@@ -2584,8 +2533,11 @@ table.cmp td:first-child{font-weight:600}
     <div style="margin-top:22px;display:grid;gap:10px">
       <h3 style="font-size:17px">Ekran haritası: hangi ekran hangi modda</h3>
       <div class="row" style="gap:12px;flex-wrap:wrap"><div class="mini-seg" id="mdsel" role="group" aria-label="Mod seç" style="width:240px"><span class="on" data-m="ev" role="button" tabindex="0">Ev</span><span data-m="is" role="button" tabindex="0">İşletme</span></div><div class="mdkey"><span><i></i>açık</span><span><i style="border:1px dashed var(--tint)"></i>sade</span><span><i style="background:transparent;border-style:dotted"></i>kapalı</span></div></div>
-      <div class="mdmap" id="mdmap" data-mode="ev"><div class="mdg"><b>Tarif</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="wiz"><span class="nm">Sihirbaz</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="rl"><span class="nm">Tarif listesi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="im"><span class="nm">İçe aktarma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="ed"><span class="nm">Tarif editörü</span><span class="ev">formül seçimleri gizli</span></a><a href="#" class="mdc" data-ev="A" data-go2="wa"><span class="nm">Su ve pH</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mm"><span class="nm">Mash ve maya</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fp"><span class="nm">Fermantasyon profili</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tl"><span class="nm">Kaynatma programı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mead"><span class="nm">Mead tarifi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="cmp"><span class="nm">Karşılaştırma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sg"><span class="nm">Stil kılavuzları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ing"><span class="nm">Malzeme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sc"><span class="nm">Ölçekleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="hw"><span class="nm">Nasıl hesaplandı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ci"><span class="nm">Kendi malzemen</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wr"><span class="nm">Su raporu</span><span class="ev"></span></a></div></div><div class="mdg"><b>Demleme</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="bd"><span class="nm">Demleme günü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="pp"><span class="nm">Kağıt ve düzeltme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fe"><span class="nm">Fermantasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wt"><span class="nm">Apple Watch (ileride)</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ru"><span class="nm">Uyarı kuralları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="bs"><span class="nm">Parti özeti</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tools"><span class="nm">Araçlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="pb"><span class="nm">Parti başlatma</span><span class="ev">tank ataması yok</span></a></div></div><div class="mdg"><b>Üretim</b><div class="mdw"><a href="#" class="mdc" data-ev="K" data-go2="td"><span class="nm">Bugün</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dz"><span class="nm">Bugün düzenleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="pr"><span class="nm">Üretim panosu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="op"><span class="nm">Operatör görünümü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="ap"><span class="nm">Onaylar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="qa"><span class="nm">Kalite</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="cip"><span class="nm">CIP ve ambalaj</span><span class="ev">Ev'de "Şişele / fıçıla" eylemi</span></a><a href="#" class="mdc" data-ev="K" data-go2="kg"><span class="nm">Fıçılar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="KA" data-go2="ym"><span class="nm">Maya yönetimi</span><span class="ev">Ayarlar'dan açılabilir</span></a><a href="#" class="mdc" data-ev="K" data-go2="rp"><span class="nm">Raporlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="mv"><span class="nm">Tank hareketi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tt"><span class="nm">Tank turu çıktısı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dvx"><span class="nm">Sapma kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lb"><span class="nm">Etiket</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="us"><span class="nm">Kullanıcı değiştir ve davet</span><span class="ev">yalnız tarif/parti daveti</span></a><a href="#" class="mdc" data-ev="K" data-go2="au"><span class="nm">Denetim kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tk"><span class="nm">Tank detayı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lt"><span class="nm">İzlenebilirlik</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="dk"><span class="nm">Davet kabulü</span><span class="ev">yalnız tarif/parti daveti</span></a></div></div><div class="mdg"><b>Sistem</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="ob"><span class="nm">İlk açılış</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="eqw"><span class="nm">Ekipman sihirbazı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="kp"><span class="nm">Kaplar</span><span class="ev">yalnız şişe ve keg</span></a><a href="#" class="mdc" data-ev="A" data-go2="cl"><span class="nm">Kalibrasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="dv"><span class="nm">Cihazlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="inv"><span class="nm">Stok</span><span class="ev">lot yok</span></a><a href="#" class="mdc" data-ev="S" data-go2="rcv"><span class="nm">Mal kabul ve sayım</span><span class="ev">lot ve barkod yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="cal"><span class="nm">Takvim</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="se"><span class="nm">Arama</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="st"><span class="nm">Ayarlar</span><span class="ev">işletme kategorileri gizli</span></a><a href="#" class="mdc" data-ev="S" data-go2="nt"><span class="nm">Bildirim yönlendirme</span><span class="ev">vardiya ve yükseltme yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="bk"><span class="nm">Bildirim kutusu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="md"><span class="nm">Mod ayrımı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="gz"><span class="nm">Gezinme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="es"><span class="nm">Boş ve hata durumları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sub"><span class="nm">Abonelik</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ac"><span class="nm">Hesap</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="gi"><span class="nm">Giriş ve hesap bağlama</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="yd"><span class="nm">Yardım ve destek</span><span class="ev"></span></a></div></div></div>
+      <div class="mdmap" id="mdmap" data-mode="ev"><div class="mdg"><b>Tarif</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="wiz"><span class="nm">Sihirbaz</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="rl"><span class="nm">Tarif listesi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="im"><span class="nm">İçe aktarma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="ed"><span class="nm">Tarif editörü</span><span class="ev">formül seçimleri gizli</span></a><a href="#" class="mdc" data-ev="A" data-go2="wa"><span class="nm">Su ve pH</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mm"><span class="nm">Mash ve maya</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fp"><span class="nm">Fermantasyon profili</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tl"><span class="nm">Kaynatma programı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="mead"><span class="nm">Mead tarifi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="cmp"><span class="nm">Karşılaştırma</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sg"><span class="nm">Stil kılavuzları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ing"><span class="nm">Malzeme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sc"><span class="nm">Ölçekleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="hw"><span class="nm">Nasıl hesaplandı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ci"><span class="nm">Kendi malzemen</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wr"><span class="nm">Su raporu</span><span class="ev"></span></a></div></div><div class="mdg"><b>Demleme</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="bd"><span class="nm">Demleme günü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="pp"><span class="nm">Kağıt ve düzeltme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="fe"><span class="nm">Fermantasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="wt"><span class="nm">Apple Watch (ileride)</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ru"><span class="nm">Uyarı kuralları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="bs"><span class="nm">Parti özeti</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="tools"><span class="nm">Araçlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="pb"><span class="nm">Parti başlatma</span><span class="ev">tank ataması yok</span></a></div></div><div class="mdg"><b>Üretim</b><div class="mdw"><a href="#" class="mdc" data-ev="K" data-go2="td"><span class="nm">Bugün</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dz"><span class="nm">Bugün düzenleme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="pr"><span class="nm">Üretim panosu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="op"><span class="nm">Operatör görünümü</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="ap"><span class="nm">Onaylar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="qa"><span class="nm">Kalite</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="cip"><span class="nm">CIP ve ambalaj</span><span class="ev">Ev'de "Şişele / fıçıla" eylemi</span></a><a href="#" class="mdc" data-ev="K" data-go2="kg"><span class="nm">Fıçılar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="sh"><span class="nm">Saha (iPhone)</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="KA" data-go2="ym"><span class="nm">Maya yönetimi</span><span class="ev">Ayarlar'dan açılabilir</span></a><a href="#" class="mdc" data-ev="K" data-go2="rp"><span class="nm">Raporlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="mv"><span class="nm">Tank hareketi</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tt"><span class="nm">Tank turu çıktısı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="dvx"><span class="nm">Sapma kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lb"><span class="nm">Etiket</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="us"><span class="nm">Kullanıcı değiştir ve davet</span><span class="ev">yalnız tarif/parti daveti</span></a><a href="#" class="mdc" data-ev="K" data-go2="au"><span class="nm">Denetim kaydı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="tk"><span class="nm">Tank detayı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="K" data-go2="lt"><span class="nm">İzlenebilirlik</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="dk"><span class="nm">Davet kabulü</span><span class="ev">yalnız tarif/parti daveti</span></a></div></div><div class="mdg"><b>Sistem</b><div class="mdw"><a href="#" class="mdc" data-ev="A" data-go2="ob"><span class="nm">İlk açılış</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="eqw"><span class="nm">Ekipman sihirbazı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="kp"><span class="nm">Kaplar</span><span class="ev">yalnız şişe ve keg</span></a><a href="#" class="mdc" data-ev="A" data-go2="cl"><span class="nm">Kalibrasyon</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="dv"><span class="nm">Cihazlar</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="inv"><span class="nm">Stok</span><span class="ev">lot yok</span></a><a href="#" class="mdc" data-ev="S" data-go2="rcv"><span class="nm">Mal kabul ve sayım</span><span class="ev">lot ve barkod yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="cal"><span class="nm">Takvim</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="se"><span class="nm">Arama</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="S" data-go2="st"><span class="nm">Ayarlar</span><span class="ev">işletme kategorileri gizli</span></a><a href="#" class="mdc" data-ev="S" data-go2="nt"><span class="nm">Bildirim yönlendirme</span><span class="ev">vardiya ve yükseltme yok</span></a><a href="#" class="mdc" data-ev="A" data-go2="bk"><span class="nm">Bildirim kutusu</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="md"><span class="nm">Mod ayrımı</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="gz"><span class="nm">Gezinme</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="es"><span class="nm">Boş ve hata durumları</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="sub"><span class="nm">Abonelik</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="ac"><span class="nm">Hesap</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="gi"><span class="nm">Giriş ve hesap bağlama</span><span class="ev"></span></a><a href="#" class="mdc" data-ev="A" data-go2="yd"><span class="nm">Yardım ve destek</span><span class="ev"></span></a></div></div></div>
       <p style="font-size:12px;color:var(--label2)">İşletme modunda tüm ekranlar açık. Kutuya tıklayınca ekran açılır.</p>
+      <h3 style="font-size:17px;margin-top:10px">Cihaz ayrımı: iPhone'da ne var</h3>
+      <p style="font-size:13px;color:var(--label2)">iPhone veri görür ve sahadaki kısa işleri yapar; tasarım, planlama ve yönetim iPad ve web'dedir. Cihaz ayrımı yalnız arayüzdür; yetkiyi sunucu denetler.</p>
+      <div class="mdmap"><div class="mdg"><b>iPhone'da tam (kısa işler)</b><div class="mdw"><span class="mdc">Demleme günü</span><span class="mdc">Kağıt tarama, adımı kapat</span><span class="mdc">Ölçüm gir</span><span class="mdc">Araçlar</span><span class="mdc">Bugün (görev kapat)</span><span class="mdc">Saha: tank, lot, fıçı tarama</span><span class="mdc">CIP adımları</span><span class="mdc">Barkodla mal kabul ve sayım</span><span class="mdc">Alışveriş listesi</span><span class="mdc">Cihaz eşleştirme</span><span class="mdc">Bildirim kutusu</span><span class="mdc">Tarif sihirbazı (Ev)</span><span class="mdc">Ekipman sihirbazı (Ev)</span><span class="mdc">Hızlı parti başlat (Ev)</span><span class="mdc">İlk açılış, giriş, hesap, abonelik, yardım</span><span class="mdc">Davet kabulü</span><span class="mdc">Arama</span></div></div><div class="mdg"><b>iPhone'da salt görüntüleme</b><div class="mdw"><span class="mdc">Tarif ve alt sekmeleri</span><span class="mdc">Malzeme detayı</span><span class="mdc">Stil kılavuzu</span><span class="mdc">Nasıl hesaplandı</span><span class="mdc">Fermantasyon</span><span class="mdc">Parti özeti</span><span class="mdc">Üretim panosu</span><span class="mdc">Tank detayı</span><span class="mdc">Takvim (liste)</span><span class="mdc">Onay bekleyenler</span><span class="mdc">Maya yönetimi</span><span class="mdc">Raporlar (özet)</span><span class="mdc">İzlenebilirlik (lot)</span></div></div><div class="mdg"><b>Yalnız iPad ve web</b><div class="mdw"><span class="mdc">Tarif editörü</span><span class="mdc">Karşılaştırma</span><span class="mdc">Ölçekleme</span><span class="mdc">İçe aktarma eşleştirmesi</span><span class="mdc">Kendi malzemen</span><span class="mdc">Su raporu</span><span class="mdc">Uyarı kuralları</span><span class="mdc">Parti planlama ve tank ataması</span><span class="mdc">Bugün düzenleme</span><span class="mdc">Operatör görünümü</span><span class="mdc">Onay ve serbest bırakma</span><span class="mdc">Kalite</span><span class="mdc">Ambalaj kaydı</span><span class="mdc">Tank hareketi</span><span class="mdc">Sapma analizi</span><span class="mdc">Etiket</span><span class="mdc">Tank turu çıktısı</span><span class="mdc">Fıçı listesi ve QR etiket yazdırma</span><span class="mdc">Kullanıcı daveti, roller</span><span class="mdc">Denetim kaydı</span><span class="mdc">Ekipman, kaplar, kalibrasyon</span><span class="mdc">Çalışma alanı ayarları</span></div></div></div>
     </div>
   </div>
 
@@ -2824,22 +2776,7 @@ table.cmp td:first-child{font-weight:600}
         </div></div></div>
         <div class="inspo"><span class="chip">İlham: <b>Apple TV</b> profil seçimi, <b>Aile Paylaşımı</b> daveti</span><span class="chip">PIN 6 hane, kullanıcıya özel; Face ID ortak cihazda kişiyi ayırmaz</span><span class="chip">Her işlem açık kullanıcıya yazılır</span></div>
       </div>
-      <div>
-        <div class="devlabel">iPHONE · kullanıcı davet</div>
-        <div class="iphone"><div class="scr">
-          <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
-          <div class="nav"><span>Vazgeç</span><span class="t">Davet et</span><span style="font-weight:600">Gönder</span></div>
-          <div class="body">
-            <div class="group"><div class="cell">E-posta<span class="v">elif@ornek.com</span></div><div class="cell">Ad<span class="v">Elif S.</span></div></div>
-            <div><div class="ghead">Roller</div><div class="group">
-              <div class="cell">Operatör<span class="v" style="color:var(--tint)"><svg class="ico"><use href="#i-check"/></svg></span></div>
-              <div class="cell">Kalite</div><div class="cell">Depo</div><div class="cell">İzleyici</div>
-            </div></div>
-            <div class="group"><div class="cell">Kapsam<span class="pick">Tüm tanklar ›</span></div><div class="cell"><span>Ortak cihaz PIN'i oluştursun<span class="sub">ilk girişte</span></span><button class="tog on" aria-pressed="true" aria-label="Ortak cihaz PIN'i"></button></div></div>
-            <p style="font-size:11.5px;color:var(--label2)">Davet 7 gün geçerli. Kabul edilince kullanıcı sayısı aboneliğe yansır.</p>
-          </div>
-        </div></div>
-      </div>
+      <div><div class="devlabel">iPHONE · yok</div><div class="note"><h3>Davet iPad ve web'de</h3><p>Rol, kapsam ve ortak cihaz PIN'i büyük ekranda atanır. iPhone'da yalnız davet kabulü var (Davet kabulü ekranı). Ev'de tarif ve parti daveti paylaş menüsünden yapılır.</p></div></div>
     </div>
   </div>
 
@@ -3033,28 +2970,7 @@ table.cmp td:first-child{font-weight:600}
           </div>
         </div></div></div>
       </div>
-      <div>
-        <div class="devlabel">iPHONE · yeni hop, teknik föyden tara</div>
-        <div class="iphone"><div class="scr">
-          <div class="status"><span>09:41</span><span class="island"></span><span>%84</span></div>
-          <div class="nav"><span>Vazgeç</span><span class="t">Yeni hop</span><span style="font-weight:600">Kaydet</span></div>
-          <div class="body">
-            <button class="btn big"><svg class="ico"><use href="#i-search"/></svg> Föyden veya paketten tara</button>
-            <div class="group">
-              <div class="cell">Ad<span class="v" style="color:var(--label)">HBC 1019</span></div>
-              <div class="cell">Form<span class="pick">Pellet T90 ›</span></div>
-              <div class="cell">Hasat yılı<span class="v">2026</span></div>
-            </div>
-            <div><div class="ghead">Taramadan dolduruldu · kontrol et</div><div class="group">
-              <div class="cell">Alfa asit<span class="v" style="color:var(--tint)">%14.2</span></div>
-              <div class="cell">Beta asit<span class="v" style="color:var(--tint)">%4.8</span></div>
-              <div class="cell">Toplam yağ<span class="v" style="color:var(--tint)">2.6 mL/100 g</span></div>
-              <div class="cell">Aroma<span class="pick">tropik, narenciye ›</span></div>
-            </div></div>
-            <p style="font-size:11.5px;color:var(--label2)">Turuncu değerler taramadan geldi; kaydetmeden önce dokunarak düzeltilebilir.</p>
-          </div>
-        </div></div>
-      </div>
+      <div><div class="devlabel">iPHONE · yok</div><div class="note"><h3>Yeni malzeme iPad ve web'de</h3><p>Föyden tarama iPad kamerasıyla da yapılır. iPhone'da malzeme detayı salt okunur görünür.</p></div></div>
     </div>
     <div class="inspo"><span class="chip">İlham: <b>Kişiler</b> yeni kişi formu, <b>Canlı Metin</b> ile kağıttan değer okuma</span><span class="chip">Hazır malzemeden kopyalayıp değiştirmek en hızlı yol</span><span class="chip">İşletmede yalnız yetkili rol yeni malzeme ekler</span></div>
   </div>
