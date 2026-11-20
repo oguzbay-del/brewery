@@ -42,48 +42,48 @@ Tek uygulama iki modla çalışır: ev biracısı için sade Ev modu, küçük b
 
 Mod çalışma alanı bazında seçilir. **Açık:** modda tam çalışır. **Sade:** aynı ekran, işletmeye özgü alanlar gizli. **Kapalı:** ekran ve menüde görünmez. **Kapalı (açılabilir):** Ev modunda gizli, Ayarlar'dan tek özellik olarak açılabilir (ileri ev biracısı için). Tek kullanıcıya dayanmayan özellikler açılabilir; çok kullanıcı veya mevzuat gerektirenler (roller, onay, denetim kaydı, ortak cihaz, vardiya, mevzuat raporu) Ev modunda açılamaz.
 
-| Ekran veya özellik | Ev | İşletme | Not |
-| --- | --- | --- | --- |
-| **Tarif** |  |  |  |
-| Tarif sihirbazı | Açık (açılışta önde) | Açık | İşletmede editör önde |
-| Tarif editörü | Sade | Açık | Ev'de formül ve sabit seçimleri gizli, varsayılan kullanılır |
-| Tarif onayı (taslak → incelemede → onaylı) | Kapalı | Açık, zorunlu | Ev'de tarif doğrudan partiye gider |
-| Kaynatma programı, mash ve maya, fermantasyon profili, su ve pH, su raporu, mead/cider/seltzer | Açık | Açık |  |
-| Tarif ve parti listesi, tarif ve sürüm karşılaştırma, içe aktarma, "Nasıl hesaplandı" | Açık | Açık | İşletmede listede onay durumu filtresi |
-| Stil kılavuzu karşılaştırması | Açık | Açık | Varsayılan kılavuz: Ev'de BJCP, İşletmede BA |
-| Malzeme detayı, kendi malzemen | Açık | Açık | Lota özel değerler ve malt analizi (COA) yalnız İşletmede |
-| Tarif ölçekleme | Açık | Açık | hL ve bbl birimleri İşletmede |
-| **Demleme ve fermantasyon** |  |  |  |
-| Parti başlatma | Sade | Açık | İşletmede tank ataması ve yalnız onaylı sürüm |
-| Demleme günü, Live Activity | Açık (adım adım rehber) | Açık (üretim kaydı) | İşletmede operatör, sapma ve QC kaydı |
-| Kâğıt, aktarma ve düzeltme | Açık | Açık | Tarama Ev'de isteğe bağlı; İşletmede zorunlu yapılabilir ve saklama süresince silinemez |
-| Fermantasyon, otomatik uyarı kuralları, parti özeti, araçlar | Açık | Açık | İşletmede fermantasyon tank detayına bağlı |
-| Ambalaj | Sade | Açık | Ev'de ayrı ekran yok: fermantasyondaki "Şişele / fıçıla" eylemi (priming, adet); İşletmede CIP ve ambalaj kaydı |
-| Cihaz eşleştirme | Açık (Tilt, iSpindel, RAPT) | Açık | İşletmede tanka eşleştirme; profesyonel sensörler ve ağ geçidi İşletme 2. sürüm |
-| Takvim ve geriye planlama | Açık | Açık | İşletmede tank takvimi ve kapasite çakışması |
-| Kalibrasyon | Açık (ekipman profili) | Açık | İşletmede brewhouse verimi, dönüşüm ve süzme verimi ayrı |
-| Maya yönetimi (hasat, jenerasyon) | Kapalı (açılabilir) | Açık |  |
-| **Üretim** |  |  |  |
-| Üretim panosu, Bugün, Pano ve Bugün düzenleme | Kapalı | Açık | Ev'de açılış ekranı tarif listesi, aktif parti kartı üstte |
-| Operatör görünümü | Kapalı | Açık | Cihaz başına açılır |
-| Onay kutusu, kalite, sapma kaydı | Kapalı | Açık |  |
-| Tank detayı, tank hareketi, günlük tank turu | Kapalı | Açık | Ev'de birden fazla fermentor parti listesinde izlenir |
-| Lot izlenebilirlik, etiket bilgisi, raporlar ve mevzuat raporu | Kapalı | Açık | Mevzuat raporu ve etiket İşletme 2. sürüm |
-| Maliyet | Sade (tarif maliyeti, isteğe bağlı) | Açık (parti ve litre, FIFO) | Parti maliyeti Ev'de açılabilir |
-| **Sistem** |  |  |  |
-| İlk açılış, hesap, abonelik, arama, boş ve hata durumları | Açık | Açık | Mod ilk açılışta seçilir, sonra Ayarlar › Çalışma alanı › Mod'dan değişir; Ev'de açılabilen özellikler de orada. Abonelik planları moda göre |
-| Ekipman sihirbazı | Açık (tek profil) | Açık | İşletmede birden fazla brewhouse ve tank |
-| Stok ve alışveriş listesi | Sade (miktar, minimum seviye) | Açık (lot, rezerve, FIFO, COA) | Lot takibi Ev'de açılabilir |
-| Mal kabul ve sayım | Sade (stok ekleme) | Açık (lot, barkod, sayım farkı) |  |
-| Ayarlar | Sade | Açık | Ev'de Kullanıcılar, Roller ve yetkiler, vergi ülkesi gizli |
-| Bildirim yönlendirme | Sade (öncelik, sessiz saat, özet) | Açık (+ vardiya, yükseltme, role göre) |  |
-| Kullanıcı davet akışı | Sade | Açık | Ev'de tarif veya partiye düzenleyici/izleyici daveti (paylaş menüsünden); İşletmede rol atamalı ve süreli davet |
-| Roller ve yetkiler, ortak cihazda kullanıcı değiştirme, denetim kaydı | Kapalı | Açık | Ev'de açılamaz |
-| Birimler | L, kg, °C (bölgeye göre) | + hL, bbl |  |
-| Kaplar | Sade (şişe ve keg) | Açık (şişe, kutu, keg, cask) | Vergi ve rapor uygunluğu yalnız İşletmede görünür |
-| Bildirim kutusu (çan) | Açık | Açık | İşletmede vardiya, yükseltme ve role göre dağıtım eklenir |
-| Giriş ve hesap bağlama, yardım ve destek | Açık | Açık | İşletmede destek erişim iznini yönetici verir; yöneticiye passkey zorunlu |
-| Davet kabulü | Sade | Açık | Ev'de tarif ve parti daveti; İşletmede rol ve ortak cihaz PIN'i |
+| Ekran veya özellik | Ev | İşletme | Not | Modül |
+| --- | --- | --- | --- | --- |
+| **Tarif** |  |  |  |  |
+| Tarif sihirbazı | Açık (açılışta önde) | Açık | İşletmede editör önde | Çekirdek |
+| Tarif editörü | Sade | Açık | Ev'de formül ve sabit seçimleri gizli, varsayılan kullanılır | Çekirdek |
+| Tarif onayı (taslak → incelemede → onaylı) | Kapalı | Açık, zorunlu | Ev'de tarif doğrudan partiye gider | Ekip |
+| Kaynatma programı, mash ve maya, fermantasyon profili, su ve pH, su raporu, mead/cider/seltzer | Açık | Açık |  | Çekirdek |
+| Tarif ve parti listesi, tarif ve sürüm karşılaştırma, içe aktarma, "Nasıl hesaplandı" | Açık | Açık | İşletmede listede onay durumu filtresi | Çekirdek |
+| Stil kılavuzu karşılaştırması | Açık | Açık | Varsayılan kılavuz: Ev'de BJCP, İşletmede BA | Çekirdek |
+| Malzeme detayı, kendi malzemen | Açık | Açık | Lota özel değerler ve malt analizi (COA) yalnız İşletmede | Çekirdek |
+| Tarif ölçekleme | Açık | Açık | hL ve bbl birimleri İşletmede | Çekirdek |
+| **Demleme ve fermantasyon** |  |  |  |  |
+| Parti başlatma | Sade | Açık | İşletmede tank ataması ve yalnız onaylı sürüm | Çekirdek |
+| Demleme günü, Live Activity | Açık (adım adım rehber) | Açık (üretim kaydı) | İşletmede operatör, sapma ve QC kaydı | Çekirdek |
+| Kâğıt, aktarma ve düzeltme | Açık | Açık | Tarama Ev'de isteğe bağlı; İşletmede zorunlu yapılabilir ve saklama süresince silinemez | Çekirdek |
+| Fermantasyon, otomatik uyarı kuralları, parti özeti, araçlar | Açık | Açık | İşletmede fermantasyon tank detayına bağlı | Çekirdek |
+| Ambalaj | Sade | Açık | Ev'de ayrı ekran yok: fermantasyondaki "Şişele / fıçıla" eylemi (priming, adet); İşletmede CIP ve ambalaj kaydı | Çekirdek (İşletmede Üretim) |
+| Cihaz eşleştirme | Açık (Tilt, iSpindel, RAPT) | Açık | İşletmede tanka eşleştirme; profesyonel sensörler ve ağ geçidi İşletme 2. sürüm | Cihazlar |
+| Takvim ve geriye planlama | Açık | Açık | İşletmede tank takvimi ve kapasite çakışması | Çekirdek |
+| Kalibrasyon | Açık (ekipman profili) | Açık | İşletmede brewhouse verimi, dönüşüm ve süzme verimi ayrı | Çekirdek |
+| Maya yönetimi (hasat, jenerasyon) | Kapalı (açılabilir) | Açık |  | Kalite |
+| **Üretim** |  |  |  |  |
+| Üretim panosu, Bugün, Pano ve Bugün düzenleme | Kapalı | Açık | Ev'de açılış ekranı tarif listesi, aktif parti kartı üstte | Üretim |
+| Operatör görünümü | Kapalı | Açık | Cihaz başına açılır | Üretim |
+| Onay kutusu, kalite, sapma kaydı | Kapalı | Açık |  | Kalite |
+| Tank detayı, tank hareketi, günlük tank turu | Kapalı | Açık | Ev'de birden fazla fermentor parti listesinde izlenir | Üretim |
+| Lot izlenebilirlik, etiket bilgisi, raporlar ve mevzuat raporu | Kapalı | Açık | Mevzuat raporu ve etiket İşletme 2. sürüm | Kalite; Vergi ve uyum |
+| Maliyet | Sade (tarif maliyeti, isteğe bağlı) | Açık (parti ve litre, FIFO) | Parti maliyeti Ev'de açılabilir | Maliyet ve raporlar (Ev'de sade: Çekirdek) |
+| **Sistem** |  |  |  |  |
+| İlk açılış, hesap, abonelik, arama, boş ve hata durumları | Açık | Açık | Mod ilk açılışta seçilir, sonra Ayarlar › Çalışma alanı › Mod'dan değişir; Ev'de açılabilen özellikler de orada. Abonelik planları moda göre | Çekirdek |
+| Ekipman sihirbazı | Açık (tek profil) | Açık | İşletmede birden fazla brewhouse ve tank | Çekirdek |
+| Stok ve alışveriş listesi | Sade (miktar, minimum seviye) | Açık (lot, rezerve, FIFO, COA) | Lot takibi Ev'de açılabilir | Stok |
+| Mal kabul ve sayım | Sade (stok ekleme) | Açık (lot, barkod, sayım farkı) |  | Stok |
+| Ayarlar | Sade | Açık | Ev'de Kullanıcılar, Roller ve yetkiler, vergi ülkesi gizli | Çekirdek |
+| Bildirim yönlendirme | Sade (öncelik, sessiz saat, özet) | Açık (+ vardiya, yükseltme, role göre) |  | Çekirdek |
+| Kullanıcı davet akışı | Sade | Açık | Ev'de tarif veya partiye düzenleyici/izleyici daveti (paylaş menüsünden); İşletmede rol atamalı ve süreli davet | Ekip (Ev'de paylaşım: Çekirdek) |
+| Roller ve yetkiler, ortak cihazda kullanıcı değiştirme, denetim kaydı | Kapalı | Açık | Ev'de açılamaz | Ekip |
+| Birimler | L, kg, °C (bölgeye göre) | + hL, bbl |  | Çekirdek |
+| Kaplar | Sade (şişe ve keg) | Açık (şişe, kutu, keg, cask) | Vergi ve rapor uygunluğu yalnız İşletmede görünür | Çekirdek |
+| Bildirim kutusu (çan) | Açık | Açık | İşletmede vardiya, yükseltme ve role göre dağıtım eklenir | Çekirdek |
+| Giriş ve hesap bağlama, yardım ve destek | Açık | Açık | İşletmede destek erişim iznini yönetici verir; yöneticiye passkey zorunlu | Çekirdek |
+| Davet kabulü | Sade | Açık | Ev'de tarif ve parti daveti; İşletmede rol ve ortak cihaz PIN'i | Ekip (Ev'de paylaşım: Çekirdek) |
 
 Moddan moda geçişte veri silinmez; Ev'e dönülse de İşletme kayıtları (onaylar, denetim kaydı, lotlar) saklanır, yalnız görünmez.
 
