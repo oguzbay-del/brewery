@@ -35,6 +35,8 @@ pub const MODULES: &[Module] = &[
     crate::auth::shared_device::MODULE,
     crate::settings::MODULE,
     crate::subscription::MODULE,
+    crate::recipe_org::MODULE,
+    crate::recipes::MODULE,
 ];
 
 /// The routes of all modules, with the auth services as a request extension.

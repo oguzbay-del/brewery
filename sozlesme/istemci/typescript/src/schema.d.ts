@@ -775,6 +775,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the folders of the workspace. */
+        get: operations["folder_list"];
+        put?: never;
+        /** Creates a folder. */
+        post: operations["folder_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/folders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes an empty folder (soft delete). A folder with subfolders or recipes answers `409`. */
+        delete: operations["folder_delete"];
+        options?: never;
+        head?: never;
+        /** Renames or moves a folder. */
+        patch: operations["folder_update"];
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/ingredients": {
         parameters: {
             query?: never;
@@ -1034,6 +1070,220 @@ export interface paths {
         post?: never;
         /** Removes a role assignment. */
         delete: operations["assignments_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipe-versions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads a version with its lines, snapshots and (when published) the calculation summary. */
+        get: operations["recipe_version_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Changes a draft. Arrays replace the lines of their section. A stale `If-Match` answers `412`
+         *     with the current version and `conflicting_fields` (the fields of the patch that differ).
+         */
+        patch: operations["recipe_version_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipe-versions/{id}/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Calculates a version with the engine. A published version returns its stored summary. */
+        post: operations["recipe_version_calculate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipe-versions/{id}/compare/{other_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compares two versions (of the same recipe or of two recipes): header fields, lines by name,
+         *     and the calculation summaries.
+         */
+        get: operations["recipe_version_compare"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipe-versions/{id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publishes a draft: refreshes the equipment snapshot, calculates, stores the summary and makes
+         *     the version immutable. Home mode needs `recipe.edit`; Business mode needs `recipe.approve`.
+         *     TODO: the review steps of Business mode (submit, review, reject) come in stage 6.
+         */
+        post: operations["recipe_version_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipe-versions/{id}/scale": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Previews a recipe scaled by a factor or to a new batch volume. Nothing is saved: send the
+         *     lines in a patch to a draft to keep them.
+         *     TODO: rounding of small amounts comes with the scaling screen (stage 3).
+         */
+        post: operations["recipe_version_scale"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the recipes of the workspace. */
+        get: operations["recipe_list"];
+        put?: never;
+        /** Creates a recipe with its first draft. */
+        post: operations["recipe_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads a recipe. */
+        get: operations["recipe_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a recipe (soft delete). Batches that use its versions keep their data. */
+        delete: operations["recipe_delete"];
+        options?: never;
+        head?: never;
+        /** Changes the name, folder, notes or lock of a recipe. */
+        patch: operations["recipe_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipes/{id}/edit-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads the edit session (soft lock) of a recipe. The answer is `null` when nobody holds it. */
+        get: operations["editsession_get"];
+        /** Extends the edit session of the caller (heartbeat). Use it about every 30 seconds. */
+        put: operations["editsession_renew"];
+        /**
+         * Starts an edit session (takes the soft lock). Another user who holds it gets `409` with the
+         *     holder in `current`, unless `take_over` is true.
+         */
+        post: operations["editsession_start"];
+        /** Releases the edit session of the caller. The call is safe to repeat. */
+        delete: operations["editsession_release"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipes/{id}/favorite": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Marks a recipe as favorite for the caller. The call is safe to repeat. */
+        put: operations["recipefavorite_put"];
+        post?: never;
+        /** Removes the favorite mark of the caller. The call is safe to repeat. */
+        delete: operations["recipefavorite_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipes/{id}/tags/{tag_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Puts a tag on a recipe. The call is safe to repeat. */
+        put: operations["recipetag_put"];
+        post?: never;
+        /** Removes a tag from a recipe. The call is safe to repeat. */
+        delete: operations["recipetag_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/recipes/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the versions of a recipe, newest first (header only, no lines). */
+        get: operations["recipe_version_list"];
+        put?: never;
+        /** Starts a new draft that copies a published version. */
+        post: operations["recipe_version_create"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1334,6 +1584,42 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the tags of the workspace. */
+        get: operations["tag_list"];
+        put?: never;
+        /** Creates a tag. */
+        post: operations["tag_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/tags/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes a tag (soft delete) and removes it from the recipes. */
+        delete: operations["tag_delete"];
+        options?: never;
+        head?: never;
+        /** Renames a tag or changes its color. */
+        patch: operations["tag_update"];
         trace?: never;
     };
     "/v1/workspaces/{workspace_id}/vessels": {
@@ -1892,6 +2178,39 @@ export interface components {
             /** @description Presigned `GET` URL. */
             url: string;
         };
+        /** @description An edit session (soft lock) of a recipe. */
+        EditSession: {
+            /**
+             * Format: date-time
+             * @description The lock ends at this time without a heartbeat.
+             */
+            expires_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Last heartbeat.
+             */
+            last_seen_at: string;
+            /**
+             * Format: uuid
+             * @description The recipe.
+             */
+            recipe_id: string;
+            /**
+             * Format: date-time
+             * @description Started at.
+             */
+            started_at: string;
+            /**
+             * Format: uuid
+             * @description The user who holds the lock.
+             */
+            user_id: string;
+        };
         /** @description Body of `POST /v1/auth/email/start`. */
         EmailStartRequest: {
             /** @description Which client asks (for the mail text). */
@@ -2150,6 +2469,57 @@ export interface components {
              */
             yield_pct: number;
         };
+        /** @description One ingredient line of a version. All properties are copies (the snapshot). */
+        FermentableLine: {
+            /**
+             * Format: double
+             * @description Amount, kg.
+             */
+            amount_kg: number;
+            /**
+             * Format: double
+             * @description Color, SRM.
+             */
+            color_srm?: number | null;
+            /** @description `grain`, `extract`, `sugar`, `adjunct`, `dry_extract`, `fruit`, `juice`, `honey`, `acid`. */
+            grain_type?: string | null;
+            /**
+             * Format: double
+             * @description Bitterness an extract adds, IBU L per kg.
+             */
+            ibu_l_per_kg?: number | null;
+            /**
+             * Format: uuid
+             * @description Keep this line identifier when the lines are replaced.
+             */
+            id?: string | null;
+            /**
+             * Format: uuid
+             * @description Library ingredient. Missing properties are copied from it.
+             */
+            ingredient_id?: string | null;
+            /**
+             * Format: double
+             * @description Late extract, minutes before the end of the boil.
+             */
+            late_extract_min?: number | null;
+            /**
+             * Format: double
+             * @description Largest share in a batch, percent.
+             */
+            max_in_batch_pct?: number | null;
+            /** @description Name. */
+            name?: string | null;
+            /** @description The fermentable adds no fermentable extract. */
+            not_fermentable?: boolean | null;
+            /** @description `mash` (default), `steep`, `boil`, `whirlpool`, `primary`, `secondary`, `tertiary`, `bottling`, `sparge`. */
+            usage?: string | null;
+            /**
+             * Format: double
+             * @description Yield, percent.
+             */
+            yield_pct?: number | null;
+        };
         /**
          * @description Fermentation profile with its temperature steps
          * @example {
@@ -2218,6 +2588,36 @@ export interface components {
             /** @description Parameters for the user text (limits and the like). */
             params?: unknown;
         };
+        /** @description A recipe folder. */
+        Folder: {
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description Name. */
+            name: string;
+            /**
+             * Format: uuid
+             * @description Parent folder.
+             */
+            parent_id?: string | null;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
         /** @description Response of `GET /healthz`. */
         HealthResponse: {
             /** @description Service name. */
@@ -2246,6 +2646,45 @@ export interface components {
              * @description Hop storage index, percent.
              */
             hsi_pct?: number | null;
+        };
+        /** @description A hop line. */
+        HopLine: {
+            /**
+             * Format: double
+             * @description Alpha acid, percent.
+             */
+            alpha_pct?: number | null;
+            /**
+             * Format: double
+             * @description Amount, kg (liter for extracts).
+             */
+            amount_kg: number;
+            /** @description `pellet` (default), `plug`, `leaf`, `co2_extract`, `isomerized_extract`. */
+            form?: string | null;
+            /**
+             * Format: uuid
+             * @description Keep this line identifier when the lines are replaced.
+             */
+            id?: string | null;
+            /**
+             * Format: uuid
+             * @description Library ingredient.
+             */
+            ingredient_id?: string | null;
+            /** @description Name. */
+            name?: string | null;
+            /**
+             * Format: double
+             * @description Time, minutes.
+             */
+            time_min?: number | null;
+            /** @description `boil` (default), `dry_hop`, `mash`, `first_wort`, `whirlpool`. */
+            usage?: string | null;
+            /**
+             * Format: double
+             * @description Whirlpool temperature, degrees C.
+             */
+            whirlpool_temp_c?: number | null;
         };
         /** @description A sign-in method of the user. */
         IdentitySummary: {
@@ -2576,6 +3015,35 @@ export interface components {
             /** @description `spice`, `fining`, `herb`, `flavor`, `water_agent`, `other` (default). */
             misc_kind?: string | null;
         };
+        /** @description A misc line. */
+        MiscLine: {
+            /**
+             * Format: double
+             * @description Amount (L for a liquid, else kg).
+             */
+            amount: number;
+            /**
+             * Format: uuid
+             * @description Keep this line identifier when the lines are replaced.
+             */
+            id?: string | null;
+            /**
+             * Format: uuid
+             * @description Library ingredient.
+             */
+            ingredient_id?: string | null;
+            /** @description The misc is a liquid. */
+            is_liquid?: boolean | null;
+            /** @description Name. */
+            name?: string | null;
+            /**
+             * Format: double
+             * @description Time, minutes.
+             */
+            time_min?: number | null;
+            /** @description `boil` (default), `mash`, `primary`, `secondary`, `bottling`, `sparge`, `whirlpool`. */
+            usage?: string | null;
+        };
         /** @description Body of `POST /members/{id}/assignments`. */
         NewAssignment: {
             /**
@@ -2614,6 +3082,26 @@ export interface components {
              */
             size_bytes: number;
         };
+        /** @description Body of a new draft. */
+        NewDraft: {
+            /** @description Note on the change. */
+            change_note?: string | null;
+            /**
+             * Format: uuid
+             * @description Version to copy (default: the last published, else the newest).
+             */
+            from_version_id?: string | null;
+        };
+        /** @description Body of a folder create. */
+        NewFolder: {
+            /** @description Name, 1 to 200 characters. */
+            name: string;
+            /**
+             * Format: uuid
+             * @description Parent folder.
+             */
+            parent_id?: string | null;
+        };
         /** @description Body of `POST .../ingredients`. */
         NewIngredient: {
             /** @description Fields of the kind. */
@@ -2651,6 +3139,22 @@ export interface components {
             scope_id?: string | null;
             /** @description `recipe`, `batch`, `vessel` or `area`; omit for the whole workspace. */
             scope_kind?: string | null;
+        };
+        /** @description Body of a recipe create. */
+        NewRecipe: {
+            /**
+             * Format: uuid
+             * @description Folder.
+             */
+            folder_id?: string | null;
+            /** @description Name, 1 to 200 characters. */
+            name: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /** @description Tags. */
+            tag_ids?: string[];
+            /** @description Content of the first draft. */
+            version?: components["schemas"]["VersionInput"];
         };
         /** @description Body of `POST /roles`. */
         NewRole: {
@@ -2700,6 +3204,13 @@ export interface components {
             id: string;
             /** @description `recipe` or `batch`. */
             kind: string;
+        };
+        /** @description Body of a tag create. */
+        NewTag: {
+            /** @description Color as `#rrggbb`. */
+            color?: string | null;
+            /** @description Name, 1 to 100 characters. */
+            name: string;
         };
         /** @description Response of `POST /v1/auth/nonce`. */
         NonceResponse: {
@@ -2770,6 +3281,41 @@ export interface components {
             next_cursor?: string | null;
         };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Folder: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description Name. */
+                name: string;
+                /**
+                 * Format: uuid
+                 * @description Parent folder.
+                 */
+                parent_id?: string | null;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_IdentitySummary: {
             /** @description The rows of this page. */
             items: {
@@ -2830,6 +3376,66 @@ export interface components {
                 product_code?: string | null;
                 /** @description `library` (shared, read only) or `user` (added by the workspace). */
                 source: string;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Recipe: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: uuid
+                 * @description The last published version.
+                 */
+                approved_version_id?: string | null;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /**
+                 * Format: uuid
+                 * @description The open draft.
+                 */
+                draft_version_id?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Folder.
+                 */
+                folder_id?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description The caller marked the recipe as favorite. */
+                is_favorite: boolean;
+                /** @description The owner closed the recipe to changes (Home mode). */
+                is_locked: boolean;
+                /** @description Kind of the published (or else the draft) version. */
+                kind?: string | null;
+                /** @description Name. */
+                name: string;
+                /** @description Notes. */
+                notes?: string | null;
+                /** @description Tags of the recipe. */
+                tag_ids: string[];
                 /**
                  * Format: date-time
                  * @description Updated at.
@@ -3156,6 +3762,38 @@ export interface components {
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
         };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Tag: {
+            /** @description The rows of this page. */
+            items: {
+                /** @description Color as `#rrggbb`. */
+                color?: string | null;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description Name (unique in the workspace, case blind). */
+                name: string;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
         /** @description A registered passkey. */
         PasskeySummary: {
             /**
@@ -3216,6 +3854,11 @@ export interface components {
             /** @description Web only: keep the session across browser restarts. */
             remember?: boolean;
         };
+        /** @description Body of a publish. */
+        PublishBody: {
+            /** @description Note on the change. */
+            change_note?: string | null;
+        };
         /** @description Response of `GET /readyz`. */
         ReadyResponse: {
             /** @description Database state: `"ok"`. */
@@ -3224,6 +3867,75 @@ export interface components {
             redis: string;
             /** @description `"ok"` when the database answers. */
             status: string;
+        };
+        /** @description A recipe (the identity; the content is in the versions). */
+        Recipe: {
+            /**
+             * Format: uuid
+             * @description The last published version.
+             */
+            approved_version_id?: string | null;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /**
+             * Format: uuid
+             * @description The open draft.
+             */
+            draft_version_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Folder.
+             */
+            folder_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description The caller marked the recipe as favorite. */
+            is_favorite: boolean;
+            /** @description The owner closed the recipe to changes (Home mode). */
+            is_locked: boolean;
+            /** @description Kind of the published (or else the draft) version. */
+            kind?: string | null;
+            /** @description Name. */
+            name: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /** @description Tags of the recipe. */
+            tag_ids: string[];
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description Merge patch of a recipe. */
+        RecipePatch: {
+            /**
+             * Format: uuid
+             * @description Folder (`null` removes it).
+             */
+            folder_id?: string | null;
+            /** @description Lock the recipe against changes. */
+            is_locked?: boolean | null;
+            /** @description Name. */
+            name?: string | null;
+            /** @description Notes. */
+            notes?: string | null;
         };
         /** @description Response of a successful registration. */
         RegistrationDone: {
@@ -3288,6 +4000,21 @@ export interface components {
              * @description Record version (`ETag`).
              */
             version: number;
+        };
+        /** @description Body of a scaling preview. */
+        ScaleBody: {
+            /**
+             * Format: double
+             * @description Or: the new batch volume, L (the factor is the ratio to the current volume).
+             */
+            batch_volume_l?: number | null;
+            /** @description Calculate the scaled recipe with the engine (default true). */
+            calculate?: boolean | null;
+            /**
+             * Format: double
+             * @description Multiply all amounts by this factor.
+             */
+            factor?: number | null;
         };
         /** @description A scanned paper form (brew log, quality sheet). */
         ScannedDocument: {
@@ -3525,6 +4252,11 @@ export interface components {
              * @description Set when revoked.
              */
             revoked_at?: string | null;
+        };
+        /** @description Body of an edit session start. */
+        StartSession: {
+            /** @description Take the lock from another user (default false). */
+            take_over?: boolean;
         };
         /** @description Response of a successful second step. */
         StepUpDone: {
@@ -3806,6 +4538,33 @@ export interface components {
             /** @description The user session of the member (bound to the device). */
             session: components["schemas"]["SessionIssued"];
         };
+        /** @description A tag. */
+        Tag: {
+            /** @description Color as `#rrggbb`. */
+            color?: string | null;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description Name (unique in the workspace, case blind). */
+            name: string;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
         /** @description What the client does next: one HTTP request to the object store. */
         UploadInstructions: {
             /**
@@ -3833,6 +4592,91 @@ export interface components {
              * @description User id.
              */
             id: string;
+        };
+        /** @description The editable content of a version (create and the merge target of a patch). */
+        VersionInput: {
+            /**
+             * Format: double
+             * @description Batch volume into the fermenter, L.
+             */
+            batch_volume_l?: number | null;
+            /**
+             * Format: double
+             * @description Boil time, minutes.
+             */
+            boil_time_min?: number | null;
+            /**
+             * Format: double
+             * @description Pre-boil volume, L.
+             */
+            boil_volume_l?: number | null;
+            /** @description Note on the change. */
+            change_note?: string | null;
+            /**
+             * Format: double
+             * @description Brewhouse efficiency, percent.
+             */
+            efficiency_pct?: number | null;
+            /**
+             * Format: uuid
+             * @description Equipment. Missing volumes and efficiency come from it.
+             */
+            equipment_id?: string | null;
+            /** @description Fermentable lines (replaces all). */
+            fermentables?: components["schemas"]["FermentableLine"][] | null;
+            /** @description Fermentation profile snapshot: `{steps: [{name, days, temp_c}]}`. */
+            fermentation_snapshot?: Record<string, never> | null;
+            /** @description Hop lines (replaces all). */
+            hops?: components["schemas"]["HopLine"][] | null;
+            /** @description `extract`, `partial_mash`, `all_grain` (default), `cider`, `mead`, `wine`, `seltzer`. */
+            kind?: string | null;
+            /** @description Mash profile snapshot: `{biab, steps: [{kind, temp_c, infusion_l, time_min}]}`. */
+            mash_snapshot?: Record<string, never> | null;
+            /** @description Misc lines (replaces all). */
+            miscs?: components["schemas"]["MiscLine"][] | null;
+            /** @description Calculation options (engine `RecipeOptions` keys and `ibu_equation`). */
+            options?: Record<string, never> | null;
+            /**
+             * Format: uuid
+             * @description Style.
+             */
+            style_id?: string | null;
+            /**
+             * Format: double
+             * @description Target alcohol, percent.
+             */
+            target_abv_pct?: number | null;
+            /**
+             * Format: double
+             * @description Target CO2, volumes.
+             */
+            target_co2_vols?: number | null;
+            /**
+             * Format: double
+             * @description Target FG, SG.
+             */
+            target_fg_sg?: number | null;
+            /**
+             * Format: double
+             * @description Target bitterness, IBU.
+             */
+            target_ibu?: number | null;
+            /**
+             * Format: double
+             * @description Target OG, SG.
+             */
+            target_og_sg?: number | null;
+            /**
+             * Format: double
+             * @description Target color, SRM.
+             */
+            target_srm?: number | null;
+            /** @description Water addition lines (replaces all). */
+            water_additions?: components["schemas"]["WaterAdditionLine"][] | null;
+            /** @description Water profile snapshot. */
+            water_snapshot?: Record<string, never> | null;
+            /** @description Yeast lines (replaces all). */
+            yeasts?: components["schemas"]["YeastLine"][] | null;
         };
         /** @description Response of `GET /v1/version`. */
         VersionResponse: {
@@ -3911,6 +4755,28 @@ export interface components {
             max_pressure_bar?: number | null;
             name?: string;
             notes?: string | null;
+        };
+        /** @description A water addition line. */
+        WaterAdditionLine: {
+            /** @description Salt or acid (`gypsum`, `calcium_chloride`, `epsom_salt`, `baking_soda`, `chalk`, ...). */
+            agent: string;
+            /**
+             * Format: double
+             * @description Amount, kg.
+             */
+            amount_kg: number;
+            /**
+             * Format: double
+             * @description Concentration of an acid solution, percent.
+             */
+            concentration_pct?: number | null;
+            /**
+             * Format: uuid
+             * @description Keep this line identifier when the lines are replaced.
+             */
+            id?: string | null;
+            /** @description `mash` (default), `sparge`, `boil`. */
+            stage?: string | null;
         };
         /**
          * @description Source or target water profile; `source_document_id` links the lab water analysis report (a scanned document)
@@ -4119,6 +4985,77 @@ export interface components {
              * @description Cells in one package, billion.
              */
             total_cells_billion?: number | null;
+        };
+        /** @description A yeast line. */
+        YeastLine: {
+            /** @description Added in secondary. */
+            add_to_secondary?: boolean | null;
+            /**
+             * Format: double
+             * @description Amount, kg (dry yeast).
+             */
+            amount_kg?: number | null;
+            /**
+             * Format: double
+             * @description Cells per mL, billion.
+             */
+            cells_per_ml_billion?: number | null;
+            /**
+             * Format: double
+             * @description Dry pitch rate, g per hL.
+             */
+            dry_pitch_rate_g_per_hl?: number | null;
+            /** @description `liquid`, `dry`, `slant`, `culture`. */
+            form?: string | null;
+            /**
+             * Format: uuid
+             * @description Keep this line identifier when the lines are replaced.
+             */
+            id?: string | null;
+            /**
+             * Format: uuid
+             * @description Library ingredient.
+             */
+            ingredient_id?: string | null;
+            /**
+             * Format: double
+             * @description Highest apparent attenuation, percent.
+             */
+            max_attenuation_pct?: number | null;
+            /**
+             * Format: double
+             * @description Lowest apparent attenuation, percent.
+             */
+            min_attenuation_pct?: number | null;
+            /** @description Name. */
+            name?: string | null;
+            /**
+             * Format: double
+             * @description Packs (default 1).
+             */
+            packs?: number | null;
+            /**
+             * Format: double
+             * @description Alcohol tolerance, percent ABV.
+             */
+            tolerance_abv_pct?: number | null;
+            /**
+             * Format: double
+             * @description Cells in one pack, billion.
+             */
+            total_cells_billion?: number | null;
+            /** @description Use the pack counts (default true). */
+            use_packages?: boolean | null;
+            /**
+             * Format: double
+             * @description Viability, percent.
+             */
+            viability_pct?: number | null;
+            /**
+             * Format: double
+             * @description Viable cells in one pack, billion.
+             */
+            viable_cells_billion?: number | null;
         };
     };
     responses: never;
@@ -11198,6 +12135,602 @@ export interface operations {
             };
         };
     };
+    folder_list: {
+        parameters: {
+            query?: {
+                /** @description Text in the name (case blind) */
+                q?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `name` (default) or `-name` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of folders */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "name": "IPA",
+                     *           "parent_id": null,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Folder"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    folder_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewFolder"];
+            };
+        };
+        responses: {
+            /** @description Folder created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "IPA",
+                     *       "parent_id": null,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Folder"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    folder_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the folder */
+                "If-Match"?: string | null;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Folder */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    folder_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the folder */
+                "If-Match"?: string | null;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Folder */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["NewFolder"];
+            };
+        };
+        responses: {
+            /** @description The updated folder */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "Hazy IPA",
+                     *       "parent_id": null,
+                     *       "updated_at": "2026-11-20T10:05:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Folder"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     ingredient_list: {
         parameters: {
             query?: {
@@ -14415,6 +15948,3063 @@ export interface operations {
             };
         };
     };
+    recipe_version_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe version */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The version */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_volume_l": 20,
+                     *       "boil_time_min": 60,
+                     *       "calc_summary": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermentables": [],
+                     *       "hops": [],
+                     *       "id": "0192f1c07a3b7000800000000000000c",
+                     *       "kind": "all_grain",
+                     *       "miscs": [],
+                     *       "number": 1,
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000b",
+                     *       "status": "draft",
+                     *       "version": 1,
+                     *       "water_additions": [],
+                     *       "yeasts": []
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_version_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the draft */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe version */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["VersionInput"];
+            };
+        };
+        responses: {
+            /** @description The updated draft */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_volume_l": 20,
+                     *       "boil_time_min": 60,
+                     *       "calc_summary": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermentables": [],
+                     *       "hops": [],
+                     *       "id": "0192f1c07a3b7000800000000000000c",
+                     *       "kind": "all_grain",
+                     *       "miscs": [],
+                     *       "number": 1,
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000b",
+                     *       "status": "draft",
+                     *       "version": 1,
+                     *       "water_additions": [],
+                     *       "yeasts": []
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_version_calculate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe version */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The calculation summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "abv_pct": 6.3,
+                     *       "color_srm": 8,
+                     *       "engine_version": "0.1.0",
+                     *       "est_cells_ml": 0,
+                     *       "fg_sg": 1.012,
+                     *       "honey_pct": null,
+                     *       "ibu": 40,
+                     *       "og_sg": 1.06,
+                     *       "schema_version": 1,
+                     *       "source": "engine"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Calculation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_version_compare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description First recipe version (`a`) */
+                id: string;
+                /** @description Second recipe version (`b`) */
+                other_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The differences */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "a": {
+                     *         "id": "0192f1c07a3b7000800000000000000c",
+                     *         "number": 1,
+                     *         "recipe_id": "0192f1c07a3b7000800000000000000b"
+                     *       },
+                     *       "b": {
+                     *         "id": "0192f1c07a3b7000800000000000000d",
+                     *         "number": 2,
+                     *         "recipe_id": "0192f1c07a3b7000800000000000000b"
+                     *       },
+                     *       "fields": [],
+                     *       "lines": {
+                     *         "fermentables": {
+                     *           "added": [],
+                     *           "changed": [],
+                     *           "removed": []
+                     *         }
+                     *       },
+                     *       "summary": []
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_version_publish: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the draft */
+                "If-Match": string;
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe version */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishBody"];
+            };
+        };
+        responses: {
+            /** @description The published version */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_volume_l": 20,
+                     *       "boil_time_min": 60,
+                     *       "calc_summary": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermentables": [],
+                     *       "hops": [],
+                     *       "id": "0192f1c07a3b7000800000000000000c",
+                     *       "kind": "all_grain",
+                     *       "miscs": [],
+                     *       "number": 1,
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000b",
+                     *       "status": "draft",
+                     *       "version": 1,
+                     *       "water_additions": [],
+                     *       "yeasts": []
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request; Calculation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_version_scale: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe version */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScaleBody"];
+            };
+        };
+        responses: {
+            /** @description The scaled lines and the calculation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_volume_l": 40,
+                     *       "boil_volume_l": 50,
+                     *       "factor": 2,
+                     *       "fermentables": [],
+                     *       "hops": [],
+                     *       "miscs": [],
+                     *       "summary": null,
+                     *       "water_additions": [],
+                     *       "yeasts": []
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Calculation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_list: {
+        parameters: {
+            query?: {
+                /** @description Text in the name (case blind) */
+                q?: string;
+                /** @description Folder */
+                folder_id?: string;
+                /** @description Tag */
+                tag_id?: string;
+                /** @description Only favorites of the caller */
+                favorite?: boolean;
+                /** @description Kind of the version (`mead`, `cider`, ...) */
+                kind?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `name` (default) or `-name` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of recipes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "approved_version_id": null,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "draft_version_id": "0192f1c07a3b7000800000000000000c",
+                     *           "folder_id": null,
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "is_favorite": false,
+                     *           "is_locked": false,
+                     *           "kind": "all_grain",
+                     *           "name": "House IPA",
+                     *           "notes": null,
+                     *           "tag_ids": [],
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Recipe"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewRecipe"];
+            };
+        };
+        responses: {
+            /** @description Recipe created with draft number 1 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approved_version_id": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "draft_version_id": "0192f1c07a3b7000800000000000000c",
+                     *       "folder_id": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "is_favorite": false,
+                     *       "is_locked": false,
+                     *       "kind": "all_grain",
+                     *       "name": "House IPA",
+                     *       "notes": null,
+                     *       "tag_ids": [],
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Recipe"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The recipe */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approved_version_id": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "draft_version_id": "0192f1c07a3b7000800000000000000c",
+                     *       "folder_id": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "is_favorite": false,
+                     *       "is_locked": false,
+                     *       "kind": "all_grain",
+                     *       "name": "House IPA",
+                     *       "notes": null,
+                     *       "tag_ids": [],
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Recipe"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_delete: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the recipe */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the recipe */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["RecipePatch"];
+            };
+        };
+        responses: {
+            /** @description The updated recipe */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "approved_version_id": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "draft_version_id": "0192f1c07a3b7000800000000000000c",
+                     *       "folder_id": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "is_favorite": false,
+                     *       "is_locked": false,
+                     *       "kind": "all_grain",
+                     *       "name": "House IPA",
+                     *       "notes": null,
+                     *       "tag_ids": [],
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Recipe"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    editsession_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The active session or `null` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expires_at": "2026-11-20T10:02:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "last_seen_at": "2026-11-20T10:00:30Z",
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000c",
+                     *       "started_at": "2026-11-20T10:00:00Z",
+                     *       "user_id": "0192f1c07a3b7000800000000000000d"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EditSession"] | null;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    editsession_renew: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The extended session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expires_at": "2026-11-20T10:02:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "last_seen_at": "2026-11-20T10:00:30Z",
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000c",
+                     *       "started_at": "2026-11-20T10:00:00Z",
+                     *       "user_id": "0192f1c07a3b7000800000000000000d"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EditSession"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    editsession_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartSession"];
+            };
+        };
+        responses: {
+            /** @description The session of the caller */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expires_at": "2026-11-20T10:01:30Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "last_seen_at": "2026-11-20T10:00:00Z",
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000c",
+                     *       "started_at": "2026-11-20T10:00:00Z",
+                     *       "user_id": "0192f1c07a3b7000800000000000000d"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EditSession"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    editsession_release: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The caller holds no lock */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipefavorite_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The recipe is a favorite */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipefavorite_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The recipe is not a favorite */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipetag_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+                /** @description Tag */
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The recipe has the tag */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipetag_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+                /** @description Tag */
+                tag_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The recipe has no such tag */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_version_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The versions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "approved_at": "2026-11-20T10:00:00Z",
+                     *           "change_note": null,
+                     *           "id": "0192f1c07a3b7000800000000000000c",
+                     *           "kind": "all_grain",
+                     *           "number": 1,
+                     *           "status": "approved",
+                     *           "version": 2
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    recipe_version_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Recipe */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewDraft"];
+            };
+        };
+        responses: {
+            /** @description The new draft */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_volume_l": 20,
+                     *       "boil_time_min": 60,
+                     *       "calc_summary": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermentables": [],
+                     *       "hops": [],
+                     *       "id": "0192f1c07a3b7000800000000000000c",
+                     *       "kind": "all_grain",
+                     *       "miscs": [],
+                     *       "number": 1,
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000b",
+                     *       "status": "draft",
+                     *       "version": 1,
+                     *       "water_additions": [],
+                     *       "yeasts": []
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     roles_list: {
         parameters: {
             query?: never;
@@ -17294,6 +21884,602 @@ export interface operations {
             };
             /** @description Not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    tag_list: {
+        parameters: {
+            query?: {
+                /** @description Text in the name (case blind) */
+                q?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `name` (default) or `-name` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of tags */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "color": "#ffaa00",
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "name": "summer",
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Tag"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    tag_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewTag"];
+            };
+        };
+        responses: {
+            /** @description Tag created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "color": "#ffaa00",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "summer",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Tag"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    tag_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the tag */
+                "If-Match"?: string | null;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Tag */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    tag_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the tag */
+                "If-Match"?: string | null;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Tag */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["NewTag"];
+            };
+        };
+        responses: {
+            /** @description The updated tag */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "color": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "winter",
+                     *       "updated_at": "2026-11-20T10:05:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Tag"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

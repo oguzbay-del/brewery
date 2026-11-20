@@ -18,6 +18,8 @@ pub mod modules;
 pub mod openapi;
 pub mod pagination;
 pub mod ratelimit;
+pub mod recipe_org;
+pub mod recipes;
 pub mod redis_client;
 pub mod request;
 pub mod routes;

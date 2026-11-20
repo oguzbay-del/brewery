@@ -281,6 +281,13 @@ impl ApiError {
         self
     }
 
+    /// Adds the current state of the record (`current` of the problem body).
+    #[must_use]
+    pub fn with_current(mut self, current: Value) -> Self {
+        self.current = Some(current);
+        self
+    }
+
     /// Adds a `Retry-After` header (seconds).
     #[must_use]
     pub fn with_retry_after(self, secs: u64) -> Self {

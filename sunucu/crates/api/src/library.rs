@@ -378,16 +378,16 @@ pub struct MappingFilter {
 
 // --- helpers ------------------------------------------------------------------------------
 
-fn workspace(ctx: &RequestContext) -> ApiResult<Uuid> {
+pub(crate) fn workspace(ctx: &RequestContext) -> ApiResult<Uuid> {
     ctx.workspace_id
         .ok_or_else(|| ApiError::new(ErrorCode::NotFound))
 }
 
-fn issue(field: &str, code: &str) -> ApiError {
+pub(crate) fn issue(field: &str, code: &str) -> ApiError {
     ApiError::validation(vec![FieldIssue::new(field, code)])
 }
 
-fn not_found() -> ApiError {
+pub(crate) fn not_found() -> ApiError {
     ApiError::new(ErrorCode::NotFound)
 }
 
@@ -395,14 +395,14 @@ fn read_only() -> ApiError {
     ApiError::new(ErrorCode::Forbidden).with_errors(vec![FieldIssue::new("/source", "read_only")])
 }
 
-fn sqlstate(e: &sqlx::Error) -> Option<String> {
+pub(crate) fn sqlstate(e: &sqlx::Error) -> Option<String> {
     e.as_database_error()
         .and_then(sqlx::error::DatabaseError::code)
         .map(|c| c.to_string())
 }
 
 /// RFC 7396: merges `patch` into `target`.
-fn merge(target: &mut Value, patch: &Value) {
+pub(crate) fn merge(target: &mut Value, patch: &Value) {
     if let Value::Object(p) = patch {
         if !target.is_object() {
             *target = Value::Object(Map::new());
@@ -711,14 +711,14 @@ fn input_of(row: &Ingredient) -> Value {
 }
 
 /// Paging of a list: size, sort and the decoded cursor.
-struct Paging {
-    limit: u32,
-    sort: SortSpec,
-    key: Option<String>,
-    id: Option<Uuid>,
+pub(crate) struct Paging {
+    pub(crate) limit: u32,
+    pub(crate) sort: SortSpec,
+    pub(crate) key: Option<String>,
+    pub(crate) id: Option<Uuid>,
 }
 
-fn paging(
+pub(crate) fn paging(
     params: &ListParams,
     allowed: &[&'static str],
     default: &'static str,
@@ -745,7 +745,7 @@ fn paging(
 }
 
 impl Paging {
-    fn dir(&self) -> (&'static str, &'static str) {
+    pub(crate) fn dir(&self) -> (&'static str, &'static str) {
         if self.sort.descending {
             ("<", "DESC")
         } else {
@@ -754,14 +754,14 @@ impl Paging {
     }
 }
 
-fn name_cursor(name: &str, id: Uuid) -> Cursor {
+pub(crate) fn name_cursor(name: &str, id: Uuid) -> Cursor {
     Cursor {
         key: json!(name),
         id,
     }
 }
 
-fn id_cursor(id: Uuid) -> Cursor {
+pub(crate) fn id_cursor(id: Uuid) -> Cursor {
     Cursor {
         key: Value::Null,
         id,
@@ -775,7 +775,7 @@ fn check_source(source: Option<&str>) -> ApiResult<()> {
     }
 }
 
-fn created_response<T: Serialize>(location: &str, version: i64, body: &T) -> Response {
+pub(crate) fn created_response<T: Serialize>(location: &str, version: i64, body: &T) -> Response {
     let mut response = concurrency::record_response(StatusCode::CREATED, version, body);
     if let Ok(value) = location.parse() {
         response.headers_mut().insert(header::LOCATION, value);
