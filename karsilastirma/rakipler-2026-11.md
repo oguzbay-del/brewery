@@ -244,3 +244,21 @@ Açılamayan sayfalar (yalnız arama özeti var, doğrulanacak): brewersfriend.c
 - Brewfather verim/OG şikayetlerinin güncelliği (arama özeti).
 - Kalite/izlenebilirlik modülünün hiçbir rakipte olmadığı (yalnız incelenen kaynaklar için doğru).
 - FoamByte ücretsiz plan limitleri.
+
+---
+
+## Ek: Craft Beer Wizard (20 Kasım 2026)
+
+Kaynak: [craft-beer-wizard.com/en/free-beer-recipe-generator](https://craft-beer-wizard.com/en/free-beer-recipe-generator) (sayfa açılarak okundu; diğer sayfalar açılmadı).
+
+- **Ne yapıyor:** tarayıcıda, kurulum yok. Kullanıcı birayı serbest metinle tarif ediyor (ya da 73 BJCP stilinden birini, "Freestyle" ya da "Clone a beer" seçiyor); yapay zekâ tahıl, şerbetçiotu programı, mash, maya, su ve fermantasyon önerisi veriyor. OG, FG, ABV, IBU ve SRM "tahıl ve şerbetçiotu listesine göre hesaplanıyor". Model adı, IBU ve renk yöntemi, verim varsayımı yazılmamış.
+- **Fiyat:** misafir ayda 3 yapay zekâ tarifi, kayıtsız; ücretsiz hesapta 3 kayıtlı tarif. Pro (düzenleme, ölçekleme, BeerXML, su kimyası, PDF demleme kaydı, topluluk) alfa süresince ücretsiz; sonrası 4,99 CHF/ay veya 20 CHF/yıl.
+- **Diğer:** demleme günü sayaçları, sıcaklık kaydı, fermantasyon takibi, envanter, topluluk tarifleri, hesaplayıcılar. Cihaz entegrasyonu yok, yerel uygulama yok, yalnız İngilizce görünüyor.
+- **Dürüstlük notları:** "tarifi demlemeden önce gözden geçirin" uyarısı; Brewfather ve BeerSmith karşılaştırması "üretici bilgisi, bağımsız deneme değil" diye işaretli.
+
+**Bizim için anlamı:**
+1. **Yapay zekâ ile tarif taslağı artık pazarda var** ve giriş kapısı olarak kullanılıyor (kayıtsız ilk tarif). Onaylı yaklaşımımız aynı ayrımı yapıyor: model yalnız malzeme önerir, sayıları hesap motoru hesaplar. Bizim farkımız hesabın şeffaf ve doğrulanmış olması ("Nasıl hesaplandı", parite testleri, kalibrasyon); onların yöntemi yazılı değil.
+2. **Fiyat çıpası düşük:** 20 CHF/yıl (yaklaşık 22–25 $, kur doğrulanacak), Brewfather Premium'a yakın. Katman matrisi taslağında (O8) dikkate alınmalı.
+3. **Pazarlama:** "ücretsiz tarif üreticisi" ve tek tek hesaplayıcı sayfaları arama trafiği için kurulmuş. Bu, pazarlama sitesi iş parçacığının konusu (hesaplayıcı sayfaları `web-stratejisi/20-*` içinde var).
+4. **"Clone a beer" (bilinen ticari birayı taklit eden tarif):** planda yok. Dil modeli kararıyla birlikte değerlendirilebilir.
+5. **Eksikleri bizim güçlü yanımız:** cihaz entegrasyonu, iPhone/iPad uygulaması, İşletme modu ve çok kullanıcı yok.
