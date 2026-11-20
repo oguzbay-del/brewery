@@ -55,6 +55,11 @@ for (const route of routes) {
         viewport: window.innerWidth,
         document: document.documentElement.scrollWidth,
         body: document.body.scrollWidth,
+        overflowers: [...document.querySelectorAll("body *")]
+          .map((element) => ({ tag: element.tagName, className: typeof element.className === "string" ? element.className : "", id: element.id, left: Math.round(element.getBoundingClientRect().left), right: Math.round(element.getBoundingClientRect().right), width: Math.round(element.getBoundingClientRect().width), scrollWidth: element.scrollWidth }))
+          .filter((element) => element.right > window.innerWidth + 1 || element.left < -1)
+          .sort((a, b) => b.right - a.right)
+          .slice(0, 12),
       }));
       expect(dimensions.document, `document overflow at ${width}px: ${JSON.stringify(dimensions)}`).toBeLessThanOrEqual(width);
       expect(dimensions.body, `body overflow at ${width}px: ${JSON.stringify(dimensions)}`).toBeLessThanOrEqual(width);
