@@ -14,6 +14,7 @@ const featuredAreas = [...businessSpecificAreas, ...sharedBusinessAreas].slice(0
 const homebrewerAreas = features.filter((feature) => feature.audiences.includes("Homebrewers")).slice(0, 4);
 
 const base = import.meta.env.BASE_URL;
+const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}tr/`, import.meta.env.SITE).href;
 const structuredData = {
   "@context": "https://schema.org",
@@ -32,7 +33,7 @@ const structuredData = {
     <FontPreload />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#F7F6F3" />
-    <meta name="robots" content="noindex, nofollow" />
+    <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta

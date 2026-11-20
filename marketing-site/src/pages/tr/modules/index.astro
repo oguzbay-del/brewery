@@ -1,0 +1,43 @@
+---
+import FontPreload from "../../../components/FontPreload.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import Breadcrumbs from "../../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../../data/breadcrumbs";
+import { modules } from "../../../data/modules";
+import { featuresTr } from "../../../data/features.tr";
+import { moduleLabelsTr } from "../../../data/modules.tr";
+import "../../../styles/global.css";
+import "../../../styles/stitch-layout.css";
+import "../../../styles/modules.css";
+const base=import.meta.env.BASE_URL;
+const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
+const canonicalUrl=new URL(`${base}tr/modules/`,import.meta.env.SITE).href;
+const description="GRISTORA ürün modüllerini ve Ev ile Profesyonel Bira Üreticisi çalışma alanları arasındaki farkları keşfedin.";
+const breadcrumbItems=[{name:"Ana sayfa",url:new URL(`${base}tr/`,import.meta.env.SITE).href},{name:"Modüller",url:canonicalUrl}];
+const breadcrumbData=buildBreadcrumbList(breadcrumbItems);
+const structuredData={"@context":"https://schema.org","@type":"CollectionPage",name:"GRISTORA ürün modülleri",description,url:canonicalUrl,inLanguage:"tr",isPartOf:{"@type":"WebSite",name:"GRISTORA",url:new URL(base,import.meta.env.SITE).href}};
+const homeLabel=(value:string)=>value==="—"?"Ev · Dahil değil":value==="Included"?"Ev · Dahil":value==="Simplified"?"Ev · Sade kapsam":"Ev · İkinci sürüm";
+const businessLabel=(value:string)=>value==="—"?"İşletme · Dahil değil":value==="Included"?"İşletme · Dahil":"İşletme · İkinci sürüm";
+const featureTitle=(slug:string)=>featuresTr.find((feature)=>feature.slug===slug)?.title ?? slug.replaceAll("-"," ");
+const descriptions: Record<string,string> = {
+  core:"Tarifler, bira üretimi hesaplamaları, stil kılavuzları, ekipman profilleri ve kalibrasyon, demleme günü, fermantasyon, ölçümler, bildirimler ve içe/dışa aktarma temeli.",
+  devices:"iSpindel, RAPT, Tilt, webhook ve bağlı cihaz okumaları; işletme çalışma alanlarında tank sensörleri.",
+  stock:"Malzemeler, lotlar, mal kabul, sayım, ayırma, düşük stok uyarıları, alışveriş listeleri ve temel satın alma.",
+  production:"Tanklar ve doluluk, transferler, üretim panosu, takvim, ambalaj kayıtları, QR kap takibi, saha taraması ve ekipman bakımı.",
+  quality:"Spesifikasyonlar, laboratuvar sonuçları, serbest bırakma, CIP, maya jenerasyonları ve geri çağırma raporları.",
+  "cost-reports":"Parti ve litre maliyeti, ay sonu stok değerleme ve XLSX/CSV dışa aktarma.",
+  "tax-compliance":"TTB ve HMRC hesaplamaları, beyannameye hazır raporlar, saklama ve yasal tutma.",
+  team:"Roller, yetkiler, ortak cihazlar, onay akışları ve denetim kayıtları.",
+  connections:"MCP ile kendi ajanınızı bağlama ve açık API."
+};
+const details: Record<string,string> = {
+  stock:"Ev yolunda sadeleştirilmiş kapsam. Tedarikçi faturaları, ödemeler ve muhasebe kapsam dışıdır.",
+  production:"Profesyonel üretim iş akışıdır. Bitmiş ürün satışı, sevkiyat, müşteride fıçı takibi ve depozito yönetimi kapsam dışıdır.",
+  "cost-reports":"Ev yolunda isteğe bağlı tarif maliyeti; parti/litre maliyeti ve stok değerleme profesyonel iş akışıdır. Muhasebe kaydı ve tedarikçi faturası yoktur.",
+  "tax-compliance":"Beyannamelerin otomatik gönderimi mevcut onaylı kapsamda değildir.",
+  connections:"Her iki yolda da ikinci sürüm için planlanmıştır; bugün var olan özellik gibi sunulmaz."
+};
+
+---
+<!doctype html><html lang="tr"><head><meta charset="UTF-8"/><FontPreload/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#F7F6F3"/><meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} /><link rel="canonical" href={canonicalUrl}/><link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`}/><meta name="description" content={description}/><title>Ürün Modülleri | GRISTORA</title><meta property="og:type" content="website"/><meta property="og:site_name" content="GRISTORA"/><meta property="og:title" content="Ürün Modülleri | GRISTORA"/><meta property="og:description" content={description}/><meta property="og:url" content={canonicalUrl}/><meta property="og:image" content={new URL(`${base}social-card.png`,import.meta.env.SITE).href}/><meta property="og:image:alt" content="GRISTORA — Brewing Intelligence"/><meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="Ürün Modülleri | GRISTORA"/><meta name="twitter:description" content={description}/><meta name="twitter:image" content={new URL(`${base}social-card.png`,import.meta.env.SITE).href}/><meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence"/><script type="application/ld+json" set:html={JSON.stringify(structuredData)}/><script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)}/></head><body><a class="skip-link" href="#main-content">Ana içeriğe geç</a><SiteHeader current="modules" lang="tr"/><main id="main-content" class="shell modules-page"><Breadcrumbs items={breadcrumbItems}/><section class="modules-hero"><p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜN MİMARİSİ</p><h1>Dokuz modül. <em>İki bira üretim yolu.</em></h1><p class="modules-lede">GRISTORA çalışma alanı modüllerinden oluşur. Ev yolu temel bira üretim iş akışını kişisel ve yalın tutar; Profesyonel Bira Üreticisi yolu ekiplerin ortak operasyonel ihtiyaçlarını ekler.</p></section><section aria-labelledby="module-grid-title"><div class="section-heading"><p class="eyebrow">MODÜL GENEL BAKIŞI</p><h2 id="module-grid-title">İşinize uygun yetenekleri <em>seçin.</em></h2><p>Kapsam, onaylı ürün planını gösterir; planlanan her yeteneğin bugün kullanıma hazır olduğu anlamına gelmez.</p></div><div class="module-matrix">{modules.map((module,index)=><article class="module-card" id={module.id}><p class="eyebrow">MODÜL {String(index+1).padStart(2,"0")}</p><h2>{moduleLabelsTr[module.id]}</h2><p>{descriptions[module.id]}</p><div><span class="module-status">{homeLabel(module.home)}</span><span class:list={["module-status",module.brewery==="Second release"?"planned":""]}>{businessLabel(module.brewery)}</span></div><p>{details[module.id] || "Her iki çalışma alanı için ürün planında tanımlanmıştır."}</p><div class="module-links">{module.features.map(slug=><a href={`${base}tr/features/${slug}/`}>{featureTitle(slug)} ↗</a>)}</div></article>)}</div></section><section class="module-boundary" aria-labelledby="erp-boundary"><h2 id="erp-boundary">Odaklı bira üretim operasyonları, <em>tam kapsamlı ERP değil.</em></h2><p>GRISTORA satış, sipariş, müşteri yönetimi, sevkiyat, faturalama, muhasebe, e-ticaret veya taproom kasa/POS kapsamı sunmaz. Fıçı ve kap takibi üretim kayıtları ve QR bağlantılı durumla sınırlıdır; müşteride fıçı takibi ve depozito yönetimi kapsam dışıdır. Bitmiş ürün stoğu yalnızca ürünün üretildiğini ve ambalajlandığını kaydeder; satışını izlemez.</p></section></main><SiteFooter backText="Özellikleri keşfet ↑" backHref={`${base}tr/features/`}/></body></html>

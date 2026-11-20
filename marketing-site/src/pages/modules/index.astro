@@ -1,0 +1,27 @@
+---
+import FontPreload from "../../components/FontPreload.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { buildBreadcrumbList } from "../../data/breadcrumbs";
+import { modules } from "../../data/modules";
+import "../../styles/global.css";
+import "../../styles/stitch-layout.css";
+import "../../styles/modules.css";
+const base=import.meta.env.BASE_URL;
+const allowIndexing=new URL(import.meta.env.SITE).hostname==="gristora.com";
+const canonicalUrl=new URL(`${base}modules/`,import.meta.env.SITE).href;
+const description="Explore the GRISTORA product modules and how they differ between Home and Professional Brewery workspaces.";
+const breadcrumbItems=[{name:"Home",url:new URL(base,import.meta.env.SITE).href},{name:"Modules",url:canonicalUrl}];
+const breadcrumbData=buildBreadcrumbList(breadcrumbItems);
+const structuredData={"@context":"https://schema.org","@type":"CollectionPage",name:"GRISTORA product modules",description,url:canonicalUrl,inLanguage:"en",isPartOf:{"@type":"WebSite",name:"GRISTORA",url:new URL(base,import.meta.env.SITE).href}};
+---
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><FontPreload/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#F7F6F3"/>
+<meta name="robots" content={allowIndexing?"index, follow":"noindex, nofollow"}/><link rel="canonical" href={canonicalUrl}/><link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`}/>
+<meta name="description" content={description}/><title>Product Modules | GRISTORA</title><meta property="og:type" content="website"/><meta property="og:site_name" content="GRISTORA"/><meta property="og:title" content="Product Modules | GRISTORA"/><meta property="og:description" content={description}/><meta property="og:url" content={canonicalUrl}/><meta property="og:image" content={new URL(`${base}social-card.png`,import.meta.env.SITE).href}/><meta property="og:image:alt" content="GRISTORA — Brewing Intelligence"/>
+<meta name="twitter:card" content="summary_large_image"/><meta name="twitter:title" content="Product Modules | GRISTORA"/><meta name="twitter:description" content={description}/><meta name="twitter:image" content={new URL(`${base}social-card.png`,import.meta.env.SITE).href}/><meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence"/>
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)}/><script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)}/></head><body><a class="skip-link" href="#main-content">Skip to main content</a><SiteHeader current="modules"/>
+<main id="main-content" class="shell modules-page"><Breadcrumbs items={breadcrumbItems}/><section class="modules-hero"><p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT ARCHITECTURE</p><h1>Nine modules. <em>Two brewing paths.</em></h1><p class="modules-lede">GRISTORA is organised into workspace modules. The Home path keeps the essential brewing workflow personal and focused; Professional Brewery adds the shared operational modules teams need.</p></section>
+<section aria-labelledby="module-grid-title"><div class="section-heading"><p class="eyebrow">MODULE OVERVIEW</p><h2 id="module-grid-title">Choose the capabilities that <em>fit your work.</em></h2><p>Availability reflects the approved product plan, not a claim that every planned capability is already live.</p></div>
+<div class="module-matrix">{modules.map((module,index)=><article class="module-card" id={module.id}><p class="eyebrow">MODULE {String(index+1).padStart(2,"0")}</p><h2>{module.name}</h2><p>{module.description}</p><div><span class="module-status">{module.home==="—"?"Home · Not included":`Home · ${module.home}`}</span><span class:list={["module-status",module.brewery==="Second release"?"planned":""]}>Brewery · {module.brewery}</span></div><p>{module.detail}</p><div class="module-links">{module.features.map(slug=><a href={`${base}features/${slug}/`}>{slug.replaceAll("-"," ")} ↗</a>)}</div></article>)}</div></section>
+<section class="module-boundary" aria-labelledby="erp-boundary"><h2 id="erp-boundary">Focused brewing operations, <em>not a full ERP.</em></h2><p>GRISTORA does not cover sales, orders, customer management, shipping, invoicing, accounting, e-commerce or taproom point of sale. Keg and vessel tracking is limited to production records and QR-linked status; tracking kegs at customer sites and managing deposits are excluded. Finished-goods stock records that a product was produced and packaged, not its sale.</p></section></main><SiteFooter backText="Explore features ↑" backHref={`${base}features/`}/></body></html>

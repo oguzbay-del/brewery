@@ -85,7 +85,7 @@ const siteOrigin = firstLoc ? new URL(decodeHtml(firstLoc)).origin : "https://ex
 
 const requiredRoutes = [
   "/", "/homebrewers/", "/breweries/", "/features/",
-  "/how-it-works/", "/technical-principles/", "/faq/", "/pricing/", "/get-started/", "/compare/",
+  "/how-it-works/", "/technical-principles/", "/faq/", "/pricing/", "/get-started/", "/compare/", "/modules/",
 ];
 for (const route of requiredRoutes) {
   const routeUrl = new URL(`${basePath}${route}`, siteOrigin);
@@ -118,10 +118,11 @@ for (const file of htmlFiles) {
   if (rel === "404.html") continue;
   const pagePath = rel === "index.html" ? "/" : rel.endsWith("/index.html") ? `/${rel.slice(0, -"index.html".length)}` : `/${rel}`;
   const pageUrl = new URL(`${basePath}${pagePath}`, siteOrigin);
-  // Turkish preview pages (/tr/) are noindex and stay out of the sitemap (owner decision, 19 Nov 2026).
+  // Turkish routes are indexable on canonical production and excluded from preview sitemaps.
   if (pagePath.startsWith("/tr/")) {
-    assert(!sitemap.includes(pageUrl.href), `sitemap excludes Turkish preview page: ${pagePath}`);
-    continue;
+    const isCanonicalProduction = siteOrigin === "https://gristora.com";
+    assert(isCanonicalProduction ? sitemap.includes(pageUrl.href) : !sitemap.includes(pageUrl.href),
+      `sitemap Turkish route follows production vs preview policy: ${pagePath}`);
   }
   assert(sitemap.includes(pageUrl.href), `sitemap lists page: ${pagePath}`);
 }
@@ -152,11 +153,9 @@ for (const file of htmlFiles) {
   assert(Boolean(metaDescription?.trim()), rel + ": meta description is not empty");
   const robotsMeta = getMetaContent(html, "name", "robots");
   const isCanonicalProduction = siteOrigin === "https://gristora.com";
+  assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
   if (rel.startsWith("tr/")) {
-    assert(robotsMeta === "noindex, nofollow", rel + ": Turkish preview page is always noindex");
-    assert(/<html lang="tr"/.test(html), rel + ": Turkish preview page declares lang=\"tr\"");
-  } else {
-    assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
+    assert(/<html lang="tr"/.test(html), rel + ": Turkish page declares lang=\"tr\"");
   }
   if (metaDescription) {
     const length = decodeHtml(metaDescription).trim().length;
@@ -272,6 +271,11 @@ for (const file of htmlFiles) {
   assert((html.match(/<h1(?:\s|>)/g) || []).length === 1, `${rel}: exactly one primary heading`);
   assert((html.match(/<main(?:\s|>)/g) || []).length === 1, `${rel}: exactly one main landmark`);
   assert(/<a[^>]*class=["']skip-link["'][^>]*href=["']#main-content["']/.test(html), `${rel}: skip link targets main content`);
+  const languageSwitch = html.match(/lang-switch[^>]*href="([^"]+)"/)?.[1];
+  const expectedLanguagePath = isTr ? pagePath.replace("/tr/", "/") : (pagePath === "/" ? "/tr/" : "/tr" + pagePath);
+  const actualLanguagePath = languageSwitch ? new URL(decodeHtml(languageSwitch), pageUrl).pathname : "";
+  assert(actualLanguagePath === basePath + expectedLanguagePath, rel + ": language switch points to equivalent route in the other language");
+
   const desktopNav = html.match(/<nav class=["']desktop-nav["'][^>]*>([\s\S]*?)<\/nav>/)?.[1] || "";
   const breweriesNavIndex = desktopNav.indexOf(isTr ? ">Bira üreticileri<" : ">Breweries<");
   const homebrewersNavIndex = desktopNav.indexOf(isTr ? ">Ev biracıları<" : ">Homebrewers<");
