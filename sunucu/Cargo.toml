@@ -10,6 +10,7 @@ members = [
     "crates/worker",
     "crates/events",
     "crates/ingest",
+    "crates/billing",
     "crates/storage",
     "crates/fake-oidc",
 ]
@@ -23,6 +24,7 @@ publish = false
 [workspace.dependencies]
 # Internal crates
 common = { path = "crates/common" }
+billing = { path = "crates/billing" }
 db = { path = "crates/db" }
 events = { path = "crates/events" }
 engine = { path = "crates/engine" }

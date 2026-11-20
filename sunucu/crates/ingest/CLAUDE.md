@@ -2,15 +2,19 @@
 
 ## What it does
 - Intake of external events (webhooks): device, App Store, payment and GitHub sources.
-- For now it has only `GET /healthz` and clean shutdown. Later tasks add the source connections.
+- `GET /healthz` and clean shutdown.
+- App Store Server Notifications v2 (T2.28): `POST /v1/webhooks/app-store`. `jws.rs` verifies the JWS: ES256, `x5c` chain to the Apple root (`certs/AppleRootCA-G3.cer`), Apple marker extensions. `apple.rs` maps the notification to a `billing::SubscriptionUpdate`. `APPLE_BUNDLE_ID` limits the accepted app.
+- Web payment provider (Paddle, decision O6): `POST /v1/webhooks/web-payment` calls the trait `billing::provider::WebPaymentProvider`. The Paddle adapter is not written yet, so the route answers 503 in production.
+- The service stores a verified update in `external_events` and one outbox event in one transaction (role `app_api`). A repeated notification gets 200 `duplicate` and is not stored again.
 - Port `PORT` (default 8082).
 
 ## What it does not touch
-- It does not touch the database or calculation code.
-- `worker` owns event processing. This crate only receives the events.
+- It does not touch calculation code. It writes only `external_events` and `outbox`.
+- `worker` owns event processing (`billing::apply::NotificationHandler`). This crate only receives and verifies the events.
+- Do not use `JwsVerifier::with_roots` in production code. It is for tests with a test root.
 
 ## How to test
-- In `sunucu/`, run: `cargo test -p ingest`
+- In `sunucu/`, run: `DATABASE_URL=... NATS_URL=nats://127.0.0.1:4222 cargo test -p ingest`. `tests/subscription.rs` needs PostgreSQL and NATS. `tests/jws.rs` needs neither. The tests build a test PKI with `rcgen`.
 - Lint: `cargo clippy --workspace --all-targets -- -D warnings`
 
 ## Rules

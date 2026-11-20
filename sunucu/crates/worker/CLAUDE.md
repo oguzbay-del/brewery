@@ -2,7 +2,7 @@
 
 ## What it does
 - `GET /healthz` and clean shutdown.
-- Background work (`background.rs`, T2.15): the relay from the outbox to NATS JetStream (`events::relay`) and the cleanup of `processed_events`. The consumers of later tasks (`events::consumer::run`) register here. If `DATABASE_URL` (`app_worker`) and `NATS_URL` are not set, only the health endpoint runs.
+- Background work (`background.rs`, T2.15): the relay from the outbox to NATS JetStream (`events::relay`) and the cleanup of `processed_events`. The consumer `subscription-notifications` (`billing::apply::NotificationHandler`, T2.28) applies verified subscription notifications. The consumers of later tasks (`events::consumer::run`) register here. If `DATABASE_URL` (`app_worker`) and `NATS_URL` are not set, only the health endpoint runs.
 - Port `PORT` (default 8081).
 
 ## What it does not touch

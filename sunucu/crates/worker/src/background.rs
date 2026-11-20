@@ -62,6 +62,13 @@ pub async fn run(stop: watch::Receiver<bool>) {
         stopped(stop.clone()),
     ));
     // Consumers of later jobs register here: `consumer::run(pool, js, config, handler, stop)`.
+    let subscription_task = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(billing::CONSUMER_NAME, &billing::notification_filter()),
+        std::sync::Arc::new(billing::apply::NotificationHandler),
+        stopped(stop.clone()),
+    ));
     let janitor = {
         let pool = pool.clone();
         let stop = stop.clone();
@@ -77,5 +84,5 @@ pub async fn run(stop: watch::Receiver<bool>) {
             }
         })
     };
-    let _ = tokio::join!(relay_task, janitor);
+    let _ = tokio::join!(relay_task, subscription_task, janitor);
 }

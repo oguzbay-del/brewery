@@ -1584,6 +1584,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{ws}/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Subscription state of the workspace (trial, entitlement, subscriptions). */
+        get: operations["subscription_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1593,6 +1610,16 @@ export interface components {
             /** @description The token from the mailed link. */
             token: string;
         };
+        /**
+         * @description Access level to the paid features.
+         * @enum {string}
+         */
+        AccessLevelDto: "full" | "read_only";
+        /**
+         * @description Reason for the access level.
+         * @enum {string}
+         */
+        AccessSourceDto: "trial" | "subscription" | "promo" | "manual" | "none";
         /** @description Sign-in methods of other accounts that use the same verified address (ADR-0009 rule 1.6). */
         AccountHint: {
             /** @description Providers (`apple`, `google`, `email`) the other account signs in with. */
@@ -3718,6 +3745,39 @@ export interface components {
              * @description Record version (`ETag`).
              */
             version: number;
+        };
+        /** @description Subscription state of a workspace. */
+        SubscriptionState: {
+            /** @description Access level now. */
+            access: components["schemas"]["AccessLevelDto"];
+            /** @description Reason for the access level. */
+            access_source: components["schemas"]["AccessSourceDto"];
+            /** @description Subscriptions, oldest first. */
+            subscriptions: components["schemas"]["SubscriptionView"][];
+            /**
+             * Format: date-time
+             * @description End of the one month trial.
+             */
+            trial_ends_at: string;
+            /**
+             * Format: date-time
+             * @description End of the entitlement that gives access now; absent for the trial.
+             */
+            valid_until?: string | null;
+        };
+        /** @description A subscription of the workspace. */
+        SubscriptionView: {
+            /**
+             * Format: date-time
+             * @description End of the paid period.
+             */
+            period_ends_at?: string | null;
+            /** @description Product key. */
+            product_key: string;
+            /** @description `app_store` or `web`. */
+            source: string;
+            /** @description `trial`, `active`, `grace`, `expired` or `cancelled`. */
+            status: string;
         };
         /** @description Body of `POST /v1/shared-devices/{id}/switch`. */
         SwitchRequest: {
@@ -20073,6 +20133,103 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    subscription_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace id */
+                ws: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Subscription state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "access": "full",
+                     *       "access_source": "subscription",
+                     *       "subscriptions": [
+                     *         {
+                     *           "period_ends_at": "2027-01-19T09:00:00Z",
+                     *           "product_key": "pro.monthly",
+                     *           "source": "app_store",
+                     *           "status": "active"
+                     *         }
+                     *       ],
+                     *       "trial_ends_at": "2026-12-20T09:00:00Z",
+                     *       "valid_until": "2027-01-19T09:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SubscriptionState"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

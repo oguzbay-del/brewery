@@ -1,7 +1,7 @@
 # sunucu: Rust workspace
 
 ## What it does
-- Cargo workspace. The crates are in `crates/`: engine, engine-service, api, worker, ingest, common, db, events, storage.
+- Cargo workspace. The crates are in `crates/`: engine, engine-service, api, worker, ingest, billing, common, db, events, storage.
 - `rust-toolchain.toml` pins the version. Shared dependencies come into the crates with `workspace = true`.
 - Layout decision: `adr/0001-depo-duzeni.md`.
 

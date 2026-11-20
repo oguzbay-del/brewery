@@ -22,6 +22,7 @@ pub mod redis_client;
 pub mod request;
 pub mod routes;
 pub mod settings;
+pub mod subscription;
 
 use std::sync::Arc;
 

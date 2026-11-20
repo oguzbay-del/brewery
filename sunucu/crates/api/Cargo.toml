@@ -11,6 +11,7 @@ axum.workspace = true
 base64.workspace = true
 chrono.workspace = true
 common = { workspace = true, features = ["http", "otel"] }
+billing.workspace = true
 db.workspace = true
 engine-client = { path = "../engine-client" }
 events.workspace = true
