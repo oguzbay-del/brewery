@@ -87,6 +87,24 @@ Mod çalışma alanı bazında seçilir. **Açık:** modda tam çalışır. **Sa
 
 Moddan moda geçişte veri silinmez; Ev'e dönülse de İşletme kayıtları (onaylar, denetim kaydı, lotlar) saklanır, yalnız görünmez.
 
+## Modüller
+
+Ürün modüllere ayrılır; her modül çalışma alanı başına açılıp kapanır (abonelik yetkisi), katman matrisi modüllerle kurulur. ERP sınırı modül sınırlarıyla denetlenir (Oğuz, 20 Kasım 2026).
+
+| Modül | İçerik | Mod | Sınır (girmeyenler) |
+| --- | --- | --- | --- |
+| Çekirdek | Tarif, hesaplar, stil kılavuzu, demleme günü, fermantasyon, ölçüm, bildirim, içe ve dışa aktarma | Ev ve İşletme | – |
+| Cihazlar | iSpindel, RAPT, Tilt, webhook, kalibrasyon; İşletmede tank sensörleri | İkisi | – |
+| Stok | Malzeme stoğu, lot, mal kabul, sayım, ayırma, düşük stok uyarısı, alışveriş listesi, hafif satın alma | İkisi (Ev'de sade) | Tedarikçi faturası, ödeme, muhasebe |
+| Üretim | Tanklar ve doluluk, transfer, üretim panosu, takvim, ambalaj kaydı, ekipman bakımı | İşletme | Bitmiş ürünün satışı ve sevkiyatı |
+| Kalite | Spesifikasyon, laboratuvar sonucu, serbest bırakma, CIP, maya jenerasyonu, geri çağırma raporu | İşletme | – |
+| Maliyet ve raporlar | Parti ve litre maliyeti, ay sonu stok değerleme, xlsx ve CSV dışa aktarma | İşletme | Muhasebe kaydı ve fatura (yalnız dosyayla aktarım) |
+| Vergi ve uyum | TTB ve HMRC hesapları, beyannameye hazır rapor, saklama ve yasal tutma | İşletme | Beyannamenin otomatik gönderilmesi (doğrulanacak) |
+| Ekip | Roller, yetki, ortak cihaz, onay akışı, denetim kaydı | İşletme | – |
+| Bağlantılar | MCP ile kendi ajanını bağla, açık API | İkisi (Ev 2. sürüm, İşletme 2. sürüm) | – |
+
+Kapsam dışı (ERP): satış, sipariş, müşteri yönetimi, sevkiyat, fatura, muhasebe, fıçı takibi, e-ticaret ve taproom kasası. Bitmiş ürün stoğu yalnız "üretildi ve ambalajlandı" düzeyinde tutulur; satışı izlenmez. "Mod ayrımı" ve "Ek özellikler" tablolarındaki her satır bu modüllerden birine aittir.
+
 ## Platformlar ve mimari
 
 Apple cihazları native SwiftUI, masaüstü web; hepsi sunucudaki tek hesap motorunu ve tek API'sini paylaşır. Bir formül düzeltmesi tüm platformlara aynı anda gider.

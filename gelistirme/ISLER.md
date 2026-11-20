@@ -133,6 +133,16 @@ The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus 
 | 5 Home MVP beta | Cloud setup, beta | Interviews and golden test are complete; independent security review |
 | 6 Business | Business screens | Step by step |
 
+## Product modules (stage 5)
+
+Decision (Oğuz, 2026-11-20): the product has modules (plan › Modüller): Core, Devices, Stock, Production, Quality, Cost and reports, Tax and compliance, Team, Connections. Each module can be on or off for each workspace. The tier matrix (O8) uses the modules. The module borders keep the product out of ERP.
+
+| Task | Description | Done criterion | Depends on | Stage | Owner | Model | Status |
+|---|---|---|---|---|---|---|---|
+| P1 | Module switches: a module list in code (one source), the module of each endpoint module in `api/src/modules.rs`, a check that gives 403 `module_disabled` when the module is off, module state from `entitlements`, the module list in `/v1/meta` | Endpoint tests: an endpoint of a module that is off gives 403; export is always available; the OpenAPI document shows the module of each operation | T2.28, T2.35 | 5 | Claude | Sonnet | todo |
+| P2 | Tier matrix draft with the modules (Home and Business tiers, limits for devices, users and storage; no limit on export); agree with the pricing of the marketing site (`web-stratejisi/45-*`) | Draft in plan › Deneme süresi; O8 can decide | P1 | 5 | Claude | Opus | todo |
+| P3 | Module state in the clients: settings screen (modules of the workspace), hidden navigation for modules that are off, an upgrade message; update the concept, the screen list and the design system | Playwright and iOS UI tests; `araclar/tutarlilik.py` is clean | P1 | 5 | Claude | Sonnet | todo |
+
 ## Bring your own agent: MCP (stage 5 and Home version 2)
 
 Decision (Oğuz, 2026-11-20): the user can connect an own AI agent (Claude, ChatGPT or another MCP client) through a remote MCP server. We do not run a language model. The design is in plan › Platformlar ve mimari › API ve istemci iletişimi.
@@ -181,5 +191,5 @@ Rules:
 | O4 | Google Cloud organization and billing | Stage 5 | todo |
 | O5 | Delete the 7 old branches on GitHub | – | todo |
 | O6 | Select a web payment provider (subscriptions outside the App Store). Decision: Paddle (merchant of record). Paddle collects and pays US sales tax and UK VAT. | T2.28 | done (2026-11-20) |
-| O8 | Approve the tier matrix and the prices (Claude writes the draft before the beta) | Stage 5 | todo |
+| O8 | Approve the tier matrix and the prices (Claude writes the draft before the beta, task P2) | Stage 5 | todo |
 | O7 | Buy the gristora.com domain (after the trademark and domain review, Issue #146) | G7 | todo |

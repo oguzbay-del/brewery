@@ -58,7 +58,9 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
-- 2026-11-20: competitor review of Breww (Business mode) is in `karsilastirma/breww-2026-11.md`. Oğuz approved the plan additions (2026-11-20): stock reservation and alerts, CIP state in the tank proposal (Business core); equipment maintenance, stock count freeze, month-end valuation and xlsx export, light purchasing without invoices or accounting (Business version 2); contract packaging later (product decision). A proposal for product modules is open.
+- 2026-11-20 (Oğuz): the product has modules (plan › Modüller; tasks P1–P3 in stage 5). The marketing site shows the same modules (work package W13 in `web-stratejisi/46-*`).
+
+- 2026-11-20: competitor review of Breww (Business mode) is in `karsilastirma/breww-2026-11.md`. Oğuz approved the plan additions (2026-11-20): stock reservation and alerts, CIP state in the tank proposal (Business core); equipment maintenance, stock count freeze, month-end valuation and xlsx export, light purchasing without invoices or accounting (Business version 2); contract packaging later (product decision).
 
 - 2026-11-20 (Oğuz): we do not train an own model now. Added to the plan: a target-to-recipe solver in the engine (clone a beer uses it; no AI) in Home version 2, and style statistics from open recipes (simple statistics, not a model) later. A model on our own measurement data stays an idea in plan › Analitik modeller.
 
