@@ -676,6 +676,28 @@ export interface paths {
         patch: operations["batchstep_update"];
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/batches/{id}/stock-deduction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deducts the actual amounts of a batch from stock. Each ingredient is taken from the oldest lots
+         *     first (best-before day, then receipt day); a lot that the actual record names comes first. The
+         *     call is safe to repeat: it deducts only what the earlier calls did not deduct. A shortage goes
+         *     to the last lot, which then shows a `negative_stock` warning.
+         */
+        post: operations["stock_deduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/batches/{id}/summary": {
         parameters: {
             query?: never;
@@ -1740,6 +1762,174 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/shopping-list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the shopping list. */
+        get: operations["shopping_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/shopping-list/from-recipe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Builds shopping list items from a recipe version: the amounts of the recipe (scaled to the batch
+         *     volume) minus the stock on hand. An item for the same ingredient, unit and recipe version that
+         *     is still open gets a new amount, so the call is safe to repeat.
+         */
+        post: operations["shopping_from_recipe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/shopping-list/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Removes an item from the list (soft delete). */
+        delete: operations["shopping_delete"];
+        options?: never;
+        head?: never;
+        /** Ticks off an item or changes its amount. */
+        patch: operations["shopping_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/stock/lots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the stock lots of the workspace. */
+        get: operations["stock_lot_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/stock/lots/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one lot. */
+        get: operations["stock_lot_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Changes the supplier, best-before day, cost or notes of a lot. The amount changes only with a
+         *     movement.
+         */
+        patch: operations["stock_lot_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/stock/lots/{id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Writes a movement on a lot: `receive`, `consume`, `adjust` or `count`. The answer carries a
+         *     `negative_stock` warning when the lot is below zero afterwards.
+         */
+        post: operations["stock_move"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/stock/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the ledger rows. */
+        get: operations["stock_movement_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/stock/receipts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Receives goods: finds or creates the lot (ingredient and lot code) and writes a `receive` row. */
+        post: operations["stock_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/stock/totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Totals for each ingredient and unit, calculated from the ledger rows. An ingredient below zero
+         *     gets a `negative_stock` warning.
+         */
+        get: operations["stock_totals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/style-guides": {
         parameters: {
             query?: never;
@@ -2689,6 +2879,42 @@ export interface components {
             /** @description Name of the copy. */
             name: string;
         };
+        /** @description An ingredient that stock already covers. */
+        CoveredLine: {
+            /**
+             * Format: uuid
+             * @description The ingredient.
+             */
+            ingredient_id: string;
+            /** @description Name of the ingredient. */
+            ingredient_name: string;
+            /**
+             * Format: double
+             * @description Amount in stock.
+             */
+            on_hand: number;
+            /**
+             * Format: double
+             * @description Amount the recipe needs.
+             */
+            required: number;
+            /** @description `kg`, `l`, `count`. */
+            unit: string;
+        };
+        /** @description The answer of a batch deduction. */
+        DeductionResult: {
+            /**
+             * Format: uuid
+             * @description The batch.
+             */
+            batch_id: string;
+            /** @description The ledger rows that this call wrote. */
+            movements: components["schemas"]["StockMovement"][];
+            /** @description Lines that this call did not move. */
+            skipped: components["schemas"]["SkippedLine"][];
+            /** @description `negative_stock` for each lot below zero. */
+            warnings: components["schemas"]["StockWarning"][];
+        };
         /** @description Body of `POST /v1/workspaces/{ws}/shared-devices/{id}/rotate-key`. */
         DeviceKeyRotate: {
             /** @description The new key (same rules as at registration). */
@@ -3151,6 +3377,21 @@ export interface components {
              */
             version: number;
         };
+        /** @description Body of a shopping list build from a recipe. */
+        FromRecipe: {
+            /**
+             * Format: double
+             * @description Scale the amounts to this batch volume, L (default: the volume of the recipe).
+             */
+            batch_volume_l?: number | null;
+            /**
+             * Format: uuid
+             * @description The recipe version.
+             */
+            recipe_version_id: string;
+            /** @description Subtract the stock on hand (default true). */
+            subtract_stock?: boolean | null;
+        };
         /** @description Response of `GET /healthz`. */
         HealthResponse: {
             /** @description Service name. */
@@ -3399,6 +3640,25 @@ export interface components {
             /** @description The user. */
             user: components["schemas"]["UserSummary"];
         };
+        /** @description Body of a lot patch (JSON Merge Patch). */
+        LotPatch: {
+            /** @description Currency of the cost. */
+            cost_currency?: string | null;
+            /**
+             * Format: date
+             * @description Best-before day.
+             */
+            expires_on?: string | null;
+            /** @description Notes. */
+            notes?: string | null;
+            /** @description Supplier. */
+            supplier?: string | null;
+            /**
+             * Format: double
+             * @description Cost of one unit; needs `cost_currency`.
+             */
+            unit_cost?: number | null;
+        };
         /**
          * @description Mash profile with its steps
          * @example {
@@ -3608,6 +3868,45 @@ export interface components {
             time_min?: number | null;
             /** @description `boil` (default), `mash`, `primary`, `secondary`, `bottling`, `sparge`, `whirlpool`. */
             usage?: string | null;
+        };
+        /** @description Body of a movement on a lot. */
+        MoveBody: {
+            /**
+             * Format: uuid
+             * @description The batch that used the amount.
+             */
+            batch_id?: string | null;
+            /**
+             * Format: double
+             * @description `count`: the counted amount, zero or more. The server calculates the difference.
+             */
+            counted_quantity?: number | null;
+            /**
+             * @description `receive` (amount in), `consume` (amount out), `adjust` (signed correction, needs a
+             *     reason) or `count` (stock count).
+             */
+            kind: string;
+            /**
+             * Format: date-time
+             * @description When it happened (default now).
+             */
+            occurred_at?: string | null;
+            /**
+             * Format: double
+             * @description `receive` and `consume`: the amount, greater than zero. `adjust`: the signed difference.
+             */
+            quantity?: number | null;
+            /** @description Reason. */
+            reason?: string | null;
+        };
+        /** @description The answer of a stock movement. */
+        MovementResult: {
+            /** @description The lot after the movement. */
+            lot: components["schemas"]["StockLot"];
+            /** @description The ledger row. */
+            movement: components["schemas"]["StockMovement"];
+            /** @description `negative_stock` when the lot is below zero. */
+            warnings: components["schemas"]["StockWarning"][];
         };
         /** @description Body of `POST /members/{id}/assignments`. */
         NewAssignment: {
@@ -4310,6 +4609,169 @@ export interface components {
             next_cursor?: string | null;
         };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_ShoppingItem: {
+            /** @description The rows of this page. */
+            items: {
+                /** @description Bought (ticked off). */
+                checked: boolean;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /**
+                 * Format: uuid
+                 * @description The ingredient.
+                 */
+                ingredient_id: string;
+                /** @description Name of the ingredient. */
+                ingredient_name: string;
+                /**
+                 * Format: double
+                 * @description Amount to buy.
+                 */
+                quantity: number;
+                /**
+                 * Format: uuid
+                 * @description The recipe version that put the item on the list.
+                 */
+                source_recipe_version_id?: string | null;
+                /** @description `kg`, `l`, `count`. */
+                unit: string;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_StockLot: {
+            /** @description The rows of this page. */
+            items: {
+                /** @description Currency of the cost. */
+                cost_currency?: string | null;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date
+                 * @description Best-before day.
+                 */
+                expires_on?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /**
+                 * Format: uuid
+                 * @description The ingredient.
+                 */
+                ingredient_id: string;
+                /** @description `fermentable`, `hop`, `yeast`, `misc`. */
+                ingredient_kind: string;
+                /** @description Name of the ingredient. */
+                ingredient_name: string;
+                /** @description Lot code (`default` in Home mode). */
+                lot_code: string;
+                /** @description Notes. */
+                notes?: string | null;
+                /**
+                 * Format: double
+                 * @description Amount in the unit of the lot (the cache of the ledger total).
+                 */
+                quantity: number;
+                /**
+                 * Format: date
+                 * @description Day of the goods receipt.
+                 */
+                received_on?: string | null;
+                /** @description Supplier. */
+                supplier?: string | null;
+                /** @description `kg`, `l`, `count`. */
+                unit: string;
+                /**
+                 * Format: double
+                 * @description Cost of one unit. Empty for a caller without `cost.view`.
+                 */
+                unit_cost?: number | null;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_StockMovement: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: uuid
+                 * @description The batch (a deduction).
+                 */
+                batch_id?: string | null;
+                /**
+                 * Format: double
+                 * @description Counted amount (`count` only).
+                 */
+                counted_quantity?: number | null;
+                /**
+                 * Format: date-time
+                 * @description Written at.
+                 */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description `receive`, `consume`, `adjust`, `count`. */
+                kind: string;
+                /**
+                 * Format: uuid
+                 * @description The lot.
+                 */
+                lot_id: string;
+                /**
+                 * Format: date-time
+                 * @description When it happened.
+                 */
+                occurred_at: string;
+                /**
+                 * Format: double
+                 * @description Signed difference in the unit of the lot.
+                 */
+                quantity: number;
+                /** @description Reason. */
+                reason?: string | null;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_Style: {
             /** @description The rows of this page. */
             items: {
@@ -4629,6 +5091,49 @@ export interface components {
             redis: string;
             /** @description `"ok"` when the database answers. */
             status: string;
+        };
+        /** @description Body of a goods receipt. */
+        Receipt: {
+            /** @description Currency of the cost (ISO 4217). */
+            cost_currency?: string | null;
+            /**
+             * Format: date
+             * @description Best-before day.
+             */
+            expires_on?: string | null;
+            /**
+             * Format: uuid
+             * @description The ingredient (a library or workspace ingredient).
+             */
+            ingredient_id: string;
+            /** @description Lot code (default `default`). A known code adds to that lot. */
+            lot_code?: string | null;
+            /** @description Notes of the lot. */
+            notes?: string | null;
+            /**
+             * Format: date-time
+             * @description When it happened (default now).
+             */
+            occurred_at?: string | null;
+            /**
+             * Format: double
+             * @description Received amount, greater than zero.
+             */
+            quantity: number;
+            /**
+             * Format: date
+             * @description Day of the receipt (default today).
+             */
+            received_on?: string | null;
+            /** @description Supplier. */
+            supplier?: string | null;
+            /** @description `kg` (default), `l` or `count`. */
+            unit?: string | null;
+            /**
+             * Format: double
+             * @description Cost of one unit; needs `cost_currency`.
+             */
+            unit_cost?: number | null;
         };
         /** @description A recipe (the identity; the content is in the versions). */
         Recipe: {
@@ -5015,6 +5520,74 @@ export interface components {
              */
             revoked_at?: string | null;
         };
+        /** @description An item of the shopping list. */
+        ShoppingItem: {
+            /** @description Bought (ticked off). */
+            checked: boolean;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description The ingredient.
+             */
+            ingredient_id: string;
+            /** @description Name of the ingredient. */
+            ingredient_name: string;
+            /**
+             * Format: double
+             * @description Amount to buy.
+             */
+            quantity: number;
+            /**
+             * Format: uuid
+             * @description The recipe version that put the item on the list.
+             */
+            source_recipe_version_id?: string | null;
+            /** @description `kg`, `l`, `count`. */
+            unit: string;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description The answer of a shopping list build. */
+        ShoppingResult: {
+            /** @description The ingredients that stock covers (not on the list). */
+            covered: components["schemas"]["CoveredLine"][];
+            /** @description The items that were added or renewed. */
+            items: components["schemas"]["ShoppingItem"][];
+            /** @description Names of recipe lines that have no ingredient record (not on the list). */
+            unlinked: string[];
+        };
+        /** @description A line that a batch deduction did not move. */
+        SkippedLine: {
+            /**
+             * Format: double
+             * @description The amount that was not deducted.
+             */
+            amount: number;
+            /**
+             * Format: uuid
+             * @description The ingredient (empty for a line without one).
+             */
+            ingredient_id?: string | null;
+            /** @description `no_ingredient`, `no_lot`, `unit_mismatch`, `already_deducted`. */
+            reason: string;
+        };
         /** @description Body of an edit session start. */
         StartSession: {
             /** @description Take the lock from another user (default false). */
@@ -5056,6 +5629,161 @@ export interface components {
             challenge_id: string;
             /** @description The authenticator's answer (`PublicKeyCredential` as JSON). */
             credential: Record<string, never>;
+        };
+        /** @description One lot of an ingredient. In Home mode an ingredient has one lot, `default`. */
+        StockLot: {
+            /** @description Currency of the cost. */
+            cost_currency?: string | null;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date
+             * @description Best-before day.
+             */
+            expires_on?: string | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description The ingredient.
+             */
+            ingredient_id: string;
+            /** @description `fermentable`, `hop`, `yeast`, `misc`. */
+            ingredient_kind: string;
+            /** @description Name of the ingredient. */
+            ingredient_name: string;
+            /** @description Lot code (`default` in Home mode). */
+            lot_code: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /**
+             * Format: double
+             * @description Amount in the unit of the lot (the cache of the ledger total).
+             */
+            quantity: number;
+            /**
+             * Format: date
+             * @description Day of the goods receipt.
+             */
+            received_on?: string | null;
+            /** @description Supplier. */
+            supplier?: string | null;
+            /** @description `kg`, `l`, `count`. */
+            unit: string;
+            /**
+             * Format: double
+             * @description Cost of one unit. Empty for a caller without `cost.view`.
+             */
+            unit_cost?: number | null;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description One row of the ledger. */
+        StockMovement: {
+            /**
+             * Format: uuid
+             * @description The batch (a deduction).
+             */
+            batch_id?: string | null;
+            /**
+             * Format: double
+             * @description Counted amount (`count` only).
+             */
+            counted_quantity?: number | null;
+            /**
+             * Format: date-time
+             * @description Written at.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description `receive`, `consume`, `adjust`, `count`. */
+            kind: string;
+            /**
+             * Format: uuid
+             * @description The lot.
+             */
+            lot_id: string;
+            /**
+             * Format: date-time
+             * @description When it happened.
+             */
+            occurred_at: string;
+            /**
+             * Format: double
+             * @description Signed difference in the unit of the lot.
+             */
+            quantity: number;
+            /** @description Reason. */
+            reason?: string | null;
+        };
+        /** @description The total of one ingredient and unit, calculated from the ledger. */
+        StockTotal: {
+            /**
+             * Format: double
+             * @description Sum of the cached lot amounts (must equal `quantity`).
+             */
+            cached_quantity: number;
+            /**
+             * Format: uuid
+             * @description The ingredient.
+             */
+            ingredient_id: string;
+            /** @description `fermentable`, `hop`, `yeast`, `misc`. */
+            ingredient_kind: string;
+            /** @description Name of the ingredient. */
+            ingredient_name: string;
+            /**
+             * Format: int64
+             * @description Number of lots.
+             */
+            lots: number;
+            /**
+             * Format: double
+             * @description Sum of the ledger rows of the lots.
+             */
+            quantity: number;
+            /** @description `kg`, `l`, `count`. */
+            unit: string;
+        };
+        /** @description A warning that comes with a stock answer. */
+        StockWarning: {
+            /**
+             * Format: uuid
+             * @description The ingredient.
+             */
+            ingredient_id: string;
+            /** @description Name of the ingredient. */
+            ingredient_name: string;
+            /** @description `negative_stock`. */
+            kind: string;
+            /**
+             * Format: uuid
+             * @description The lot (empty in a total of an ingredient).
+             */
+            lot_id?: string | null;
+            /**
+             * Format: double
+             * @description The amount that is below zero.
+             */
+            quantity: number;
         };
         /** @description A beer style of a guide. Ranges are `*_min` and `*_max`. */
         Style: {
@@ -5343,6 +6071,13 @@ export interface components {
              * @description Record version (`ETag`).
              */
             version: number;
+        };
+        /** @description The totals answer. */
+        Totals: {
+            /** @description One row for each ingredient and unit. */
+            items: components["schemas"]["StockTotal"][];
+            /** @description `negative_stock` for each ingredient below zero. */
+            warnings: components["schemas"]["StockWarning"][];
         };
         /** @description Body of a stage transition. */
         Transition: {
@@ -11682,6 +12417,168 @@ export interface operations {
             };
             /** @description Precondition required */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_deduct: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rows that this call wrote */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000a",
+                     *       "movements": [
+                     *         {
+                     *           "batch_id": null,
+                     *           "counted_quantity": null,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000d",
+                     *           "kind": "receive",
+                     *           "lot_id": "0192f1c07a3b7000800000000000000b",
+                     *           "occurred_at": "2026-11-20T10:00:00Z",
+                     *           "quantity": 25,
+                     *           "reason": null
+                     *         }
+                     *       ],
+                     *       "skipped": [],
+                     *       "warnings": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DeductionResult"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -24871,6 +25768,1707 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    shopping_list: {
+        parameters: {
+            query?: {
+                /** @description Only ticked (or only open) items */
+                checked?: boolean;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `id` (creation order, default) or `-id` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of items */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "checked": false,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *           "ingredient_name": "Pale malt",
+                     *           "quantity": 4.5,
+                     *           "source_recipe_version_id": "0192f1c07a3b7000800000000000000f",
+                     *           "unit": "kg",
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_ShoppingItem"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    shopping_from_recipe: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FromRecipe"];
+            };
+        };
+        responses: {
+            /** @description The items and the covered lines */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "covered": [],
+                     *       "items": [
+                     *         {
+                     *           "checked": false,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *           "ingredient_name": "Pale malt",
+                     *           "quantity": 4.5,
+                     *           "source_recipe_version_id": "0192f1c07a3b7000800000000000000f",
+                     *           "unit": "kg",
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "unlinked": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ShoppingResult"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    shopping_delete: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the item */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Item */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    shopping_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the item */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Item */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description `checked` (boolean) and `quantity` (number, zero or more) */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": unknown;
+            };
+        };
+        responses: {
+            /** @description The updated item */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "checked": false,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *       "ingredient_name": "Pale malt",
+                     *       "quantity": 4.5,
+                     *       "source_recipe_version_id": "0192f1c07a3b7000800000000000000f",
+                     *       "unit": "kg",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ShoppingItem"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_lot_list: {
+        parameters: {
+            query?: {
+                /** @description The ingredient */
+                ingredient_id?: string;
+                /** @description Text in the ingredient name, lot code or supplier (case blind) */
+                q?: string;
+                /** @description Only lots below zero */
+                negative?: boolean;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `id` (creation order, default) or `-id` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of lots */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "cost_currency": "USD",
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "expires_on": null,
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *           "ingredient_kind": "fermentable",
+                     *           "ingredient_name": "Pale malt",
+                     *           "lot_code": "default",
+                     *           "notes": null,
+                     *           "quantity": 25,
+                     *           "received_on": "2026-11-20",
+                     *           "supplier": null,
+                     *           "unit": "kg",
+                     *           "unit_cost": 2.4,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_StockLot"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_lot_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Lot */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The lot */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cost_currency": "USD",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "expires_on": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *       "ingredient_kind": "fermentable",
+                     *       "ingredient_name": "Pale malt",
+                     *       "lot_code": "default",
+                     *       "notes": null,
+                     *       "quantity": 25,
+                     *       "received_on": "2026-11-20",
+                     *       "supplier": null,
+                     *       "unit": "kg",
+                     *       "unit_cost": 2.4,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StockLot"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_lot_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the lot */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Lot */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["LotPatch"];
+            };
+        };
+        responses: {
+            /** @description The updated lot */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cost_currency": "USD",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "expires_on": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *       "ingredient_kind": "fermentable",
+                     *       "ingredient_name": "Pale malt",
+                     *       "lot_code": "default",
+                     *       "notes": null,
+                     *       "quantity": 25,
+                     *       "received_on": "2026-11-20",
+                     *       "supplier": null,
+                     *       "unit": "kg",
+                     *       "unit_cost": 2.4,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StockLot"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_move: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Lot */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveBody"];
+            };
+        };
+        responses: {
+            /** @description The movement and the lot */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "lot": {
+                     *         "cost_currency": "USD",
+                     *         "created_at": "2026-11-20T10:00:00Z",
+                     *         "expires_on": null,
+                     *         "id": "0192f1c07a3b7000800000000000000b",
+                     *         "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *         "ingredient_kind": "fermentable",
+                     *         "ingredient_name": "Pale malt",
+                     *         "lot_code": "default",
+                     *         "notes": null,
+                     *         "quantity": 25,
+                     *         "received_on": "2026-11-20",
+                     *         "supplier": null,
+                     *         "unit": "kg",
+                     *         "unit_cost": 2.4,
+                     *         "updated_at": "2026-11-20T10:00:00Z",
+                     *         "version": 1
+                     *       },
+                     *       "movement": {
+                     *         "batch_id": null,
+                     *         "counted_quantity": null,
+                     *         "created_at": "2026-11-20T10:00:00Z",
+                     *         "id": "0192f1c07a3b7000800000000000000d",
+                     *         "kind": "receive",
+                     *         "lot_id": "0192f1c07a3b7000800000000000000b",
+                     *         "occurred_at": "2026-11-20T10:00:00Z",
+                     *         "quantity": 25,
+                     *         "reason": null
+                     *       },
+                     *       "warnings": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MovementResult"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_movement_list: {
+        parameters: {
+            query?: {
+                /** @description The lot */
+                lot_id?: string;
+                /** @description The batch */
+                batch_id?: string;
+                /** @description `receive`, `consume`, `adjust`, `count` */
+                kind?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `id` (write order) or `-id` (default) */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of ledger rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "batch_id": null,
+                     *           "counted_quantity": null,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000d",
+                     *           "kind": "receive",
+                     *           "lot_id": "0192f1c07a3b7000800000000000000b",
+                     *           "occurred_at": "2026-11-20T10:00:00Z",
+                     *           "quantity": 25,
+                     *           "reason": null
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_StockMovement"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_receive: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Receipt"];
+            };
+        };
+        responses: {
+            /** @description The movement and the lot */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "lot": {
+                     *         "cost_currency": "USD",
+                     *         "created_at": "2026-11-20T10:00:00Z",
+                     *         "expires_on": null,
+                     *         "id": "0192f1c07a3b7000800000000000000b",
+                     *         "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *         "ingredient_kind": "fermentable",
+                     *         "ingredient_name": "Pale malt",
+                     *         "lot_code": "default",
+                     *         "notes": null,
+                     *         "quantity": 25,
+                     *         "received_on": "2026-11-20",
+                     *         "supplier": null,
+                     *         "unit": "kg",
+                     *         "unit_cost": 2.4,
+                     *         "updated_at": "2026-11-20T10:00:00Z",
+                     *         "version": 1
+                     *       },
+                     *       "movement": {
+                     *         "batch_id": null,
+                     *         "counted_quantity": null,
+                     *         "created_at": "2026-11-20T10:00:00Z",
+                     *         "id": "0192f1c07a3b7000800000000000000d",
+                     *         "kind": "receive",
+                     *         "lot_id": "0192f1c07a3b7000800000000000000b",
+                     *         "occurred_at": "2026-11-20T10:00:00Z",
+                     *         "quantity": 25,
+                     *         "reason": null
+                     *       },
+                     *       "warnings": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MovementResult"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    stock_totals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All totals (no paging) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "cached_quantity": 25,
+                     *           "ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *           "ingredient_kind": "fermentable",
+                     *           "ingredient_name": "Pale malt",
+                     *           "lots": 1,
+                     *           "quantity": 25,
+                     *           "unit": "kg"
+                     *         }
+                     *       ],
+                     *       "warnings": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Totals"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

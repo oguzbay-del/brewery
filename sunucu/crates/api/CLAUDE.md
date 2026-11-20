@@ -13,6 +13,7 @@
 - Subscription (`subscription.rs`, T2.28): `GET /v1/workspaces/{ws}/subscription` reads the access state. `require_paid_write(conn, ws)` is the guard for a write to a paid feature: it returns `403 entitlement_required` one month after workspace creation when no entitlement is valid. Do not call it in export or read endpoints. The API does not write `subscriptions` or `entitlements`.
 - Recipes (`recipes.rs`, `recipe_org.rs`, T2.21): recipe and version endpoints, calculation with the engine, publish (the version becomes immutable and keeps `calc_summary`), scaling preview, comparison, folders, tags, favorites, the edit session (soft lock, events through the outbox). A stale `If-Match` on a draft gives `412` with `current.conflicting_fields`.
 - Batches (`batches.rs`, `brew_day.rs`, T2.22): batch from an `approved` version, steps, actual amounts with deviation, measurements with a client UUID (safe to repeat), stage transitions, summary, calendar, backward plan, and the signed brew day package. The package key is `BREW_PACKAGE_KEY` (or `_FILE`) and `BREW_PACKAGE_KEY_ID`. Without a key, the package endpoints answer `503`.
+- Stock (`stock.rs`, T2.23): lots, the movement ledger (`receive`, `consume`, `adjust`, `count`), totals from the ledger, `negative_stock` warning, deduction for a batch (safe to repeat, oldest lot first), and the shopping list from a recipe version minus stock. Write permission is `stock.move`. The module does not add migrations (tables are in `0010` and `0100`).
 - Port `PORT` (default 8080).
 
 ## What it does not touch
