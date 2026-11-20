@@ -76,7 +76,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
           <table class="comparison-table" aria-label="GRISTORA ürün alanlarının Ev biracıları ve Profesyonel bira üreticileri için karşılaştırması">
             <thead><tr><th scope="col">Ürün alanı</th><th scope="col">Ev biracısı · 1 kullanıcı</th><th scope="col">Profesyonel bira üreticisi · 5+ kullanıcı</th></tr></thead>
             <tbody>
-              {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}tr/features/${slug}/`}>{label} ↗</a></th><td><span class={isMissing(homeStage) ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={isMissing(businessStage) ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
+              {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const feature = features.find((item) => item.slug === slug); const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}tr/features/${slug}/`}>{label} ↗</a><small class="comparison-module-label">{feature?.modules.map((id) => moduleLabelsTr[id]).join(" · ")}</small></th><td><span class={isMissing(homeStage) ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={isMissing(businessStage) ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
             </tbody>
           </table>
         </div>
