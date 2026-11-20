@@ -21,20 +21,19 @@ export const photos = {
   "feature-equipment-calibration": { en: "Gloved hands check a pressure gauge on top of a stainless-steel tank, with a wrench nearby.", tr: "Eldivenli eller paslanmaz çelik tankın üstündeki basınç göstergesini kontrol ediyor; yanında bir anahtar var." },
   "feature-production-management": { en: "A brewer walks along an aisle between two rows of tall fermenters.", tr: "Bir bira üreticisi iki sıra uzun fermentörün arasındaki koridorda yürüyor." },
   "feature-inventory-costing": { en: "Stacked malt sacks on pallets and boxed supplies on shelves in a brewery storeroom.", tr: "Bira fabrikası deposunda paletlere istiflenmiş malt çuvalları ve raflarda kutulu malzemeler." },
+  "feature-fermentation-monitoring": { en: "Amber beer fermenting in a glass jug closed with a bung and an airlock.", tr: "Tıpa ve hava kilidiyle kapatılmış cam damacanada mayalanan amber bira." },
+  "feature-planning-scheduling": { en: "A brewer walks past a row of conical fermenters in a brick-walled cellar.", tr: "Bir bira üreticisi tuğla duvarlı mahzende sıra hâlindeki konik fermentörlerin yanından geçiyor." },
+  "feature-quality-laboratory": { en: "A lab technician at a microscope with petri dishes and a rack of beer samples.", tr: "Mikroskop başında petri kapları ve bira numunesi rafıyla çalışan bir laboratuvar teknisyeni." },
+  "feature-packaging-compliance": { en: "Unlabelled aluminium cans on a small canning line.", tr: "Küçük bir kutulama hattında etiketsiz alüminyum kutular." },
+  "feature-team-notifications": { en: "Two brewers in aprons check a valve on a fermenter together.", tr: "Önlüklü iki bira üreticisi fermentördeki bir vanayı birlikte kontrol ediyor." },
+  "feature-connected-devices": { en: "A gloved hand fits a small sensor to the cone of a stainless-steel fermenter.", tr: "Eldivenli bir el, paslanmaz çelik fermentörün konik kısmına küçük bir sensör takıyor." },
+  "feature-imports-exports-tools": { en: "Old handwritten brew logbooks and recipe cards next to a laptop.", tr: "Dizüstü bilgisayarın yanında eski el yazısı bira defterleri ve tarif kartları." },
+  "feature-platform-security-data": { en: "A key in the lock of a stainless-steel cabinet in a brewery.", tr: "Bir bira fabrikasındaki paslanmaz çelik dolabın kilidinde bir anahtar." },
+  "feature-analytics-reports": { en: "Five glasses of amber beer in a row, from lighter to darker, for batch comparison.", tr: "Parti karşılaştırması için açıktan koyuya sıralanmış beş bardak amber bira." },
 } as const;
 
-// Temporary stand-ins until the owner sends the dedicated photos (#16, #18, #21–#27).
-const featureFallback: Record<string, PhotoKey> = {
-  "fermentation-monitoring": "home-hero",
-  "planning-scheduling": "feature-production-management",
-  "quality-laboratory": "technical-principles-hero",
-  "packaging-compliance": "pricing-hero",
-  "team-notifications": "breweries-hero",
-  "connected-devices": "feature-equipment-calibration",
-  "imports-exports-tools": "faq-hero",
-  "platform-security-data": "features-hero",
-  "analytics-reports": "compare-hero",
-};
+// Stand-ins for a feature without a dedicated photo. Empty: every feature has its photo.
+const featureFallback: Record<string, PhotoKey> = {};
 
 /** Photo for a feature slug: the dedicated photo, else a temporary stand-in. */
 export function featurePhoto(slug: string): PhotoKey | undefined {
