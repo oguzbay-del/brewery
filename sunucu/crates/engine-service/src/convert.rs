@@ -159,14 +159,14 @@ mod tests {
     #[test]
     fn volume_round_trip() {
         assert!((floz_to_l(l_to_floz(5.0)) - 5.0).abs() < 1e-12);
-        assert!((l_to_floz(0.029_573_529_56) - 1.0).abs() < 1e-12);
+        assert!((l_to_floz(0.029_573_529_562_5) - 1.0).abs() < 1e-12);
     }
 
     #[test]
     fn mass_length_round_trip() {
         assert!((oz_to_kg(kg_to_oz(0.75)) - 0.75).abs() < 1e-12);
         assert!((oz_to_g(g_to_oz(28.0)) - 28.0).abs() < 1e-12);
-        assert!((oz_to_g(1.0) - 28.349_525).abs() < 1e-6);
+        assert!((oz_to_g(1.0) - 28.349_523_125).abs() < 1e-12);
         assert!((ft_to_m(m_to_ft(914.4)) - 914.4).abs() < 1e-9);
         assert!((m_to_ft(0.3048) - 1.0).abs() < 1e-12);
         assert!((floz_to_ml(ml_to_floz(100.0)) - 100.0).abs() < 1e-12);
@@ -181,7 +181,7 @@ mod tests {
             (ibu_gal_per_lb_to_l_per_kg(ibu_l_per_kg_to_gal_per_lb(250.0)) - 250.0).abs() < 1e-9
         );
         let per_100 = per_12floz_to_per_100ml(150.0);
-        assert!((per_100 - 150.0 / 3.548_823_547_2).abs() < 1e-9);
+        assert!((per_100 - 150.0 / 3.548_823_547_5).abs() < 1e-9);
         assert!((per_100ml_to_per_12floz(per_100) - 150.0).abs() < 1e-9);
     }
 

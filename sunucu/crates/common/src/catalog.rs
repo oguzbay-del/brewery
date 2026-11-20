@@ -297,15 +297,15 @@ mod tests {
         assert!(c.units["plato"].to_si(12.0).is_none());
     }
 
-    /// The catalog uses exact definitions; the engine keeps BeerSmith's rounded constants.
+    /// The catalog and the engine use the same exact definitions (T2.38).
     #[test]
     fn unit_constants_agree_with_the_engine() {
         let c = catalog();
         let rel = |a: f64, b: f64| ((a - b) / b).abs();
-        assert!(rel(c.units["fl_oz_us"].mul * 1000.0, units::FLOZ_ML) < 1e-8);
-        assert!(rel(c.units["gal_us"].mul, units::GAL_L) < 1e-8);
-        assert!(rel(c.units["lb"].mul, units::LB_KG) < 1e-6);
-        assert!(rel(c.units["oz"].mul * 1000.0, units::OZ_G) < 1e-6);
+        assert!(rel(c.units["fl_oz_us"].mul * 1000.0, units::FLOZ_ML) < 1e-12);
+        assert!(rel(c.units["gal_us"].mul, units::GAL_L) < 1e-12);
+        assert!(rel(c.units["lb"].mul, units::LB_KG) < 1e-12);
+        assert!(rel(c.units["oz"].mul * 1000.0, units::OZ_G) < 1e-12);
         assert!(rel(c.units["psi"].mul, units::PSI_BAR) < 1e-12);
         // 1.9635 g/L per vol (spec 09) against the ideal-gas constant 44.01 / 22.414.
         assert!(rel(c.units["g_l_co2"].div, units::CO2_G_PER_VOL) < 1e-4);

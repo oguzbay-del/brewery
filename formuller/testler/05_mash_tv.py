@@ -1,5 +1,5 @@
-FLOZ_L = 29.57352956/1000.0
-LB_KG  = 0.4535924
+FLOZ_L = 29.5735295625/1000.0  # exact definition (decision 2026-11-20); BeerSmith uses a rounded value
+LB_KG  = 0.45359237  # exact definition (decision 2026-11-20); BeerSmith uses a rounded value
 OZ_KG  = LB_KG/16
 GRAIN_VOL = 0.652          # O_GRAIN_VOL  L/kg
 C_MALT    = 0.380          # O_MALT_SPECIFIC_HEAT cal/g°C

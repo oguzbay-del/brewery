@@ -6,20 +6,21 @@
 /// Continuous-quantity tolerance (slopes, ratios): `formuller/00-OKU-BENI.md`.
 pub const TOL: f64 = 1e-9;
 
-/// Millilitres per US fluid ounce.
-pub const FLOZ_ML: f64 = 29.573_529_56;
+/// Millilitres per US fluid ounce: 1/128 US gallon, exact (`3785.411784 / 128`).
+/// Same value as unit `fl_oz_us` in the catalog (T2.38, decision 2026-11-20).
+pub const FLOZ_ML: f64 = 29.573_529_562_5;
 
 /// Litres per US fluid ounce.
 pub const FLOZ_L: f64 = FLOZ_ML / 1000.0;
 
-/// One US gallon in litres (`128 fl oz × 29.57352956 mL`).
+/// One US gallon in litres: 231 in³, exact (`128 fl oz`).
 pub const GAL_L: f64 = 128.0 * FLOZ_ML / 1000.0;
 
-/// Kilograms per pound (BeerSmith: `0.4535924`).
-pub const LB_KG: f64 = 0.453_592_4;
+/// Kilograms per pound: exact definition. BeerSmith uses the rounded `0.4535924`. Same value
+/// as unit `lb` in the catalog (T2.38).
+pub const LB_KG: f64 = 0.453_592_37;
 
-/// Grams per ounce (`LB_KG / 16 × 1000` = 28.349525, BeerSmith's constant; spec 04 §0 and, since
-/// T1.16 B, spec 02 §8 as well).
+/// Grams per ounce (`LB_KG / 16 × 1000` = 28.349523125, exact; BeerSmith uses 28.349525).
 pub const OZ_G: f64 = LB_KG / 16.0 * 1000.0;
 
 /// CO₂ in g/L per volume of gas (`44.01 / 22.414`, ideal gas, 0 °C, 1 atm); one constant for

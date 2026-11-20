@@ -243,13 +243,13 @@ def calc_aau(w,a,use,t): return w*a if use in (0,3) and t>=15 else 0.0
 def tool_bitterness(hops,sg,v_floz,eq,util_pct,opts):
     c=[calc_ibu(h,sg,v_floz,eq,util_pct,opts) for h in hops]
     return {"ibu":sum(c),"aau":sum(calc_aau(h["amount_oz"],h["alpha_pct"],h["usage"],h["time_min"]) for h in hops),"contribs":c}
-OZ_G=0.4535924/16*1000; FLOZ_L=29.57352956/1000
+OZ_G=0.45359237/16*1000; FLOZ_L=29.5735295625/1000  # exact definition (decision 2026-11-20); BeerSmith uses a rounded value
 # §8 hop oranları (g/L)
 def tot_hops_phase(hops,phase):
     return sum(h["amount_oz"] for h in hops if h["usage"]==phase or (phase==0 and h["usage"]==3))
 def hop_rate(hops,volume_floz,phase):
     if volume_floz==0: return 0.0
-    return tot_hops_phase(hops,phase)*OZ_G/(volume_floz*FLOZ_L)  # OZ_G = 28.349525 (04 ile tek sabit, T1.16 B)
+    return tot_hops_phase(hops,phase)*OZ_G/(volume_floz*FLOZ_L)  # OZ_G = 28.349523125 (04 ile tek sabit)
 # §9 TotWhirlpoolTime
 def tot_whirlpool_time(recipe_time,hops,misc):
     m=recipe_time

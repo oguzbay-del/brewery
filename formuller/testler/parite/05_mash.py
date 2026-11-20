@@ -3,7 +3,7 @@ from ortak import Vektor, dene, yukle
 
 # Tun: (kütle kg, özgül ısı cal/g°C, hacim L). Sıfır = tun ısısı yok sayılır.
 TUN_KUCUK = (4.0, 0.12, 40.0)
-TUN_VARSAYILAN = (160 * 0.4535924 / 16, 0.3, 640 * 29.57352956 / 1000.0)  # 160 oz, 0.3, 640 fl oz
+TUN_VARSAYILAN = (160 * 0.45359237 / 16, 0.3, 640 * 29.5735295625 / 1000.0)  # 160 oz, 0.3, 640 fl oz  # exact definition (decision 2026-11-20); BeerSmith uses a rounded value
 TUN_DOLU = (4.0, 0.12, 12.0)   # mash tun'un %80 kapasitesini aşar -> düzeltme yok
 
 

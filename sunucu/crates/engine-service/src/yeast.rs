@@ -752,7 +752,7 @@ mod tests {
             ..y2
         };
         let r = plan(plan_req(vec![y1, y2, y3, y4])).await;
-        close(r.dry_in_recipe_g, 36.174_762_5);
+        close(r.dry_in_recipe_g, 36.174_761_562_5);
         close(r.pack_count, 3.0);
         close(r.pack_viability_pct, 82.666_666_666_666_67);
         close(r.avg_age_months, 6.0);
@@ -767,8 +767,8 @@ mod tests {
         close(r.dry_min_g_per_hl, 18.0);
         close(r.dry_max_g_per_hl, 150.0);
         assert!(!r.dry_by_weight);
-        close(r.rehydrate_water_ml, 36.174_762_5 * 25.0);
-        close(r.goferm_g, 36.174_762_5 * 25.0 * 0.05);
+        close(r.rehydrate_water_ml, 36.174_761_562_5 * 25.0);
+        close(r.goferm_g, 36.174_761_562_5 * 25.0 * 0.05);
         assert!(r.starter.is_none());
     }
 

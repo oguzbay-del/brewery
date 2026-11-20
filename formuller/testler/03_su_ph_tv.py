@@ -1,5 +1,5 @@
 import math
-GAL_L = 128*29.57352956/1000.0
+GAL_L = 128*29.5735295625/1000.0  # exact definition (decision 2026-11-20); BeerSmith uses a rounded value
 # a_matrix: columns = salts, rows = Ca,Mg,Na,SO4,Cl,HCO3  (ppm per g/US gal)
 A = {
  'gypsum':[61.478,0,0,147.359,0,0],
@@ -299,7 +299,7 @@ print("T1.14c so4/cl etiket (1.426, 0.3, 19):", so4cl_label(1.426), so4cl_label(
 
 # ---- T1.15: parite betiğinde duran hesaplar referansa taşındı (ADR-0003 madde 1; T1.12 B4, B7, B17, B18)
 # Aşağıdaki fonksiyonlar yukarıdakileri değiştirmez; parite betiği yalnız çağırır.
-LB_G = 453.5924                         # §0.1 lb -> g (05 ile aynı LB_KG)
+LB_G = 453.59237                        # §0.1 lb -> g (05 ile aynı LB_KG)  # exact definition (decision 2026-11-20); BeerSmith uses a rounded value
 MASH_ACIDS_DEFINED = (0, 1, 2, 3)       # §6.2: yalnız bu kodların MW ve yoğunluğu tanımlı (T1.15 B13 kararı)
 
 def to_grams(amount, units):

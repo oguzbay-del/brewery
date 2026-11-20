@@ -1,5 +1,5 @@
 from math import log, exp, sqrt, floor
-FLOZ_ML=29.57352956; OZ_G=0.4535924/16*1000
+FLOZ_ML=29.5735295625; OZ_G=0.45359237/16*1000  # exact definition (decision 2026-11-20); BeerSmith uses a rounded value
 def L_to_floz(v): return v*1000/FLOZ_ML
 def floz_to_L(v): return v*FLOZ_ML/1000
 def gal_from_L(v): return v*1000/FLOZ_ML/128
