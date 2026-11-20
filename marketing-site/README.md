@@ -6,7 +6,7 @@ An isolated Astro + TypeScript + static-site project for the GRISTORA public mar
 
 **Read [`DESIGN.md`](./DESIGN.md) before making any visual or UI change to the public marketing website.** It is the implementation source of truth for the owner-approved GRISTORA brand-board direction and applies only to `marketing-site/`.
 
-Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for approved logo asset filenames, the recorded palette and asset usage rules. Track final release-readiness evidence in [`ACCEPTANCE.md`](./ACCEPTANCE.md); W12 must pass against the current `main` baseline, not an outdated preview branch.
+Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for approved logo asset filenames, the recorded palette and asset usage rules. Read [`PHOTO-ASSETS.md`](./PHOTO-ASSETS.md) for the source archive, photo replacement map, responsive formats and build-time optimization. Track final release-readiness evidence in [`ACCEPTANCE.md`](./ACCEPTANCE.md); W12 must pass against the current `main` baseline, not an outdated preview branch.
 
 Read these canonical documents before changing public brand, copy, metadata or visual assets:
 
@@ -51,6 +51,7 @@ The owner confirms that `gristora.com` has been purchased. DNS, domain verificat
 
 ```sh
 npm install
+npm run optimize:photos
 npm run dev
 ```
 
@@ -101,29 +102,6 @@ npm run test:browser
 - Add or revise feature groups in the data file; the feature index, detail pages and sitemap are generated from the same source.
 - Keep research-only analytical models marked as under consideration; do not present them as committed capabilities.
 - Do not add ERP functions excluded by the product plan (sales, orders, distribution, keg tracking, CRM or accounting).
-
-## Image replacement map
-
-All visuals are original SVG files in `public/`. To replace one, keep the file name or update the `src` and the `width` and `height` attributes in the page.
-
-| Image | File | Used in |
-|---|---|---|
-| Homebrewing bench illustration | `public/images/illustrations/homebrewing-workspace.svg` | `src/pages/homebrewers.astro` hero |
-| Professional brewery vessels illustration | `public/images/illustrations/professional-brewery-vessels.svg` | `src/pages/breweries.astro` hero |
-| Homebrewer audience image | `public/audience/homebrewer.svg` | `src/pages/compare.astro` |
-| Professional brewery audience image | `public/audience/professional-brewery.svg` | `src/pages/compare.astro` |
-| Brewery record chain diagram | `public/images/diagrams/brewery-record-chain.svg` | `src/pages/how-it-works.astro` |
-| Homebrew learning loop diagram | `public/images/diagrams/homebrew-learning-loop.svg` | `src/pages/how-it-works.astro` |
-| Business batch timeline diagram | `public/images/diagrams/business-batch-timeline.svg` | `src/pages/breweries.astro` |
-| Homebrew ingredient context diagram | `public/images/diagrams/homebrew-ingredient-context.svg` | `src/pages/homebrewers.astro` |
-| Fermentation observation timeline diagram | `public/images/diagrams/fermentation-observation-timeline.svg` | `src/pages/homebrewers.astro` |
-| Fermentation profile example | `public/images/diagrams/fermentation-profile-example.svg` | `src/pages/technical-principles.astro` |
-| Target versus actual example | `public/images/diagrams/target-vs-actual-example.svg` | `src/pages/technical-principles.astro` |
-| Measurement source context diagram | `public/images/diagrams/measurement-source-context.svg` | `src/pages/technical-principles.astro` |
-| Calibration record model diagram | `public/images/diagrams/calibration-record-model.svg` | `src/pages/technical-principles.astro` |
-| GRISTORA symbol | `public/brand/gristora-symbol.svg` | `src/components/SiteHeader.astro`, `src/components/SiteFooter.astro`, 404 page |
-
-Every `<img>` has intrinsic `width` and `height` attributes that match the file viewBox. Confirm usage rights before you publish new assets. Do not use product UI screenshots unless supplied and verified.
 
 ## Layout
 
