@@ -658,6 +658,12 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Geçmiş partilerden ekipman kalibrasyonu | Ölçülen verim, kaynatma kaybı ve kayıplardan profili güncelleme önerisi | İkisi | Ev MVP |
 | Kurallar ve otomatik uyarılar | "SG 3 gündür sabit", "sıcaklık 22 °C'yi geçti", "dry hop zamanı" | İkisi | Ev MVP |
 | Tarif ve sürüm karşılaştırma | İki tarifi veya sürümü yan yana, malzeme ve tahmin farkları | İkisi | Ev MVP |
+| Başka uygulamadan taşıma: tarif ve ekipman | Brewfather JSON yedeği ve BeerSmith .bsmx dosyasından tarif ve ekipman; eşleştirme adımında kaynak ile bizim OG, IBU ve renk yan yana | İkisi | Ev MVP |
+| Başka uygulamadan taşıma: parti ve stok | Geçmiş partiler, ölçümler ve stok aynı yedekten | İkisi | Ev 2. sürüm |
+| Son silinenler | Kullanıcı sildiği tarif, parti, malzeme ve ekipmanı 30 gün içinde kendisi geri getirir | İkisi | Ev MVP |
+| Dönüşüm ve süzme verimi ayrımı (Ev) | Ekipman profilinde ileri ayar; Ev modunda da açılabilir | İkisi | Ev MVP |
+| Stoktan ne demlenir (kural tabanlı) | Eldeki stokla yapılabilecek tarifleri ve eksik malzemeyi gösterir; dil modeli kullanmaz | Ev | Ev 2. sürüm |
+| Dil modeliyle tarif taslağı | Model yalnız malzeme listesi taslak önerir; OG, IBU ve renk hesap motorunda hesaplanır. Maliyet, gizlilik ve doğruluk riski için ayrı karar | Ev | Sonra (ayrı karar) |
 | Dekoksiyon aracı | Kaynatılacak mash miktarı ve sıcaklık adımları; formülü var (BeerSmith) | İkisi | Ev MVP |
 | Kalori ve karbonhidrat | Bardak başına kalori ve karbonhidrat; formülü var; ABD "Alcohol Facts" kesinleşirse İşletme etiketinde de kullanılır (BeerSmith, Brewer's Friend) | İkisi | Ev MVP |
 | Ekstrakt biracısı araçları | Kısmi kaynatma ve üzerine eklenen su; LME, DME ve bal için gram ↔ mL (BeerSmith, Brewer's Friend); formül: 10 §2 | Ev | Ev MVP |
@@ -759,7 +765,7 @@ ABD'deki butik bira üreticilerinin kullandığı yazılım ve cihazlar ile hede
 | Temiz olmayan tank uyarısı | CIP kaydı olmayan tanka parti başlatılırken veya transfer yapılırken uyarı | Parti başlatma; Tank hareketi | İşletme | İşletme çekirdek |
 | Geri çağırma raporu | Lot → hangi partiler ve ambalaj kayıtları (kap türü, adet, tarih); rapor ambalajda biter, müşteri bilgisi sistemde yok | Lot izlenebilirlik raporu | İşletme | İşletme çekirdek |
 | Tank boşalma önerisi | Hangi tankın ne zaman boşalacağı, yeni partiye uygun tank | Takvim ve geriye planlama; Üretim panosu | İşletme | İşletme 2. sürüm |
-| Hobi cihazları için veri alma adresi (webhook) | Tilt köprüleri (TiltBridge, Pitch), iSpindel ve RAPT veriyi bu adrese gönderir | Cihaz eşleştirme; Ayarlar › Cihazlar | İkisi | Ev MVP |
+| Hobi cihazları için veri alma adresi (webhook) | Tilt köprüleri (TiltBridge, Pitch), iSpindel ve RAPT veriyi bu adrese gönderir; Brewfather "Custom Stream" biçimi de kabul edilir, böylece kullanıcı cihazını yalnız adresi değiştirerek taşır (biçim doğrulanacak) | Cihaz eşleştirme; Ayarlar › Cihazlar | İkisi | Ev MVP |
 | Profesyonel tank sensörleri | SG, pH, çözünmüş oksijen, basınç; API veya CSV ile | Cihaz eşleştirme; Tank detayı | İşletme | İşletme 2. sürüm |
 | Endüstriyel ağ geçidi | Glikol ve tank kontrolcüleri, PLC: Modbus TCP, OPC UA, MQTT | Ayarlar › Cihazlar; Tank detayı; Operatör görünümü | İşletme | Okuma İşletme 2. sürüm; komut gönderme Sonra |
 | Sürdürülebilirlik göstergeleri | hL başına su, enerji ve CO₂ tüketimi ve trendi | Raporlar, panolar | İşletme | İşletme 2. sürüm |
@@ -809,7 +815,7 @@ Rakip uygulamaların (BeerSmith, Brewfather, Brewer's Friend, Grainfather, Ekos,
 ### Deneme süresi
 
 - **1 ay tam deneme:** deneme süresince tüm özellikler açık; hesaplar kısıtlanmaz (BeerSmith denemesinde hesapların güncellenmemesi şikayet konusu).
-- Deneme bitince veriler silinmez ve her zaman dışa aktarılabilir; ücretli özellikler salt okunur kalır.
+- Deneme bitince veriler silinmez ve her zaman dışa aktarılabilir; ücretli özellikler salt okunur kalır. Katman matrisi ve fiyatlar betadan önce kararlaştırılır; Claude taslak yazar, Oğuz onaylar. Ev modunda sınır tarif sayısından çok cihaz, kullanıcı ve depolama gibi alanlara konur (veri sahipliği sözü korunur).
 - Fiyatlar ve ücretsiz katmanın sınırı hâlâ açık karar. Karar verilirken katmanlara göre özellik matrisi yazılır: tarif, parti, cihaz, kullanıcı ve depolama sınırları, destek yanıt süresi. Hiçbir katmanda dışa aktarma kapatılmaz.
 
 ### Kalibrasyon asistanı

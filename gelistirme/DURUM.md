@@ -47,6 +47,14 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
+- 2026-11-20 (competitor review, Oğuz approved Claude proposals; report `karsilastirma/rakipler-2026-11.md`):
+  - Import of recipes and equipment from Brewfather JSON and `.bsmx` in Home MVP (T2.26). Batches and stock in Home version 2.
+  - Device intake accepts the Brewfather "Custom Stream" format (T2.25).
+  - "Recently deleted" screen with restore for 30 days in Home MVP (T2.37).
+  - Rule-based "what can I brew from stock" in Home version 2. A recipe draft from a language model comes later, after a separate decision.
+  - Conversion and lauter efficiency split also in Home mode, as an advanced setting (T2.38).
+  - Claude writes the tier matrix draft before the beta; Oğuz approves it (O8).
+
 - 2026-11-20 (Oğuz): the product name is GRISTORA and the domain is gristora.com. The app design and the marketing site design are separate; only the name, the logo, the app icon and the accent color are shared. Tasks G1–G8 in `gelistirme/ISLER.md` (stages 3–5).
 
 - 2026-11-20 (F2.1 items 8–12, Oğuz approved Claude proposals):
