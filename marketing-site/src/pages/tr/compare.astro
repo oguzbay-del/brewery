@@ -15,6 +15,7 @@ import { modules } from "../../data/modules";
 import { moduleLabelsTr } from "../../data/modules.tr";
 
 const base = import.meta.env.BASE_URL;
+const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}tr/compare/`, import.meta.env.SITE).href;
 const description = "GRISTORA'nın Ev biracısı ve Profesyonel bira üreticisi özellik yollarını karşılaştırın.";
 const rows: { group: string; items: [string, string][] }[] = [
@@ -55,7 +56,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
   <head>
     <meta charset="UTF-8" />
     <FontPreload /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#F7F6F3" />
-    <meta name="robots" content="noindex, nofollow" /><link rel="canonical" href={canonicalUrl} /><link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} /><link rel="canonical" href={canonicalUrl} /><link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content={description} /><title>Ev ve Bira Üreticisi İşlev Karşılaştırması | GRISTORA</title>
     <meta property="og:type" content="website" /><meta property="og:site_name" content="GRISTORA" /><meta property="og:title" content="Ev ve Bira Üreticisi İşlev Karşılaştırması | GRISTORA" /><meta property="og:description" content={description} /><meta property="og:url" content={canonicalUrl} /><meta property="og:locale" content="tr_TR" /><meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} /><meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:title" content="Ev ve Bira Üreticisi İşlev Karşılaştırması | GRISTORA" /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
