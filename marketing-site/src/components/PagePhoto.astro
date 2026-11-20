@@ -4,16 +4,36 @@ interface Props { name: PhotoKey; lang?: "en" | "tr"; eager?: boolean; class?: s
 const { name, lang = "en", eager = false, class: cls = "" } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const feature = name.startsWith("feature-");
-const widths = feature ? [640, 960, 1152] : [640, 960, 1408];
-const [w, h] = feature ? [1152, 768] : [1408, 768];
+const curatedFeaturePhotos = [
+  "feature-fermentation-monitoring",
+  "feature-equipment-calibration",
+  "feature-planning-scheduling",
+  "feature-inventory-costing",
+  "feature-production-management",
+  "feature-quality-laboratory",
+  "feature-packaging-compliance",
+  "feature-team-notifications",
+  "feature-connected-devices",
+  "feature-imports-exports-tools",
+  "feature-platform-security-data",
+  "feature-analytics-reports",
+] as const;
+const curated = (curatedFeaturePhotos as readonly PhotoKey[]).includes(name);
+const widths = curated ? [640, 896] : feature ? [640, 960, 1152] : [640, 960, 1408];
+const [w, h] = curated ? [896, 597] : feature ? [1152, 768] : [1408, 768];
 const set = (ext: string) => widths.map((x) => `${base}images/photos/${name}-${x}.${ext} ${x}w`).join(", ");
-const sizes = "(min-width: 1240px) 1180px, calc(100vw - 32px)";
+const sizes = curated
+  ? "(min-width: 928px) 896px, calc(100vw - 32px)"
+  : "(min-width: 1240px) 1180px, calc(100vw - 32px)";
+const fallbackWidth = curated ? 896 : 960;
+const fallbackExt = curated ? "jpg" : "webp";
 ---
-<figure class={`page-photo ${feature ? "page-photo-feature" : ""} ${cls}`}>
+<figure class={`page-photo ${feature ? "page-photo-feature" : ""} ${curated ? "page-photo-feature-curated" : ""} ${cls}`}>
   <picture>
     <source type="image/avif" srcset={set("avif")} sizes={sizes} />
     <source type="image/webp" srcset={set("webp")} sizes={sizes} />
-    <img src={`${base}images/photos/${name}-960.webp`} width={w} height={h} alt={photos[name][lang]}
+    {curated && <source type="image/jpeg" srcset={set("jpg")} sizes={sizes} />}
+    <img src={`${base}images/photos/${name}-${fallbackWidth}.${fallbackExt}`} width={w} height={h} alt={photos[name][lang]}
       loading={eager ? "eager" : "lazy"} decoding="async" fetchpriority={eager ? "high" : undefined} />
   </picture>
 </figure>
