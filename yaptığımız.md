@@ -48,16 +48,15 @@ Astro build komutu, projedeki build script'ine göre fotoğraf optimizasyonu ve 
 - Google tarafından indekslenebilirlik için production HTML sayfalarında `noindex` direktifi bulunmamalı; robots.txt ve canonical URL'ler de kontrol edilmeli.
 - Cloudflare Pages preview adresleri ve GitHub Pages test ortamları arama motorlarına indeksletilmemeli.
 
-## 5. Açık işler
+## 5. SEO ve dil değiştirme düzeltmeleri
 
-Aşağıdaki maddeler bu dokümanın hazırlandığı sırada tamamlanmış olarak kabul edilmemektedir:
-
-- [ ] Production sayfalarındaki `noindex` / `X-Robots-Tag: noindex` kullanımını incele; yalnızca canlı site için kaldır.
-- [ ] Preview/test ortamlarında `noindex` korumasını sürdür.
-- [ ] İngilizce sayfalara Türkçe sayfalardaki dil değiştirme bağlantısını ekle; TR ↔ EN geçişinin eşdeğer sayfaya gittiğini doğrula.
-- [ ] Sitemap, robots.txt, canonical ve hreflang etiketlerini kontrol et.
+- [x] İngilizce ve Türkçe içerik sayfalarında indeksleme yalnızca `gristora.com` canonical host'u için açılacak şekilde düzenlendi (`index, follow`).
+- [x] Preview / test host'ları `noindex, nofollow` korumasında bırakıldı; `robots.txt` production dışındaki host'larda taramayı engelliyor.
+- [x] Ortak `SiteHeader.astro` bileşeninde EN/TR dil bağlantısı yer alıyor; bağlantı aynı sayfanın karşı dildeki karşılığına yönleniyor.
+- [ ] Üretim build'i ve Cloudflare deployment'ı tamamlandıktan sonra canlı HTML, `robots.txt`, canonical, sitemap ve hreflang davranışını tekrar doğrula.
+- [ ] Sitemap, robots.txt, canonical ve hreflang etiketlerini canlı alan adında doğrula.
 - [ ] `www.gristora.com` → `gristora.com` yönlendirmesini doğrula.
-- [ ] Cloudflare Pages Deployments ekranında son production build'in başarılı olduğunu ve doğru commit'i yayınladığını kontrol et.
+- [ ] Cloudflare Pages Deployments ekranında son production build'in başarılı olduğunu ve doğru commit'i yayınladığını doğrula.
 
 ## 6. Resmî Cloudflare kaynakları
 
@@ -68,4 +67,4 @@ Aşağıdaki maddeler bu dokümanın hazırlandığı sırada tamamlanmış olar
 
 ---
 
-Bu dosya kurulumun ve kararların kısa operasyonel kaydıdır. Cloudflare dashboard'unda henüz bağımsız olarak doğrulanmamış ayarlar, kesin uygulanmış ayarlar gibi değerlendirilmemelidir.
+Bu dosya kurulumun ve kararların kısa operasyonel kaydıdır. GitHub PR/CI ve Cloudflare deployment sonuçları doğrulanmadan production yayını tamamlanmış sayılmaz.
