@@ -11,6 +11,8 @@ import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import { buildBreadcrumbList } from "../../data/breadcrumbs";
 import type { FeatureAudience } from "../../data/features";
 import { featuresTr as features } from "../../data/features.tr";
+import { modules } from "../../data/modules";
+import { moduleLabelsTr } from "../../data/modules.tr";
 
 const base = import.meta.env.BASE_URL;
 const canonicalUrl = new URL(`${base}tr/compare/`, import.meta.env.SITE).href;
@@ -37,7 +39,11 @@ const rows: { group: string; items: [string, string][] }[] = [
 const stageFor = (slug: string, audience: FeatureAudience) => {
   const feature = features.find((item) => item.slug === slug);
   if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Ev yolunda yok" : "Bira üreticisi yolunda yok";
-  return "Dahil";
+  const availability = feature.modules.map((id) => modules.find((module) => module.id === id)).filter(Boolean).map((module) => audience === "Homebrewers" ? module!.home : module!.brewery);
+  if (availability.includes("Included")) return "Dahil";
+  if (availability.includes("Simplified")) return "Sade kapsam";
+  if (availability.includes("Second release")) return "İkinci sürüm";
+  return audience === "Homebrewers" ? "Ev yolunda yok" : "İşletme yolunda yok";
 };
 const isMissing = (stage: string) => stage.endsWith("yolunda yok");
 const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "İşlev karşılaştırması", url: canonicalUrl }];
