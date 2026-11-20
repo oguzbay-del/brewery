@@ -77,3 +77,14 @@ A new session should:
 5. Merge manually only after checks pass.
 6. Update this document with merged PR numbers, remaining decisions and next package.
 7. Stop when W12 passes. Do not expand into product engineering.
+
+
+## W13 execution — 21 November 2026
+
+- Started a separate feature branch: `work/gristora-modular-product-presentation-2026-11-21`.
+- Added a canonical nine-module catalogue based on the approved `plan/demleme-plani.md` › `Modüller` table: Core, Devices, Stock, Production, Quality, Cost & reports, Tax & compliance, Team, Connections.
+- Mapped all 16 existing feature pages to their module(s) in both EN and TR feature data; feature detail pages expose module links.
+- Added EN and TR module overview routes with Home vs Professional Brewery availability, the simplified Home Stock scope, Connections second-release timing, and explicit ERP exclusions.
+- Added Modules / Modüller to shared navigation and links from both comparison pages. Pricing amounts/discounts were not changed because the module-based tier matrix remains owner-dependent (O8).
+- Added `/modules/` to generated-site route validation. CI and responsive visual review are pending on the feature PR.
+- No product app, APIs, data model, roadmap, or production deployment changed.
