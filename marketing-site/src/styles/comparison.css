@@ -7,3 +7,5 @@
 .compare-stage-key .stage-muted { white-space: nowrap; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @media (max-width: 620px) { .compare-hero-actions { align-items: flex-start; flex-direction: column; } .compare-stage-key ul { flex-direction: column; gap: 10px; } }
+
+.comparison-module-label{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:500;line-height:1.4}
