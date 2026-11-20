@@ -441,6 +441,7 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; 
 .page-photo { margin: 0 auto; padding: 0 0 8px; max-width: 1180px; }
 .page-photo img { display: block; width: 100%; height: auto; aspect-ratio: 1408 / 768; object-fit: cover; border-radius: var(--radius-card, 18px); background: #e9e4da; }
 .page-photo-feature img { aspect-ratio: 3 / 2; }
+.page-photo-feature-curated { max-width: 896px; }
 .page-photo-band { padding: 0 16px; margin-block: 8px 40px; }
 @media (max-width: 640px) { .page-photo-band { margin-block: 4px 28px; } .page-photo img { aspect-ratio: 4 / 3; } }
 .audience-hero-photo { max-width: none; padding: 0; }
