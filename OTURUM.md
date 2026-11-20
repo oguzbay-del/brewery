@@ -2,6 +2,7 @@
 
 ## Fixed decisions and scope
 
+- **Photography (Oğuz, 20 Nov 2026):** every public page will have a photo. The owner will generate the photos with Google Nano Banana. Prompts for 27 images (11 pages, 16 feature pages; TR pages reuse them) are in `web-stratejisi/50-gristora-photo-prompts-nano-banana.md`. This changes LCH-07: AI-generated representative images, no logos, labels, readable text or fake UI. Next step: the owner generates and sends the PNG files; Claude converts them to AVIF/WebP and integrates them.
 - **Owner decision (Oğuz, 16 Nov 2026):** the public site shows no product-maturity disclaimers; product–site consistency is verified by the owner (doc 41 updated). Disclaimers removed from `marketing-site/` pages, features data, SVG diagrams, social card and validator/test assertions. Results: `astro check` 0 errors, build complete, `validate:site` 2292 checks passed, Playwright 116 passed. Next step: owner review of the live copy.
 - Public brand: **GRISTORA**. Descriptor: **Brewing Intelligence**.
 - The owner selected the **first logo design shown by the assistant** before the message beginning “Paralel çalışmayı sürdürdüm. Bu turda marka dokümantasyonundan çıkıp ilk logo tasarımını…”. This is the only direction to refine; do not substitute later exploration variants or ask the owner to repeat the decision.
