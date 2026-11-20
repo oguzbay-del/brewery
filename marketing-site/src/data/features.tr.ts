@@ -61,7 +61,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "brew-day",
-    modules: ["core","production"],
+    modules: ["core"],
     title: "Demleme günü ve üretim kayıtları",
     eyebrow: "DEMLEME GÜNÜ",
     summary: "Demleme günü çalışma alanı, reçete planını gerçekte olandan ayrı tutar; ıslak ekipmanın ve kâğıt kayıtların yanında da kullanılabilir kalır.",
@@ -75,7 +75,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "fermentation-monitoring",
-    modules: ["core","production"],
+    modules: ["core"],
     title: "Fermantasyon ve parti takibi",
     eyebrow: "FERMANTASYON",
     summary: "Her partiyi demleme gününden fermantasyona, olgunlaştırmaya ve paketlemeye kadar; cihaz okumaları ya da elle yapılan ölçümlerle izleyin.",
@@ -90,7 +90,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "equipment-calibration",
-    modules: ["devices","production"],
+    modules: ["devices"],
     title: "Ekipman ve kalibrasyon",
     eyebrow: "EKİPMAN",
     summary: "Ekipman profilleri, bir ev kurulumunun ya da profesyonel demhanenin gerçek davranışını yansıtır ve ölçülen parti sonuçlarıyla gelişir.",
@@ -160,7 +160,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "packaging-compliance",
-    modules: ["quality","tax-compliance"],
+    modules: ["production","quality","tax-compliance"],
     title: "Paketleme, CIP ve uyumluluk",
     eyebrow: "PAKETLEME VE KAYITLAR",
     summary: "Paketleme kayıtları, kap temizliği ve yargı bölgesine duyarlı raporlama profesyonel üretimi destekler; sistemin neleri yapmadığı da açıkça belirtilir.",
