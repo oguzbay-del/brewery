@@ -27,6 +27,7 @@ pub const MODULES: &[Module] = &[
     crate::routes::MODULE,
     crate::events::MODULE,
     crate::files::MODULE,
+    crate::library::MODULE,
     crate::auth::handlers::MODULE,
     crate::auth::setup::MODULE,
     crate::auth::access::MODULE,

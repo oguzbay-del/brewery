@@ -23,6 +23,10 @@ name = "migrate"
 path = "src/bin/migrate.rs"
 
 [[bin]]
+name = "seed-sample"
+path = "src/bin/seed_sample.rs"
+
+[[bin]]
 name = "audit-verify"
 path = "src/bin/audit_verify.rs"
 

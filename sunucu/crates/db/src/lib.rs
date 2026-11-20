@@ -16,6 +16,7 @@ mod measurement;
 pub mod outbox;
 mod pool;
 mod roles;
+pub mod seed;
 
 pub use audit::{
     AuditEvent, AuditRecord, CanonicalFields, ChainBreak, ChainReport, GENESIS_HASH, NewAuditEntry,

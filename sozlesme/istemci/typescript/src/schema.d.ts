@@ -528,6 +528,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/ingredients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the ingredients of the shared library and of the workspace. */
+        get: operations["ingredient_list"];
+        put?: never;
+        /** Adds an ingredient to the workspace. */
+        post: operations["ingredient_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/ingredients/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one ingredient with its detail. */
+        get: operations["ingredient_get"];
+        put?: never;
+        post?: never;
+        /** Deletes an ingredient of the workspace (soft delete). A shared library ingredient answers `403`. */
+        delete: operations["ingredient_delete"];
+        options?: never;
+        head?: never;
+        /** Changes an ingredient of the workspace. A shared library ingredient answers `403`. */
+        patch: operations["ingredient_update"];
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/invitations": {
         parameters: {
             query?: never;
@@ -769,6 +806,108 @@ export interface paths {
          *     editor or viewer preset.
          */
         post: operations["shares_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/style-guides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the style guides. */
+        get: operations["style_guide_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/style-guides/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one style guide. */
+        get: operations["style_guide_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/style-guides/{id}/styles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the styles of one guide. */
+        get: operations["style_guide_styles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/style-mappings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the mappings between the styles of two guides. */
+        get: operations["style_mapping_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/styles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists styles of all guides. */
+        get: operations["style_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/styles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one style. */
+        get: operations["style_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1074,6 +1213,48 @@ export interface components {
          * @enum {string}
          */
         ErrorCode: "malformed_request" | "unauthenticated" | "forbidden" | "step_up_required" | "entitlement_required" | "not_found" | "conflict" | "idempotency_in_progress" | "version_mismatch" | "payload_too_large" | "unsupported_media_type" | "validation_failed" | "idempotency_mismatch" | "calculation_failed" | "upgrade_required" | "precondition_required" | "rate_limited" | "internal" | "unavailable";
+        /** @description Detail of a fermentable. */
+        FermentableDetail: {
+            /**
+             * Format: double
+             * @description Color, SRM.
+             */
+            color_srm?: number;
+            /**
+             * Format: double
+             * @description Diastatic power, Lintner.
+             */
+            diastatic_power_lintner?: number | null;
+            /** @description `grain`, `extract`, `sugar`, `adjunct`, `dry_extract`, `fruit`, `juice`, `honey`, `acid`. */
+            grain_type: string;
+            /**
+             * Format: double
+             * @description Bitterness an extract adds, IBU L per kg.
+             */
+            ibu_l_per_kg?: number;
+            /**
+             * Format: double
+             * @description Largest share in a batch, percent (default 100).
+             */
+            max_in_batch_pct?: number | null;
+            /**
+             * Format: double
+             * @description Moisture, percent.
+             */
+            moisture_pct?: number | null;
+            /** @description The fermentable adds no fermentable extract. */
+            not_fermentable?: boolean;
+            /**
+             * Format: double
+             * @description Protein, percent.
+             */
+            protein_pct?: number | null;
+            /**
+             * Format: double
+             * @description Yield, percent of dry basis.
+             */
+            yield_pct: number;
+        };
         /** @description One field-level problem (`errors[]`). */
         FieldIssue: {
             /** @description Stable code of the problem (`out_of_range`, ...). */
@@ -1092,6 +1273,26 @@ export interface components {
             /** @description Service version. */
             version: string;
         };
+        /** @description Detail of a hop. */
+        HopDetail: {
+            /**
+             * Format: double
+             * @description Alpha acid, percent.
+             */
+            alpha_pct: number;
+            /**
+             * Format: double
+             * @description Beta acid, percent.
+             */
+            beta_pct?: number | null;
+            /** @description `pellet` (default), `plug`, `leaf`, `co2_extract`, `isomerized_extract`. */
+            form?: string | null;
+            /**
+             * Format: double
+             * @description Hop storage index, percent.
+             */
+            hsi_pct?: number | null;
+        };
         /** @description A sign-in method of the user. */
         IdentitySummary: {
             /**
@@ -1108,6 +1309,73 @@ export interface components {
             linked_at: string;
             /** @description `apple`, `google` or `email`. */
             provider: string;
+        };
+        /** @description An ingredient of the shared library or of the workspace. */
+        Ingredient: {
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /** @description Fields of the kind: see `FermentableDetail`, `HopDetail`, `YeastDetail`, `MiscDetail`. */
+            detail: Record<string, never>;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description `fermentable`, `hop`, `yeast` or `misc`. */
+            kind: string;
+            /** @description Manufacturer. */
+            manufacturer?: string | null;
+            /** @description Name. */
+            name: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /** @description Origin (country or region). */
+            origin?: string | null;
+            /** @description Price per kg, decimal text with up to 4 decimals. */
+            price?: string | null;
+            /** @description Currency of the price (ISO 4217). */
+            price_currency?: string | null;
+            /** @description Product code of the manufacturer. */
+            product_code?: string | null;
+            /** @description `library` (shared, read only) or `user` (added by the workspace). */
+            source: string;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description Body of `PATCH .../ingredients/{id}` (JSON Merge Patch). `kind` cannot change. */
+        IngredientPatch: {
+            /** @description Fields of the kind, merged one by one. */
+            detail: Record<string, never>;
+            /** @description Manufacturer; `null` clears it. */
+            manufacturer?: string | null;
+            /** @description Name. */
+            name?: string | null;
+            /** @description Notes; `null` clears them. */
+            notes?: string | null;
+            /** @description Origin; `null` clears it. */
+            origin?: string | null;
+            /** @description Price per kg; `null` clears it (with the currency). */
+            price?: string | null;
+            /** @description Currency of the price. */
+            price_currency?: string | null;
+            /** @description Product code; `null` clears it. */
+            product_code?: string | null;
         };
         /** @description Result of accepting. */
         InvitationAccepted: {
@@ -1252,6 +1520,15 @@ export interface components {
              */
             member_id: string;
         };
+        /** @description Detail of a misc ingredient. */
+        MiscDetail: {
+            /** @description `boil`, `mash`, `primary`, `secondary`, `bottling`, `sparge`, `whirlpool`. */
+            default_usage?: string | null;
+            /** @description Liquid (measured in L) instead of solid (kg). */
+            is_liquid?: boolean;
+            /** @description `spice`, `fining`, `herb`, `flavor`, `water_agent`, `other` (default). */
+            misc_kind?: string | null;
+        };
         /** @description Body of `POST /members/{id}/assignments`. */
         NewAssignment: {
             /**
@@ -1289,6 +1566,27 @@ export interface components {
              * @description Exact size in bytes.
              */
             size_bytes: number;
+        };
+        /** @description Body of `POST .../ingredients`. */
+        NewIngredient: {
+            /** @description Fields of the kind. */
+            detail?: Record<string, never>;
+            /** @description `fermentable`, `hop`, `yeast` or `misc`. */
+            kind: string;
+            /** @description Manufacturer (up to 200 characters). */
+            manufacturer?: string | null;
+            /** @description Name (1 to 200 characters). */
+            name: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /** @description Origin (up to 100 characters). */
+            origin?: string | null;
+            /** @description Price per kg, decimal text. */
+            price?: string | null;
+            /** @description Currency of the price; needed with `price`. */
+            price_currency?: string | null;
+            /** @description Product code (up to 100 characters). */
+            product_code?: string | null;
         };
         /** @description Body of `POST /invitations`. */
         NewInvitation: {
@@ -1447,6 +1745,59 @@ export interface components {
             next_cursor?: string | null;
         };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Ingredient: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /** @description Fields of the kind: see `FermentableDetail`, `HopDetail`, `YeastDetail`, `MiscDetail`. */
+                detail: Record<string, never>;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description `fermentable`, `hop`, `yeast` or `misc`. */
+                kind: string;
+                /** @description Manufacturer. */
+                manufacturer?: string | null;
+                /** @description Name. */
+                name: string;
+                /** @description Notes. */
+                notes?: string | null;
+                /** @description Origin (country or region). */
+                origin?: string | null;
+                /** @description Price per kg, decimal text with up to 4 decimals. */
+                price?: string | null;
+                /** @description Currency of the price (ISO 4217). */
+                price_currency?: string | null;
+                /** @description Product code of the manufacturer. */
+                product_code?: string | null;
+                /** @description `library` (shared, read only) or `user` (added by the workspace). */
+                source: string;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_ScannedDocument: {
             /** @description The rows of this page. */
             items: {
@@ -1539,6 +1890,221 @@ export interface components {
                  * @description Last activity.
                  */
                 last_activity_at: string;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Style: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: double
+                 * @description Alcohol, highest (percent ABV).
+                 */
+                abv_max_pct?: number | null;
+                /**
+                 * Format: double
+                 * @description Alcohol, lowest (percent ABV).
+                 */
+                abv_min_pct?: number | null;
+                /** @description Category name. */
+                category?: string | null;
+                /**
+                 * Format: double
+                 * @description Carbonation, highest (volumes of CO2).
+                 */
+                co2_max_vols?: number | null;
+                /**
+                 * Format: double
+                 * @description Carbonation, lowest (volumes of CO2).
+                 */
+                co2_min_vols?: number | null;
+                /** @description Code in the guide. */
+                code?: string | null;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /**
+                 * Format: double
+                 * @description Final gravity, highest (SG).
+                 */
+                fg_max_sg?: number | null;
+                /**
+                 * Format: double
+                 * @description Final gravity, lowest (SG).
+                 */
+                fg_min_sg?: number | null;
+                /**
+                 * Format: uuid
+                 * @description Guide of the style.
+                 */
+                guide_id: string;
+                /**
+                 * Format: double
+                 * @description Bitterness, highest (IBU).
+                 */
+                ibu_max?: number | null;
+                /**
+                 * Format: double
+                 * @description Bitterness, lowest (IBU).
+                 */
+                ibu_min?: number | null;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description Name. */
+                name: string;
+                /** @description Notes. */
+                notes?: string | null;
+                /**
+                 * Format: double
+                 * @description Original gravity, highest (SG).
+                 */
+                og_max_sg?: number | null;
+                /**
+                 * Format: double
+                 * @description Original gravity, lowest (SG).
+                 */
+                og_min_sg?: number | null;
+                /** @description `library` or `user`. */
+                source: string;
+                /**
+                 * Format: double
+                 * @description Color, highest (SRM).
+                 */
+                srm_max?: number | null;
+                /**
+                 * Format: double
+                 * @description Color, lowest (SRM).
+                 */
+                srm_min?: number | null;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_StyleGuide: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description License note of the data. */
+                license_note?: string | null;
+                /** @description Name. */
+                name: string;
+                /** @description `library` or `user`. */
+                source: string;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+                /**
+                 * Format: int32
+                 * @description Year of the edition.
+                 */
+                year?: number | null;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_StyleMapping: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Guide of that style.
+                 */
+                from_guide_id: string;
+                /**
+                 * Format: uuid
+                 * @description Style the mapping starts from.
+                 */
+                from_style_id: string;
+                /** @description Name of that style. */
+                from_style_name: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description Notes. */
+                notes?: string | null;
+                /** @description `equivalent` or `closest`. */
+                relation: string;
+                /** @description `library` or `user`. */
+                source: string;
+                /**
+                 * Format: uuid
+                 * @description Guide of that style.
+                 */
+                to_guide_id: string;
+                /**
+                 * Format: uuid
+                 * @description Style the mapping points to.
+                 */
+                to_style_id: string;
+                /** @description Name of that style. */
+                to_style_name: string;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
             }[];
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
@@ -1890,6 +2456,206 @@ export interface components {
             /** @description The authenticator's answer (`PublicKeyCredential` as JSON). */
             credential: Record<string, never>;
         };
+        /** @description A beer style of a guide. Ranges are `*_min` and `*_max`. */
+        Style: {
+            /**
+             * Format: double
+             * @description Alcohol, highest (percent ABV).
+             */
+            abv_max_pct?: number | null;
+            /**
+             * Format: double
+             * @description Alcohol, lowest (percent ABV).
+             */
+            abv_min_pct?: number | null;
+            /** @description Category name. */
+            category?: string | null;
+            /**
+             * Format: double
+             * @description Carbonation, highest (volumes of CO2).
+             */
+            co2_max_vols?: number | null;
+            /**
+             * Format: double
+             * @description Carbonation, lowest (volumes of CO2).
+             */
+            co2_min_vols?: number | null;
+            /** @description Code in the guide. */
+            code?: string | null;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /**
+             * Format: double
+             * @description Final gravity, highest (SG).
+             */
+            fg_max_sg?: number | null;
+            /**
+             * Format: double
+             * @description Final gravity, lowest (SG).
+             */
+            fg_min_sg?: number | null;
+            /**
+             * Format: uuid
+             * @description Guide of the style.
+             */
+            guide_id: string;
+            /**
+             * Format: double
+             * @description Bitterness, highest (IBU).
+             */
+            ibu_max?: number | null;
+            /**
+             * Format: double
+             * @description Bitterness, lowest (IBU).
+             */
+            ibu_min?: number | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description Name. */
+            name: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /**
+             * Format: double
+             * @description Original gravity, highest (SG).
+             */
+            og_max_sg?: number | null;
+            /**
+             * Format: double
+             * @description Original gravity, lowest (SG).
+             */
+            og_min_sg?: number | null;
+            /** @description `library` or `user`. */
+            source: string;
+            /**
+             * Format: double
+             * @description Color, highest (SRM).
+             */
+            srm_max?: number | null;
+            /**
+             * Format: double
+             * @description Color, lowest (SRM).
+             */
+            srm_min?: number | null;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description A style guide. */
+        StyleGuide: {
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description License note of the data. */
+            license_note?: string | null;
+            /** @description Name. */
+            name: string;
+            /** @description `library` or `user`. */
+            source: string;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+            /**
+             * Format: int32
+             * @description Year of the edition.
+             */
+            year?: number | null;
+        };
+        /** @description A mapping from a style of one guide to a style of another guide. */
+        StyleMapping: {
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /**
+             * Format: uuid
+             * @description Guide of that style.
+             */
+            from_guide_id: string;
+            /**
+             * Format: uuid
+             * @description Style the mapping starts from.
+             */
+            from_style_id: string;
+            /** @description Name of that style. */
+            from_style_name: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /** @description `equivalent` or `closest`. */
+            relation: string;
+            /** @description `library` or `user`. */
+            source: string;
+            /**
+             * Format: uuid
+             * @description Guide of that style.
+             */
+            to_guide_id: string;
+            /**
+             * Format: uuid
+             * @description Style the mapping points to.
+             */
+            to_style_id: string;
+            /** @description Name of that style. */
+            to_style_name: string;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
         /** @description Body of `POST /v1/shared-devices/{id}/switch`. */
         SwitchRequest: {
             /**
@@ -2003,6 +2769,53 @@ export interface components {
             region: string;
             /** @description Membership status (`active` or `disabled`). */
             status: string;
+        };
+        /** @description Detail of a yeast. */
+        YeastDetail: {
+            /**
+             * Format: double
+             * @description Cells in one ml, billion.
+             */
+            cells_per_ml_billion?: number | null;
+            /**
+             * Format: double
+             * @description Dry pitch rate, g per hl.
+             */
+            dry_pitch_rate_g_per_hl?: number | null;
+            /** @description `low`, `medium`, `high`, `very_high`. */
+            flocculation?: string | null;
+            /** @description `liquid`, `dry`, `slant`, `culture`. */
+            form: string;
+            /**
+             * Format: double
+             * @description Highest apparent attenuation, percent.
+             */
+            max_attenuation_pct: number;
+            /**
+             * Format: double
+             * @description Highest fermentation temperature, degrees C.
+             */
+            max_temp_c?: number | null;
+            /**
+             * Format: double
+             * @description Lowest apparent attenuation, percent.
+             */
+            min_attenuation_pct: number;
+            /**
+             * Format: double
+             * @description Lowest fermentation temperature, degrees C.
+             */
+            min_temp_c?: number | null;
+            /**
+             * Format: double
+             * @description Alcohol tolerance, percent ABV.
+             */
+            tolerance_abv_pct?: number | null;
+            /**
+             * Format: double
+             * @description Cells in one package, billion.
+             */
+            total_cells_billion?: number | null;
         };
     };
     responses: never;
@@ -5758,6 +6571,749 @@ export interface operations {
             };
         };
     };
+    ingredient_list: {
+        parameters: {
+            query?: {
+                /** @description `fermentable`, `hop`, `yeast` or `misc` */
+                kind?: string;
+                /** @description `library` or `user` */
+                source?: string;
+                /** @description Text in the name (case blind) */
+                q?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `name` (default) or `-name` */
+                sort?: string;
+                /** @description Changed since (RFC 3339), deleted ones included */
+                updated_since?: string;
+                /** @description Include soft-deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of ingredients */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "detail": {
+                     *             "alpha_pct": 5.5,
+                     *             "beta_pct": 5,
+                     *             "form": "pellet",
+                     *             "hsi_pct": null
+                     *           },
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "kind": "hop",
+                     *           "manufacturer": null,
+                     *           "name": "Cascade",
+                     *           "notes": null,
+                     *           "origin": "US",
+                     *           "price": null,
+                     *           "price_currency": null,
+                     *           "product_code": null,
+                     *           "source": "library",
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Ingredient"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ingredient_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewIngredient"];
+            };
+        };
+        responses: {
+            /** @description Ingredient created (`source` is `user`) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "detail": {
+                     *         "default_usage": "boil",
+                     *         "is_liquid": false,
+                     *         "misc_kind": "spice"
+                     *       },
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "kind": "misc",
+                     *       "manufacturer": null,
+                     *       "name": "Orange peel",
+                     *       "notes": null,
+                     *       "origin": null,
+                     *       "price": null,
+                     *       "price_currency": null,
+                     *       "product_code": null,
+                     *       "source": "user",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Ingredient"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ingredient_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Ingredient */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The ingredient */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "detail": {
+                     *         "flocculation": "medium",
+                     *         "form": "dry",
+                     *         "max_attenuation_pct": 80,
+                     *         "max_temp_c": 24,
+                     *         "min_attenuation_pct": 73,
+                     *         "min_temp_c": 15
+                     *       },
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "kind": "yeast",
+                     *       "manufacturer": "Sample Lab",
+                     *       "name": "Sample Ale Yeast",
+                     *       "notes": null,
+                     *       "origin": null,
+                     *       "price": "4.5000",
+                     *       "price_currency": "USD",
+                     *       "product_code": null,
+                     *       "source": "user",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Ingredient"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ingredient_delete: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the ingredient */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Ingredient */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    ingredient_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the ingredient */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Ingredient */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["IngredientPatch"];
+            };
+        };
+        responses: {
+            /** @description The updated ingredient */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "detail": {
+                     *         "alpha_pct": 6.1,
+                     *         "beta_pct": null,
+                     *         "form": "pellet",
+                     *         "hsi_pct": null
+                     *       },
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "kind": "hop",
+                     *       "manufacturer": null,
+                     *       "name": "Cascade (own crop)",
+                     *       "notes": null,
+                     *       "origin": "US",
+                     *       "price": null,
+                     *       "price_currency": null,
+                     *       "product_code": null,
+                     *       "source": "user",
+                     *       "updated_at": "2026-11-20T10:05:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Ingredient"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     invitations_list: {
         parameters: {
             query?: never;
@@ -8291,6 +9847,805 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    style_guide_list: {
+        parameters: {
+            query?: {
+                /** @description `library` or `user` */
+                source?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `name` (default) or `-name` */
+                sort?: string;
+                /** @description Changed since (RFC 3339), deleted ones included */
+                updated_since?: string;
+                /** @description Include soft-deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of style guides */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "license_note": "SAMPLE DATA",
+                     *           "name": "Sample Guide A",
+                     *           "source": "library",
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1,
+                     *           "year": 2021
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_StyleGuide"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    style_guide_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Style guide */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The style guide */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "license_note": "SAMPLE DATA",
+                     *       "name": "Sample Guide A",
+                     *       "source": "library",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1,
+                     *       "year": 2021
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StyleGuide"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    style_guide_styles: {
+        parameters: {
+            query?: {
+                /** @description Text in the name or code (case blind) */
+                q?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `name` (default) or `-name` */
+                sort?: string;
+                /** @description Changed since (RFC 3339), deleted ones included */
+                updated_since?: string;
+                /** @description Include soft-deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Style guide */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of styles of the guide */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "abv_max_pct": 6.2,
+                     *           "abv_min_pct": 4.5,
+                     *           "category": "Pale Ale",
+                     *           "co2_max_vols": 2.8,
+                     *           "co2_min_vols": 2.2,
+                     *           "code": "A1",
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "fg_max_sg": 1.015,
+                     *           "fg_min_sg": 1.01,
+                     *           "guide_id": "0192f1c07a3b7000800000000000000b",
+                     *           "ibu_max": 50,
+                     *           "ibu_min": 30,
+                     *           "id": "0192f1c07a3b7000800000000000000c",
+                     *           "name": "Sample Pale Ale",
+                     *           "notes": "SAMPLE DATA",
+                     *           "og_max_sg": 1.06,
+                     *           "og_min_sg": 1.045,
+                     *           "source": "library",
+                     *           "srm_max": 10,
+                     *           "srm_min": 5,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Style"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    style_mapping_list: {
+        parameters: {
+            query?: {
+                /** @description Mappings that start or end at this style */
+                style_id?: string;
+                /** @description Mappings that start in this guide */
+                from_guide_id?: string;
+                /** @description Mappings that end in this guide */
+                to_guide_id?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `id` (default) or `-id` */
+                sort?: string;
+                /** @description Changed since (RFC 3339), deleted ones included */
+                updated_since?: string;
+                /** @description Include soft-deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of style mappings */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "from_guide_id": "0192f1c07a3b7000800000000000000b",
+                     *           "from_style_id": "0192f1c07a3b7000800000000000000c",
+                     *           "from_style_name": "Sample Pale Ale",
+                     *           "id": "0192f1c07a3b7000800000000000000d",
+                     *           "notes": null,
+                     *           "relation": "closest",
+                     *           "source": "library",
+                     *           "to_guide_id": "0192f1c07a3b7000800000000000000f",
+                     *           "to_style_id": "0192f1c07a3b7000800000000000000e",
+                     *           "to_style_name": "Sample American Ale",
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_StyleMapping"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    style_list: {
+        parameters: {
+            query?: {
+                /** @description Only the styles of this guide */
+                guide_id?: string;
+                /** @description Text in the name or code (case blind) */
+                q?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `name` (default) or `-name` */
+                sort?: string;
+                /** @description Changed since (RFC 3339), deleted ones included */
+                updated_since?: string;
+                /** @description Include soft-deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of styles */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "abv_max_pct": 6.2,
+                     *           "abv_min_pct": 4.5,
+                     *           "category": "Pale Ale",
+                     *           "co2_max_vols": 2.8,
+                     *           "co2_min_vols": 2.2,
+                     *           "code": "A1",
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "fg_max_sg": 1.015,
+                     *           "fg_min_sg": 1.01,
+                     *           "guide_id": "0192f1c07a3b7000800000000000000b",
+                     *           "ibu_max": 50,
+                     *           "ibu_min": 30,
+                     *           "id": "0192f1c07a3b7000800000000000000c",
+                     *           "name": "Sample Pale Ale",
+                     *           "notes": "SAMPLE DATA",
+                     *           "og_max_sg": 1.06,
+                     *           "og_min_sg": 1.045,
+                     *           "source": "library",
+                     *           "srm_max": 10,
+                     *           "srm_min": 5,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Style"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    style_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Style */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The style */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "abv_max_pct": 6.2,
+                     *       "abv_min_pct": 4.5,
+                     *       "category": "Pale Ale",
+                     *       "co2_max_vols": 2.8,
+                     *       "co2_min_vols": 2.2,
+                     *       "code": "A1",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "fg_max_sg": 1.015,
+                     *       "fg_min_sg": 1.01,
+                     *       "guide_id": "0192f1c07a3b7000800000000000000b",
+                     *       "ibu_max": 50,
+                     *       "ibu_min": 30,
+                     *       "id": "0192f1c07a3b7000800000000000000c",
+                     *       "name": "Sample Pale Ale",
+                     *       "notes": "SAMPLE DATA",
+                     *       "og_max_sg": 1.06,
+                     *       "og_min_sg": 1.045,
+                     *       "source": "library",
+                     *       "srm_max": 10,
+                     *       "srm_min": 5,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Style"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

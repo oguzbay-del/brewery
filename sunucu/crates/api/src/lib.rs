@@ -13,6 +13,7 @@ pub mod error;
 pub mod events;
 pub mod files;
 pub mod idempotency;
+pub mod library;
 pub mod modules;
 pub mod openapi;
 pub mod pagination;
