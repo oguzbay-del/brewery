@@ -98,7 +98,7 @@ Moddan moda geçişte veri silinmez; Ev'e dönülse de İşletme kayıtları (on
 | Çekirdek | Tarif, hesaplar, stil kılavuzu, demleme günü, fermantasyon, ölçüm, bildirim, içe ve dışa aktarma | Ev ve İşletme | – |
 | Cihazlar | iSpindel, RAPT, Tilt, webhook, kalibrasyon; İşletmede tank sensörleri | İkisi | – |
 | Stok | Malzeme stoğu, lot, mal kabul, sayım, ayırma, düşük stok uyarısı, alışveriş listesi, hafif satın alma | İkisi (Ev'de sade) | Tedarikçi faturası, ödeme, muhasebe |
-| Üretim | Tanklar ve doluluk, transfer, üretim panosu, takvim, ambalaj kaydı, fıçı ve kap takibi (QR), ekipman bakımı | İşletme | Bitmiş ürünün satışı ve sevkiyatı; fıçının müşteride takibi ve depozitosu |
+| Üretim | Tanklar ve doluluk, transfer, üretim panosu, takvim, ambalaj kaydı, fıçı ve kap takibi (QR), Saha görünümü (iPhone tarama), ekipman bakımı | İşletme | Bitmiş ürünün satışı ve sevkiyatı; fıçının müşteride takibi ve depozitosu |
 | Kalite | Spesifikasyon, laboratuvar sonucu, serbest bırakma, CIP, maya jenerasyonu, geri çağırma raporu | İşletme | – |
 | Maliyet ve raporlar | Parti ve litre maliyeti, ay sonu stok değerleme, xlsx ve CSV dışa aktarma | İşletme | Muhasebe kaydı ve fatura (yalnız dosyayla aktarım) |
 | Vergi ve uyum | TTB ve HMRC hesapları, beyannameye hazır rapor, saklama ve yasal tutma | İşletme | Beyannamenin otomatik gönderilmesi (doğrulanacak) |
@@ -125,7 +125,7 @@ iPhone veri görür ve sahadaki kısa işleri yapar; tasarım, planlama, yöneti
 
 | iPhone'da | Ekranlar ve işler |
 | --- | --- |
-| Tam (kısa işler) | Demleme günü ve Live Activity; kâğıt tarama ve adımı kapatma; ölçüm girişi; araçlar; Bugün (görev kapatma); Saha: tank, lot ve fıçı tarama, seri tarama; CIP adımları; barkodla mal kabul ve sayım; alışveriş listesi; cihaz eşleştirme (Bluetooth); bildirim kutusu; Ev'de tarif sihirbazı, ekipman sihirbazı ve hızlı parti başlatma; ilk açılış, giriş, hesap, abonelik (StoreKit), yardım; davet kabulü; arama |
+| Tam (kısa işler) | Demleme günü ve Live Activity; kâğıt tarama ve adımı kapatma; ölçüm girişi; araçlar; Bugün (görev kapatma); Saha: tank, lot ve fıçı tarama, seri tarama; CIP adımları; barkodla mal kabul ve sayım; alışveriş listesi; cihaz eşleştirme (Bluetooth); bildirim kutusu; kişisel ayarlar (bildirim, görünüm); parti özetinde kalibrasyon önerisini kabul; Ev'de tarif sihirbazı, ekipman sihirbazı ve hızlı parti başlatma; ilk açılış, giriş, hesap, abonelik (StoreKit), yardım; davet kabulü; arama |
 | Salt görüntüleme | Tarif ve alt sekmeleri (su, mash, fermantasyon profili, kaynatma, mead); malzeme detayı; stil kılavuzu; "Nasıl hesaplandı"; fermantasyon; parti özeti (tadım notu eklenir); üretim panosu; tank detayı; takvim (liste); onay bekleyenler; maya yönetimi; rapor özetleri; lot izlenebilirlik |
 | Yok (iPad ve web) | Tarif editörü, karşılaştırma, ölçekleme, içe aktarma eşleştirmesi, kendi malzemen, su raporu, uyarı kuralları; parti planlama ve tank ataması; Bugün düzenleme; operatör görünümü; onay ve serbest bırakma; kalite; ambalaj kaydı; tank hareketi; sapma analizi; etiket; tank turu çıktısı; fıçı listesi ve QR etiket yazdırma; kullanıcı daveti ve roller; denetim kaydı; ekipman, kaplar, kalibrasyon; çalışma alanı ayarları |
 

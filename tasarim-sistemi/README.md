@@ -43,7 +43,7 @@ Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web
 
 ## Düzen ve gezinme
 
-- iPad ve web: kenar çubuğu + içerik + gerektiğinde Inspector (Numbers gibi). iPhone: en fazla 5 sekme (`TabBar`), büyük başlık, seçiciler sheet olarak.
+- iPad ve web: kenar çubuğu + içerik + gerektiğinde Inspector (Numbers gibi). iPhone: en fazla 5 sekme (`TabBar`), büyük başlık, seçiciler sheet olarak. iPhone veri görür ve kısa işleri yapar; tasarım, planlama ve yönetim ekranı iPhone'a konmaz (plan › iPhone kapsamı). Saha taraması iPhone'da tek kamera ekranıdır: okunan koda göre kart ve en çok üç eylem, ana eylem `Button` dolu ve büyük.
 - Her ekran dört gezinme tipinden birindedir: sekme kökü, ileri itme (geri düğmesi önceki ekranın adını taşır), sheet (Vazgeç / Kaydet), tam ekran (demleme günü, sihirbaz; çıkış sol üstte). Sheet üstüne sheet açılmaz.
 - Süren demleme her ekranda `BrewReturnBar` ile görünür.
 - Web'de her ekranın kendi adresi vardır; üç seviyeden derin ekranlarda üstte iz yolu.
@@ -63,7 +63,7 @@ Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web
 
 ## Baskı
 
-- Yazdırılan formlar (brew sheet, tank turu, etiket) temadan bağımsızdır: her zaman beyaz kağıt üzerinde siyah. Kağıt boyutu bölgeye göre (US Letter, diğerleri A4). Formdaki QR kod taramayı doğru partiye bağlar.
+- Yazdırılan formlar (brew sheet, tank turu, etiket) temadan bağımsızdır: her zaman beyaz kağıt üzerinde siyah. Kağıt boyutu bölgeye göre (US Letter, diğerleri A4). Formdaki QR kod taramayı doğru partiye bağlar. Fıçı, tank ve lot QR etiketi de aynı kuralla basılır; kodun yanında okunur seri numarası veya lot kodu bulunur.
 
 ## İkonlar ve logo
 

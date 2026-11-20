@@ -16,6 +16,8 @@
 - The macOS CI does the build and the tests. The product owner does the device test.
 
 ## Rules
+- The iPhone shows only the screens in plan › iPhone kapsamı. Do not add design, planning or management screens to the iPhone. Put them on the iPad.
+- The device split is a user interface rule. Do not use it as a permission check. The server checks the permission.
 - Do not edit generated files by hand: `Demleme/Resources/Assets.xcassets/Colors` and `Demleme/Design/Tokens.swift`. Generate them again with `python3 -I ios/scripts/gen_colors.py`.
 - Format: SwiftFormat and SwiftLint (`.swiftformat`, `.swiftlint.yml`).
 - Code is in English. Notes for Claude (this file, task lists) use ASD-STE100. Other documents are in Turkish. User-visible text comes from the text catalog.
