@@ -906,6 +906,28 @@ pub fn total_grain_use_field(r: &RecipeInput, usage: GrainUse, field: GrainField
 
 // --- §4 efficiency ---------------------------------------------------------------------
 
+/// Brewhouse efficiency (%) from the split of Home advanced mode (T2.38, spec 08 §4.3):
+/// `conversion_pct × lauter_pct / 100`. Each input is in `0..=100`. Use the result as
+/// `RecipeInput::efficiency_pct`; the potential of the grain already holds the lab extract.
+///
+/// # Errors
+/// `InvalidInput` when an input is non-finite or outside `0..=100`.
+pub fn split_efficiency_pct(conversion_pct: f64, lauter_pct: f64) -> Result<f64> {
+    for (field, v) in [
+        ("conversion_efficiency_pct", conversion_pct),
+        ("lauter_efficiency_pct", lauter_pct),
+    ] {
+        ensure_finite(field, v)?;
+        if !(0.0..=100.0).contains(&v) {
+            return Err(Error::InvalidInput {
+                field,
+                reason: "must be in 0..=100",
+            });
+        }
+    }
+    Ok(conversion_pct * lauter_pct / 100.0)
+}
+
 /// Efficiency (%), §4.1 `GetEfficiency`. `og` in SG (`<= 0` → the recipe OG), `volume_floz` in
 /// fl oz (`<= 0` → 0.01). Only Partial Mash and All Grain recipes; others give 0. `mash_only`
 /// counts Mash, Steep and Sparge fermentables and does not subtract the fixed-yield points.

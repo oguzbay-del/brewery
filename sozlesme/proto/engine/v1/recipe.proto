@@ -211,6 +211,12 @@ message CalculateRecipeRequest {
   Mash mash = 11;
   RecipeOptions options = 12;
   IbuEquation ibu_equation = 13;
+  // Home advanced mode: conversion efficiency, percent (0 to 100). Set it together with
+  // `lauter_efficiency_pct`; then `efficiency_pct` is ignored and the brewhouse efficiency is
+  // `conversion_efficiency_pct * lauter_efficiency_pct / 100` (spec 08 section 4.3).
+  optional double conversion_efficiency_pct = 14;
+  // Home advanced mode: lauter efficiency, percent (0 to 100). See above.
+  optional double lauter_efficiency_pct = 15;
 }
 
 message RecipeSummary {

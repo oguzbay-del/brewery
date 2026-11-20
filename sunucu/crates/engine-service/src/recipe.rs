@@ -138,6 +138,25 @@ fn map_options(o: Option<&proto::RecipeOptions>) -> Options {
 }
 
 /// Maps the request to the engine input; the boil volume for IBU is read from the result.
+/// Brewhouse efficiency of the request. Both split fields (Home advanced mode) set: their
+/// product. One set: error, because half a split has no meaning. None set: `efficiency_pct`.
+fn efficiency_pct(r: &CalculateRecipeRequest) -> Result<f64, Status> {
+    match (r.conversion_efficiency_pct, r.lauter_efficiency_pct) {
+        (None, None) => Ok(r.efficiency_pct),
+        (Some(c), Some(l)) => density::split_efficiency_pct(c, l).map_err(|e| from_engine(&e)),
+        (Some(_), None) => Err(bad_request(
+            "efficiency split is incomplete",
+            "lauter_efficiency_pct",
+            "must be set with conversion_efficiency_pct",
+        )),
+        (None, Some(_)) => Err(bad_request(
+            "efficiency split is incomplete",
+            "conversion_efficiency_pct",
+            "must be set with lauter_efficiency_pct",
+        )),
+    }
+}
+
 fn to_engine(r: &CalculateRecipeRequest) -> Result<RecipeInput, Status> {
     let eq = require("equipment", r.equipment.as_ref())?;
     let mash = require("mash", r.mash.as_ref())?;
@@ -203,7 +222,7 @@ fn to_engine(r: &CalculateRecipeRequest) -> Result<RecipeInput, Status> {
         volume_floz: convert::l_to_floz(r.batch_volume_l),
         boil_vol_floz: convert::l_to_floz(r.boil_volume_l),
         boil_time_min: r.boil_time_min,
-        efficiency_pct: r.efficiency_pct,
+        efficiency_pct: efficiency_pct(r)?,
         equipment: Equipment {
             trub_loss_floz: convert::l_to_floz(eq.trub_loss_l),
             pre_trub_loss_floz: convert::l_to_floz(eq.pre_trub_loss_l),
@@ -415,6 +434,8 @@ mod tests {
             }),
             options: None,
             ibu_equation: IbuEquation::Tinseth as i32,
+            conversion_efficiency_pct: None,
+            lauter_efficiency_pct: None,
         }
     }
 
@@ -441,6 +462,8 @@ mod tests {
                 ..Default::default()
             }),
             ibu_equation: IbuEquation::Tinseth as i32,
+            conversion_efficiency_pct: None,
+            lauter_efficiency_pct: None,
         }
     }
 
@@ -475,6 +498,8 @@ mod tests {
             mash: Some(PMash::default()),
             options: None,
             ibu_equation: IbuEquation::Tinseth as i32,
+            conversion_efficiency_pct: None,
+            lauter_efficiency_pct: None,
         }
     }
 
@@ -510,6 +535,33 @@ mod tests {
     async fn ibu_matches_vector() {
         let s = calc(ibu_recipe()).await.unwrap();
         close("ibu", s.ibu, 157.980_844_325_717_33);
+    }
+
+    #[tokio::test]
+    async fn efficiency_split_equals_the_product_as_single_efficiency() {
+        let mut single = ornek_ag();
+        single.efficiency_pct = 0.9 * 80.0;
+        let mut split = ornek_ag();
+        split.efficiency_pct = 10.0; // ignored when the split is set
+        split.conversion_efficiency_pct = Some(90.0);
+        split.lauter_efficiency_pct = Some(80.0);
+        let (a, b) = (calc(single).await.unwrap(), calc(split).await.unwrap());
+        close("og", b.og_sg, a.og_sg);
+        close("mash_eff", b.mash_efficiency_pct, a.mash_efficiency_pct);
+    }
+
+    #[tokio::test]
+    async fn efficiency_split_rejects_half_and_out_of_range() {
+        let mut r = ornek_ag();
+        r.conversion_efficiency_pct = Some(90.0);
+        assert_eq!(field_of(&invalid(r).await), "lauter_efficiency_pct");
+        let mut r = ornek_ag();
+        r.lauter_efficiency_pct = Some(80.0);
+        assert_eq!(field_of(&invalid(r).await), "conversion_efficiency_pct");
+        let mut r = ornek_ag();
+        r.conversion_efficiency_pct = Some(101.0);
+        r.lauter_efficiency_pct = Some(80.0);
+        invalid(r).await;
     }
 
     async fn invalid(r: CalculateRecipeRequest) -> Status {
