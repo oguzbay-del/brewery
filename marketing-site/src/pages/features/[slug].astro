@@ -11,6 +11,7 @@ import "../../styles/learning-pages.css";
 import "../../styles/faq-evidence.css";
 import "../../styles/stitch-layout.css";
 import { features } from "../../data/features";
+import { moduleLabels } from "../../data/modules";
 
 export function getStaticPaths() {
   return features.map((feature) => ({ params: { slug: feature.slug }, props: { feature } }));
@@ -71,6 +72,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <p class="feature-lead">{feature.summary}</p>
         <div class="feature-tags">
           {feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}
+          {feature.modules.map((moduleId) => <a class="feature-tag feature-module-tag" href={`${base}modules/#${moduleId}`}>{moduleLabels[moduleId]}</a>)}
         </div>
       </section>
       {featurePhoto(feature.slug) && <div class="page-photo-band"><PagePhoto name={featurePhoto(feature.slug)!} lang="en" eager /></div>}
