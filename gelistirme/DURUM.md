@@ -21,6 +21,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Blockers
 
+- T2.39: object lock is off locally (`S3_OBJECT_LOCK_MODE` not set); T2.32 configures a lock-enabled bucket (`S3_DIGEST_BUCKET`) in the cluster and in Terraform. The digest retention is 400 days (proposal, waits for Oğuz). A finding of the weekly check goes to the log and to `maintenance_runs` only; there is no alert yet.
+
 - T2.38: the engine accepts `conversion_efficiency_pct` and `lauter_efficiency_pct` (proto fields 14, 15). The equipment endpoints (T2.20) do not have these fields yet and do not send them to the engine. Add them in T2.21 or in a small follow-up task. The scripts in `karsilastirma/testler/` still use the rounded BeerSmith constants (not part of the parity tests).
 
 - T2.19: ingredient writes use `recipe.edit` (there is no `library.edit`). Style guides, styles and mappings are read-only. The sample seed (`db` binary `seed-sample`) is not in compose or the Makefile. The source of real library data is open.
