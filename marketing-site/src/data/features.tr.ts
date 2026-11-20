@@ -90,7 +90,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "equipment-calibration",
-    modules: ["devices"],
+    modules: ["core"],
     title: "Ekipman ve kalibrasyon",
     eyebrow: "EKİPMAN",
     summary: "Ekipman profilleri, bir ev kurulumunun ya da profesyonel demhanenin gerçek davranışını yansıtır ve ölçülen parti sonuçlarıyla gelişir.",
@@ -103,7 +103,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "planning-scheduling",
-    modules: ["production"],
+    modules: ["core","production"],
     title: "Planlama ve çizelgeleme",
     eyebrow: "İŞİ PLANLAYIN",
     summary: "Hedef paketleme tarihinden geriye doğru planlayın, her adım için gereken süreyi anlayın ve partilerin ekipman kullanılabilirliğine nasıl sığdığını görün.",
@@ -160,7 +160,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "packaging-compliance",
-    modules: ["production","quality","tax-compliance"],
+    modules: ["production","tax-compliance"],
     title: "Paketleme, CIP ve uyumluluk",
     eyebrow: "PAKETLEME VE KAYITLAR",
     summary: "Paketleme kayıtları, kap temizliği ve yargı bölgesine duyarlı raporlama profesyonel üretimi destekler; sistemin neleri yapmadığı da açıkça belirtilir.",
@@ -175,7 +175,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "team-notifications",
-    modules: ["team"],
+    modules: ["core","team"],
     title: "Ekipler, roller ve bildirimler",
     eyebrow: "İNSANLAR VE İŞ AKIŞLARI",
     summary: "Tek bir çalışma alanı hem tek başına çalışan bir biracıyı hem de çok rollü bir üretim ekibini destekler; bildirimler doğru kişiye yönlendirilir ve eylemler kaydedilir.",
