@@ -21,7 +21,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Blockers
 
-- T2.9: the measurement endpoint (T2.22) must call `db::validate_measured_at`. `purge_workspace` has no worker job yet. Open decisions: F2.1 report items 8 (`reason` text) and 9–12 (references after a permanent delete, legal hold, retention of external event payloads, audit anchor).
+- T2.9: the measurement endpoint (T2.22) must call `db::validate_measured_at`. `purge_workspace` has no worker job yet. F2.1 items 8–12 are decided (2026-11-20, see Recent decisions). Their implementation is not done yet.
 
 - T2.14: if an attacker deletes both the rows and the head of the chain, the check does not find it. An external anchor is necessary: write a periodic digest to the object store. If the canonical field list changes, add a format version.
 - T2.16: `EngineClient` is not connected to `AppState` yet (T2.20 and T2.21 connect it). The proto has no separate field for the intermediate values of "Nasıl hesaplandı".
@@ -43,6 +43,12 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
+- 2026-11-20 (F2.1 items 8–12, Oğuz approved Claude proposals):
+  - 8: the deletion reason is a value from a fixed list, with an optional short note. The client shows a warning: do not write personal data in the note.
+  - 9: an ingredient, a lot or a recipe version that is in use cannot be deleted permanently. It can only be archived. When it is not in use, a permanent delete is possible, and references change to a snapshot.
+  - 10: only the workspace owner can shorten or remove a legal hold or a retention end. The operation needs step-up and writes an audit log row. A delete request for a workspace with mandatory retention is postponed to the retention end, and the user gets a notification.
+  - 11: the payload of an external event that is not processed is kept for 30 days, then cleared. The event ID is kept for 13 months for the duplicate check.
+  - 12: each day, the worker writes the digests of the chain heads to an immutable (retention-locked) area of the object store. A weekly job verifies the chain against these digests.
 - 2026-11-20 (Oğuz approved Claude proposals):
   - T2.30: support corrects a subscription or an entitlement through a request with a reason in the support panel. The worker applies the request and writes an audit log row. The API does not write these tables.
   - T2.17: the engine will use the exact unit definitions of the catalog. The BeerSmith parity tests keep their tolerance. This is a task for the engine (not started).
