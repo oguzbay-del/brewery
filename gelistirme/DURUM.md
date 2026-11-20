@@ -3,7 +3,11 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task:** give the chain T2.21 → T2.22 to one agent. In parallel: T2.26 can wait (it needs T2.21). T2.19, T2.20 and T2.28 are done. Work rules: root `CLAUDE.md` › Token verimliliği.
+**Next task (new session):** these tasks are open and do not depend on each other. Give each chain to one agent; run at most 2–3 agents at the same time.
+- Chain A: T2.23 stock → T2.27 search.
+- Chain B: T2.24 notifications → T2.29 support requests → T2.30 support panel.
+- Single tasks: T2.25 device intake, T2.26 import and export, T2.37 recently deleted, T2.40 equipment efficiency fields.
+- Done on 2026-11-20: T2.19, T2.20, T2.21, T2.22, T2.28, T2.38, T2.39. Full api tests: 168 passed (with mailpit, NATS and the object store running).
 - 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
 - 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
@@ -20,6 +24,9 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - Database roles: `app_owner` (owner, NOLOGIN), `app_api`, `app_worker`. `migrate` sets their passwords (`APP_*_PASSWORD`).
 
 ## Blockers
+
+- T2.21: `est_cells_ml` and `honey_pct` are calculated in the API (`TODO`: move them into the engine). Publish is one step (`recipe.edit` in Home, `recipe.approve` in Business); submit and review come in stage 6. `calculate` on a published version returns the stored `calc_summary`. `scale` is a preview only. The 412 body has `current.conflicting_fields` as the difference.
+- T2.22: the actual ABV comes from an `abv_pct` measurement (the engine needs a call for measured OG/FG). The brew day package key is `BREW_PACKAGE_KEY` (or `_FILE`) and `BREW_PACKAGE_KEY_ID`; without a key the package endpoints give 503. Only the current key verifies, so a key change makes open packages invalid (`TODO`: key rotation). The `device` measurement source comes in T2.25. The SSE delivery of edit session events is not tested end to end.
 
 - T2.39: object lock is off locally (`S3_OBJECT_LOCK_MODE` not set); T2.32 configures a lock-enabled bucket (`S3_DIGEST_BUCKET`) in the cluster and in Terraform. The digest retention is 400 days (approved by Oğuz, 2026-11-20). A finding of the weekly check goes to the log and to `maintenance_runs` only; there is no alert yet.
 
@@ -50,6 +57,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - T2.28: the web payment provider is Paddle (O6). The Paddle adapter (webhook signature, events) is not written yet. Other open items are in ADR-0002 (legal and cost decisions for Terraform, cloud account O4, AppIcon).
 
 ## Recent decisions
+
+- 2026-11-20: competitor review of Breww (Business mode) is in `karsilastirma/breww-2026-11.md`. A decision of Oğuz about the plan additions is open (stock reservation and alerts, CIP state in the tank proposal, equipment maintenance, stock count freeze, month-end valuation, purchasing at the ERP border, contract packaging).
 
 - 2026-11-20 (Oğuz): we do not train an own model now. Added to the plan: a target-to-recipe solver in the engine (clone a beer uses it; no AI) in Home version 2, and style statistics from open recipes (simple statistics, not a model) later. A model on our own measurement data stays an idea in plan › Analitik modeller.
 
