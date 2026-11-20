@@ -528,6 +528,262 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the batches of the workspace. */
+        get: operations["batch_list"];
+        put?: never;
+        /** Starts a batch from an approved recipe version and writes its steps. */
+        post: operations["batch_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads a batch. */
+        get: operations["batch_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a batch (soft delete). */
+        delete: operations["batch_delete"];
+        options?: never;
+        head?: never;
+        /** Changes the name, plan or volume of a batch. A closed batch answers `409`. */
+        patch: operations["batch_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/actuals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the actual amounts of a batch with plan and deviation. */
+        get: operations["batchactual_list"];
+        put?: never;
+        /** Records an ingredient that is not in the recipe. */
+        post: operations["batchactual_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/actuals/{line_kind}/{line_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Records the actual amount of a recipe line (create or replace). A deviation of 5 percent or
+         *     more opens a deviation record (`ingredient_amount`).
+         */
+        put: operations["batchactual_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/brew-day-package": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads the newest package of a batch. */
+        get: operations["brewdaypackage_latest"];
+        put?: never;
+        /** Creates a signed brew day package for a batch. */
+        post: operations["brewdaypackage_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/measurements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the measurements of a batch in time order. */
+        get: operations["measurement_list"];
+        put?: never;
+        /**
+         * Sends measurements. An item with a known `id` is not stored again, so the client can repeat the
+         *     request after a lost answer. An item that names a package is checked against the package.
+         */
+        post: operations["measurement_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/steps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the steps of a batch in order. */
+        get: operations["batchstep_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/steps/{step_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Records a step: start, end, status and input source. The newest write wins for each field. */
+        patch: operations["batchstep_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Plan against actual for a batch: gravities, volume, alcohol, ingredient deviations, step times
+         *     and the stage history.
+         */
+        get: operations["batch_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/batches/{id}/transitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Moves a batch to its next stage, or cancels it. Other moves answer `409`. */
+        post: operations["batch_transition"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/brew-day-packages/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one package. */
+        get: operations["brewdaypackage_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/brew-day-packages/{id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revokes a package. The server then rejects measurements that name it. The call is safe to repeat. */
+        post: operations["brewdaypackage_revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The calendar: batches with a planned brew day in a date range, and their steps. */
+        get: operations["calendar_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/calendar/backward-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Plans backward from the day the beer is ready: brew day, end of the fermentation and of the
+         *     conditioning. The durations come from the fermentation profile of the recipe version.
+         */
+        post: operations["calendar_plan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/carbonation-profiles": {
         parameters: {
             query?: never;
@@ -1911,6 +2167,70 @@ export interface components {
             /** @description Providers (`apple`, `google`, `email`) the other account signs in with. */
             providers: string[];
         };
+        /** @description An actual amount of an ingredient line, with the plan and the deviation. */
+        Actual: {
+            /**
+             * Format: double
+             * @description Actual amount.
+             */
+            actual_amount_kg: number;
+            /**
+             * Format: double
+             * @description Actual minus plan.
+             */
+            deviation_kg?: number | null;
+            /**
+             * Format: double
+             * @description Deviation in percent of the plan.
+             */
+            deviation_pct?: number | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description The recipe line.
+             */
+            line_id?: string | null;
+            /** @description `fermentable`, `hop`, `yeast`, `misc`, `water_addition` (empty for an unplanned ingredient). */
+            line_kind?: string | null;
+            /** @description Name of the recipe line. */
+            line_name?: string | null;
+            /** @description Notes. */
+            notes?: string | null;
+            /**
+             * Format: double
+             * @description Planned amount of the line (kg; L for a liquid misc).
+             */
+            planned_amount_kg?: number | null;
+            /**
+             * Format: uuid
+             * @description Ingredient that replaces the line, or an unplanned ingredient.
+             */
+            substitute_ingredient_id?: string | null;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description Body of an actual amount. */
+        ActualBody: {
+            /**
+             * Format: double
+             * @description Actual amount, kg (L for a liquid).
+             */
+            actual_amount_kg: number;
+            /** @description Notes. */
+            notes?: string | null;
+        };
         /** @description One role assignment. */
         AssignmentResponse: {
             /**
@@ -2000,6 +2320,219 @@ export interface components {
             attachment: components["schemas"]["Attachment"];
             /** @description How to upload the bytes. */
             upload: components["schemas"]["UploadInstructions"];
+        };
+        /** @description Body of a backward plan. */
+        BackwardPlan: {
+            /**
+             * Format: date
+             * @description The day the beer is ready.
+             */
+            ready_date: string;
+            /**
+             * Format: uuid
+             * @description The recipe version that gives the durations.
+             */
+            recipe_version_id: string;
+        };
+        /** @description A batch. */
+        Batch: {
+            /**
+             * Format: double
+             * @description Actual volume, L.
+             */
+            actual_volume_l?: number | null;
+            /** @description Number for people, unique in the workspace (`B-0001`). */
+            code: string;
+            /**
+             * Format: date-time
+             * @description Completed or cancelled at.
+             */
+            completed_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description Deleted at (soft delete).
+             */
+            deleted_at?: string | null;
+            /** @description Engine version of the recipe calculation. */
+            engine_version?: string | null;
+            /**
+             * Format: uuid
+             * @description Equipment.
+             */
+            equipment_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description Name. */
+            name: string;
+            /** @description Notes. */
+            notes?: string | null;
+            /**
+             * Format: date
+             * @description Planned brew day.
+             */
+            planned_date?: string | null;
+            /**
+             * Format: uuid
+             * @description The recipe.
+             */
+            recipe_id: string;
+            /**
+             * Format: uuid
+             * @description The recipe version of the batch (published, immutable).
+             */
+            recipe_version_id: string;
+            /**
+             * Format: int32
+             * @description Number of the recipe version.
+             */
+            recipe_version_number: number;
+            /** @description `planned`, `brewing`, `fermenting`, `conditioning`, `packaging`, `completed`, `cancelled`. */
+            stage: string;
+            /**
+             * Format: date-time
+             * @description Brewing started at.
+             */
+            started_at?: string | null;
+            /**
+             * Format: double
+             * @description Target volume, L.
+             */
+            target_volume_l?: number | null;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description Merge patch of a batch. */
+        BatchPatch: {
+            /**
+             * Format: double
+             * @description Actual volume, L.
+             */
+            actual_volume_l?: number | null;
+            /**
+             * Format: uuid
+             * @description Equipment.
+             */
+            equipment_id?: string | null;
+            /** @description Name. */
+            name?: string | null;
+            /** @description Notes. */
+            notes?: string | null;
+            /**
+             * Format: date
+             * @description Brew day.
+             */
+            planned_date?: string | null;
+            /**
+             * Format: double
+             * @description Target volume, L.
+             */
+            target_volume_l?: number | null;
+        };
+        /** @description A step of the brew day. */
+        BatchStep: {
+            /**
+             * Format: date-time
+             * @description Actual end.
+             */
+            actual_end_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Actual start.
+             */
+            actual_start_at?: string | null;
+            /**
+             * Format: uuid
+             * @description The batch.
+             */
+            batch_id: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description `timer`, `manual`, `paper`. */
+            input_source?: string | null;
+            /** @description `prepare`, `mash_step`, `boil`, `cool`, `pitch`, `ferment`, `package`. */
+            kind: string;
+            /** @description Name. */
+            name: string;
+            /**
+             * Format: date-time
+             * @description Planned end.
+             */
+            planned_end_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Planned start.
+             */
+            planned_start_at?: string | null;
+            /**
+             * Format: int32
+             * @description Position in the batch.
+             */
+            position: number;
+            /** @description `pending`, `running`, `done`, `skipped`. */
+            status: string;
+            /**
+             * Format: int64
+             * @description Record version (`ETag`).
+             */
+            version: number;
+        };
+        /** @description A brew day package. */
+        BrewDayPackage: {
+            /**
+             * Format: uuid
+             * @description The batch.
+             */
+            batch_id: string;
+            /** @description Steps, timers and targets (`schema_version` 1). */
+            content: Record<string, never>;
+            /**
+             * Format: int32
+             * @description Number of the package of this batch.
+             */
+            content_version: number;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description The package is not valid after this time.
+             */
+            expires_at?: string | null;
+            /**
+             * Format: uuid
+             * @description Package ID. Send it with a measurement.
+             */
+            id: string;
+            /** @description Identifier of the signing key. */
+            key_id: string;
+            /**
+             * Format: date-time
+             * @description The package was revoked at this time.
+             */
+            revoked_at?: string | null;
+            /** @description HMAC-SHA256 signature, base64. */
+            signature: string;
         };
         CalibrationObservation: {
             /** Format: double */
@@ -2959,6 +3492,38 @@ export interface components {
             /** Format: double */
             time_min: number;
         };
+        /** @description A measurement. */
+        Measurement: {
+            /**
+             * Format: uuid
+             * @description The batch.
+             */
+            batch_id: string;
+            /**
+             * Format: uuid
+             * @description Client UUID.
+             */
+            id: string;
+            /** @description `sg`, `temp_c`, `ph`, `pressure_bar`, `volume_l`, `abv_pct`, `battery_v`, `signal_dbm`. */
+            kind: string;
+            /**
+             * Format: date-time
+             * @description Measured at.
+             */
+            measured_at: string;
+            /**
+             * Format: uuid
+             * @description The brew day package of the client.
+             */
+            package_id?: string | null;
+            /** @description `manual`, `paper` or `device`. */
+            source: string;
+            /**
+             * Format: double
+             * @description Value in SI units (SG as specific gravity, temperature in degrees C).
+             */
+            value: number;
+        };
         /** @description List of members. */
         MemberList: {
             /** @description The members. */
@@ -3082,6 +3647,38 @@ export interface components {
              */
             size_bytes: number;
         };
+        /** @description Body of a batch create. */
+        NewBatch: {
+            /**
+             * Format: uuid
+             * @description Equipment.
+             */
+            equipment_id?: string | null;
+            /** @description Name. */
+            name?: string | null;
+            /** @description Notes. */
+            notes?: string | null;
+            /**
+             * Format: date
+             * @description Brew day.
+             */
+            planned_date?: string | null;
+            /**
+             * Format: date
+             * @description The day the beer is ready. The server plans backward and sets `planned_date`.
+             */
+            ready_date?: string | null;
+            /**
+             * Format: uuid
+             * @description An `approved` version.
+             */
+            recipe_version_id: string;
+            /**
+             * Format: double
+             * @description Target volume, L (default: the batch volume of the recipe).
+             */
+            target_volume_l?: number | null;
+        };
         /** @description Body of a new draft. */
         NewDraft: {
             /** @description Note on the change. */
@@ -3139,6 +3736,46 @@ export interface components {
             scope_id?: string | null;
             /** @description `recipe`, `batch`, `vessel` or `area`; omit for the whole workspace. */
             scope_kind?: string | null;
+        };
+        /** @description One measurement of a request. */
+        NewMeasurement: {
+            /**
+             * Format: uuid
+             * @description Client UUID. The same ID with the same data is stored once.
+             */
+            id: string;
+            /** @description `sg`, `temp_c`, `ph`, `pressure_bar`, `volume_l`, `abv_pct`. */
+            kind: string;
+            /**
+             * Format: date-time
+             * @description Measured at (RFC 3339).
+             */
+            measured_at: string;
+            /**
+             * Format: uuid
+             * @description Brew day package that the client works from.
+             */
+            package_id?: string | null;
+            /** @description `manual` (default) or `paper`. */
+            source?: string | null;
+            /**
+             * Format: double
+             * @description Value in SI units.
+             */
+            value: number;
+        };
+        /** @description Body of a measurement request. */
+        NewMeasurements: {
+            /** @description One to 100 measurements. */
+            items: components["schemas"]["NewMeasurement"][];
+        };
+        /** @description Body of a package create. */
+        NewPackage: {
+            /**
+             * Format: int64
+             * @description Life of the package in hours, 1 to 168 (default 72).
+             */
+            valid_hours?: number | null;
         };
         /** @description Body of a recipe create. */
         NewRecipe: {
@@ -3281,6 +3918,94 @@ export interface components {
             next_cursor?: string | null;
         };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Batch: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: double
+                 * @description Actual volume, L.
+                 */
+                actual_volume_l?: number | null;
+                /** @description Number for people, unique in the workspace (`B-0001`). */
+                code: string;
+                /**
+                 * Format: date-time
+                 * @description Completed or cancelled at.
+                 */
+                completed_at?: string | null;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: date-time
+                 * @description Deleted at (soft delete).
+                 */
+                deleted_at?: string | null;
+                /** @description Engine version of the recipe calculation. */
+                engine_version?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Equipment.
+                 */
+                equipment_id?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description Name. */
+                name: string;
+                /** @description Notes. */
+                notes?: string | null;
+                /**
+                 * Format: date
+                 * @description Planned brew day.
+                 */
+                planned_date?: string | null;
+                /**
+                 * Format: uuid
+                 * @description The recipe.
+                 */
+                recipe_id: string;
+                /**
+                 * Format: uuid
+                 * @description The recipe version of the batch (published, immutable).
+                 */
+                recipe_version_id: string;
+                /**
+                 * Format: int32
+                 * @description Number of the recipe version.
+                 */
+                recipe_version_number: number;
+                /** @description `planned`, `brewing`, `fermenting`, `conditioning`, `packaging`, `completed`, `cancelled`. */
+                stage: string;
+                /**
+                 * Format: date-time
+                 * @description Brewing started at.
+                 */
+                started_at?: string | null;
+                /**
+                 * Format: double
+                 * @description Target volume, L.
+                 */
+                target_volume_l?: number | null;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_Folder: {
             /** @description The rows of this page. */
             items: {
@@ -3386,6 +4111,43 @@ export interface components {
                  * @description Record version (`ETag`).
                  */
                 version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Measurement: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: uuid
+                 * @description The batch.
+                 */
+                batch_id: string;
+                /**
+                 * Format: uuid
+                 * @description Client UUID.
+                 */
+                id: string;
+                /** @description `sg`, `temp_c`, `ph`, `pressure_bar`, `volume_l`, `abv_pct`, `battery_v`, `signal_dbm`. */
+                kind: string;
+                /**
+                 * Format: date-time
+                 * @description Measured at.
+                 */
+                measured_at: string;
+                /**
+                 * Format: uuid
+                 * @description The brew day package of the client.
+                 */
+                package_id?: string | null;
+                /** @description `manual`, `paper` or `device`. */
+                source: string;
+                /**
+                 * Format: double
+                 * @description Value in SI units (SG as specific gravity, temperature in degrees C).
+                 */
+                value: number;
             }[];
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
@@ -4258,6 +5020,23 @@ export interface components {
             /** @description Take the lock from another user (default false). */
             take_over?: boolean;
         };
+        /** @description Merge patch of a step. */
+        StepPatch: {
+            /**
+             * Format: date-time
+             * @description Actual end (default: now when the status becomes `done`).
+             */
+            actual_end_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Actual start (default: now when the status becomes `running`).
+             */
+            actual_start_at?: string | null;
+            /** @description `timer`, `manual`, `paper`. */
+            input_source?: string | null;
+            /** @description `pending`, `running`, `done`, `skipped`. */
+            status?: string | null;
+        };
         /** @description Response of a successful second step. */
         StepUpDone: {
             /** @description Replacement session; the old token stops working. */
@@ -4564,6 +5343,26 @@ export interface components {
              * @description Record version (`ETag`).
              */
             version: number;
+        };
+        /** @description Body of a stage transition. */
+        Transition: {
+            /** @description The next stage, or `cancelled`. */
+            to_stage: string;
+        };
+        /** @description Body of an unplanned ingredient. */
+        UnplannedActual: {
+            /**
+             * Format: double
+             * @description Actual amount, kg.
+             */
+            actual_amount_kg: number;
+            /** @description Notes. */
+            notes?: string | null;
+            /**
+             * Format: uuid
+             * @description The ingredient from the library.
+             */
+            substitute_ingredient_id: string;
         };
         /** @description What the client does next: one HTTP request to the object store. */
         UploadInstructions: {
@@ -8762,6 +9561,2952 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batch_list: {
+        parameters: {
+            query?: {
+                /** @description Stage */
+                stage?: string;
+                /** @description Text in the code or name (case blind) */
+                q?: string;
+                /** @description The recipe */
+                recipe_id?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `id` (creation order, default) or `-id` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of batches */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "actual_volume_l": null,
+                     *           "code": "B-0001",
+                     *           "completed_at": null,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "engine_version": "0.1.0",
+                     *           "equipment_id": null,
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "name": "House IPA",
+                     *           "notes": null,
+                     *           "planned_date": "2026-11-28",
+                     *           "recipe_id": "0192f1c07a3b7000800000000000000d",
+                     *           "recipe_version_id": "0192f1c07a3b7000800000000000000c",
+                     *           "recipe_version_number": 1,
+                     *           "stage": "planned",
+                     *           "started_at": null,
+                     *           "target_volume_l": 20,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Batch"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batch_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewBatch"];
+            };
+        };
+        responses: {
+            /** @description The batch in stage `planned` */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual_volume_l": null,
+                     *       "code": "B-0001",
+                     *       "completed_at": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "engine_version": "0.1.0",
+                     *       "equipment_id": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "House IPA",
+                     *       "notes": null,
+                     *       "planned_date": "2026-11-28",
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000d",
+                     *       "recipe_version_id": "0192f1c07a3b7000800000000000000c",
+                     *       "recipe_version_number": 1,
+                     *       "stage": "planned",
+                     *       "started_at": null,
+                     *       "target_volume_l": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Batch"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batch_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The batch */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual_volume_l": null,
+                     *       "code": "B-0001",
+                     *       "completed_at": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "engine_version": "0.1.0",
+                     *       "equipment_id": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "House IPA",
+                     *       "notes": null,
+                     *       "planned_date": "2026-11-28",
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000d",
+                     *       "recipe_version_id": "0192f1c07a3b7000800000000000000c",
+                     *       "recipe_version_number": 1,
+                     *       "stage": "planned",
+                     *       "started_at": null,
+                     *       "target_volume_l": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Batch"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batch_delete: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the batch */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batch_update: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the batch */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["BatchPatch"];
+            };
+        };
+        responses: {
+            /** @description The updated batch */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual_volume_l": null,
+                     *       "code": "B-0001",
+                     *       "completed_at": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "engine_version": "0.1.0",
+                     *       "equipment_id": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "House IPA",
+                     *       "notes": null,
+                     *       "planned_date": "2026-11-28",
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000d",
+                     *       "recipe_version_id": "0192f1c07a3b7000800000000000000c",
+                     *       "recipe_version_number": 1,
+                     *       "stage": "planned",
+                     *       "started_at": null,
+                     *       "target_volume_l": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Batch"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batchactual_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The actual amounts */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "actual_amount_kg": 4.6,
+                     *           "deviation_kg": 0.1,
+                     *           "deviation_pct": 2.2,
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "line_id": "0192f1c07a3b7000800000000000000c",
+                     *           "line_kind": "fermentable",
+                     *           "line_name": "Pale malt",
+                     *           "notes": null,
+                     *           "planned_amount_kg": 4.5,
+                     *           "substitute_ingredient_id": null,
+                     *           "updated_at": "2026-11-28T09:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batchactual_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnplannedActual"];
+            };
+        };
+        responses: {
+            /** @description The actual amount */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual_amount_kg": 0.1,
+                     *       "deviation_kg": null,
+                     *       "deviation_pct": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "line_id": null,
+                     *       "line_kind": null,
+                     *       "line_name": null,
+                     *       "notes": null,
+                     *       "planned_amount_kg": null,
+                     *       "substitute_ingredient_id": "0192f1c07a3b7000800000000000000c",
+                     *       "updated_at": "2026-11-28T09:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Actual"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batchactual_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+                /** @description `fermentable`, `hop`, `yeast`, `misc`, `water_addition` */
+                line_kind: string;
+                /** @description Line of the recipe version of the batch */
+                line_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActualBody"];
+            };
+        };
+        responses: {
+            /** @description The actual amount */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual_amount_kg": 4.6,
+                     *       "deviation_kg": 0.1,
+                     *       "deviation_pct": 2.2,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "line_id": "0192f1c07a3b7000800000000000000c",
+                     *       "line_kind": "fermentable",
+                     *       "line_name": "Pale malt",
+                     *       "notes": null,
+                     *       "planned_amount_kg": 4.5,
+                     *       "substitute_ingredient_id": null,
+                     *       "updated_at": "2026-11-28T09:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Actual"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    brewdaypackage_latest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The newest package */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *       "content": {
+                     *         "schema_version": 1,
+                     *         "steps": [],
+                     *         "targets": {
+                     *           "og_sg": 1.055
+                     *         }
+                     *       },
+                     *       "content_version": 1,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "expires_at": "2026-11-23T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "key_id": "k1",
+                     *       "revoked_at": null,
+                     *       "signature": "c2lnbmF0dXJl"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BrewDayPackage"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    brewdaypackage_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewPackage"];
+            };
+        };
+        responses: {
+            /** @description The signed package */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *       "content": {
+                     *         "schema_version": 1,
+                     *         "steps": [],
+                     *         "targets": {
+                     *           "og_sg": 1.055
+                     *         }
+                     *       },
+                     *       "content_version": 1,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "expires_at": "2026-11-23T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "key_id": "k1",
+                     *       "revoked_at": null,
+                     *       "signature": "c2lnbmF0dXJl"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BrewDayPackage"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    measurement_list: {
+        parameters: {
+            query?: {
+                /** @description Kind */
+                kind?: string;
+                /** @description From this time (RFC 3339) */
+                from?: string;
+                /** @description Until this time (RFC 3339) */
+                to?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `measured_at` (default) or `-measured_at` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of measurements */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "kind": "sg",
+                     *           "measured_at": "2026-11-28T12:00:00Z",
+                     *           "package_id": null,
+                     *           "source": "manual",
+                     *           "value": 1.052
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Measurement"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    measurement_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewMeasurements"];
+            };
+        };
+        responses: {
+            /** @description Each item is `created` or `duplicate` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created": 1,
+                     *       "duplicates": 0,
+                     *       "items": [
+                     *         {
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "status": "created"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batchstep_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The steps */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "actual_end_at": null,
+                     *           "actual_start_at": null,
+                     *           "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "input_source": null,
+                     *           "kind": "prepare",
+                     *           "name": "Prepare equipment",
+                     *           "planned_end_at": null,
+                     *           "planned_start_at": null,
+                     *           "position": 0,
+                     *           "status": "pending",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batchstep_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the step */
+                "If-Match"?: string | null;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+                /** @description Step */
+                step_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["StepPatch"];
+            };
+        };
+        responses: {
+            /** @description The updated step */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual_end_at": null,
+                     *       "actual_start_at": "2026-11-28T08:00:00Z",
+                     *       "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "input_source": "manual",
+                     *       "kind": "prepare",
+                     *       "name": "Prepare equipment",
+                     *       "planned_end_at": null,
+                     *       "planned_start_at": null,
+                     *       "position": 0,
+                     *       "status": "running",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BatchStep"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batch_summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual": {
+                     *         "abv_pct": null,
+                     *         "fg_sg": 1.011,
+                     *         "og_sg": 1.057,
+                     *         "volume_l": 19.5
+                     *       },
+                     *       "batch": {
+                     *         "code": "B-0001",
+                     *         "id": "0192f1c07a3b7000800000000000000b"
+                     *       },
+                     *       "difference": {
+                     *         "abv_pct": null,
+                     *         "fg_sg": -0.001,
+                     *         "og_sg": 0.002,
+                     *         "volume_l": -0.5
+                     *       },
+                     *       "ingredients": [],
+                     *       "plan": {
+                     *         "abv_pct": 5.6,
+                     *         "fg_sg": 1.012,
+                     *         "og_sg": 1.055,
+                     *         "volume_l": 20
+                     *       },
+                     *       "stage_events": [],
+                     *       "steps": {
+                     *         "done": 1,
+                     *         "items": [],
+                     *         "total": 7
+                     *       }
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    batch_transition: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Version `ETag` of the batch */
+                "If-Match": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Batch */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Transition"];
+            };
+        };
+        responses: {
+            /** @description The batch in its new stage */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actual_volume_l": null,
+                     *       "code": "B-0001",
+                     *       "completed_at": null,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "engine_version": "0.1.0",
+                     *       "equipment_id": null,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "name": "House IPA",
+                     *       "notes": null,
+                     *       "planned_date": "2026-11-28",
+                     *       "recipe_id": "0192f1c07a3b7000800000000000000d",
+                     *       "recipe_version_id": "0192f1c07a3b7000800000000000000c",
+                     *       "recipe_version_number": 1,
+                     *       "stage": "planned",
+                     *       "started_at": null,
+                     *       "target_volume_l": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Batch"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    brewdaypackage_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Package */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The package */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *       "content": {
+                     *         "schema_version": 1,
+                     *         "steps": [],
+                     *         "targets": {
+                     *           "og_sg": 1.055
+                     *         }
+                     *       },
+                     *       "content_version": 1,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "expires_at": "2026-11-23T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "key_id": "k1",
+                     *       "revoked_at": null,
+                     *       "signature": "c2lnbmF0dXJl"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BrewDayPackage"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    brewdaypackage_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Package */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The revoked package */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *       "content": {
+                     *         "schema_version": 1,
+                     *         "steps": [],
+                     *         "targets": {
+                     *           "og_sg": 1.055
+                     *         }
+                     *       },
+                     *       "content_version": 1,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "expires_at": "2026-11-23T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "key_id": "k1",
+                     *       "revoked_at": "2026-11-20T11:00:00Z",
+                     *       "signature": "c2lnbmF0dXJl"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BrewDayPackage"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    calendar_list: {
+        parameters: {
+            query: {
+                /** @description First day (YYYY-MM-DD) */
+                from: string;
+                /** @description Last day (YYYY-MM-DD, at most 366 days after `from`) */
+                to: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Batches of the range with their steps */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "batch_id": "0192f1c07a3b7000800000000000000b",
+                     *           "code": "B-0001",
+                     *           "name": "House IPA",
+                     *           "planned_date": "2026-11-28",
+                     *           "stage": "planned",
+                     *           "steps": []
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    calendar_plan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BackwardPlan"];
+            };
+        };
+        responses: {
+            /** @description The dates of the stages */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "brew_date": "2026-10-30",
+                     *       "conditioning_days": 14,
+                     *       "fermentation_days": 14,
+                     *       "ready_date": "2026-11-27",
+                     *       "stages": []
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

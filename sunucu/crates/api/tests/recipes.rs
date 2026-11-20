@@ -2,7 +2,12 @@
 //! scaling, comparison, folders, tags, favorites, the edit session, mead. Needs PostgreSQL
 //! (`#[sqlx::test]`); the engine runs in process.
 
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::too_many_lines, clippy::float_cmp)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::too_many_lines,
+    clippy::float_cmp
+)]
 
 mod domain;
 mod support;

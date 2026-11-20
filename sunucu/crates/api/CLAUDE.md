@@ -11,13 +11,15 @@
 - It accesses the database through the `db` crate (role `app_api`). Each request context runs in a transaction where `RequestContext::begin` did `SET LOCAL`.
 - Engine connection (T2.16): `src/engine.rs`. It has a tonic channel from `ENGINE_URL`, the engine version stamp, a Redis cache keyed by the input digest (canonical protobuf bytes + SHA-256), the `calc_results` record, and the mapping of the engine status to the error envelope. An endpoint that needs a calculation uses `EngineClient::calculate`. The output is base64 protobuf in `calc_results.output`.
 - Subscription (`subscription.rs`, T2.28): `GET /v1/workspaces/{ws}/subscription` reads the access state. `require_paid_write(conn, ws)` is the guard for a write to a paid feature: it returns `403 entitlement_required` one month after workspace creation when no entitlement is valid. Do not call it in export or read endpoints. The API does not write `subscriptions` or `entitlements`.
+- Recipes (`recipes.rs`, `recipe_org.rs`, T2.21): recipe and version endpoints, calculation with the engine, publish (the version becomes immutable and keeps `calc_summary`), scaling preview, comparison, folders, tags, favorites, the edit session (soft lock, events through the outbox). A stale `If-Match` on a draft gives `412` with `current.conflicting_fields`.
+- Batches (`batches.rs`, `brew_day.rs`, T2.22): batch from an `approved` version, steps, actual amounts with deviation, measurements with a client UUID (safe to repeat), stage transitions, summary, calendar, backward plan, and the signed brew day package. The package key is `BREW_PACKAGE_KEY` (or `_FILE`) and `BREW_PACKAGE_KEY_ID`. Without a key, the package endpoints answer `503`.
 - Port `PORT` (default 8080).
 
 ## What it does not touch
 - It has no formulas. When it needs a calculation, it requests it from `engine-service` over gRPC.
 - The audit log read endpoint (T2.14) is not here. It comes in later tasks.
 - The object store client is in the `storage` crate. Here are only the endpoints and the validation.
-- It does not add migrations (exceptions: T2.18 `0070`, T2.12 `0090`, T2.28 `0130` in `db` migrations). Table decisions: `adr/0007-veri-modeli.md`.
+- It does not add migrations (exceptions: T2.18 `0070`, T2.12 `0090`, T2.28 `0130`, T2.21 `0140`, T2.22 `0141` in `db` migrations). Table decisions: `adr/0007-veri-modeli.md`.
 
 ## How to test
 - In `sunucu/`, run: `DATABASE_URL=... cargo test -p api`. You need PostgreSQL and Redis. `tests/sse.rs` needs NATS JetStream. `tests/files.rs` needs the object store. `tests/auth.rs` needs mailpit. Start them with `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres redis nats objectstore mailpit`.

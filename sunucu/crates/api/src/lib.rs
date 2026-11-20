@@ -5,6 +5,8 @@
 pub mod app_version;
 pub mod auth;
 pub mod authz;
+pub mod batches;
+pub mod brew_day;
 pub mod concurrency;
 pub mod config;
 pub mod context;
