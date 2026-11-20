@@ -54,7 +54,7 @@ The current feature catalogue data source is `marketing-site/src/data/features.t
 
 Current FAQ and audience pages explicitly rule out:
 - General-purpose brewery ERP.
-- Sales, customer orders, distribution, shipping, keg tracking, CRM and accounting.
+- Sales, customer orders, distribution, shipping, keg tracking at customer sites and keg deposits, CRM and accounting.
 - Public calculators in the current website release.
 - Predictive final gravity or fermentation finish-date capabilities.
 - Publicly available APIs, webhooks and device integrations.

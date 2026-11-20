@@ -10,7 +10,7 @@ Oct 31, 2026 · @Oguz
 | --- | --- |
 | Segmentler | Ev modu ve İşletme modu; tek uygulama, aynı veri modeli |
 | Kapsam | Tarif, demleme, fermantasyon, üretim, envanter, maliyet, mevzuat raporları |
-| Kapsam dışı | ERP katmanı: satış, sipariş, dağıtım, fıçı takibi, CRM, muhasebe. Topluluk ve herkese açık tarif paylaşımı (kullanıcılar mevcut platformları kullanır; bizde içe ve dışa aktarma var) |
+| Kapsam dışı | ERP katmanı: satış, sipariş, dağıtım, fıçının müşteride takibi ve depozitosu, CRM, muhasebe. Topluluk ve herkese açık tarif paylaşımı (kullanıcılar mevcut platformları kullanır; bizde içe ve dışa aktarma var) |
 | Platformlar | iPad (tam), iPhone (demleme günü odaklı), web (Windows, macOS, Linux ve ChromeOS tarayıcıları, tam). Apple Watch ileride opsiyonel |
 | Desteklenmeyen | Android, ayrı Mac ve Windows uygulaması; Apple Watch şimdilik yok (tasarımı konseptte duruyor, ileride opsiyonel eklenebilir) |
 | Mimari | Apple: native SwiftUI. Web: React + TypeScript. Hesap motoru: Rust, yalnız sunucuda, ayrı servis; istemciler tek API ile kullanır. Altı katman, Kubernetes üzerinde, bulut sağlayıcıdan bağımsız |
@@ -68,6 +68,7 @@ Mod çalışma alanı bazında seçilir. **Açık:** modda tam çalışır. **Sa
 | Operatör görünümü | Kapalı | Açık | Cihaz başına açılır | Üretim |
 | Onay kutusu, kalite, sapma kaydı | Kapalı | Açık |  | Kalite |
 | Tank detayı, tank hareketi, günlük tank turu | Kapalı | Açık | Ev'de birden fazla fermentor parti listesinde izlenir | Üretim |
+| Fıçı ve kap takibi (QR etiket, tarama, lot bağı) | Kapalı | Açık | İşletme 2. sürüm; fıçının müşteride takibi ve depozito yok | Üretim |
 | Lot izlenebilirlik, etiket bilgisi, raporlar ve mevzuat raporu | Kapalı | Açık | Mevzuat raporu ve etiket İşletme 2. sürüm | Kalite; Vergi ve uyum |
 | Maliyet | Sade (tarif maliyeti, isteğe bağlı) | Açık (parti ve litre, FIFO) | Parti maliyeti Ev'de açılabilir | Maliyet ve raporlar (Ev'de sade: Çekirdek) |
 | **Sistem** |  |  |  |  |
@@ -96,14 +97,14 @@ Moddan moda geçişte veri silinmez; Ev'e dönülse de İşletme kayıtları (on
 | Çekirdek | Tarif, hesaplar, stil kılavuzu, demleme günü, fermantasyon, ölçüm, bildirim, içe ve dışa aktarma | Ev ve İşletme | – |
 | Cihazlar | iSpindel, RAPT, Tilt, webhook, kalibrasyon; İşletmede tank sensörleri | İkisi | – |
 | Stok | Malzeme stoğu, lot, mal kabul, sayım, ayırma, düşük stok uyarısı, alışveriş listesi, hafif satın alma | İkisi (Ev'de sade) | Tedarikçi faturası, ödeme, muhasebe |
-| Üretim | Tanklar ve doluluk, transfer, üretim panosu, takvim, ambalaj kaydı, ekipman bakımı | İşletme | Bitmiş ürünün satışı ve sevkiyatı |
+| Üretim | Tanklar ve doluluk, transfer, üretim panosu, takvim, ambalaj kaydı, fıçı ve kap takibi (QR), ekipman bakımı | İşletme | Bitmiş ürünün satışı ve sevkiyatı; fıçının müşteride takibi ve depozitosu |
 | Kalite | Spesifikasyon, laboratuvar sonucu, serbest bırakma, CIP, maya jenerasyonu, geri çağırma raporu | İşletme | – |
 | Maliyet ve raporlar | Parti ve litre maliyeti, ay sonu stok değerleme, xlsx ve CSV dışa aktarma | İşletme | Muhasebe kaydı ve fatura (yalnız dosyayla aktarım) |
 | Vergi ve uyum | TTB ve HMRC hesapları, beyannameye hazır rapor, saklama ve yasal tutma | İşletme | Beyannamenin otomatik gönderilmesi (doğrulanacak) |
 | Ekip | Roller, yetki, ortak cihaz, onay akışı, denetim kaydı | İşletme | – |
 | Bağlantılar | MCP ile kendi ajanını bağla, açık API | İkisi (Ev 2. sürüm, İşletme 2. sürüm) | – |
 
-Kapsam dışı (ERP): satış, sipariş, müşteri yönetimi, sevkiyat, fatura, muhasebe, fıçı takibi, e-ticaret ve taproom kasası. Bitmiş ürün stoğu yalnız "üretildi ve ambalajlandı" düzeyinde tutulur; satışı izlenmez. "Mod ayrımı" ve "Ek özellikler" tablolarındaki her satır bu modüllerden birine aittir.
+Kapsam dışı (ERP): satış, sipariş, müşteri yönetimi, sevkiyat, fatura, muhasebe, fıçının müşteride takibi ve depozitosu, e-ticaret ve taproom kasası. Fıçı ve kap takibi (QR etiket, durum, lot bağı) Üretim modülünde hafif biçimde vardır (Oğuz, 20 Kasım 2026). Bitmiş ürün stoğu yalnız "üretildi ve ambalajlandı" düzeyinde tutulur; satışı izlenmez. "Mod ayrımı" ve "Ek özellikler" tablolarındaki her satır bu modüllerden birine aittir.
 
 ## Platformlar ve mimari
 
@@ -538,7 +539,7 @@ Dört kap türü var: şişe, kutu, keg ve cask. Tür; karbonasyon yöntemini, a
 | --- | --- | --- | --- | --- | --- |
 | Şişe | 0,33 L, 0,5 L, 0,75 L; ABD 12 oz (355 mL), 22 oz | Şişede kondisyon (priming) veya karbonatlı dolum | Açık ("Şişele") | Açık | Tek kullanımlık ise ambalaj atığı (EPR) raporu; İngiltere depozito sisteminin camı kapsayıp kapsamadığı doğrulanacak |
 | Kutu | 0,33 L, 0,44 L, 0,5 L; ABD 12 oz, 16 oz (473 mL) | Karbonatlı dolum (BBT'den) | Kapalı | Açık | İngiltere depozito sistemi (1 Ekim 2027) ve EPR; dolumda çözünmüş oksijen ölçümü laboratuvar kaydında |
-| Keg | Ev: 19 L (corny). İşletme: 20, 30, 50 L; ABD 1/6 bbl (19,5 L), 1/4 bbl (29,3 L), 1/2 bbl (58,7 L) | Basınçla (zorla) veya priming | Açık ("Fıçıla") | Açık | İngiltere fıçı indirimi: 20 L ve üstü, pompa veya gazlı musluk; keg takibi kapsam dışı |
+| Keg | Ev: 19 L (corny). İşletme: 20, 30, 50 L; ABD 1/6 bbl (19,5 L), 1/4 bbl (29,3 L), 1/2 bbl (58,7 L) | Basınçla (zorla) veya priming | Açık ("Fıçıla") | Açık | İngiltere fıçı indirimi: 20 L ve üstü, pompa veya gazlı musluk; fıçı QR ile izlenir (Fıçılar, İşletme 2. sürüm); müşteride takip kapsam dışı |
 | Cask | Pin 20,5 L, firkin 40,9 L, kilderkin 81,8 L | Cask'ta priming ve durultucu (finings), düşük CO₂ | Kapalı | Açık (İngiltere) | İngiltere fıçı indirimine girer (el pompasıyla servis); pin sınırda, doğrulanacak |
 
 - **Tanım yeri:** Ayarlar › Ekipman ve tanklar › Kaplar. Her kap için tür, hacim, tek kullanımlık mi iade mi, malzeme ve boş ağırlık (EPR için) girilir; kullanıcı yeni boyut ekleyebilir.
@@ -546,6 +547,7 @@ Dört kap türü var: şişe, kutu, keg ve cask. Tür; karbonasyon yöntemini, a
 - **Ev modu:** fermantasyondaki "Şişele / fıçıla" eylemi yalnız şişe ve keg sunar; priming veya basınç kap türüne göre önerilir.
 - **Karbonasyon önerisi:** şişe → priming, kutu → karbonatlı dolum, keg → basınç, cask → cask priming. Kullanıcı değiştirebilir.
 - **Vergi ve raporlar:** fıçı indirimi uygunluğu kap türü ve hacminden; depozito ve EPR raporu kap sayısı, malzeme ve ağırlıktan gelir.
+- **Fıçı ve kap takibi (İşletme 2. sürüm):** iade edilen keg ve cask için seri numaralı QR etiket (PDF; yıkamaya dayanıklı etiket malzemesini kullanıcı seçer). iPhone veya iPad ile tarama: dolum (ambalaj kaydına bağlanır), temizlendi, dışarıda, geri döndü, bakım. Geri çağırmada lot → fıçı seri numaraları. Fıçının hangi müşteride olduğu, depozito ve geciken fıçı uyarısı kapsam dışı (ERP).
 
 ## Apple tasarım ilkeleri
 
@@ -793,7 +795,8 @@ ABD'deki butik bira üreticilerinin kullandığı yazılım ve cihazlar ile hede
 | Süreli davet | Danışman veya muhasebeci için bitiş tarihli erişim | Kullanıcı davet akışı; Ayarlar › Kullanıcılar | İşletme | İşletme çekirdek |
 | Kişi × yetki tablosu | Rol matrisine ek olarak kimin neye yetkili olduğu kişi bazında tek tabloda | Ayarlar › Roller ve yetkiler | İşletme | İşletme çekirdek |
 | Temiz olmayan tank uyarısı | CIP kaydı olmayan tanka parti başlatılırken veya transfer yapılırken uyarı | Parti başlatma; Tank hareketi | İşletme | İşletme çekirdek |
-| Geri çağırma raporu | Lot → hangi partiler ve ambalaj kayıtları (kap türü, adet, tarih); rapor ambalajda biter, müşteri bilgisi sistemde yok | Lot izlenebilirlik raporu | İşletme | İşletme çekirdek |
+| Geri çağırma raporu | Lot → hangi partiler ve ambalaj kayıtları (kap türü, adet, tarih); rapor ambalajda ve fıçı seri numarasında biter (fıçı İşletme 2. sürüm), müşteri bilgisi sistemde yok | Lot izlenebilirlik raporu | İşletme | İşletme çekirdek |
+| Fıçı ve kap takibi (QR) | İade edilen keg ve cask için seri numaralı QR etiket; taramayla doldur, temizlendi, dışarıda, geri döndü, bakım. Dolumda parti ve lota bağlanır; lottan fıçı listesine geri izleme. Müşteri, depozito ve geciken fıçı uyarısı yok (Oğuz, 20 Kasım 2026) | Fıçılar; Ambalaj kaydı; Lot izlenebilirlik raporu | İşletme | İşletme 2. sürüm |
 | Tank boşalma önerisi | Hangi tankın ne zaman boşalacağı, yeni partiye uygun tank | Takvim ve geriye planlama; Üretim panosu | İşletme | İşletme 2. sürüm |
 | Hobi cihazları için veri alma adresi (webhook) | Tilt köprüleri (TiltBridge, Pitch), iSpindel ve RAPT veriyi bu adrese gönderir; Brewfather "Custom Stream" biçimi de kabul edilir, böylece kullanıcı cihazını yalnız adresi değiştirerek taşır (biçim doğrulanacak) | Cihaz eşleştirme; Ayarlar › Cihazlar | İkisi | Ev MVP |
 | Profesyonel tank sensörleri | SG, pH, çözünmüş oksijen, basınç; API veya CSV ile | Cihaz eşleştirme; Tank detayı | İşletme | İşletme 2. sürüm |
@@ -978,7 +981,7 @@ Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renk
 
 ## Ekran listesi
 
-Konseptte 62 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşamalarında 19, Apple Watch ekranı ileride opsiyonel; bu 19 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında; destek paneli ayrıca İç kullanım grubunda (sayıya girmez). Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
+Konseptte 63 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşamalarında 20, Apple Watch ekranı ileride opsiyonel; bu 20 ekran yalnız İşletme modunda; ekranların hangi modda açık olduğu "Mod ayrımı" tablosunda); konseptte sekmeler Tarif, Demleme, Üretim ve Sistem gruplarında; destek paneli ayrıca İç kullanım grubunda (sayıya girmez). Stok ekranı işletme modunda lot bazında çalışır (rezerve, kullanılabilir, FIFO, COA, lota göre tarif düzeltmesi); ev modunda basit miktar ve minimum seviye.
 
 | Ekran | Durum | Segment | Gerektiği aşama |
 | --- | --- | --- | --- |
@@ -1004,6 +1007,7 @@ Konseptte 62 ekranın hepsi taslaklandı (Ev MVP aşamasında 42, İşletme aşa
 | Onay kutusu (tarif onayı, serbest bırakma) | Tasarlandı | İşletme | İşletme çekirdek |
 | Kalite: spesifikasyon, laboratuvar, serbest bırakma | Tasarlandı | İşletme | İşletme çekirdek |
 | CIP kaydı ve ambalaj kaydı | Tasarlandı | İşletme | İşletme çekirdek |
+| Fıçılar (liste, fıçı detayı, QR tarama, etiket yazdırma) | Tasarlandı | İşletme | İşletme 2. sürüm |
 | Maya yönetimi (hasat, jenerasyon) | Tasarlandı | İşletme | İşletme çekirdek |
 | Raporlar, panolar, mevzuat raporu | Tasarlandı | İşletme | İşletme 2. sürüm |
 | Fermantasyon profili editörü | Tasarlandı | İkisi | Ev MVP |
@@ -1114,6 +1118,7 @@ Veri modeli ilk sürümden itibaren işletme modunu taşıyacak şekilde kurulur
 | ImportSource | İçe aktarılan kaynak dosya ve eşleştirme kararları |
 | AuditLog | Kim, ne zaman, önceki ve yeni değer; EditSession (yumuşak kilit) ile birlikte |
 | PackageType, PackagingRun | Kap tanımı (tür: şişe / kutu / keg / cask, hacim, tek kullanımlık mi, malzeme, ağırlık); ambalaj kaydı satırları (parti, kap, adet, litre, lot, karbonasyon yöntemi) |
+| Container, ContainerEvent | Fıçı ve kap varlığı: kap tanımı (PackageType), seri numarası, QR kodu, durum (temiz / dolu / dışarıda / kirli / bakımda / emekli), son dolum (PackagingRun satırı ve lot); olay defteri (tarama, kim, ne zaman, önceki ve yeni durum, not). Müşteri alanı yok; "dışarıda" için serbest not |
 | Notification, NotificationEvent, Reminder | Bildirim (öncelik, parti, adım, durum: açık / ertelendi / onaylandı / yoksayıldı / çözüldü); olaylar (gönderildi, okundu, onaylandı, ertelendi; kim, hangi cihaz, ne zaman); hatırlatıcı (kural, zaman, bağlı adım) |
 | CalcResult | Kaydedilen hesap sonucu: girdi özeti (hash), motor sürümü, çıktılar; tarif sürümüne ve partiye bağlı |
 | UserIdentity | Giriş kimlikleri: sağlayıcı (Apple / Google / e-posta), sağlayıcıdaki kalıcı kimlik, bağlanma zamanı; bir kullanıcıda birden çok; passkey kayıtları |

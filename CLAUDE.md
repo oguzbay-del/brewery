@@ -5,7 +5,7 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 ## Proje durumu ve kararlar
 
 - **Geliştirme aşamasındayız** (11 Kasım 2026'dan). İş `gelistirme/ISLER.md`'deki sırayla, adım adım yapılır. Görüşmeler ve altın test kodun değil Aşama 5'in (beta) kapısıdır.
-- **Kapsam dışı:** ERP (satış, sipariş, sevkiyat, fatura, muhasebe, keg takibi), topluluk ve herkese açık tarif paylaşımı, Android, ayrı Mac/Windows uygulaması.
+- **Kapsam dışı:** ERP (satış, sipariş, sevkiyat, fatura, muhasebe, fıçının müşteride takibi ve depozitosu), topluluk ve herkese açık tarif paylaşımı, Android, ayrı Mac/Windows uygulaması. Fıçı ve kap takibi (QR etiket, durum, lot bağı) İşletme 2. sürümde hafif biçimde kapsamdadır (Oğuz, 20.11.2026).
 - **Mimari:** SwiftUI (iPad, iPhone; Apple Watch ileride opsiyonel), React web, Rust hesap motoru yalnız sunucuda, ayrı servis olarak (istemciye hesap kodu gitmez). Altı katman (istemci, kenar, uygulama, hesap, veri, platform); Kubernetes üzerinde, açık standartlarla, bulut sağlayıcıdan bağımsız (plan › Platformlar ve mimari). Sunucu kodunun tamamı Rust; ilk bulut Google Cloud; giriş Apple ve Google ile (yedek e-posta bağlantısı), ayrı kayıt ve şifre yok.
 - **Kodu Claude yazar:** derleme, tip, lint, test vektörü ve sözleşme testinden geçmeyen kod ana dala girmez. Geçici mimari yok: Kubernetes, ayrı hesap motoru servisi, Redis ve NATS ilk sürümden. Bütün sistem yerelde tek komutla (Docker Compose, kind) çalışır ve Claude her değişikliği orada uçtan uca test eder. iOS'ta macOS CI ve gerçek cihaz testi ürün sahibinde (plan › Geliştirme düzeni). İnternetli çalışma; yalnız demleme günü indirilen paketle yerelde çalışır. Çevrimdışı senkron yok.
 - **Hedef pazar:** ABD ve İngiltere öncelikli.

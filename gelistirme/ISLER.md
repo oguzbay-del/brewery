@@ -143,6 +143,23 @@ Decision (Oğuz, 2026-11-20): the product has modules (plan › Modüller): Core
 | P2 | Tier matrix draft with the modules (Home and Business tiers, limits for devices, users and storage; no limit on export); agree with the pricing of the marketing site (`web-stratejisi/45-*`) | Draft in plan › Deneme süresi; O8 can decide | P1 | 5 | Claude | Opus | todo |
 | P3 | Module state in the clients: settings screen (modules of the workspace), hidden navigation for modules that are off, an upgrade message; update the concept, the screen list and the design system | Playwright and iOS UI tests; `araclar/tutarlilik.py` is clean | P1 | 5 | Claude | Sonnet | todo |
 
+## Keg and container tracking (stage 6, Business version 2)
+
+Decision (Oğuz, 2026-11-20): Business mode gets a light keg and cask tracking feature in the Production module (plan › Ambalaj ve kap türleri). Each returnable container has a serial number and a QR label. A scan changes the status. A fill links the container to the packaging run and the lot.
+
+Rules:
+- Do not add customers, deposits or overdue alerts. These are ERP functions and are out of scope.
+- The status "out" has a free text note only. Do not link it to a customer record.
+- Do not put the workspace ID or other internal IDs in the QR code. Use an opaque code.
+- Do not start these tasks before stage 6.
+
+| Task | Description | Done criterion | Depends on | Stage | Owner | Model | Status |
+|---|---|---|---|---|---|---|---|
+| K1 | Data model for `Container` and `ContainerEvent` (plan › Veri modeli): serial number, opaque QR code, `PackageType`, status (clean, filled, out, dirty, maintenance, retired), last fill (packaging run row and lot), event log (scan, user, time, old and new status, note); migration and row level security | Migration tests; a container of a different workspace is not visible; a dirty container cannot be filled | T2.35 | 6 | Claude | Opus (design), Sonnet (migration) | todo |
+| K2 | API endpoints: list with status counts, detail, bulk create with serial numbers, status change from a scan, retire; a fill from a packaging run row; recall query from a lot to the container list; label PDF (QR code, serial number, size) | Endpoint and contract tests; the recall query gives each filled container of the lot; the OpenAPI document shows the Production module | K1 | 6 | Claude | Sonnet | todo |
+| K3 | Web screen "Fıçılar" (concept pane `kg`): list, status counts, detail with the event log, label print | Playwright and accessibility tests | K2 | 6 | Claude | Sonnet | todo |
+| K4 | iOS: QR scan with VisionKit, a sheet with the status actions, iPad list and detail | iOS UI tests on macOS CI; device test (Oğuz) | K2 | 6 | Claude | Sonnet | todo |
+
 ## Bring your own agent: MCP (stage 5 and Home version 2)
 
 Decision (Oğuz, 2026-11-20): the user can connect an own AI agent (Claude, ChatGPT or another MCP client) through a remote MCP server. We do not run a language model. The design is in plan › Platformlar ve mimari › API ve istemci iletişimi.

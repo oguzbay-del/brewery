@@ -85,7 +85,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <ol class="explain-flow">
             {businessSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
           </ol>
-          <div class="scope-inline"><strong>Scope boundary</strong><p>GRISTORA is not a general ERP. Sales, customer orders, distribution/shipping, keg tracking, CRM and accounting are outside the product scope.</p></div>
+          <div class="scope-inline"><strong>Scope boundary</strong><p>GRISTORA is not a general ERP. Sales, customer orders, distribution/shipping, keg tracking at customer sites and keg deposits, CRM and accounting are outside the product scope.</p></div>
           <a class="text-link explain-audience-link" href={`${base}breweries/`}>Explore the Professional Breweries page <span aria-hidden="true">→</span></a>
         </div>
       </section>

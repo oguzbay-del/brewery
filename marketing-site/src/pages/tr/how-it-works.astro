@@ -85,7 +85,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <ol class="explain-flow">
             {businessSteps.map((step, index) => <li class="explain-flow-item"><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{step.title}</h3><p>{step.body}</p><a href={`${base}tr/${step.href}`}>{step.label} <span aria-hidden="true">↗</span></a></div></li>)}
           </ol>
-          <div class="scope-inline"><strong>Kapsam sınırı</strong><p>GRISTORA genel amaçlı bir ERP değildir. Satış, müşteri siparişleri, dağıtım/sevkiyat, fıçı takibi, CRM ve muhasebe ürün kapsamının dışındadır.</p></div>
+          <div class="scope-inline"><strong>Kapsam sınırı</strong><p>GRISTORA genel amaçlı bir ERP değildir. Satış, müşteri siparişleri, dağıtım/sevkiyat, müşterideki fıçının takibi ve depozitosu, CRM ve muhasebe ürün kapsamının dışındadır.</p></div>
           <a class="text-link explain-audience-link" href={`${base}tr/breweries/`}>Profesyonel bira üreticileri sayfasını keşfedin <span aria-hidden="true">→</span></a>
         </div>
       </section>

@@ -58,6 +58,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
+- 2026-11-20 (Oğuz): Business version 2 gets light keg and cask tracking in the Production module. It has a QR label for each container, a status from a scan, and a link to the lot at fill. Customers, deposits and overdue alerts stay out of scope (ERP). Tasks K1–K4 are in stage 6. The concept has the new screen "Fıçılar" (63 screens). The marketing site now says that only customer keg tracking and keg deposits are out of scope.
+
 - 2026-11-20 (Oğuz): the product has modules (plan › Modüller; tasks P1–P3 in stage 5). The marketing site shows the same modules (work package W13 in `web-stratejisi/46-*`).
 
 - 2026-11-20: competitor review of Breww (Business mode) is in `karsilastirma/breww-2026-11.md`. Oğuz approved the plan additions (2026-11-20): stock reservation and alerts, CIP state in the tank proposal (Business core); equipment maintenance, stock count freeze, month-end valuation and xlsx export, light purchasing without invoices or accounting (Business version 2); contract packaging later (product decision).

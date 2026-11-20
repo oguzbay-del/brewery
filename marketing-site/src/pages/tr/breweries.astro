@@ -37,7 +37,7 @@ const roles = [
 ];
 const faqs = [
   { q: "GRISTORA bir bira üreticisi ERP'sinin yerini alır mı?", a: "Hayır. GRISTORA, bira üretimiyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır." },
-  { q: "Satış, sipariş, dağıtım veya fıçı takibini yönetir mi?", a: "Hayır. Satış, müşteri siparişleri, dağıtım ve sevkiyat, fıçı takibi, CRM ve muhasebe belirtilen ürün kapsamının dışındadır." },
+  { q: "Satış, sipariş, dağıtım veya fıçı takibini yönetir mi?", a: "Hayır. Satış, müşteri siparişleri, dağıtım ve sevkiyat, müşterideki fıçının takibi ve depozitosu, CRM ve muhasebe belirtilen ürün kapsamının dışındadır." },
   { q: "GRISTORA API ve webhook sunar mı?", a: "İşletme modu açık bir API ve üretim verisi webhook'ları içerir. Ev modu cihaz webhook kapsamı ayrıdır." },
   { q: "Roller, izinler ve onaylar nasıl ele alınır?", a: "İşletme modu rol tabanlı iş akışlarını ve onay kuyruklarını içerir." },
 ];
@@ -176,7 +176,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="erp-boundary-section section-pad">
         <div class="shell erp-boundary-inner">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜN KAPSAMI</p><h2>Bir bira çalışma alanı, <em>genel amaçlı ERP değil.</em></h2></div>
-          <div><p>GRISTORA, bira üretimiyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır ve şunları yönettiğini iddia etmez:</p><ul><li>Satış veya müşteri siparişleri</li><li>Dağıtım, sevkiyat veya teslimat operasyonları</li><li>Fıçı takibi</li><li>CRM veya muhasebe</li></ul><p>Bu sistemleri kendi uzman araçlarında tutun; GRISTORA'nın kapsamı bira üretimine odaklı kalır.</p></div>
+          <div><p>GRISTORA, bira üretimiyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır ve şunları yönettiğini iddia etmez:</p><ul><li>Satış veya müşteri siparişleri</li><li>Dağıtım, sevkiyat veya teslimat operasyonları</li><li>Müşterideki fıçının takibi ve depozitosu</li><li>CRM veya muhasebe</li></ul><p>Bu sistemleri kendi uzman araçlarında tutun; GRISTORA'nın kapsamı bira üretimine odaklı kalır.</p></div>
         </div>
       </section>
       <section class="audience-faq-section section-pad">

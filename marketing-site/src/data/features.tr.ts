@@ -133,7 +133,7 @@ export const featuresTr: FeaturePage[] = [
       { heading: "Tank ve parti hareketleri", intro: "Biranın bira üretim tesisi içindeki fiziksel yolculuğunu modelleyin.", items: ["Doluluğu, durumu, basınç sınırını ve temizlik durumunu içeren tank ayrıntısı", "Hacim ve kayıp kayıtlarıyla kaplar arası transfer", "Bir partiyi birden fazla tanka bölme", "Hesaplanan harman özellikleriyle partileri birleştirme", "Kapasite çakışması kontrolleri ve tank çizelgeleme"] },
       { heading: "Üretim kayıtları", intro: "Planlanan süreci ve gerçekleşen işi birbirine bağlı tutun.", items: ["Operatör kimliği, adım tamamlama ve gerçek ölçümler", "Sapma kayıtları ve düzeltici kararlar", "Malzemelerden paketlemeye partinin izlenebilirliği; lottan partiye geri çağırma raporlarıyla", "Birden fazla operatör ve eş zamanlı etkin partiler", "Kapatılmış üretim kayıtlarındaki değişiklikler için denetim izi", "Geçerli temizlik kaydı olmayan bir tank atandığında uyarılar", "Açık uyarıların ve üretim notlarının vardiya devri"] }
     ],
-    note: "GRISTORA bir ERP değildir. Satış, sipariş, dağıtım, keg takibi, CRM ve muhasebe ürün kapsamının dışındadır."
+    note: "GRISTORA bir ERP değildir. Satış, sipariş, dağıtım, müşterideki fıçının takibi ve depozitosu, CRM ve muhasebe ürün kapsamının dışındadır."
   },
   {
     slug: "quality-laboratory",

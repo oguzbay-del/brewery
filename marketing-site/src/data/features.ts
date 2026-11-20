@@ -143,7 +143,7 @@ export const features: FeaturePage[] = [
       { heading: "Tank and batch movements", intro: "Model the physical journey of beer through the brewery.", items: ["Tank detail with occupancy, status, pressure limit and cleaning status", "Transfer between vessels with volume and loss records", "Split one batch across multiple tanks", "Merge batches with calculated blend properties", "Capacity conflict checks and tank scheduling"] },
       { heading: "Production records", intro: "Keep the planned process and actual work connected.", items: ["Operator identity, step completion and actual measurements", "Deviation records and corrective decisions", "Batch traceability from ingredients through packaging, with lot-to-batch recall reports", "Multiple operators and simultaneous active batches", "Audit trail for changes to closed production records", "Warnings when a tank without a valid cleaning record is assigned", "Shift handover of open alerts and production notes"] }
     ],
-    note: "GRISTORA is not an ERP. Sales, orders, distribution, keg tracking, CRM and accounting are outside the product scope."
+    note: "GRISTORA is not an ERP. Sales, orders, distribution, keg tracking at customer sites, keg deposits, CRM and accounting are outside the product scope."
   },
   {
     slug: "quality-laboratory",
