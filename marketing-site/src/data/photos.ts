@@ -1,5 +1,6 @@
-// Representative AI-generated photos (owner decision LCH-07, 20 Nov 2026).
-// Raw files: ../fotograflar-ham/. Build outputs: scripts/optimize-photos.py.
+// Owner-supplied editorial photo set (12 feature images, 21 Nov 2026).
+// Curated originals: ../fotograflar-ham/brewing-editorial-photos.zip.
+// Build outputs: AVIF/WebP plus JPEG fallbacks in public/images/photos/.
 export type PhotoKey = keyof typeof photos;
 
 export const photos = {
@@ -32,10 +33,8 @@ export const photos = {
   "feature-analytics-reports": { en: "Five glasses of amber beer in a row, from lighter to darker, for batch comparison.", tr: "Parti karşılaştırması için açıktan koyuya sıralanmış beş bardak amber bira." },
 } as const;
 
-// Stand-ins for a feature without a dedicated photo. Empty: every feature has its photo.
 const featureFallback: Record<string, PhotoKey> = {};
 
-/** Photo for a feature slug: the dedicated photo, else a temporary stand-in. */
 export function featurePhoto(slug: string): PhotoKey | undefined {
   const key = `feature-${slug}`;
   return key in photos ? (key as PhotoKey) : featureFallback[slug];
