@@ -43,6 +43,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
+- 2026-11-20 (Oğuz): the product name is GRISTORA and the domain is gristora.com. The app design and the marketing site design are separate; only the name, the logo, the app icon and the accent color are shared. Tasks G1–G8 in `gelistirme/ISLER.md` (stages 3–5).
+
 - 2026-11-20 (F2.1 items 8–12, Oğuz approved Claude proposals):
   - 8: the deletion reason is a value from a fixed list, with an optional short note. The client shows a warning: do not write personal data in the note.
   - 9: an ingredient, a lot or a recipe version that is in use cannot be deleted permanently. It can only be archived. When it is not in use, a permanent delete is possible, and references change to a snapshot.

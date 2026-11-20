@@ -129,6 +129,26 @@ The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus 
 | 5 Home MVP beta | Cloud setup, beta | Interviews and golden test are complete; independent security review |
 | 6 Business | Business screens | Step by step |
 
+## Brand: GRISTORA in the product (stages 3–5)
+
+Decision (Oğuz, 2026-11-20): the product name is GRISTORA. The domain is gristora.com. The app (iOS and web app) has its own design system. The marketing site (`marketing-site/`) has a different design. Only the name, the logo, the app icon and the brand accent color are shared. The approved logo files are in `marketing-site/public/brand/` (`marketing-site/BRAND-ASSETS.md`).
+
+Rules:
+- Do not change `marketing-site/` from these tasks. It is a separate work stream (`OTURUM.md`).
+- Do not rename internal identifiers (crates, database names, `demleme` roles, API paths) unless G1 decides it. A rename gives risk and no value to the user.
+- Do a task in the stage that is given in the table. Do not start these tasks before that stage.
+
+| Task | Description | Done criterion | Depends on | Stage | Owner | Model | Status |
+|---|---|---|---|---|---|---|---|
+| G1 | Brand ADR for the product: the name in each place (app, App Store, email sender, OpenAPI title, web title); the domains (`app.`, `api.`, `auth.`, `mail.` under gristora.com); the shared brand elements (logo, app icon, accent color) and how the app design system uses the accent color (contrast check against the dark high-contrast theme); internal identifiers stay or change | `adr/0010-urun-markasi.md`; the design system and the plan agree | – | 3 (start) | Claude | Opus | todo |
+| G2 | Scan for the old product name: list each user-visible "Demleme" text in `web/`, `ios/`, `sozlesme/`, email templates and the concept | A list in `gelistirme/raporlar/G2-ad-taramasi.md` (file, line, text) | G1 | 3 | Claude | Haiku | todo |
+| G3 | Product documents: change the product name to GRISTORA in the concept (`arayuz/`), the design system (`tasarim-sistemi/` and its Artifact) and the plan title; add the logo and the accent color tokens to the design system | `araclar/tutarlilik.py` is clean; the concept has no overflow at 1280 px and 400 px | G1, G2 | 3 | Claude | Sonnet | todo |
+| G4 | Text catalog and server texts: the product name in the TR/EN catalog (`sozlesme/katalog`), the email templates (sender name GRISTORA, address `no-reply@gristora.com`), the OpenAPI title; run `make gen` | The generated files are in the difference check; the email test passes | G1, G2 | 3 | Claude | Sonnet | todo |
+| G5 | Web app brand: the logo in the app header (from `gristora-symbol.svg` and the wordmark), favicon, page title, web manifest; use the tokens of the app design system, not the styles of the marketing site | Playwright and accessibility checks pass; screenshots at 1280 px and 400 px | G3, G4 | 3 | Claude | Sonnet | todo |
+| G6 | iOS brand: display name GRISTORA, AppIcon (light, dark, tinted; from the logo symbol, Apple icon rules), launch screen, accent color in the asset catalog | macOS CI is green; device check (Oğuz) | G3, O3 | 4 | Claude | Sonnet | todo |
+| G7 | Domains and configuration: DNS for gristora.com in Terraform (Cloud DNS); ingress hosts; redirect URIs for Apple and Google sign-in; cookie domain and CORS; SPF, DKIM, DMARC for email; the universal link file (`apple-app-site-association`) | `terraform validate` is clean; `make kind-test` passes with the new hosts | G1, O4, O7 | 5 | Claude | Sonnet | todo |
+| G8 | Brand consistency check: the app (web and iOS screenshots) and the marketing site use the same name, logo and icon; the site does not claim a feature that the app does not have | Report `gelistirme/raporlar/G8-marka-tutarliligi.md` | G5, G6 | 5 | Claude | Sonnet | todo |
+
 ## Tasks for Oğuz (parallel)
 
 | Task | Description | Necessary for | Status |
@@ -139,3 +159,4 @@ The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus 
 | O4 | Google Cloud organization and billing | Stage 5 | todo |
 | O5 | Delete the 7 old branches on GitHub | – | todo |
 | O6 | Select a web payment provider (subscriptions outside the App Store). Decision: Paddle (merchant of record). Paddle collects and pays US sales tax and UK VAT. | T2.28 | done (2026-11-20) |
+| O7 | Buy the gristora.com domain (after the trademark and domain review, Issue #146) | G7 | todo |

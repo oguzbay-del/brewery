@@ -4,7 +4,7 @@ Oct 31, 2026 · @Oguz
 
 ## Özet ve kararlar
 
-Bira üretimine odaklı, ev biracıları ve küçük işletmeler için iki modlu bir tarif ve üretim uygulaması yapılacak. Apple tarafı native SwiftUI, masaüstü web; hesap motoru tek ve ortak. Görsel ekran taslakları: [Demleme Arayüz Konsepti](https://claude.ai/artifact/BCEHj3wb6xj7eShvjTxKn6).
+Ürünün adı GRISTORA, alan adı gristora.com (marka ve alan adı hukuki incelemesi sürüyor). Bira üretimine odaklı, ev biracıları ve küçük işletmeler için iki modlu bir tarif ve üretim uygulaması yapılacak. Apple tarafı native SwiftUI, masaüstü web; hesap motoru tek ve ortak. Görsel ekran taslakları: [Demleme Arayüz Konsepti](https://claude.ai/artifact/BCEHj3wb6xj7eShvjTxKn6).
 
 | Konu | Karar |
 | --- | --- |
@@ -14,7 +14,7 @@ Bira üretimine odaklı, ev biracıları ve küçük işletmeler için iki modlu
 | Platformlar | iPad (tam), iPhone (demleme günü odaklı), web (Mac ve PC, tam). Apple Watch ileride opsiyonel |
 | Desteklenmeyen | Android, ayrı Mac ve Windows uygulaması; Apple Watch şimdilik yok (tasarımı konseptte duruyor, ileride opsiyonel eklenebilir) |
 | Mimari | Apple: native SwiftUI. Web: React + TypeScript. Hesap motoru: Rust, yalnız sunucuda, ayrı servis; istemciler tek API ile kullanır. Altı katman, Kubernetes üzerinde, bulut sağlayıcıdan bağımsız |
-| Tasarım | Apple tasarım ilkeleri (HIG); her ekran benzer işi yapan bir Apple uygulamasından fikir alıyor |
+| Tasarım | Apple tasarım ilkeleri (HIG); her ekran benzer işi yapan bir Apple uygulamasından fikir alıyor. Uygulamanın (iOS ve web) tasarım sistemi ile pazarlama sitesinin tasarımı ayrıdır; ortak olan yalnız ad, logo, uygulama simgesi ve marka vurgu rengi |
 | Stil kılavuzları | BJCP 2021, BJCP mead/cider ve Brewers Association gömülü; her aşamada seçilebilir |
 | Demleme günü | Plan ve gerçekleşen ayrı; sayaç isteğe bağlı; yazdırma ve belge tarama |
 | Eşzamanlı üretim | Birden fazla parti aynı anda; işletmede üretim panosu ve tank takvimi |
