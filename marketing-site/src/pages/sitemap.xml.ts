@@ -11,6 +11,7 @@ const routes = [
   "pricing/",
   "get-started/",
   "compare/",
+  "modules/",
   "features/",
   ...features.map((feature) => `features/${feature.slug}/`),
 ];
