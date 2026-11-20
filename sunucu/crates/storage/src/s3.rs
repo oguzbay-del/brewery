@@ -19,6 +19,54 @@ const MAX_KEY_BYTES: usize = 1024;
 pub struct S3Store {
     config: S3Config,
     client: reqwest::Client,
+    lock_mode: Option<ObjectLockMode>,
+}
+
+/// Object lock mode of `put_locked` (S3 `x-amz-object-lock-mode`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ObjectLockMode {
+    /// Privileged users can remove the lock.
+    Governance,
+    /// Nobody can remove the lock before the retention date.
+    Compliance,
+}
+
+impl ObjectLockMode {
+    /// Parses `governance` or `compliance` (any case).
+    #[must_use]
+    pub fn parse(text: &str) -> Option<Self> {
+        match text.trim().to_ascii_lowercase().as_str() {
+            "governance" => Some(Self::Governance),
+            "compliance" => Some(Self::Compliance),
+            _ => None,
+        }
+    }
+
+    const fn header_value(self) -> &'static str {
+        match self {
+            Self::Governance => "GOVERNANCE",
+            Self::Compliance => "COMPLIANCE",
+        }
+    }
+}
+
+/// Headers that lock a new object. S3 also requires a checksum header on such a request.
+fn lock_headers(
+    mode: ObjectLockMode,
+    retain_until: DateTime<Utc>,
+    body: &[u8],
+) -> Vec<(&'static str, String)> {
+    vec![
+        ("x-amz-object-lock-mode", mode.header_value().to_owned()),
+        (
+            "x-amz-object-lock-retain-until-date",
+            retain_until.format("%Y-%m-%dT%H:%M:%SZ").to_string(),
+        ),
+        (
+            "x-amz-checksum-sha256",
+            STANDARD.encode(Sha256::digest(body)),
+        ),
+    ]
 }
 
 /// An endpoint split into what URLs and signatures need.
@@ -48,7 +96,24 @@ impl S3Store {
             .timeout(Duration::from_secs(30))
             .build()
             .map_err(|e| StorageError::Config(e.to_string()))?;
-        Ok(Self { config, client })
+        Ok(Self {
+            config,
+            client,
+            lock_mode: None,
+        })
+    }
+
+    /// Turns on object lock for [`ObjectStore::put_locked`] (and creates the bucket with lock
+    /// enabled). The bucket needs object lock support (AWS S3, GCS through its own retention
+    /// policy, `SeaweedFS` with object lock).
+    ///
+    /// TODO: Local `SeaweedFS` and tests run without a lock: `put_locked` then stores a plain
+    /// object. Enable the lock in the cluster and Terraform in T2.32 and set
+    /// `S3_OBJECT_LOCK_MODE`.
+    #[must_use]
+    pub const fn with_object_lock(mut self, mode: ObjectLockMode) -> Self {
+        self.lock_mode = Some(mode);
+        self
     }
 
     /// The settings.
@@ -354,6 +419,55 @@ impl ObjectStore for S3Store {
         })
     }
 
+    fn get<'a>(
+        &'a self,
+        key: &'a str,
+        max_bytes: u64,
+    ) -> BoxFuture<'a, StorageResult<Option<Vec<u8>>>> {
+        Box::pin(async move {
+            let mut response = self.send(Method::GET, Some(key), &[], Vec::new()).await?;
+            if response.status() == StatusCode::NOT_FOUND {
+                return Ok(None);
+            }
+            if !response.status().is_success() {
+                return Err(Self::reject(response).await);
+            }
+            let mut body = Vec::new();
+            while let Some(chunk) = response
+                .chunk()
+                .await
+                .map_err(|e| StorageError::Unavailable(e.without_url().to_string()))?
+            {
+                if (body.len() + chunk.len()) as u64 > max_bytes {
+                    return Err(StorageError::TooLarge(max_bytes));
+                }
+                body.extend_from_slice(&chunk);
+            }
+            Ok(Some(body))
+        })
+    }
+
+    fn put_locked<'a>(
+        &'a self,
+        key: &'a str,
+        content_type: &'a str,
+        body: Vec<u8>,
+        retain_until: DateTime<Utc>,
+    ) -> BoxFuture<'a, StorageResult<()>> {
+        Box::pin(async move {
+            let mut headers = vec![("content-type", content_type.to_owned())];
+            if let Some(mode) = self.lock_mode {
+                headers.extend(lock_headers(mode, retain_until, &body));
+            }
+            let response = self.send(Method::PUT, Some(key), &headers, body).await?;
+            if response.status().is_success() {
+                Ok(())
+            } else {
+                Err(Self::reject(response).await)
+            }
+        })
+    }
+
     fn delete<'a>(&'a self, key: &'a str) -> BoxFuture<'a, StorageResult<()>> {
         Box::pin(async move {
             let response = self
@@ -369,7 +483,12 @@ impl ObjectStore for S3Store {
 
     fn ensure_bucket(&self) -> BoxFuture<'_, StorageResult<()>> {
         Box::pin(async move {
-            let response = self.send(Method::PUT, None, &[], Vec::new()).await?;
+            let headers: Vec<(&str, String)> = if self.lock_mode.is_some() {
+                vec![("x-amz-bucket-object-lock-enabled", "true".to_owned())]
+            } else {
+                Vec::new()
+            };
+            let response = self.send(Method::PUT, None, &headers, Vec::new()).await?;
             let status = response.status();
             if status.is_success() || status == StatusCode::CONFLICT {
                 // 409 BucketAlreadyOwnedByYou: nothing to do.
@@ -465,5 +584,27 @@ mod tests {
         let mut cfg = store(true).config().clone();
         cfg.endpoint = "not a url".to_owned();
         assert!(S3Store::new(cfg).is_err());
+    }
+
+    #[test]
+    fn lock_headers_carry_mode_date_and_checksum() {
+        let until = Utc.with_ymd_and_hms(2027, 12, 31, 23, 59, 58).unwrap();
+        let headers = lock_headers(ObjectLockMode::Compliance, until, b"abc");
+        let get = |name: &str| headers.iter().find(|(k, _)| *k == name).unwrap().1.clone();
+        assert_eq!(get("x-amz-object-lock-mode"), "COMPLIANCE");
+        assert_eq!(
+            get("x-amz-object-lock-retain-until-date"),
+            "2027-12-31T23:59:58Z"
+        );
+        // SHA-256("abc") in base64.
+        assert_eq!(
+            get("x-amz-checksum-sha256"),
+            "ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0="
+        );
+        assert_eq!(
+            ObjectLockMode::parse(" Governance "),
+            Some(ObjectLockMode::Governance)
+        );
+        assert_eq!(ObjectLockMode::parse("x"), None);
     }
 }

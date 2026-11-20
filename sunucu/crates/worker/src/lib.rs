@@ -1,6 +1,9 @@
 //! `worker` service: HTTP router.
 
+pub mod audit_anchor;
 pub mod background;
+pub mod maintenance;
+pub mod retention;
 
 use axum::Router;
 
@@ -8,6 +11,23 @@ use axum::Router;
 pub const SERVICE_NAME: &str = "worker";
 /// Default listen port (override with `PORT`).
 pub const DEFAULT_PORT: u16 = 8081;
+
+/// Errors of the maintenance jobs.
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    /// Database failure.
+    #[error(transparent)]
+    Db(#[from] db::Error),
+    /// Object store failure.
+    #[error(transparent)]
+    Storage(#[from] storage::StorageError),
+    /// Data that cannot be written or computed.
+    #[error("{0}")]
+    Format(String),
+}
+
+/// Result of a maintenance job.
+pub type Result<T> = std::result::Result<T, Error>;
 
 /// Builds the service router.
 pub fn router() -> Router {

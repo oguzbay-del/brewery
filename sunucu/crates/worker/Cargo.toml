@@ -9,15 +9,21 @@ publish.workspace = true
 async-nats.workspace = true
 axum.workspace = true
 billing.workspace = true
+chrono.workspace = true
 common = { workspace = true, features = ["http"] }
 db.workspace = true
 events.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+storage.workspace = true
+thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
+uuid.workspace = true
 
 [dev-dependencies]
 http-body-util.workspace = true
-serde_json.workspace = true
 tower.workspace = true
 
 [lints]

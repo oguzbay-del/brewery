@@ -32,6 +32,12 @@ pub async fn run(stop: watch::Receiver<bool>) {
             return;
         }
     };
+    // Maintenance (audit digests, retention) needs the database only, not NATS.
+    let maintenance_task = tokio::spawn(crate::maintenance::run(
+        pool.clone(),
+        crate::maintenance::digest_store_from_env(),
+        stop.clone(),
+    ));
     let client = match events::connect(&nats_url).await {
         Ok(c) => c,
         Err(e) => {
@@ -84,5 +90,5 @@ pub async fn run(stop: watch::Receiver<bool>) {
             }
         })
     };
-    let _ = tokio::join!(relay_task, subscription_task, janitor);
+    let _ = tokio::join!(relay_task, subscription_task, janitor, maintenance_task);
 }

@@ -12,6 +12,7 @@
 mod audit;
 mod context;
 mod error;
+pub mod maintenance;
 mod measurement;
 pub mod outbox;
 mod pool;

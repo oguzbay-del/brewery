@@ -5263,14 +5263,20 @@ dependencies = [
  "async-nats",
  "axum",
  "billing",
+ "chrono",
  "common",
  "db",
  "events",
  "http-body-util",
+ "serde",
  "serde_json",
+ "sqlx",
+ "storage",
+ "thiserror 2.0.21",
  "tokio",
  "tower",
  "tracing",
+ "uuid",
 ]
 
 [[package]]

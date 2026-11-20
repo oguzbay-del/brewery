@@ -19,6 +19,7 @@
 - The audit chain is in `src/audit.rs` (digest and verification are in Rust, no migration). Add rows only with `append_audit`, in the request transaction. If the row fields change, the `canonical_row` format changes and the old chain breaks (a new format version is necessary). Test: `tests/audit_chain.rs`.
 - Only the worker deletes a workspace: `purge_workspace(id)` (SECURITY DEFINER, `app_worker` only). `app_api` has no DELETE on `workspaces` and `users`. The function writes `workspace_tombstones` first. A retention or legal hold trigger stops the purge and rolls the tombstone back.
 - Do not add a NO ACTION foreign key from an immutable or ledger row to a record that a job deletes. Use `ON DELETE SET NULL` and a snapshot column filled by `snapshot_references()`.
+- Worker maintenance (T2.39): `src/maintenance.rs`. `list_audit_heads()` and `list_workspace_tombstones()` (SECURITY DEFINER, `app_worker` only) read across workspaces. `maintenance_runs` (cross-workspace table) records job runs. `external_events.payload_cleared_at` marks a cleared payload.
 - `audit_log` is append-only. The application roles have no UPDATE/DELETE/TRUNCATE right. A trigger also rejects these actions for the owner role (except the foreign key chain when a workspace is deleted).
 
 ## How to test

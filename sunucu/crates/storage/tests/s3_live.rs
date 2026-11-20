@@ -159,3 +159,37 @@ async fn upload_must_match_the_signed_limits() {
     assert!(upload(&put, body).await.is_success());
     store.delete(&key).await.unwrap();
 }
+
+#[tokio::test]
+async fn get_reads_back_what_put_and_put_locked_stored() {
+    let store = store().await;
+    let key = key("get.json");
+    assert_eq!(store.get(&key, 1024).await.unwrap(), None);
+    store
+        .put(&key, "application/json", b"{\"a\":1}".to_vec())
+        .await
+        .unwrap();
+    assert_eq!(
+        store.get(&key, 1024).await.unwrap().as_deref(),
+        Some(b"{\"a\":1}".as_slice())
+    );
+    assert!(matches!(
+        store.get(&key, 3).await,
+        Err(StorageError::TooLarge(3))
+    ));
+    store.delete(&key).await.unwrap();
+
+    // Without a configured lock, `put_locked` stores a plain object.
+    let locked = key.replace("get.json", "locked.json");
+    store
+        .put_locked(
+            &locked,
+            "application/json",
+            b"[]".to_vec(),
+            Utc::now() + chrono::Duration::days(1),
+        )
+        .await
+        .unwrap();
+    assert!(store.head(&locked).await.unwrap().is_some());
+    store.delete(&locked).await.unwrap();
+}

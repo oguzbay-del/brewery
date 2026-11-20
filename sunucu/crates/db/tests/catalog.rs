@@ -13,6 +13,7 @@ const CROSS_WORKSPACE: &[&str] = &[
     "scheduled_jobs",
     "external_events",
     "processed_events",
+    "maintenance_runs",
 ];
 /// Shared tables written only by migrations and seeds; no RLS, read-only for the API.
 const SHARED: &[&str] = &[
@@ -33,6 +34,7 @@ const OWNER_LOOKUP: &[&str] = &[
     "idempotency_keys",
     "workspaces",
     "workspace_tombstones",
+    "audit_heads",
     "push_targets",
 ];
 

@@ -22,7 +22,7 @@ use serde::Serialize;
 
 pub use config::S3Config;
 pub use error::{StorageError, StorageResult};
-pub use s3::S3Store;
+pub use s3::{ObjectLockMode, S3Store};
 
 /// Boxed future (keeps [`ObjectStore`] object safe).
 pub type BoxFuture<'a, T> = Pin<Box<dyn Future<Output = T> + Send + 'a>>;
@@ -96,6 +96,25 @@ pub trait ObjectStore: Send + Sync + 'static {
         key: &'a str,
         content_type: &'a str,
         body: Vec<u8>,
+    ) -> BoxFuture<'a, StorageResult<()>>;
+
+    /// Reads a small object into memory. Fails with [`StorageError::TooLarge`] past
+    /// `max_bytes`; `None` when it does not exist.
+    fn get<'a>(
+        &'a self,
+        key: &'a str,
+        max_bytes: u64,
+    ) -> BoxFuture<'a, StorageResult<Option<Vec<u8>>>>;
+
+    /// Stores a small object that nobody can change or delete until `retain_until` (object
+    /// lock). A store without lock support stores it as [`Self::put`] does; see
+    /// [`S3Store::with_object_lock`].
+    fn put_locked<'a>(
+        &'a self,
+        key: &'a str,
+        content_type: &'a str,
+        body: Vec<u8>,
+        retain_until: DateTime<Utc>,
     ) -> BoxFuture<'a, StorageResult<()>>;
 
     /// Deletes an object; deleting a missing one succeeds.
