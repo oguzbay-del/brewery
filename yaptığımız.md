@@ -9,7 +9,7 @@
 - Cloudflare hesabı ve Pages tarafı hazırlandı.
 - GitHub hesabı Cloudflare Pages ile yetkilendirildi.
 - `oguzbay-del/brewery` repository'si Cloudflare Pages projesine eklendi.
-- Kullanıcı teyidine göre `gristora.com` alan adı Cloudflare üzerinde çalışır duruma geldi ve site tarayıcıda açılıyor.
+- Kullanıcı teyidine göre `gristora.com` alan adı Cloudflare üzerinde çalışır durumda. GitHub Cloudflare Pages deployment check'i `bef1ed0` commit'i için başarılı döndü.
 - Böylece GitHub repository'sinden Cloudflare Pages'e Git entegrasyonu üzerinden otomatik build/deploy akışı kurulmuş oldu. Cloudflare, bağlı repository'ye gönderilen commit'ler için deployment başlatabilir; production dışındaki dallar preview deployment üretebilir.
 
 > Not: Cloudflare dashboard'una doğrudan erişimimiz olmadığı için deployment geçmişi, son build sonucu, DNS kayıtları ve tüm build ayarları bağımsız olarak API üzerinden doğrulanmadı. Alan adının çalıştığı bilgisi kullanıcı teyidine dayanır.
@@ -53,10 +53,13 @@ Astro build komutu, projedeki build script'ine göre fotoğraf optimizasyonu ve 
 - [x] İngilizce ve Türkçe içerik sayfalarında indeksleme yalnızca `gristora.com` canonical host'u için açılacak şekilde düzenlendi (`index, follow`).
 - [x] Preview / test host'ları `noindex, nofollow` korumasında bırakıldı; `robots.txt` production dışındaki host'larda taramayı engelliyor.
 - [x] Ortak `SiteHeader.astro` bileşeninde EN/TR dil bağlantısı yer alıyor; bağlantı aynı sayfanın karşı dildeki karşılığına yönleniyor.
-- [ ] Üretim build'i ve Cloudflare deployment'ı tamamlandıktan sonra canlı HTML, `robots.txt`, canonical, sitemap ve hreflang davranışını tekrar doğrula.
-- [ ] Sitemap, robots.txt, canonical ve hreflang etiketlerini canlı alan adında doğrula.
+- [x] Production build ve Cloudflare Pages deployment tamamlandı (`bef1ed0`, Deploy successful).
+- [x] Build doğrulaması: production için EN/TR sayfalar `index, follow`; preview ve GitHub Pages test host'ları `noindex, nofollow`.
+- [x] Production sitemap'ine Türkçe ve İngilizce sayfalar dahil; preview sitemap'leri Türkçe sayfaları dışarıda bırakıyor.
+- [x] CI, robots.txt, canonical URL, sitemap hedefleri ve karşılıklı EN/TR dil bağlantılarını doğruluyor.
 - [ ] `www.gristora.com` → `gristora.com` yönlendirmesini doğrula.
-- [ ] Cloudflare Pages Deployments ekranında son production build'in başarılı olduğunu ve doğru commit'i yayınladığını doğrula.
+- [x] Cloudflare Pages production deployment başarılı; yayınlanan commit `bef1ed0`.
+- [ ] `www.gristora.com` → `gristora.com` yönlendirmesini tarayıcı/HTTP üzerinden ayrıca doğrula.
 
 ## 6. Resmî Cloudflare kaynakları
 
@@ -67,4 +70,4 @@ Astro build komutu, projedeki build script'ine göre fotoğraf optimizasyonu ve 
 
 ---
 
-Bu dosya kurulumun ve kararların kısa operasyonel kaydıdır. GitHub PR/CI ve Cloudflare deployment sonuçları doğrulanmadan production yayını tamamlanmış sayılmaz.
+Bu dosya kurulumun ve kararların kısa operasyonel kaydıdır. Cloudflare Pages deployment check'i production commit'i için başarılıdır; `www` yönlendirmesi ayrıca doğrulanmayı beklemektedir.
