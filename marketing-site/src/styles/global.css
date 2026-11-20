@@ -129,7 +129,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 }
 @media (max-width: 760px) {
   .shell { width: calc(100% - 44px); }
-  .site-header { min-height: 72px; padding-inline: 22px; }
+  .site-header { min-height: 72px; padding-inline: 22px; gap: 12px; }
   .wordmark { font-size: 25px; }
   .desktop-nav, .header-cta { display: none; }
   .mobile-menu { position: relative; display: block; }

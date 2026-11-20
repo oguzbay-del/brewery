@@ -11,7 +11,10 @@ const base = import.meta.env.BASE_URL;
 const tr = lang === "tr";
 // Turkish preview: links stay inside /tr/. The EN link points to the same page in English.
 const root = tr ? `${base}tr/` : base;
-const enHref = tr ? Astro.url.pathname.replace(`${base}tr/`, base) : undefined;
+const pathWithoutBase = Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : Astro.url.pathname.slice(1);
+const languageHref = tr
+  ? `${base}${pathWithoutBase.replace(/^tr\//, "")}`
+  : `${base}tr/${pathWithoutBase}`;
 const linksEn = [
   { id: "product", href: `${base}features/`, label: "Product", mobile: "Product" },
   { id: "modules", href: `${base}modules/`, label: "Modules", mobile: "Modules" },
@@ -39,7 +42,7 @@ const links = tr ? linksTr : linksEn;
   <nav class="desktop-nav" aria-label={tr ? "Ana gezinme" : "Main navigation"}>
     {links.map((link) => <a href={link.href} aria-current={current === link.id ? "page" : undefined}>{link.label}</a>)}
   </nav>
-  {tr && <a class="lang-switch" href={enHref} hreflang="en" lang="en">EN</a>}
+  <a class="lang-switch" href={languageHref} hreflang={tr ? "en" : "tr"} lang={tr ? "en" : "tr"}>{tr ? "EN" : "TR"}</a>
   <a class="header-cta" href={`${root}breweries/`}>{tr ? "Bira üreticileri için" : "Explore breweries"} <span aria-hidden="true">↗</span></a>
   <details class="mobile-menu"><summary aria-label={tr ? "Gezinme menüsünü aç" : "Open navigation menu"}><span></span><span></span></summary><nav aria-label={tr ? "Mobil gezinme" : "Mobile navigation"}>{links.map((link) => <a href={link.href} aria-current={current === link.id ? "page" : undefined}>{link.mobile}</a>)}</nav></details>
 </header>
