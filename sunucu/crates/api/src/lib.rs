@@ -21,6 +21,7 @@ pub mod ratelimit;
 pub mod redis_client;
 pub mod request;
 pub mod routes;
+pub mod settings;
 
 use std::sync::Arc;
 
@@ -64,6 +65,8 @@ pub struct AppState {
     pub store: Option<Arc<dyn storage::ObjectStore>>,
     /// Sign-in services for the auth modules; `None` switches their routes off.
     pub auth_services: Option<Arc<auth::AuthServices>>,
+    /// Client of `engine-service` (T2.16). Disabled by default: calls answer `503`.
+    pub engine: engine::EngineClient,
 }
 
 impl std::fmt::Debug for AppState {
@@ -86,6 +89,7 @@ impl AppState {
             events: None,
             store: None,
             auth_services: None,
+            engine: engine::EngineClient::disabled(),
         }
     }
 
@@ -100,6 +104,13 @@ impl AppState {
     #[must_use]
     pub fn with_auth_services(mut self, auth: Arc<auth::AuthServices>) -> Self {
         self.auth_services = Some(auth);
+        self
+    }
+
+    /// Connects the state to the calculation engine; endpoints that calculate use `state.engine`.
+    #[must_use]
+    pub fn with_engine(mut self, engine: engine::EngineClient) -> Self {
+        self.engine = engine;
         self
     }
 

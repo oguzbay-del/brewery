@@ -528,6 +528,253 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/carbonation-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists records: Carbonation profile: method and target CO2 volumes */
+        get: operations["carbonation_profiles_list"];
+        put?: never;
+        /** Creates a record: Carbonation profile: method and target CO2 volumes */
+        post: operations["carbonation_profiles_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/carbonation-profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one record */
+        get: operations["carbonation_profiles_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a record (soft delete; the history can restore it) */
+        delete: operations["carbonation_profiles_delete"];
+        options?: never;
+        head?: never;
+        /** Changes fields of a record (merge patch). Last writer wins for each field; `If-Match` is optional */
+        patch: operations["carbonation_profiles_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/carbonation-profiles/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of a record, newest first. `previous_value` holds the replaced values of the changed fields */
+        get: operations["carbonation_profiles_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/carbonation-profiles/{id}/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the values of a history row back (a new change with its own history row) */
+        post: operations["carbonation_profiles_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/equipment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists records: Equipment profile: volumes, losses, efficiency, altitude and hop utilization */
+        get: operations["equipment_list"];
+        put?: never;
+        /** Creates a record: Equipment profile: volumes, losses, efficiency, altitude and hop utilization */
+        post: operations["equipment_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/equipment/wizard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Creates an equipment record from the four answers of the equipment wizard */
+        post: operations["equipment_wizard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/equipment/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one record */
+        get: operations["equipment_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a record (soft delete; the history can restore it) */
+        delete: operations["equipment_delete"];
+        options?: never;
+        head?: never;
+        /** Changes fields of a record (merge patch). Last writer wins for each field; `If-Match` is optional */
+        patch: operations["equipment_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/equipment/{id}/calibration-proposal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Proposes a new efficiency from measured results of past batches (the engine calculates the yields). Changes nothing */
+        post: operations["equipment_calibrate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/equipment/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of a record, newest first. `previous_value` holds the replaced values of the changed fields */
+        get: operations["equipment_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/equipment/{id}/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the values of a history row back (a new change with its own history row) */
+        post: operations["equipment_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/fermentation-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists records: Fermentation profile with its temperature steps */
+        get: operations["fermentation_profiles_list"];
+        put?: never;
+        /** Creates a record: Fermentation profile with its temperature steps */
+        post: operations["fermentation_profiles_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/fermentation-profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one record */
+        get: operations["fermentation_profiles_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a record (soft delete; the history can restore it) */
+        delete: operations["fermentation_profiles_delete"];
+        options?: never;
+        head?: never;
+        /** Changes fields of a record (merge patch). Last writer wins for each field; `If-Match` is optional */
+        patch: operations["fermentation_profiles_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/fermentation-profiles/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of a record, newest first. `previous_value` holds the replaced values of the changed fields */
+        get: operations["fermentation_profiles_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/fermentation-profiles/{id}/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the values of a history row back (a new change with its own history row) */
+        post: operations["fermentation_profiles_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/ingredients": {
         parameters: {
             query?: never;
@@ -595,6 +842,129 @@ export interface paths {
         post?: never;
         /** Revokes a pending invitation. */
         delete: operations["invitations_revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/mash-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists records: Mash profile with its steps */
+        get: operations["mash_profiles_list"];
+        put?: never;
+        /** Creates a record: Mash profile with its steps */
+        post: operations["mash_profiles_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/mash-profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one record */
+        get: operations["mash_profiles_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a record (soft delete; the history can restore it) */
+        delete: operations["mash_profiles_delete"];
+        options?: never;
+        head?: never;
+        /** Changes fields of a record (merge patch). Last writer wins for each field; `If-Match` is optional */
+        patch: operations["mash_profiles_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/mash-profiles/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of a record, newest first. `previous_value` holds the replaced values of the changed fields */
+        get: operations["mash_profiles_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/mash-profiles/{id}/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the values of a history row back (a new change with its own history row) */
+        post: operations["mash_profiles_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/me/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads the user settings of the caller */
+        get: operations["user_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Changes keys of the user settings of the caller (merge patch; `null` removes a key). Last writer wins for each key */
+        patch: operations["user_settings_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/me/settings/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of the user settings of the caller, newest first */
+        get: operations["user_settings_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/me/settings/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the keys of a history row back into the user settings of the caller */
+        post: operations["user_settings_restore"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -792,6 +1162,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads the workspace settings */
+        get: operations["settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Changes keys of the workspace settings (merge patch; `null` removes a key). Last writer wins for each key */
+        patch: operations["settings_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/settings/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of the workspace settings, newest first */
+        get: operations["settings_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/settings/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the keys of a history row back into the workspace settings */
+        post: operations["settings_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/shares": {
         parameters: {
             query?: never;
@@ -908,6 +1330,148 @@ export interface paths {
         get: operations["style_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/vessels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists records: Vessel (fermenter, kettle, keg store, ...) as Home mode uses it */
+        get: operations["vessels_list"];
+        put?: never;
+        /** Creates a record: Vessel (fermenter, kettle, keg store, ...) as Home mode uses it */
+        post: operations["vessels_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/vessels/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one record */
+        get: operations["vessels_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a record (soft delete; the history can restore it) */
+        delete: operations["vessels_delete"];
+        options?: never;
+        head?: never;
+        /** Changes fields of a record (merge patch). Last writer wins for each field; `If-Match` is optional */
+        patch: operations["vessels_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/vessels/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of a record, newest first. `previous_value` holds the replaced values of the changed fields */
+        get: operations["vessels_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/vessels/{id}/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the values of a history row back (a new change with its own history row) */
+        post: operations["vessels_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/water-profiles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists records: Source or target water profile; `source_document_id` links the lab water analysis report (a scanned document) */
+        get: operations["water_profiles_list"];
+        put?: never;
+        /** Creates a record: Source or target water profile; `source_document_id` links the lab water analysis report (a scanned document) */
+        post: operations["water_profiles_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/water-profiles/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads one record */
+        get: operations["water_profiles_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a record (soft delete; the history can restore it) */
+        delete: operations["water_profiles_delete"];
+        options?: never;
+        head?: never;
+        /** Changes fields of a record (merge patch). Last writer wins for each field; `If-Match` is optional */
+        patch: operations["water_profiles_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/water-profiles/{id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Change history of a record, newest first. `previous_value` holds the replaced values of the changed fields */
+        get: operations["water_profiles_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/water-profiles/{id}/history/{history_id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Writes the values of a history row back (a new change with its own history row) */
+        post: operations["water_profiles_restore"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1124,6 +1688,107 @@ export interface components {
             /** @description How to upload the bytes. */
             upload: components["schemas"]["UploadInstructions"];
         };
+        CalibrationObservation: {
+            /** Format: double */
+            malt_kg: number;
+            measured_hot?: boolean;
+            /** Format: double */
+            wort_extract_p: number;
+            /** Format: double */
+            wort_volume_l: number;
+        };
+        CalibrationRequest: {
+            observations: components["schemas"]["CalibrationObservation"][];
+        };
+        CalibrationResponse: {
+            /** Format: double */
+            current_efficiency_pct: number;
+            engine_version: string;
+            /** Format: uuid */
+            equipment_id: string;
+            observations: {
+                /** Format: double */
+                brewhouse_yield_pct?: number;
+                /** @enum {string} */
+                source?: "engine" | "redis" | "database";
+            }[];
+            proposal: {
+                based_on?: number;
+                /** Format: double */
+                efficiency_pct?: number;
+                /** Format: double */
+                spread_pct?: number;
+            } | null;
+            /** @enum {string|null} */
+            reason: "too_few_observations" | "inconsistent_observations" | null;
+        };
+        /**
+         * @description Carbonation profile: method and target CO2 volumes
+         * @example {
+         *       "created_at": "2026-11-20T10:00:00Z",
+         *       "deleted_at": null,
+         *       "id": "0192f1c07a3b7000800000000000000e",
+         *       "method": "forced",
+         *       "name": "Bottle conditioned ale",
+         *       "notes": "Priming with corn sugar",
+         *       "priming_agent": "corn_sugar",
+         *       "target_co2_vols": 2.4,
+         *       "temp_c": 20,
+         *       "updated_at": "2026-11-20T10:00:00Z",
+         *       "version": 1
+         *     }
+         */
+        CarbonationProfile: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            deleted_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            method?: "forced" | "priming" | "natural" | "spunding";
+            name?: string;
+            notes?: string | null;
+            /** @enum {string|null} */
+            priming_agent?: "corn_sugar" | "table_sugar" | "dme" | "honey" | null;
+            /** Format: double */
+            target_co2_vols?: number;
+            /** Format: double */
+            temp_c?: number | null;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int64 */
+            version: number;
+        };
+        CarbonationProfileCreate: {
+            /** @enum {string} */
+            method: "forced" | "priming" | "natural" | "spunding";
+            name: string;
+            notes?: string | null;
+            /** @enum {string|null} */
+            priming_agent?: "corn_sugar" | "table_sugar" | "dme" | "honey" | null;
+            /** Format: double */
+            target_co2_vols: number;
+            /** Format: double */
+            temp_c?: number | null;
+        };
+        CarbonationProfileList: {
+            items: components["schemas"]["CarbonationProfile"][];
+            next_cursor: string | null;
+        };
+        /** @description JSON Merge Patch: only the sent fields change; the last writer wins for each field */
+        CarbonationProfilePatch: {
+            /** @enum {string} */
+            method?: "forced" | "priming" | "natural" | "spunding";
+            name?: string;
+            notes?: string | null;
+            /** @enum {string|null} */
+            priming_agent?: "corn_sugar" | "table_sugar" | "dme" | "honey" | null;
+            /** Format: double */
+            target_co2_vols?: number;
+            /** Format: double */
+            temp_c?: number | null;
+        };
         /** @description A `WebAuthn` ceremony to run on the client. */
         CeremonyStart: {
             /**
@@ -1141,6 +1806,25 @@ export interface components {
              *     `ASAuthorizationPlatformPublicKeyCredentialProvider`.
              */
             options: Record<string, never>;
+        };
+        ChangeHistoryEntry: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @description Replaced values of the changed fields */
+            previous_value: Record<string, never>;
+            /**
+             * Format: int64
+             * @description Version the change produced
+             */
+            record_version: number;
+        };
+        ChangeHistoryList: {
+            items: components["schemas"]["ChangeHistoryEntry"][];
+            next_cursor: string | null;
         };
         /**
          * @description The kind of client signing in; decides how the session travels.
@@ -1208,6 +1892,190 @@ export interface components {
             token: string;
         };
         /**
+         * @description Equipment profile: volumes, losses, efficiency, altitude and hop utilization
+         * @example {
+         *       "altitude_m": 0,
+         *       "batch_volume_l": 20,
+         *       "boil_off_l_per_h": 3,
+         *       "boil_time_min": 60,
+         *       "boil_volume_l": 26,
+         *       "cooling_shrinkage_pct": 4,
+         *       "created_at": "2026-11-20T10:00:00Z",
+         *       "deleted_at": null,
+         *       "efficiency_pct": 72,
+         *       "fermenter_loss_l": 0.5,
+         *       "grain_absorption_l_per_kg": 1.04,
+         *       "hop_utilization_pct": 100,
+         *       "id": "0192f1c07a3b7000800000000000000e",
+         *       "is_default": true,
+         *       "mash_dead_space_l": 0,
+         *       "mash_tun_mass_kg": 0,
+         *       "mash_tun_specific_heat": 0.12,
+         *       "mash_tun_volume_l": 30,
+         *       "name": "Brew house",
+         *       "notes": "Electric kettle, 30 L",
+         *       "pre_trub_loss_l": 0,
+         *       "top_up_l": 0,
+         *       "trub_loss_l": 1,
+         *       "updated_at": "2026-11-20T10:00:00Z",
+         *       "version": 1,
+         *       "whirlpool_carry": false,
+         *       "whirlpool_time_min": 0
+         *     }
+         */
+        Equipment: {
+            /** Format: double */
+            altitude_m?: number;
+            /** Format: double */
+            batch_volume_l?: number;
+            /** Format: double */
+            boil_off_l_per_h?: number;
+            /** Format: double */
+            boil_time_min?: number;
+            /** Format: double */
+            boil_volume_l?: number | null;
+            /** Format: double */
+            cooling_shrinkage_pct?: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            deleted_at?: string | null;
+            /** Format: double */
+            efficiency_pct?: number;
+            /** Format: double */
+            fermenter_loss_l?: number;
+            /** Format: double */
+            grain_absorption_l_per_kg?: number;
+            /** Format: double */
+            hop_utilization_pct?: number;
+            /** Format: uuid */
+            id: string;
+            is_default?: boolean;
+            /** Format: double */
+            mash_dead_space_l?: number;
+            /** Format: double */
+            mash_tun_mass_kg?: number;
+            /** Format: double */
+            mash_tun_specific_heat?: number;
+            /** Format: double */
+            mash_tun_volume_l?: number | null;
+            name?: string;
+            notes?: string | null;
+            /** Format: double */
+            pre_trub_loss_l?: number;
+            /** Format: double */
+            top_up_l?: number;
+            /** Format: double */
+            trub_loss_l?: number;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int64 */
+            version: number;
+            whirlpool_carry?: boolean;
+            /** Format: double */
+            whirlpool_time_min?: number;
+        };
+        EquipmentCreate: {
+            /** Format: double */
+            altitude_m?: number;
+            /** Format: double */
+            batch_volume_l: number;
+            /** Format: double */
+            boil_off_l_per_h?: number;
+            /** Format: double */
+            boil_time_min?: number;
+            /** Format: double */
+            boil_volume_l?: number | null;
+            /** Format: double */
+            cooling_shrinkage_pct?: number;
+            /** Format: double */
+            efficiency_pct: number;
+            /** Format: double */
+            fermenter_loss_l?: number;
+            /** Format: double */
+            grain_absorption_l_per_kg?: number;
+            /** Format: double */
+            hop_utilization_pct?: number;
+            is_default?: boolean;
+            /** Format: double */
+            mash_dead_space_l?: number;
+            /** Format: double */
+            mash_tun_mass_kg?: number;
+            /** Format: double */
+            mash_tun_specific_heat?: number;
+            /** Format: double */
+            mash_tun_volume_l?: number | null;
+            name: string;
+            notes?: string | null;
+            /** Format: double */
+            pre_trub_loss_l?: number;
+            /** Format: double */
+            top_up_l?: number;
+            /** Format: double */
+            trub_loss_l?: number;
+            whirlpool_carry?: boolean;
+            /** Format: double */
+            whirlpool_time_min?: number;
+        };
+        EquipmentList: {
+            items: components["schemas"]["Equipment"][];
+            next_cursor: string | null;
+        };
+        /** @description JSON Merge Patch: only the sent fields change; the last writer wins for each field */
+        EquipmentPatch: {
+            /** Format: double */
+            altitude_m?: number;
+            /** Format: double */
+            batch_volume_l?: number;
+            /** Format: double */
+            boil_off_l_per_h?: number;
+            /** Format: double */
+            boil_time_min?: number;
+            /** Format: double */
+            boil_volume_l?: number | null;
+            /** Format: double */
+            cooling_shrinkage_pct?: number;
+            /** Format: double */
+            efficiency_pct?: number;
+            /** Format: double */
+            fermenter_loss_l?: number;
+            /** Format: double */
+            grain_absorption_l_per_kg?: number;
+            /** Format: double */
+            hop_utilization_pct?: number;
+            is_default?: boolean;
+            /** Format: double */
+            mash_dead_space_l?: number;
+            /** Format: double */
+            mash_tun_mass_kg?: number;
+            /** Format: double */
+            mash_tun_specific_heat?: number;
+            /** Format: double */
+            mash_tun_volume_l?: number | null;
+            name?: string;
+            notes?: string | null;
+            /** Format: double */
+            pre_trub_loss_l?: number;
+            /** Format: double */
+            top_up_l?: number;
+            /** Format: double */
+            trub_loss_l?: number;
+            whirlpool_carry?: boolean;
+            /** Format: double */
+            whirlpool_time_min?: number;
+        };
+        EquipmentWizardRequest: {
+            /** Format: double */
+            batch_volume_l: number;
+            /** Format: double */
+            efficiency_pct?: number;
+            /** Format: double */
+            kettle_volume_l: number;
+            /** @enum {string} */
+            method: "all_grain" | "biab" | "extract";
+            name?: string;
+        };
+        /**
          * @description Every error code the API returns. The single list: the `OpenAPI` document and the text
          *     catalog are generated from it (ADR-0008 rule 3.2).
          * @enum {string}
@@ -1254,6 +2122,65 @@ export interface components {
              * @description Yield, percent of dry basis.
              */
             yield_pct: number;
+        };
+        /**
+         * @description Fermentation profile with its temperature steps
+         * @example {
+         *       "created_at": "2026-11-20T10:00:00Z",
+         *       "deleted_at": null,
+         *       "id": "0192f1c07a3b7000800000000000000e",
+         *       "name": "Ale, 18 C",
+         *       "notes": "Primary then diacetyl rest",
+         *       "steps": [
+         *         {
+         *           "duration_min": 10080,
+         *           "name": "Primary",
+         *           "ramp_min": 0,
+         *           "temp_c": 18
+         *         }
+         *       ],
+         *       "updated_at": "2026-11-20T10:00:00Z",
+         *       "version": 1
+         *     }
+         */
+        FermentationProfile: {
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            deleted_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            name?: string;
+            notes?: string | null;
+            steps?: components["schemas"]["FermentationStep"][];
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int64 */
+            version: number;
+        };
+        FermentationProfileCreate: {
+            name: string;
+            notes?: string | null;
+            steps?: components["schemas"]["FermentationStep"][];
+        };
+        FermentationProfileList: {
+            items: components["schemas"]["FermentationProfile"][];
+            next_cursor: string | null;
+        };
+        /** @description JSON Merge Patch: only the sent fields change; the last writer wins for each field */
+        FermentationProfilePatch: {
+            name?: string;
+            notes?: string | null;
+            steps?: components["schemas"]["FermentationStep"][];
+        };
+        FermentationStep: {
+            /** Format: double */
+            duration_min: number;
+            name?: string;
+            /** Format: double */
+            ramp_min?: number;
+            /** Format: double */
+            temp_c: number;
         };
         /** @description One field-level problem (`errors[]`). */
         FieldIssue: {
@@ -1472,6 +2399,99 @@ export interface components {
             session: components["schemas"]["SessionIssued"];
             /** @description The user. */
             user: components["schemas"]["UserSummary"];
+        };
+        /**
+         * @description Mash profile with its steps
+         * @example {
+         *       "biab": false,
+         *       "created_at": "2026-11-20T10:00:00Z",
+         *       "deleted_at": null,
+         *       "grain_temp_c": 20,
+         *       "id": "0192f1c07a3b7000800000000000000e",
+         *       "name": "Single infusion",
+         *       "notes": "Mash for pale ales",
+         *       "sparge_temp_c": 76,
+         *       "steps": [
+         *         {
+         *           "infusion_l": 15,
+         *           "infusion_temp_c": 72,
+         *           "kind": "infusion",
+         *           "name": "Saccharification",
+         *           "ramp_min": 0,
+         *           "temp_c": 66,
+         *           "time_min": 60
+         *         }
+         *       ],
+         *       "target_ph": 5.4,
+         *       "updated_at": "2026-11-20T10:00:00Z",
+         *       "version": 1
+         *     }
+         */
+        MashProfile: {
+            biab?: boolean;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            deleted_at?: string | null;
+            /** Format: double */
+            grain_temp_c?: number | null;
+            /** Format: uuid */
+            id: string;
+            name?: string;
+            notes?: string | null;
+            /** Format: double */
+            sparge_temp_c?: number | null;
+            steps?: components["schemas"]["MashStep"][];
+            /** Format: double */
+            target_ph?: number | null;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int64 */
+            version: number;
+        };
+        MashProfileCreate: {
+            biab?: boolean;
+            /** Format: double */
+            grain_temp_c?: number | null;
+            name: string;
+            notes?: string | null;
+            /** Format: double */
+            sparge_temp_c?: number | null;
+            steps?: components["schemas"]["MashStep"][];
+            /** Format: double */
+            target_ph?: number | null;
+        };
+        MashProfileList: {
+            items: components["schemas"]["MashProfile"][];
+            next_cursor: string | null;
+        };
+        /** @description JSON Merge Patch: only the sent fields change; the last writer wins for each field */
+        MashProfilePatch: {
+            biab?: boolean;
+            /** Format: double */
+            grain_temp_c?: number | null;
+            name?: string;
+            notes?: string | null;
+            /** Format: double */
+            sparge_temp_c?: number | null;
+            steps?: components["schemas"]["MashStep"][];
+            /** Format: double */
+            target_ph?: number | null;
+        };
+        MashStep: {
+            /** Format: double */
+            infusion_l?: number | null;
+            /** Format: double */
+            infusion_temp_c?: number | null;
+            /** @enum {string} */
+            kind: "infusion" | "decoction" | "temperature";
+            name?: string;
+            /** Format: double */
+            ramp_min?: number;
+            /** Format: double */
+            temp_c: number;
+            /** Format: double */
+            time_min: number;
         };
         /** @description List of members. */
         MemberList: {
@@ -2391,6 +3411,49 @@ export interface components {
              */
             last_activity_at: string;
         };
+        Settings: {
+            settings: components["schemas"]["SettingsValues"];
+            /** Format: date-time */
+            updated_at: string | null;
+            /**
+             * Format: int64
+             * @description 0 before the first write of user settings
+             */
+            version: number;
+        };
+        /** @description Unit and calculation option keys. The option names follow `RecipeOptions` of the engine contract */
+        SettingsValues: {
+            /** @enum {string|null} */
+            color_unit?: "srm" | "ebc" | null;
+            /** @enum {string|null} */
+            gravity_unit?: "sg" | "plato" | "brix" | null;
+            /** Format: double */
+            hop_first_wort_adj_pct?: number | null;
+            /** Format: double */
+            hop_leaf_adj_pct?: number | null;
+            /** Format: double */
+            hop_mash_adj_pct?: number | null;
+            /** Format: double */
+            hop_pellet_adj_pct?: number | null;
+            /** Format: double */
+            hop_plug_adj_pct?: number | null;
+            hop_type_adj?: boolean | null;
+            /** @enum {string|null} */
+            ibu_equation?: "tinseth" | "rager" | "garetz" | null;
+            /** Format: double */
+            mash_fg_adj_slope_pct_per_c?: number | null;
+            /** Format: double */
+            mash_fg_adj_temp_c?: number | null;
+            mash_fg_adjust?: boolean | null;
+            /** @enum {string|null} */
+            pressure_unit?: "bar" | "psi" | "kpa" | null;
+            /** Format: double */
+            steep_efficiency_pct?: number | null;
+            /** @enum {string|null} */
+            temperature_unit?: "celsius" | "fahrenheit" | null;
+            /** @enum {string|null} */
+            unit_system?: "metric" | "us" | "imperial" | null;
+        };
         /** @description Body of `POST /v1/workspaces/{ws}/shared-devices`. */
         SharedDeviceCreate: {
             /**
@@ -2717,6 +3780,186 @@ export interface components {
             api: string;
             /** @description Calculation engine version; `null` until the engine is wired in. */
             engine?: string | null;
+        };
+        /**
+         * @description Vessel (fermenter, kettle, keg store, ...) as Home mode uses it
+         * @example {
+         *       "capacity_l": 30,
+         *       "cleaning_status": "dirty",
+         *       "code": "FV-1",
+         *       "created_at": "2026-11-20T10:00:00Z",
+         *       "deleted_at": null,
+         *       "id": "0192f1c07a3b7000800000000000000e",
+         *       "kind": "fermenter",
+         *       "max_pressure_bar": 1,
+         *       "name": "Conical fermenter",
+         *       "notes": "Stainless steel",
+         *       "updated_at": "2026-11-20T10:00:00Z",
+         *       "version": 1
+         *     }
+         */
+        Vessel: {
+            /** Format: double */
+            capacity_l?: number;
+            /** @enum {string} */
+            cleaning_status?: "dirty" | "cleaning" | "clean" | "sanitized";
+            code?: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            deleted_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind?: "fermenter" | "brite" | "kettle" | "mash_tun" | "hlt" | "yeast_brink" | "keg_store" | "other";
+            /** Format: double */
+            max_pressure_bar?: number | null;
+            name?: string;
+            notes?: string | null;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int64 */
+            version: number;
+        };
+        VesselCreate: {
+            /** Format: double */
+            capacity_l: number;
+            /** @enum {string} */
+            cleaning_status?: "dirty" | "cleaning" | "clean" | "sanitized";
+            code: string;
+            /** @enum {string} */
+            kind: "fermenter" | "brite" | "kettle" | "mash_tun" | "hlt" | "yeast_brink" | "keg_store" | "other";
+            /** Format: double */
+            max_pressure_bar?: number | null;
+            name?: string;
+            notes?: string | null;
+        };
+        VesselList: {
+            items: components["schemas"]["Vessel"][];
+            next_cursor: string | null;
+        };
+        /** @description JSON Merge Patch: only the sent fields change; the last writer wins for each field */
+        VesselPatch: {
+            /** Format: double */
+            capacity_l?: number;
+            /** @enum {string} */
+            cleaning_status?: "dirty" | "cleaning" | "clean" | "sanitized";
+            code?: string;
+            /** @enum {string} */
+            kind?: "fermenter" | "brite" | "kettle" | "mash_tun" | "hlt" | "yeast_brink" | "keg_store" | "other";
+            /** Format: double */
+            max_pressure_bar?: number | null;
+            name?: string;
+            notes?: string | null;
+        };
+        /**
+         * @description Source or target water profile; `source_document_id` links the lab water analysis report (a scanned document)
+         * @example {
+         *       "alkalinity_mg_l": 100,
+         *       "bicarbonate_mg_l": 120,
+         *       "calcium_mg_l": 50,
+         *       "chloride_mg_l": 40,
+         *       "created_at": "2026-11-20T10:00:00Z",
+         *       "deleted_at": null,
+         *       "id": "0192f1c07a3b7000800000000000000e",
+         *       "kind": "source",
+         *       "magnesium_mg_l": 10,
+         *       "name": "Tap water",
+         *       "notes": "Lab report of March",
+         *       "ph": 7.4,
+         *       "sodium_mg_l": 15,
+         *       "source_document_id": "0192f1c07a3b7000800000000000000f",
+         *       "sulfate_mg_l": 60,
+         *       "updated_at": "2026-11-20T10:00:00Z",
+         *       "version": 1
+         *     }
+         */
+        WaterProfile: {
+            /** Format: double */
+            alkalinity_mg_l?: number | null;
+            /** Format: double */
+            bicarbonate_mg_l?: number;
+            /** Format: double */
+            calcium_mg_l?: number;
+            /** Format: double */
+            chloride_mg_l?: number;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            deleted_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind?: "source" | "target";
+            /** Format: double */
+            magnesium_mg_l?: number;
+            name?: string;
+            notes?: string | null;
+            /** Format: double */
+            ph?: number | null;
+            /** Format: double */
+            sodium_mg_l?: number;
+            /** Format: uuid */
+            source_document_id?: string | null;
+            /** Format: double */
+            sulfate_mg_l?: number;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: int64 */
+            version: number;
+        };
+        WaterProfileCreate: {
+            /** Format: double */
+            alkalinity_mg_l?: number | null;
+            /** Format: double */
+            bicarbonate_mg_l?: number;
+            /** Format: double */
+            calcium_mg_l?: number;
+            /** Format: double */
+            chloride_mg_l?: number;
+            /** @enum {string} */
+            kind: "source" | "target";
+            /** Format: double */
+            magnesium_mg_l?: number;
+            name: string;
+            notes?: string | null;
+            /** Format: double */
+            ph?: number | null;
+            /** Format: double */
+            sodium_mg_l?: number;
+            /** Format: uuid */
+            source_document_id?: string | null;
+            /** Format: double */
+            sulfate_mg_l?: number;
+        };
+        WaterProfileList: {
+            items: components["schemas"]["WaterProfile"][];
+            next_cursor: string | null;
+        };
+        /** @description JSON Merge Patch: only the sent fields change; the last writer wins for each field */
+        WaterProfilePatch: {
+            /** Format: double */
+            alkalinity_mg_l?: number | null;
+            /** Format: double */
+            bicarbonate_mg_l?: number;
+            /** Format: double */
+            calcium_mg_l?: number;
+            /** Format: double */
+            chloride_mg_l?: number;
+            /** @enum {string} */
+            kind?: "source" | "target";
+            /** Format: double */
+            magnesium_mg_l?: number;
+            name?: string;
+            notes?: string | null;
+            /** Format: double */
+            ph?: number | null;
+            /** Format: double */
+            sodium_mg_l?: number;
+            /** Format: uuid */
+            source_document_id?: string | null;
+            /** Format: double */
+            sulfate_mg_l?: number;
         };
         /** @description Body of `POST /v1/workspaces`. */
         WorkspaceCreateRequest: {
@@ -6571,6 +7814,3330 @@ export interface operations {
             };
         };
     };
+    carbonation_profiles_list: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+                /** @description Sort field; `-` prefix for descending */
+                sort?: "name" | "-name" | "updated_at" | "-updated_at";
+                /** @description Only records changed since this time, deleted ones included */
+                updated_since?: string;
+                /** @description Include deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "method": "forced",
+                     *           "name": "Bottle conditioned ale",
+                     *           "notes": "Priming with corn sugar",
+                     *           "priming_agent": "corn_sugar",
+                     *           "target_co2_vols": 2.4,
+                     *           "temp_c": 20,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarbonationProfileList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    carbonation_profiles_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "method": "forced",
+                 *       "name": "Bottle conditioned ale",
+                 *       "notes": "Priming with corn sugar",
+                 *       "priming_agent": "corn_sugar",
+                 *       "target_co2_vols": 2.4,
+                 *       "temp_c": 20
+                 *     }
+                 */
+                "application/json": components["schemas"]["CarbonationProfileCreate"];
+            };
+        };
+        responses: {
+            /** @description Record created */
+            201: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "method": "forced",
+                     *       "name": "Bottle conditioned ale",
+                     *       "notes": "Priming with corn sugar",
+                     *       "priming_agent": "corn_sugar",
+                     *       "target_co2_vols": 2.4,
+                     *       "temp_c": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarbonationProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    carbonation_profiles_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "method": "forced",
+                     *       "name": "Bottle conditioned ale",
+                     *       "notes": "Priming with corn sugar",
+                     *       "priming_agent": "corn_sugar",
+                     *       "target_co2_vols": 2.4,
+                     *       "temp_c": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarbonationProfile"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    carbonation_profiles_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    carbonation_profiles_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "temp_c": 20
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["CarbonationProfilePatch"];
+            };
+        };
+        responses: {
+            /** @description The updated record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "method": "forced",
+                     *       "name": "Bottle conditioned ale",
+                     *       "notes": "Priming with corn sugar",
+                     *       "priming_agent": "corn_sugar",
+                     *       "target_co2_vols": 2.4,
+                     *       "temp_c": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarbonationProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    carbonation_profiles_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    carbonation_profiles_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "method": "forced",
+                     *       "name": "Bottle conditioned ale",
+                     *       "notes": "Priming with corn sugar",
+                     *       "priming_agent": "corn_sugar",
+                     *       "target_co2_vols": 2.4,
+                     *       "temp_c": 20,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CarbonationProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_list: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+                /** @description Sort field; `-` prefix for descending */
+                sort?: "name" | "-name" | "updated_at" | "-updated_at";
+                /** @description Only records changed since this time, deleted ones included */
+                updated_since?: string;
+                /** @description Include deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "altitude_m": 0,
+                     *           "batch_volume_l": 20,
+                     *           "boil_off_l_per_h": 3,
+                     *           "boil_time_min": 60,
+                     *           "boil_volume_l": 26,
+                     *           "cooling_shrinkage_pct": 4,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "efficiency_pct": 72,
+                     *           "fermenter_loss_l": 0.5,
+                     *           "grain_absorption_l_per_kg": 1.04,
+                     *           "hop_utilization_pct": 100,
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "is_default": true,
+                     *           "mash_dead_space_l": 0,
+                     *           "mash_tun_mass_kg": 0,
+                     *           "mash_tun_specific_heat": 0.12,
+                     *           "mash_tun_volume_l": 30,
+                     *           "name": "Brew house",
+                     *           "notes": "Electric kettle, 30 L",
+                     *           "pre_trub_loss_l": 0,
+                     *           "top_up_l": 0,
+                     *           "trub_loss_l": 1,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1,
+                     *           "whirlpool_carry": false,
+                     *           "whirlpool_time_min": 0
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EquipmentList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "altitude_m": 0,
+                 *       "batch_volume_l": 20,
+                 *       "boil_off_l_per_h": 3,
+                 *       "boil_time_min": 60,
+                 *       "boil_volume_l": 26,
+                 *       "cooling_shrinkage_pct": 4,
+                 *       "efficiency_pct": 72,
+                 *       "fermenter_loss_l": 0.5,
+                 *       "grain_absorption_l_per_kg": 1.04,
+                 *       "hop_utilization_pct": 100,
+                 *       "is_default": true,
+                 *       "mash_dead_space_l": 0,
+                 *       "mash_tun_mass_kg": 0,
+                 *       "mash_tun_specific_heat": 0.12,
+                 *       "mash_tun_volume_l": 30,
+                 *       "name": "Brew house",
+                 *       "notes": "Electric kettle, 30 L",
+                 *       "pre_trub_loss_l": 0,
+                 *       "top_up_l": 0,
+                 *       "trub_loss_l": 1,
+                 *       "whirlpool_carry": false,
+                 *       "whirlpool_time_min": 0
+                 *     }
+                 */
+                "application/json": components["schemas"]["EquipmentCreate"];
+            };
+        };
+        responses: {
+            /** @description Record created */
+            201: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "altitude_m": 0,
+                     *       "batch_volume_l": 20,
+                     *       "boil_off_l_per_h": 3,
+                     *       "boil_time_min": 60,
+                     *       "boil_volume_l": 26,
+                     *       "cooling_shrinkage_pct": 4,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermenter_loss_l": 0.5,
+                     *       "grain_absorption_l_per_kg": 1.04,
+                     *       "hop_utilization_pct": 100,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "is_default": true,
+                     *       "mash_dead_space_l": 0,
+                     *       "mash_tun_mass_kg": 0,
+                     *       "mash_tun_specific_heat": 0.12,
+                     *       "mash_tun_volume_l": 30,
+                     *       "name": "Brew house",
+                     *       "notes": "Electric kettle, 30 L",
+                     *       "pre_trub_loss_l": 0,
+                     *       "top_up_l": 0,
+                     *       "trub_loss_l": 1,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1,
+                     *       "whirlpool_carry": false,
+                     *       "whirlpool_time_min": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Equipment"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_wizard: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "batch_volume_l": 20,
+                 *       "efficiency_pct": 72,
+                 *       "kettle_volume_l": 30,
+                 *       "method": "all_grain",
+                 *       "name": "My brew house"
+                 *     }
+                 */
+                "application/json": components["schemas"]["EquipmentWizardRequest"];
+            };
+        };
+        responses: {
+            /** @description Equipment created */
+            201: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "altitude_m": 0,
+                     *       "batch_volume_l": 20,
+                     *       "boil_off_l_per_h": 3,
+                     *       "boil_time_min": 60,
+                     *       "boil_volume_l": 26,
+                     *       "cooling_shrinkage_pct": 4,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermenter_loss_l": 0.5,
+                     *       "grain_absorption_l_per_kg": 1.04,
+                     *       "hop_utilization_pct": 100,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "is_default": true,
+                     *       "mash_dead_space_l": 0,
+                     *       "mash_tun_mass_kg": 0,
+                     *       "mash_tun_specific_heat": 0.12,
+                     *       "mash_tun_volume_l": 30,
+                     *       "name": "Brew house",
+                     *       "notes": "Electric kettle, 30 L",
+                     *       "pre_trub_loss_l": 0,
+                     *       "top_up_l": 0,
+                     *       "trub_loss_l": 1,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1,
+                     *       "whirlpool_carry": false,
+                     *       "whirlpool_time_min": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Equipment"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "altitude_m": 0,
+                     *       "batch_volume_l": 20,
+                     *       "boil_off_l_per_h": 3,
+                     *       "boil_time_min": 60,
+                     *       "boil_volume_l": 26,
+                     *       "cooling_shrinkage_pct": 4,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermenter_loss_l": 0.5,
+                     *       "grain_absorption_l_per_kg": 1.04,
+                     *       "hop_utilization_pct": 100,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "is_default": true,
+                     *       "mash_dead_space_l": 0,
+                     *       "mash_tun_mass_kg": 0,
+                     *       "mash_tun_specific_heat": 0.12,
+                     *       "mash_tun_volume_l": 30,
+                     *       "name": "Brew house",
+                     *       "notes": "Electric kettle, 30 L",
+                     *       "pre_trub_loss_l": 0,
+                     *       "top_up_l": 0,
+                     *       "trub_loss_l": 1,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1,
+                     *       "whirlpool_carry": false,
+                     *       "whirlpool_time_min": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Equipment"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "is_default": true
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["EquipmentPatch"];
+            };
+        };
+        responses: {
+            /** @description The updated record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "altitude_m": 0,
+                     *       "batch_volume_l": 20,
+                     *       "boil_off_l_per_h": 3,
+                     *       "boil_time_min": 60,
+                     *       "boil_volume_l": 26,
+                     *       "cooling_shrinkage_pct": 4,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermenter_loss_l": 0.5,
+                     *       "grain_absorption_l_per_kg": 1.04,
+                     *       "hop_utilization_pct": 100,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "is_default": true,
+                     *       "mash_dead_space_l": 0,
+                     *       "mash_tun_mass_kg": 0,
+                     *       "mash_tun_specific_heat": 0.12,
+                     *       "mash_tun_volume_l": 30,
+                     *       "name": "Brew house",
+                     *       "notes": "Electric kettle, 30 L",
+                     *       "pre_trub_loss_l": 0,
+                     *       "top_up_l": 0,
+                     *       "trub_loss_l": 1,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1,
+                     *       "whirlpool_carry": false,
+                     *       "whirlpool_time_min": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Equipment"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_calibrate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Equipment */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "observations": [
+                 *         {
+                 *           "malt_kg": 4.5,
+                 *           "measured_hot": false,
+                 *           "wort_extract_p": 12.5,
+                 *           "wort_volume_l": 20
+                 *         }
+                 *       ]
+                 *     }
+                 */
+                "application/json": components["schemas"]["CalibrationRequest"];
+            };
+        };
+        responses: {
+            /** @description The proposal */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "current_efficiency_pct": 72,
+                     *       "engine_version": "1.0.0",
+                     *       "equipment_id": "0192f1c07a3b7000800000000000000e",
+                     *       "observations": [
+                     *         {
+                     *           "brewhouse_yield_pct": 74.1,
+                     *           "source": "engine"
+                     *         }
+                     *       ],
+                     *       "proposal": {
+                     *         "based_on": 3,
+                     *         "efficiency_pct": 74,
+                     *         "spread_pct": 1.2
+                     *       },
+                     *       "reason": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CalibrationResponse"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Calculation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    equipment_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "altitude_m": 0,
+                     *       "batch_volume_l": 20,
+                     *       "boil_off_l_per_h": 3,
+                     *       "boil_time_min": 60,
+                     *       "boil_volume_l": 26,
+                     *       "cooling_shrinkage_pct": 4,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "efficiency_pct": 72,
+                     *       "fermenter_loss_l": 0.5,
+                     *       "grain_absorption_l_per_kg": 1.04,
+                     *       "hop_utilization_pct": 100,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "is_default": true,
+                     *       "mash_dead_space_l": 0,
+                     *       "mash_tun_mass_kg": 0,
+                     *       "mash_tun_specific_heat": 0.12,
+                     *       "mash_tun_volume_l": 30,
+                     *       "name": "Brew house",
+                     *       "notes": "Electric kettle, 30 L",
+                     *       "pre_trub_loss_l": 0,
+                     *       "top_up_l": 0,
+                     *       "trub_loss_l": 1,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1,
+                     *       "whirlpool_carry": false,
+                     *       "whirlpool_time_min": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Equipment"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    fermentation_profiles_list: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+                /** @description Sort field; `-` prefix for descending */
+                sort?: "name" | "-name" | "updated_at" | "-updated_at";
+                /** @description Only records changed since this time, deleted ones included */
+                updated_since?: string;
+                /** @description Include deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "name": "Ale, 18 C",
+                     *           "notes": "Primary then diacetyl rest",
+                     *           "steps": [
+                     *             {
+                     *               "duration_min": 10080,
+                     *               "name": "Primary",
+                     *               "ramp_min": 0,
+                     *               "temp_c": 18
+                     *             }
+                     *           ],
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FermentationProfileList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    fermentation_profiles_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "name": "Ale, 18 C",
+                 *       "notes": "Primary then diacetyl rest"
+                 *     }
+                 */
+                "application/json": components["schemas"]["FermentationProfileCreate"];
+            };
+        };
+        responses: {
+            /** @description Record created */
+            201: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Ale, 18 C",
+                     *       "notes": "Primary then diacetyl rest",
+                     *       "steps": [
+                     *         {
+                     *           "duration_min": 10080,
+                     *           "name": "Primary",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 18
+                     *         }
+                     *       ],
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FermentationProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    fermentation_profiles_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Ale, 18 C",
+                     *       "notes": "Primary then diacetyl rest",
+                     *       "steps": [
+                     *         {
+                     *           "duration_min": 10080,
+                     *           "name": "Primary",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 18
+                     *         }
+                     *       ],
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FermentationProfile"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    fermentation_profiles_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    fermentation_profiles_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "notes": "Primary then diacetyl rest"
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["FermentationProfilePatch"];
+            };
+        };
+        responses: {
+            /** @description The updated record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Ale, 18 C",
+                     *       "notes": "Primary then diacetyl rest",
+                     *       "steps": [
+                     *         {
+                     *           "duration_min": 10080,
+                     *           "name": "Primary",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 18
+                     *         }
+                     *       ],
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FermentationProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    fermentation_profiles_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    fermentation_profiles_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Ale, 18 C",
+                     *       "notes": "Primary then diacetyl rest",
+                     *       "steps": [
+                     *         {
+                     *           "duration_min": 10080,
+                     *           "name": "Primary",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 18
+                     *         }
+                     *       ],
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FermentationProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     ingredient_list: {
         parameters: {
             query?: {
@@ -7610,6 +12177,1545 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    mash_profiles_list: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+                /** @description Sort field; `-` prefix for descending */
+                sort?: "name" | "-name" | "updated_at" | "-updated_at";
+                /** @description Only records changed since this time, deleted ones included */
+                updated_since?: string;
+                /** @description Include deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "biab": false,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "grain_temp_c": 20,
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "name": "Single infusion",
+                     *           "notes": "Mash for pale ales",
+                     *           "sparge_temp_c": 76,
+                     *           "steps": [
+                     *             {
+                     *               "infusion_l": 15,
+                     *               "infusion_temp_c": 72,
+                     *               "kind": "infusion",
+                     *               "name": "Saccharification",
+                     *               "ramp_min": 0,
+                     *               "temp_c": 66,
+                     *               "time_min": 60
+                     *             }
+                     *           ],
+                     *           "target_ph": 5.4,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MashProfileList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    mash_profiles_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "biab": false,
+                 *       "grain_temp_c": 20,
+                 *       "name": "Single infusion",
+                 *       "notes": "Mash for pale ales",
+                 *       "sparge_temp_c": 76,
+                 *       "target_ph": 5.4
+                 *     }
+                 */
+                "application/json": components["schemas"]["MashProfileCreate"];
+            };
+        };
+        responses: {
+            /** @description Record created */
+            201: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "biab": false,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "grain_temp_c": 20,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Single infusion",
+                     *       "notes": "Mash for pale ales",
+                     *       "sparge_temp_c": 76,
+                     *       "steps": [
+                     *         {
+                     *           "infusion_l": 15,
+                     *           "infusion_temp_c": 72,
+                     *           "kind": "infusion",
+                     *           "name": "Saccharification",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 66,
+                     *           "time_min": 60
+                     *         }
+                     *       ],
+                     *       "target_ph": 5.4,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MashProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    mash_profiles_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "biab": false,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "grain_temp_c": 20,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Single infusion",
+                     *       "notes": "Mash for pale ales",
+                     *       "sparge_temp_c": 76,
+                     *       "steps": [
+                     *         {
+                     *           "infusion_l": 15,
+                     *           "infusion_temp_c": 72,
+                     *           "kind": "infusion",
+                     *           "name": "Saccharification",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 66,
+                     *           "time_min": 60
+                     *         }
+                     *       ],
+                     *       "target_ph": 5.4,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MashProfile"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    mash_profiles_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    mash_profiles_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "biab": false
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["MashProfilePatch"];
+            };
+        };
+        responses: {
+            /** @description The updated record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "biab": false,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "grain_temp_c": 20,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Single infusion",
+                     *       "notes": "Mash for pale ales",
+                     *       "sparge_temp_c": 76,
+                     *       "steps": [
+                     *         {
+                     *           "infusion_l": 15,
+                     *           "infusion_temp_c": 72,
+                     *           "kind": "infusion",
+                     *           "name": "Saccharification",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 66,
+                     *           "time_min": 60
+                     *         }
+                     *       ],
+                     *       "target_ph": 5.4,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MashProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    mash_profiles_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    mash_profiles_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "biab": false,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "grain_temp_c": 20,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "name": "Single infusion",
+                     *       "notes": "Mash for pale ales",
+                     *       "sparge_temp_c": 76,
+                     *       "steps": [
+                     *         {
+                     *           "infusion_l": 15,
+                     *           "infusion_temp_c": 72,
+                     *           "kind": "infusion",
+                     *           "name": "Saccharification",
+                     *           "ramp_min": 0,
+                     *           "temp_c": 66,
+                     *           "time_min": 60
+                     *         }
+                     *       ],
+                     *       "target_ph": 5.4,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MashProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    user_settings_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The settings */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "settings": {
+                     *         "temperature_unit": "fahrenheit",
+                     *         "unit_system": "us"
+                     *       },
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    user_settings_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "unit_system": "us"
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["SettingsValues"];
+            };
+        };
+        responses: {
+            /** @description The updated settings */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "settings": {
+                     *         "temperature_unit": "fahrenheit",
+                     *         "unit_system": "us"
+                     *       },
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    user_settings_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    user_settings_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored settings */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "settings": {
+                     *         "temperature_unit": "fahrenheit",
+                     *         "unit_system": "us"
+                     *       },
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9711,6 +15817,529 @@ export interface operations {
             };
         };
     };
+    settings_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The settings */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "settings": {
+                     *         "temperature_unit": "fahrenheit",
+                     *         "unit_system": "us"
+                     *       },
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    settings_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "unit_system": "us"
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["SettingsValues"];
+            };
+        };
+        responses: {
+            /** @description The updated settings */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "settings": {
+                     *         "temperature_unit": "fahrenheit",
+                     *         "unit_system": "us"
+                     *       },
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    settings_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    settings_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored settings */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "settings": {
+                     *         "temperature_unit": "fahrenheit",
+                     *         "unit_system": "us"
+                     *       },
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Settings"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     shares_create: {
         parameters: {
             query?: never;
@@ -10646,6 +17275,1970 @@ export interface operations {
                 headers: {
                     /** @description Seconds to wait before retrying */
                     "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    vessels_list: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+                /** @description Sort field; `-` prefix for descending */
+                sort?: "code" | "-code" | "updated_at" | "-updated_at";
+                /** @description Only records changed since this time, deleted ones included */
+                updated_since?: string;
+                /** @description Include deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "capacity_l": 30,
+                     *           "cleaning_status": "dirty",
+                     *           "code": "FV-1",
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "kind": "fermenter",
+                     *           "max_pressure_bar": 1,
+                     *           "name": "Conical fermenter",
+                     *           "notes": "Stainless steel",
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VesselList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    vessels_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "capacity_l": 30,
+                 *       "cleaning_status": "dirty",
+                 *       "code": "FV-1",
+                 *       "kind": "fermenter",
+                 *       "max_pressure_bar": 1,
+                 *       "name": "Conical fermenter",
+                 *       "notes": "Stainless steel"
+                 *     }
+                 */
+                "application/json": components["schemas"]["VesselCreate"];
+            };
+        };
+        responses: {
+            /** @description Record created */
+            201: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "capacity_l": 30,
+                     *       "cleaning_status": "dirty",
+                     *       "code": "FV-1",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "fermenter",
+                     *       "max_pressure_bar": 1,
+                     *       "name": "Conical fermenter",
+                     *       "notes": "Stainless steel",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Vessel"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    vessels_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "capacity_l": 30,
+                     *       "cleaning_status": "dirty",
+                     *       "code": "FV-1",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "fermenter",
+                     *       "max_pressure_bar": 1,
+                     *       "name": "Conical fermenter",
+                     *       "notes": "Stainless steel",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Vessel"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    vessels_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    vessels_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "name": "Conical fermenter"
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["VesselPatch"];
+            };
+        };
+        responses: {
+            /** @description The updated record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "capacity_l": 30,
+                     *       "cleaning_status": "dirty",
+                     *       "code": "FV-1",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "fermenter",
+                     *       "max_pressure_bar": 1,
+                     *       "name": "Conical fermenter",
+                     *       "notes": "Stainless steel",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Vessel"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    vessels_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    vessels_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "capacity_l": 30,
+                     *       "cleaning_status": "dirty",
+                     *       "code": "FV-1",
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "fermenter",
+                     *       "max_pressure_bar": 1,
+                     *       "name": "Conical fermenter",
+                     *       "notes": "Stainless steel",
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Vessel"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    water_profiles_list: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+                /** @description Sort field; `-` prefix for descending */
+                sort?: "name" | "-name" | "updated_at" | "-updated_at";
+                /** @description Only records changed since this time, deleted ones included */
+                updated_since?: string;
+                /** @description Include deleted records */
+                include_deleted?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "alkalinity_mg_l": 100,
+                     *           "bicarbonate_mg_l": 120,
+                     *           "calcium_mg_l": 50,
+                     *           "chloride_mg_l": 40,
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "deleted_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "kind": "source",
+                     *           "magnesium_mg_l": 10,
+                     *           "name": "Tap water",
+                     *           "notes": "Lab report of March",
+                     *           "ph": 7.4,
+                     *           "sodium_mg_l": 15,
+                     *           "source_document_id": "0192f1c07a3b7000800000000000000f",
+                     *           "sulfate_mg_l": 60,
+                     *           "updated_at": "2026-11-20T10:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WaterProfileList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    water_profiles_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "alkalinity_mg_l": 100,
+                 *       "bicarbonate_mg_l": 120,
+                 *       "calcium_mg_l": 50,
+                 *       "chloride_mg_l": 40,
+                 *       "kind": "source",
+                 *       "magnesium_mg_l": 10,
+                 *       "name": "Tap water",
+                 *       "notes": "Lab report of March",
+                 *       "ph": 7.4,
+                 *       "sodium_mg_l": 15,
+                 *       "source_document_id": "0192f1c07a3b7000800000000000000f",
+                 *       "sulfate_mg_l": 60
+                 *     }
+                 */
+                "application/json": components["schemas"]["WaterProfileCreate"];
+            };
+        };
+        responses: {
+            /** @description Record created */
+            201: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "alkalinity_mg_l": 100,
+                     *       "bicarbonate_mg_l": 120,
+                     *       "calcium_mg_l": 50,
+                     *       "chloride_mg_l": 40,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "source",
+                     *       "magnesium_mg_l": 10,
+                     *       "name": "Tap water",
+                     *       "notes": "Lab report of March",
+                     *       "ph": 7.4,
+                     *       "sodium_mg_l": 15,
+                     *       "source_document_id": "0192f1c07a3b7000800000000000000f",
+                     *       "sulfate_mg_l": 60,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WaterProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Precondition required */
+            428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    water_profiles_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` the client holds */
+                "If-None-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "alkalinity_mg_l": 100,
+                     *       "bicarbonate_mg_l": 120,
+                     *       "calcium_mg_l": 50,
+                     *       "chloride_mg_l": 40,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "source",
+                     *       "magnesium_mg_l": 10,
+                     *       "name": "Tap water",
+                     *       "notes": "Lab report of March",
+                     *       "ph": 7.4,
+                     *       "sodium_mg_l": 15,
+                     *       "source_document_id": "0192f1c07a3b7000800000000000000f",
+                     *       "sulfate_mg_l": 60,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WaterProfile"];
+                };
+            };
+            /** @description Not modified */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    water_profiles_delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    water_profiles_update: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Version `ETag` of the record (optional) */
+                "If-Match"?: string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                /**
+                 * @example {
+                 *       "calcium_mg_l": 50
+                 *     }
+                 */
+                "application/merge-patch+json": components["schemas"]["WaterProfilePatch"];
+            };
+        };
+        responses: {
+            /** @description The updated record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "alkalinity_mg_l": 100,
+                     *       "bicarbonate_mg_l": 120,
+                     *       "calcium_mg_l": 50,
+                     *       "chloride_mg_l": 40,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "source",
+                     *       "magnesium_mg_l": 10,
+                     *       "name": "Tap water",
+                     *       "notes": "Lab report of March",
+                     *       "ph": 7.4,
+                     *       "sodium_mg_l": 15,
+                     *       "source_document_id": "0192f1c07a3b7000800000000000000f",
+                     *       "sulfate_mg_l": 60,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WaterProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    water_profiles_history: {
+        parameters: {
+            query?: {
+                /** @description Page size */
+                limit?: number;
+                /** @description Cursor of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of history rows */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "created_by": "0192f1c07a3b7000800000000000000e",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "previous_value": {
+                     *             "efficiency_pct": 72
+                     *           },
+                     *           "record_version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ChangeHistoryList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    water_profiles_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Record */
+                id: string;
+                /** @description History row */
+                history_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored record */
+            200: {
+                headers: {
+                    /** @description Strong entity tag: the record version */
+                    ETag?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "alkalinity_mg_l": 100,
+                     *       "bicarbonate_mg_l": 120,
+                     *       "calcium_mg_l": 50,
+                     *       "chloride_mg_l": 40,
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "deleted_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "kind": "source",
+                     *       "magnesium_mg_l": 10,
+                     *       "name": "Tap water",
+                     *       "notes": "Lab report of March",
+                     *       "ph": 7.4,
+                     *       "sodium_mg_l": 15,
+                     *       "source_document_id": "0192f1c07a3b7000800000000000000f",
+                     *       "sulfate_mg_l": 60,
+                     *       "updated_at": "2026-11-20T10:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["WaterProfile"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
                     [name: string]: unknown;
                 };
                 content: {

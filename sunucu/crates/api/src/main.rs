@@ -8,6 +8,7 @@ use api::{
         AuthServices,
         email::{Mailer, MemoryMailer, SmtpMailer},
     },
+    engine::{EngineClient, EngineConfig},
     redis_client::Redis,
 };
 use common::{otel, shutdown::shutdown_signal};
@@ -69,6 +70,13 @@ async fn main() -> common::Result<()> {
     }
     if let Some(store) = store {
         state = state.with_store(store);
+    }
+    // The engine client calls `ENGINE_URL`; without it, calculation endpoints answer 503.
+    if let Some(engine_cfg) = EngineConfig::from_env()? {
+        let client = EngineClient::connect_lazy(engine_cfg, state.redis.clone())?;
+        state = state.with_engine(client);
+    } else {
+        tracing::warn!("ENGINE_URL not set; calculation endpoints answer 503");
     }
     let router = api::router(state);
 
