@@ -27,7 +27,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - T2.16: `EngineClient` is not connected to `AppState` yet (T2.20 and T2.21 connect it). The proto has no separate field for the intermediate values of "Nasıl hesaplandı".
 - T2.11: the web redirect code flow and CORS come in stage 3. The Apple refresh token comes in T2.31. Session events are not written to the audit log yet.
 - T2.15: the consumer is not registered yet (add `consumer::run` to `worker/src/background.rs`). Each SSE connection opens its own JetStream consumer. If scale makes it necessary, use a shared subscription.
-- T2.18: the file limits (25 MiB; jpeg, png, heic, webp, pdf, text) are a product proposal, to be verified. No worker job deletes the object bytes of deleted or incomplete uploads. The object store for k8s and Terraform comes in T2.32. There is no Azure Blob implementation (the interface is ready).
+- T2.18: the file limits (25 MiB; jpeg, png, heic, webp, pdf, text) are approved (2026-11-20). No worker job deletes the object bytes of deleted or incomplete uploads. The object store for k8s and Terraform comes in T2.32. There is no Azure Blob implementation (the interface is ready).
 - There is no seed data for tax rates. Rows start as `unverified`. Load them after a check against the official source (T2.8).
 - T2.22: a batch starts only from an `approved` version (also in Home mode). To start a batch from a draft, publish the version first.
 - T2.10 decisions (they apply until someone objects):
@@ -37,12 +37,16 @@ Each session reads this file first. Keep it to one page. Update it after each ta
   - `/v1/meta/fields` has `max-age=3600`. The request ID is UUIDv7.
   - Each new endpoint adds a row to the `OPERATIONS` table in `api/src/openapi.rs`.
   - The `/internal` listener and SSE come in later tasks.
-- T2.30: only `app_worker` writes `subscriptions` and `entitlements`. A decision is necessary about the path for manual corrections by support.
-- T2.17: the field limits are a product proposal (`verify: true`, to be verified). The catalog uses exact unit definitions. The engine uses the rounded constants of BeerSmith (difference approximately 1e-7). The decision about alignment is open.
+- T2.30: only `app_worker` writes `subscriptions` and `entitlements`. Support corrections go through the worker (decision 2026-11-20).
+- T2.17: the field limits are a product proposal (`verify: true`, to be verified). Decision 2026-11-20: change the engine to the exact unit definitions of the catalog (difference approximately 1e-7); keep the tolerance of the BeerSmith parity tests. Not done yet.
 - T2.28: the web payment provider is Paddle (O6). The Paddle adapter (webhook signature, events) is not written yet. Other open items are in ADR-0002 (legal and cost decisions for Terraform, cloud account O4, AppIcon).
 
 ## Recent decisions
 
+- 2026-11-20 (Oğuz approved Claude proposals):
+  - T2.30: support corrects a subscription or an entitlement through a request with a reason in the support panel. The worker applies the request and writes an audit log row. The API does not write these tables.
+  - T2.17: the engine will use the exact unit definitions of the catalog. The BeerSmith parity tests keep their tolerance. This is a task for the engine (not started).
+  - T2.18: the file limits are approved: 25 MiB; jpeg, png, heic, webp, pdf, text.
 - 2026-11-20 (O6, Oğuz): the web payment provider is Paddle (merchant of record).
 
 - 2026-11-14 (F2.1 decisions, Oğuz):
