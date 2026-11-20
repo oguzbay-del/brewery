@@ -3,7 +3,7 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task:** give the chain T2.19 → T2.21 → T2.22 to one agent (T2.20 can run in parallel). Work rules: root `CLAUDE.md` › Token verimliliği.
+**Next task:** give the chain T2.21 → T2.22 to one agent. In parallel: T2.26 can wait (it needs T2.21). T2.19, T2.20 and T2.28 are done. Work rules: root `CLAUDE.md` › Token verimliliği.
 - 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
 - 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
@@ -20,6 +20,10 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - Database roles: `app_owner` (owner, NOLOGIN), `app_api`, `app_worker`. `migrate` sets their passwords (`APP_*_PASSWORD`).
 
 ## Blockers
+
+- T2.19: ingredient writes use `recipe.edit` (there is no `library.edit`). Style guides, styles and mappings are read-only. The sample seed (`db` binary `seed-sample`) is not in compose or the Makefile. The source of real library data is open.
+- T2.20: the engine has no calibration function. The API calls `BrewhouseEfficiency` for each observation and averages the last 3 values if their spread is 5 points or less (`TODO`: move the rule into the engine; to be verified: brewhouse yield against `efficiency_pct`). The wizard defaults are to be verified. Boil values are equipment columns (no `boil_profiles` table). Workspace settings use `workspaces.version` as the ETag, so an unrelated update can make an optional `If-Match` fail.
+- T2.28: the iOS client must set `appAccountToken` to the workspace ID at purchase. The Paddle adapter is not written; the web payment route gives 503 in production. A grace period of 16 days is used when Apple sends no `gracePeriodExpiresDate`. Set `APPLE_BUNDLE_ID` in production. The trial is `workspaces.created_at` plus 1 month (no row).
 
 - T2.9: the measurement endpoint (T2.22) must call `db::validate_measured_at`. `purge_workspace` has no worker job yet. F2.1 items 8–12 are decided (2026-11-20, see Recent decisions). Their implementation is not done yet.
 
