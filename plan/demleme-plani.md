@@ -11,7 +11,7 @@ Oct 31, 2026 · @Oguz
 | Segmentler | Ev modu ve İşletme modu; tek uygulama, aynı veri modeli |
 | Kapsam | Tarif, demleme, fermantasyon, üretim, envanter, maliyet, mevzuat raporları |
 | Kapsam dışı | ERP katmanı: satış, sipariş, dağıtım, fıçı takibi, CRM, muhasebe. Topluluk ve herkese açık tarif paylaşımı (kullanıcılar mevcut platformları kullanır; bizde içe ve dışa aktarma var) |
-| Platformlar | iPad (tam), iPhone (demleme günü odaklı), web (Mac ve PC, tam). Apple Watch ileride opsiyonel |
+| Platformlar | iPad (tam), iPhone (demleme günü odaklı), web (Windows, macOS, Linux ve ChromeOS tarayıcıları, tam). Apple Watch ileride opsiyonel |
 | Desteklenmeyen | Android, ayrı Mac ve Windows uygulaması; Apple Watch şimdilik yok (tasarımı konseptte duruyor, ileride opsiyonel eklenebilir) |
 | Mimari | Apple: native SwiftUI. Web: React + TypeScript. Hesap motoru: Rust, yalnız sunucuda, ayrı servis; istemciler tek API ile kullanır. Altı katman, Kubernetes üzerinde, bulut sağlayıcıdan bağımsız |
 | Tasarım | Apple tasarım ilkeleri (HIG); her ekran benzer işi yapan bir Apple uygulamasından fikir alıyor. Uygulamanın (iOS ve web) tasarım sistemi ile pazarlama sitesinin tasarımı ayrıdır; ortak olan yalnız ad, logo, uygulama simgesi ve marka vurgu rengi |
@@ -390,6 +390,7 @@ Mevcut spesifikasyon BeerSmith formülleri ve Brewtarget karşılaştırmasında
 | Meyve eklemesi (şeker, hacim, asit) | Tarif editörü, mead/cider | İkisi | Sonra |
 | pH'ın sıcaklıkla düzeltilmesi; kaynatma sonrası ve fermentör pH'ı | Su ve pH, kalite | İkisi | Sonra |
 | Cider ve şarapta toplam asitlik (TA) ve asit ayarı | Mead/cider tarifi | İkisi | Sonra |
+| Mead besin hesabı (YAN, TOSNA) ve sülfit hesabı | Mead/cider tarifi | İkisi | Sonra |
 | Küçükler: Noonan IBU, Mosher ve Daniels renk, Terrill doğrusal/kübik ve Novotný refraktometre, BU:GU, hop yağı oranı | Ayarlar › Hesaplama, tarif editörü | İkisi | Sonra |
 | Ekşi ve karışık fermantasyon (kettle sour pH hedefi), fıçıda (barrel) yıllandırma | Tarif editörü, fermantasyon profili | İkisi | Sonra |
 
@@ -495,6 +496,7 @@ Tarif plan, parti gerçekleşendir; demleme gününde yapılan her değişiklik 
 - **Kağıttan aktarma:** ekran kağıtla aynı sıra ve numaralarla açılır; "plan gibi" tek dokunuş, yalnız farklı değerler yazılır.
 - **Belge tarama:** VisionKit ile tarama; QR kod taramayı partiye bağlar; aktarılan değerlerle yan yana görüntülenir. İşletme modunda zorunlu yapılabilir ve saklama süresince silinemez. Yazı tanıma ile ön doldurma sonraki aşama; değerler yalnız öneri olarak gelir.
 - **Denetim:** işletme modunda her düzeltme kim, ne zaman, önceki değer ile kaydedilir.
+  - **Kabul testi:** aynı partide iki cihazda (iPhone ve web) sayaçlar tutarlıdır; uyarı atlanmaz ve iki kez gelmez; demleme paketiyle sayaç ve ölçüm girişi internetsiz çalışır ve bağlantı gelince tek kayıt olarak gönderilir. Rakip uygulamalarda bu hatalar kullanıcı şikayeti olarak görüldü (karsilastirma/rakipler-2026-11.md).
 
 ## Fermantasyon ve eşzamanlı üretim
 
@@ -769,7 +771,7 @@ Kapsam dışı: distribütör satış verisi (VIP iDIG), CRM ve muhasebe. Bunlar
 
 ### Cihaz entegrasyonu ilkeleri
 
-- Her cihaz ayrı adaptörle bağlanır; tek üreticiye bağımlı olunmaz (Plaato üretimden kalktı, Brewfather desteği kaldırdı).
+- Her cihaz ayrı adaptörle bağlanır; tek üreticiye bağımlı olunmaz (Plaato üretimden kalktı; Brewfather'ın desteği sürdürüp sürdürmediği doğrulanacak, sitesi hâlâ listeliyor).
 - Önce yalnız okuma yapılır. Cihaza komut göndermek (ör. soğutmayı başlat) sonraki bir sürümde ve onayla gelir.
 - Sensörün bağlantısı koparsa okumalar sensörde veya ağ geçidinde biriktirilir, sonra sunucuya aktarılır (uygulamanın çevrimdışı çalışmasıyla ilgisi yok).
 - Her cihazın kendi erişim anahtarı olur (Güvenlik bölümündeki cihaz anahtarları).
