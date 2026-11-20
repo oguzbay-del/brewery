@@ -9,6 +9,7 @@ publish.workspace = true
 async-nats.workspace = true
 axum.workspace = true
 billing.workspace = true
+notifier.workspace = true
 chrono.workspace = true
 common = { workspace = true, features = ["http"] }
 db.workspace = true
@@ -25,6 +26,7 @@ uuid.workspace = true
 
 [dev-dependencies]
 http-body-util.workspace = true
+reqwest.workspace = true
 tower.workspace = true
 
 [lints]

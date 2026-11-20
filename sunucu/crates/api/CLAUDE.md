@@ -17,6 +17,7 @@
 - Search (`search.rs`, T2.27): `GET /v1/workspaces/{ws}/search?q=&types=&limit=`. Full-text over recipes, batches, ingredients and stock lots (`search` columns, `simple`). Each branch filters on `workspace_id`; library ingredients are included. Words match as prefix; the whole text also runs as a web search query.
 - Recently deleted (`trash.rs`, T2.37): `GET .../trash` lists the soft-deleted recipes, batches, ingredients and equipment of the last 30 days. `POST .../trash/{kind}/{id}/restore` restores one. After 30 days restore answers `409`. Each kind needs the write permission of its own endpoints.
 - Devices (`devices.rs`, T2.25): `/v1/workspaces/{ws}/devices*` (register, pair with a batch, rotate key, delete). The key is shown once on create and rotate. Only its SHA-256 digest is stored. Rotation needs the second step when the auth services run, and writes the audit event `device_key.renew`. `INGEST_PUBLIC_URL` (optional) gives the full data address in the answer.
+- Notifications (`notifications.rs`, T2.24): inbox, actions (approve, postpone, ignore), notification preferences (quiet hours, daily summary) and alert rules. The worker creates and delivers notifications (`notifier` crate).
 - Port `PORT` (default 8080).
 
 ## What it does not touch

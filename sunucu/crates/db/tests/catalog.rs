@@ -37,6 +37,9 @@ const OWNER_LOOKUP: &[&str] = &[
     "audit_heads",
     "push_targets",
     "devices",
+    "notifications",
+    "reminders",
+    "notification_preferences",
 ];
 
 /// Shared-library tables (`workspace_id` NULL = shared row): `app_owner` seeds them through the

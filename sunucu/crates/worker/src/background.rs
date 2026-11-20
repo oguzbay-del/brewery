@@ -82,6 +82,26 @@ pub async fn run(stop: watch::Receiver<bool>) {
         std::sync::Arc::new(devices::apply::ReadingHandler),
         stopped(stop.clone()),
     ));
+    let deliverer = std::sync::Arc::new(notifier::deliver::Deliverer::from_env());
+    let alert_task = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(notifier::ALERT_CONSUMER, &notifier::alert_filter()),
+        std::sync::Arc::new(notifier::alert::AlertHandler),
+        stopped(stop.clone()),
+    ));
+    let delivery_task = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(notifier::DELIVERY_CONSUMER, &notifier::delivery_filter()),
+        std::sync::Arc::new(notifier::deliver::DeliveryHandler::new(deliverer.clone())),
+        stopped(stop.clone()),
+    ));
+    let notify_tick = tokio::spawn(notifier::tick::run(
+        pool.clone(),
+        deliverer.clone(),
+        stop.clone(),
+    ));
     let janitor = {
         let pool = pool.clone();
         let stop = stop.clone();
@@ -101,6 +121,9 @@ pub async fn run(stop: watch::Receiver<bool>) {
         relay_task,
         subscription_task,
         device_task,
+        alert_task,
+        delivery_task,
+        notify_tick,
         janitor,
         maintenance_task
     );
