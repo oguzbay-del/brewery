@@ -21,6 +21,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Blockers
 
+- T2.38: the engine accepts `conversion_efficiency_pct` and `lauter_efficiency_pct` (proto fields 14, 15). The equipment endpoints (T2.20) do not have these fields yet and do not send them to the engine. Add them in T2.21 or in a small follow-up task. The scripts in `karsilastirma/testler/` still use the rounded BeerSmith constants (not part of the parity tests).
+
 - T2.19: ingredient writes use `recipe.edit` (there is no `library.edit`). Style guides, styles and mappings are read-only. The sample seed (`db` binary `seed-sample`) is not in compose or the Makefile. The source of real library data is open.
 - T2.20: the engine has no calibration function. The API calls `BrewhouseEfficiency` for each observation and averages the last 3 values if their spread is 5 points or less (`TODO`: move the rule into the engine; to be verified: brewhouse yield against `efficiency_pct`). The wizard defaults are to be verified. Boil values are equipment columns (no `boil_profiles` table). Workspace settings use `workspaces.version` as the ETag, so an unrelated update can make an optional `If-Match` fail.
 - T2.28: the iOS client must set `appAccountToken` to the workspace ID at purchase. The Paddle adapter is not written; the web payment route gives 503 in production. A grace period of 16 days is used when Apple sends no `gracePeriodExpiresDate`. Set `APPLE_BUNDLE_ID` in production. The trial is `workspaces.created_at` plus 1 month (no row).
@@ -42,7 +44,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
   - Each new endpoint adds a row to the `OPERATIONS` table in `api/src/openapi.rs`.
   - The `/internal` listener and SSE come in later tasks.
 - T2.30: only `app_worker` writes `subscriptions` and `entitlements`. Support corrections go through the worker (decision 2026-11-20).
-- T2.17: the field limits are a product proposal (`verify: true`, to be verified). Decision 2026-11-20: change the engine to the exact unit definitions of the catalog (difference approximately 1e-7); keep the tolerance of the BeerSmith parity tests. Not done yet.
+- T2.17: the field limits are a product proposal (`verify: true`, to be verified). Done in T2.38 (2026-11-20): the engine and the Python references use the exact unit definitions; 235 vectors were generated again; the tolerance did not change.
 - T2.28: the web payment provider is Paddle (O6). The Paddle adapter (webhook signature, events) is not written yet. Other open items are in ADR-0002 (legal and cost decisions for Terraform, cloud account O4, AppIcon).
 
 ## Recent decisions
