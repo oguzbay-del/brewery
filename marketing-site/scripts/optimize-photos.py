@@ -80,7 +80,11 @@ if not features.check("avif"):
     raise RuntimeError("Pillow AVIF encoder is unavailable; install a Pillow build with AVIF support.")
 
 # Existing editorial sources remain the default for pages and non-curated features.
+curated_keys = set(CURATED_MAP.values())
 for file in sorted(src.glob("*.jpg")) + sorted(src.glob("*.png")):
+    # Do not regenerate superseded low-quality feature derivatives from the old sources.
+    if file.stem in curated_keys:
+        continue
     image = Image.open(file).convert("RGB")
     is_feature = file.stem.startswith("feature-")
     if is_feature:
