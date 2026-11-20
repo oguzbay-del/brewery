@@ -17,6 +17,7 @@ export const stageLabelTr: Record<FeatureStage, string> = {
 export const featuresTr: FeaturePage[] = [
   {
     slug: "recipe-design",
+    modules: ["core"],
     title: "Reçete tasarımı ve yönetimi",
     eyebrow: "REÇETELER",
     summary: "Rehberli ilk reçeteden derinlemesine yapılandırılabilen profesyonel formülasyona kadar GRISTORA, reçeteleri sürümden sürüme anlaşılır tutar.",
@@ -31,6 +32,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "brewing-calculations",
+    modules: ["core"],
     title: "Bira hesaplamaları",
     eyebrow: "HESAP MOTORU",
     summary: "Ortak ve sunucu tarafında çalışan bir hesap motoru web ve Apple uygulamalarına hizmet eder; girdiler nettir, birimler tutarlıdır ve her sonucun arkasında bir açıklama bulunur.",
@@ -45,6 +47,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "water-mash-yeast",
+    modules: ["core"],
     title: "Su, mayşe ve maya",
     eyebrow: "SÜREÇ TASARIMI",
     summary: "Su kimyasını, mayşe adımlarını ve maya hazırlığını birbirinden bağımsız hesaplayıcılar olarak değil, reçetenin bağlantılı parçaları olarak planlayın.",
@@ -58,6 +61,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "brew-day",
+    modules: ["core","production"],
     title: "Demleme günü ve üretim kayıtları",
     eyebrow: "DEMLEME GÜNÜ",
     summary: "Demleme günü çalışma alanı, reçete planını gerçekte olandan ayrı tutar; ıslak ekipmanın ve kâğıt kayıtların yanında da kullanılabilir kalır.",
@@ -71,6 +75,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "fermentation-monitoring",
+    modules: ["core","production"],
     title: "Fermantasyon ve parti takibi",
     eyebrow: "FERMANTASYON",
     summary: "Her partiyi demleme gününden fermantasyona, olgunlaştırmaya ve paketlemeye kadar; cihaz okumaları ya da elle yapılan ölçümlerle izleyin.",
@@ -85,6 +90,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "equipment-calibration",
+    modules: ["devices","production"],
     title: "Ekipman ve kalibrasyon",
     eyebrow: "EKİPMAN",
     summary: "Ekipman profilleri, bir ev kurulumunun ya da profesyonel demhanenin gerçek davranışını yansıtır ve ölçülen parti sonuçlarıyla gelişir.",
@@ -97,6 +103,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "planning-scheduling",
+    modules: ["production"],
     title: "Planlama ve çizelgeleme",
     eyebrow: "İŞİ PLANLAYIN",
     summary: "Hedef paketleme tarihinden geriye doğru planlayın, her adım için gereken süreyi anlayın ve partilerin ekipman kullanılabilirliğine nasıl sığdığını görün.",
@@ -110,6 +117,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "inventory-costing",
+    modules: ["stock","cost-reports"],
     title: "Envanter, malzemeler ve maliyet",
     eyebrow: "MALZEME VE MALİYET",
     summary: "Malzemeleri basit bir ev stok listesinden profesyonel lot düzeyinde izlenebilirliğe kadar yönetin; reçete ve parti maliyetleri gerçek malzeme değerlerine dayanır.",
@@ -123,6 +131,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "production-management",
+    modules: ["production"],
     title: "Bira üretim yönetimi",
     eyebrow: "İŞLETME MODU",
     summary: "Küçük bira üreticileri için bir üretim çalışma alanı; reçetelere, partilere, tanklara, kişilere ve kayıtlara odaklanır, genel amaçlı bir ERP değildir.",
@@ -137,6 +146,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "quality-laboratory",
+    modules: ["quality"],
     title: "Kalite, laboratuvar ve serbest bırakma",
     eyebrow: "KALİTE YÖNETİMİ",
     summary: "Profesyonel kalite akışları; ürün spesifikasyonları, laboratuvar sonuçları, tadım ve paketlemeden önce kayda geçirilen bir serbest bırakma kararı etrafında kurulur.",
@@ -150,6 +160,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "packaging-compliance",
+    modules: ["quality","tax-compliance"],
     title: "Paketleme, CIP ve uyumluluk",
     eyebrow: "PAKETLEME VE KAYITLAR",
     summary: "Paketleme kayıtları, kap temizliği ve yargı bölgesine duyarlı raporlama profesyonel üretimi destekler; sistemin neleri yapmadığı da açıkça belirtilir.",
@@ -164,6 +175,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "team-notifications",
+    modules: ["team"],
     title: "Ekipler, roller ve bildirimler",
     eyebrow: "İNSANLAR VE İŞ AKIŞLARI",
     summary: "Tek bir çalışma alanı hem tek başına çalışan bir biracıyı hem de çok rollü bir üretim ekibini destekler; bildirimler doğru kişiye yönlendirilir ve eylemler kaydedilir.",
@@ -177,6 +189,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "connected-devices",
+    modules: ["devices","connections"],
     title: "Bağlı cihazlar ve entegrasyonlar",
     eyebrow: "BAĞLI CİHAZLAR",
     summary: "Salt okunur fermantasyon cihazı verileri, profesyonel sensör ve endüstriyel ağ geçidi desteğiyle birlikte sunulur.",
@@ -190,6 +203,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "imports-exports-tools",
+    modules: ["core","connections"],
     title: "İçe aktarma, dışa aktarma ve bira yapım araçları",
     eyebrow: "TAŞINABİLİRLİK VE ARAÇLAR",
     summary: "Mevcut reçete çalışmalarınızı GRISTORA'ya taşıyın, gerektiğinde verilerinizi dışarı alın ve reçete ile parti akışlarının yanında odaklı bira yapım araçlarını kullanın.",
@@ -203,6 +217,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "platform-security-data",
+    modules: ["connections"],
     title: "Platform, güvenlik ve veri sahipliği",
     eyebrow: "PLATFORM",
     summary: "Ürün, Apple cihazları ve masaüstü web arasında tek bir bağlantılı sistemdir; ortak bir sunucu tarafı motoru ve açık veri sahipliği denetimleri vardır.",
@@ -219,6 +234,7 @@ export const featuresTr: FeaturePage[] = [
   },
   {
     slug: "analytics-reports",
+    modules: ["cost-reports"],
     title: "Raporlar, içgörüler ve sürdürülebilirlik",
     eyebrow: "RAPORLAMA VE İÇGÖRÜLER",
     summary: "Operasyonel raporlama; partileri, reçeteleri ve bira üretimini kapsar.",
