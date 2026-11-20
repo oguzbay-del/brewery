@@ -102,7 +102,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "equipment-calibration",
-    modules: ["devices"],
+    modules: ["core"],
     title: "Equipment & calibration",
     eyebrow: "EQUIPMENT",
     summary: "Equipment profiles reflect the real behaviour of a home setup or professional brewhouse, and improve through measured batch outcomes.",
@@ -115,7 +115,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "planning-scheduling",
-    modules: ["production"],
+    modules: ["core","production"],
     title: "Planning & scheduling",
     eyebrow: "PLAN THE WORK",
     summary: "Plan backwards from a target packaging date, understand the time required for each step and see how batches fit around equipment availability.",
@@ -172,7 +172,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "packaging-compliance",
-    modules: ["production","quality","tax-compliance"],
+    modules: ["production","tax-compliance"],
     title: "Packaging, CIP & compliance",
     eyebrow: "PACKAGING AND RECORDS",
     summary: "Packaging records, vessel cleaning and jurisdiction-aware reporting support professional production, with clear boundaries around what the system does not do.",
@@ -187,7 +187,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "team-notifications",
-    modules: ["team"],
+    modules: ["core","team"],
     title: "Teams, roles & notifications",
     eyebrow: "PEOPLE AND WORKFLOWS",
     summary: "One workspace supports a solo brewer and a multi-role production team, with notifications routed to the right person and actions recorded.",
