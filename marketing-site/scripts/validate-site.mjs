@@ -155,9 +155,7 @@ for (const file of htmlFiles) {
   const isCanonicalProduction = siteOrigin === "https://gristora.com";
   assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
   if (rel.startsWith("tr/")) {
-    assert(/<html lang="tr"/.test(html), rel + ": Turkish preview page declares lang=\"tr\"");
-  } else {
-    assert(isCanonicalProduction ? robotsMeta === "index, follow" : robotsMeta === "noindex, nofollow", rel + ": indexing policy matches production vs preview host");
+    assert(/<html lang="tr"/.test(html), rel + ": Turkish page declares lang=\"tr\"");
   }
   if (metaDescription) {
     const length = decodeHtml(metaDescription).trim().length;
