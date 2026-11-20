@@ -392,6 +392,7 @@ Mevcut spesifikasyon BeerSmith formülleri ve Brewtarget karşılaştırmasında
 | pH'ın sıcaklıkla düzeltilmesi; kaynatma sonrası ve fermentör pH'ı | Su ve pH, kalite | İkisi | Sonra |
 | Cider ve şarapta toplam asitlik (TA) ve asit ayarı | Mead/cider tarifi | İkisi | Sonra |
 | Mead besin hesabı (YAN, TOSNA) ve sülfit hesabı | Mead/cider tarifi | İkisi | Sonra |
+| Hedeften tarif çözücü (OG, IBU, renk, ABV hedeflerinden malzeme miktarları) | Tarif editörü, klonlama | İkisi | Ev 2. sürüm |
 | Küçükler: Noonan IBU, Mosher ve Daniels renk, Terrill doğrusal/kübik ve Novotný refraktometre, BU:GU, hop yağı oranı | Ayarlar › Hesaplama, tarif editörü | İkisi | Sonra |
 | Ekşi ve karışık fermantasyon (kettle sour pH hedefi), fıçıda (barrel) yıllandırma | Tarif editörü, fermantasyon profili | İkisi | Sonra |
 
@@ -659,6 +660,8 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Geçmiş partilerden ekipman kalibrasyonu | Ölçülen verim, kaynatma kaybı ve kayıplardan profili güncelleme önerisi | İkisi | Ev MVP |
 | Kurallar ve otomatik uyarılar | "SG 3 gündür sabit", "sıcaklık 22 °C'yi geçti", "dry hop zamanı" | İkisi | Ev MVP |
 | Tarif ve sürüm karşılaştırma | İki tarifi veya sürümü yan yana, malzeme ve tahmin farkları | İkisi | Ev MVP |
+| Hedeften tarif ve klonlama | Kullanıcı hedef OG, IBU, renk ve ABV ile malzeme listesini girer, hesap motoru miktarları önerir; bilinen bir birayı klonlamak bunun bir kullanımıdır (üreticinin yayımladığı değerler ve malzeme adları). Yapay zekâ kullanmaz; "Nasıl hesaplandı" ile açıklanır | İkisi | Ev 2. sürüm |
+| Stil istatistikleri | Açık tariflerden stil başına tipik malt oranları ve şerbetçiotu zamanlaması (model değil, basit istatistik); sihirbaz varsayılanlarında ve "Tarif kontrolü" uyarılarında kullanılır. Verinin kullanım koşulları ayrıca kararlaştırılır | İkisi | Sonra |
 | Kendi ajanını bağla (MCP) | Kullanıcının kendi yapay zekâ ajanı tarif, parti ve stokla çalışır; sayıları hesap motoru üretir (Platformlar ve mimari › API ve istemci iletişimi) | İkisi | Ev 2. sürüm |
 | Başka uygulamadan taşıma: tarif ve ekipman | Brewfather JSON yedeği ve BeerSmith .bsmx dosyasından tarif ve ekipman; eşleştirme adımında kaynak ile bizim OG, IBU ve renk yan yana | İkisi | Ev MVP |
 | Başka uygulamadan taşıma: parti ve stok | Geçmiş partiler, ölçümler ve stok aynı yedekten | İkisi | Ev 2. sürüm |

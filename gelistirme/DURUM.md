@@ -51,6 +51,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
+- 2026-11-20 (Oğuz): we do not train an own model now. Added to the plan: a target-to-recipe solver in the engine (clone a beer uses it; no AI) in Home version 2, and style statistics from open recipes (simple statistics, not a model) later. A model on our own measurement data stays an idea in plan › Analitik modeller.
+
 - 2026-11-20 (Oğuz): no AI recipe generator of our own. The user can connect an own agent through a remote MCP server (OAuth 2.1; the engine calculates the numbers; no publish, approve or delete). ADR in stage 5, release in Home version 2. Tasks M1–M5.
 
 - 2026-11-20 (Oğuz): the daily audit digests stay retention-locked in the object store for 400 days (T2.39).
