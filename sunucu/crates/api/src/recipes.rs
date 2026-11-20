@@ -1075,6 +1075,9 @@ fn build_request(v: &Value) -> proto::CalculateRecipeRequest {
         }),
         options: Some(options),
         ibu_equation: ibu_equation as i32,
+        // Both unset: the engine uses its default (T2.38). See the TODO above.
+        conversion_efficiency_pct: None,
+        lauter_efficiency_pct: None,
     }
 }
 
