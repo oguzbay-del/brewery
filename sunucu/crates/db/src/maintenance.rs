@@ -197,3 +197,46 @@ pub async fn delete_old_external_events(pool: &PgPool, cutoff: DateTime<Utc>) ->
         .await?;
     Ok(done.rows_affected())
 }
+
+/// Result of [`purge_expired_soft_deletes`] for one kind of record.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PurgeCount {
+    /// `batch`, `recipe`, `equipment` or `ingredient`.
+    pub kind: String,
+    /// Records deleted for good.
+    pub purged: i64,
+    /// Expired records that stay soft-deleted because something still uses them
+    /// (F2.1 decision 9).
+    pub kept: i64,
+}
+
+/// Deletes for good the batches, recipes, equipment and user ingredients of every workspace
+/// that were soft-deleted before `cutoff` (T2.37: 30 days). A record that is in use stays and
+/// counts as `kept`. Running it again deletes nothing more. Returns the totals by kind.
+pub async fn purge_expired_soft_deletes(
+    pool: &PgPool,
+    cutoff: DateTime<Utc>,
+) -> Result<Vec<PurgeCount>> {
+    let mut totals: Vec<PurgeCount> = Vec::new();
+    for workspace_id in list_workspace_ids(pool).await? {
+        let mut tx = pool.begin().await?;
+        set_workspace_id(&mut tx, workspace_id).await?;
+        let rows = sqlx::query("SELECT kind, purged, kept FROM purge_expired_soft_deletes($1)")
+            .bind(cutoff)
+            .fetch_all(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        for r in &rows {
+            let kind: String = r.try_get("kind")?;
+            let (purged, kept): (i64, i64) = (r.try_get("purged")?, r.try_get("kept")?);
+            match totals.iter_mut().find(|t| t.kind == kind) {
+                Some(t) => {
+                    t.purged += purged;
+                    t.kept += kept;
+                }
+                None => totals.push(PurgeCount { kind, purged, kept }),
+            }
+        }
+    }
+    Ok(totals)
+}

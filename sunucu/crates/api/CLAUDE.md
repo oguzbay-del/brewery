@@ -15,6 +15,7 @@
 - Batches (`batches.rs`, `brew_day.rs`, T2.22): batch from an `approved` version, steps, actual amounts with deviation, measurements with a client UUID (safe to repeat), stage transitions, summary, calendar, backward plan, and the signed brew day package. The package key is `BREW_PACKAGE_KEY` (or `_FILE`) and `BREW_PACKAGE_KEY_ID`. Without a key, the package endpoints answer `503`.
 - Stock (`stock.rs`, T2.23): lots, the movement ledger (`receive`, `consume`, `adjust`, `count`), totals from the ledger, `negative_stock` warning, deduction for a batch (safe to repeat, oldest lot first), and the shopping list from a recipe version minus stock. Write permission is `stock.move`. The module does not add migrations (tables are in `0010` and `0100`).
 - Search (`search.rs`, T2.27): `GET /v1/workspaces/{ws}/search?q=&types=&limit=`. Full-text over recipes, batches, ingredients and stock lots (`search` columns, `simple`). Each branch filters on `workspace_id`; library ingredients are included. Words match as prefix; the whole text also runs as a web search query.
+- Recently deleted (`trash.rs`, T2.37): `GET .../trash` lists the soft-deleted recipes, batches, ingredients and equipment of the last 30 days. `POST .../trash/{kind}/{id}/restore` restores one. After 30 days restore answers `409`. Each kind needs the write permission of its own endpoints.
 - Port `PORT` (default 8080).
 
 ## What it does not touch

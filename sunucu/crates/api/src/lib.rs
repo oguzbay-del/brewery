@@ -29,6 +29,7 @@ pub mod search;
 pub mod settings;
 pub mod stock;
 pub mod subscription;
+pub mod trash;
 
 use std::sync::Arc;
 

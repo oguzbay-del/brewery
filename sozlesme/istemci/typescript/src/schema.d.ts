@@ -2085,6 +2085,40 @@ export interface paths {
         patch: operations["tag_update"];
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/trash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the records deleted in the last 30 days that the caller may restore. */
+        get: operations["trash_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/trash/{kind}/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restores a deleted record within 30 days of its deletion. */
+        post: operations["trash_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/vessels": {
         parameters: {
             query?: never;
@@ -6138,6 +6172,33 @@ export interface components {
         Transition: {
             /** @description The next stage, or `cancelled`. */
             to_stage: string;
+        };
+        /** @description A record in the trash. */
+        TrashItem: {
+            /**
+             * Format: date-time
+             * @description When the record was deleted.
+             */
+            deleted_at: string;
+            /**
+             * Format: uuid
+             * @description Record id.
+             */
+            id: string;
+            /** @description `recipe`, `batch`, `ingredient` or `equipment`. */
+            kind: string;
+            /** @description Name of the record. */
+            name: string;
+            /**
+             * Format: date-time
+             * @description Last instant a restore works.
+             */
+            restorable_until: string;
+        };
+        /** @description The trash, newest deletion first. */
+        TrashList: {
+            /** @description Deleted records of the last 30 days. */
+            items: components["schemas"]["TrashItem"][];
         };
         /** @description Body of an unplanned ingredient. */
         UnplannedActual: {
@@ -29020,6 +29081,244 @@ export interface operations {
             };
             /** @description Validation failed */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    trash_list: {
+        parameters: {
+            query?: {
+                /** @description Only this kind */
+                kind?: string;
+                /** @description Largest number of items (1..=200) */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted records */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "deleted_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000a",
+                     *           "kind": "recipe",
+                     *           "name": "House IPA",
+                     *           "restorable_until": "2026-12-20T10:00:00Z"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TrashList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    trash_restore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description `recipe`, `batch`, `ingredient` or `equipment` */
+                kind: string;
+                /** @description Record */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The restored record */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "deleted_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000a",
+                     *       "kind": "recipe",
+                     *       "name": "House IPA",
+                     *       "restorable_until": "2026-12-20T10:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TrashItem"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

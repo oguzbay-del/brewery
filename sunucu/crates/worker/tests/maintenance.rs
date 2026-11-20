@@ -484,3 +484,80 @@ async fn a_job_runs_once_per_interval_and_retries_after_an_error(pool: PgPool) {
             .unwrap()
     );
 }
+
+async fn insert_soft_deleted(pool: &PgPool, ws: Uuid, n: u128, days_ago: i32, with_lot: bool) {
+    let ing = id(1000 + n);
+    sqlx::query(
+        "INSERT INTO ingredients (id, workspace_id, kind, name, source, deleted_at)
+         VALUES ($1, $2, 'hop', 'H', 'user', now() - make_interval(days => $3))",
+    )
+    .bind(ing)
+    .bind(ws)
+    .bind(days_ago)
+    .execute(pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO recipes (id, workspace_id, name, deleted_at)
+         VALUES ($1, $2, 'R', now() - make_interval(days => $3))",
+    )
+    .bind(id(2000 + n))
+    .bind(ws)
+    .bind(days_ago)
+    .execute(pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO equipment (id, workspace_id, name, batch_volume_l, efficiency_pct, deleted_at)
+         VALUES ($1, $2, 'E', 20, 70, now() - make_interval(days => $3))",
+    )
+    .bind(id(3000 + n))
+    .bind(ws)
+    .bind(days_ago)
+    .execute(pool)
+    .await
+    .unwrap();
+    if with_lot {
+        sqlx::query("INSERT INTO stock_lots (id, workspace_id, ingredient_id) VALUES ($1, $2, $3)")
+            .bind(id(4000 + n))
+            .bind(ws)
+            .bind(ing)
+            .execute(pool)
+            .await
+            .unwrap();
+    }
+}
+
+async fn count(pool: &PgPool, table: &'static str) -> i64 {
+    sqlx::query_scalar(sqlx::AssertSqlSafe(format!("SELECT count(*) FROM {table}")))
+        .fetch_one(pool)
+        .await
+        .unwrap()
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn expired_soft_deletes_are_purged_unless_in_use(pool: PgPool) {
+    let (worker, a, b) = setup(&pool).await;
+    // Workspace a: old (31 days) and recent (10 days); workspace b: old, with a stock lot.
+    insert_soft_deleted(&pool, a, 1, 31, false).await;
+    insert_soft_deleted(&pool, a, 2, 10, false).await;
+    insert_soft_deleted(&pool, b, 3, 40, true).await;
+
+    let totals = retention::purge_soft_deletes(&worker, Utc::now())
+        .await
+        .unwrap();
+    let get = |k: &str| totals.iter().find(|t| t.kind == k).unwrap().clone();
+    assert_eq!((get("recipe").purged, get("recipe").kept), (2, 0));
+    assert_eq!((get("equipment").purged, get("equipment").kept), (2, 0));
+    // The ingredient with a stock lot stays (F2.1 decision 9).
+    assert_eq!((get("ingredient").purged, get("ingredient").kept), (1, 1));
+    assert_eq!(count(&pool, "recipes").await, 1);
+    assert_eq!(count(&pool, "equipment").await, 1);
+    assert_eq!(count(&pool, "ingredients").await, 2);
+
+    // A second run deletes nothing more.
+    let again = retention::purge_soft_deletes(&worker, Utc::now())
+        .await
+        .unwrap();
+    assert!(again.iter().all(|t| t.purged == 0));
+}

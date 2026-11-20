@@ -14,6 +14,21 @@ pub const PAYLOAD_DAYS: i64 = 30;
 /// Age at which an event row (its delivery ID) is deleted.
 pub const ID_MONTHS: u32 = 13;
 
+/// Days a soft-deleted recipe, batch, ingredient or equipment record can be restored (T2.37).
+pub const SOFT_DELETE_DAYS: i64 = 30;
+
+/// Deletes for good the records that were soft-deleted more than [`SOFT_DELETE_DAYS`] days
+/// before `now`. A record that is in use stays (F2.1 decision 9).
+pub async fn purge_soft_deletes(
+    pool: &PgPool,
+    now: DateTime<Utc>,
+) -> Result<Vec<db::maintenance::PurgeCount>> {
+    Ok(
+        db::maintenance::purge_expired_soft_deletes(pool, now - Duration::days(SOFT_DELETE_DAYS))
+            .await?,
+    )
+}
+
 /// Rows touched by one run.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RetentionReport {

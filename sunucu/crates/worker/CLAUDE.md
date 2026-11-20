@@ -8,6 +8,7 @@
   - Daily: `audit_anchor::write_daily_digest` writes the audit chain heads and the workspace deletion records to `audit-digests/YYYY-MM-DD.json` with an object lock.
   - Weekly: `audit_anchor::verify_against_digests` verifies each chain and compares it with the digests of the last 8 days. A mismatch is a finding (`last_status = 'findings'` and an error log).
   - Daily: `retention::run` clears the payload of unprocessed `external_events` after 30 days and deletes the rows after 13 months.
+  - Daily: `retention::purge_soft_deletes` deletes recipes, batches, equipment and user ingredients that were soft-deleted more than 30 days ago (T2.37, `db::maintenance::purge_expired_soft_deletes`). A record that is in use stays soft-deleted (F2.1 decision 9).
   - Settings: `S3_*`, `S3_DIGEST_BUCKET` (separate bucket), `S3_OBJECT_LOCK_MODE` (`governance` or `compliance`). Without `S3_ENDPOINT`, only the retention job runs.
 
 ## What it does not touch

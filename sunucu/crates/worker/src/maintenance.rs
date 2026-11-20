@@ -17,6 +17,8 @@ pub const JOB_DIGEST: &str = "audit-digest-daily";
 pub const JOB_VERIFY: &str = "audit-digest-verify-weekly";
 /// Job name: retention of external events.
 pub const JOB_RETENTION: &str = "external-events-retention";
+/// Job name: permanent delete of records soft-deleted more than 30 days ago (T2.37).
+pub const JOB_SOFT_DELETES: &str = "soft-delete-purge";
 
 const DAY: Duration = Duration::from_hours(23);
 const WEEK: Duration = Duration::from_hours(7 * 24 - 1);
@@ -115,6 +117,19 @@ pub async fn tick(pool: &PgPool, store: Option<&dyn ObjectStore>) {
             )
         });
         record(pool, JOB_RETENTION, outcome).await;
+    }
+    if claim(pool, JOB_SOFT_DELETES, DAY).await {
+        let outcome = retention::purge_soft_deletes(pool, now)
+            .await
+            .map(|counts| {
+                let detail = counts
+                    .iter()
+                    .map(|c| format!("{}: purged {}, kept {}", c.kind, c.purged, c.kept))
+                    .collect::<Vec<_>>()
+                    .join("; ");
+                (RunStatus::Ok, detail)
+            });
+        record(pool, JOB_SOFT_DELETES, outcome).await;
     }
 }
 

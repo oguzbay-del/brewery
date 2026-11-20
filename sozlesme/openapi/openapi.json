@@ -7836,6 +7836,58 @@
         ],
         "type": "object"
       },
+      "TrashItem": {
+        "description": "A record in the trash.",
+        "properties": {
+          "deleted_at": {
+            "description": "When the record was deleted.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Record id.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "description": "`recipe`, `batch`, `ingredient` or `equipment`.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name of the record.",
+            "type": "string"
+          },
+          "restorable_until": {
+            "description": "Last instant a restore works.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "name",
+          "deleted_at",
+          "restorable_until"
+        ],
+        "type": "object"
+      },
+      "TrashList": {
+        "description": "The trash, newest deletion first.",
+        "properties": {
+          "items": {
+            "description": "Deleted records of the last 30 days.",
+            "items": {
+              "$ref": "#/components/schemas/TrashItem"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "UnplannedActual": {
         "additionalProperties": false,
         "description": "Body of an unplanned ingredient.",
@@ -61981,6 +62033,575 @@
         "x-permission": "recipe.edit"
       }
     },
+    "/v1/workspaces/{workspace_id}/trash": {
+      "get": {
+        "operationId": "trash_list",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only this kind",
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Largest number of items (1..=200)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "items": [
+                    {
+                      "deleted_at": "2026-11-20T10:00:00Z",
+                      "id": "0192f1c07a3b7000800000000000000a",
+                      "kind": "recipe",
+                      "name": "House IPA",
+                      "restorable_until": "2026-12-20T10:00:00Z"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TrashList"
+                }
+              }
+            },
+            "description": "Deleted records"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lists the records deleted in the last 30 days that the caller may restore.",
+        "tags": [
+          "trash"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/trash/{kind}/{id}/restore": {
+      "post": {
+        "operationId": "trash_restore",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "`recipe`, `batch`, `ingredient` or `equipment`",
+            "in": "path",
+            "name": "kind",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Record",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "deleted_at": "2026-11-20T10:00:00Z",
+                  "id": "0192f1c07a3b7000800000000000000a",
+                  "kind": "recipe",
+                  "name": "House IPA",
+                  "restorable_until": "2026-12-20T10:00:00Z"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/TrashItem"
+                }
+              }
+            },
+            "description": "The restored record"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Restores a deleted record within 30 days of its deletion.",
+        "tags": [
+          "trash"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      }
+    },
     "/v1/workspaces/{workspace_id}/vessels": {
       "get": {
         "operationId": "vessels_list",
@@ -69036,6 +69657,10 @@
     {
       "description": "Global search over recipes, batches, ingredients and stock",
       "name": "search"
+    },
+    {
+      "description": "Recently deleted records (30 days) and their restore",
+      "name": "trash"
     }
   ]
 }
