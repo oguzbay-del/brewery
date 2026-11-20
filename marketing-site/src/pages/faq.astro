@@ -1,4 +1,5 @@
 ---
+import PagePhoto from "../components/PagePhoto.astro";
 import FontPreload from "../components/FontPreload.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -100,6 +101,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <h1>Good questions deserve <em>clear answers.</em></h1>
         <p>Professional brewery teams are GRISTORA's primary audience. Homebrewers have a separate secondary path.</p>
       </section>
+      <div class="page-photo-band"><PagePhoto name="faq-hero" lang="en" eager /></div>
       <section class="faq-directory section-pad">
         <div class="shell faq-directory-layout">
           <aside class="faq-directory-aside"><p class="eyebrow"><span class="eyebrow-line"></span> QUICK CONTEXT</p><h2>Methods and units, <em>explained plainly.</em></h2><p>The technical principles explain how GRISTORA treats methods, units and measurements.</p><a class="text-link" href={`${base}technical-principles/`}>Read technical principles <span aria-hidden="true">→</span></a></aside>

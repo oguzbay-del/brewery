@@ -1,0 +1,19 @@
+---
+import { photos, type PhotoKey } from "../data/photos";
+interface Props { name: PhotoKey; lang?: "en" | "tr"; eager?: boolean; class?: string }
+const { name, lang = "en", eager = false, class: cls = "" } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const feature = name.startsWith("feature-");
+const widths = feature ? [640, 960, 1152] : [640, 960, 1408];
+const [w, h] = feature ? [1152, 768] : [1408, 768];
+const set = (ext: string) => widths.map((x) => `${base}images/photos/${name}-${x}.${ext} ${x}w`).join(", ");
+const sizes = "(min-width: 1240px) 1180px, calc(100vw - 32px)";
+---
+<figure class={`page-photo ${feature ? "page-photo-feature" : ""} ${cls}`}>
+  <picture>
+    <source type="image/avif" srcset={set("avif")} sizes={sizes} />
+    <source type="image/webp" srcset={set("webp")} sizes={sizes} />
+    <img src={`${base}images/photos/${name}-960.webp`} width={w} height={h} alt={photos[name][lang]}
+      loading={eager ? "eager" : "lazy"} decoding="async" fetchpriority={eager ? "high" : undefined} />
+  </picture>
+</figure>

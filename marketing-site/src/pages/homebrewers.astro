@@ -1,4 +1,5 @@
 ---
+import PagePhoto from "../components/PagePhoto.astro";
 import FontPreload from "../components/FontPreload.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -80,7 +81,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <a class="button button-primary" href="#homebrewing-workflow">Explore the homebrewing workflow <span aria-hidden="true">↗</span></a>
       </section>
       <section class="shell audience-hero">
-        <figure class="audience-hero-art"><img src={`${base}images/illustrations/homebrewing-workspace.svg`} width="1200" height="600" alt="Original illustration of a homebrewing bench with a stainless brew kettle, glass fermenter, hydrometer, malt and hops." loading="eager" /><figcaption>Homebrewing, from ingredients to fermentation · original illustration</figcaption></figure>
+        <PagePhoto name="homebrewers-hero" lang="en" eager class="audience-hero-photo" />
       </section>
       </div>
       <section class="audience-page-section section-pad" id="homebrewing-workflow">

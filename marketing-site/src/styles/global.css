@@ -436,3 +436,11 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; 
 .lang-switch { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--forest); padding: 8px 10px; border: 1px solid rgba(80, 76, 65, .25); border-radius: 2px; text-decoration: none; }
 .lang-switch:hover { color: var(--amber); }
 @media (max-width: 1100px) { .lang-switch { margin-left: auto; } }
+
+/* Representative photos (LCH-07) */
+.page-photo { margin: 0 auto; padding: 0 0 8px; max-width: 1180px; }
+.page-photo img { display: block; width: 100%; height: auto; aspect-ratio: 1408 / 768; object-fit: cover; border-radius: var(--radius-card, 18px); background: #e9e4da; }
+.page-photo-feature img { aspect-ratio: 3 / 2; }
+.page-photo-band { padding: 0 16px; margin-block: 8px 40px; }
+@media (max-width: 640px) { .page-photo-band { margin-block: 4px 28px; } .page-photo img { aspect-ratio: 4 / 3; } }
+.audience-hero-photo { max-width: none; padding: 0; }

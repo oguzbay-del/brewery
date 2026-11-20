@@ -1,4 +1,5 @@
 ---
+import PagePhoto from "../components/PagePhoto.astro";
 import FontPreload from "../components/FontPreload.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -68,6 +69,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <h1>Technical clarity is <em>part of the craft.</em></h1>
         <p>GRISTORA is designed around brewing information that can be understood, checked and discussed. These principles describe the standard it sets.</p>
       </section>
+      <div class="page-photo-band"><PagePhoto name="technical-principles-hero" lang="en" eager /></div>
       <section class="principles-section section-pad">
         <div class="shell">
           <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> DESIGN PRINCIPLES</p><h2>Trust comes from <em>showing the work.</em></h2><p>Good technical software makes assumptions visible and leaves room for human judgement.</p></div>

@@ -1,4 +1,5 @@
 ---
+import PagePhoto from "../../../components/PagePhoto.astro";
 import FontPreload from "../../../components/FontPreload.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
@@ -61,6 +62,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <p class="feature-lead">GRISTORA önce profesyonel bira üreticisi iş akışları etrafında tasarlanır: reçete standartları, üretim planlaması, parti kayıtları ve kalite bağlamı. Ev biracıları için ayrı bir yol da ürünün parçasıdır.</p>
         <div class="feature-hero-meta"><span>16 ürün alanı</span><span>Önce işletme · Ev biracıları yolu ayrı</span></div>
       </section>
+      <div class="page-photo-band"><PagePhoto name="features-hero" lang="tr" eager /></div>
       <section class="feature-directory section-pad">
         <div class="shell">
           <div class="section-heading feature-section-heading">

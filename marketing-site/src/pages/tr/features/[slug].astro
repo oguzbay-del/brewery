@@ -1,4 +1,6 @@
 ---
+import PagePhoto from "../../../components/PagePhoto.astro";
+import { featurePhoto } from "../../../data/photos";
 import FontPreload from "../../../components/FontPreload.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
@@ -71,6 +73,7 @@ const audienceText = feature.audiences.map((audience) => audienceLabelTr[audienc
           {audienceText.map((audience) => <span class="feature-tag">{audience}</span>)}
         </div>
       </section>
+      {featurePhoto(feature.slug) && <div class="page-photo-band"><PagePhoto name={featurePhoto(feature.slug)!} lang="tr" eager /></div>}
       <section class="feature-detail-body section-pad">
         <div class="shell feature-detail-layout">
           <div class="feature-detail-sections">

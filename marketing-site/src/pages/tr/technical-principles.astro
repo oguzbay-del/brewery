@@ -1,4 +1,5 @@
 ---
+import PagePhoto from "../../components/PagePhoto.astro";
 import FontPreload from "../../components/FontPreload.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
@@ -68,6 +69,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <h1>Teknik netlik, <em>zanaatın bir parçasıdır.</em></h1>
         <p>GRISTORA, anlaşılabilen, kontrol edilebilen ve tartışılabilen bira bilgisi etrafında tasarlanmıştır. Bu ilkeler, koyduğu standardı tanımlar.</p>
       </section>
+      <div class="page-photo-band"><PagePhoto name="technical-principles-hero" lang="tr" eager /></div>
       <section class="principles-section section-pad">
         <div class="shell">
           <div class="section-heading"><p class="eyebrow"><span class="eyebrow-line"></span> TASARIM İLKELERİ</p><h2>Güven, <em>işi göstermekten gelir.</em></h2><p>İyi teknik yazılım varsayımları görünür kılar ve insan muhakemesine yer bırakır.</p></div>

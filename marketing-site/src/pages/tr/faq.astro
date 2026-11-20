@@ -1,4 +1,5 @@
 ---
+import PagePhoto from "../../components/PagePhoto.astro";
 import FontPreload from "../../components/FontPreload.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
 import SiteFooter from "../../components/SiteFooter.astro";
@@ -100,6 +101,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <h1>İyi sorular <em>net yanıtları hak eder.</em></h1>
         <p>Profesyonel bira üreticisi ekipleri GRISTORA'nın birincil kitlesidir. Ev biracılarının ayrı bir ikincil yolu vardır.</p>
       </section>
+      <div class="page-photo-band"><PagePhoto name="faq-hero" lang="tr" eager /></div>
       <section class="faq-directory section-pad">
         <div class="shell faq-directory-layout">
           <aside class="faq-directory-aside"><p class="eyebrow"><span class="eyebrow-line"></span> KISA BAĞLAM</p><h2>Yöntemler ve birimler, <em>sade biçimde açıklandı.</em></h2><p>Teknik ilkeler, GRISTORA'nın yöntemlere, birimlere ve ölçümlere nasıl yaklaştığını açıklar.</p><a class="text-link" href={`${base}tr/technical-principles/`}>Teknik ilkeleri okuyun <span aria-hidden="true">→</span></a></aside>
