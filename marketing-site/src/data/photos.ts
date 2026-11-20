@@ -23,8 +23,21 @@ export const photos = {
   "feature-inventory-costing": { en: "Stacked malt sacks on pallets and boxed supplies on shelves in a brewery storeroom.", tr: "Bira fabrikası deposunda paletlere istiflenmiş malt çuvalları ve raflarda kutulu malzemeler." },
 } as const;
 
-/** Photo for a feature slug, or undefined while the photo is pending. */
+// Temporary stand-ins until the owner sends the dedicated photos (#16, #18, #21–#27).
+const featureFallback: Record<string, PhotoKey> = {
+  "fermentation-monitoring": "home-hero",
+  "planning-scheduling": "feature-production-management",
+  "quality-laboratory": "technical-principles-hero",
+  "packaging-compliance": "pricing-hero",
+  "team-notifications": "breweries-hero",
+  "connected-devices": "feature-equipment-calibration",
+  "imports-exports-tools": "faq-hero",
+  "platform-security-data": "features-hero",
+  "analytics-reports": "compare-hero",
+};
+
+/** Photo for a feature slug: the dedicated photo, else a temporary stand-in. */
 export function featurePhoto(slug: string): PhotoKey | undefined {
   const key = `feature-${slug}`;
-  return key in photos ? (key as PhotoKey) : undefined;
+  return key in photos ? (key as PhotoKey) : featureFallback[slug];
 }
