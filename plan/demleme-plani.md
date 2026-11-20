@@ -140,6 +140,7 @@ Arayüz iki kez yazılır (SwiftUI ve React); başka hiçbir şey iki kez yazıl
 - **Tekrar güvenliği:** kayıt oluşturan her istek istemcinin ürettiği istek anahtarını (idempotency key) taşır. Bağlantı kopup yeniden gönderilen istek ikinci kayıt oluşturmaz. Demleme günü ölçüm kuyruğundaki UUID kuralının bütün API'ye yayılmışı.
 - **Dış olaylar:** cihaz webhook'ları, App Store sunucu bildirimleri (abonelik yenileme, iade), web ödeme sağlayıcısının webhook'ları ve GitHub (destek talepleri) aynı alım servisinden girer: imza doğrulanır, kuyruğa yazılır, aynı olay iki kez işlenmez. Abonelik ve yetki durumu yalnız sunucuda tutulur.
 - **Demleme paketi bütünlüğü:** paket sunucuda imzalanır ve sürelidir (ör. 72 saat) \[doğrulanacak\]; kuyruktaki ölçümler paket kimliğiyle gönderilir, sunucu paketin o partiye ait olduğunu denetler.
+- **Kendi ajanını bağla (MCP):** kullanıcı kendi yapay zekâ ajanını (Claude, ChatGPT veya başka bir MCP istemcisi) uzak MCP sunucusuyla bağlar. Sunucu uygulama katmanında, `/v1` API'nin üstünde ince bir katmandır; iş kuralları yeniden yazılmaz. Giriş OAuth 2.1 (PKCE) ve kapsamlarla yapılır; bağlantı Ayarlar › Bağlı uygulamalar'dan kaldırılır. Araçlar: okuma ve arama (tarif, parti, fermantasyon verisi, stok), hesaplama, taslak tarif, ölçüm ekleme, alışveriş listesi. Ajan sayı yazmaz, sayıları hesap motoru üretir; ajan yayımlayamaz, onaylayamaz, silemez. Aynı yetki matrisi, çalışma alanı ayrımı ve hız sınırı geçerlidir; maliyet alanları role göre gizlidir; her işlem denetim kaydına "MCP üzerinden" yazılır. Dil modeli maliyeti kullanıcınındır; biz model çalıştırmayız. ADR Aşama 5'te, yayın Ev 2. sürümde; İşletme açık API'si aynı OAuth altyapısını kullanır.
 
 ### Destek paneli (iç kullanım)
 
@@ -658,6 +659,7 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Geçmiş partilerden ekipman kalibrasyonu | Ölçülen verim, kaynatma kaybı ve kayıplardan profili güncelleme önerisi | İkisi | Ev MVP |
 | Kurallar ve otomatik uyarılar | "SG 3 gündür sabit", "sıcaklık 22 °C'yi geçti", "dry hop zamanı" | İkisi | Ev MVP |
 | Tarif ve sürüm karşılaştırma | İki tarifi veya sürümü yan yana, malzeme ve tahmin farkları | İkisi | Ev MVP |
+| Kendi ajanını bağla (MCP) | Kullanıcının kendi yapay zekâ ajanı tarif, parti ve stokla çalışır; sayıları hesap motoru üretir (Platformlar ve mimari › API ve istemci iletişimi) | İkisi | Ev 2. sürüm |
 | Başka uygulamadan taşıma: tarif ve ekipman | Brewfather JSON yedeği ve BeerSmith .bsmx dosyasından tarif ve ekipman; eşleştirme adımında kaynak ile bizim OG, IBU ve renk yan yana | İkisi | Ev MVP |
 | Başka uygulamadan taşıma: parti ve stok | Geçmiş partiler, ölçümler ve stok aynı yedekten | İkisi | Ev 2. sürüm |
 | Son silinenler | Kullanıcı sildiği tarif, parti, malzeme ve ekipmanı 30 gün içinde kendisi geri getirir | İkisi | Ev MVP |

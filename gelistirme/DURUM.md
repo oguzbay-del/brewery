@@ -51,6 +51,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
+- 2026-11-20 (Oğuz): no AI recipe generator of our own. The user can connect an own agent through a remote MCP server (OAuth 2.1; the engine calculates the numbers; no publish, approve or delete). ADR in stage 5, release in Home version 2. Tasks M1–M5.
+
 - 2026-11-20 (Oğuz): the daily audit digests stay retention-locked in the object store for 400 days (T2.39).
 
 - 2026-11-20 (competitor review, Oğuz approved Claude proposals; report `karsilastirma/rakipler-2026-11.md`):

@@ -132,6 +132,24 @@ The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus 
 | 5 Home MVP beta | Cloud setup, beta | Interviews and golden test are complete; independent security review |
 | 6 Business | Business screens | Step by step |
 
+## Bring your own agent: MCP (stage 5 and Home version 2)
+
+Decision (Oğuz, 2026-11-20): the user can connect an own AI agent (Claude, ChatGPT or another MCP client) through a remote MCP server. We do not run a language model. The design is in plan › Platformlar ve mimari › API ve istemci iletişimi.
+
+Rules:
+- The MCP server is a thin layer on the `/v1` API. Do not write business rules again in it.
+- The agent does not write calculated numbers. The engine calculates them.
+- The agent cannot publish, approve or delete.
+- Do not start these tasks before the given stage.
+
+| Task | Description | Done criterion | Depends on | Stage | Owner | Model | Status |
+|---|---|---|---|---|---|---|---|
+| M1 | ADR for OAuth 2.1 and MCP: authorization server (PKCE, dynamic client registration as the MCP specification requires), scopes, consent screen, token lifetime and revocation; the list of MCP tools and their scopes; audit entries "via MCP"; rate limits; the risk of prompt injection through user text in tool results; the same OAuth base for the Business open API | `adr/00xx-mcp-ve-oauth.md`; plan and ADR agree | T2.35 | 5 | Claude | Opus | todo |
+| M2 | OAuth 2.1 authorization server in the API: authorization code with PKCE, client registration, scopes, consent, refresh and revocation; "Connected apps" endpoints | Endpoint tests: a token without a scope gives 403; a revoked token gives 401; a token of a different workspace gives 404 | M1 | Home v2 | Claude | Sonnet | todo |
+| M3 | Remote MCP server (Rust, Streamable HTTP): tools for search and read (recipes, batches, fermentation data, stock), calculation through the engine, draft recipe, add measurement, shopping list; each tool calls the `/v1` services | Contract tests for each tool; a publish, approve or delete request is not possible; each call writes an audit row | M2 | Home v2 | Claude | Sonnet | todo |
+| M4 | "Connected apps" screen on web and iOS (Settings): list, scopes, last use, remove; update the concept, the screen list and the design system | Playwright and iOS UI test; `araclar/tutarlilik.py` is clean | M2 | Home v2 | Claude | Sonnet | todo |
+| M5 | Independent security review of OAuth and MCP (token handling, scope checks, prompt injection, data leaks between workspaces) | Report `gelistirme/raporlar/M5-mcp-guvenlik.md`; critical and important findings are closed | M3, M4 | Home v2 | Claude | Fable | todo |
+
 ## Brand: GRISTORA in the product (stages 3–5)
 
 Decision (Oğuz, 2026-11-20): the product name is GRISTORA. The domain is gristora.com. The app (iOS and web app) has its own design system. The marketing site (`marketing-site/`) has a different design. Only the name, the logo, the app icon and the brand accent color are shared. The approved logo files are in `marketing-site/public/brand/` (`marketing-site/BRAND-ASSETS.md`).
