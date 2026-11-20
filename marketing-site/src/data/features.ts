@@ -1,4 +1,5 @@
 export type FeatureAudience = "Breweries" | "Homebrewers";
+export type FeatureModule = "core" | "devices" | "stock" | "production" | "quality" | "cost-reports" | "tax-compliance" | "team" | "connections";
 export type FeatureStage =
   | "Homebrew MVP"
   | "Homebrew second release"
@@ -20,6 +21,7 @@ export type FeaturePage = {
   summary: string;
   audiences: FeatureAudience[];
   stages: FeatureStage[];
+  modules: FeatureModule[];
   sections: FeatureSection[];
   note?: string;
 };
@@ -27,6 +29,7 @@ export type FeaturePage = {
 export const features: FeaturePage[] = [
   {
     slug: "recipe-design",
+    modules: ["core"],
     title: "Recipe design & management",
     eyebrow: "RECIPES",
     summary: "From a guided first recipe to a deeply configurable professional formulation, GRISTORA keeps recipes understandable from version to version.",
@@ -41,6 +44,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "brewing-calculations",
+    modules: ["core"],
     title: "Brewing calculations",
     eyebrow: "THE CALCULATION ENGINE",
     summary: "A shared, server-side calculation engine serves the web and Apple apps, with clear inputs, consistent units and an explanation behind every result.",
@@ -55,6 +59,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "water-mash-yeast",
+    modules: ["core"],
     title: "Water, mash & yeast",
     eyebrow: "PROCESS DESIGN",
     summary: "Plan water chemistry, mash steps and yeast preparation as connected parts of the recipe rather than isolated calculators.",
@@ -68,6 +73,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "brew-day",
+    modules: ["core","production"],
     title: "Brew day & production records",
     eyebrow: "BREW DAY",
     summary: "A brew-day workspace keeps the recipe plan separate from what actually happened, while remaining usable beside wet equipment and paper records.",
@@ -81,6 +87,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "fermentation-monitoring",
+    modules: ["core","production"],
     title: "Fermentation & batch tracking",
     eyebrow: "FERMENTATION",
     summary: "Follow each batch from brew day through fermentation, conditioning and packaging, using device readings or manual measurements.",
@@ -95,6 +102,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "equipment-calibration",
+    modules: ["devices","production"],
     title: "Equipment & calibration",
     eyebrow: "EQUIPMENT",
     summary: "Equipment profiles reflect the real behaviour of a home setup or professional brewhouse, and improve through measured batch outcomes.",
@@ -107,6 +115,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "planning-scheduling",
+    modules: ["production"],
     title: "Planning & scheduling",
     eyebrow: "PLAN THE WORK",
     summary: "Plan backwards from a target packaging date, understand the time required for each step and see how batches fit around equipment availability.",
@@ -120,6 +129,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "inventory-costing",
+    modules: ["stock","cost-reports"],
     title: "Inventory, ingredients & costing",
     eyebrow: "MATERIALS AND COST",
     summary: "Manage ingredients from a simple home stock list to professional lot-level traceability, with recipe and batch costs grounded in actual material values.",
@@ -133,6 +143,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "production-management",
+    modules: ["production"],
     title: "Brewery production management",
     eyebrow: "BUSINESS MODE",
     summary: "A production workspace for small breweries, focused on recipes, batches, tanks, people and records—not a general-purpose ERP.",
@@ -147,6 +158,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "quality-laboratory",
+    modules: ["quality"],
     title: "Quality, laboratory & release",
     eyebrow: "QUALITY MANAGEMENT",
     summary: "Professional quality workflows are built around product specifications, lab results, tasting and a recorded release decision before packaging.",
@@ -160,6 +172,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "packaging-compliance",
+    modules: ["quality","tax-compliance"],
     title: "Packaging, CIP & compliance",
     eyebrow: "PACKAGING AND RECORDS",
     summary: "Packaging records, vessel cleaning and jurisdiction-aware reporting support professional production, with clear boundaries around what the system does not do.",
@@ -174,6 +187,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "team-notifications",
+    modules: ["team"],
     title: "Teams, roles & notifications",
     eyebrow: "PEOPLE AND WORKFLOWS",
     summary: "One workspace supports a solo brewer and a multi-role production team, with notifications routed to the right person and actions recorded.",
@@ -187,6 +201,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "connected-devices",
+    modules: ["devices","connections"],
     title: "Connected devices & integrations",
     eyebrow: "CONNECTED BREWING",
     summary: "Read-only fermentation device data sits alongside professional sensor and industrial gateway support.",
@@ -200,6 +215,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "imports-exports-tools",
+    modules: ["core","connections"],
     title: "Import, export & brewing tools",
     eyebrow: "PORTABILITY AND UTILITIES",
     summary: "Bring existing recipe work into GRISTORA, move your data out when needed and use focused brewing tools alongside recipe and batch workflows.",
@@ -213,6 +229,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "platform-security-data",
+    modules: ["connections"],
     title: "Platform, security & data ownership",
     eyebrow: "PLATFORM",
     summary: "The product is one connected system across Apple devices and desktop web, with a shared server-side engine and explicit data ownership controls.",
@@ -229,6 +246,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "analytics-reports",
+    modules: ["cost-reports"],
     title: "Reports, insights & sustainability",
     eyebrow: "REPORTING AND INSIGHTS",
     summary: "Operational reporting covers batches, recipes and brewery production.",
