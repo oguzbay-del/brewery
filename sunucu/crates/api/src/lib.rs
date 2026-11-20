@@ -25,6 +25,7 @@ pub mod recipes;
 pub mod redis_client;
 pub mod request;
 pub mod routes;
+pub mod search;
 pub mod settings;
 pub mod stock;
 pub mod subscription;

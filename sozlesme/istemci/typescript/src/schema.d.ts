@@ -1690,6 +1690,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Searches recipes, batches, ingredients and stock of the workspace. */
+        get: operations["search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/settings": {
         parameters: {
             query?: never;
@@ -5345,6 +5362,30 @@ export interface components {
             document: components["schemas"]["ScannedDocument"];
             /** @description How to upload the bytes. */
             upload: components["schemas"]["UploadInstructions"];
+        };
+        /** @description A search hit. */
+        SearchHit: {
+            /**
+             * Format: uuid
+             * @description Identifier of the record.
+             */
+            id: string;
+            /**
+             * Format: float
+             * @description Rank, higher is better.
+             */
+            rank: number;
+            /** @description Second line: batch code, ingredient kind, lot code. */
+            subtitle?: string | null;
+            /** @description Name of the record (for stock: the ingredient). */
+            title: string;
+            /** @description `recipe`, `batch`, `ingredient` or `stock`. */
+            type: string;
+        };
+        /** @description The search answer. */
+        SearchResults: {
+            /** @description The hits, best first. No paging: use `limit`. */
+            items: components["schemas"]["SearchHit"][];
         };
         /** @description Details of a session. */
         SessionDetail: {
@@ -25060,6 +25101,134 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    search: {
+        parameters: {
+            query: {
+                /** @description Text, 1 to 200 characters */
+                q: string;
+                /** @description Comma separated: `recipe`, `batch`, `ingredient`, `stock` (default all) */
+                types?: string;
+                /** @description Number of hits, 1..=50 (default 20) */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The hits, best first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "rank": 0.06,
+                     *           "subtitle": null,
+                     *           "title": "House IPA",
+                     *           "type": "recipe"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SearchResults"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

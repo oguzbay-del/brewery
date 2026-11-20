@@ -422,11 +422,13 @@ fn hide_cost(ctx: &RequestContext, lot: &mut StockLot) {
 
 async fn fetch_lot(tx: &mut PgConnection, id: Uuid, lock: bool) -> ApiResult<StockLot> {
     let lock = if lock { " FOR UPDATE OF l" } else { "" };
-    sqlx::query_as(sqlx::AssertSqlSafe(format!("{LOT_SQL} AND l.id = $1{lock}")))
-        .bind(id)
-        .fetch_optional(tx)
-        .await?
-        .ok_or_else(not_found)
+    sqlx::query_as(sqlx::AssertSqlSafe(format!(
+        "{LOT_SQL} AND l.id = $1{lock}"
+    )))
+    .bind(id)
+    .fetch_optional(tx)
+    .await?
+    .ok_or_else(not_found)
 }
 
 fn warning_of(lot: &StockLot) -> Option<StockWarning> {
@@ -689,7 +691,10 @@ pub async fn stock_receive(
     if !UNITS.contains(&unit.as_str()) {
         return Err(issue("/unit", "invalid_value"));
     }
-    let code = body.lot_code.clone().unwrap_or_else(|| "default".to_owned());
+    let code = body
+        .lot_code
+        .clone()
+        .unwrap_or_else(|| "default".to_owned());
     if code.is_empty() || code.chars().count() > 100 {
         return Err(issue("/lot_code", "invalid_length"));
     }
@@ -782,7 +787,11 @@ pub async fn stock_move(
 ) -> ApiResult<Response> {
     ctx.require(MOVE_PERMISSION)?;
     let ws = workspace(&ctx)?;
-    let reason = body.reason.as_deref().map(str::trim).filter(|r| !r.is_empty());
+    let reason = body
+        .reason
+        .as_deref()
+        .map(str::trim)
+        .filter(|r| !r.is_empty());
     let (quantity, counted) = match body.kind.as_str() {
         "receive" | "consume" => {
             let q = body
@@ -984,14 +993,14 @@ pub async fn stock_deduct(
     let user = ctx.identity.user_id;
     let mut tx = ctx.begin(&state.db).await?;
     // The batch lock makes two deductions of one batch wait for each other.
-    let stage: String = sqlx::query_scalar(
+    let batch_stage: String = sqlx::query_scalar(
         "SELECT stage FROM batches WHERE id = $1 AND deleted_at IS NULL FOR UPDATE",
     )
     .bind(batch_id)
     .fetch_optional(&mut *tx)
     .await?
     .ok_or_else(not_found)?;
-    if stage == "cancelled" {
+    if batch_stage == "cancelled" {
         return Err(conflict("/stage", "batch_cancelled"));
     }
     let needs: Vec<Need> = sqlx::query_as(
@@ -1071,7 +1080,12 @@ pub async fn stock_deduct(
             skipped.push(SkippedLine {
                 ingredient_id: Some(ingredient),
                 amount: remaining,
-                reason: if has_count_lot { "unit_mismatch" } else { "no_lot" }.to_owned(),
+                reason: if has_count_lot {
+                    "unit_mismatch"
+                } else {
+                    "no_lot"
+                }
+                .to_owned(),
             });
             continue;
         }
@@ -1299,12 +1313,14 @@ pub async fn shopping_from_recipe(
             continue;
         }
         let id = if let Some(id) = existing {
-            sqlx::query("UPDATE shopping_list_items SET quantity = $2, updated_by = $3 WHERE id = $1")
-                .bind(id)
-                .bind(to_buy)
-                .bind(user)
-                .execute(&mut *tx)
-                .await?;
+            sqlx::query(
+                "UPDATE shopping_list_items SET quantity = $2, updated_by = $3 WHERE id = $1",
+            )
+            .bind(id)
+            .bind(to_buy)
+            .bind(user)
+            .execute(&mut *tx)
+            .await?;
             id
         } else {
             let id = Uuid::now_v7();
@@ -1380,7 +1396,10 @@ pub async fn shopping_update(
     let Some(fields) = patch.as_object() else {
         return Err(issue("/", "invalid"));
     };
-    if let Some(unknown) = fields.keys().find(|k| !matches!(k.as_str(), "checked" | "quantity")) {
+    if let Some(unknown) = fields
+        .keys()
+        .find(|k| !matches!(k.as_str(), "checked" | "quantity"))
+    {
         return Err(issue(&format!("/{unknown}"), "unknown_field"));
     }
     let checked = match fields.get("checked") {
@@ -1464,7 +1483,10 @@ pub fn routes(state: &AppState) -> Router<AppState> {
         state,
         Router::new()
             .route(&format!("{WS}/stock/receipts"), post(stock_receive))
-            .route(&format!("{WS}/stock/lots/{{id}}/movements"), post(stock_move))
+            .route(
+                &format!("{WS}/stock/lots/{{id}}/movements"),
+                post(stock_move),
+            )
             .route(
                 &format!("{WS}/batches/{{id}}/stock-deduction"),
                 post(stock_deduct),

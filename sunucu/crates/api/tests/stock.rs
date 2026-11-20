@@ -199,7 +199,12 @@ async fn batch_deduction_is_safe_to_repeat(pool: PgPool) {
         .unwrap()
         .to_owned();
     let d = post(&w, &format!("/batches/{id}/stock-deduction"), json!({})).await;
-    assert_eq!(d.body["movements"].as_array().unwrap().len(), 1, "{}", d.body);
+    assert_eq!(
+        d.body["movements"].as_array().unwrap().len(),
+        1,
+        "{}",
+        d.body
+    );
     assert_eq!(d.body["movements"][0]["quantity"], -4.5);
     assert_eq!(
         get(&w, &format!("/stock/lots/{lot}")).await.body["quantity"],
