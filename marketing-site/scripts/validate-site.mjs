@@ -85,7 +85,7 @@ const siteOrigin = firstLoc ? new URL(decodeHtml(firstLoc)).origin : "https://ex
 
 const requiredRoutes = [
   "/", "/homebrewers/", "/breweries/", "/features/",
-  "/how-it-works/", "/technical-principles/", "/faq/", "/pricing/", "/get-started/", "/compare/", "/modules/", "/modules/",
+  "/how-it-works/", "/technical-principles/", "/faq/", "/pricing/", "/get-started/", "/compare/", "/modules/",
 ];
 for (const route of requiredRoutes) {
   const routeUrl = new URL(`${basePath}${route}`, siteOrigin);
