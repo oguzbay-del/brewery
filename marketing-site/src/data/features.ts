@@ -73,7 +73,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "brew-day",
-    modules: ["core","production"],
+    modules: ["core"],
     title: "Brew day & production records",
     eyebrow: "BREW DAY",
     summary: "A brew-day workspace keeps the recipe plan separate from what actually happened, while remaining usable beside wet equipment and paper records.",
@@ -87,7 +87,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "fermentation-monitoring",
-    modules: ["core","production"],
+    modules: ["core"],
     title: "Fermentation & batch tracking",
     eyebrow: "FERMENTATION",
     summary: "Follow each batch from brew day through fermentation, conditioning and packaging, using device readings or manual measurements.",
@@ -102,7 +102,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "equipment-calibration",
-    modules: ["devices","production"],
+    modules: ["devices"],
     title: "Equipment & calibration",
     eyebrow: "EQUIPMENT",
     summary: "Equipment profiles reflect the real behaviour of a home setup or professional brewhouse, and improve through measured batch outcomes.",
@@ -172,7 +172,7 @@ export const features: FeaturePage[] = [
   },
   {
     slug: "packaging-compliance",
-    modules: ["quality","tax-compliance"],
+    modules: ["production","quality","tax-compliance"],
     title: "Packaging, CIP & compliance",
     eyebrow: "PACKAGING AND RECORDS",
     summary: "Packaging records, vessel cleaning and jurisdiction-aware reporting support professional production, with clear boundaries around what the system does not do.",
