@@ -138,4 +138,4 @@ The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus 
 | O3 | Apple Developer account, macOS CI (GitHub Actions macOS or Xcode Cloud) | T0.9, stage 4 | active: macOS CI runs on GitHub macOS machines; the Apple Developer account and the device test are not done |
 | O4 | Google Cloud organization and billing | Stage 5 | todo |
 | O5 | Delete the 7 old branches on GitHub | – | todo |
-| O6 | Select a web payment provider (subscriptions outside the App Store) | T2.28 | todo |
+| O6 | Select a web payment provider (subscriptions outside the App Store). Decision: Paddle (merchant of record). Paddle collects and pays US sales tax and UK VAT. | T2.28 | done (2026-11-20) |

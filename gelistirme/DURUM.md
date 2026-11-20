@@ -39,9 +39,11 @@ Each session reads this file first. Keep it to one page. Update it after each ta
   - The `/internal` listener and SSE come in later tasks.
 - T2.30: only `app_worker` writes `subscriptions` and `entitlements`. A decision is necessary about the path for manual corrections by support.
 - T2.17: the field limits are a product proposal (`verify: true`, to be verified). The catalog uses exact unit definitions. The engine uses the rounded constants of BeerSmith (difference approximately 1e-7). The decision about alignment is open.
-- T2.28: web payment waits for decision O6 (the App Store part has no blocker). Other open items are in ADR-0002 (legal and cost decisions for Terraform, cloud account O4, AppIcon).
+- T2.28: the web payment provider is Paddle (O6). The Paddle adapter (webhook signature, events) is not written yet. Other open items are in ADR-0002 (legal and cost decisions for Terraform, cloud account O4, AppIcon).
 
 ## Recent decisions
+
+- 2026-11-20 (O6, Oğuz): the web payment provider is Paddle (merchant of record).
 
 - 2026-11-14 (F2.1 decisions, Oğuz):
   - Permanent delete: change an immutable reference to a snapshot, then delete the original record.
