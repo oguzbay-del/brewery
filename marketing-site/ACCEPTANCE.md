@@ -134,3 +134,18 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Compared with Stitch project `9024853279551774830` (read only). The shared `SiteHeader`/`SiteFooter` use the Stitch "set B" navigation on all pages. Feature detail and 404 pages use the Stitch layout. Every `<img>` has intrinsic dimensions. The empty dashed frame on How it works is removed.
 - Local evidence: astro check 0 errors, validate:site 2304/2304, Playwright 117/117, Lighthouse mobile 99/100/100/100 and desktop 100/100/100/100 on Home, Compare, Pricing and How it works.
 - Still open: manual keyboard/screen-reader/200% zoom review; Pages re-verification after the owner-approved merge. Details: `web-stratejisi/49-gristora-session-handoff.md`.
+
+
+## Current-main QA refresh — 21 November 2026
+
+- Curated feature photography PR [#177](https://github.com/oguzbay-del/brewery/pull/177) merged at commit [116fd00d4bf2ee7c53d05963e5d215429198dd2f](https://github.com/oguzbay-del/brewery/commit/116fd00d4bf2ee7c53d05963e5d215429198dd2f). Twelve owner-supplied original photos are served through responsive AVIF/WebP/JPEG variants.
+- Current-main marketing CI [run #44825280339](https://github.com/oguzbay-del/brewery/actions/runs/44825280339) completed successfully for the photo-refresh commit. Build job passed; responsive screenshots and Lighthouse report artifacts were uploaded.
+- Current-main GitHub Pages deployment [run #44825280408](https://github.com/oguzbay-del/brewery/actions/runs/44825280408) completed successfully for the same commit. The preview remains the public GitHub Pages copy at `https://oguzbay-del.github.io/brewery/`, configured noindex; this is not the custom-domain launch.
+- Responsive screenshot artifact #14673700985 (31 screenshots) was downloaded and reviewed for Home desktop (1440 px) and Home mobile (320 px). No obvious clipping or page-level horizontal overflow in these samples; complete route-by-route visual review remains pending.
+- Social-card artifact #14673467385 was generated. Latest Lighthouse report artifact #14673188743 contains mobile and desktop audits for Home, Compare, Pricing and How it works.
+- Lighthouse scores (Performance / Accessibility / Best Practices / SEO): Home desktop 100/100/100/100; Home mobile **85/100/100/100**; Compare desktop/mobile 100/100/100/100; Pricing desktop/mobile 100/100/100/100; How it works desktop/mobile 100/100/100/100.
+- Home mobile's Performance score is the only material score variance. Report identifies 590 ms total blocking time, 2.0 s main-thread work and an oversized responsive home-hero image (estimated 24 KiB savings); this needs investigation/optimization before W12 closure.
+- Manual keyboard-only, screen-reader and 200% zoom review remain outstanding. Stitch parity remains unverified without a live Stitch connector/export.
+- Production domain, DNS and Vercel project settings were not changed. Existing Vercel automatic production-target deployment guard remains in force; do not merge/push further to main until reviewed and adjusted with owner approval.
+
+**W12 status remains in progress.** Outstanding: investigate Home mobile Lighthouse 85, finish visual review across all routes and viewport widths, complete manual keyboard/screen-reader/zoom checks, and verify the deployed noindex Pages response.
