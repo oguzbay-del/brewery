@@ -1361,6 +1361,7 @@
           "boil_off_l_per_h": 3.0,
           "boil_time_min": 60.0,
           "boil_volume_l": 26.0,
+          "conversion_efficiency_pct": 90.0,
           "cooling_shrinkage_pct": 4.0,
           "created_at": "2026-11-20T10:00:00Z",
           "deleted_at": null,
@@ -1370,6 +1371,7 @@
           "hop_utilization_pct": 100.0,
           "id": "0192f1c07a3b7000800000000000000e",
           "is_default": true,
+          "lauter_efficiency_pct": 80.0,
           "mash_dead_space_l": 0.0,
           "mash_tun_mass_kg": 0.0,
           "mash_tun_specific_heat": 0.12,
@@ -1407,6 +1409,15 @@
           "boil_volume_l": {
             "exclusiveMinimum": 0,
             "format": "double",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "conversion_efficiency_pct": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "maximum": 100,
             "type": [
               "number",
               "null"
@@ -1456,6 +1467,15 @@
           },
           "is_default": {
             "type": "boolean"
+          },
+          "lauter_efficiency_pct": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "maximum": 100,
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "mash_dead_space_l": {
             "format": "double",
@@ -1560,6 +1580,15 @@
               "null"
             ]
           },
+          "conversion_efficiency_pct": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "maximum": 100,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
           "cooling_shrinkage_pct": {
             "format": "double",
             "maximum": 100,
@@ -1589,6 +1618,15 @@
           },
           "is_default": {
             "type": "boolean"
+          },
+          "lauter_efficiency_pct": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "maximum": 100,
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "mash_dead_space_l": {
             "format": "double",
@@ -1706,6 +1744,15 @@
               "null"
             ]
           },
+          "conversion_efficiency_pct": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "maximum": 100,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
           "cooling_shrinkage_pct": {
             "format": "double",
             "maximum": 100,
@@ -1735,6 +1782,15 @@
           },
           "is_default": {
             "type": "boolean"
+          },
+          "lauter_efficiency_pct": {
+            "exclusiveMinimum": 0,
+            "format": "double",
+            "maximum": 100,
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "mash_dead_space_l": {
             "format": "double",
@@ -27211,6 +27267,7 @@
                       "boil_off_l_per_h": 3.0,
                       "boil_time_min": 60.0,
                       "boil_volume_l": 26.0,
+                      "conversion_efficiency_pct": 90.0,
                       "cooling_shrinkage_pct": 4.0,
                       "created_at": "2026-11-20T10:00:00Z",
                       "deleted_at": null,
@@ -27220,6 +27277,7 @@
                       "hop_utilization_pct": 100.0,
                       "id": "0192f1c07a3b7000800000000000000e",
                       "is_default": true,
+                      "lauter_efficiency_pct": 80.0,
                       "mash_dead_space_l": 0.0,
                       "mash_tun_mass_kg": 0.0,
                       "mash_tun_specific_heat": 0.12,
@@ -27487,12 +27545,14 @@
                 "boil_off_l_per_h": 3.0,
                 "boil_time_min": 60.0,
                 "boil_volume_l": 26.0,
+                "conversion_efficiency_pct": 90.0,
                 "cooling_shrinkage_pct": 4.0,
                 "efficiency_pct": 72.0,
                 "fermenter_loss_l": 0.5,
                 "grain_absorption_l_per_kg": 1.04,
                 "hop_utilization_pct": 100.0,
                 "is_default": true,
+                "lauter_efficiency_pct": 80.0,
                 "mash_dead_space_l": 0.0,
                 "mash_tun_mass_kg": 0.0,
                 "mash_tun_specific_heat": 0.12,
@@ -27522,6 +27582,7 @@
                   "boil_off_l_per_h": 3.0,
                   "boil_time_min": 60.0,
                   "boil_volume_l": 26.0,
+                  "conversion_efficiency_pct": 90.0,
                   "cooling_shrinkage_pct": 4.0,
                   "created_at": "2026-11-20T10:00:00Z",
                   "deleted_at": null,
@@ -27531,6 +27592,7 @@
                   "hop_utilization_pct": 100.0,
                   "id": "0192f1c07a3b7000800000000000000e",
                   "is_default": true,
+                  "lauter_efficiency_pct": 80.0,
                   "mash_dead_space_l": 0.0,
                   "mash_tun_mass_kg": 0.0,
                   "mash_tun_specific_heat": 0.12,
@@ -27924,6 +27986,7 @@
                   "boil_off_l_per_h": 3.0,
                   "boil_time_min": 60.0,
                   "boil_volume_l": 26.0,
+                  "conversion_efficiency_pct": 90.0,
                   "cooling_shrinkage_pct": 4.0,
                   "created_at": "2026-11-20T10:00:00Z",
                   "deleted_at": null,
@@ -27933,6 +27996,7 @@
                   "hop_utilization_pct": 100.0,
                   "id": "0192f1c07a3b7000800000000000000e",
                   "is_default": true,
+                  "lauter_efficiency_pct": 80.0,
                   "mash_dead_space_l": 0.0,
                   "mash_tun_mass_kg": 0.0,
                   "mash_tun_specific_heat": 0.12,
@@ -28643,6 +28707,7 @@
                   "boil_off_l_per_h": 3.0,
                   "boil_time_min": 60.0,
                   "boil_volume_l": 26.0,
+                  "conversion_efficiency_pct": 90.0,
                   "cooling_shrinkage_pct": 4.0,
                   "created_at": "2026-11-20T10:00:00Z",
                   "deleted_at": null,
@@ -28652,6 +28717,7 @@
                   "hop_utilization_pct": 100.0,
                   "id": "0192f1c07a3b7000800000000000000e",
                   "is_default": true,
+                  "lauter_efficiency_pct": 80.0,
                   "mash_dead_space_l": 0.0,
                   "mash_tun_mass_kg": 0.0,
                   "mash_tun_specific_heat": 0.12,
@@ -28951,6 +29017,7 @@
                   "boil_off_l_per_h": 3.0,
                   "boil_time_min": 60.0,
                   "boil_volume_l": 26.0,
+                  "conversion_efficiency_pct": 90.0,
                   "cooling_shrinkage_pct": 4.0,
                   "created_at": "2026-11-20T10:00:00Z",
                   "deleted_at": null,
@@ -28960,6 +29027,7 @@
                   "hop_utilization_pct": 100.0,
                   "id": "0192f1c07a3b7000800000000000000e",
                   "is_default": true,
+                  "lauter_efficiency_pct": 80.0,
                   "mash_dead_space_l": 0.0,
                   "mash_tun_mass_kg": 0.0,
                   "mash_tun_specific_heat": 0.12,
@@ -29952,6 +30020,7 @@
                   "boil_off_l_per_h": 3.0,
                   "boil_time_min": 60.0,
                   "boil_volume_l": 26.0,
+                  "conversion_efficiency_pct": 90.0,
                   "cooling_shrinkage_pct": 4.0,
                   "created_at": "2026-11-20T10:00:00Z",
                   "deleted_at": null,
@@ -29961,6 +30030,7 @@
                   "hop_utilization_pct": 100.0,
                   "id": "0192f1c07a3b7000800000000000000e",
                   "is_default": true,
+                  "lauter_efficiency_pct": 80.0,
                   "mash_dead_space_l": 0.0,
                   "mash_tun_mass_kg": 0.0,
                   "mash_tun_specific_heat": 0.12,

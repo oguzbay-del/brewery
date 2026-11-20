@@ -21,7 +21,7 @@
 - It has no formulas. When it needs a calculation, it requests it from `engine-service` over gRPC.
 - The audit log read endpoint (T2.14) is not here. It comes in later tasks.
 - The object store client is in the `storage` crate. Here are only the endpoints and the validation.
-- It does not add migrations (exceptions: T2.18 `0070`, T2.12 `0090`, T2.28 `0130`, T2.21 `0140`, T2.22 `0141` in `db` migrations). Table decisions: `adr/0007-veri-modeli.md`.
+- It does not add migrations (exceptions: T2.18 `0070`, T2.12 `0090`, T2.28 `0130`, T2.21 `0140`, T2.22 `0141`, T2.40 `0190`, T2.37 `0191` in `db` migrations). Table decisions: `adr/0007-veri-modeli.md`.
 
 ## How to test
 - In `sunucu/`, run: `DATABASE_URL=... cargo test -p api`. You need PostgreSQL and Redis. `tests/sse.rs` needs NATS JetStream. `tests/files.rs` needs the object store. `tests/auth.rs` needs mailpit. Start them with `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres redis nats objectstore mailpit`.

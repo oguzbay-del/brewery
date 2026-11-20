@@ -305,6 +305,8 @@ const EQUIPMENT: &[Field] = &[
     num("mash_dead_space_l", 0.0).ge(0.0),
     num("grain_absorption_l_per_kg", 1.04).ge(0.0),
     num("efficiency_pct", 72.0).req().ge(0.0).le(100.0),
+    num("conversion_efficiency_pct", 90.0).null().gt(0.0).le(100.0),
+    num("lauter_efficiency_pct", 80.0).null().gt(0.0).le(100.0),
     num("altitude_m", 0.0),
     num("hop_utilization_pct", 100.0).ge(0.0),
     flag("whirlpool_carry", false),

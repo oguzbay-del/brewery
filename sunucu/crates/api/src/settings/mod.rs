@@ -107,7 +107,20 @@ fn map_db(r: Option<&Resource>, e: sqlx::Error) -> ApiError {
             ApiError::new(ErrorCode::Conflict).with_errors(vec![FieldIssue::new(field, "taken")])
         }
         Some("23503") => ApiError::validation(vec![FieldIssue::new("/", "unknown_reference")]),
-        Some("23514") => ApiError::validation(vec![FieldIssue::new("/", "check_failed")]),
+        Some("23514") => {
+            let split = e
+                .as_database_error()
+                .and_then(sqlx::error::DatabaseError::constraint)
+                == Some("equipment_efficiency_split_ck");
+            if split {
+                ApiError::validation(vec![
+                    FieldIssue::new("/conversion_efficiency_pct", "split_incomplete"),
+                    FieldIssue::new("/lauter_efficiency_pct", "split_incomplete"),
+                ])
+            } else {
+                ApiError::validation(vec![FieldIssue::new("/", "check_failed")])
+            }
+        }
         _ => e.into(),
     }
 }

@@ -908,10 +908,6 @@ async fn write_section(
 
 // --- engine request and summary -----------------------------------------------------------
 
-// TODO: T2.38 adds the optional engine fields `conversion_efficiency_pct` and
-// `lauter_efficiency_pct`. Send both or none. This needs two nullable equipment columns, the
-// settings endpoints for them and the engine proto of origin/main. It is not a small change:
-// do it in a separate task after the rebase on T2.38.
 fn build_request(v: &Value) -> proto::CalculateRecipeRequest {
     use proto::{
         FermentableKind as FK, FermentableUse as FU, HopForm, HopUse, MiscUse, RecipeKind,
@@ -1075,9 +1071,10 @@ fn build_request(v: &Value) -> proto::CalculateRecipeRequest {
         }),
         options: Some(options),
         ibu_equation: ibu_equation as i32,
-        // Both unset: the engine uses its default (T2.38). See the TODO above.
-        conversion_efficiency_pct: None,
-        lauter_efficiency_pct: None,
+        // From the equipment snapshot (T2.40). Both set: the engine uses their product. One set
+        // alone: the engine rejects the request (the database allows only both or none).
+        conversion_efficiency_pct: opt_num(&eq, "conversion_efficiency_pct"),
+        lauter_efficiency_pct: opt_num(&eq, "lauter_efficiency_pct"),
     }
 }
 
