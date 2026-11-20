@@ -124,7 +124,9 @@ for (const file of htmlFiles) {
     assert(isCanonicalProduction ? sitemap.includes(pageUrl.href) : !sitemap.includes(pageUrl.href),
       `sitemap Turkish route follows production vs preview policy: ${pagePath}`);
   }
-  assert(sitemap.includes(pageUrl.href), `sitemap lists page: ${pagePath}`);
+  const isExcludedTurkishPreview = pagePath.startsWith("/tr/") && siteOrigin !== "https://gristora.com";
+  assert(isExcludedTurkishPreview ? !sitemap.includes(pageUrl.href) : sitemap.includes(pageUrl.href),
+    `sitemap inclusion follows production vs preview policy: ${pagePath}`);
 }
 const forbidden = [
   "Demleme",
