@@ -660,6 +660,13 @@ Profesyonel uygulamalardan alınan ek özellikler aşamalara dağıtıldı; işl
 | Geçmiş partilerden ekipman kalibrasyonu | Ölçülen verim, kaynatma kaybı ve kayıplardan profili güncelleme önerisi | İkisi | Ev MVP |
 | Kurallar ve otomatik uyarılar | "SG 3 gündür sabit", "sıcaklık 22 °C'yi geçti", "dry hop zamanı" | İkisi | Ev MVP |
 | Tarif ve sürüm karşılaştırma | İki tarifi veya sürümü yan yana, malzeme ve tahmin farkları | İkisi | Ev MVP |
+| Planlı partiye hammadde ayırma, eksik ve düşük stok uyarısı | Parti planlanınca malzeme lottan ayrılır; eksik malzeme ve minimum seviyenin altı bildirim kuralı olarak uyarır (Ev'de yalnız düşük stok uyarısı) | İkisi | İşletme çekirdeği (Ev uyarısı Ev MVP) |
+| Tank önerisinde CIP durumu | Yeni partiye tank önerilirken boş olma, kapasite ve son temizliğin geçerli olması birlikte denetlenir | İşletme | İşletme çekirdeği |
+| Ekipman bakımı | Zamana veya kullanıma göre bakım planı, hatırlatıcı ve imzalı bakım kaydı (pompa, conta, kalibrasyon) | İşletme | İşletme 2. sürüm |
+| Stok sayımı: dondurma, kısmi sayım, onaylı düzeltme | Sayım sırasında hareket dondurulur; yalnız bir depo veya malzeme grubu sayılabilir; fark yetkili onayıyla düzeltilir ve denetim kaydına yazılır | İşletme | İşletme 2. sürüm |
+| Ay sonu stok değerleme ve raporlar | Ay sonu stok değeri (lot maliyetinden), tank boş kalma raporu, son N parti kıyası; xlsx ve CSV dışa aktarma (muhasebe yazılımına aktarım dosyayla, entegrasyon yok) | İşletme | İşletme 2. sürüm |
+| Hafif satın alma | Eksik stoktan sipariş taslağı (PDF veya e-posta), mal kabulde nakliye ve gümrük dahil maliyetin lota yazılması, şerbetçiotu sözleşmesi kaydı. Tedarikçi faturası, ödeme ve muhasebe yok (ERP sınırı) | İşletme | İşletme 2. sürüm |
+| Sözleşmeli ambalaj | Başka bir marka adına üretim ve ambalajlama; müşteriye ait malzeme ve partiler ayrı izlenir | İşletme | Sonra (ürün kararı) |
 | Hedeften tarif ve klonlama | Kullanıcı hedef OG, IBU, renk ve ABV ile malzeme listesini girer, hesap motoru miktarları önerir; bilinen bir birayı klonlamak bunun bir kullanımıdır (üreticinin yayımladığı değerler ve malzeme adları). Yapay zekâ kullanmaz; "Nasıl hesaplandı" ile açıklanır | İkisi | Ev 2. sürüm |
 | Stil istatistikleri | Açık tariflerden stil başına tipik malt oranları ve şerbetçiotu zamanlaması (model değil, basit istatistik); sihirbaz varsayılanlarında ve "Tarif kontrolü" uyarılarında kullanılır. Verinin kullanım koşulları ayrıca kararlaştırılır | İkisi | Sonra |
 | Kendi ajanını bağla (MCP) | Kullanıcının kendi yapay zekâ ajanı tarif, parti ve stokla çalışır; sayıları hesap motoru üretir (Platformlar ve mimari › API ve istemci iletişimi) | İkisi | Ev 2. sürüm |
