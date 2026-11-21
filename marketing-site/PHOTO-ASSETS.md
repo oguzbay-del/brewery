@@ -34,7 +34,7 @@ The existing `<picture>` implementation therefore keeps AVIF/WebP delivery while
 
 ## Build
 
-`npm run build` runs `npm run optimize:photos` before Astro builds the static site. The optimizer reads the raw photo directory and the curated ZIP, then writes the generated AVIF, WebP and JPEG derivatives. GitHub Actions and Vercel therefore build the same assets from the same committed source archive.
+`npm run build` runs `npm run optimize:photos` before Astro builds the static site. The optimizer reads the raw photo directory and the curated ZIP, then writes the generated AVIF, WebP and JPEG derivatives. GitHub Actions and Cloudflare Pages build the same assets from the same committed source archive.
 
 Run `npm run optimize:photos` before `npm run dev` when previewing changed source photos locally.
 
