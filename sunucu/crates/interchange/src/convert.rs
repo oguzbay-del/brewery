@@ -2,9 +2,7 @@
 
 use serde_json::Value;
 
-use crate::model::{
-    Equipment, Fermentable, Hop, MashStep, Misc, Recipe, SourceValues, Yeast,
-};
+use crate::model::{Equipment, Fermentable, Hop, MashStep, Misc, Recipe, SourceValues, Yeast};
 
 impl Recipe {
     /// Fills the values the API requires and a file may lack. Returns one note for each change.
@@ -13,7 +11,8 @@ impl Recipe {
         let eq = self.equipment.clone();
         if self.batch_volume_l.is_none() {
             self.batch_volume_l = eq.as_ref().and_then(|e| e.batch_volume_l).or(Some(20.0));
-            notes.push("batch_volume_l: not in the file, set from the equipment or 20 L".to_owned());
+            notes
+                .push("batch_volume_l: not in the file, set from the equipment or 20 L".to_owned());
         }
         if self.efficiency_pct.is_none() {
             self.efficiency_pct = eq.as_ref().and_then(|e| e.efficiency_pct).or(Some(70.0));
@@ -27,7 +26,6 @@ impl Recipe {
                 let y = match f.grain_type.as_deref() {
                     Some("sugar") => 100.0,
                     Some("dry_extract") => 95.0,
-                    Some("honey") => 75.0,
                     Some("extract") => 80.0,
                     _ => 75.0,
                 };
@@ -38,7 +36,10 @@ impl Recipe {
         for h in &mut self.hops {
             if h.alpha_pct.is_none() {
                 h.alpha_pct = Some(0.0);
-                notes.push(format!("hop {}: alpha_pct not in the file, set to 0", h.name));
+                notes.push(format!(
+                    "hop {}: alpha_pct not in the file, set to 0",
+                    h.name
+                ));
             }
             if !matches!(
                 h.form.as_deref(),
@@ -65,6 +66,7 @@ impl Recipe {
     /// Builds a recipe from a version JSON of the API (header, lines and `calc_summary`). The
     /// source values come from the stored calculation, else from the targets.
     #[must_use]
+    #[allow(clippy::many_single_char_names)]
     pub fn from_version_json(name: &str, notes: Option<&str>, v: &Value) -> Self {
         let f = |o: &Value, k: &str| o.get(k).and_then(Value::as_f64);
         let t = |o: &Value, k: &str| o.get(k).and_then(Value::as_str).map(str::to_owned);
@@ -142,7 +144,7 @@ impl Recipe {
                         f(l, "min_attenuation_pct"),
                         f(l, "max_attenuation_pct"),
                     ) {
-                        (Some(a), Some(b)) => Some((a + b) / 2.0),
+                        (Some(a), Some(b)) => Some(f64::midpoint(a, b)),
                         (a, b) => a.or(b),
                     },
                     packs: f(l, "packs"),

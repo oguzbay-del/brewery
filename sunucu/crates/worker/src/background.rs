@@ -19,6 +19,27 @@ async fn stopped(mut rx: watch::Receiver<bool>) {
     }
 }
 
+/// The object store of the export files, from `S3_*`. `None` without `S3_ENDPOINT`.
+fn export_store_from_env() -> Option<std::sync::Arc<dyn storage::ObjectStore>> {
+    match storage::S3Config::from_env() {
+        Ok(Some(config)) => match storage::S3Store::new(config) {
+            Ok(store) => Some(std::sync::Arc::new(store)),
+            Err(e) => {
+                tracing::error!(error = %e, "object store setup failed; export jobs are off");
+                None
+            }
+        },
+        Ok(None) => {
+            tracing::warn!("S3_ENDPOINT is not set; export jobs are off");
+            None
+        }
+        Err(e) => {
+            tracing::error!(error = %e, "object store settings are invalid; export jobs are off");
+            None
+        }
+    }
+}
+
 /// Runs until `stop` turns `true`.
 #[allow(clippy::too_many_lines)]
 pub async fn run(stop: watch::Receiver<bool>) {
@@ -39,6 +60,9 @@ pub async fn run(stop: watch::Receiver<bool>) {
         crate::maintenance::digest_store_from_env(),
         stop.clone(),
     ));
+    // Export jobs (T2.26) need the database and the object store only, not NATS.
+    let export_task = export_store_from_env()
+        .map(|store| tokio::spawn(crate::export::run(pool.clone(), store, stop.clone())));
     let client = match events::connect(&nats_url).await {
         Ok(c) => c,
         Err(e) => {
@@ -166,4 +190,7 @@ pub async fn run(stop: watch::Receiver<bool>) {
         janitor,
         maintenance_task
     );
+    if let Some(task) = export_task {
+        let _ = task.await;
+    }
 }

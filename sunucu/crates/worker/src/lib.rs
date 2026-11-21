@@ -2,6 +2,7 @@
 
 pub mod audit_anchor;
 pub mod background;
+pub mod export;
 pub mod maintenance;
 pub mod retention;
 

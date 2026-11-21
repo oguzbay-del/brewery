@@ -1,4 +1,4 @@
-//! Endpoint tests of T2.26: recipe import (BeerXML, BeerJSON, Brewfather) with the mapping
+//! Endpoint tests of T2.26: recipe import (`BeerXML`, `BeerJSON`, Brewfather) with the mapping
 //! decisions and the calculated values, the safety limits, and the export job rules. Needs
 //! PostgreSQL (`#[sqlx::test]`); the engine runs in process. The files the worker writes are
 //! tested in `crates/worker/tests/export.rs`.
@@ -80,7 +80,10 @@ async fn beerxml_import_shows_source_and_calculated_values(pool: PgPool) {
     let d = &apply.body["mapping_decisions"];
     assert_eq!(d["recipes"][0]["equipment"]["decision"], "created");
     let matches = d["recipes"][0]["ingredients"].as_array().unwrap();
-    let malt = matches.iter().find(|m| m["name"] == "Test Pale Malt").unwrap();
+    let malt = matches
+        .iter()
+        .find(|m| m["name"] == "Test Pale Malt")
+        .unwrap();
     assert_eq!(malt["decision"], "matched");
     let hop = matches.iter().find(|m| m["name"] == "Test Hop A").unwrap();
     assert_eq!(hop["decision"], "kept_file_values");
@@ -92,7 +95,11 @@ async fn beerxml_import_shows_source_and_calculated_values(pool: PgPool) {
     let recipe_id = r["recipe_id"].as_str().unwrap();
     let rec = get(&w, &format!("/recipes/{recipe_id}")).await;
     assert_eq!(rec.status, StatusCode::OK, "{}", rec.body);
-    let v = get(&w, &format!("/recipe-versions/{}", r["version_id"].as_str().unwrap())).await;
+    let v = get(
+        &w,
+        &format!("/recipe-versions/{}", r["version_id"].as_str().unwrap()),
+    )
+    .await;
     assert_eq!(v.body["fermentables"].as_array().unwrap().len(), 2);
     assert_eq!(v.body["target_og_sg"], 1.052);
 
@@ -134,7 +141,10 @@ async fn beerjson_import_round_trips_a_beerxml_file(pool: PgPool) {
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn unsafe_xml_and_big_files_are_rejected(pool: PgPool) {
     let w = exporter_world(&pool).await;
-    for (file, code) in [(BOMB, "xml_doctype_not_allowed"), (XXE, "xml_doctype_not_allowed")] {
+    for (file, code) in [
+        (BOMB, "xml_doctype_not_allowed"),
+        (XXE, "xml_doctype_not_allowed"),
+    ] {
         let r = upload(&w, "?format=beerxml", file.as_bytes().to_vec()).await;
         assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY, "{}", r.body);
         assert_eq!(r.body["errors"][0]["code"], code);
@@ -187,11 +197,26 @@ async fn full_export_is_limited_to_one_per_day_but_batch_export_is_not(pool: PgP
     assert_eq!(batch.status, StatusCode::CREATED, "{}", batch.body);
     let batch_id = batch.body["id"].as_str().unwrap().to_owned();
 
-    let first = post(&w, "/exports", json!({"scope": "workspace", "format": "zip"})).await;
+    let first = post(
+        &w,
+        "/exports",
+        json!({"scope": "workspace", "format": "zip"}),
+    )
+    .await;
     assert_eq!(first.status, StatusCode::ACCEPTED, "{}", first.body);
     assert_eq!(first.body["status"], "queued");
-    let second = post(&w, "/exports", json!({"scope": "workspace", "format": "zip"})).await;
-    assert_eq!(second.status, StatusCode::TOO_MANY_REQUESTS, "{}", second.body);
+    let second = post(
+        &w,
+        "/exports",
+        json!({"scope": "workspace", "format": "zip"}),
+    )
+    .await;
+    assert_eq!(
+        second.status,
+        StatusCode::TOO_MANY_REQUESTS,
+        "{}",
+        second.body
+    );
     assert!(second.headers.contains_key("retry-after"));
     assert_eq!(second.body["errors"][0]["code"], "full_export_once_per_day");
 
@@ -222,7 +247,12 @@ async fn full_export_is_limited_to_one_per_day_but_batch_export_is_not(pool: PgP
         .execute(&pool)
         .await
         .unwrap();
-    let retry = post(&w, "/exports", json!({"scope": "workspace", "format": "zip"})).await;
+    let retry = post(
+        &w,
+        "/exports",
+        json!({"scope": "workspace", "format": "zip"}),
+    )
+    .await;
     assert_eq!(retry.status, StatusCode::ACCEPTED, "{}", retry.body);
     let mut perms: Vec<&str> = domain::ALL.to_vec();
     perms.push("reports.export");
@@ -251,7 +281,12 @@ async fn export_requests_are_validated(pool: PgPool) {
         json!({"scope": "workspace", "format": "zip", "from": "2026-01-01T00:00:00Z"}),
     ] {
         let r = post(&w, "/exports", body.clone()).await;
-        assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY, "{body}: {}", r.body);
+        assert_eq!(
+            r.status,
+            StatusCode::UNPROCESSABLE_ENTITY,
+            "{body}: {}",
+            r.body
+        );
     }
     // Without the permission.
     w.auth.add(w.other, w.ws, &["recipe.view"]);

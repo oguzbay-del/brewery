@@ -259,9 +259,12 @@ pub async fn import_create(
         _ => interchange::brewfather::parse(&body),
     }
     .map_err(|e| parse_error(&e))?;
-    let file_name = q
-        .file_name
-        .map(|n| n.chars().filter(|c| !c.is_control()).take(255).collect::<String>());
+    let file_name = q.file_name.map(|n| {
+        n.chars()
+            .filter(|c| !c.is_control())
+            .take(255)
+            .collect::<String>()
+    });
     let id = Uuid::now_v7();
     // The original file is kept as an attachment of the recipes (plan: "kaynak dosya saklanır").
     let key = format!("{ws}/imports/{id}");
@@ -434,7 +437,10 @@ async fn create_equipment(
     .bind(user)
     .execute(tx)
     .await
-    .map_err(|e| crate::library::sqlstate(&e).map_or_else(|| e.into(), |_| issue("/equipment", "constraint_violated")))?;
+    .map_err(|e| {
+        crate::library::sqlstate(&e)
+            .map_or_else(|| e.into(), |_| issue("/equipment", "constraint_violated"))
+    })?;
     Ok(id)
 }
 
@@ -454,7 +460,6 @@ async fn match_ingredient(
     .await?;
     Ok(match ids.as_slice() {
         [one] => (Some(*one), "matched"),
-        [] => (None, "kept_file_values"),
         // The first has the workspace's own record before the shared one.
         [first, _] => (Some(*first), "matched_first_of_many"),
         _ => (None, "kept_file_values"),
@@ -570,7 +575,11 @@ pub async fn import_apply(
                 continue;
             };
             for (i, line) in lines.iter_mut().enumerate() {
-                let name = line.get("name").and_then(Value::as_str).unwrap_or("").to_owned();
+                let name = line
+                    .get("name")
+                    .and_then(Value::as_str)
+                    .unwrap_or("")
+                    .to_owned();
                 let (found, how) = match_ingredient(&mut tx, kind, &name).await?;
                 if let (Some(found), Some(o)) = (found, line.as_object_mut()) {
                     o.insert("ingredient_id".into(), json!(found));
@@ -592,9 +601,12 @@ pub async fn import_apply(
         recipe_event(&mut tx, ws, "recipe.created", recipe_id, 1, None).await?;
         first_recipe.get_or_insert(recipe_id);
         // The calculation must not break the import: a failure rolls back to the savepoint.
-        sqlx::query("SAVEPOINT import_calc").execute(&mut *tx).await?;
+        sqlx::query("SAVEPOINT import_calc")
+            .execute(&mut *tx)
+            .await?;
         let v = version_json(&mut tx, version_id).await?;
-        let calculated = match calculate_json(&state, &mut tx, &ctx, ws, &v, CalcTarget::None).await {
+        let calculated = match calculate_json(&state, &mut tx, &ctx, ws, &v, CalcTarget::None).await
+        {
             Ok((summary, _)) => {
                 sqlx::query("RELEASE SAVEPOINT import_calc")
                     .execute(&mut *tx)
@@ -643,7 +655,8 @@ pub async fn import_apply(
             continue;
         }
         if let Some(existing) = find_equipment(&mut tx, &e.name).await? {
-            equipment_decisions.push(json!({"name": e.name, "id": existing, "decision": "matched_by_name"}));
+            equipment_decisions
+                .push(json!({"name": e.name, "id": existing, "decision": "matched_by_name"}));
             continue;
         }
         let created = create_equipment(&mut tx, ws, user, e, 20.0, 70.0).await?;
@@ -751,7 +764,12 @@ fn export_job(row: ExportRow, state: &AppState) -> ApiResult<ExportJob> {
     if status == "done" && row.expires_at.is_some_and(|t| t <= now) {
         "expired".clone_into(&mut status);
     }
-    let download = match (status.as_str(), &row.result_object_key, &state.store, row.expires_at) {
+    let download = match (
+        status.as_str(),
+        &row.result_object_key,
+        &state.store,
+        row.expires_at,
+    ) {
         ("done", Some(key), Some(store), Some(expires)) => {
             let remaining = (expires - now).to_std().unwrap_or(Duration::ZERO);
             let ttl = remaining.min(LINK_TTL);
@@ -824,7 +842,11 @@ pub async fn export_create(
     }
     let mut tx = ctx.begin(&state.db).await?;
     if let Some(sid) = new.scope_id {
-        let table = if new.scope == "recipe" { "recipes" } else { "batches" };
+        let table = if new.scope == "recipe" {
+            "recipes"
+        } else {
+            "batches"
+        };
         let found: Option<Uuid> = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
             "SELECT id FROM {table} WHERE id = $1 AND deleted_at IS NULL"
         )))
@@ -847,7 +869,7 @@ pub async fn export_create(
              AND created_at > now() - make_interval(hours => $2::int)",
         )
         .bind(user)
-        .bind(FULL_EXPORT_INTERVAL_HOURS as i32)
+        .bind(i32::try_from(FULL_EXPORT_INTERVAL_HOURS).unwrap_or(24))
         .fetch_one(&mut *tx)
         .await?;
         if let Some(last) = last {
@@ -881,7 +903,9 @@ pub async fn export_create(
     let job = export_job(row, &state)?;
     let mut response = (StatusCode::ACCEPTED, Json(job)).into_response();
     if let Ok(v) = format!("/v1/workspaces/{ws}/exports/{id}").parse() {
-        response.headers_mut().insert(axum::http::header::LOCATION, v);
+        response
+            .headers_mut()
+            .insert(axum::http::header::LOCATION, v);
     }
     Ok(response)
 }
@@ -965,10 +989,25 @@ mod spec {
     ];
 
     pub(super) const OPERATIONS: &[OperationSpec] = &[
-        file_op("import_create", Some("recipe.edit"), Some(Concurrency::Append), WRITE),
+        file_op(
+            "import_create",
+            Some("recipe.edit"),
+            Some(Concurrency::Append),
+            WRITE,
+        ),
         file_op("import_get", Some("recipe.edit"), None, READ),
-        file_op("import_apply", Some("recipe.edit"), Some(Concurrency::Append), WRITE),
-        file_op("export_create", Some("reports.export"), Some(Concurrency::Append), WRITE),
+        file_op(
+            "import_apply",
+            Some("recipe.edit"),
+            Some(Concurrency::Append),
+            WRITE,
+        ),
+        file_op(
+            "export_create",
+            Some("reports.export"),
+            Some(Concurrency::Append),
+            WRITE,
+        ),
         file_op("export_get", Some("reports.export"), None, READ),
     ];
 }
