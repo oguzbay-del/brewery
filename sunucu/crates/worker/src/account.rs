@@ -72,7 +72,8 @@ async fn revoke_apple(pool: &PgPool, deps: &Deps, user: Uuid) -> Result<usize> {
     }
     let (Some(apple), Some(envelope)) = (&deps.apple, &deps.envelope) else {
         return Err(Error::Format(
-            "an Apple token exists but the Apple client or the account key is not configured".into(),
+            "an Apple token exists but the Apple client or the account key is not configured"
+                .into(),
         ));
     };
     for (identity, blob) in &tokens {
@@ -133,7 +134,10 @@ pub async fn purge_user(pool: &PgPool, deps: &Deps, user: Uuid) -> Result<Purged
         .map(|r| r.workspace_id)
         .collect();
     let issues: Vec<i32> = rows.iter().filter_map(|r| r.issue_number).collect();
-    let keys: Vec<&str> = rows.iter().filter_map(|r| r.object_key.as_deref()).collect();
+    let keys: Vec<&str> = rows
+        .iter()
+        .filter_map(|r| r.object_key.as_deref())
+        .collect();
     if !issues.is_empty() {
         let Some(client) = &deps.issues else {
             return Err(Error::Format(

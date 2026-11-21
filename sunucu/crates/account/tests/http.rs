@@ -16,14 +16,20 @@ type Seen = Arc<Mutex<Vec<(String, String)>>>;
 
 async fn token(State(seen): State<Seen>, body: String) -> (StatusCode, String) {
     seen.lock().unwrap().push(("token".into(), body));
-    (StatusCode::OK, r#"{"refresh_token":"r-1","access_token":"a"}"#.into())
+    (
+        StatusCode::OK,
+        r#"{"refresh_token":"r-1","access_token":"a"}"#.into(),
+    )
 }
 
 async fn revoke(State(seen): State<Seen>, body: String) -> (StatusCode, String) {
     let unknown = body.contains("token=gone");
     seen.lock().unwrap().push(("revoke".into(), body));
     if unknown {
-        (StatusCode::BAD_REQUEST, r#"{"error":"invalid_grant"}"#.into())
+        (
+            StatusCode::BAD_REQUEST,
+            r#"{"error":"invalid_grant"}"#.into(),
+        )
     } else if seen.lock().unwrap().len() > 2 {
         (StatusCode::BAD_GATEWAY, String::new())
     } else {

@@ -43,7 +43,12 @@ impl MemoryStore {
 }
 
 impl ObjectStore for MemoryStore {
-    fn presign_put(&self, _: &str, _: &UploadLimits, _: Duration) -> StorageResult<PresignedRequest> {
+    fn presign_put(
+        &self,
+        _: &str,
+        _: &UploadLimits,
+        _: Duration,
+    ) -> StorageResult<PresignedRequest> {
         Err(StorageError::Config("not supported".into()))
     }
     fn presign_get(&self, _: &str, _: Duration) -> StorageResult<PresignedRequest> {
@@ -55,7 +60,12 @@ impl ObjectStore for MemoryStore {
     fn digest<'a>(&'a self, _: &'a str, _: u64) -> BoxFuture<'a, StorageResult<Option<Digest>>> {
         Box::pin(async { Ok(None) })
     }
-    fn put<'a>(&'a self, key: &'a str, _: &'a str, body: Vec<u8>) -> BoxFuture<'a, StorageResult<()>> {
+    fn put<'a>(
+        &'a self,
+        key: &'a str,
+        _: &'a str,
+        body: Vec<u8>,
+    ) -> BoxFuture<'a, StorageResult<()>> {
         Box::pin(async move {
             self.objects.lock().unwrap().insert(key.to_owned(), body);
             Ok(())
@@ -93,7 +103,7 @@ struct FakeIssues {
 }
 
 impl IssueScrubber for FakeIssues {
-    fn scrub<'a>(&'a self, issue: i64) -> support::github::BoxFuture<'a, Result<(), GitHubError>> {
+    fn scrub(&self, issue: i64) -> support::github::BoxFuture<'_, Result<(), GitHubError>> {
         Box::pin(async move {
             self.scrubbed.lock().unwrap().push(issue);
             Ok(())
@@ -166,7 +176,12 @@ async fn make_admin(base: &PgPool, ws: Uuid, member: Uuid) {
 
 /// The account rows of a user: identity with a sealed Apple token, passkey, session, push target.
 async fn seed_account(base: &PgPool, fakes: &Fakes, user: Uuid) {
-    exec(base, "UPDATE users SET display_name = 'Sam Brewer' WHERE id = $1", &[user]).await;
+    exec(
+        base,
+        "UPDATE users SET display_name = 'Sam Brewer' WHERE id = $1",
+        &[user],
+    )
+    .await;
     let sealed = fakes.envelope.seal(b"apple-refresh-token").unwrap();
     sqlx::query(
         "INSERT INTO user_identities (id, user_id, provider, subject, provider_refresh_token_enc) \
@@ -218,7 +233,13 @@ async fn seed_account(base: &PgPool, fakes: &Fakes, user: Uuid) {
 }
 
 /// A support request of `user` in `ws` with a message, an attachment and an Issue number.
-async fn seed_support(base: &PgPool, store: &MemoryStore, ws: Uuid, user: Uuid, issue: i32) -> String {
+async fn seed_support(
+    base: &PgPool,
+    store: &MemoryStore,
+    ws: Uuid,
+    user: Uuid,
+    issue: i32,
+) -> String {
     let (request, message) = (Uuid::now_v7(), Uuid::now_v7());
     sqlx::query(
         "INSERT INTO support_requests (id, workspace_id, topic, title, github_issue_number, created_by) \
@@ -243,10 +264,7 @@ async fn seed_support(base: &PgPool, store: &MemoryStore, ws: Uuid, user: Uuid, 
     .await
     .unwrap();
     let key = format!("{ws}/support/{message}.png");
-    store
-        .put(&key, "image/png", vec![1, 2, 3])
-        .await
-        .unwrap();
+    store.put(&key, "image/png", vec![1, 2, 3]).await.unwrap();
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key, \
          content_type, size_bytes, sha256, created_by) \
@@ -339,7 +357,11 @@ async fn home_account_is_deleted_for_good_with_everything_in_it(base: PgPool) {
     seed_account(&base, &fakes, s.user).await;
     let key = seed_support(&base, &fakes.store, s.ws, s.user, 17).await;
     let doc_key = format!("{}/documents/scan.jpg", s.ws);
-    fakes.store.put(&doc_key, "image/jpeg", vec![7; 10]).await.unwrap();
+    fakes
+        .store
+        .put(&doc_key, "image/jpeg", vec![7; 10])
+        .await
+        .unwrap();
     sqlx::query(
         "INSERT INTO scanned_documents (id, workspace_id, form_type, object_key, content_type, size_bytes, sha256) \
          VALUES (gen_random_uuid(), $1, 'brew_sheet', $2, 'image/jpeg', 10, decode(repeat('00', 32), 'hex'))",
@@ -354,13 +376,24 @@ async fn home_account_is_deleted_for_good_with_everything_in_it(base: PgPool) {
     // Not due: nothing happens.
     request_restore_request(&base, s.user).await;
     assert_eq!(purge_due(&pool, &fakes.deps()).await.unwrap(), 0);
-    assert_eq!(count(&base, "SELECT count(*) FROM workspaces WHERE id = $1", s.ws).await, 1);
+    assert_eq!(
+        count(&base, "SELECT count(*) FROM workspaces WHERE id = $1", s.ws).await,
+        1
+    );
 
     make_due(&base, s.user).await;
     // Apple does not answer: the account stays complete and the failure is recorded.
     *fakes.apple.fail_revoke.lock().unwrap() = true;
     assert_eq!(purge_due(&pool, &fakes.deps()).await.unwrap(), 0);
-    assert_eq!(count(&base, "SELECT count(*) FROM user_identities WHERE user_id = $1", s.user).await, 2);
+    assert_eq!(
+        count(
+            &base,
+            "SELECT count(*) FROM user_identities WHERE user_id = $1",
+            s.user
+        )
+        .await,
+        2
+    );
     let (attempts, error): (i32, Option<String>) =
         sqlx::query_as("SELECT attempts, last_error FROM account_deletions WHERE user_id = $1")
             .bind(s.user)
@@ -377,22 +410,50 @@ async fn home_account_is_deleted_for_good_with_everything_in_it(base: PgPool) {
     assert_eq!(purge_due(&pool, &fakes.deps()).await.unwrap(), 1);
 
     // Apple token revoked; the Issue scrubbed.
-    assert_eq!(fakes.apple.revoked_tokens(), vec!["apple-refresh-token".to_owned()]);
+    assert_eq!(
+        fakes.apple.revoked_tokens(),
+        vec!["apple-refresh-token".to_owned()]
+    );
     assert_eq!(*fakes.issues.scrubbed.lock().unwrap(), vec![17]);
     // No row of the user and no object stays.
     for table in ["user_identities", "passkeys", "sessions", "push_targets"] {
-        let n = count(&base, &format!("SELECT count(*) FROM {table} WHERE user_id = $1"), s.user).await;
+        let n = count(
+            &base,
+            &format!("SELECT count(*) FROM {table} WHERE user_id = $1"),
+            s.user,
+        )
+        .await;
         assert_eq!(n, 0, "{table}");
     }
     for table in [
-        "workspaces", "recipes", "batches", "workspace_members", "support_requests",
-        "support_messages", "attachments", "audit_log", "scanned_documents",
+        "workspaces",
+        "recipes",
+        "batches",
+        "workspace_members",
+        "support_requests",
+        "support_messages",
+        "attachments",
+        "audit_log",
+        "scanned_documents",
     ] {
-        let col = if table == "workspaces" { "id" } else { "workspace_id" };
-        let n = count(&base, &format!("SELECT count(*) FROM {table} WHERE {col} = $1"), s.ws).await;
+        let col = if table == "workspaces" {
+            "id"
+        } else {
+            "workspace_id"
+        };
+        let n = count(
+            &base,
+            &format!("SELECT count(*) FROM {table} WHERE {col} = $1"),
+            s.ws,
+        )
+        .await;
         assert_eq!(n, 0, "{table}");
     }
-    assert!(fakes.store.keys().is_empty(), "objects left: {:?} ({key})", fakes.store.keys());
+    assert!(
+        fakes.store.keys().is_empty(),
+        "objects left: {:?} ({key})",
+        fakes.store.keys()
+    );
     // The user row is a tombstone.
     let (name, email, deleted): (String, Option<String>, bool) = sqlx::query_as(
         "SELECT display_name, contact_email, deleted_at IS NOT NULL FROM users WHERE id = $1",
@@ -411,7 +472,12 @@ async fn home_account_is_deleted_for_good_with_everything_in_it(base: PgPool) {
     .unwrap();
     assert!(purged);
     // The deletion record of the workspace names the user by UUID only.
-    let tomb = count(&base, "SELECT count(*) FROM workspace_tombstones WHERE former_workspace_id = $1", s.ws).await;
+    let tomb = count(
+        &base,
+        "SELECT count(*) FROM workspace_tombstones WHERE former_workspace_id = $1",
+        s.ws,
+    )
+    .await;
     assert_eq!(tomb, 1);
     // Nothing is due any more.
     assert_eq!(purge_due(&pool, &fakes.deps()).await.unwrap(), 0);
@@ -432,10 +498,20 @@ async fn home_account_is_deleted_for_good_with_everything_in_it(base: PgPool) {
 async fn business_workspace_keeps_its_records_and_the_audit_chain_stays_valid(base: PgPool) {
     let fakes = Fakes::new();
     let s = seed(&base).await;
-    exec(&base, "UPDATE workspaces SET mode = 'business' WHERE id = $1", &[s.ws]).await;
+    exec(
+        &base,
+        "UPDATE workspaces SET mode = 'business' WHERE id = $1",
+        &[s.ws],
+    )
+    .await;
     // A second administrator.
     let (other, other_member) = (Uuid::now_v7(), Uuid::now_v7());
-    exec(&base, "INSERT INTO users (id, display_name) VALUES ($1, 'Pat Partner')", &[other]).await;
+    exec(
+        &base,
+        "INSERT INTO users (id, display_name) VALUES ($1, 'Pat Partner')",
+        &[other],
+    )
+    .await;
     exec(
         &base,
         "INSERT INTO workspace_members (id, workspace_id, user_id) VALUES ($1, $2, $3)",
@@ -450,7 +526,12 @@ async fn business_workspace_keeps_its_records_and_the_audit_chain_stays_valid(ba
     let their_key = seed_support(&base, &fakes.store, s.ws, other, 22).await;
     audit(&base, s.ws, s.user, 3).await;
     audit(&base, s.ws, other, 2).await;
-    let rows_before = count(&base, "SELECT count(*) FROM audit_log WHERE workspace_id = $1", s.ws).await;
+    let rows_before = count(
+        &base,
+        "SELECT count(*) FROM audit_log WHERE workspace_id = $1",
+        s.ws,
+    )
+    .await;
     let pool = worker_pool(&base).await;
 
     request_restore_request(&base, s.user).await;
@@ -458,9 +539,28 @@ async fn business_workspace_keeps_its_records_and_the_audit_chain_stays_valid(ba
     assert_eq!(purge_due(&pool, &fakes.deps()).await.unwrap(), 1);
 
     // The workspace and its records stay.
-    assert_eq!(count(&base, "SELECT count(*) FROM workspaces WHERE id = $1", s.ws).await, 1);
-    assert_eq!(count(&base, "SELECT count(*) FROM recipes WHERE workspace_id = $1", s.ws).await, 1);
-    assert_eq!(count(&base, "SELECT count(*) FROM batches WHERE workspace_id = $1", s.ws).await, 1);
+    assert_eq!(
+        count(&base, "SELECT count(*) FROM workspaces WHERE id = $1", s.ws).await,
+        1
+    );
+    assert_eq!(
+        count(
+            &base,
+            "SELECT count(*) FROM recipes WHERE workspace_id = $1",
+            s.ws
+        )
+        .await,
+        1
+    );
+    assert_eq!(
+        count(
+            &base,
+            "SELECT count(*) FROM batches WHERE workspace_id = $1",
+            s.ws
+        )
+        .await,
+        1
+    );
     // The user's membership is closed, the other one is open.
     let active: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM workspace_members WHERE workspace_id = $1 AND deleted_at IS NULL AND status = 'active'",
@@ -471,8 +571,24 @@ async fn business_workspace_keeps_its_records_and_the_audit_chain_stays_valid(ba
     .unwrap();
     assert_eq!(active, 1);
     // The user's support data is gone, the other member's data stays.
-    assert_eq!(count(&base, "SELECT count(*) FROM support_requests WHERE created_by = $1", s.user).await, 0);
-    assert_eq!(count(&base, "SELECT count(*) FROM support_requests WHERE created_by = $1", other).await, 1);
+    assert_eq!(
+        count(
+            &base,
+            "SELECT count(*) FROM support_requests WHERE created_by = $1",
+            s.user
+        )
+        .await,
+        0
+    );
+    assert_eq!(
+        count(
+            &base,
+            "SELECT count(*) FROM support_requests WHERE created_by = $1",
+            other
+        )
+        .await,
+        1
+    );
     assert_eq!(*fakes.issues.scrubbed.lock().unwrap(), vec![21]);
     assert_eq!(fakes.store.keys(), vec![their_key]);
     // Created-by references still point to the tombstone, which shows no personal data.
@@ -483,12 +599,22 @@ async fn business_workspace_keeps_its_records_and_the_audit_chain_stays_valid(ba
             .await
             .unwrap();
     assert_eq!(tomb, (String::new(), None));
-    let by: i64 = count(&base, "SELECT count(*) FROM recipe_versions WHERE approved_by = $1", s.user).await;
+    let by: i64 = count(
+        &base,
+        "SELECT count(*) FROM recipe_versions WHERE approved_by = $1",
+        s.user,
+    )
+    .await;
     assert_eq!(by, 1);
 
     // The audit log keeps its rows (one more row says "purged"), names the user by UUID only
     // and the chain still verifies.
-    let rows_after = count(&base, "SELECT count(*) FROM audit_log WHERE workspace_id = $1", s.ws).await;
+    let rows_after = count(
+        &base,
+        "SELECT count(*) FROM audit_log WHERE workspace_id = $1",
+        s.ws,
+    )
+    .await;
     assert_eq!(rows_after, rows_before + 1);
     let text: String = sqlx::query_scalar(
         "SELECT string_agg(to_jsonb(a)::text, ' ') FROM audit_log a WHERE workspace_id = $1",
@@ -512,7 +638,12 @@ async fn a_home_workspace_with_another_administrator_stays(base: PgPool) {
     let fakes = Fakes::new();
     let s = seed(&base).await;
     let (other, other_member) = (Uuid::now_v7(), Uuid::now_v7());
-    exec(&base, "INSERT INTO users (id, display_name) VALUES ($1, 'Pat')", &[other]).await;
+    exec(
+        &base,
+        "INSERT INTO users (id, display_name) VALUES ($1, 'Pat')",
+        &[other],
+    )
+    .await;
     exec(
         &base,
         "INSERT INTO workspace_members (id, workspace_id, user_id) VALUES ($1, $2, $3)",
@@ -526,8 +657,19 @@ async fn a_home_workspace_with_another_administrator_stays(base: PgPool) {
     request_restore_request(&base, s.user).await;
     make_due(&base, s.user).await;
     assert_eq!(purge_due(&pool, &fakes.deps()).await.unwrap(), 1);
-    assert_eq!(count(&base, "SELECT count(*) FROM workspaces WHERE id = $1", s.ws).await, 1);
-    assert_eq!(count(&base, "SELECT count(*) FROM batches WHERE workspace_id = $1", s.ws).await, 1);
+    assert_eq!(
+        count(&base, "SELECT count(*) FROM workspaces WHERE id = $1", s.ws).await,
+        1
+    );
+    assert_eq!(
+        count(
+            &base,
+            "SELECT count(*) FROM batches WHERE workspace_id = $1",
+            s.ws
+        )
+        .await,
+        1
+    );
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
@@ -563,7 +705,12 @@ async fn account_data_export_holds_profile_workspace_data_and_files(base: PgPool
     .await
     .unwrap();
     let pool = worker_pool(&base).await;
-    assert_eq!(worker::export::run_pending(&pool, fakes.store.as_ref()).await.unwrap(), 1);
+    assert_eq!(
+        worker::export::run_pending(&pool, fakes.store.as_ref())
+            .await
+            .unwrap(),
+        1
+    );
     let (status, key): (String, Option<String>) =
         sqlx::query_as("SELECT status, result_object_key FROM export_jobs WHERE id = $1")
             .bind(job)
@@ -571,11 +718,20 @@ async fn account_data_export_holds_profile_workspace_data_and_files(base: PgPool
             .await
             .unwrap();
     assert_eq!(status, "done");
-    let zip = fakes.store.objects.lock().unwrap().get(&key.unwrap()).cloned().unwrap();
+    let zip = fakes
+        .store
+        .objects
+        .lock()
+        .unwrap()
+        .get(&key.unwrap())
+        .cloned()
+        .unwrap();
     assert_eq!(&zip[..4], b"PK\x03\x04");
     let has = |needle: &str| zip.windows(needle.len()).any(|w| w == needle.as_bytes());
     for name in [
-        "account.json", "workspaces.json", "manifest.json",
+        "account.json",
+        "workspaces.json",
+        "manifest.json",
         &format!("workspaces/{}/recipes.beerjson", s.ws),
         &format!("workspaces/{}/water_profiles.json", s.ws),
         &format!("workspaces/{}/devices.json", s.ws),
@@ -587,7 +743,13 @@ async fn account_data_export_holds_profile_workspace_data_and_files(base: PgPool
         assert!(has(name), "{name} is missing");
     }
     // Profile and content are in the file; secrets are not.
-    for text in [NAME, "Tap Water", "Fermenter Spindel", "Please help", "Phone"] {
+    for text in [
+        NAME,
+        "Tap Water",
+        "Fermenter Spindel",
+        "Please help",
+        "Phone",
+    ] {
         assert!(has(text), "{text} is missing");
     }
     assert!(!has("apple-refresh-token"));

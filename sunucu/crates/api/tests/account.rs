@@ -206,7 +206,14 @@ async fn request_closes_sessions_and_restore_brings_the_account_back(pool: PgPoo
     assert_eq!(user2, user);
     let status = as_user(&w, &token2, "GET", "/v1/me/deletion", None).await;
     assert_eq!(status.body["state"], "pending");
-    let closed = as_user(&w, &token2, "GET", &format!("/v1/workspaces/{ws}/trash"), None).await;
+    let closed = as_user(
+        &w,
+        &token2,
+        "GET",
+        &format!("/v1/workspaces/{ws}/trash"),
+        None,
+    )
+    .await;
     assert!(
         closed.status == StatusCode::FORBIDDEN || closed.status == StatusCode::NOT_FOUND,
         "{:?}",
@@ -222,7 +229,14 @@ async fn request_closes_sessions_and_restore_brings_the_account_back(pool: PgPoo
     assert_eq!(restored.body["state"], "none");
     let nothing = as_user(&w, &token3, "DELETE", "/v1/me/deletion", None).await;
     assert_eq!(nothing.status, StatusCode::NOT_FOUND);
-    let open = as_user(&w, &token3, "GET", &format!("/v1/workspaces/{ws}/trash"), None).await;
+    let open = as_user(
+        &w,
+        &token3,
+        "GET",
+        &format!("/v1/workspaces/{ws}/trash"),
+        None,
+    )
+    .await;
     assert_eq!(open.status, StatusCode::OK, "{:?}", open.body);
 
     // Request again after the restore: a new waiting time starts.
@@ -285,17 +299,28 @@ async fn data_export_queues_one_account_job_a_day(pool: PgPool) {
     assert_eq!(r.status, StatusCode::ACCEPTED, "{:?}", r.body);
     assert_eq!(r.body["status"], "queued");
     let id = r.body["id"].as_str().unwrap();
-    let (scope, workspace, by): (String, Uuid, Uuid) = sqlx::query_as(
-        "SELECT scope, workspace_id, created_by FROM export_jobs WHERE id = $1",
-    )
-    .bind(id.parse::<Uuid>().unwrap())
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let (scope, workspace, by): (String, Uuid, Uuid) =
+        sqlx::query_as("SELECT scope, workspace_id, created_by FROM export_jobs WHERE id = $1")
+            .bind(id.parse::<Uuid>().unwrap())
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!((scope.as_str(), workspace, by), ("account_data", ws, user));
     let again = as_user(&w, &token, "POST", "/v1/me/data-export", Some(json!({}))).await;
-    assert_eq!(again.status, StatusCode::TOO_MANY_REQUESTS, "{:?}", again.body);
-    let read = as_user(&w, &token, "GET", &format!("/v1/me/data-export/{ws}/{id}"), None).await;
+    assert_eq!(
+        again.status,
+        StatusCode::TOO_MANY_REQUESTS,
+        "{:?}",
+        again.body
+    );
+    let read = as_user(
+        &w,
+        &token,
+        "GET",
+        &format!("/v1/me/data-export/{ws}/{id}"),
+        None,
+    )
+    .await;
     assert_eq!(read.status, StatusCode::OK, "{:?}", read.body);
     assert_eq!(read.body["status"], "queued");
     let other = as_user(
@@ -306,5 +331,10 @@ async fn data_export_queues_one_account_job_a_day(pool: PgPool) {
         Some(json!({"workspace_id": Uuid::now_v7()})),
     )
     .await;
-    assert_eq!(other.status, StatusCode::UNPROCESSABLE_ENTITY, "{:?}", other.body);
+    assert_eq!(
+        other.status,
+        StatusCode::UNPROCESSABLE_ENTITY,
+        "{:?}",
+        other.body
+    );
 }

@@ -413,7 +413,10 @@ pub fn routes(state: &AppState) -> Router<AppState> {
                     .delete(deletion_restore),
             )
             .route("/v1/me/data-export", post(data_export_create))
-            .route("/v1/me/data-export/{workspace_id}/{id}", get(data_export_get)),
+            .route(
+                "/v1/me/data-export/{workspace_id}/{id}",
+                get(data_export_get),
+            ),
     )
 }
 

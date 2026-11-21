@@ -360,7 +360,8 @@ async fn fill_workspace(
             opt_text(r, "notes"),
         ]));
     }
-    zip.add(&name_of("batches.csv"), batches.as_bytes()).map_err(zerr)?;
+    zip.add(&name_of("batches.csv"), batches.as_bytes())
+        .map_err(zerr)?;
     let batch_count = rows.len();
 
     // Stock lots.
@@ -400,7 +401,8 @@ async fn fill_workspace(
             opt_text(r, "notes"),
         ]));
     }
-    zip.add(&name_of("stock_lots.csv"), stock.as_bytes()).map_err(zerr)?;
+    zip.add(&name_of("stock_lots.csv"), stock.as_bytes())
+        .map_err(zerr)?;
 
     // Equipment and own ingredients as JSON.
     let equipment: Value = sqlx::query_scalar(
@@ -608,7 +610,8 @@ pub async fn build_account_data(
         .fetch_one(pool)
         .await
         .map_err(db_err)?;
-    zip.add("account.json", &json_bytes(&profile)).map_err(zerr)?;
+    zip.add("account.json", &json_bytes(&profile))
+        .map_err(zerr)?;
     let members: Vec<(Uuid, String, bool, Uuid)> = sqlx::query_as(
         "SELECT workspace_id, mode, sole_admin, member_id FROM account_export_workspaces($1)",
     )
@@ -669,7 +672,8 @@ pub async fn build_account_data(
         "scope": "account_data",
         "files": ["account.json", "workspaces.json", "workspaces/<id>/me/", "workspaces/<id>/"],
     });
-    zip.add("manifest.json", &json_bytes(&manifest)).map_err(zerr)?;
+    zip.add("manifest.json", &json_bytes(&manifest))
+        .map_err(zerr)?;
     Ok(Built {
         bytes: zip.finish().map_err(zerr)?,
         content_type: "application/zip",
@@ -686,11 +690,13 @@ fn context(ws: Uuid) -> DbContext {
 }
 
 async fn load_job(tx: &mut PgConnection, id: Uuid) -> Result<Job> {
-    let row = sqlx::query("SELECT scope, scope_id, format, params, created_by FROM export_jobs WHERE id = $1")
-        .bind(id)
-        .fetch_one(&mut *tx)
-        .await
-        .map_err(db::Error::from)?;
+    let row = sqlx::query(
+        "SELECT scope, scope_id, format, params, created_by FROM export_jobs WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db::Error::from)?;
     let params: Value = row.get("params");
     let time = |k: &str| {
         params

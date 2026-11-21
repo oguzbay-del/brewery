@@ -6,6 +6,7 @@
 //! (to be verified against the live service).
 
 use std::{
+    fmt::Write as _,
     sync::Mutex,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -78,7 +79,7 @@ fn form_encode(value: &str) -> String {
         if b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b'~') {
             out.push(char::from(b));
         } else {
-            out.push_str(&format!("%{b:02X}"));
+            let _ = write!(out, "%{b:02X}");
         }
     }
     out
@@ -112,12 +113,9 @@ impl HttpApple {
         let der = STANDARD
             .decode(body.trim())
             .map_err(|e| AppleError::Config(format!("private key is not base64: {e}")))?;
-        let key = EcdsaKeyPair::from_pkcs8(
-            &ECDSA_P256_SHA256_FIXED_SIGNING,
-            &der,
-            &SystemRandom::new(),
-        )
-        .map_err(|e| AppleError::Config(format!("private key is not valid: {e}")))?;
+        let key =
+            EcdsaKeyPair::from_pkcs8(&ECDSA_P256_SHA256_FIXED_SIGNING, &der, &SystemRandom::new())
+                .map_err(|e| AppleError::Config(format!("private key is not valid: {e}")))?;
         let _ = rustls::crypto::ring::default_provider().install_default();
         let http = reqwest::Client::builder()
             .timeout(Duration::from_secs(15))
@@ -166,7 +164,11 @@ impl HttpApple {
         let header = json!({"alg": "ES256", "kid": self.key_id, "typ": "JWT"});
         let claims = json!({"iss": self.team_id, "iat": now, "exp": now + 300,
                             "aud": AUDIENCE, "sub": self.client_id});
-        let signing_input = format!("{}.{}", b64(header.to_string().as_bytes()), b64(claims.to_string().as_bytes()));
+        let signing_input = format!(
+            "{}.{}",
+            b64(header.to_string().as_bytes()),
+            b64(claims.to_string().as_bytes())
+        );
         let sig = self
             .key
             .sign(&SystemRandom::new(), signing_input.as_bytes())
@@ -271,7 +273,7 @@ impl AppleClient for FakeApple {
 
     fn revoke<'a>(&'a self, refresh_token: &'a str) -> BoxFuture<'a, Result<(), AppleError>> {
         Box::pin(async move {
-            if self.fail_revoke.lock().map(|g| *g).unwrap_or(false) {
+            if self.fail_revoke.lock().is_ok_and(|g| *g) {
                 return Err(AppleError::Unavailable("fake failure".into()));
             }
             if let Ok(mut g) = self.revoked.lock() {
@@ -300,7 +302,10 @@ mod tests {
 
     #[test]
     fn form_values_are_percent_encoded() {
-        assert_eq!(form_body(&[("a", "x y&z=1"), ("b", "ok-_.~")]), "a=x%20y%26z%3D1&b=ok-_.~");
+        assert_eq!(
+            form_body(&[("a", "x y&z=1"), ("b", "ok-_.~")]),
+            "a=x%20y%26z%3D1&b=ok-_.~"
+        );
     }
 
     #[tokio::test]

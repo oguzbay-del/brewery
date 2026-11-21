@@ -393,11 +393,11 @@ pub type BoxFuture<'a, T> = std::pin::Pin<Box<dyn std::future::Future<Output = T
 /// it; tests use a fake.
 pub trait IssueScrubber: Send + Sync {
     /// See [`GitHub::scrub_issue`].
-    fn scrub<'a>(&'a self, issue: i64) -> BoxFuture<'a, Result<(), GitHubError>>;
+    fn scrub(&self, issue: i64) -> BoxFuture<'_, Result<(), GitHubError>>;
 }
 
 impl IssueScrubber for GitHub {
-    fn scrub<'a>(&'a self, issue: i64) -> BoxFuture<'a, Result<(), GitHubError>> {
+    fn scrub(&self, issue: i64) -> BoxFuture<'_, Result<(), GitHubError>> {
         Box::pin(self.scrub_issue(issue))
     }
 }

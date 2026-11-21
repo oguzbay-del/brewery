@@ -392,7 +392,10 @@ impl AuthServices {
             return;
         };
         let result = async {
-            let token = client.exchange_code(code).await.map_err(|e| e.to_string())?;
+            let token = client
+                .exchange_code(code)
+                .await
+                .map_err(|e| e.to_string())?;
             let sealed = envelope.seal(token.as_bytes()).map_err(|e| e.to_string())?;
             let mut tx = db::begin(&self.db, &db::DbContext::user(user_id, None))
                 .await
