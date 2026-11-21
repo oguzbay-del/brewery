@@ -29,8 +29,6 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: agent-bridge/package-lock.json
       - name: Install dependencies
         run: npm install
       - name: Type-check Worker
