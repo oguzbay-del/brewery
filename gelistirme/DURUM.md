@@ -3,10 +3,10 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task (new session):** these tasks are open and do not depend on each other. Give each chain to one agent; run at most 2–3 agents at the same time.
-- Chain A: T2.23 stock → T2.27 search.
-- Chain B: T2.24 notifications → T2.29 support requests → T2.30 support panel.
-- Single tasks: T2.25 device intake, T2.26 import and export, T2.37 recently deleted, T2.40 equipment efficiency fields.
+**Next task (new session):** these tasks are open or in progress (2026-11-21).
+- Chain B: T2.24 notifications → T2.29 support requests → T2.30 support panel (agent in progress).
+- T2.25 device intake and T2.26 import and export (agents in progress).
+- Done on 2026-11-21: T2.23, T2.27, T2.40, T2.37.
 - Done on 2026-11-20: T2.19, T2.20, T2.21, T2.22, T2.28, T2.38, T2.39. Full api tests: 168 passed (with mailpit, NATS and the object store running).
 - 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
 - 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
@@ -55,6 +55,9 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - T2.30: only `app_worker` writes `subscriptions` and `entitlements`. Support corrections go through the worker (decision 2026-11-20).
 - T2.17: the field limits are a product proposal (`verify: true`, to be verified). Done in T2.38 (2026-11-20): the engine and the Python references use the exact unit definitions; 235 vectors were generated again; the tolerance did not change.
 - T2.28: the web payment provider is Paddle (O6). The Paddle adapter (webhook signature, events) is not written yet. Other open items are in ADR-0002 (legal and cost decisions for Terraform, cloud account O4, AppIcon).
+
+- T2.23: a yeast line in `count` units is not deducted (`skipped`, `unit_mismatch`). Add a pack amount to the batch actual record. The stock endpoints do not publish SSE events yet. Search has no paging (`limit` 1–50).
+- T2.37: `trash_list` and `trash_restore` have `x-permission: none`, because the permission depends on the kind (to be decided). Restore writes no audit row and no outbox event (to be decided). `require_for` scoped permissions do not apply to trash. The list has no cursor.
 
 ## Recent decisions
 
