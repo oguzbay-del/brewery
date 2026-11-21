@@ -177,6 +177,7 @@ fn loc_args(params: &Value) -> Vec<String> {
 ///
 /// # Errors
 /// Database errors, or [`Error::Delivery`] when every push failed in a way a retry can fix.
+#[allow(clippy::too_many_lines)]
 pub async fn deliver_one(
     conn: &mut PgConnection,
     d: &Deliverer,

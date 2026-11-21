@@ -1,7 +1,12 @@
 //! Helpers of the worker integration tests: seed data, a worker pool and in-process fake HTTP
 //! servers (fake APNs, fake GitHub). They need PostgreSQL (`#[sqlx::test]`).
 
-#![allow(dead_code, clippy::unwrap_used, clippy::expect_used)]
+#![allow(
+    dead_code,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::items_after_statements
+)]
 
 use std::{
     collections::VecDeque,

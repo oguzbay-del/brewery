@@ -143,7 +143,11 @@ fn check_body(field: &str, body: &str) -> ApiResult<()> {
     Ok(())
 }
 
-async fn own_request(tx: &mut PgConnection, ctx: &RequestContext, id: Uuid) -> ApiResult<(String, Uuid)> {
+async fn own_request(
+    tx: &mut PgConnection,
+    ctx: &RequestContext,
+    id: Uuid,
+) -> ApiResult<(String, Uuid)> {
     sqlx::query_as(
         "SELECT status, workspace_id FROM support_requests
          WHERE id = $1 AND created_by = $2 AND deleted_at IS NULL FOR UPDATE",
@@ -339,9 +343,12 @@ pub async fn supportrequest_list(
         .bind(i64::from(paging.limit) + 1)
         .fetch_all(&mut *tx)
         .await?;
-    Ok(Json(Page::from_rows(rows, paging.limit, &paging.sort, |r| {
-        id_cursor(r.id)
-    })))
+    Ok(Json(Page::from_rows(
+        rows,
+        paging.limit,
+        &paging.sort,
+        |r| id_cursor(r.id),
+    )))
 }
 
 async fn detail(tx: &mut PgConnection, ctx: &RequestContext, id: Uuid) -> ApiResult<RequestDetail> {
@@ -562,7 +569,10 @@ pub fn routes(state: &AppState) -> Router<AppState> {
         state,
         Router::new()
             .route(BASE, post(supportrequest_create))
-            .route(&format!("{BASE}/{{id}}/messages"), post(supportmessage_create)),
+            .route(
+                &format!("{BASE}/{{id}}/messages"),
+                post(supportmessage_create),
+            ),
     );
     let others = Router::new()
         .route(BASE, get(supportrequest_list))

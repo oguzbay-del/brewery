@@ -6,6 +6,7 @@
 - The consumer `device-readings` (`devices::apply::ReadingHandler`, T2.25) writes `measurements` with source `device` for the batch that the device is paired with, and writes the event `batch.measurement_added`.
 - Notification consumers (T2.24): `notifier-alerts` (`notifier::alert::AlertHandler`) and `notifier-delivery` (`notifier::deliver::DeliveryHandler`). The task `notifier::tick::run` delivers deferred notifications, wakes snoozed ones, fires reminders and sends the daily summary.
 - Support consumers (T2.29): `support-sync` (`support::sync::SyncHandler`), `support-github` (`support::webhook::GithubHandler`) and the retry task `support::sync::run_jobs` (every 10 seconds). Settings: `GITHUB_REPO` and the credentials (see `support/CLAUDE.md`).
+- Correction consumer (T2.30): `support-corrections` (`support::panel::CorrectionHandler`) applies the correction requests of the support panel (manual entitlement, ending an entitlement) and writes the audit row.
 - Port `PORT` (default 8081).
 - Maintenance jobs (`maintenance.rs`, T2.39). A tick runs each hour. `maintenance_runs` lets each job run once for each interval, also with many replicas.
   - Daily: `audit_anchor::write_daily_digest` writes the audit chain heads and the workspace deletion records to `audit-digests/YYYY-MM-DD.json` with an object lock.

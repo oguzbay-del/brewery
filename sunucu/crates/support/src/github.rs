@@ -46,7 +46,7 @@ pub enum Auth {
     /// A fixed token.
     Token(String),
     /// A GitHub App installation token.
-    App(AppAuth),
+    App(Box<AppAuth>),
 }
 
 /// The client.
@@ -91,7 +91,12 @@ impl AppAuth {
         let input = format!("{head}.{body}");
         let mut sig = vec![0; self.key.public().modulus_len()];
         self.key
-            .sign(&RSA_PKCS1_SHA256, &SystemRandom::new(), input.as_bytes(), &mut sig)
+            .sign(
+                &RSA_PKCS1_SHA256,
+                &SystemRandom::new(),
+                input.as_bytes(),
+                &mut sig,
+            )
             .map_err(|e| format!("signing failed: {e}"))?;
         Ok(format!("{input}.{}", URL_SAFE_NO_PAD.encode(sig)))
     }
@@ -131,7 +136,7 @@ impl GitHub {
             );
             let pem = std::fs::read_to_string(file).ok()?;
             match AppAuth::from_pem(&app, &inst, &pem) {
-                Ok(a) => Auth::App(a),
+                Ok(a) => Auth::App(Box::new(a)),
                 Err(e) => {
                     tracing::error!(error = %e, "GitHub App key unusable; support sync is off");
                     return None;
@@ -169,9 +174,7 @@ impl GitHub {
                     "{}/app/installations/{}/access_tokens",
                     self.api_url, app.installation_id
                 );
-                let reply = self
-                    .send(Method::POST, &url, &jwt, None)
-                    .await?;
+                let reply = self.send(Method::POST, &url, &jwt, None).await?;
                 let token = reply["token"]
                     .as_str()
                     .ok_or_else(|| GitHubError::Rejected("no installation token".to_owned()))?
@@ -234,7 +237,12 @@ impl GitHub {
         )))
     }
 
-    async fn call(&self, method: Method, path: &str, body: Option<Value>) -> Result<Value, GitHubError> {
+    async fn call(
+        &self,
+        method: Method,
+        path: &str,
+        body: Option<Value>,
+    ) -> Result<Value, GitHubError> {
         let token = self.token().await?;
         let url = format!("{}/repos/{}{path}", self.api_url, self.repo);
         self.send(method, &url, &token, body.as_ref()).await

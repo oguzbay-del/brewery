@@ -37,7 +37,29 @@ pub enum Outcome {
     Failed(String),
 }
 
-type RequestRow = (i64, String, String, String, Option<Value>, Option<i64>, Option<String>, String, String);
+type RequestRow = (
+    i64,
+    String,
+    String,
+    String,
+    Option<Value>,
+    Option<i64>,
+    Option<String>,
+    String,
+    String,
+);
+
+type MessageRow = (
+    Uuid,
+    String,
+    String,
+    String,
+    Option<i64>,
+    Option<i64>,
+    i64,
+    bool,
+    bool,
+);
 
 /// Labels of an Issue: topic, mode and, while the customer must answer, the waiting label.
 #[must_use]
@@ -107,7 +129,8 @@ pub async fn sync_request(
     .bind(request_id)
     .fetch_optional(&mut *conn)
     .await?;
-    let Some((number, topic, title, status, diagnostics, issue, mut synced_status, mode, alias)) = row
+    let Some((number, topic, title, status, diagnostics, issue, mut synced_status, mode, alias)) =
+        row
     else {
         return Ok(Outcome::Synced);
     };
@@ -159,7 +182,6 @@ pub async fn sync_request(
     };
 
     // 2. Messages: create, edit, delete.
-    type MessageRow = (Uuid, String, String, String, Option<i64>, Option<i64>, i64, bool, bool);
     let messages: Vec<MessageRow> = sqlx::query_as(
         "SELECT id, author_kind, visibility, body, github_comment_id, github_synced_version,
                 version, retracted_at IS NOT NULL, github_deleted_at IS NOT NULL
@@ -234,13 +256,11 @@ pub async fn sync_request(
             .await
         {
             Ok(()) => {
-                sqlx::query(
-                    "UPDATE support_requests SET github_synced_status = $2 WHERE id = $1",
-                )
-                .bind(request_id)
-                .bind(&status)
-                .execute(&mut *conn)
-                .await?;
+                sqlx::query("UPDATE support_requests SET github_synced_status = $2 WHERE id = $1")
+                    .bind(request_id)
+                    .bind(&status)
+                    .execute(&mut *conn)
+                    .await?;
             }
             Err(e) => return Ok(failed(&e)),
         }
@@ -385,7 +405,9 @@ pub async fn run_due(pool: &PgPool, gh: &GitHub) -> Result<usize> {
                 .await?;
             }
             Outcome::Later(wait) => {
-                let delay = wait.unwrap_or_else(|| backoff(attempts + 1)).max(Duration::from_secs(1));
+                let delay = wait
+                    .unwrap_or_else(|| backoff(attempts + 1))
+                    .max(Duration::from_secs(1));
                 sqlx::query(
                     "UPDATE scheduled_jobs SET attempts = attempts + 1, last_error = 'unavailable',
                          run_at = now() + make_interval(secs => $2) WHERE id = $1",

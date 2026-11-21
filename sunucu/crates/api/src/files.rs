@@ -101,7 +101,7 @@ pub struct Attachment {
     pub id: Uuid,
     /// `photo`, `note` or `file`.
     pub kind: String,
-    /// `batch` or `tasting_note`.
+    /// `batch`, `tasting_note` or `support_message`.
     pub record_kind: String,
     /// The record it belongs to.
     pub record_id: Uuid,
@@ -241,7 +241,7 @@ pub struct DownloadLink {
 pub struct NewAttachment {
     /// `photo`, `note` or `file`.
     pub kind: String,
-    /// `batch` or `tasting_note`.
+    /// `batch`, `tasting_note` or `support_message`.
     pub record_kind: String,
     /// The record it belongs to.
     pub record_id: Uuid,
@@ -277,7 +277,7 @@ pub struct NewScannedDocument {
 /// Filters of `GET .../attachments`.
 #[derive(Debug, Default, Deserialize)]
 pub struct AttachmentFilter {
-    /// `batch` or `tasting_note`.
+    /// `batch`, `tasting_note` or `support_message`.
     pub record_kind: Option<String>,
     /// The record.
     pub record_id: Option<Uuid>,
@@ -853,7 +853,7 @@ pub async fn attachment_complete(
     operation_id = "attachment_list",
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace"),
-        ("record_kind" = Option<String>, Query, description = "`batch` or `tasting_note`"),
+        ("record_kind" = Option<String>, Query, description = "`batch`, `tasting_note` or `support_message`"),
         ("record_id" = Option<Uuid>, Query, description = "Record the files belong to"),
         ("limit" = Option<u32>, Query, description = "Page size, 1..=200 (default 50)"),
         ("cursor" = Option<String>, Query, description = "`next_cursor` of the previous page"),

@@ -20,6 +20,7 @@ async fn stopped(mut rx: watch::Receiver<bool>) {
 }
 
 /// Runs until `stop` turns `true`.
+#[allow(clippy::too_many_lines)]
 pub async fn run(stop: watch::Receiver<bool>) {
     let (Ok(database_url), Ok(nats_url)) = (db::database_url(), std::env::var("NATS_URL")) else {
         tracing::warn!("DATABASE_URL or NATS_URL missing; outbox relay and consumers are off");
@@ -103,9 +104,10 @@ pub async fn run(stop: watch::Receiver<bool>) {
         stop.clone(),
     ));
     let issue_client = support::github::GitHub::from_env().map(std::sync::Arc::new);
-    let bot = issue_client
-        .as_ref()
-        .map_or_else(|| "demleme-support[bot]".to_owned(), |g| g.bot_login().to_owned());
+    let bot = issue_client.as_ref().map_or_else(
+        || "demleme-support[bot]".to_owned(),
+        |g| g.bot_login().to_owned(),
+    );
     let support_sync = tokio::spawn(consumer::run(
         pool.clone(),
         js.clone(),
@@ -118,6 +120,16 @@ pub async fn run(stop: watch::Receiver<bool>) {
         js.clone(),
         consumer::ConsumerConfig::new(support::GITHUB_CONSUMER, &support::github_filter()),
         std::sync::Arc::new(support::webhook::GithubHandler::new(&bot)),
+        stopped(stop.clone()),
+    ));
+    let support_corrections = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(
+            support::panel::CORRECTION_CONSUMER,
+            &support::panel::correction_filter(),
+        ),
+        std::sync::Arc::new(support::panel::CorrectionHandler),
         stopped(stop.clone()),
     ));
     let support_jobs = tokio::spawn(support::sync::run_jobs(
@@ -149,6 +161,7 @@ pub async fn run(stop: watch::Receiver<bool>) {
         notify_tick,
         support_sync,
         support_hook,
+        support_corrections,
         support_jobs,
         janitor,
         maintenance_task

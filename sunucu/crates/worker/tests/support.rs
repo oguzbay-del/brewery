@@ -46,10 +46,9 @@ async fn fake_github() -> Fake {
         let path = seen.path.as_str();
         match (seen.method.as_str(), path) {
             ("POST", "/repos/o/r/issues") => (201, json!({"number": 7})),
-            ("POST", p) if p.ends_with("/comments") => (
-                201,
-                json!({"id": comments.fetch_add(1, Ordering::SeqCst)}),
-            ),
+            ("POST", p) if p.ends_with("/comments") => {
+                (201, json!({"id": comments.fetch_add(1, Ordering::SeqCst)}))
+            }
             ("DELETE", _) => (204, Value::Null),
             _ => (200, json!({})),
         }
@@ -118,14 +117,20 @@ async fn request_becomes_an_issue_and_changes_follow(base: PgPool) {
     let gh = client(&fake);
     let (request, message, number) = open_request(&base, &s).await;
 
-    assert_eq!(run_sync(&pool, &gh, &s, request).await, sync::Outcome::Synced);
+    assert_eq!(
+        run_sync(&pool, &gh, &s, request).await,
+        sync::Outcome::Synced
+    );
     let seen = fake.seen();
     assert_eq!(seen.len(), 2);
     let issue = &seen[0];
     assert_eq!(issue.path, "/repos/o/r/issues");
     assert_eq!(issue.body["title"], format!("#{number} Cannot publish"));
     let text = issue.body["body"].as_str().unwrap();
-    assert!(text.contains(&format!("pseudonym-{}", s.ws)), "alias in the Issue");
+    assert!(
+        text.contains(&format!("pseudonym-{}", s.ws)),
+        "alias in the Issue"
+    );
     assert!(text.contains("2.3.1"));
     assert!(!text.contains("example.com"), "no e-mail in the Issue");
     assert_eq!(issue.body["labels"], json!(["konu:recipes", "mod:ev"]));
@@ -144,7 +149,10 @@ async fn request_becomes_an_issue_and_changes_follow(base: PgPool) {
     assert_eq!((issue_no, comment_id), (7, 100));
 
     // A second run changes nothing.
-    assert_eq!(run_sync(&pool, &gh, &s, request).await, sync::Outcome::Synced);
+    assert_eq!(
+        run_sync(&pool, &gh, &s, request).await,
+        sync::Outcome::Synced
+    );
     assert_eq!(fake.seen().len(), 2);
 
     // Edit, then retract, of the customer message.
@@ -156,7 +164,10 @@ async fn request_becomes_an_issue_and_changes_follow(base: PgPool) {
     run_sync(&pool, &gh, &s, request).await;
     let seen = fake.seen();
     let edit = seen.last().unwrap();
-    assert_eq!((edit.method.as_str(), edit.path.as_str()), ("PATCH", "/repos/o/r/issues/comments/100"));
+    assert_eq!(
+        (edit.method.as_str(), edit.path.as_str()),
+        ("PATCH", "/repos/o/r/issues/comments/100")
+    );
     assert!(edit.body["body"].as_str().unwrap().contains("at all"));
     sqlx::query("UPDATE support_messages SET retracted_at = now() WHERE id = $1")
         .bind(message)
@@ -165,7 +176,10 @@ async fn request_becomes_an_issue_and_changes_follow(base: PgPool) {
         .unwrap();
     run_sync(&pool, &gh, &s, request).await;
     let del = fake.seen().last().cloned().unwrap();
-    assert_eq!((del.method.as_str(), del.path.as_str()), ("DELETE", "/repos/o/r/issues/comments/100"));
+    assert_eq!(
+        (del.method.as_str(), del.path.as_str()),
+        ("DELETE", "/repos/o/r/issues/comments/100")
+    );
     let before = fake.seen().len();
     run_sync(&pool, &gh, &s, request).await;
     assert_eq!(fake.seen().len(), before, "a retracted message syncs once");
@@ -180,7 +194,12 @@ async fn request_becomes_an_issue_and_changes_follow(base: PgPool) {
     let patch = fake.seen().last().cloned().unwrap();
     assert_eq!(patch.path, "/repos/o/r/issues/7");
     assert_eq!(patch.body["state"], "open");
-    assert!(patch.body["labels"].as_array().unwrap().contains(&json!("bekliyor:musteri")));
+    assert!(
+        patch.body["labels"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("bekliyor:musteri"))
+    );
     sqlx::query("UPDATE support_requests SET status = 'resolved' WHERE id = $1")
         .bind(request)
         .execute(&base)
@@ -189,7 +208,12 @@ async fn request_becomes_an_issue_and_changes_follow(base: PgPool) {
     run_sync(&pool, &gh, &s, request).await;
     let patch = fake.seen().last().cloned().unwrap();
     assert_eq!(patch.body["state"], "closed");
-    assert!(!patch.body["labels"].as_array().unwrap().contains(&json!("bekliyor:musteri")));
+    assert!(
+        !patch.body["labels"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("bekliyor:musteri"))
+    );
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
@@ -215,13 +239,19 @@ async fn when_github_is_down_the_request_syncs_later(base: PgPool) {
     // The retry job runs once GitHub answers, and only one job exists for the request.
     let mut tx = pool.begin().await.unwrap();
     enter_workspace(&mut tx, s.ws).await.unwrap();
-    sync::schedule(&mut tx, s.ws, request, Duration::ZERO).await.unwrap();
-    sync::schedule(&mut tx, s.ws, request, Duration::ZERO).await.unwrap();
-    tx.commit().await.unwrap();
-    let jobs: i64 = sqlx::query_scalar("SELECT count(*) FROM scheduled_jobs WHERE kind = 'support.github_sync'")
-        .fetch_one(&base)
+    sync::schedule(&mut tx, s.ws, request, Duration::ZERO)
         .await
         .unwrap();
+    sync::schedule(&mut tx, s.ws, request, Duration::ZERO)
+        .await
+        .unwrap();
+    tx.commit().await.unwrap();
+    let jobs: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM scheduled_jobs WHERE kind = 'support.github_sync'",
+    )
+    .fetch_one(&base)
+    .await
+    .unwrap();
     assert_eq!(jobs, 1);
     assert_eq!(sync::run_due(&pool, &gh).await.unwrap(), 1);
     let issue: Option<i32> =
@@ -231,10 +261,11 @@ async fn when_github_is_down_the_request_syncs_later(base: PgPool) {
             .await
             .unwrap();
     assert_eq!(issue, Some(7));
-    let status: String = sqlx::query_scalar("SELECT status FROM scheduled_jobs WHERE kind = 'support.github_sync'")
-        .fetch_one(&base)
-        .await
-        .unwrap();
+    let status: String =
+        sqlx::query_scalar("SELECT status FROM scheduled_jobs WHERE kind = 'support.github_sync'")
+            .fetch_one(&base)
+            .await
+            .unwrap();
     assert_eq!(status, "done");
 
     // A job that fails again waits longer.
@@ -242,7 +273,9 @@ async fn when_github_is_down_the_request_syncs_later(base: PgPool) {
     fake.fail_next(1, 429);
     let mut tx = pool.begin().await.unwrap();
     enter_workspace(&mut tx, s.ws).await.unwrap();
-    sync::schedule(&mut tx, s.ws, request2, Duration::ZERO).await.unwrap();
+    sync::schedule(&mut tx, s.ws, request2, Duration::ZERO)
+        .await
+        .unwrap();
     tx.commit().await.unwrap();
     assert_eq!(sync::run_due(&pool, &gh).await.unwrap(), 1);
     let (attempts, status, waits): (i32, String, bool) = sqlx::query_as(
@@ -297,20 +330,44 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
 
     let count = |sql: &'static str| {
         let base = base.clone();
-        async move { sqlx::query_scalar::<_, i64>(sql).fetch_one(&base).await.unwrap() }
+        async move {
+            sqlx::query_scalar::<_, i64>(sql)
+                .fetch_one(&base)
+                .await
+                .unwrap()
+        }
     };
     let notifications = || count("SELECT count(*) FROM notifications WHERE kind = 'support.reply'");
 
     // Internal notes: from the team and from anyone else. No notification, no status change.
-    assert_eq!(apply(&pool, "issue_comment", &comment("created", 501, "alice", "Looks like the cache.")).await, Applied::Note);
-    assert_eq!(apply(&pool, "issue_comment", &comment("created", 502, "bob-dev", "Related to #99")).await, Applied::Note);
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 501, "alice", "Looks like the cache.")
+        )
+        .await,
+        Applied::Note
+    );
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 502, "bob-dev", "Related to #99")
+        )
+        .await,
+        Applied::Note
+    );
     assert_eq!(notifications().await, 0);
-    let internal: i64 = count("SELECT count(*) FROM support_messages WHERE visibility = 'internal'").await;
+    let internal: i64 =
+        count("SELECT count(*) FROM support_messages WHERE visibility = 'internal'").await;
     assert_eq!(internal, 2);
-    let author: String = sqlx::query_scalar("SELECT author_kind FROM support_messages WHERE github_comment_id = 502")
-        .fetch_one(&base)
-        .await
-        .unwrap();
+    let author: String = sqlx::query_scalar(
+        "SELECT author_kind FROM support_messages WHERE github_comment_id = 502",
+    )
+    .fetch_one(&base)
+    .await
+    .unwrap();
     assert_eq!(author, "system");
     let status: String = sqlx::query_scalar("SELECT status FROM support_requests WHERE id = $1")
         .bind(request)
@@ -320,16 +377,61 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
     assert_eq!(status, "open");
 
     // Ignored: /yanit from outside the team, the App's own comment, a marked comment, a repeat.
-    assert_eq!(apply(&pool, "issue_comment", &comment("created", 503, "bob-dev", "/yanit Hi")).await, Applied::Ignored);
-    assert_eq!(apply(&pool, "issue_comment", &comment("created", 504, BOT, "/yanit Echo")).await, Applied::Ignored);
-    assert_eq!(apply(&pool, "issue_comment", &comment("created", 505, "alice", "<!-- demleme:msg:x -->\n/yanit Hi")).await, Applied::Ignored);
-    assert_eq!(apply(&pool, "issue_comment", &comment("created", 501, "alice", "Looks like the cache.")).await, Applied::Ignored);
-    assert_eq!(apply(&pool, "issue_comment", &comment("created", 506, "alice", "/yanit")).await, Applied::Ignored);
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 503, "bob-dev", "/yanit Hi")
+        )
+        .await,
+        Applied::Ignored
+    );
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 504, BOT, "/yanit Echo")
+        )
+        .await,
+        Applied::Ignored
+    );
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 505, "alice", "<!-- demleme:msg:x -->\n/yanit Hi")
+        )
+        .await,
+        Applied::Ignored
+    );
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 501, "alice", "Looks like the cache.")
+        )
+        .await,
+        Applied::Ignored
+    );
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 506, "alice", "/yanit")
+        )
+        .await,
+        Applied::Ignored
+    );
     assert_eq!(notifications().await, 0);
 
     // The reply.
     assert_eq!(
-        apply(&pool, "issue_comment", &comment("created", 510, "Alice", "/yanit Please update to 2.3.2.")).await,
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("created", 510, "Alice", "/yanit Please update to 2.3.2.")
+        )
+        .await,
         Applied::Reply
     );
     let (body, visibility): (String, String) = sqlx::query_as(
@@ -338,7 +440,10 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
     .fetch_one(&base)
     .await
     .unwrap();
-    assert_eq!((body.as_str(), visibility.as_str()), ("Please update to 2.3.2.", "customer"));
+    assert_eq!(
+        (body.as_str(), visibility.as_str()),
+        ("Please update to 2.3.2.", "customer")
+    );
     let status: String = sqlx::query_scalar("SELECT status FROM support_requests WHERE id = $1")
         .bind(request)
         .fetch_one(&base)
@@ -349,7 +454,12 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
     // The label goes to the Issue on the next sync.
     run_sync(&pool, &gh, &s, request).await;
     let patch = fake.seen().last().cloned().unwrap();
-    assert!(patch.body["labels"].as_array().unwrap().contains(&json!("bekliyor:musteri")));
+    assert!(
+        patch.body["labels"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("bekliyor:musteri"))
+    );
 
     // Delivery: push and e-mail, without the text of the reply.
     let apns = Fake::start(|_| (200, json!({}))).await;
@@ -377,11 +487,22 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
         .unwrap();
     let mut tx = pool.begin().await.unwrap();
     enter_workspace(&mut tx, s.ws).await.unwrap();
-    let out = deliver_one(&mut tx, &d, s.ws, nid, Utc::now()).await.unwrap();
+    let out = deliver_one(&mut tx, &d, s.ws, nid, Utc::now())
+        .await
+        .unwrap();
     tx.commit().await.unwrap();
-    assert_eq!(out, Outcome::Delivered { pushes: 1, email: true });
+    assert_eq!(
+        out,
+        Outcome::Delivered {
+            pushes: 1,
+            email: true
+        }
+    );
     let push = apns.seen().remove(0);
-    assert_eq!(push.body["aps"]["alert"]["title-loc-key"], "notification.support.reply");
+    assert_eq!(
+        push.body["aps"]["alert"]["title-loc-key"],
+        "notification.support.reply"
+    );
     assert!(!push.body.to_string().contains("2.3.2"));
     let email: String = sqlx::query_scalar("SELECT contact_email FROM users WHERE id = $1")
         .bind(s.user)
@@ -394,7 +515,15 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
     assert!(!mails[0].1.contains("2.3.2"), "the mail has no reply text");
 
     // Edit and delete of the reply on the GitHub side reach the customer record.
-    assert_eq!(apply(&pool, "issue_comment", &comment("edited", 510, "alice", "/yanit Update to 2.3.3.")).await, Applied::Updated);
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("edited", 510, "alice", "/yanit Update to 2.3.3.")
+        )
+        .await,
+        Applied::Updated
+    );
     let (body, edited): (String, bool) = sqlx::query_as(
         "SELECT body, edited_at IS NOT NULL FROM support_messages WHERE github_comment_id = 510",
     )
@@ -402,7 +531,15 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
     .await
     .unwrap();
     assert_eq!((body.as_str(), edited), ("Update to 2.3.3.", true));
-    assert_eq!(apply(&pool, "issue_comment", &comment("deleted", 510, "alice", "")).await, Applied::Updated);
+    assert_eq!(
+        apply(
+            &pool,
+            "issue_comment",
+            &comment("deleted", 510, "alice", "")
+        )
+        .await,
+        Applied::Updated
+    );
     let retracted: bool = sqlx::query_scalar(
         "SELECT retracted_at IS NOT NULL FROM support_messages WHERE github_comment_id = 510",
     )
@@ -412,21 +549,31 @@ async fn yanit_reaches_the_customer_and_notes_do_not(base: PgPool) {
     assert!(retracted);
     // Editing a comment that the application wrote does nothing.
     let marked = comment("edited", 100, "alice", "x");
-    assert_eq!(apply(&pool, "issue_comment", &marked).await, Applied::Ignored);
+    assert_eq!(
+        apply(&pool, "issue_comment", &marked).await,
+        Applied::Ignored
+    );
 
     // Issue events.
-    let issues = |action: &str, login: &str| {
-        json!({"action": action, "issue": {"number": 7}, "sender": {"login": login}})
-    };
-    assert_eq!(apply(&pool, "issues", &issues("closed", BOT)).await, Applied::Ignored);
-    assert_eq!(apply(&pool, "issues", &issues("closed", "alice")).await, Applied::Updated);
+    let issues = |action: &str, login: &str| json!({"action": action, "issue": {"number": 7}, "sender": {"login": login}});
+    assert_eq!(
+        apply(&pool, "issues", &issues("closed", BOT)).await,
+        Applied::Ignored
+    );
+    assert_eq!(
+        apply(&pool, "issues", &issues("closed", "alice")).await,
+        Applied::Updated
+    );
     let status: String = sqlx::query_scalar("SELECT status FROM support_requests WHERE id = $1")
         .bind(request)
         .fetch_one(&base)
         .await
         .unwrap();
     assert_eq!(status, "resolved");
-    assert_eq!(apply(&pool, "issues", &issues("reopened", "alice")).await, Applied::Updated);
+    assert_eq!(
+        apply(&pool, "issues", &issues("reopened", "alice")).await,
+        Applied::Updated
+    );
     let status: String = sqlx::query_scalar("SELECT status FROM support_requests WHERE id = $1")
         .bind(request)
         .fetch_one(&base)
@@ -478,13 +625,11 @@ async fn the_outbox_event_starts_the_sync(base: PgPool) {
     let done = wait_for(15, || {
         let base = base.clone();
         async move {
-            sqlx::query_scalar::<_, Option<i32>>(
-                "SELECT github_issue_number FROM support_requests",
-            )
-            .fetch_one(&base)
-            .await
-            .unwrap()
-            .is_some()
+            sqlx::query_scalar::<_, Option<i32>>("SELECT github_issue_number FROM support_requests")
+                .fetch_one(&base)
+                .await
+                .unwrap()
+                .is_some()
         }
     })
     .await;

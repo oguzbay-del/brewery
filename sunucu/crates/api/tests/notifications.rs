@@ -33,13 +33,15 @@ async fn world(pool: PgPool) -> World {
     insert_user(&pool, user).await;
     insert_user(&pool, other).await;
     for (u, m) in [(user, Uuid::now_v7()), (other, Uuid::now_v7())] {
-        sqlx::query("INSERT INTO workspace_members (id, workspace_id, user_id) VALUES ($1, $2, $3)")
-            .bind(m)
-            .bind(ws)
-            .bind(u)
-            .execute(&pool)
-            .await
-            .unwrap();
+        sqlx::query(
+            "INSERT INTO workspace_members (id, workspace_id, user_id) VALUES ($1, $2, $3)",
+        )
+        .bind(m)
+        .bind(ws)
+        .bind(u)
+        .execute(&pool)
+        .await
+        .unwrap();
     }
     let auth = Arc::new(FakeAuth::default());
     auth.add(user, ws, &["batch.record", "recipe.view"]);
@@ -97,7 +99,14 @@ async fn inbox_shows_own_notifications_and_actions_change_them(pool: PgPool) {
     .await;
     assert_eq!(r.status, StatusCode::NOT_FOUND);
 
-    let act = |body: Value| call("POST", &format!("{base}/{mine}/actions"), w.user, Some(&body));
+    let act = |body: Value| {
+        call(
+            "POST",
+            &format!("{base}/{mine}/actions"),
+            w.user,
+            Some(&body),
+        )
+    };
     let r = send(&w.app, act(json!({"action": "postpone"}))).await;
     assert_eq!(r.status, StatusCode::OK);
     assert_eq!(r.body["status"], "snoozed");
@@ -116,16 +125,19 @@ async fn inbox_shows_own_notifications_and_actions_change_them(pool: PgPool) {
     let r = send(&w.app, act(json!({"action": "dance"}))).await;
     assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
 
-    let events: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM notification_events WHERE notification_id = $1",
-    )
-    .bind(mine)
-    .fetch_one(&w.pool)
-    .await
-    .unwrap();
+    let events: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM notification_events WHERE notification_id = $1")
+            .bind(mine)
+            .fetch_one(&w.pool)
+            .await
+            .unwrap();
     assert_eq!(events, 2);
 
-    let r = send(&w.app, call("GET", &format!("{base}?status=open"), w.user, None)).await;
+    let r = send(
+        &w.app,
+        call("GET", &format!("{base}?status=open"), w.user, None),
+    )
+    .await;
     assert_eq!(r.body["items"].as_array().unwrap().len(), 0);
 }
 
@@ -172,8 +184,10 @@ async fn alert_rules_are_validated_and_need_the_permission(pool: PgPool) {
         "condition": {"schema_version": 1, "measurement": "temp_c", "op": "gt", "value": 22.0}});
     let post = |user: Uuid, body: &Value| {
         let mut r = call("POST", &path, user, Some(body));
-        r.headers_mut()
-            .insert("idempotency-key", Uuid::now_v7().to_string().parse().unwrap());
+        r.headers_mut().insert(
+            "idempotency-key",
+            Uuid::now_v7().to_string().parse().unwrap(),
+        );
         r
     };
     let r = send(&w.app, post(w.other, &good)).await;
@@ -196,11 +210,20 @@ async fn alert_rules_are_validated_and_need_the_permission(pool: PgPool) {
     assert_eq!(r.body.as_array().unwrap().len(), 1);
     let r = send(
         &w.app,
-        call("PATCH", &format!("{path}/{id}"), w.user, Some(&json!({"enabled": false}))),
+        call(
+            "PATCH",
+            &format!("{path}/{id}"),
+            w.user,
+            Some(&json!({"enabled": false})),
+        ),
     )
     .await;
     assert_eq!(r.body["enabled"], false);
-    let r = send(&w.app, call("DELETE", &format!("{path}/{id}"), w.user, None)).await;
+    let r = send(
+        &w.app,
+        call("DELETE", &format!("{path}/{id}"), w.user, None),
+    )
+    .await;
     assert_eq!(r.status, StatusCode::NO_CONTENT);
     let r = send(&w.app, call("GET", &path, w.user, None)).await;
     assert_eq!(r.body.as_array().unwrap().len(), 0);

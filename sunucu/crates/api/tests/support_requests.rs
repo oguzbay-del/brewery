@@ -19,8 +19,10 @@ fn call(method: &str, path: &str, user: Uuid, body: Option<&Value>) -> axum::htt
         .body(body.map_or_else(Body::empty, |v| Body::from(v.to_string())))
         .unwrap();
     if method == "POST" {
-        r.headers_mut()
-            .insert("idempotency-key", Uuid::now_v7().to_string().parse().unwrap());
+        r.headers_mut().insert(
+            "idempotency-key",
+            Uuid::now_v7().to_string().parse().unwrap(),
+        );
     }
     r
 }
@@ -85,12 +87,11 @@ async fn a_request_opens_with_a_message_and_queues_the_sync(pool: PgPool) {
     assert_eq!(r.body["messages"].as_array().unwrap().len(), 1);
     assert_eq!(r.body["messages"][0]["author"], "customer");
     // The sync event waits in the outbox; the request exists although GitHub was never asked.
-    let events: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM outbox WHERE topic = 'support.sync_requested'",
-    )
-    .fetch_one(&w.pool)
-    .await
-    .unwrap();
+    let events: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM outbox WHERE topic = 'support.sync_requested'")
+            .fetch_one(&w.pool)
+            .await
+            .unwrap();
     assert_eq!(events, 1);
     let issue: Option<i32> = sqlx::query_scalar("SELECT github_issue_number FROM support_requests")
         .fetch_one(&w.pool)
@@ -103,13 +104,23 @@ async fn a_request_opens_with_a_message_and_queues_the_sync(pool: PgPool) {
     assert_eq!(r.status, StatusCode::NOT_FOUND);
     let r = send(
         &w.app,
-        call("GET", &format!("/v1/workspaces/{}/support/requests", w.ws), w.other, None),
+        call(
+            "GET",
+            &format!("/v1/workspaces/{}/support/requests", w.ws),
+            w.other,
+            None,
+        ),
     )
     .await;
     assert_eq!(r.body["items"].as_array().unwrap().len(), 0);
     let r = send(
         &w.app,
-        call("GET", &format!("/v1/workspaces/{}/support/requests", w.ws), w.user, None),
+        call(
+            "GET",
+            &format!("/v1/workspaces/{}/support/requests", w.ws),
+            w.user,
+            None,
+        ),
     )
     .await;
     assert_eq!(r.body["items"][0]["id"], id);
@@ -123,7 +134,12 @@ async fn a_request_opens_with_a_message_and_queues_the_sync(pool: PgPool) {
     ] {
         let r = send(
             &w.app,
-            call("POST", &format!("/v1/workspaces/{}/support/requests", w.ws), w.user, Some(&bad)),
+            call(
+                "POST",
+                &format!("/v1/workspaces/{}/support/requests", w.ws),
+                w.user,
+                Some(&bad),
+            ),
         )
         .await;
         assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY, "{bad}");
@@ -161,7 +177,12 @@ async fn internal_notes_never_show_and_messages_follow_the_status_rules(pool: Pg
     // A new customer message opens an answered request again.
     let r = send(
         &w.app,
-        call("POST", &format!("{path}/messages"), w.user, Some(&json!({"body": "Still broken."}))),
+        call(
+            "POST",
+            &format!("{path}/messages"),
+            w.user,
+            Some(&json!({"body": "Still broken."})),
+        ),
     )
     .await;
     assert_eq!(r.status, StatusCode::CREATED, "{}", r.body);
@@ -171,10 +192,23 @@ async fn internal_notes_never_show_and_messages_follow_the_status_rules(pool: Pg
 
     // Edit and retract.
     let m = format!("{path}/messages/{message}");
-    let r = send(&w.app, call("PATCH", &m, w.user, Some(&json!({"body": "Still broken, v2."})))).await;
+    let r = send(
+        &w.app,
+        call(
+            "PATCH",
+            &m,
+            w.user,
+            Some(&json!({"body": "Still broken, v2."})),
+        ),
+    )
+    .await;
     assert_eq!(r.status, StatusCode::OK, "{}", r.body);
     assert!(r.body["edited_at"].is_string());
-    let r = send(&w.app, call("PATCH", &m, w.other, Some(&json!({"body": "x"})))).await;
+    let r = send(
+        &w.app,
+        call("PATCH", &m, w.other, Some(&json!({"body": "x"}))),
+    )
+    .await;
     assert_eq!(r.status, StatusCode::NOT_FOUND);
     let r = send(&w.app, call("DELETE", &m, w.user, None)).await;
     assert_eq!(r.status, StatusCode::NO_CONTENT);
@@ -185,12 +219,23 @@ async fn internal_notes_never_show_and_messages_follow_the_status_rules(pool: Pg
         .iter()
         .find(|x| x["id"] == message.as_str())
         .unwrap();
-    assert_eq!((retracted["retracted"].clone(), retracted["body"].clone()), (json!(true), json!("")));
+    assert_eq!(
+        (retracted["retracted"].clone(), retracted["body"].clone()),
+        (json!(true), json!(""))
+    );
 
     // Resolve, write again (opens), resolve, close, then no more messages.
-    let r = send(&w.app, call("POST", &format!("{path}/resolve"), w.user, None)).await;
+    let r = send(
+        &w.app,
+        call("POST", &format!("{path}/resolve"), w.user, None),
+    )
+    .await;
     assert_eq!(r.body["request"]["status"], "resolved");
-    let r = send(&w.app, call("POST", &format!("{path}/resolve"), w.user, None)).await;
+    let r = send(
+        &w.app,
+        call("POST", &format!("{path}/resolve"), w.user, None),
+    )
+    .await;
     assert_eq!(r.status, StatusCode::CONFLICT);
     sqlx::query("UPDATE support_requests SET status = 'closed'")
         .execute(&w.pool)
@@ -198,7 +243,12 @@ async fn internal_notes_never_show_and_messages_follow_the_status_rules(pool: Pg
         .unwrap();
     let r = send(
         &w.app,
-        call("POST", &format!("{path}/messages"), w.user, Some(&json!({"body": "Hello?"}))),
+        call(
+            "POST",
+            &format!("{path}/messages"),
+            w.user,
+            Some(&json!({"body": "Hello?"})),
+        ),
     )
     .await;
     assert_eq!(r.status, StatusCode::CONFLICT);
@@ -210,8 +260,10 @@ async fn internal_notes_never_show_and_messages_follow_the_status_rules(pool: Pg
             "POST",
             &format!("/v1/workspaces/{}/support/requests", w.ws),
             w.user,
-            Some(&json!({"topic": "recipes", "title": "Again", "body": "Back.",
-                "previous_request_id": id})),
+            Some(
+                &json!({"topic": "recipes", "title": "Again", "body": "Back.",
+                "previous_request_id": id}),
+            ),
         ),
     )
     .await;

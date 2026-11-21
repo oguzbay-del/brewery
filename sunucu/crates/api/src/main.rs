@@ -78,6 +78,15 @@ async fn main() -> common::Result<()> {
     } else {
         tracing::warn!("ENGINE_URL not set; calculation endpoints answer 503");
     }
+    // The support panel routes need the shared token of the OIDC reverse proxy in front of them.
+    if let Some(token) = std::env::var("INTERNAL_PROXY_TOKEN")
+        .ok()
+        .filter(|t| !t.is_empty())
+    {
+        state = state.with_internal(api::internal::InternalConfig::new(&token));
+    } else {
+        tracing::warn!("INTERNAL_PROXY_TOKEN not set; support panel routes answer 503");
+    }
     let router = api::router(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));

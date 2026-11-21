@@ -1,7 +1,7 @@
 //! GitHub webhook of the support repository (T2.29): signature, repeated delivery, storage.
 //! Needs PostgreSQL (`DATABASE_URL`).
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::format_collect)]
 
 use axum::{
     body::Body,
@@ -44,7 +44,12 @@ fn sign(body: &[u8]) -> String {
     format!("sha256={hex}")
 }
 
-async fn post(app: &axum::Router, body: &Value, signature: Option<String>, delivery: &str) -> (StatusCode, Value) {
+async fn post(
+    app: &axum::Router,
+    body: &Value,
+    signature: Option<String>,
+    delivery: &str,
+) -> (StatusCode, Value) {
     let raw = body.to_string();
     let mut b = Request::post("/v1/webhooks/github")
         .header("content-type", "application/json")
@@ -53,10 +58,17 @@ async fn post(app: &axum::Router, body: &Value, signature: Option<String>, deliv
     if let Some(s) = signature.or_else(|| Some(sign(raw.as_bytes()))) {
         b = b.header("x-hub-signature-256", s);
     }
-    let r = app.clone().oneshot(b.body(Body::from(raw)).unwrap()).await.unwrap();
+    let r = app
+        .clone()
+        .oneshot(b.body(Body::from(raw)).unwrap())
+        .await
+        .unwrap();
     let status = r.status();
     let bytes = r.into_body().collect().await.unwrap().to_bytes();
-    (status, serde_json::from_slice(&bytes).unwrap_or(Value::Null))
+    (
+        status,
+        serde_json::from_slice(&bytes).unwrap_or(Value::Null),
+    )
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
@@ -68,18 +80,26 @@ async fn signature_is_checked_and_a_repeat_is_stored_once(base: PgPool) {
     let (status, _) = post(&app, &payload, Some("sha256=00".to_owned()), "d-1").await;
     assert_eq!(status, StatusCode::UNAUTHORIZED);
     let (status, body) = post(&app, &payload, None, "d-1").await;
-    assert_eq!((status, body["status"].as_str()), (StatusCode::OK, Some("accepted")));
+    assert_eq!(
+        (status, body["status"].as_str()),
+        (StatusCode::OK, Some("accepted"))
+    );
     let (status, body) = post(&app, &payload, None, "d-1").await;
-    assert_eq!((status, body["status"].as_str()), (StatusCode::OK, Some("duplicate")));
+    assert_eq!(
+        (status, body["status"].as_str()),
+        (StatusCode::OK, Some("duplicate"))
+    );
 
-    let events: i64 = sqlx::query_scalar("SELECT count(*) FROM external_events WHERE source = 'github'")
-        .fetch_one(&base)
-        .await
-        .unwrap();
-    let outbox: i64 = sqlx::query_scalar("SELECT count(*) FROM outbox WHERE topic = 'support.github_event'")
-        .fetch_one(&base)
-        .await
-        .unwrap();
+    let events: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM external_events WHERE source = 'github'")
+            .fetch_one(&base)
+            .await
+            .unwrap();
+    let outbox: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM outbox WHERE topic = 'support.github_event'")
+            .fetch_one(&base)
+            .await
+            .unwrap();
     assert_eq!((events, outbox), (1, 1));
     let stored: Value = sqlx::query_scalar("SELECT payload FROM external_events")
         .fetch_one(&base)

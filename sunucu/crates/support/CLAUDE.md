@@ -7,6 +7,8 @@
 - `reply.rs`: `staff_message` writes a message of the support team (the support panel calls it). `notify_customer` creates the notification `support.reply` (inbox, push, e-mail without the text).
 - `github.rs`: the REST client. Settings: `GITHUB_REPO`, `GITHUB_API_URL`, `GITHUB_TOKEN` or `GITHUB_APP_ID`, `GITHUB_APP_INSTALLATION_ID`, `GITHUB_APP_KEY_FILE`, `GITHUB_BOT_LOGIN`. `GITHUB_WEBHOOK_SECRET` is for `ingest`.
 
+- `panel.rs` (T2.30): `active_grant`, `record_action` (support_actions and audit row), `request_correction` and `CorrectionHandler` (worker consumer of `support.correction_requested`; only the worker writes `subscriptions` and `entitlements`), `open_emergency` and `approve_emergency` (two different staff members; the grant lasts 24 hours; the customer gets a priority 1 notification).
+
 ## Rules
 - `/yanit` is valid only from a person in `staff_users.github_login`. A comment with the marker `<!-- demleme:msg:` or from the bot login is ignored.
 - Do not write the name, the e-mail or the workspace name to GitHub. Only the pseudonym of the workspace and the request number go there.
@@ -20,4 +22,8 @@
 ## Open items
 - TODO: the GitHub App token flow is not tested against real GitHub (to be verified).
 - TODO: the request status `closed` (14 days after `resolved`) has no job yet.
+- TODO: the correction kind `deletion_request` stays pending. A person must decide and the purge call is not connected.
+- TODO: the correction kind `subscription_reverify` only queues the outbox event `subscription.reverify_requested`. The store client does not exist yet.
+- TODO: the device key rotation of the panel makes the old key invalid and shows no new key. The customer flow comes with T2.25.
+- TODO: the grant note in the Issue ("izin var, bitiş: ...") is not written.
 - TODO: deleting Issues when an account is deleted is not written (to be verified: Issue delete permission of the App).

@@ -39,13 +39,15 @@ fn apns(fake: &Fake) -> Deliverer {
 
 async fn add_push_target(base: &PgPool, user: Uuid, token: &str) -> Uuid {
     let id = Uuid::now_v7();
-    sqlx::query("INSERT INTO push_targets (id, user_id, environment, token) VALUES ($1, $2, 'sandbox', $3)")
-        .bind(id)
-        .bind(user)
-        .bind(token)
-        .execute(base)
-        .await
-        .unwrap();
+    sqlx::query(
+        "INSERT INTO push_targets (id, user_id, environment, token) VALUES ($1, $2, 'sandbox', $3)",
+    )
+    .bind(id)
+    .bind(user)
+    .bind(token)
+    .execute(base)
+    .await
+    .unwrap();
     id
 }
 
@@ -133,7 +135,10 @@ async fn measurement_to_rule_to_notification_to_apns(base: PgPool) {
     let alert_task = tokio::spawn(consumer::run(
         pool.clone(),
         js.clone(),
-        ConsumerConfig::new(&format!("test-alerts-{}", s.ws), &format!("ev.{}.batch.>", s.ws)),
+        ConsumerConfig::new(
+            &format!("test-alerts-{}", s.ws),
+            &format!("ev.{}.batch.>", s.ws),
+        ),
         Arc::new(AlertHandler),
         stopped(stop_rx.clone()),
     ));
@@ -156,7 +161,10 @@ async fn measurement_to_rule_to_notification_to_apns(base: PgPool) {
 
     add_measurement(&base, &s, 23.4).await;
     emit_measurement_event(&base, &s).await;
-    assert!(wait_for(15, || async { !fake.seen().is_empty() }).await, "no push arrived");
+    assert!(
+        wait_for(15, || async { !fake.seen().is_empty() }).await,
+        "no push arrived"
+    );
 
     let push = fake.seen().remove(0);
     assert_eq!(push.method, "POST");
@@ -169,6 +177,21 @@ async fn measurement_to_rule_to_notification_to_apns(base: PgPool) {
         "notification.alert.threshold"
     );
 
+    // The push reaches the fake before the consumer transaction commits: wait for the commit.
+    let committed = wait_for(10, || {
+        let base = base.clone();
+        async move {
+            sqlx::query_scalar::<_, i64>(
+                "SELECT count(*) FROM notifications WHERE delivered_at IS NOT NULL",
+            )
+            .fetch_one(&base)
+            .await
+            .unwrap()
+                == 1
+        }
+    })
+    .await;
+    assert!(committed, "delivery was not committed");
     let (status, delivered, kind): (String, bool, String) = sqlx::query_as(
         "SELECT status, delivered_at IS NOT NULL, kind FROM notifications WHERE workspace_id = $1",
     )
@@ -176,7 +199,10 @@ async fn measurement_to_rule_to_notification_to_apns(base: PgPool) {
     .fetch_one(&base)
     .await
     .unwrap();
-    assert_eq!((status.as_str(), delivered, kind.as_str()), ("open", true, "alert.threshold"));
+    assert_eq!(
+        (status.as_str(), delivered, kind.as_str()),
+        ("open", true, "alert.threshold")
+    );
     let sent: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM notification_events WHERE workspace_id = $1 AND kind = 'sent'",
     )
@@ -189,11 +215,12 @@ async fn measurement_to_rule_to_notification_to_apns(base: PgPool) {
     // The same event again in the same cooldown window: no second notification, no second push.
     emit_measurement_event(&base, &s).await;
     tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
-    let count: i64 = sqlx::query_scalar("SELECT count(*) FROM notifications WHERE workspace_id = $1")
-        .bind(s.ws)
-        .fetch_one(&base)
-        .await
-        .unwrap();
+    let count: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM notifications WHERE workspace_id = $1")
+            .bind(s.ws)
+            .fetch_one(&base)
+            .await
+            .unwrap();
     assert_eq!(count, 1);
     assert_eq!(fake.seen().len(), 1);
 
@@ -249,7 +276,10 @@ async fn quiet_hours_defer_but_critical_goes_through(base: PgPool) {
 
     let normal = insert_notification(&base, &s, 2).await;
     let critical = insert_notification(&base, &s, 1).await;
-    assert_eq!(deliver(&pool, &d, &s, normal, night).await, Outcome::Deferred(morning));
+    assert_eq!(
+        deliver(&pool, &d, &s, normal, night).await,
+        Outcome::Deferred(morning)
+    );
     assert!(matches!(
         deliver(&pool, &d, &s, critical, night).await,
         Outcome::Delivered { pushes: 1, .. }
@@ -314,7 +344,12 @@ async fn low_priority_goes_to_the_summary_and_snooze_wakes(base: PgPool) {
     .execute(&base)
     .await
     .unwrap();
-    assert_eq!(tick::run_due(&pool, &d, now + chrono::Duration::minutes(1)).await.unwrap(), 1);
+    assert_eq!(
+        tick::run_due(&pool, &d, now + chrono::Duration::minutes(1))
+            .await
+            .unwrap(),
+        1
+    );
     assert_eq!(fake.seen().len(), 1);
     let status: String = sqlx::query_scalar("SELECT status FROM notifications WHERE id = $1")
         .bind(snoozed)

@@ -104,6 +104,8 @@ impl Condition {
     }
 }
 
+type RuleRow = (Uuid, String, Value, i16, Option<String>, Option<Uuid>);
+
 /// Evaluates the alert rules for the latest measurements of a batch. Returns the number of
 /// notifications created.
 ///
@@ -115,7 +117,7 @@ pub async fn evaluate_batch(
     batch_id: Uuid,
     now: DateTime<Utc>,
 ) -> Result<usize> {
-    let rules: Vec<(Uuid, String, Value, i16, Option<String>, Option<Uuid>)> = sqlx::query_as(
+    let rules: Vec<RuleRow> = sqlx::query_as(
         "SELECT id, name, condition, priority, scope_kind, scope_id FROM alert_rules
          WHERE enabled AND deleted_at IS NULL AND (muted_until IS NULL OR muted_until <= $1)
            AND (scope_kind IS NULL OR scope_kind = 'device'
@@ -131,7 +133,7 @@ pub async fn evaluate_batch(
     let members = create::recipients(conn, workspace_id).await?;
     let mut created = 0;
     for (rule_id, name, raw, priority, scope_kind, scope_id) in rules {
-        let Ok(cond) = Condition::parse(&raw) else {
+        let Ok(rule_cond) = Condition::parse(&raw) else {
             tracing::warn!(%rule_id, "alert rule has an invalid condition; skipped");
             continue;
         };
@@ -140,7 +142,7 @@ pub async fn evaluate_batch(
              WHERE batch_id = $1 AND kind = $2 ORDER BY measured_at DESC, created_at DESC LIMIT 1",
         )
         .bind(batch_id)
-        .bind(&cond.measurement)
+        .bind(&rule_cond.measurement)
         .fetch_optional(&mut *conn)
         .await?;
         let Some((value, device_id)) = latest else {
@@ -149,10 +151,10 @@ pub async fn evaluate_batch(
         if scope_kind.as_deref() == Some("device") && device_id != scope_id {
             continue;
         }
-        if !cond.fires(value) {
+        if !rule_cond.fires(value) {
             continue;
         }
-        let window = cond.window(now);
+        let window = rule_cond.window(now);
         for member in &members {
             let n = NewNotification {
                 workspace_id,
@@ -162,9 +164,9 @@ pub async fn evaluate_batch(
                 text_key: "notification.alert.threshold".to_owned(),
                 params: json!({
                     "rule_name": name,
-                    "measurement": cond.measurement,
-                    "op": cond.op,
-                    "threshold": cond.value,
+                    "measurement": rule_cond.measurement,
+                    "op": rule_cond.op,
+                    "threshold": rule_cond.value,
                     "value": value,
                 }),
                 batch_id: Some(batch_id),

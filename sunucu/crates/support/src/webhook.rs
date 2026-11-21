@@ -148,7 +148,10 @@ pub async fn apply(
     let Some(issue) = payload.pointer("/issue/number").and_then(Value::as_i64) else {
         return Ok(Applied::Ignored);
     };
-    let action = payload.get("action").and_then(Value::as_str).unwrap_or_default();
+    let action = payload
+        .get("action")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
     let sender = payload
         .pointer("/sender/login")
         .and_then(Value::as_str)
@@ -163,7 +166,10 @@ pub async fn apply(
     match (event, action) {
         ("issue_comment", "created") => {
             let comment = payload.get("comment").unwrap_or(&Value::Null);
-            let body = comment.get("body").and_then(Value::as_str).unwrap_or_default();
+            let body = comment
+                .get("body")
+                .and_then(Value::as_str)
+                .unwrap_or_default();
             let Some(cid) = comment.get("id").and_then(Value::as_i64) else {
                 return Ok(Applied::Ignored);
             };
@@ -235,7 +241,10 @@ pub async fn apply(
         }
         ("issue_comment", "edited" | "deleted") => {
             let comment = payload.get("comment").unwrap_or(&Value::Null);
-            let body = comment.get("body").and_then(Value::as_str).unwrap_or_default();
+            let body = comment
+                .get("body")
+                .and_then(Value::as_str)
+                .unwrap_or_default();
             let Some(cid) = comment.get("id").and_then(Value::as_i64) else {
                 return Ok(Applied::Ignored);
             };
@@ -279,7 +288,11 @@ pub async fn apply(
                 .await?
                 .rows_affected()
             };
-            Ok(if n > 0 { Applied::Updated } else { Applied::Ignored })
+            Ok(if n > 0 {
+                Applied::Updated
+            } else {
+                Applied::Ignored
+            })
         }
         ("issues", "closed" | "reopened" | "labeled" | "unlabeled") if !is_bot => {
             let label = payload.pointer("/label/name").and_then(Value::as_str);
@@ -303,7 +316,11 @@ pub async fn apply(
             .execute(&mut *conn)
             .await?
             .rows_affected();
-            Ok(if n > 0 { Applied::Updated } else { Applied::Ignored })
+            Ok(if n > 0 {
+                Applied::Updated
+            } else {
+                Applied::Ignored
+            })
         }
         _ => Ok(Applied::Ignored),
     }
@@ -350,12 +367,17 @@ impl Handler for GithubHandler {
             .await
             .map_err(crate::Error::from)?;
             let Some((stored, processed)) = row else {
-                return Err(HandlerError::Permanent("external event not found".to_owned()));
+                return Err(HandlerError::Permanent(
+                    "external event not found".to_owned(),
+                ));
             };
             if processed {
                 return Ok(());
             }
-            let name = stored.get("event").and_then(Value::as_str).unwrap_or_default();
+            let name = stored
+                .get("event")
+                .and_then(Value::as_str)
+                .unwrap_or_default();
             let payload = stored.get("payload").unwrap_or(&Value::Null);
             let result = apply(tx, &self.bot_login, name, payload).await?;
             tracing::info!(?result, event = name, "GitHub event applied");
@@ -371,6 +393,7 @@ impl Handler for GithubHandler {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::format_collect)]
     use super::*;
 
     #[test]

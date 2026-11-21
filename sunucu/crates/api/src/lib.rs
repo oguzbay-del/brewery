@@ -16,6 +16,7 @@ pub mod error;
 pub mod events;
 pub mod files;
 pub mod idempotency;
+pub mod internal;
 pub mod library;
 pub mod modules;
 pub mod notifications;
@@ -31,8 +32,9 @@ pub mod search;
 pub mod settings;
 pub mod stock;
 pub mod subscription;
-pub mod trash;
 pub mod support;
+pub mod support_access;
+pub mod trash;
 
 use std::sync::Arc;
 
@@ -78,6 +80,8 @@ pub struct AppState {
     pub auth_services: Option<Arc<auth::AuthServices>>,
     /// Client of `engine-service` (T2.16). Disabled by default: calls answer `503`.
     pub engine: engine::EngineClient,
+    /// Settings of the support panel routes (`/internal`, T2.30); `None` answers them with `503`.
+    pub internal: Option<Arc<internal::InternalConfig>>,
 }
 
 impl std::fmt::Debug for AppState {
@@ -101,7 +105,15 @@ impl AppState {
             store: None,
             auth_services: None,
             engine: engine::EngineClient::disabled(),
+            internal: None,
         }
+    }
+
+    /// Turns the support panel routes (`/internal`) on.
+    #[must_use]
+    pub fn with_internal(mut self, internal: internal::InternalConfig) -> Self {
+        self.internal = Some(Arc::new(internal));
+        self
     }
 
     /// Connects the state to NATS `JetStream` (SSE).

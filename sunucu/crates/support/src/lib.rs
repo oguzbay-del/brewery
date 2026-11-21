@@ -14,6 +14,7 @@
 //! goes to the customer.
 
 pub mod github;
+pub mod panel;
 pub mod reply;
 pub mod sync;
 pub mod webhook;

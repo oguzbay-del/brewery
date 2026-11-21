@@ -458,6 +458,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/alert-rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The alert rules of the workspace. */
+        get: operations["alertrule_list"];
+        put?: never;
+        /** Creates an alert rule. */
+        post: operations["alertrule_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/alert-rules/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Deletes an alert rule. */
+        delete: operations["alertrule_delete"];
+        options?: never;
+        head?: never;
+        /** Changes an alert rule. */
+        patch: operations["alertrule_update"];
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/attachments": {
         parameters: {
             query?: never;
@@ -1292,6 +1328,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The notification preferences of the caller. Defaults when nothing is saved. */
+        get: operations["notificationpreference_get"];
+        /** Changes the notification preferences of the caller. */
+        put: operations["notificationpreference_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/me/settings": {
         parameters: {
             query?: never;
@@ -1408,6 +1462,40 @@ export interface paths {
         post?: never;
         /** Removes a role assignment. */
         delete: operations["assignments_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The inbox of the caller, newest first. */
+        get: operations["notification_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/notifications/{id}/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approves, postpones or ignores a notification. */
+        post: operations["notification_action"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2109,6 +2197,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/support/access-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The grants and the operations of the support team in the workspace. */
+        get: operations["supportaccess_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/support/grants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Gives support access to the content of the workspace. */
+        post: operations["supportgrant_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/support/grants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revokes a grant. The access stops at once. */
+        delete: operations["supportgrant_revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/support/requests": {
         parameters: {
             query?: never;
@@ -2543,6 +2682,13 @@ export interface components {
             /** @description The token from the mailed link. */
             token: string;
         };
+        /** @description Grants and operations. */
+        AccessHistory: {
+            /** @description Operations, newest first (the last 200). */
+            actions: components["schemas"]["SupportActionView"][];
+            /** @description Grants, newest first. */
+            grants: components["schemas"]["Grant"][];
+        };
         /**
          * @description Access level to the paid features.
          * @enum {string}
@@ -2557,6 +2703,16 @@ export interface components {
         AccountHint: {
             /** @description Providers (`apple`, `google`, `email`) the other account signs in with. */
             providers: string[];
+        };
+        /** @description An action on a notification. */
+        ActionBody: {
+            /** @description `approve`, `postpone` or `ignore`. */
+            action: string;
+            /**
+             * Format: date-time
+             * @description `postpone`: until this time (default one hour, at most 7 days).
+             */
+            until?: string | null;
         };
         /** @description An actual amount of an ingredient line, with the plan and the deviation. */
         Actual: {
@@ -2622,6 +2778,61 @@ export interface components {
             /** @description Notes. */
             notes?: string | null;
         };
+        /** @description An alert rule. */
+        AlertRule: {
+            /** @description Condition (`schema_version`, `measurement`, `op`, `value`, `cooldown_min`). */
+            condition: Record<string, never>;
+            /** @description On. */
+            enabled: boolean;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Muted until.
+             */
+            muted_until?: string | null;
+            /** @description Name. */
+            name: string;
+            /**
+             * Format: int32
+             * @description Priority of the notification, 1..=3.
+             */
+            priority: number;
+            /**
+             * Format: uuid
+             * @description Batch or device.
+             */
+            scope_id?: string | null;
+            /** @description `batch` or `device`; empty for every batch. */
+            scope_kind?: string | null;
+            /**
+             * Format: int64
+             * @description Record version.
+             */
+            version: number;
+        };
+        /** @description Changes of an alert rule. */
+        AlertRulePatch: {
+            /** @description Condition. */
+            condition?: Record<string, never> | null;
+            /** @description On or off. */
+            enabled?: boolean | null;
+            /**
+             * Format: date-time
+             * @description Mute until; the time must be in the future.
+             */
+            muted_until?: string | null;
+            /** @description Name. */
+            name?: string | null;
+            /**
+             * Format: int32
+             * @description Priority.
+             */
+            priority?: number | null;
+        };
         /** @description One role assignment. */
         AssignmentResponse: {
             /**
@@ -2680,7 +2891,7 @@ export interface components {
              * @description The record it belongs to.
              */
             record_id: string;
-            /** @description `batch` or `tasting_note`. */
+            /** @description `batch`, `tasting_note` or `support_message`. */
             record_kind: string;
             /** @description SHA-256, hex. */
             sha256: string;
@@ -3660,6 +3871,41 @@ export interface components {
             /** @description Subtract the stock on hand (default true). */
             subtract_stock?: boolean | null;
         };
+        /** @description A grant. */
+        Grant: {
+            /** @description Opened by support as an emergency (two approvals); the customer is told afterwards. */
+            emergency: boolean;
+            /**
+             * Format: date-time
+             * @description End (at most 72 hours after the start).
+             */
+            ends_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description The support request the grant belongs to.
+             */
+            request_id?: string | null;
+            /**
+             * Format: date-time
+             * @description Revoked at.
+             */
+            revoked_at?: string | null;
+            /**
+             * Format: date-time
+             * @description Start.
+             */
+            starts_at: string;
+            /**
+             * Format: int64
+             * @description Record version.
+             */
+            version: number;
+        };
         /** @description Response of `GET /healthz`. */
         HealthResponse: {
             /** @description Service name. */
@@ -4181,6 +4427,25 @@ export interface components {
             /** @description `negative_stock` when the lot is below zero. */
             warnings: components["schemas"]["StockWarning"][];
         };
+        /** @description A new alert rule. */
+        NewAlertRule: {
+            /** @description Condition. */
+            condition: Record<string, never>;
+            /** @description Name, 1..=200 characters. */
+            name: string;
+            /**
+             * Format: int32
+             * @description Priority 1..=3 (default 2).
+             */
+            priority?: number | null;
+            /**
+             * Format: uuid
+             * @description Batch or device.
+             */
+            scope_id?: string | null;
+            /** @description `batch` or `device`. */
+            scope_kind?: string | null;
+        };
         /** @description Body of `POST /members/{id}/assignments`. */
         NewAssignment: {
             /**
@@ -4209,7 +4474,7 @@ export interface components {
              * @description The record it belongs to.
              */
             record_id: string;
-            /** @description `batch` or `tasting_note`. */
+            /** @description `batch`, `tasting_note` or `support_message`. */
             record_kind: string;
             /** @description SHA-256 of the file, hex (64 characters). */
             sha256: string;
@@ -4284,6 +4549,19 @@ export interface components {
              * @description Parent folder.
              */
             parent_id?: string | null;
+        };
+        /** @description A new grant. */
+        NewGrant: {
+            /**
+             * Format: int32
+             * @description Hours, 1..=72 (default 72).
+             */
+            hours?: number | null;
+            /**
+             * Format: uuid
+             * @description A support request of the workspace.
+             */
+            request_id?: string | null;
         };
         /** @description Body of `POST .../ingredients`. */
         NewIngredient: {
@@ -4468,6 +4746,52 @@ export interface components {
             /** @description Single-use random value to hand to the provider (Apple: its SHA-256 in hex). */
             nonce: string;
         };
+        /** @description A notification of the caller. */
+        Notification: {
+            /**
+             * Format: uuid
+             * @description Batch.
+             */
+            batch_id?: string | null;
+            /**
+             * Format: uuid
+             * @description Batch step.
+             */
+            batch_step_id?: string | null;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description Kind (`alert.threshold`, `reminder`, `support.reply`). */
+            kind: string;
+            /** @description Parameters of the text. */
+            params: Record<string, never>;
+            /**
+             * Format: int32
+             * @description 1 (critical), 2 (normal) or 3 (low).
+             */
+            priority: number;
+            /**
+             * Format: date-time
+             * @description End of the postponement.
+             */
+            snoozed_until?: string | null;
+            /** @description `open`, `snoozed`, `acknowledged`, `dismissed` or `resolved`. */
+            status: string;
+            /** @description Text key of the client catalog. */
+            text_key: string;
+            /**
+             * Format: int64
+             * @description Record version.
+             */
+            version: number;
+        };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_Attachment: {
             /** @description The rows of this page. */
@@ -4498,7 +4822,7 @@ export interface components {
                  * @description The record it belongs to.
                  */
                 record_id: string;
-                /** @description `batch` or `tasting_note`. */
+                /** @description `batch`, `tasting_note` or `support_message`. */
                 record_kind: string;
                 /** @description SHA-256, hex. */
                 sha256: string;
@@ -4806,6 +5130,57 @@ export interface components {
                  * @description Value in SI units (SG as specific gravity, temperature in degrees C).
                  */
                 value: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Notification: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: uuid
+                 * @description Batch.
+                 */
+                batch_id?: string | null;
+                /**
+                 * Format: uuid
+                 * @description Batch step.
+                 */
+                batch_step_id?: string | null;
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /** @description Kind (`alert.threshold`, `reminder`, `support.reply`). */
+                kind: string;
+                /** @description Parameters of the text. */
+                params: Record<string, never>;
+                /**
+                 * Format: int32
+                 * @description 1 (critical), 2 (normal) or 3 (low).
+                 */
+                priority: number;
+                /**
+                 * Format: date-time
+                 * @description End of the postponement.
+                 */
+                snoozed_until?: string | null;
+                /** @description `open`, `snoozed`, `acknowledged`, `dismissed` or `resolved`. */
+                status: string;
+                /** @description Text key of the client catalog. */
+                text_key: string;
+                /**
+                 * Format: int64
+                 * @description Record version.
+                 */
+                version: number;
             }[];
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
@@ -5452,6 +5827,42 @@ export interface components {
         PinSet: {
             /** @description Six digits. */
             pin: string;
+        };
+        /** @description Notification preferences of the caller in the workspace. */
+        Preferences: {
+            /** @description Daily summary on. */
+            daily_summary: boolean;
+            /** @description E-mail on. */
+            email_enabled: boolean;
+            /** @description Push on. */
+            push_enabled: boolean;
+            /** @description End of the quiet hours (`HH:MM`). */
+            quiet_end?: string | null;
+            /** @description Start of the quiet hours (`HH:MM`). */
+            quiet_start?: string | null;
+            /** @description Time of the summary (`HH:MM`). */
+            summary_time: string;
+            /** @description IANA time zone for quiet hours and the summary. */
+            timezone: string;
+        };
+        /** @description New values of the preferences. Absent fields keep their value. */
+        PreferencesBody: {
+            /** @description Remove the quiet hours. */
+            clear_quiet_hours?: boolean | null;
+            /** @description Daily summary on. */
+            daily_summary?: boolean | null;
+            /** @description E-mail on. */
+            email_enabled?: boolean | null;
+            /** @description Push on. */
+            push_enabled?: boolean | null;
+            /** @description End of the quiet hours; with `quiet_start`. */
+            quiet_end?: string | null;
+            /** @description Start of the quiet hours; with `quiet_end`. */
+            quiet_start?: string | null;
+            /** @description Time of the summary. */
+            summary_time?: string | null;
+            /** @description IANA time zone. */
+            timezone?: string | null;
         };
         /** @description RFC 9457 problem details body (`application/problem+json`). */
         ProblemDetails: {
@@ -6458,6 +6869,22 @@ export interface components {
             source: string;
             /** @description `trial`, `active`, `grace`, `expired` or `cancelled`. */
             status: string;
+        };
+        /** @description One operation of the support team. */
+        SupportActionView: {
+            /** @description What (`content.read.batches`, `request.reply`, ...). */
+            action: string;
+            /**
+             * Format: date-time
+             * @description When.
+             */
+            at: string;
+            /** @description The reason that the staff member gave. */
+            reason: string;
+            /** @description Kind of the record. */
+            record_kind?: string | null;
+            /** @description Role of the staff member (`support` or `support_admin`). */
+            staff_role: string;
         };
         /** @description A message of a request. */
         SupportMessage: {
@@ -10132,10 +10559,597 @@ export interface operations {
             };
         };
     };
+    alertrule_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rules */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "condition": {
+                     *           "cooldown_min": 60,
+                     *           "measurement": "temp_c",
+                     *           "op": "gt",
+                     *           "schema_version": 1,
+                     *           "value": 22
+                     *         },
+                     *         "enabled": true,
+                     *         "id": "0192f1c07a3b7000800000000000000b",
+                     *         "muted_until": null,
+                     *         "name": "Too warm",
+                     *         "priority": 1,
+                     *         "scope_id": null,
+                     *         "scope_kind": null,
+                     *         "version": 1
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["AlertRule"][];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    alertrule_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewAlertRule"];
+            };
+        };
+        responses: {
+            /** @description The rule */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "condition": {
+                     *         "cooldown_min": 60,
+                     *         "measurement": "temp_c",
+                     *         "op": "gt",
+                     *         "schema_version": 1,
+                     *         "value": 22
+                     *       },
+                     *       "enabled": true,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "muted_until": null,
+                     *       "name": "Too warm",
+                     *       "priority": 1,
+                     *       "scope_id": null,
+                     *       "scope_kind": null,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AlertRule"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    alertrule_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Rule */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    alertrule_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Rule */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AlertRulePatch"];
+            };
+        };
+        responses: {
+            /** @description The rule */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "condition": {
+                     *         "cooldown_min": 60,
+                     *         "measurement": "temp_c",
+                     *         "op": "gt",
+                     *         "schema_version": 1,
+                     *         "value": 22
+                     *       },
+                     *       "enabled": true,
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "muted_until": null,
+                     *       "name": "Too warm",
+                     *       "priority": 1,
+                     *       "scope_id": null,
+                     *       "scope_kind": null,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AlertRule"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     attachment_list: {
         parameters: {
             query?: {
-                /** @description `batch` or `tasting_note` */
+                /** @description `batch`, `tasting_note` or `support_message` */
                 record_kind?: string;
                 /** @description Record the files belong to */
                 record_id?: string;
@@ -20944,6 +21958,275 @@ export interface operations {
             };
         };
     };
+    notificationpreference_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The preferences */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "daily_summary": false,
+                     *       "email_enabled": true,
+                     *       "push_enabled": true,
+                     *       "quiet_end": "07:00",
+                     *       "quiet_start": "22:00",
+                     *       "summary_time": "08:00",
+                     *       "timezone": "America/New_York"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    notificationpreference_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesBody"];
+            };
+        };
+        responses: {
+            /** @description The preferences after the change */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "daily_summary": true,
+                     *       "email_enabled": true,
+                     *       "push_enabled": true,
+                     *       "quiet_end": "07:00",
+                     *       "quiet_start": "22:00",
+                     *       "summary_time": "08:00",
+                     *       "timezone": "America/New_York"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     user_settings_get: {
         parameters: {
             query?: never;
@@ -22060,6 +23343,305 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    notification_list: {
+        parameters: {
+            query?: {
+                /** @description Status filter */
+                status?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of notifications */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *           "batch_step_id": null,
+                     *           "created_at": "2026-11-28T12:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "kind": "alert.threshold",
+                     *           "params": {
+                     *             "rule_name": "Too warm",
+                     *             "schema_version": 1,
+                     *             "value": 23.4
+                     *           },
+                     *           "priority": 1,
+                     *           "snoozed_until": null,
+                     *           "status": "open",
+                     *           "text_key": "notification.alert.threshold",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Notification"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    notification_action: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Notification */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActionBody"];
+            };
+        };
+        responses: {
+            /** @description The notification after the action */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000c",
+                     *       "batch_step_id": null,
+                     *       "created_at": "2026-11-28T12:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "kind": "alert.threshold",
+                     *       "params": {
+                     *         "rule_name": "Too warm",
+                     *         "schema_version": 1,
+                     *         "value": 23.4
+                     *       },
+                     *       "priority": 1,
+                     *       "snoozed_until": null,
+                     *       "status": "open",
+                     *       "text_key": "notification.alert.threshold",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Notification"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {
@@ -29833,6 +31415,428 @@ export interface operations {
             };
             /** @description Not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportaccess_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "actions": [
+                     *         {
+                     *           "action": "content.read.batches",
+                     *           "at": "2026-11-28T12:05:00Z",
+                     *           "reason": "Request #4182",
+                     *           "record_kind": "support_grant",
+                     *           "staff_role": "support"
+                     *         }
+                     *       ],
+                     *       "grants": [
+                     *         {
+                     *           "emergency": false,
+                     *           "ends_at": "2026-12-01T12:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "request_id": null,
+                     *           "revoked_at": null,
+                     *           "starts_at": "2026-11-28T12:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AccessHistory"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportgrant_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewGrant"];
+            };
+        };
+        responses: {
+            /** @description The grant */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "emergency": false,
+                     *       "ends_at": "2026-12-01T12:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000b",
+                     *       "request_id": null,
+                     *       "revoked_at": null,
+                     *       "starts_at": "2026-11-28T12:00:00Z",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Grant"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportgrant_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Grant */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

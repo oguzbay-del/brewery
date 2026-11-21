@@ -426,7 +426,7 @@ async fn requests_are_validated_and_authorized(pool: PgPool) {
     let r = create_attachment(&w, w.writer, &unknown).await;
     assert_eq!(r.body["errors"][0]["field"], "/record_id");
     let mut kind = ok.clone();
-    kind["record_kind"] = json!("support_message");
+    kind["record_kind"] = json!("recipe");
     assert_eq!(
         create_attachment(&w, w.writer, &kind).await.body["errors"][0]["field"],
         "/record_kind"

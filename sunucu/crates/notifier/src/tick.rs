@@ -75,8 +75,10 @@ async fn run_item(
     Ok(())
 }
 
+type ReminderRow = (Option<Uuid>, Option<Uuid>, Option<Uuid>, String);
+
 async fn fire_reminder(conn: &mut PgConnection, ws: Uuid, id: Uuid) -> Result<()> {
-    let row: Option<(Option<Uuid>, Option<Uuid>, Option<Uuid>, String)> = sqlx::query_as(
+    let row: Option<ReminderRow> = sqlx::query_as(
         "UPDATE reminders SET status = 'fired' WHERE id = $1 AND status = 'scheduled'
          RETURNING recipient_member_id, batch_id, batch_step_id, rule",
     )
