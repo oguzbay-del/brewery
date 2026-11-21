@@ -521,7 +521,7 @@ table.cmp td:first-child{font-weight:600}
       <tr><td>Hesap<span class="newdot" role="img" aria-label="yeni"></span></td><td>Ayarlar › Apple Hesabı</td><td>Cihaz listesi, çıkış, dışa aktarma ve hesap silme</td></tr>
       <tr><td>Boş ve hata durumları<span class="newdot" role="img" aria-label="yeni"></span></td><td>Notlar/Fotoğraflar boş durumları, Pages ortak düzenleme</td><td>Ne olduğunu ve ilk adımı söyleyen boş ekran; kaydederken kayıt değişmişse iki sürümü gösterip seçtir</td></tr>
       <tr><td>Giriş ve hesap bağlama<span class="newdot" role="img" aria-label="yeni"></span></td><td>Slack ve Notion sihirli bağlantı, Ayarlar › Apple Hesabı</td><td>Şifre yok; aynı e-posta başka hesapta ise önce o hesapla girip bağlatır</td></tr>
-      <tr><td>Yardım ve destek<span class="newdot" role="img" aria-label="yeni"></span></td><td>Apple Destek uygulaması</td><td>Talep, ekran görüntüsü ve süreli erişim izni tek sheet'te; yanıt ve erişim aynı zaman çizelgesinde</td></tr>
+      <tr><td>Yardım ve destek<span class="newdot" role="img" aria-label="yeni"></span></td><td>Apple Destek uygulaması</td><td>Talep, özellik önerisi ve görüş; ekran görüntüsü ve süreli erişim izni tek sheet'te; yanıt ve erişim aynı zaman çizelgesinde. Özellik önerisinde yalnız "Yapıldı" bildirim gönderir</td></tr>
       <tr><td>Davet kabulü<span class="newdot" role="img" aria-label="yeni"></span></td><td>Slack daveti, Notlar paylaşım daveti</td><td>Çalışma alanı ve rol önce gösterilir; katılım Apple, Google veya e-postayla</td></tr>
       <tr><td>Abonelik<span class="newdot" role="img" aria-label="yeni"></span></td><td>App Store abonelikleri, Apple One</td><td>Planlar yan yana, mevcut plan işaretli; StoreKit'in hazır abonelik ekranı</td></tr>
     </tbody>
@@ -3194,9 +3194,11 @@ table.cmp td:first-child{font-weight:600}
             <div class="cell">IBU nasıl hesaplanıyor<span class="v">›</span></div>
           </div>
           <button class="btn fill" style="width:100%">Destek talebi aç</button>
+          <div class="row" style="gap:8px"><button class="btn sm" style="flex:1">Özellik öner</button><button class="btn sm" style="flex:1">Görüş bildir</button></div>
           <div><div class="ghead">Taleplerim</div><div class="group">
             <div class="cell"><span>Tarifim kayboldu<span class="sub">#4182 · yanıtlandı · 10 dk önce</span></span><span class="v" style="color:var(--tint)">●</span></div>
             <div class="cell"><span>Abonelik iki kez görünüyor<span class="sub">#3907 · kapandı</span></span><span class="v">›</span></div>
+            <div class="cell"><span>Bira günlüğüne fotoğraf ekle<span class="sub">#4301 · özellik önerisi · planlandı</span></span><span class="v">›</span></div>
           </div></div>
           <div class="callout ok"><svg class="ico"><use href="#i-checkc"/></svg><span>Tüm servisler çalışıyor</span></div>
         </div>
@@ -3233,7 +3235,7 @@ table.cmp td:first-child{font-weight:600}
       </div></div>
     </div>
     <div class="inspo"><span class="chip">İlham: <b>Apple Destek</b> uygulaması talepleri, <b>Ayarlar › Gizlilik</b> izin listesi</span><span class="chip">Talep ve erişim aynı zaman çizelgesinde</span><span class="chip">Yanıt bildirim kutusuna ve e-postaya düşer</span></div>
-    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p><span style="font-family:var(--mono)">SupportRequest</span>: genel numara, konu, ilgili kayıt, durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama. <span style="font-family:var(--mono)">SupportMessage</span>: yazar (müşteri, destek veya sistem), metin, zaman, ekran görüntüsü. Bu iki ekranda Taleplerim ve #4182 zaman çizelgesi bu kayıtlardır. İç not burada görünmez. Destek ekibi talebi arka planda GitHub Issues'ta yürütür; müşteri GitHub'ı görmez, yanıtlar buraya iki yönlü eşitlenir.</p></div>
+    <div class="note" style="margin-top:14px"><h3>Veri modeli</h3><p><span style="font-family:var(--mono)">SupportRequest</span>: genel numara, konu, ilgili kayıt, durum (açık / yanıtlandı / çözüldü / kapandı), isteğe bağlı tanılama. Konu özellik önerisi ya da görüş ise durum alındı / planlandı / yapıldı / yapılmayacak olur; müşteriye yalnız "yapıldı" bildirimi gider. <span style="font-family:var(--mono)">SupportMessage</span>: yazar (müşteri, destek veya sistem), metin, zaman, ekran görüntüsü. Bu iki ekranda Taleplerim ve #4182 zaman çizelgesi bu kayıtlardır. İç not burada görünmez. Destek ekibi talebi arka planda GitHub Issues'ta yürütür; müşteri GitHub'ı görmez, yanıtlar buraya iki yönlü eşitlenir.</p></div>
   </div>
 
   <!-- INVITE ACCEPTANCE -->
