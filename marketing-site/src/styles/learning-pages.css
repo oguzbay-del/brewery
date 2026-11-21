@@ -65,3 +65,26 @@
 .explain-business-section .explain-flow-item { border: 1px solid var(--line); }
 .comparison-scroll-hint { display: none; }
 @media (max-width: 760px) { .comparison-scroll-hint { display: block; margin: 0 0 10px; color: var(--muted); font-size: 12px; } }
+
+
+/* Rounded card grids use transparent gutters, never a colored backing at the corners. */
+.explain-flow,
+.principle-grid,
+.stage-grid {
+  gap: 16px;
+  border: 0;
+  background: transparent;
+}
+.explain-flow-item,
+.principle-card,
+.stage-grid article {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+}
+@media (max-width: 620px) {
+  .explain-flow,
+  .principle-grid,
+  .stage-grid { gap: 12px; }
+}
