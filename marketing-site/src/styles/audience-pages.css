@@ -2,12 +2,12 @@
 .workflow-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--line);
-  background: var(--line);
+  border: 0;
+  background: transparent;
 }
 .workflow-card {
   min-height: 285px;
@@ -15,7 +15,10 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
   background: var(--surface);
+  box-shadow: var(--card-shadow);
 }
 .workflow-number {
   color: var(--amber);
@@ -153,12 +156,12 @@
 .record-model-flow {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
+  gap: 16px;
   margin: 36px 0 0;
   padding: 0;
   list-style: none;
-  border: 1px solid var(--line);
-  background: var(--line);
+  border: 0;
+  background: transparent;
 }
 .record-model-flow li {
   min-height: 220px;
@@ -166,7 +169,10 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
   background: var(--surface);
+  box-shadow: var(--card-shadow);
 }
 .record-model-index {
   color: var(--amber);
