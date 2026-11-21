@@ -3,11 +3,12 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task (new session):** stage 2 tasks T2.23–T2.30, T2.37 and T2.40 are done (2026-11-21). Read the open stage 2 rows in `gelistirme/ISLER.md` for the next task.
-- Done (2026-11-21): the `.bsmx` import (format `beersmith`). The sample fixture comes from `cadwallion/brewscribe` (code read only, not copied).
-- Done on 2026-11-20: T2.19, T2.20, T2.21, T2.22, T2.28, T2.38, T2.39. Full api tests: 168 passed (with mailpit, NATS and the object store running).
-- 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
-- 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
+**Next task (new session):** T2.32 is built and merged (2026-11-21) but not done. Run `make kind-test` through CI (`altyapi.yml`) and fix the failures. Then do T2.41, T2.33 and T2.36.
+- Done (2026-11-21): T2.31. Migration 0220, endpoints `/v1/me/deletion` and `/v1/me/data-export`, worker purge job. Tests: worker account 4, api account 4 pass. Not run: tests that need NATS, mailpit and the object store (api `sse`, `devices`, `files`, `auth`, `internal`; worker `notifications`, `support`). Run them in CI.
+- T2.31 open decisions (all `to be verified` in code): retention 30 days; the only admin of a Business workspace gets `409 sole_business_admin`; GitHub Issue delete uses a scrub (REST has no delete); `ACCOUNT_KEY` is fixed until T2.32 KMS; compose and Helm lack the `APPLE_*` settings; subscriptions are not cancelled at deletion; a pending user can create a workspace.
+- T2.32 open decisions: no separate `/internal` port (edge 404 and API token cover it); GCS has no Object Lock API (digest bucket retention policy instead); no cloud load balancer or ingest route yet. Istio 1.27.3 and oauth2-proxy v7.9.0 versions come from memory; verify them.
+- Added T2.41 (feature request and feedback topics; notify only on `done`). Plan source updated (2026-11-21). The copy `plan/demleme-plani.md` is stale; export it again. Run `python3 -I araclar/tutarlilik.py`.
+- Done on 2026-11-21: T2.23–T2.30, T2.37, T2.40 and the `.bsmx` import (format `beersmith`).
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment
