@@ -1,7 +1,6 @@
 import { defineConfig } from "astro/config";
 
 const isGitHubPages = process.env.GITHUB_PAGES === "true";
-const vercelHost = process.env.VERCEL_URL;
 const cloudflarePreviewUrl =
   process.env.CF_PAGES === "1" && process.env.CF_PAGES_BRANCH !== "main"
     ? process.env.CF_PAGES_URL
@@ -9,11 +8,7 @@ const cloudflarePreviewUrl =
 const site =
   cloudflarePreviewUrl ??
   process.env.SITE_URL ??
-  (isGitHubPages
-    ? "https://oguzbay-del.github.io"
-    : vercelHost
-      ? `https://${vercelHost}`
-      : "https://gristora.com");
+  (isGitHubPages ? "https://oguzbay-del.github.io" : "https://gristora.com");
 const base = process.env.SITE_BASE ?? (isGitHubPages ? "/brewery" : "/");
 
 export default defineConfig({

@@ -28,13 +28,13 @@ The owner-supplied `../fotograflar-ham/brewing-editorial-photos.zip` is the sour
 - JPEG is the final fallback for the curated photos; the original ZIP remains unchanged.
 - Each curated image is cropped to the existing 3:2 feature-photo composition and emitted at 640 px and its native 896 px width. The optimizer does not upscale the source.
 - The curated photo figure is capped at 896 px on desktop so the site does not enlarge a smaller source beyond its native width.
-- The existing 640/960/1152 feature variants and 640/960/1408 page-hero variants remain in place for all other photos.
+- Non-curated feature photos are emitted at 640/768/960/1152 px; page-hero photos are emitted at 640/768/960/1408 px. The 768 px candidate gives mobile browsers a closer 2×-density choice between the 640 and 960 px variants.
 
 The existing `<picture>` implementation therefore keeps AVIF/WebP delivery while adding a universally readable JPEG fallback. AVIF/WebP are supported by current major browsers; the JPEG fallback covers older clients and constrained image decoders. See [MDN's image format guide](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types).
 
 ## Build
 
-`npm run build` runs `npm run optimize:photos` before Astro builds the static site. The optimizer reads the raw photo directory and the curated ZIP, then writes the generated AVIF, WebP and JPEG derivatives. GitHub Actions and Vercel therefore build the same assets from the same committed source archive.
+`npm run build` runs `npm run optimize:photos` before Astro builds the static site. The optimizer reads the raw photo directory and the curated ZIP, then writes the generated AVIF, WebP and JPEG derivatives. GitHub Actions and Cloudflare Pages build the same assets from the same committed source archive.
 
 Run `npm run optimize:photos` before `npm run dev` when previewing changed source photos locally.
 

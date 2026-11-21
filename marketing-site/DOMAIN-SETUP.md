@@ -1,69 +1,50 @@
-# GRISTORA domain and production launch setup
+# GRISTORA domain and production hosting
 
-**Owner update (15 November 2026):** the owner confirms that `gristora.com` has been purchased. This is an owner-provided fact, not independent registrar verification. DNS, domain verification, HTTPS and production launch are separate checks and must not be described as complete until verified.
+**Current hosting:** Cloudflare Pages project `gristora`. The owner has connected `gristora.com` to the Cloudflare-hosted marketing website. This file records the current setup and safe operating rules; it is not a request to change DNS.
 
-## Hosting decision
+## Source and build
 
-Use a **dedicated Vercel project for the public marketing website**. Keep GitHub as the source repository and CI/review system.
-
-- Repository: `oguzbay-del/brewery`
-- Vercel project name: `gristora-marketing` (suggested; create as a separate project)
-- Vercel Root Directory: `marketing-site`
-- Framework preset: Astro
-- Build command: `npm run build`
-- Output directory: `dist`
+- GitHub repository: `oguzbay-del/brewery`
+- Website root directory: `marketing-site`
+- Framework: Astro, static output
 - Install command: `npm install`
-- Production plan: Vercel Pro before operating the commercial marketing site publicly. Hobby is for personal, non-commercial use.
-- Do not attach this website to or modify the existing product Vercel project. The marketing site must have its own project and deployment settings.
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Canonical origin: `https://gristora.com`
+- Cloudflare Pages project: `gristora`
 
-The site is statically generated. Do not add an Astro server adapter.
+Cloudflare Pages provides branch preview deployments. Preview builds use `CF_PAGES_URL` as the canonical origin and are generated with `noindex, nofollow`. The production branch resolves to the canonical `gristora.com` host and is generated with `index, follow`. The production sitemap includes both English and Turkish routes; preview sitemaps exclude the Turkish production-only routes.
 
-## Intended canonical origin
+## Domain and DNS safety
 
-- Primary: `https://gristora.com`
-- Preferred canonical host: apex `gristora.com`
-- Secondary: `www.gristora.com` should redirect to the apex host.
-- Keep the public marketing site separate from the product application. Do not invent an app subdomain or sign-in route.
+- Keep DNS and custom-domain configuration in Cloudflare.
+- Do not copy DNS records from old hosting providers or change records during normal website development.
+- Do not alter the apex or `www` records, redirect rules, SSL/TLS mode, or nameservers without an explicit owner request.
+- Confirm the custom-domain status and HTTPS certificate in Cloudflare before recording a hosting change as complete.
+- The marketing site remains separate from the GRISTORA product application. Do not invent an app or sign-in subdomain.
 
-## Vercel project setup
+## Deployment rules
 
-1. In Vercel, create a **new project** from `oguzbay-del/brewery`; do not reuse the existing product project.
-2. Set Root Directory to `marketing-site` and confirm the Astro build settings above.
-3. Keep Preview deployments enabled for pull requests. Do not set a production domain on the product project.
-4. Set Production Environment Variable `SITE_URL=https://gristora.com`. Leave `SITE_BASE` unset (root path).
-5. Preview builds use Vercel's `VERCEL_URL` automatically for their own canonical origin. GitHub Pages fallback continues to use `/brewery/`.
-6. Upgrade the dedicated marketing project to Vercel Pro before public commercial operation.
+1. Work on a feature branch and open a pull request.
+2. Let GitHub marketing CI run Astro/TypeScript checks, photo optimization, static build, generated-site validation, responsive Playwright/axe checks and Lighthouse.
+3. Review the Cloudflare branch preview and its robots/canonical metadata before merging.
+4. Merge only after required checks pass.
+5. Verify the production deployment after a reviewed merge. Do not make DNS changes as part of the merge.
+6. Keep GitHub Pages as a separate `noindex` fallback only.
 
-## DNS and domain connection
+## Vercel retirement
 
-1. In the **dedicated marketing Vercel project**, open Settings → Domains and add both `gristora.com` and `www.gristora.com`.
-2. Copy the exact DNS records Vercel displays for this project. DNS targets can vary by account/project; do not blindly reuse old GitHub Pages records or stale generic values.
-3. At the registrar/DNS provider, publish Vercel's requested apex and www records. Remove conflicting records only after confirming they belong to the previous hosting target. Do not use wildcard DNS unless explicitly required.
-4. If Vercel requests domain ownership verification, publish its exact TXT record and retain it as instructed.
-5. Configure `www.gristora.com` to redirect to `https://gristora.com` in the Vercel project.
-6. Wait for Vercel to report the domain as configured and HTTPS certificate as issued. Do not claim HTTPS is ready before that status is visible.
+Vercel is not used for the GRISTORA marketing website. The project lookup in the connected `demleme` Vercel team returned no matching `brewery` project. Do not create a replacement Vercel project, add Vercel environment variables, or rely on `VERCEL_URL` for canonical metadata.
 
-## Build and URL behavior
+## Launch and SEO checks
 
-- Production: `SITE_URL=https://gristora.com`, `SITE_BASE=/`.
-- Vercel Preview: Astro uses `VERCEL_URL` as the preview origin unless `SITE_URL` is explicitly overridden.
-- GitHub Pages fallback: `GITHUB_PAGES=true` retains `https://oguzbay-del.github.io/brewery/`.
-- Sitemap and robots origin derive from the active Astro site configuration.
-- Never change the existing GitHub Pages fallback into a production deployment as part of this Vercel migration.
+- [ ] Cloudflare Pages production deployment is successful.
+- [ ] `https://gristora.com/` and `https://gristora.com/tr/` return the expected site.
+- [ ] Production pages emit `index, follow`; branch previews emit `noindex, nofollow`.
+- [ ] `/robots.txt` allows crawling and points to the production sitemap.
+- [ ] `/sitemap.xml` contains canonical English and Turkish production routes.
+- [ ] Canonical and Open Graph URLs use `https://gristora.com` in production.
+- [ ] HTTPS is active for the custom domain.
+- [ ] Owner confirms public production launch.
 
-## Launch acceptance
-
-- [ ] Dedicated Vercel project created with Root Directory `marketing-site`.
-- [ ] Project is separate from the product Vercel project.
-- [ ] Vercel Pro enabled before commercial public operation.
-- [ ] Production environment variable `SITE_URL=https://gristora.com` configured.
-- [ ] Preview deployment uses its own Vercel URL and correct canonical metadata.
-- [ ] Both apex and www domains added to the marketing project.
-- [ ] DNS records match the values displayed by Vercel and resolve correctly.
-- [ ] Domain verification complete if Vercel requests it.
-- [ ] HTTPS certificate issued and active.
-- [ ] www-to-apex redirect verified.
-- [ ] Homepage, all routes, 404, canonical metadata, Open Graph, sitemap and robots checked on the custom domain.
-- [ ] Owner gives explicit production-launch approval.
-
-**Important:** Domain purchase does not equal trademark clearance. Keep the separate trademark counsel gate open. Do not publish a legal-clearance claim.
+Do not claim trademark clearance based on domain ownership or hosting configuration.

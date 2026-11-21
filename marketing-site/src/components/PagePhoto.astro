@@ -19,7 +19,7 @@ const curatedFeaturePhotos = [
   "feature-analytics-reports",
 ] as const;
 const curated = (curatedFeaturePhotos as readonly PhotoKey[]).includes(name);
-const widths = curated ? [640, 896] : feature ? [640, 960, 1152] : [640, 960, 1408];
+const widths = curated ? [640, 896] : feature ? [640, 768, 960, 1152] : [640, 768, 960, 1408];
 const [w, h] = curated ? [896, 597] : feature ? [1152, 768] : [1408, 768];
 const set = (ext: string) => widths.map((x) => `${base}images/photos/${name}-${x}.${ext} ${x}w`).join(", ");
 const sizes = curated
