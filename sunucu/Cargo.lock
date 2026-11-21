@@ -89,6 +89,7 @@ dependencies = [
  "chrono",
  "common",
  "db",
+ "devices",
  "engine-client",
  "engine-service",
  "events",
@@ -97,6 +98,7 @@ dependencies = [
  "getrandom 0.3.4",
  "hmac",
  "http-body-util",
+ "ingest",
  "opentelemetry",
  "opentelemetry_sdk",
  "prost",
@@ -1032,6 +1034,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "devices"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "db",
+ "events",
+ "getrandom 0.3.4",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1927,6 +1947,7 @@ dependencies = [
  "chrono",
  "common",
  "db",
+ "devices",
  "events",
  "futures-util",
  "http-body-util",
@@ -5266,6 +5287,7 @@ dependencies = [
  "chrono",
  "common",
  "db",
+ "devices",
  "events",
  "http-body-util",
  "serde",

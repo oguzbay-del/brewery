@@ -4,10 +4,12 @@
 //!   JWS (certificate chain to the Apple root) and stores the normalized update in
 //!   `external_events` plus one outbox event, in one transaction. A repeated notification is
 //!   acknowledged and not stored again. The worker applies the update (`billing` crate).
+//! - `POST /v1/ingest/{key}[/{format}]`: device readings (`device.rs`, T2.25).
 //! - `POST /v1/webhooks/web-payment`: the same flow for the web payment provider interface
 //!   (`billing::provider::WebPaymentProvider`; Paddle per decision O6, adapter not written yet).
 
 pub mod apple;
+pub mod device;
 pub mod jws;
 
 use std::sync::Arc;
@@ -65,7 +67,14 @@ pub fn router_with(state: IngestState) -> Router {
     let hooks = Router::new()
         .route("/v1/webhooks/app-store", post(app_store))
         .route("/v1/webhooks/web-payment", post(web_payment))
+        .with_state(state.clone());
+    // Device data (T2.25): the key in the address is the credential.
+    let device_routes = Router::new()
+        .route("/v1/ingest/{key}", post(device::ingest_default))
+        .route("/v1/ingest/{key}/{format}", post(device::ingest_format))
+        .layer(axum::extract::DefaultBodyLimit::max(device::BODY_LIMIT))
         .with_state(state);
+    let hooks = hooks.merge(device_routes);
     router().merge(hooks)
 }
 

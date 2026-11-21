@@ -13,6 +13,7 @@ chrono.workspace = true
 common = { workspace = true, features = ["http", "otel"] }
 billing.workspace = true
 db.workspace = true
+devices.workspace = true
 engine-client = { path = "../engine-client" }
 events.workspace = true
 futures-util.workspace = true
@@ -49,6 +50,7 @@ url.workspace = true
 engine-service = { path = "../engine-service" }
 fake-oidc = { path = "../fake-oidc" }
 http-body-util.workspace = true
+ingest = { path = "../ingest" }
 webauthn-authenticator-rs = { version = "=0.6.2", default-features = false, features = ["softpasskey"] }
 opentelemetry_sdk = "0.33.1"
 tracing-subscriber.workspace = true

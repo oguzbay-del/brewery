@@ -22,6 +22,8 @@
 - Worker maintenance (T2.39): `src/maintenance.rs`. `list_audit_heads()` and `list_workspace_tombstones()` (SECURITY DEFINER, `app_worker` only) read across workspaces. `maintenance_runs` (cross-workspace table) records job runs. `external_events.payload_cleared_at` marks a cleared payload.
 - `audit_log` is append-only. The application roles have no UPDATE/DELETE/TRUNCATE right. A trigger also rejects these actions for the owner role (except the foreign key chain when a workspace is deleted).
 
+- Device key lookup (T2.25, `0200`): `find_device_by_key_hash(bytea)` (SECURITY DEFINER, `app_api` only) is the only way for `ingest` to find a device before it knows the workspace. `devices` has an `owner_lookup` policy.
+
 ## How to test
 - You need a real PostgreSQL: `make up` (or only `docker compose -f altyapi/compose/compose.yaml up -d postgres`). Then run `make test` in the repository root. By hand: `DATABASE_URL=postgres://demleme:demleme-yerel@127.0.0.1:5432/demleme cargo test -p db`.
 - `#[sqlx::test]` creates a temporary database for each test, applies the migrations and deletes the database at the end. `pool_as` in `tests/common` tests application behavior: the connections open with `SET ROLE app_api` (or `app_worker`, `app_owner`). After `SET ROLE`, the RLS exemption of the superuser does not apply. A superuser session can use `SET ROLE` to change to any role. For this reason, test claims such as "an application role cannot be the owner" from `pg_roles` or the catalog.

@@ -12,6 +12,7 @@ billing.workspace = true
 chrono.workspace = true
 common = { workspace = true, features = ["http"] }
 db.workspace = true
+devices.workspace = true
 events.workspace = true
 serde.workspace = true
 serde_json.workspace = true

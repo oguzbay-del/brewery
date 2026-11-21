@@ -10,6 +10,7 @@ pub mod brew_day;
 pub mod concurrency;
 pub mod config;
 pub mod context;
+pub mod devices;
 pub mod engine;
 pub mod error;
 pub mod events;

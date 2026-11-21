@@ -75,6 +75,13 @@ pub async fn run(stop: watch::Receiver<bool>) {
         std::sync::Arc::new(billing::apply::NotificationHandler),
         stopped(stop.clone()),
     ));
+    let device_task = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(devices::CONSUMER_NAME, &devices::reading_filter()),
+        std::sync::Arc::new(devices::apply::ReadingHandler),
+        stopped(stop.clone()),
+    ));
     let janitor = {
         let pool = pool.clone();
         let stop = stop.clone();
@@ -90,5 +97,11 @@ pub async fn run(stop: watch::Receiver<bool>) {
             }
         })
     };
-    let _ = tokio::join!(relay_task, subscription_task, janitor, maintenance_task);
+    let _ = tokio::join!(
+        relay_task,
+        subscription_task,
+        device_task,
+        janitor,
+        maintenance_task
+    );
 }

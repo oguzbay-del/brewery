@@ -16,13 +16,14 @@
 - Stock (`stock.rs`, T2.23): lots, the movement ledger (`receive`, `consume`, `adjust`, `count`), totals from the ledger, `negative_stock` warning, deduction for a batch (safe to repeat, oldest lot first), and the shopping list from a recipe version minus stock. Write permission is `stock.move`. The module does not add migrations (tables are in `0010` and `0100`).
 - Search (`search.rs`, T2.27): `GET /v1/workspaces/{ws}/search?q=&types=&limit=`. Full-text over recipes, batches, ingredients and stock lots (`search` columns, `simple`). Each branch filters on `workspace_id`; library ingredients are included. Words match as prefix; the whole text also runs as a web search query.
 - Recently deleted (`trash.rs`, T2.37): `GET .../trash` lists the soft-deleted recipes, batches, ingredients and equipment of the last 30 days. `POST .../trash/{kind}/{id}/restore` restores one. After 30 days restore answers `409`. Each kind needs the write permission of its own endpoints.
+- Devices (`devices.rs`, T2.25): `/v1/workspaces/{ws}/devices*` (register, pair with a batch, rotate key, delete). The key is shown once on create and rotate. Only its SHA-256 digest is stored. Rotation needs the second step when the auth services run, and writes the audit event `device_key.renew`. `INGEST_PUBLIC_URL` (optional) gives the full data address in the answer.
 - Port `PORT` (default 8080).
 
 ## What it does not touch
 - It has no formulas. When it needs a calculation, it requests it from `engine-service` over gRPC.
 - The audit log read endpoint (T2.14) is not here. It comes in later tasks.
 - The object store client is in the `storage` crate. Here are only the endpoints and the validation.
-- It does not add migrations (exceptions: T2.18 `0070`, T2.12 `0090`, T2.28 `0130`, T2.21 `0140`, T2.22 `0141`, T2.40 `0190`, T2.37 `0191` in `db` migrations). Table decisions: `adr/0007-veri-modeli.md`.
+- It does not add migrations (exceptions: T2.18 `0070`, T2.12 `0090`, T2.28 `0130`, T2.21 `0140`, T2.22 `0141`, T2.40 `0190`, T2.37 `0191`, T2.25 `0200` in `db` migrations). Table decisions: `adr/0007-veri-modeli.md`.
 
 ## How to test
 - In `sunucu/`, run: `DATABASE_URL=... cargo test -p api`. You need PostgreSQL and Redis. `tests/sse.rs` needs NATS JetStream. `tests/files.rs` needs the object store. `tests/auth.rs` needs mailpit. Start them with `docker compose -f altyapi/compose/compose.yaml up -d --wait postgres redis nats objectstore mailpit`.

@@ -877,6 +877,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the devices of the workspace. */
+        get: operations["device_list"];
+        put?: never;
+        /** Registers a device and returns its key once. The key is part of the data address. */
+        post: operations["device_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/devices/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Reads a device. */
+        get: operations["device_get"];
+        put?: never;
+        post?: never;
+        /** Deletes a device (soft delete). Its data address stops working at once. */
+        delete: operations["device_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Changes the name, the calibration or the paired batch (`null` unpairs). `If-Match` is
+         *     optional: each reading also changes the version.
+         */
+        patch: operations["device_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/devices/{id}/rotate-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Makes a new key and returns it once. The old key stops working at once. Needs the second
+         *     step when the auth services run.
+         */
+        post: operations["device_rotatekey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/equipment": {
         parameters: {
             query?: never;
@@ -2966,10 +3026,63 @@ export interface components {
             /** @description `negative_stock` for each lot below zero. */
             warnings: components["schemas"]["StockWarning"][];
         };
+        /** @description A device. The key digest never leaves the server. */
+        Device: {
+            /**
+             * Format: uuid
+             * @description The paired batch.
+             */
+            batch_id?: string | null;
+            /** @description Calibration record, for example `{"schema_version": 1, "gravity_unit": "plato"}`. */
+            calibration?: Record<string, never> | null;
+            /**
+             * Format: date-time
+             * @description Creation time.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Time the current key was made.
+             */
+            ingest_key_rotated_at: string;
+            /** @description `ispindel`, `rapt`, `tilt` or `other`. */
+            kind: string;
+            /**
+             * Format: date-time
+             * @description Time of the last accepted reading.
+             */
+            last_data_at?: string | null;
+            /** @description Name. */
+            name: string;
+            /**
+             * Format: date-time
+             * @description Last change.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Version (`ETag`).
+             */
+            version: number;
+        };
         /** @description Body of `POST /v1/workspaces/{ws}/shared-devices/{id}/rotate-key`. */
         DeviceKeyRotate: {
             /** @description The new key (same rules as at registration). */
             device_key: string;
+        };
+        /** @description A device with its data address. Only create and rotate return the key. */
+        DeviceWithKey: components["schemas"]["Device"] & {
+            /** @description The key. Shown once; keep it secret. */
+            ingest_key: string;
+            /** @description Path of the data address on the ingest service. */
+            ingest_path: string;
+            /** @description Full data address, when the server knows its public URL (`INGEST_PUBLIC_URL`). */
+            ingest_url?: string | null;
         };
         /** @description A short lived download link. */
         DownloadLink: {
@@ -4043,6 +4156,20 @@ export interface components {
              */
             target_volume_l?: number | null;
         };
+        /** @description Body of `POST /v1/workspaces/{ws}/devices`. */
+        NewDevice: {
+            /**
+             * Format: uuid
+             * @description Batch to pair with.
+             */
+            batch_id?: string | null;
+            /** @description Calibration record (object with `schema_version`). */
+            calibration?: Record<string, never> | null;
+            /** @description `ispindel`, `rapt`, `tilt` or `other`. */
+            kind: string;
+            /** @description Name (1 to 200 characters). */
+            name: string;
+        };
         /** @description Body of a new draft. */
         NewDraft: {
             /** @description Note on the change. */
@@ -4363,6 +4490,55 @@ export interface components {
                 /**
                  * Format: int64
                  * @description Record version (`ETag`).
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_Device: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: uuid
+                 * @description The paired batch.
+                 */
+                batch_id?: string | null;
+                /** @description Calibration record, for example `{"schema_version": 1, "gravity_unit": "plato"}`. */
+                calibration?: Record<string, never> | null;
+                /**
+                 * Format: date-time
+                 * @description Creation time.
+                 */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /**
+                 * Format: date-time
+                 * @description Time the current key was made.
+                 */
+                ingest_key_rotated_at: string;
+                /** @description `ispindel`, `rapt`, `tilt` or `other`. */
+                kind: string;
+                /**
+                 * Format: date-time
+                 * @description Time of the last accepted reading.
+                 */
+                last_data_at?: string | null;
+                /** @description Name. */
+                name: string;
+                /**
+                 * Format: date-time
+                 * @description Last change.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Version (`ETag`).
                  */
                 version: number;
             }[];
@@ -14522,6 +14698,922 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    device_list: {
+        parameters: {
+            query?: {
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+                /** @description `id` (creation order, default) or `-id` */
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of devices */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "batch_id": "0192f1c07a3b7000800000000000000b",
+                     *           "calibration": {
+                     *             "gravity_unit": "plato",
+                     *             "schema_version": 1
+                     *           },
+                     *           "created_at": "2026-11-20T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000e",
+                     *           "ingest_key_rotated_at": "2026-11-20T10:00:00Z",
+                     *           "kind": "ispindel",
+                     *           "last_data_at": "2026-11-21T10:15:00Z",
+                     *           "name": "Green iSpindel",
+                     *           "updated_at": "2026-11-21T10:15:00Z",
+                     *           "version": 3
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_Device"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    device_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewDevice"];
+            };
+        };
+        responses: {
+            /** @description The device and its key (shown once) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000b",
+                     *       "calibration": {
+                     *         "gravity_unit": "plato",
+                     *         "schema_version": 1
+                     *       },
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "ingest_key": "k3Zq1m9XbV7c2nJ0aT5dY8wLpR4sGhUeFiOxNvB6CyA",
+                     *       "ingest_key_rotated_at": "2026-11-20T10:00:00Z",
+                     *       "ingest_path": "/v1/ingest/k3Zq1m9XbV7c2nJ0aT5dY8wLpR4sGhUeFiOxNvB6CyA",
+                     *       "ingest_url": "https://ingest.example.com/v1/ingest/k3Zq1m9XbV7c2nJ0aT5dY8wLpR4sGhUeFiOxNvB6CyA",
+                     *       "kind": "ispindel",
+                     *       "last_data_at": "2026-11-21T10:15:00Z",
+                     *       "name": "Green iSpindel",
+                     *       "updated_at": "2026-11-21T10:15:00Z",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DeviceWithKey"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Second factor required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    device_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Device */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The device */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000b",
+                     *       "calibration": {
+                     *         "gravity_unit": "plato",
+                     *         "schema_version": 1
+                     *       },
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "ingest_key_rotated_at": "2026-11-20T10:00:00Z",
+                     *       "kind": "ispindel",
+                     *       "last_data_at": "2026-11-21T10:15:00Z",
+                     *       "name": "Green iSpindel",
+                     *       "updated_at": "2026-11-21T10:15:00Z",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Device"];
+                };
+            };
+            /** @description Not modified (`If-None-Match` matched) */
+            304: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    device_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Device */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Second factor required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    device_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Device */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": unknown;
+            };
+        };
+        responses: {
+            /** @description The updated device */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000b",
+                     *       "calibration": {
+                     *         "gravity_unit": "plato",
+                     *         "schema_version": 1
+                     *       },
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "ingest_key_rotated_at": "2026-11-20T10:00:00Z",
+                     *       "kind": "ispindel",
+                     *       "last_data_at": "2026-11-21T10:15:00Z",
+                     *       "name": "Green iSpindel",
+                     *       "updated_at": "2026-11-21T10:15:00Z",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Device"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Second factor required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    device_rotatekey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Device */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The device and the new key (shown once) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "batch_id": "0192f1c07a3b7000800000000000000b",
+                     *       "calibration": {
+                     *         "gravity_unit": "plato",
+                     *         "schema_version": 1
+                     *       },
+                     *       "created_at": "2026-11-20T10:00:00Z",
+                     *       "id": "0192f1c07a3b7000800000000000000e",
+                     *       "ingest_key": "k3Zq1m9XbV7c2nJ0aT5dY8wLpR4sGhUeFiOxNvB6CyA",
+                     *       "ingest_key_rotated_at": "2026-11-20T10:00:00Z",
+                     *       "ingest_path": "/v1/ingest/k3Zq1m9XbV7c2nJ0aT5dY8wLpR4sGhUeFiOxNvB6CyA",
+                     *       "ingest_url": "https://ingest.example.com/v1/ingest/k3Zq1m9XbV7c2nJ0aT5dY8wLpR4sGhUeFiOxNvB6CyA",
+                     *       "kind": "ispindel",
+                     *       "last_data_at": "2026-11-21T10:15:00Z",
+                     *       "name": "Green iSpindel",
+                     *       "updated_at": "2026-11-21T10:15:00Z",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DeviceWithKey"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Second factor required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Version mismatch */
+            412: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

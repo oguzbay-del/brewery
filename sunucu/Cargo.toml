@@ -11,6 +11,7 @@ members = [
     "crates/events",
     "crates/ingest",
     "crates/billing",
+    "crates/devices",
     "crates/storage",
     "crates/fake-oidc",
 ]
@@ -25,6 +26,7 @@ publish = false
 # Internal crates
 common = { path = "crates/common" }
 billing = { path = "crates/billing" }
+devices = { path = "crates/devices" }
 db = { path = "crates/db" }
 events = { path = "crates/events" }
 engine = { path = "crates/engine" }
