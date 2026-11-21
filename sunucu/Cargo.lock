@@ -99,6 +99,7 @@ dependencies = [
  "hmac",
  "http-body-util",
  "ingest",
+ "notifier",
  "opentelemetry",
  "opentelemetry_sdk",
  "prost",
@@ -2338,6 +2339,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "notifier"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "db",
+ "events",
+ "reqwest",
+ "ring",
+ "rustls",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "nu-ansi-term"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3278,6 +3300,7 @@ dependencies = [
  "futures-channel",
  "futures-core",
  "futures-util",
+ "h2",
  "http",
  "http-body",
  "http-body-util",
@@ -4183,6 +4206,28 @@ name = "subtle"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
+
+[[package]]
+name = "support"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "base64 0.22.1",
+ "chrono",
+ "db",
+ "events",
+ "notifier",
+ "reqwest",
+ "ring",
+ "rustls",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "uuid",
+]
 
 [[package]]
 name = "syn"
@@ -5292,6 +5337,8 @@ dependencies = [
  "devices",
  "events",
  "http-body-util",
+ "notifier",
+ "reqwest",
  "serde",
  "serde_json",
  "sqlx",

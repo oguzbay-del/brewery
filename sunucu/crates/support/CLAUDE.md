@@ -24,6 +24,6 @@
 - TODO: the request status `closed` (14 days after `resolved`) has no job yet.
 - TODO: the correction kind `deletion_request` stays pending. A person must decide and the purge call is not connected.
 - TODO: the correction kind `subscription_reverify` only queues the outbox event `subscription.reverify_requested`. The store client does not exist yet.
-- TODO: the device key rotation of the panel makes the old key invalid and shows no new key. The customer flow comes with T2.25.
+- The device key rotation of the panel uses the key helpers of the `devices` crate. The old key stops working and staff do not see a new key.
 - TODO: the grant note in the Issue ("izin var, bitiş: ...") is not written.
 - TODO: deleting Issues when an account is deleted is not written (to be verified: Issue delete permission of the App).

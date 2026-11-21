@@ -72,6 +72,7 @@ async fn stack(w: &World) -> Stack {
         apple: ingest::jws::JwsVerifier::apple(),
         bundle_id: None,
         web_payment: None,
+        github_secret: None,
     });
     let (stop, rx) = watch::channel(false);
     let task = tokio::spawn(consumer::run(

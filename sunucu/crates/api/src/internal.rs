@@ -626,17 +626,15 @@ async fn device_rotate(
     ApiJson(b): ApiJson<ReasonBody>,
 ) -> ApiResult<Response> {
     let why = reason(b.reason.as_deref())?;
-    let mut random = [0u8; 32];
-    getrandom::fill(&mut random)
-        .map_err(|e| ApiError::from(db::Error::from(sqlx::Error::Protocol(e.to_string()))))?;
-    let hash = Sha256::digest(random);
+    // The new key is dropped: staff never see it. The customer shows a new key in the app.
+    let hash = devices::key_hash(&devices::new_key());
     let mut tx = staff_tx(&state, ws, None).await?;
     let n = sqlx::query(
         "UPDATE devices SET ingest_key_hash = $2, ingest_key_rotated_at = now()
          WHERE id = $1 AND deleted_at IS NULL",
     )
     .bind(device)
-    .bind(hash.as_slice())
+    .bind(hash)
     .execute(&mut *tx)
     .await?
     .rows_affected();
