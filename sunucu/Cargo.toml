@@ -15,6 +15,7 @@ members = [
     "crates/notifier",
     "crates/support",
     "crates/storage",
+    "crates/interchange",
     "crates/fake-oidc",
 ]
 
@@ -35,6 +36,7 @@ db = { path = "crates/db" }
 events = { path = "crates/events" }
 engine = { path = "crates/engine" }
 storage = { path = "crates/storage" }
+interchange = { path = "crates/interchange" }
 
 # Shared third-party crates
 async-nats = "0.52.0"

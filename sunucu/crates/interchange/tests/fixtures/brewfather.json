@@ -1,0 +1,30 @@
+{
+  "recipes": [
+    {
+      "name": "Test Brewfather IPA",
+      "type": "All Grain",
+      "batchSize": 21,
+      "boilSize": 26,
+      "boilTime": 60,
+      "efficiency": 70,
+      "og": 1.064,
+      "fg": 1.012,
+      "ibu": 55,
+      "color": 8.2,
+      "abv": 6.8,
+      "style": {"name": "American IPA"},
+      "equipment": {"name": "Test Rig", "batchSize": 21, "boilSize": 26, "boilTime": 60, "efficiency": 70, "trubChillerLoss": 1, "evaporationRate": 12},
+      "fermentables": [
+        {"name": "Test Base Malt", "type": "Grain", "amount": 5.2, "potential": 1.037, "color": 3},
+        {"name": "Test Honey", "type": "Sugar", "amount": 0.4, "potential": 1.035, "color": 1}
+      ],
+      "hops": [
+        {"name": "Test Hop C", "amount": 30, "alpha": 14, "use": "Boil", "time": 60, "type": "Pellet"},
+        {"name": "Test Hop D", "amount": 60, "alpha": 7, "use": "Dry Hop", "time": 4320, "type": "Pellet"}
+      ],
+      "yeasts": [{"name": "Test Yeast", "attenuation": 77, "amount": 1}],
+      "miscs": [{"name": "Test Salt", "amount": 4, "unit": "g", "use": "Mash"}],
+      "mash": {"steps": [{"name": "Rest", "type": "Infusion", "stepTemp": 65, "stepTime": 60}]}
+    }
+  ]
+}
