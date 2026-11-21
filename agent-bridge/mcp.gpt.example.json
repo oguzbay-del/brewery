@@ -1,0 +1,24 @@
+{
+  "tools": [
+    {
+      "type": "mcp",
+      "server_label": "gristora_agent_bridge",
+      "server_url": "https://gristora-agent-bridge.<account-subdomain>.workers.dev/mcp",
+      "headers": {
+        "Authorization": "Bearer <MCP_TOKEN_GPT from the secret store>"
+      },
+      "allowed_tools": [
+        "whoami",
+        "create_task",
+        "get_task",
+        "list_tasks",
+        "claim_task",
+        "update_task",
+        "requeue_task",
+        "send_message",
+        "read_messages"
+      ],
+      "require_approval": "never"
+    }
+  ]
+}

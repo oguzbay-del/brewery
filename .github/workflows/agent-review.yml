@@ -1,0 +1,102 @@
+name: Agent review
+
+# Independent Claude and GPT reviews of agent pull requests (claude/* and gpt/*).
+# Each job reads the diff through the API and never checks out or runs pull request code.
+# It posts a machine-readable record (author github-actions[bot]) for the head SHA.
+# The Agent auto-merge gate reads these records.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to review
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-review-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  claude-review:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       !github.event.pull_request.draft &&
+       (startsWith(github.event.pull_request.head.ref, 'claude/') || startsWith(github.event.pull_request.head.ref, 'gpt/')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Check out the default branch (runner code only)
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: |
+            agent-bridge
+            .github/scripts
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: agent-bridge/package-lock.json
+      - name: Install runner dependencies
+        working-directory: agent-bridge
+        run: npm ci
+      - name: Claude review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AGENT_MAX_BUDGET_USD: ${{ vars.AGENT_REVIEW_BUDGET_USD || '3' }}
+          AGENT_TIMEOUT_MINUTES: "20"
+          POST_REVIEW: "true"
+          PR: ${{ github.event.pull_request.number || inputs.pr_number }}
+        run: node agent-bridge/runner/claude.mjs review "$PR"
+
+  gpt-review:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       !github.event.pull_request.draft &&
+       (startsWith(github.event.pull_request.head.ref, 'claude/') || startsWith(github.event.pull_request.head.ref, 'gpt/')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Check out the default branch (runner code only)
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: |
+            agent-bridge
+            .github/scripts
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: agent-bridge/package-lock.json
+      - name: Install runner dependencies
+        working-directory: agent-bridge
+        run: npm ci
+      - name: GPT review
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          POST_REVIEW: "true"
+          PR: ${{ github.event.pull_request.number || inputs.pr_number }}
+        run: node agent-bridge/runner/gpt.mjs review "$PR"

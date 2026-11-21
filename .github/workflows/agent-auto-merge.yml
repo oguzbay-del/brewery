@@ -1,0 +1,97 @@
+name: Agent auto-merge
+
+# Guarded automatic merge for agent pull requests (claude/* and gpt/* branches).
+# It runs the version of this file and of the gate script on the default branch only
+# (pull_request_target, workflow_run, schedule). It never checks out pull request code.
+# Gates: .github/scripts/agent-auto-merge.mjs. Policy: AGENT_TEAM.md.
+
+on:
+  pull_request_target:
+    types: [labeled, unlabeled, synchronize, reopened, ready_for_review]
+  workflow_run:
+    workflows:
+      - Marketing site checks
+      - Agent bridge checks
+      - Agent review
+      - Agent config check
+      - Actionlint
+      - sunucu
+      - web
+      - ios
+      - sozlesme
+      - altyapi
+      - belgeler
+    types: [completed]
+  schedule:
+    # External checks (Cloudflare Pages, Workers Builds) do not start workflows.
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Evaluate only this PR number (empty = every PR with the auto-merge label)
+        required: false
+      dry_run:
+        description: Evaluate without merging
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: agent-auto-merge
+  cancel-in-progress: false
+
+jobs:
+  auto-merge-clear-reviews:
+    # A new commit invalidates both agent reviews: they must review the new head SHA.
+    if: github.event_name == 'pull_request_target' && github.event.action == 'synchronize'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Remove review labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Labels are only a visible hint; the gate reads the review records for the head SHA.
+          for label in "review:claude-ok" "review:gpt-ok"; do
+            gh api -X DELETE "repos/${REPO}/issues/${PR}/labels/${label}" >/dev/null 2>&1 || true
+          done
+
+  auto-merge-gate:
+    needs: auto-merge-clear-reviews
+    if: >-
+      always() &&
+      (github.event_name != 'pull_request_target' ||
+       contains(github.event.pull_request.labels.*.name, 'auto-merge'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+      checks: read
+      statuses: read
+    steps:
+      - name: Check out the default branch (gate script only)
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Test the gate logic
+        run: node --test .github/scripts/agent-auto-merge.test.mjs
+      - name: Evaluate and merge
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && 'true' || 'false' }}
+        run: node .github/scripts/agent-auto-merge.mjs
