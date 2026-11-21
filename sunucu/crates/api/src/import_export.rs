@@ -233,7 +233,13 @@ const SELECT_IMPORT: &str = "SELECT id, format, status, file_name, parsed, mappi
     ),
     request_body(content = String, content_type = "application/octet-stream",
         description = "The file (up to 8 MiB)"),
-    responses((status = 201, description = "The parsed file", body = ImportPreview))
+    responses((status = 201, description = "The parsed file", body = ImportPreview,
+        example = json!({"id": "0192f1c0-7a3b-7000-8000-000000000001", "format": "beerxml", "status": "parsed",
+            "file_name": "pale.xml", "recipes": [{"index": 0, "name": "Pale Ale", "kind": "all_grain",
+            "style": "American Pale Ale", "source": {"og_sg": 1.052, "fg_sg": 1.011, "ibu": 38.0,
+            "srm": 7.5, "abv_pct": 5.4}, "equipment": "Kettle 30 L", "lines": [2, 2, 1, 1],
+            "warnings": []}], "equipment": ["Kettle 30 L"], "warnings": [],
+            "mapping_decisions": null, "recipe_id": null})))
 )]
 pub async fn import_create(
     State(state): State<AppState>,
@@ -311,7 +317,13 @@ pub async fn import_create(
         ("workspace_id" = Uuid, Path, description = "Workspace"),
         ("id" = Uuid, Path, description = "Import")
     ),
-    responses((status = 200, description = "The import", body = ImportPreview))
+    responses((status = 200, description = "The import", body = ImportPreview,
+        example = json!({"id": "0192f1c0-7a3b-7000-8000-000000000001", "format": "beerxml", "status": "parsed",
+            "file_name": "pale.xml", "recipes": [{"index": 0, "name": "Pale Ale", "kind": "all_grain",
+            "style": "American Pale Ale", "source": {"og_sg": 1.052, "fg_sg": 1.011, "ibu": 38.0,
+            "srm": 7.5, "abv_pct": 5.4}, "equipment": "Kettle 30 L", "lines": [2, 2, 1, 1],
+            "warnings": []}], "equipment": ["Kettle 30 L"], "warnings": [],
+            "mapping_decisions": null, "recipe_id": null})))
 )]
 pub async fn import_get(
     State(state): State<AppState>,
@@ -488,7 +500,14 @@ fn calc_figures(summary: &Value) -> CalculatedFigures {
         ("id" = Uuid, Path, description = "Import")
     ),
     request_body = ApplyBody,
-    responses((status = 201, description = "Recipes created", body = ApplyResult))
+    responses((status = 201, description = "Recipes created", body = ApplyResult,
+        example = json!({"import_id": "0192f1c0-7a3b-7000-8000-000000000001", "recipes": [{"index": 0,
+            "recipe_id": "0192f1c0-7a3b-7000-8000-000000000002",
+            "version_id": "0192f1c0-7a3b-7000-8000-000000000003", "name": "Pale Ale",
+            "source": {"og_sg": 1.052, "fg_sg": 1.011, "ibu": 38.0, "srm": 7.5, "abv_pct": 5.4},
+            "calculated": {"og_sg": 1.051, "fg_sg": 1.012, "ibu": 36.0, "color_srm": 7.2, "abv_pct": 5.2},
+            "equipment_id": null}], "equipment_ids": [],
+            "mapping_decisions": {"schema_version": 1, "format": "beerxml", "recipes": [], "equipment": []}})))
 )]
 pub async fn import_apply(
     State(state): State<AppState>,
@@ -806,7 +825,11 @@ fn export_job(row: ExportRow, state: &AppState) -> ApiResult<ExportJob> {
     operation_id = "export_create",
     params(("workspace_id" = Uuid, Path, description = "Workspace")),
     request_body = NewExport,
-    responses((status = 202, description = "The queued job", body = ExportJob))
+    responses((status = 202, description = "The queued job", body = ExportJob,
+        example = json!({"id": "0192f1c0-7a3b-7000-8000-000000000004", "scope": "workspace", "scope_id": null,
+            "format": "zip", "status": "done", "error": null, "size_bytes": 20480,
+            "expires_at": "2026-11-28T10:00:00Z", "created_at": "2026-11-21T10:00:00Z",
+            "download": {"url": "https://files.example.test/x?sig=abc", "expires_at": "2026-11-21T10:30:00Z"}})))
 )]
 pub async fn export_create(
     State(state): State<AppState>,
@@ -920,7 +943,11 @@ pub async fn export_create(
         ("workspace_id" = Uuid, Path, description = "Workspace"),
         ("id" = Uuid, Path, description = "Export job")
     ),
-    responses((status = 200, description = "The job", body = ExportJob))
+    responses((status = 200, description = "The job", body = ExportJob,
+        example = json!({"id": "0192f1c0-7a3b-7000-8000-000000000004", "scope": "workspace", "scope_id": null,
+            "format": "zip", "status": "done", "error": null, "size_bytes": 20480,
+            "expires_at": "2026-11-28T10:00:00Z", "created_at": "2026-11-21T10:00:00Z",
+            "download": {"url": "https://files.example.test/x?sig=abc", "expires_at": "2026-11-21T10:30:00Z"}})))
 )]
 pub async fn export_get(
     State(state): State<AppState>,
