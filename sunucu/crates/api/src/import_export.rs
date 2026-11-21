@@ -764,7 +764,7 @@ pub struct ExportJob {
 }
 
 #[derive(FromRow)]
-struct ExportRow {
+pub(crate) struct ExportRow {
     id: Uuid,
     scope: String,
     scope_id: Option<Uuid>,
@@ -777,10 +777,10 @@ struct ExportRow {
     result_object_key: Option<String>,
 }
 
-const SELECT_EXPORT: &str = "SELECT id, scope, scope_id, format, status, error, size_bytes, \
+pub(crate) const SELECT_EXPORT: &str = "SELECT id, scope, scope_id, format, status, error, size_bytes, \
     expires_at, created_at, result_object_key FROM export_jobs WHERE id = $1 AND deleted_at IS NULL";
 
-fn export_job(row: ExportRow, state: &AppState) -> ApiResult<ExportJob> {
+pub(crate) fn export_job(row: ExportRow, state: &AppState) -> ApiResult<ExportJob> {
     let now = Utc::now();
     let mut status = row.status.clone();
     if status == "done" && row.expires_at.is_some_and(|t| t <= now) {

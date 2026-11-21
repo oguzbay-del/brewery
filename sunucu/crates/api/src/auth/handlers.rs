@@ -91,6 +91,10 @@ pub struct ProviderLoginRequest {
     /// Name from the first Apple authorization, which Apple sends only to the app.
     #[serde(default)]
     pub display_name: Option<String>,
+    /// Apple only: the authorization code of the first sign-in. The server exchanges it for a
+    /// refresh token and stores it sealed, to revoke it when the account is deleted.
+    #[serde(default)]
+    pub authorization_code: Option<String>,
 }
 
 /// Body of `POST /v1/auth/email/start`.
@@ -379,6 +383,38 @@ impl AuthServices {
         })
     }
 
+    /// Exchanges the Apple authorization code and stores the refresh token sealed. A failure is
+    /// logged and does not stop the sign-in; without the token the revoke at account deletion
+    /// has nothing to revoke.
+    async fn store_apple_token(&self, user_id: Uuid, subject: &str, code: &str) {
+        let (Some(client), Some(envelope)) = (&self.apple_client, &self.envelope) else {
+            tracing::debug!("Apple code exchange is not configured; the code is ignored");
+            return;
+        };
+        let result = async {
+            let token = client.exchange_code(code).await.map_err(|e| e.to_string())?;
+            let sealed = envelope.seal(token.as_bytes()).map_err(|e| e.to_string())?;
+            let mut tx = db::begin(&self.db, &db::DbContext::user(user_id, None))
+                .await
+                .map_err(|e| e.to_string())?;
+            sqlx::query(
+                "UPDATE user_identities SET provider_refresh_token_enc = $3 \
+                 WHERE user_id = $1 AND provider = 'apple' AND subject = $2",
+            )
+            .bind(user_id)
+            .bind(subject)
+            .bind(sealed)
+            .execute(&mut *tx)
+            .await
+            .map_err(|e| e.to_string())?;
+            tx.commit().await.map_err(|e| e.to_string())
+        }
+        .await;
+        if let Err(e) = result {
+            tracing::warn!(user_id = %user_id, error = %e, "Apple refresh token was not stored");
+        }
+    }
+
     async fn consume_nonce(&self, raw: &str) -> ApiResult<bool> {
         if raw.is_empty() || raw.len() > 128 {
             return Ok(false);
@@ -653,7 +689,14 @@ async fn provider_login(
     if claim.display_name.is_empty() {
         claim.display_name = req.display_name.unwrap_or_default();
     }
-    Ok(svc.login_response(svc.login(&claim, &device).await?))
+    let outcome = svc.login(&claim, &device).await?;
+    if provider == "apple"
+        && let Some(code) = req.authorization_code.as_deref().filter(|c| !c.is_empty())
+    {
+        svc.store_apple_token(outcome.user.id, &claim.subject, code)
+            .await;
+    }
+    Ok(svc.login_response(outcome))
 }
 
 /// Signs in with an Apple ID token.
