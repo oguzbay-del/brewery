@@ -107,28 +107,27 @@ npm run test:browser
 
 The site follows the approved Stitch layout. `src/styles/stitch-layout.css` holds the Stitch page patterns and tokens (`--sx-*`), with rules scoped by page class such as `.features-page`, `.feature-detail-page` and `.not-found-page`. `src/components/SiteHeader.astro` (nav set B, with a `current` prop for `aria-current`) and `src/components/SiteFooter.astro` (with back-link props) are shared by every page. Change the navigation or footer in those two components only.
 
-## Vercel preview and production gate
+## Cloudflare Pages hosting and production gate
 
-Use a dedicated Vercel project for the marketing site; do not reuse or modify the product's Vercel project. The commercial production host, plan and public domain are not approved until the owner completes the steps in [`DOMAIN-SETUP.md`](./DOMAIN-SETUP.md). Keep the GitHub repository as the source of truth.
+Cloudflare Pages is the hosting platform for the GRISTORA marketing website. GitHub remains the source repository and review/CI system. The Cloudflare Pages project is named `gristora`; its deployment integration publishes branch previews and the production branch.
 
-1. Import `oguzbay-del/brewery` into Vercel.
-2. Set **Root Directory** to `marketing-site`.
-3. Select **Astro** as the framework preset.
-4. Use the defaults: install `npm install`, build `npm run build`, output `dist`.
-5. Do not add an Astro server adapter; this site is statically generated.
-6. Vercel's `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` values provide the deployment host. Set `SITE_URL` to the final canonical origin once the production domain is confirmed. Do not repeatedly retry Preview deployments while the Hobby quota window is active; GitHub Pages is the temporary preview fallback.
-7. Only after the production host and domain are approved, connect the domain and verify HTTPS, canonical URLs, `/robots.txt`, `/sitemap.xml`, and all routes before switching public traffic.
+- Repository: `oguzbay-del/brewery`
+- Site root: `marketing-site/`
+- Framework: Astro static output
+- Build command: `npm run build`
+- Output directory: `dist`
+- Canonical production origin: `https://gristora.com`
+- Preview builds use the Cloudflare-provided `CF_PAGES_URL` as their own canonical origin and remain `noindex, nofollow`.
+- The production branch uses `https://gristora.com` and is indexable. Do not change DNS or production routing as part of ordinary feature work.
 
-The Astro config uses the root path for Vercel and `/brewery` only for the GitHub Pages fallback. Preview canonical URLs use `VERCEL_URL`; future production uses `SITE_URL=https://gristora.com`. The robots and sitemap endpoints are generated at build time from the active site/base URL.
-
-**Plan note:** Vercel Hobby is for personal, non-commercial use. Use it for private setup/preview only; upgrade to Pro before operating this commercial marketing site publicly.
+The Astro config has no Vercel environment-variable dependency. Vercel is not part of the website deployment path; do not recreate a Vercel project or add Vercel deployment actions.
 
 ## GitHub Pages fallback
 
-- **Project website:** https://oguzbay-del.github.io/brewery/
+- Project website: https://oguzbay-del.github.io/brewery/
 - Workflow: `.github/workflows/marketing-site-pages.yml`.
-- The workflow sets `GITHUB_PAGES=true` to build with the `/brewery` base path.
-- GitHub Pages is the temporary preview fallback while Vercel is rate-limited. Before public release, complete final responsive browser QA on the approved production preview environment.
+- The workflow sets `GITHUB_PAGES=true` and builds with the `/brewery` base path.
+- GitHub Pages remains a separate public `noindex, nofollow` fallback, not the canonical production host.
 
 ## Final QA checklist
 
