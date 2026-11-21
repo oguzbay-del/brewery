@@ -12,6 +12,7 @@
 pub mod beerjson;
 pub mod beerxml;
 pub mod brewfather;
+pub mod convert;
 pub mod csv;
 pub mod model;
 pub mod xml;

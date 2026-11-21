@@ -33,6 +33,7 @@ sha2.workspace = true
 sqlx.workspace = true
 time.workspace = true
 storage.workspace = true
+interchange.workspace = true
 tokio = { workspace = true, features = ["io-util", "time"] }
 tonic.workspace = true
 tonic-types.workspace = true

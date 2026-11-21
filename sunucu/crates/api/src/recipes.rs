@@ -1323,6 +1323,59 @@ pub async fn recipe_list(
     )))
 }
 
+/// Inserts a recipe with its first draft (the body of `recipe_create`, also used by the import).
+/// Returns the recipe and draft version identifiers. The caller emits the event and commits.
+pub(crate) async fn insert_recipe(
+    tx: &mut PgConnection,
+    ws: Uuid,
+    user: Uuid,
+    new: &NewRecipe,
+    name: &str,
+) -> ApiResult<(Uuid, Uuid)> {
+    let id = Uuid::now_v7();
+    let version_id = Uuid::now_v7();
+    sqlx::query(
+        "INSERT INTO recipes (id, workspace_id, name, folder_id, notes, created_by, updated_by) \
+         VALUES ($1, $2, $3, $4, $5, $6, $6)",
+    )
+    .bind(id)
+    .bind(ws)
+    .bind(name)
+    .bind(new.folder_id)
+    .bind(&new.notes)
+    .bind(user)
+    .execute(&mut *tx)
+    .await
+    .map_err(constraint_error)?;
+    let header = resolve_header(&mut *tx, &new.version, None).await?;
+    insert_header(&mut *tx, ws, user, version_id, id, 1, &header).await?;
+    for (key, _, _) in SECTIONS {
+        if let Some(rows) = resolve_section(&mut *tx, key, &new.version).await? {
+            write_section(&mut *tx, ws, user, version_id, key, &rows).await?;
+        }
+    }
+    sqlx::query("UPDATE recipes SET draft_version_id = $2 WHERE id = $1")
+        .bind(id)
+        .bind(version_id)
+        .execute(&mut *tx)
+        .await
+        .map_err(constraint_error)?;
+    for tag_id in &new.tag_ids {
+        sqlx::query(
+            "INSERT INTO recipe_tags (workspace_id, recipe_id, tag_id, created_by) \
+             VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
+        )
+        .bind(ws)
+        .bind(id)
+        .bind(tag_id)
+        .bind(user)
+        .execute(&mut *tx)
+        .await
+        .map_err(constraint_error)?;
+    }
+    Ok((id, version_id))
+}
+
 /// Creates a recipe with its first draft.
 #[utoipa::path(
     post,
@@ -1349,48 +1402,8 @@ pub async fn recipe_create(
         return Err(issue("/name", "invalid_value"));
     }
     let user = ctx.identity.user_id;
-    let id = Uuid::now_v7();
-    let version_id = Uuid::now_v7();
     let mut tx = ctx.begin(&state.db).await?;
-    sqlx::query(
-        "INSERT INTO recipes (id, workspace_id, name, folder_id, notes, created_by, updated_by) \
-         VALUES ($1, $2, $3, $4, $5, $6, $6)",
-    )
-    .bind(id)
-    .bind(ws)
-    .bind(&name)
-    .bind(new.folder_id)
-    .bind(&new.notes)
-    .bind(user)
-    .execute(&mut *tx)
-    .await
-    .map_err(constraint_error)?;
-    let header = resolve_header(&mut tx, &new.version, None).await?;
-    insert_header(&mut tx, ws, user, version_id, id, 1, &header).await?;
-    for (key, _, _) in SECTIONS {
-        if let Some(rows) = resolve_section(&mut tx, key, &new.version).await? {
-            write_section(&mut tx, ws, user, version_id, key, &rows).await?;
-        }
-    }
-    sqlx::query("UPDATE recipes SET draft_version_id = $2 WHERE id = $1")
-        .bind(id)
-        .bind(version_id)
-        .execute(&mut *tx)
-        .await
-        .map_err(constraint_error)?;
-    for tag_id in &new.tag_ids {
-        sqlx::query(
-            "INSERT INTO recipe_tags (workspace_id, recipe_id, tag_id, created_by) \
-             VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
-        )
-        .bind(ws)
-        .bind(id)
-        .bind(tag_id)
-        .bind(user)
-        .execute(&mut *tx)
-        .await
-        .map_err(constraint_error)?;
-    }
+    let (id, _) = insert_recipe(&mut tx, ws, user, &new, &name).await?;
     let row = fetch_recipe(&mut tx, user, id).await?;
     recipe_event(&mut tx, ws, "recipe.created", id, row.version, None).await?;
     tx.commit().await?;

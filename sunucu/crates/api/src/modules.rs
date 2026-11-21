@@ -47,6 +47,7 @@ pub const MODULES: &[Module] = &[
     crate::support::MODULE,
     crate::support_access::MODULE,
     crate::internal::MODULE,
+    crate::import_export::MODULE,
 ];
 
 /// The routes of all modules, with the auth services as a request extension.
