@@ -19,7 +19,9 @@ permissions:
 
 jobs:
   typecheck:
+    name: typecheck, bundle, MCP e2e
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: agent-bridge
@@ -30,7 +32,13 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install
+          cache: npm
+          cache-dependency-path: agent-bridge/package-lock.json
+      - name: Install dependencies (lockfile)
+        run: npm ci
       - name: Type-check Worker
         run: npm run check
+      - name: Bundle Worker (dry run)
+        run: npx wrangler deploy --dry-run --outdir dist
+      - name: MCP end-to-end test (2025 and 2026 protocol clients)
+        run: npm run test:e2e
