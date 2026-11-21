@@ -75,6 +75,14 @@ jobs:
           AGENT_BRIDGE_URL: ${{ vars.AGENT_BRIDGE_URL }}
           MCP_TOKEN_CLAUDE: ${{ secrets.MCP_TOKEN_CLAUDE }}
           MCP_TOKEN_GPT: ${{ secrets.MCP_TOKEN_GPT }}
+          EVENT: ${{ github.event_name }}
+        # `shell: bash` adds -o pipefail, so a failed check is not hidden by `tee`.
+        shell: bash
         run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$AGENT_BRIDGE_URL/health" || true)
+          if [ "$code" != 200 ] && [ "$EVENT" = pull_request ]; then
+            echo "::notice::NOT DEPLOYED: $AGENT_BRIDGE_URL/health returned $code. The Worker deploys after the merge to main; the live check runs then."
+            exit 0
+          fi
           npm ci
           node runner/live-check.mjs | tee -a "$GITHUB_STEP_SUMMARY"
