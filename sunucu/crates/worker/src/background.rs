@@ -63,6 +63,19 @@ pub async fn run(stop: watch::Receiver<bool>) {
     // Export jobs (T2.26) need the database and the object store only, not NATS.
     let export_task = export_store_from_env()
         .map(|store| tokio::spawn(crate::export::run(pool.clone(), store, stop.clone())));
+    // Account deletion (T2.31) needs the database; files, Apple and GitHub only when it has
+    // records there.
+    let account_task = {
+        let deps = crate::account::Deps {
+            store: export_store_from_env(),
+            apple: account::apple::client_from_env(),
+            envelope: account::Envelope::from_env().map(std::sync::Arc::new),
+            issues: support::github::GitHub::from_env().map(|g| {
+                std::sync::Arc::new(g) as std::sync::Arc<dyn support::github::IssueScrubber>
+            }),
+        };
+        tokio::spawn(crate::account::run(pool.clone(), deps, stop.clone()))
+    };
     let client = match events::connect(&nats_url).await {
         Ok(c) => c,
         Err(e) => {
@@ -193,4 +206,5 @@ pub async fn run(stop: watch::Receiver<bool>) {
     if let Some(task) = export_task {
         let _ = task.await;
     }
+    let _ = account_task.await;
 }

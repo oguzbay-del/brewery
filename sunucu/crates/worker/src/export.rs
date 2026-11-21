@@ -11,8 +11,16 @@
 //!   `manifest.json`. CSV cells are escaped against formula injection.
 //!
 //! The file is built in memory (limit 512 MiB). TODO: stream the ZIP for very large accounts.
-//! TODO: water profiles, devices, support requests, documents and photos come with the account
-//! data export (T2.31).
+//! - scope `account_data` (account data export, ZIP, T2.31): `account.json` (profile, sign-in
+//!   methods without tokens, passkey names, sessions, push targets), `workspaces.json`, and for
+//!   each workspace of the user the files `workspaces/<id>/me/*.json` (own support requests,
+//!   settings, favorites, notification preferences). A Home workspace where the user is the
+//!   only administrator also has the full workspace export (`workspaces/<id>/...`, including
+//!   water profiles, devices, support requests and documents) and the document and attachment
+//!   files (`workspaces/<id>/files/`).
+//!
+//! TODO: photos and document files are only in the account data export, not in the workspace
+//! export.
 
 #![allow(clippy::too_many_lines)]
 
@@ -53,6 +61,7 @@ pub struct Built {
 
 #[derive(Debug)]
 struct Job {
+    created_by: Option<Uuid>,
     scope: String,
     scope_id: Option<Uuid>,
     format: String,
@@ -262,6 +271,23 @@ async fn build_batch(tx: &mut PgConnection, job: &Job) -> Result<Built> {
 async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
     let zerr = |e: interchange::Error| format_err(e.to_string());
     let mut zip = ZipWriter::new();
+    fill_workspace(tx, ws, &mut zip, "").await?;
+    Ok(Built {
+        bytes: zip.finish().map_err(zerr)?,
+        content_type: "application/zip",
+        ext: "zip",
+    })
+}
+
+/// Writes the files of the full workspace export into `zip`, each name under `prefix`.
+async fn fill_workspace(
+    tx: &mut PgConnection,
+    ws: Uuid,
+    zip: &mut ZipWriter,
+    prefix: &str,
+) -> Result<()> {
+    let zerr = |e: interchange::Error| format_err(e.to_string());
+    let name_of = |n: &str| format!("{prefix}{n}");
     let db_err = |e: sqlx::Error| Error::from(db::Error::from(e));
 
     // Recipes (the newest version of each).
@@ -281,12 +307,12 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
         }
     }
     zip.add(
-        "recipes.beerjson",
+        &name_of("recipes.beerjson"),
         interchange::beerjson::write(&recipes).as_bytes(),
     )
     .map_err(zerr)?;
     zip.add(
-        "recipes.beerxml",
+        &name_of("recipes.beerxml"),
         interchange::beerxml::write(&recipes).as_bytes(),
     )
     .map_err(zerr)?;
@@ -334,7 +360,7 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
             opt_text(r, "notes"),
         ]));
     }
-    zip.add("batches.csv", batches.as_bytes()).map_err(zerr)?;
+    zip.add(&name_of("batches.csv"), batches.as_bytes()).map_err(zerr)?;
     let batch_count = rows.len();
 
     // Stock lots.
@@ -374,7 +400,7 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
             opt_text(r, "notes"),
         ]));
     }
-    zip.add("stock_lots.csv", stock.as_bytes()).map_err(zerr)?;
+    zip.add(&name_of("stock_lots.csv"), stock.as_bytes()).map_err(zerr)?;
 
     // Equipment and own ingredients as JSON.
     let equipment: Value = sqlx::query_scalar(
@@ -384,7 +410,7 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
     .fetch_one(&mut *tx)
     .await
     .map_err(db_err)?;
-    zip.add("equipment.json", &json_bytes(&equipment))
+    zip.add(&name_of("equipment.json"), &json_bytes(&equipment))
         .map_err(zerr)?;
     let ingredients: Value = sqlx::query_scalar(
         "SELECT COALESCE(jsonb_agg(to_jsonb(i) - ARRAY['workspace_id','search','created_by','updated_by','deleted_at'] \
@@ -395,7 +421,7 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
     .fetch_one(&mut *tx)
     .await
     .map_err(db_err)?;
-    zip.add("ingredients.json", &json_bytes(&ingredients))
+    zip.add(&name_of("ingredients.json"), &json_bytes(&ingredients))
         .map_err(zerr)?;
 
     // Measurements: one CSV for each batch and year.
@@ -419,7 +445,7 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
                 .as_ref()
                 .is_none_or(|(c, y, _)| *c != code || *y != year)
             {
-                let base = format!("measurements/{}-{year}", safe_name(&code));
+                let base = format!("{prefix}measurements/{}-{year}", safe_name(&code));
                 let mut name = format!("{base}.csv");
                 let mut n = 2;
                 while files.contains_key(&name) {
@@ -451,17 +477,199 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
     for (name, text) in &files {
         zip.add(name, text.as_bytes()).map_err(zerr)?;
     }
+    // Water profiles, devices (no key digest), support requests (no internal notes) and the
+    // metadata of documents and attachments (T2.31).
+    let water: Value = sqlx::query_scalar(
+        "SELECT COALESCE(jsonb_agg(to_jsonb(w) - ARRAY['workspace_id','created_by','updated_by','deleted_at'] \
+         ORDER BY w.name), '[]'::jsonb) FROM water_profiles w WHERE w.deleted_at IS NULL",
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    zip.add(&name_of("water_profiles.json"), &json_bytes(&water))
+        .map_err(zerr)?;
+    let devices: Value = sqlx::query_scalar(
+        "SELECT COALESCE(jsonb_agg(to_jsonb(d) - ARRAY['workspace_id','ingest_key_hash','created_by','updated_by','deleted_at'] \
+         ORDER BY d.name), '[]'::jsonb) FROM devices d WHERE d.deleted_at IS NULL",
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    zip.add(&name_of("devices.json"), &json_bytes(&devices))
+        .map_err(zerr)?;
+    let support: Value = sqlx::query_scalar(
+        "SELECT COALESCE(jsonb_agg((to_jsonb(r) - ARRAY['workspace_id','created_by','updated_by','deleted_at'] \
+            ) || jsonb_build_object('messages', (SELECT COALESCE(jsonb_agg( \
+                to_jsonb(m) - ARRAY['workspace_id','created_by','updated_by','deleted_at','visibility','author_staff_id'] \
+                ORDER BY m.created_at), '[]'::jsonb) FROM support_messages m \
+                WHERE m.request_id = r.id AND m.visibility = 'customer' AND m.deleted_at IS NULL)) \
+            ORDER BY r.public_number), '[]'::jsonb) FROM support_requests r WHERE r.deleted_at IS NULL",
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    zip.add(&name_of("support_requests.json"), &json_bytes(&support))
+        .map_err(zerr)?;
+    let documents: Value = sqlx::query_scalar(
+        "SELECT jsonb_build_object( \
+           'scanned_documents', (SELECT COALESCE(jsonb_agg(to_jsonb(d) - ARRAY['workspace_id','created_by','updated_by','deleted_at'] \
+               ORDER BY d.created_at), '[]'::jsonb) FROM scanned_documents d WHERE d.deleted_at IS NULL), \
+           'attachments', (SELECT COALESCE(jsonb_agg(to_jsonb(a) - ARRAY['workspace_id','created_by','updated_by','deleted_at'] \
+               ORDER BY a.created_at), '[]'::jsonb) FROM attachments a WHERE a.deleted_at IS NULL))",
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    zip.add(&name_of("documents.json"), &json_bytes(&documents))
+        .map_err(zerr)?;
     let manifest = json!({
         "schema_version": 1,
         "generated_at": Utc::now(),
         "counts": {"recipes": recipes.len(), "batches": batch_count,
                    "measurements": measurement_count, "measurement_files": measurement_files.len()},
         "files": ["recipes.beerjson", "recipes.beerxml", "batches.csv", "stock_lots.csv",
-                  "equipment.json", "ingredients.json", "measurements/"],
-        "not_included_yet": ["water_profiles", "devices", "support_requests", "documents", "photos"],
+                  "equipment.json", "ingredients.json", "water_profiles.json", "devices.json",
+                  "support_requests.json", "documents.json", "measurements/"],
+        "not_included_yet": ["photos"],
     });
-    zip.add("manifest.json", &json_bytes(&manifest))
+    zip.add(&name_of("manifest.json"), &json_bytes(&manifest))
         .map_err(zerr)?;
+    Ok(())
+}
+
+/// The personal slice of a workspace: rows that belong to `user`.
+async fn fill_personal(
+    tx: &mut PgConnection,
+    user: Uuid,
+    zip: &mut ZipWriter,
+    prefix: &str,
+) -> Result<()> {
+    let zerr = |e: interchange::Error| format_err(e.to_string());
+    let db_err = |e: sqlx::Error| Error::from(db::Error::from(e));
+    let drop = "ARRAY['workspace_id','created_by','updated_by','deleted_at']";
+    let slices: [(&str, String); 4] = [
+        (
+            "support_requests.json",
+            format!(
+                "SELECT COALESCE(jsonb_agg((to_jsonb(r) - {drop}) || jsonb_build_object('messages', \
+                 (SELECT COALESCE(jsonb_agg(to_jsonb(m) - ARRAY['workspace_id','created_by','updated_by','deleted_at','visibility','author_staff_id'] \
+                  ORDER BY m.created_at), '[]'::jsonb) FROM support_messages m \
+                  WHERE m.request_id = r.id AND m.visibility = 'customer' AND m.deleted_at IS NULL)) \
+                 ORDER BY r.public_number), '[]'::jsonb) FROM support_requests r \
+                 WHERE r.created_by = $1 AND r.deleted_at IS NULL"
+            ),
+        ),
+        (
+            "settings.json",
+            format!(
+                "SELECT COALESCE(jsonb_agg(to_jsonb(s) - {drop}), '[]'::jsonb) FROM user_settings s \
+                 WHERE s.user_id = $1 AND s.deleted_at IS NULL"
+            ),
+        ),
+        (
+            "notification_preferences.json",
+            format!(
+                "SELECT COALESCE(jsonb_agg(to_jsonb(p) - {drop}), '[]'::jsonb) \
+                 FROM notification_preferences p WHERE p.user_id = $1 AND p.deleted_at IS NULL"
+            ),
+        ),
+        (
+            "favorites.json",
+            "SELECT COALESCE(jsonb_agg(to_jsonb(f) - ARRAY['workspace_id']), '[]'::jsonb) \
+             FROM favorites f WHERE f.user_id = $1"
+                .to_owned(),
+        ),
+    ];
+    for (name, sql) in slices {
+        let v: Value = sqlx::query_scalar(sqlx::AssertSqlSafe(sql))
+            .bind(user)
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(db_err)?;
+        zip.add(&format!("{prefix}me/{name}"), &json_bytes(&v))
+            .map_err(zerr)?;
+    }
+    Ok(())
+}
+
+/// Builds the account data export: the account profile and, for each workspace of the user, the
+/// personal slice; the whole workspace for a Home workspace where the user is the only
+/// administrator.
+pub async fn build_account_data(
+    pool: &PgPool,
+    store: &dyn ObjectStore,
+    user: Uuid,
+) -> Result<Built> {
+    let zerr = |e: interchange::Error| format_err(e.to_string());
+    let db_err = |e: sqlx::Error| Error::from(db::Error::from(e));
+    let mut zip = ZipWriter::new();
+    let profile: Value = sqlx::query_scalar("SELECT account_export_profile($1)")
+        .bind(user)
+        .fetch_one(pool)
+        .await
+        .map_err(db_err)?;
+    zip.add("account.json", &json_bytes(&profile)).map_err(zerr)?;
+    let members: Vec<(Uuid, String, bool, Uuid)> = sqlx::query_as(
+        "SELECT workspace_id, mode, sole_admin, member_id FROM account_export_workspaces($1)",
+    )
+    .bind(user)
+    .fetch_all(pool)
+    .await
+    .map_err(db_err)?;
+    let mut listing = Vec::new();
+    let mut total = 0usize;
+    for (ws, mode, sole_admin, _) in &members {
+        let ctx = DbContext {
+            user_id: Some(user),
+            workspace_id: Some(*ws),
+            actor_kind: ActorKind::System,
+        };
+        let mut tx = db::begin(pool, &ctx).await?;
+        let name: String = sqlx::query_scalar("SELECT name FROM workspaces WHERE id = $1")
+            .bind(ws)
+            .fetch_one(&mut *tx)
+            .await
+            .map_err(db_err)?;
+        let prefix = format!("workspaces/{ws}/");
+        fill_personal(&mut tx, user, &mut zip, &prefix).await?;
+        let whole = mode == "home" && *sole_admin;
+        let mut file_count = 0usize;
+        if whole {
+            fill_workspace(&mut tx, *ws, &mut zip, &prefix).await?;
+            let keys: Vec<(Uuid, String)> = sqlx::query_as(
+                "SELECT id, object_key FROM scanned_documents WHERE deleted_at IS NULL \
+                 UNION ALL SELECT id, object_key FROM attachments WHERE deleted_at IS NULL",
+            )
+            .fetch_all(&mut *tx)
+            .await
+            .map_err(db_err)?;
+            for (id, key) in keys {
+                let Some(bytes) = store.get(&key, MAX_BYTES as u64).await? else {
+                    continue;
+                };
+                total += bytes.len();
+                if total > MAX_BYTES {
+                    return Err(format_err("export is too large"));
+                }
+                let base = key.rsplit('/').next().unwrap_or("file");
+                zip.add(&format!("{prefix}files/{id}-{}", safe_name(base)), &bytes)
+                    .map_err(zerr)?;
+                file_count += 1;
+            }
+        }
+        tx.commit().await.map_err(db_err)?;
+        listing.push(json!({"id": ws, "name": name, "mode": mode,
+            "full_workspace_export": whole, "files": file_count}));
+    }
+    zip.add("workspaces.json", &json_bytes(&Value::Array(listing)))
+        .map_err(zerr)?;
+    let manifest = json!({
+        "schema_version": 1,
+        "generated_at": Utc::now(),
+        "scope": "account_data",
+        "files": ["account.json", "workspaces.json", "workspaces/<id>/me/", "workspaces/<id>/"],
+    });
+    zip.add("manifest.json", &json_bytes(&manifest)).map_err(zerr)?;
     Ok(Built {
         bytes: zip.finish().map_err(zerr)?,
         content_type: "application/zip",
@@ -478,7 +686,7 @@ fn context(ws: Uuid) -> DbContext {
 }
 
 async fn load_job(tx: &mut PgConnection, id: Uuid) -> Result<Job> {
-    let row = sqlx::query("SELECT scope, scope_id, format, params FROM export_jobs WHERE id = $1")
+    let row = sqlx::query("SELECT scope, scope_id, format, params, created_by FROM export_jobs WHERE id = $1")
         .bind(id)
         .fetch_one(&mut *tx)
         .await
@@ -492,6 +700,7 @@ async fn load_job(tx: &mut PgConnection, id: Uuid) -> Result<Job> {
             .map(|t| t.with_timezone(&Utc))
     };
     Ok(Job {
+        created_by: row.get("created_by"),
         scope: row.get("scope"),
         scope_id: row.get("scope_id"),
         format: row.get("format"),
@@ -509,6 +718,18 @@ pub async fn process(pool: &PgPool, store: &dyn ObjectStore, id: Uuid, ws: Uuid)
             "recipe" => build_recipe(&mut tx, &job).await?,
             "batch" => build_batch(&mut tx, &job).await?,
             "workspace" => build_workspace(&mut tx, ws).await?,
+            "account_data" => {
+                let user = job
+                    .created_by
+                    .ok_or_else(|| format_err("account data job has no user"))?;
+                // The data spans workspaces: it uses its own transactions.
+                tx.commit().await.map_err(db::Error::from)?;
+                let built = build_account_data(pool, store, user).await?;
+                let key = format!("{ws}/exports/{id}.{}", built.ext);
+                let size = built.bytes.len();
+                store.put(&key, built.content_type, built.bytes).await?;
+                return Ok((key, size));
+            }
             other => return Err(format_err(format!("scope {other} is not supported"))),
         };
         tx.commit().await.map_err(db::Error::from)?;

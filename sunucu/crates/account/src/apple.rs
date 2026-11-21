@@ -118,6 +118,7 @@ impl HttpApple {
             &SystemRandom::new(),
         )
         .map_err(|e| AppleError::Config(format!("private key is not valid: {e}")))?;
+        let _ = rustls::crypto::ring::default_provider().install_default();
         let http = reqwest::Client::builder()
             .timeout(Duration::from_secs(15))
             .build()

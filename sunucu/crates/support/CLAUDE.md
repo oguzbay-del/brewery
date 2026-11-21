@@ -26,4 +26,4 @@
 - TODO: the correction kind `subscription_reverify` only queues the outbox event `subscription.reverify_requested`. The store client does not exist yet.
 - The device key rotation of the panel uses the key helpers of the `devices` crate. The old key stops working and staff do not see a new key.
 - TODO: the grant note in the Issue ("izin var, bitiş: ...") is not written.
-- TODO: deleting Issues when an account is deleted is not written (to be verified: Issue delete permission of the App).
+- Account deletion (T2.31): `GitHub::scrub_issue` deletes all comments, blanks the title and the body and closes the Issue (trait `IssueScrubber`, used by `worker/src/account.rs`). TODO: real Issue delete needs the GraphQL `deleteIssue` mutation and an administrator right of the App (to be verified).
