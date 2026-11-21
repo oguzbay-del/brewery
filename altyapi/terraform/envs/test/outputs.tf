@@ -47,3 +47,8 @@ output "kms_key_ids" {
   description = "KMS anahtarları."
   value       = module.secrets.key_ids
 }
+
+output "digest_bucket" {
+  description = "Denetim özeti kovası (S3_DIGEST_BUCKET)."
+  value       = module.storage.digest_bucket_name
+}

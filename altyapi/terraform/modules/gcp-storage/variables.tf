@@ -53,3 +53,15 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "digest_retention_days" {
+  description = "Denetim özeti kovasında nesnelerin silinemez kaldığı gün sayısı (Oğuz onayı: 400, 2026-11-20)."
+  type        = number
+  default     = 400
+}
+
+variable "digest_retention_locked" {
+  description = "true ise özet kovasının saklama politikası kilitlenir (WORM, geri alınamaz). Yalnız canlıda aç."
+  type        = bool
+  default     = false
+}

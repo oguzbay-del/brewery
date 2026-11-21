@@ -123,14 +123,16 @@ module "redis" {
 module "storage" {
   source = "../../modules/gcp-storage"
 
-  project_id             = var.project_id
-  name_prefix            = "${var.project_id}-${local.region_code}"
-  location               = var.region
-  cors_origins           = var.storage_cors_origins
-  audit_retention_days   = var.audit_retention_days
-  audit_retention_locked = var.audit_retention_locked
-  force_destroy          = var.storage_force_destroy
-  labels                 = local.labels
+  project_id              = var.project_id
+  name_prefix             = "${var.project_id}-${local.region_code}"
+  location                = var.region
+  cors_origins            = var.storage_cors_origins
+  audit_retention_days    = var.audit_retention_days
+  audit_retention_locked  = var.audit_retention_locked
+  digest_retention_days   = var.digest_retention_days
+  digest_retention_locked = var.digest_retention_locked
+  force_destroy           = var.storage_force_destroy
+  labels                  = local.labels
 
   depends_on = [google_project_service.apis]
 }
