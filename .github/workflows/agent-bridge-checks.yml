@@ -1,0 +1,36 @@
+name: Agent bridge checks
+
+on:
+  pull_request:
+    paths:
+      - "agent-bridge/**"
+      - "AGENT_TEAM.md"
+      - ".github/workflows/agent-bridge-checks.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "agent-bridge/**"
+      - "AGENT_TEAM.md"
+      - ".github/workflows/agent-bridge-checks.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent-bridge
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Type-check Worker
+        run: npm run check
