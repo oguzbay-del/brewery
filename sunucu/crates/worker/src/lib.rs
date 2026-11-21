@@ -1,5 +1,6 @@
 //! `worker` service: HTTP router.
 
+pub mod account;
 pub mod audit_anchor;
 pub mod background;
 pub mod export;

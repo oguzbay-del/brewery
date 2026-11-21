@@ -1550,6 +1550,41 @@
         ],
         "type": "object"
       },
+      "DeletionStatus": {
+        "description": "State of the deletion request.",
+        "properties": {
+          "purge_at": {
+            "description": "When the account is deleted for good. The user can restore it before this time.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requested_at": {
+            "description": "When the user asked.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "retention_days": {
+            "description": "Days between the request and the permanent delete.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "state": {
+            "description": "`none` or `pending`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "retention_days"
+        ],
+        "type": "object"
+      },
       "Device": {
         "description": "A device. The key digest never leaves the server.",
         "properties": {
@@ -4406,6 +4441,20 @@
         ],
         "type": "object"
       },
+      "NewDataExport": {
+        "description": "Body of `POST /v1/me/data-export`.",
+        "properties": {
+          "workspace_id": {
+            "description": "The workspace that carries the job (default: the oldest active membership).",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
       "NewDevice": {
         "description": "Body of `POST /v1/workspaces/{ws}/devices`.",
         "properties": {
@@ -7166,6 +7215,13 @@
       "ProviderLoginRequest": {
         "description": "Body of `POST /v1/auth/apple` and `POST /v1/auth/google`.",
         "properties": {
+          "authorization_code": {
+            "description": "Apple only: the authorization code of the first sign-in. The server exchanges it for a\nrefresh token and stores it sealed, to revoke it when the account is deleted.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "client": {
             "$ref": "#/components/schemas/ClientParam",
             "description": "Client kind (default `web`)."
@@ -12272,6 +12328,1025 @@
           "access"
         ],
         "x-concurrency": "none",
+        "x-permission": "none"
+      }
+    },
+    "/v1/me/data-export": {
+      "post": {
+        "operationId": "me_data_export_create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewDataExport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2026-11-21T10:00:00Z",
+                  "download": null,
+                  "error": null,
+                  "expires_at": null,
+                  "format": "zip",
+                  "id": "0192f1c0-7a3b-7000-8000-000000000005",
+                  "scope": "account_data",
+                  "scope_id": null,
+                  "size_bytes": null,
+                  "status": "queued"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ExportJob"
+                }
+              }
+            },
+            "description": "The queued job"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Second factor required"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Queues the export of all account data (ZIP). The second step is required.",
+        "tags": [
+          "account"
+        ],
+        "x-concurrency": "append",
+        "x-permission": "none"
+      }
+    },
+    "/v1/me/data-export/{workspace_id}/{id}": {
+      "get": {
+        "operationId": "me_data_export_get",
+        "parameters": [
+          {
+            "description": "Workspace that carries the job",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Export job",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2026-11-21T10:00:00Z",
+                  "download": null,
+                  "error": null,
+                  "expires_at": null,
+                  "format": "zip",
+                  "id": "0192f1c0-7a3b-7000-8000-000000000005",
+                  "scope": "account_data",
+                  "scope_id": null,
+                  "size_bytes": null,
+                  "status": "queued"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ExportJob"
+                }
+              }
+            },
+            "description": "The job"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reads an account data export job. A finished job carries a download link.",
+        "tags": [
+          "account"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      }
+    },
+    "/v1/me/deletion": {
+      "delete": {
+        "operationId": "me_deletion_restore",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "purge_at": null,
+                  "requested_at": null,
+                  "retention_days": 30,
+                  "state": "none"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionStatus"
+                }
+              }
+            },
+            "description": "The account is restored"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Restores the account while the retention time runs.",
+        "tags": [
+          "account"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      },
+      "get": {
+        "operationId": "me_deletion_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "purge_at": "2026-12-21T10:00:00Z",
+                  "requested_at": "2026-11-21T10:00:00Z",
+                  "retention_days": 30,
+                  "state": "pending"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionStatus"
+                }
+              }
+            },
+            "description": "The state"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reads the state of the deletion request.",
+        "tags": [
+          "account"
+        ],
+        "x-concurrency": "none",
+        "x-permission": "none"
+      },
+      "post": {
+        "operationId": "me_deletion_request",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "purge_at": "2026-12-21T10:00:00Z",
+                  "requested_at": "2026-11-21T10:00:00Z",
+                  "retention_days": 30,
+                  "state": "pending"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionStatus"
+                }
+              }
+            },
+            "description": "A request was pending already"
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "purge_at": "2026-12-21T10:00:00Z",
+                  "requested_at": "2026-11-21T10:00:00Z",
+                  "retention_days": 30,
+                  "state": "pending"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionStatus"
+                }
+              }
+            },
+            "description": "The request is saved; all sessions are closed"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Second factor required"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Asks for the deletion of the account. The second step is required.",
+        "tags": [
+          "account"
+        ],
+        "x-concurrency": "append",
         "x-permission": "none"
       }
     },
@@ -81547,6 +82622,10 @@
     {
       "description": "Recipe import (BeerXML, BeerJSON, Brewfather) and data export jobs",
       "name": "import-export"
+    },
+    {
+      "description": "Account deletion and data export",
+      "name": "account"
     }
   ]
 }

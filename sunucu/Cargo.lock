@@ -3,6 +3,22 @@
 version = 4
 
 [[package]]
+name = "account"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "base64 0.22.1",
+ "futures-util",
+ "reqwest",
+ "ring",
+ "rustls",
+ "serde_json",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "aead"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -81,6 +97,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 name = "api"
 version = "0.1.0"
 dependencies = [
+ "account",
  "argon2 0.6.0",
  "async-nats",
  "axum",
@@ -5348,6 +5365,7 @@ dependencies = [
 name = "worker"
 version = "0.1.0"
 dependencies = [
+ "account",
  "async-nats",
  "axum",
  "billing",

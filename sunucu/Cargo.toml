@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "crates/common",
+    "crates/account",
     "crates/db",
     "crates/engine",
     "crates/engine-client",
@@ -28,6 +29,7 @@ publish = false
 [workspace.dependencies]
 # Internal crates
 common = { path = "crates/common" }
+account = { path = "crates/account" }
 billing = { path = "crates/billing" }
 devices = { path = "crates/devices" }
 notifier = { path = "crates/notifier" }

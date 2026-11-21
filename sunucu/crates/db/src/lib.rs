@@ -9,6 +9,7 @@
 //! - [`DbContext`], [`begin`], [`set_context`]: request context for row level security
 //!   (ADR-0007).
 
+pub mod account;
 mod audit;
 mod context;
 mod error;

@@ -41,6 +41,7 @@ const OWNER_LOOKUP: &[&str] = &[
     "reminders",
     "notification_preferences",
     "support_requests",
+    "account_deletions",
     "export_jobs",
 ];
 

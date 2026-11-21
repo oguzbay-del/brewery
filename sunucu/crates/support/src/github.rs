@@ -319,6 +319,53 @@ impl GitHub {
         }
     }
 
+    /// Removes the personal content of an Issue (account deletion, T2.31): deletes every
+    /// comment, blanks the title and the body, closes the Issue. A missing Issue counts as done.
+    /// GitHub has no REST call that deletes an Issue; the GraphQL `deleteIssue` mutation needs
+    /// an administrator right (to be verified).
+    ///
+    /// # Errors
+    /// See [`GitHubError`].
+    pub async fn scrub_issue(&self, issue: i64) -> Result<(), GitHubError> {
+        let gone = |r: &GitHubError| matches!(r, GitHubError::Rejected(m) if m.starts_with("404"));
+        for _ in 0..100 {
+            let list = match self
+                .call(
+                    Method::GET,
+                    &format!("/issues/{issue}/comments?per_page=100"),
+                    None,
+                )
+                .await
+            {
+                Ok(v) => v,
+                Err(e) if gone(&e) => return Ok(()),
+                Err(e) => return Err(e),
+            };
+            let ids: Vec<i64> = list
+                .as_array()
+                .map(|a| a.iter().filter_map(|c| c["id"].as_i64()).collect())
+                .unwrap_or_default();
+            if ids.is_empty() {
+                break;
+            }
+            for id in ids {
+                self.delete_comment(id).await?;
+            }
+        }
+        match self
+            .call(
+                Method::PATCH,
+                &format!("/issues/{issue}"),
+                Some(json!({"title": "Deleted request", "state": "closed",
+                            "body": "Deleted at the request of the account owner."})),
+            )
+            .await
+        {
+            Err(e) if gone(&e) => Ok(()),
+            other => other.map(|_| ()),
+        }
+    }
+
     /// Sets the state and the labels of an Issue.
     ///
     /// # Errors
@@ -336,5 +383,21 @@ impl GitHub {
         )
         .await
         .map(|_| ())
+    }
+}
+
+/// A boxed future, as the trait below needs.
+pub type BoxFuture<'a, T> = std::pin::Pin<Box<dyn std::future::Future<Output = T> + Send + 'a>>;
+
+/// Removes the personal content of Issues (account deletion, T2.31). [`GitHub`] implements
+/// it; tests use a fake.
+pub trait IssueScrubber: Send + Sync {
+    /// See [`GitHub::scrub_issue`].
+    fn scrub(&self, issue: i64) -> BoxFuture<'_, Result<(), GitHubError>>;
+}
+
+impl IssueScrubber for GitHub {
+    fn scrub(&self, issue: i64) -> BoxFuture<'_, Result<(), GitHubError>> {
+        Box::pin(self.scrub_issue(issue))
     }
 }

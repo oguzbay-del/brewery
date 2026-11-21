@@ -22,6 +22,7 @@
 - Worker maintenance (T2.39): `src/maintenance.rs`. `list_audit_heads()` and `list_workspace_tombstones()` (SECURITY DEFINER, `app_worker` only) read across workspaces. `maintenance_runs` (cross-workspace table) records job runs. `external_events.payload_cleared_at` marks a cleared payload.
 - `audit_log` is append-only. The application roles have no UPDATE/DELETE/TRUNCATE right. A trigger also rejects these actions for the owner role (except the foreign key chain when a workspace is deleted).
 
+- Account deletion (T2.31, `0220`, `src/account.rs`): `account_deletions` (one row for each user: request, `purge_at`, restore) is under `own_rows` RLS for `app_api`; the worker uses only the SECURITY DEFINER functions `account_deletions_due`, `account_collect`, `account_purge`, `account_apple_tokens` and others. `account_purge` sets `app.user_id` and `app.workspace_id` itself and does not touch `audit_log`. The retention period is the constant `db::account::RETENTION_DAYS` (30, to be verified).
 - Device key lookup (T2.25, `0200`): `find_device_by_key_hash(bytea)` (SECURITY DEFINER, `app_api` only) is the only way for `ingest` to find a device before it knows the workspace. `devices` has an `owner_lookup` policy.
 
 ## How to test

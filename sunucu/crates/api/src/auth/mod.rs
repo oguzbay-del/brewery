@@ -61,6 +61,10 @@ pub struct AuthServices {
     pub(crate) sessions: SessionStore,
     pub(crate) redis: Redis,
     pub(crate) webauthn: Option<webauthn_rs::prelude::Webauthn>,
+    /// Sign in with Apple server calls (code exchange); `None` when not configured.
+    pub(crate) apple_client: Option<Arc<dyn account::AppleClient>>,
+    /// Seals the Apple refresh token before it is stored.
+    pub(crate) envelope: Option<Arc<account::Envelope>>,
 }
 
 impl std::fmt::Debug for AuthServices {
@@ -127,7 +131,21 @@ impl AuthServices {
             db,
             config,
             mailer,
+            apple_client: account::apple::client_from_env(),
+            envelope: account::Envelope::from_env().map(Arc::new),
         }
+    }
+
+    /// Replaces the Apple client and the sealing key (tests).
+    #[must_use]
+    pub fn with_apple_exchange(
+        mut self,
+        client: Arc<dyn account::AppleClient>,
+        envelope: account::Envelope,
+    ) -> Self {
+        self.apple_client = Some(client);
+        self.envelope = Some(Arc::new(envelope));
+        self
     }
 
     /// The token the request carries, if any.
@@ -208,7 +226,9 @@ impl crate::Authenticator for AuthServices {
                 "SELECT m.id, w.authz_version FROM workspace_members m \
                  JOIN workspaces w ON w.id = m.workspace_id AND w.deleted_at IS NULL \
                  WHERE m.workspace_id = $1 AND m.user_id = $2 \
-                   AND m.status = 'active' AND m.deleted_at IS NULL",
+                   AND m.status = 'active' AND m.deleted_at IS NULL \
+                   AND NOT EXISTS (SELECT 1 FROM account_deletions d WHERE d.user_id = m.user_id \
+                       AND d.restored_at IS NULL AND d.purged_at IS NULL)",
             )
             .bind(workspace_id)
             .bind(identity.user_id)

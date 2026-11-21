@@ -2,6 +2,7 @@
 //! pagination, rate limit, request ids and tracing, and the `OpenAPI` document. Resource
 //! endpoints come in later jobs and use these building blocks.
 
+pub mod account;
 pub mod app_version;
 pub mod auth;
 pub mod authz;
