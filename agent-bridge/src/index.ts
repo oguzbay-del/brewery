@@ -1,4 +1,4 @@
-import { DurableObject } from "cloudflare:workers";
+import { DurableObject, env as workerEnv } from "cloudflare:workers";
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
@@ -164,12 +164,12 @@ export class TaskStore extends DurableObject<Env> {
   }
 }
 
-function createServer(env: Env) {
+function createServer() {
   const server = new McpServer({
     name: "gristora-agent-bridge",
     version: "0.1.0"
   });
-  const store = env.TASK_STORE.get(env.TASK_STORE.idFromName("gristora-shared"));
+  const store = workerEnv.TASK_STORE.get(workerEnv.TASK_STORE.idFromName("gristora-shared"));
 
   server.registerTool(
     "create_task",
@@ -272,6 +272,11 @@ function createServer(env: Env) {
   return server;
 }
 
+const mcpHandler = createMcpHandler(createServer, {
+  route: "/mcp",
+  legacy: "reject"
+});
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
@@ -285,10 +290,6 @@ export default {
     if (!env.MCP_SHARED_TOKEN || request.headers.get("authorization") !== expected) {
       return new Response("Unauthorized", { status: 401 });
     }
-    const handler = createMcpHandler(() => createServer(env), {
-      route: "/mcp",
-      legacy: "reject"
-    });
-    return handler(request, env, ctx);
+      return mcpHandler(request, env, ctx);
   }
 } satisfies ExportedHandler<Env>;
