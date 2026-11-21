@@ -1,0 +1,43 @@
+name: Pages production check
+
+# After a merge to main, Cloudflare Pages (Git integration) builds and deploys production.
+# This workflow waits for that deployment, runs the health check and rolls back on failure.
+# Agent auto-merge dispatches it, because a GITHUB_TOKEN merge starts no push workflow.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "marketing-site/**"
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit to check (default = head of main)
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-production
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Wait for the deployment, check health, roll back on failure
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://gristora.com' }}
+          EXPECTED_SHA: ${{ inputs.sha || github.sha }}
+        run: node .github/scripts/pages-production-check.mjs

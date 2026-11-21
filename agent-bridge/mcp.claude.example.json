@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "gristora-agent-bridge": {
+      "type": "http",
+      "url": "${GRISTORA_BRIDGE_URL}/mcp",
+      "headers": {
+        "Authorization": "Bearer ${GRISTORA_MCP_TOKEN_CLAUDE}"
+      }
+    }
+  }
+}

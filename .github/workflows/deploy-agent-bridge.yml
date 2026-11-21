@@ -1,0 +1,114 @@
+name: Deploy GRISTORA Agent Bridge
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "agent-bridge/**"
+      - ".github/workflows/deploy-agent-bridge.yml"
+  # Agent auto-merge dispatches this workflow, because a GITHUB_TOKEN merge starts no push workflow.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gristora-agent-bridge-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: agent-bridge-production
+    defaults:
+      run:
+        working-directory: agent-bridge
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: agent-bridge/package-lock.json
+      - name: Install dependencies (lockfile)
+        run: npm ci
+      - name: Type-check Worker
+        run: npm run check
+      - name: MCP end-to-end test
+        run: npm run test:e2e
+      - name: Check Cloudflare credentials
+        id: creds
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::BLOCKED: CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID is not set. Nothing was deployed."
+            exit 1
+          fi
+      - name: Deploy Worker to Cloudflare
+        id: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler deploy --message "github ${GITHUB_SHA::7}" | tee deploy.log
+          url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          echo "url=${url}" >> "$GITHUB_OUTPUT"
+      - name: Sync agent tokens to Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          MCP_TOKEN_CLAUDE: ${{ secrets.MCP_TOKEN_CLAUDE }}
+          MCP_TOKEN_GPT: ${{ secrets.MCP_TOKEN_GPT }}
+        run: |
+          # GitHub secrets are the single source; the values never appear in the log.
+          for name in MCP_TOKEN_CLAUDE MCP_TOKEN_GPT; do
+            value="${!name}"
+            if [ -n "$value" ]; then
+              printf '%s' "$value" | npx wrangler secret put "$name" >/dev/null
+              echo "Worker secret $name synced."
+            else
+              echo "::warning::GitHub secret $name is not set; the Worker secret is unchanged."
+            fi
+          done
+      - name: Health check
+        env:
+          URL: ${{ steps.deploy.outputs.url }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$URL" || { echo "::error::No workers.dev URL in the deploy output."; exit 1; }
+          for i in 1 2 3 4 5 6; do
+            curl -fsS "$URL/health" | grep -q '"status":"ok"' && break
+            [ "$i" = 6 ] && { echo "::error::$URL/health did not return ok."; exit 1; }
+            sleep 5
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$URL/mcp" -H 'content-type: application/json' -d '{}')
+          [ "$code" = 401 ] || { echo "::error::/mcp without a token returned $code, expected 401."; exit 1; }
+          echo "Health check passed: $URL"
+          echo "## Agent bridge" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployed: $URL — /health ok, /mcp without a token 401" >> "$GITHUB_STEP_SUMMARY"
+      - name: Live acceptance check
+        env:
+          AGENT_BRIDGE_URL: ${{ steps.deploy.outputs.url }}
+          MCP_TOKEN_CLAUDE: ${{ secrets.MCP_TOKEN_CLAUDE }}
+          MCP_TOKEN_GPT: ${{ secrets.MCP_TOKEN_GPT }}
+        run: |
+          if [ -z "$MCP_TOKEN_CLAUDE" ] || [ -z "$MCP_TOKEN_GPT" ]; then
+            echo "::warning::MCP_TOKEN_CLAUDE/MCP_TOKEN_GPT are not GitHub secrets; the live acceptance check is skipped."
+            exit 0
+          fi
+          node runner/live-check.mjs | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Roll back on a failed health check
+        if: failure() && steps.deploy.outcome == 'success'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx wrangler rollback --message "health check failed for ${GITHUB_SHA::7}" --yes \
+            || echo "::error::Rollback failed (first deployment has no previous version)."
