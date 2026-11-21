@@ -70,7 +70,7 @@ jobs:
   kubernetes:
     name: kustomize ve kind duman testi
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
       - name: kind 0.33.0
@@ -86,6 +86,12 @@ jobs:
             kubectl kustomize "$d" > /dev/null
             echo "::endgroup::"
           done
+      - name: kind betikleri (sözdizimi)
+        run: bash -n altyapi/k8s/kind-up.sh && bash -n altyapi/k8s/kind-test.sh && bash -n altyapi/k8s/kind-down.sh
+      - name: Genel girişte /internal yok (edge yapılandırması)
+        run: |
+          set -euo pipefail
+          kubectl kustomize altyapi/k8s/overlays/yerel | grep -q 'location ^~ /internal { return 404; }'
       - name: make kind-up
         run: make kind-up
       - name: make kind-test
@@ -95,6 +101,10 @@ jobs:
         run: |
           kubectl --context kind-demleme -n demleme get pods,jobs -o wide || true
           kubectl --context kind-demleme -n demleme describe pods | tail -n 200 || true
+          kubectl --context kind-demleme -n istio-system get pods -o wide || true
+          kubectl --context kind-demleme -n istio-system logs daemonset/ztunnel --tail=80 || true
+          kubectl --context kind-demleme -n demleme logs deployment/oauth2-proxy --tail=40 || true
+          kubectl --context kind-demleme -n demleme logs deployment/edge --tail=40 || true
       - name: make kind-down
         if: always()
         run: make kind-down

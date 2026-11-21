@@ -139,5 +139,31 @@ variable "secret_ids" {
     "email-provider-api-key",
     "github-app-private-key",
     "redis-auth",
+    "csrf-hmac-key",
+    "internal-proxy-token",
+    "oauth2-proxy-client-secret",
+    "oauth2-proxy-cookie-secret",
+    "brew-package-key",
+    "oauth2-proxy-client-id",
+    "database-url",
+    "worker-database-url",
+    "redis-url",
+    "migrate-database-url",
+    "app-api-password",
+    "app-worker-password",
+    "gcs-hmac-access-key",
+    "gcs-hmac-secret-key",
   ]
+}
+
+variable "digest_retention_days" {
+  description = "Denetim özeti kovasında silinemez saklama süresi (gün; Oğuz onayı 2026-11-20)."
+  type        = number
+  default     = 400
+}
+
+variable "digest_retention_locked" {
+  description = "Özet kovasının saklama politikasını kalıcı kilitle (WORM, geri alınamaz)."
+  type        = bool
+  default     = false
 }

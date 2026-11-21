@@ -8,6 +8,9 @@ kind: Kustomization
 namespace: demleme
 resources:
   - ../../base
+components:
+  - ../../components/external-secrets
+  - ../../components/istio-ambient
 # Etiketler CI'da gerçek sürümle değiştirilir (kustomize edit set image); burada yer tutucu.
 # Kayıt defteri adresi doğrulanacak (ilk bulut: Google Cloud, Artifact Registry).
 images:
@@ -16,5 +19,25 @@ images:
   - { name: demleme/worker, newName: KAYIT-DEFTERI/demleme/worker, newTag: SURUM }
   - { name: demleme/ingest, newName: KAYIT-DEFTERI/demleme/ingest, newTag: SURUM }
   - { name: demleme/migrate, newName: KAYIT-DEFTERI/demleme/migrate, newTag: SURUM }
+configMapGenerator:
+  # Bulut uç noktaları: değerler CI'da doldurulur (büyük harfli yer tutucular). Doğrulanacak.
+  - name: demleme-config
+    behavior: merge
+    literals:
+      - S3_ENDPOINT=https://storage.googleapis.com
+      - S3_PUBLIC_ENDPOINT=https://storage.googleapis.com
+      - S3_BUCKET=OBJE-KOVASI
+      - S3_DIGEST_BUCKET=OZET-KOVASI
+      - S3_REGION=auto
+      - S3_PATH_STYLE=true
+  - name: demleme-oauth2-proxy-ayar
+    behavior: replace
+    literals:
+      - OAUTH2_PROXY_OIDC_ISSUER_URL=https://accounts.google.com
+      - OAUTH2_PROXY_EMAIL_DOMAINS=ALAN-ADI
+      - OAUTH2_PROXY_REDIRECT_URL=https://DESTEK-ADRESI/oauth2/callback
+      - OAUTH2_PROXY_COOKIE_SECURE=true
+generatorOptions:
+  disableNameSuffixHash: true
 patches:
   - path: kopyalar.yaml

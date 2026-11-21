@@ -1,17 +1,60 @@
-# Yerel (kind): PostgreSQL ve Redis küme içinde, imajlar yerelde derlenip kümeye yüklenir.
+# Yerel (kind): PostgreSQL, Redis, nesne deposu ve sahte dış servisler küme içinde; imajlar yerelde
+# derlenip kümeye yüklenir. Servisler arası mTLS için Istio ambient bileşeni açık (`make kind-up` kurar).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: demleme
 resources:
   - ../../base
   - veri.yaml
+  - sahte.yaml
+components:
+  - ../../components/istio-ambient
 images:
   - { name: demleme/api, newTag: dev }
   - { name: demleme/engine-service, newTag: dev }
   - { name: demleme/worker, newTag: dev }
   - { name: demleme/ingest, newTag: dev }
   - { name: demleme/migrate, newTag: dev }
+  - { name: demleme/fake-oidc, newTag: dev }
+configMapGenerator:
+  # Yerel uç noktalar (compose.yaml ile aynı); base'in demleme-config'ine eklenir.
+  - name: demleme-config
+    behavior: merge
+    literals:
+      - S3_ENDPOINT=http://objectstore:8333
+      - S3_PUBLIC_ENDPOINT=http://objectstore:8333
+      - S3_BUCKET=demleme-files
+      - S3_REGION=us-east-1
+      - S3_CREATE_BUCKET=true
+      - S3_DIGEST_BUCKET=demleme-digests
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - MAIL_FROM=no-reply@demleme.local
+      - GITHUB_API_URL=http://github-mock:8080
+      - APNS_URL=http://apns-mock:8080
+      - APPLE_CLIENT_IDS=com.demleme.app.dev
+      - APPLE_ISSUER=http://fake-oidc:9000/apple
+      - APPLE_JWKS_URL=http://fake-oidc:9000/apple/jwks
+      - GOOGLE_CLIENT_IDS=demleme-dev.apps.googleusercontent.example
+      - GOOGLE_ISSUER=http://fake-oidc:9000/google
+      - GOOGLE_JWKS_URL=http://fake-oidc:9000/google/jwks
+      - WEB_BASE_URL=http://localhost:3000
+      - BREW_PACKAGE_KEY_ID=yerel-k1
+  # oauth2-proxy yerelde sahte OIDC sağlayıcısına bağlanır. Keşif kapalı: sahte sağlayıcının
+  # yetkilendirme ucu yok; denetim yalnız "oturumsuz istek içeri alınmaz" davranışıdır.
+  - name: demleme-oauth2-proxy-ayar
+    behavior: replace
+    literals:
+      - OAUTH2_PROXY_OIDC_ISSUER_URL=http://fake-oidc:9000/google
+      - OAUTH2_PROXY_SKIP_OIDC_DISCOVERY=true
+      - OAUTH2_PROXY_LOGIN_URL=http://fake-oidc:9000/google/authorize
+      - OAUTH2_PROXY_REDEEM_URL=http://fake-oidc:9000/google/token
+      - OAUTH2_PROXY_OIDC_JWKS_URL=http://fake-oidc:9000/google/jwks
+      - OAUTH2_PROXY_EMAIL_DOMAINS=*
+      - OAUTH2_PROXY_REDIRECT_URL=http://localhost:4180/oauth2/callback
+      - OAUTH2_PROXY_COOKIE_SECURE=false
 # Yalnız yerel örnek değer (compose ile aynı); gerçek ortamlara girmez.
+# `demleme-oauth2-proxy` burada YOK: `make kind-up` her küme için rastgele üretir (kind-up.sh).
 secretGenerator:
   - name: demleme-postgres
     literals:
@@ -27,5 +70,13 @@ secretGenerator:
       - DATABASE_URL=postgres://app_api:demleme-api-yerel@postgres:5432/demleme
       - WORKER_DATABASE_URL=postgres://app_worker:demleme-worker-yerel@postgres:5432/demleme
       - REDIS_URL=redis://redis:6379
+      - S3_ACCESS_KEY=demleme-yerel
+      - S3_SECRET_KEY=demleme-yerel-gizli
+      - CSRF_HMAC_KEY=demleme-yerel-csrf-anahtari
+      - BREW_PACKAGE_KEY=demleme-yerel-paket-anahtari-yalniz-yerel
+  # SeaweedFS S3 kimlikleri (compose/s3/s3.json ile aynı yerel değerler).
+  - name: demleme-objectstore-s3
+    files:
+      - s3.json
 generatorOptions:
   disableNameSuffixHash: true

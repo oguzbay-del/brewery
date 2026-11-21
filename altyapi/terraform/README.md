@@ -16,3 +16,9 @@ terraform fmt -check -recursive   # altyapi/terraform altında
 ```
 
 `.terraform.lock.hcl` dosyaları depoda kalır; sağlayıcı yükseltmesi ayrı iştir.
+
+## T2.32 notes (STE)
+
+- `modules/gcp-storage` creates a third bucket, `<prefix>-digests`, for the audit digests (`S3_DIGEST_BUCKET`). Retention is 400 days (`digest_retention_days`; approved by Oğuz, 2026-11-20). `digest_retention_locked` is false. Set it to true only in production.
+- `modules/gcp-sql` and `modules/gcp-redis` already require encrypted connections (`ENCRYPTED_ONLY`, `SERVER_AUTHENTICATION`).
+- `secret_ids` has new empty secrets for the cluster Secrets (database URLs, S3 HMAC keys, CSRF key, brew package key, oauth2-proxy values). Values are entered outside Terraform. The `ExternalSecret` objects in `altyapi/k8s/components/external-secrets` read them.

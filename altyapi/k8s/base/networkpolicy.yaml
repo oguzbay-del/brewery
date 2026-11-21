@@ -24,20 +24,50 @@ spec:
       ports:
         - { protocol: TCP, port: 50051 }
 ---
-# api ve ingest dışarıdan (kenar katmanı / yük dengeleyici) gelen trafiği alır.
+# api yalnız edge (genel giriş) ve oauth2-proxy (destek paneli) üzerinden erişilir.
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: api-ingest-giris
+  name: api-edge-ve-oauth2-proxy
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/name: api }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - { key: app.kubernetes.io/name, operator: In, values: [edge, oauth2-proxy] }
+      ports:
+        - { protocol: TCP, port: 8080 }
+---
+# ingest dışarıdan (kenar katmanı / yük dengeleyici) gelen olay trafiğini alır.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ingest-giris
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/name: ingest }
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - { protocol: TCP, port: 8082 }
+---
+# edge ve oauth2-proxy dışarıdan (yük dengeleyici) gelen trafiği alır.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: edge-oauth2-proxy-giris
 spec:
   podSelector:
     matchExpressions:
-      - { key: app.kubernetes.io/name, operator: In, values: [api, ingest] }
+      - { key: app.kubernetes.io/name, operator: In, values: [edge, oauth2-proxy] }
   policyTypes: [Ingress]
   ingress:
     - ports:
         - { protocol: TCP, port: 8080 }
-        - { protocol: TCP, port: 8082 }
+        - { protocol: TCP, port: 4180 }
 ---
 # NATS istemci portu yalnız uygulama servislerine açık.
 apiVersion: networking.k8s.io/v1

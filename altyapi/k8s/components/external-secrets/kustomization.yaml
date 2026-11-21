@@ -1,0 +1,7 @@
+# Test ve canlı: Kubernetes Secret'ları bulutun sır yöneticisinden External Secrets Operator ile
+# gelir (ADR-0009 › 11). Ön koşul: kümede ESO ve `gcp-secret-manager` adlı ClusterSecretStore.
+# Sır kapları Terraform'da açılır (modules/gcp-secrets); değerler Terraform dışında girilir.
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+  - sirlar.yaml
