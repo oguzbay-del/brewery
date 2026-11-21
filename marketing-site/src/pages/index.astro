@@ -58,11 +58,13 @@ const structuredData = {
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
-    <SiteHeader home />
-
     <main id="main-content">
-      <section class="sx-hero">
-        <div class="shell sx-hero-grid">
+      <section class="sx-hero sx-home-hero">
+        <PagePhoto name="home-hero" lang="en" eager class="sx-home-hero-photo" />
+        <div class="sx-home-hero-shade" aria-hidden="true"></div>
+        <div class="sx-home-hero-content">
+          <SiteHeader home />
+          <div class="shell sx-hero-grid">
           <div class="hero-copy sx-hero-copy">
             <div class="sx-chip-row">
               <p class="sx-chip sx-chip-amber"><span class="sx-dot" aria-hidden="true"></span> BREWING INTELLIGENCE</p>
@@ -74,29 +76,14 @@ const structuredData = {
             </p>
             <div class="hero-actions">
               <a class="button button-primary" href={`${base}breweries/`}>Explore professional breweries <span aria-hidden="true">↗</span></a>
-              <a class="text-link hero-secondary" href={`${base}homebrewers/`}>For homebrewers <span aria-hidden="true">→</span></a>
+              <a class="button hero-secondary" href={`${base}homebrewers/`}>For homebrewers <span aria-hidden="true">→</span></a>
             </div>
-            <ul class="sx-facts" aria-label="Project summary">
-              <li><span>PRIMARY AUDIENCE</span><strong>Professional breweries</strong></li>
-              <li><span>SECONDARY PATH</span><strong>Homebrewers</strong></li>
-            </ul>
           </div>
 
-          <aside class="sx-panel" aria-labelledby="sx-panel-title">
-            <div class="sx-panel-head">
-              <p class="sx-panel-kicker" id="sx-panel-title">THE WORKFLOW</p>
-            </div>
 
-            <ol class="sx-panel-steps">
-              <li><span class="sx-step-no">01</span><div><strong>Recipe standard</strong><p>Ingredients, targets and method, kept with their version context.</p></div></li>
-              <li><span class="sx-step-no">02</span><div><strong>Production context</strong><p>Scheduled work, vessels and the decisions behind each batch.</p></div></li>
-              <li><span class="sx-step-no">03</span><div><strong>Batch record</strong><p>What was planned, and what was actually recorded.</p></div></li>
-            </ol>
-
-          </aside>
+          </div>
         </div>
       </section>
-      <div class="page-photo-band"><PagePhoto name="home-hero" lang="en" /></div>
 
       <section class="sx-band section-pad" id="approach">
         <div class="shell">
