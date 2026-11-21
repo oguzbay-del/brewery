@@ -5,12 +5,15 @@ labels:
   - pairs: { app.kubernetes.io/part-of: demleme }
 resources:
   - namespace.yaml
+  - serviceaccounts.yaml
   - api.yaml
   - engine-service.yaml
   - worker.yaml
   - ingest.yaml
   - migrate.yaml
   - nats.yaml
+  - edge.yaml
+  - oauth2-proxy.yaml
   - networkpolicy.yaml
 configMapGenerator:
   - name: demleme-config
@@ -18,5 +21,13 @@ configMapGenerator:
       - RUST_LOG=info
       - NATS_URL=nats://nats:4222
       - ENGINE_URL=http://engine-service:50051
+  # oauth2-proxy ayarları (ortama göre overlay `behavior: replace` ile doldurur; büyük harfli
+  # değerler yer tutucudur). Sırlar `demleme-oauth2-proxy` Secret'ındadır.
+  - name: demleme-oauth2-proxy-ayar
+    literals:
+      - OAUTH2_PROXY_OIDC_ISSUER_URL=https://accounts.google.com
+      - OAUTH2_PROXY_EMAIL_DOMAINS=ALAN-ADI
+      - OAUTH2_PROXY_REDIRECT_URL=https://DESTEK-ADRESI/oauth2/callback
+      - OAUTH2_PROXY_COOKIE_SECURE=true
 generatorOptions:
   disableNameSuffixHash: true

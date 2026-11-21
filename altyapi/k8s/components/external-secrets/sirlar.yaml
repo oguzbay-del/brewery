@@ -1,0 +1,46 @@
+# Üç Secret; her anahtar Secret Manager'daki bir sır kabına eşlenir. Depoda değer yoktur.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: demleme-dis-servisler
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { kind: ClusterSecretStore, name: gcp-secret-manager }
+  target: { name: demleme-dis-servisler, creationPolicy: Owner }
+  data:
+    - { secretKey: DATABASE_URL, remoteRef: { key: database-url } }
+    - { secretKey: WORKER_DATABASE_URL, remoteRef: { key: worker-database-url } }
+    - { secretKey: REDIS_URL, remoteRef: { key: redis-url } }
+    - { secretKey: S3_ACCESS_KEY, remoteRef: { key: gcs-hmac-access-key } }
+    - { secretKey: S3_SECRET_KEY, remoteRef: { key: gcs-hmac-secret-key } }
+    - { secretKey: CSRF_HMAC_KEY, remoteRef: { key: csrf-hmac-key } }
+    - { secretKey: BREW_PACKAGE_KEY, remoteRef: { key: brew-package-key } }
+---
+# Göç Job'ı: yalnız migrate görür.
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: demleme-migrate
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { kind: ClusterSecretStore, name: gcp-secret-manager }
+  target: { name: demleme-migrate, creationPolicy: Owner }
+  data:
+    - { secretKey: MIGRATE_DATABASE_URL, remoteRef: { key: migrate-database-url } }
+    - { secretKey: APP_API_PASSWORD, remoteRef: { key: app-api-password } }
+    - { secretKey: APP_WORKER_PASSWORD, remoteRef: { key: app-worker-password } }
+---
+# Destek paneli girişi: oauth2-proxy ve api (yalnız INTERNAL_PROXY_TOKEN).
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: demleme-oauth2-proxy
+spec:
+  refreshInterval: 1h
+  secretStoreRef: { kind: ClusterSecretStore, name: gcp-secret-manager }
+  target: { name: demleme-oauth2-proxy, creationPolicy: Owner }
+  data:
+    - { secretKey: OAUTH2_PROXY_CLIENT_ID, remoteRef: { key: oauth2-proxy-client-id } }
+    - { secretKey: OAUTH2_PROXY_CLIENT_SECRET, remoteRef: { key: oauth2-proxy-client-secret } }
+    - { secretKey: OAUTH2_PROXY_COOKIE_SECRET, remoteRef: { key: oauth2-proxy-cookie-secret } }
+    - { secretKey: INTERNAL_PROXY_TOKEN, remoteRef: { key: internal-proxy-token } }

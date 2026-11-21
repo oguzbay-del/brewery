@@ -144,6 +144,15 @@ variable "secret_ids" {
     "oauth2-proxy-client-secret",
     "oauth2-proxy-cookie-secret",
     "brew-package-key",
+    "oauth2-proxy-client-id",
+    "database-url",
+    "worker-database-url",
+    "redis-url",
+    "migrate-database-url",
+    "app-api-password",
+    "app-worker-password",
+    "gcs-hmac-access-key",
+    "gcs-hmac-secret-key",
   ]
 }
 

@@ -1,0 +1,357 @@
+# Yalnız yerel: nesne deposu ve sahte dış servisler (compose ile aynı imajlar ve sürümler).
+# wiremock eşlemeleri `demleme-github-mock-eslemeler` ve `demleme-apns-mock-eslemeler` ConfigMap'lerinden
+# gelir; `make kind-up` bunları altyapi/compose/mocks'tan üretir (kustomize kök dışı dosya okumaz).
+# --- S3 uyumlu nesne deposu (SeaweedFS; compose'taki `objectstore`) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: objectstore
+spec:
+  selector: { app.kubernetes.io/name: objectstore }
+  ports:
+    - { name: s3, port: 8333, targetPort: s3 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: objectstore
+spec:
+  serviceName: objectstore
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: objectstore }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: objectstore }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: objectstore
+          image: chrislusf/seaweedfs:4.05
+          imagePullPolicy: IfNotPresent
+          args:
+            - server
+            - -dir=/data
+            - -master.volumeSizeLimitMB=64
+            - -volume.max=20
+            - -s3
+            - -s3.port=8333
+            - -s3.config=/etc/seaweedfs/s3.json
+            - -ip.bind=0.0.0.0
+          env:
+            - { name: HOME, value: /tmp }
+          ports:
+            - { name: s3, containerPort: 8333 }
+            - { name: master, containerPort: 9333 }
+          readinessProbe:
+            httpGet: { path: /cluster/status, port: master }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            httpGet: { path: /cluster/status, port: master }
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { memory: 768Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: data, mountPath: /data }
+            - { name: tmp, mountPath: /tmp }
+            - { name: s3-config, mountPath: /etc/seaweedfs, readOnly: true }
+      volumes:
+        - { name: tmp, emptyDir: {} }
+        - name: s3-config
+          secret: { secretName: demleme-objectstore-s3 }
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests: { storage: 1Gi }
+---
+# --- Sahte OIDC sağlayıcısı (Apple ve Google; sunucu/crates/fake-oidc) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fake-oidc
+spec:
+  selector: { app.kubernetes.io/name: fake-oidc }
+  ports:
+    - { name: http, port: 9000, targetPort: http }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-oidc
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: fake-oidc }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: fake-oidc }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: fake-oidc
+          image: demleme/fake-oidc
+          imagePullPolicy: IfNotPresent
+          env:
+            - { name: RUST_LOG, value: info }
+            - { name: PORT, value: "9000" }
+            - { name: PUBLIC_URL, value: "http://fake-oidc:9000" }
+          ports:
+            - { name: http, containerPort: 9000 }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits: { memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+---
+# --- Sahte SMTP (mailpit) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailpit
+spec:
+  selector: { app.kubernetes.io/name: mailpit }
+  ports:
+    - { name: smtp, port: 1025, targetPort: smtp }
+    - { name: ui, port: 8025, targetPort: ui }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: mailpit }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: mailpit }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: mailpit
+          image: axllent/mailpit:v1.27
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: smtp, containerPort: 1025 }
+            - { name: ui, containerPort: 8025 }
+          readinessProbe:
+            httpGet: { path: /readyz, port: ui }
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet: { path: /readyz, port: ui }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            requests: { cpu: 20m, memory: 32Mi }
+            limits: { memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+---
+# --- Sahte GitHub ve APNs (wiremock) ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: github-mock
+spec:
+  selector: { app.kubernetes.io/name: github-mock }
+  ports:
+    - { name: http, port: 8080, targetPort: http }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: github-mock }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: github-mock }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: wiremock
+          image: wiremock/wiremock:3.13.2
+          imagePullPolicy: IfNotPresent
+          args: ["--disable-banner", "--root-dir=/tmp/wm"]
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 384Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: mappings, mountPath: /tmp/wm/mappings, readOnly: true }
+      volumes:
+        - { name: tmp, emptyDir: {} }
+        - name: mappings
+          configMap: { name: demleme-github-mock-eslemeler }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apns-mock
+spec:
+  selector: { app.kubernetes.io/name: apns-mock }
+  ports:
+    - { name: http, port: 8080, targetPort: http }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apns-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: apns-mock }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: apns-mock }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: wiremock
+          image: wiremock/wiremock:3.13.2
+          imagePullPolicy: IfNotPresent
+          args: ["--disable-banner", "--root-dir=/tmp/wm"]
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 3
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 384Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: mappings, mountPath: /tmp/wm/mappings, readOnly: true }
+      volumes:
+        - { name: tmp, emptyDir: {} }
+        - name: mappings
+          configMap: { name: demleme-apns-mock-eslemeler }
+---
+# Sahte servislere yalnız uygulama servisleri erişir.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: objectstore-api-worker
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/name: objectstore }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - { key: app.kubernetes.io/name, operator: In, values: [api, worker] }
+      ports:
+        - { protocol: TCP, port: 8333 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sahte-dis-servisler
+spec:
+  podSelector:
+    matchExpressions:
+      - { key: app.kubernetes.io/name, operator: In, values: [mailpit, github-mock, apns-mock] }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest] }
+      ports:
+        - { protocol: TCP, port: 1025 }
+        - { protocol: TCP, port: 8080 }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: fake-oidc-api-oauth2-proxy
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/name: fake-oidc }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchExpressions:
+              - { key: app.kubernetes.io/name, operator: In, values: [api, oauth2-proxy] }
+      ports:
+        - { protocol: TCP, port: 9000 }

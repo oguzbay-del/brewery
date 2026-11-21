@@ -10,6 +10,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: api }
     spec:
+      serviceAccountName: api
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -25,6 +26,10 @@ spec:
           env:
             - { name: PORT, value: "8080" }
             - { name: SERVICE_NAME, value: api }
+            # Destek paneli (`/internal`): paylaşılan belirteç oauth2-proxy ile aynı Secret'tan gelir.
+            - name: INTERNAL_PROXY_TOKEN
+              valueFrom:
+                secretKeyRef: { name: demleme-oauth2-proxy, key: INTERNAL_PROXY_TOKEN, optional: true }
           envFrom:
             - configMapRef: { name: demleme-config }
             - secretRef: { name: demleme-dis-servisler }

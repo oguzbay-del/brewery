@@ -1,0 +1,102 @@
+# Ad alanındaki bütün trafik mTLS ister (STRICT): düz metin istek ztunnel'de reddedilir.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: varsayilan
+spec:
+  mtls: { mode: STRICT }
+---
+# Dışarıdan (yük dengeleyiciden, ağ örgüsü dışı) düz metin alan giriş noktaları: edge, oauth2-proxy
+# ve ingest (GitHub, Apple ve cihaz çağrılarını doğrudan alır). Bunların arkasındaki her atlama
+# yine mTLS'dir.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: edge
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: edge }
+  mtls: { mode: PERMISSIVE }
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: oauth2-proxy
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: oauth2-proxy }
+  mtls: { mode: PERMISSIVE }
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: ingest
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: ingest }
+  mtls: { mode: PERMISSIVE }
+---
+# engine-service'e yalnız api kimliği (SPIFFE) erişir.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: engine-service-yalniz-api
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: engine-service }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/demleme/sa/api"]
+---
+# api'ye yalnız edge (genel giriş) ve oauth2-proxy (destek paneli) erişir. ztunnel yalnız L4 uygular;
+# yol bazlı ayrım (`/internal`) edge'de (404) ve api'nin belirteç denetiminde. Ayrı bir `/internal`
+# portu api'de henüz yok; gelince burada portlara bölünür (to be verified).
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: api-edge-ve-oauth2-proxy
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: api }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/demleme/sa/edge
+              - cluster.local/ns/demleme/sa/oauth2-proxy
+---
+# NATS istemcileri: api, worker, ingest.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: nats-uygulama-servisleri
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: nats }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/demleme/sa/api
+              - cluster.local/ns/demleme/sa/worker
+              - cluster.local/ns/demleme/sa/ingest
+---
+# Ambient için NetworkPolicy ek izinleri: ztunnel'in kubelet sağlık denetimi adresi ve HBONE portu.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ambient-sonda-ve-hbone
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - ipBlock: { cidr: 169.254.7.127/32 }
+    - from:
+        - podSelector: {}
+      ports:
+        - { protocol: TCP, port: 15008 }
