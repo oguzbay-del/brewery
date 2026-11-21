@@ -40,6 +40,7 @@ const OWNER_LOOKUP: &[&str] = &[
     "notifications",
     "reminders",
     "notification_preferences",
+    "support_requests",
 ];
 
 /// Shared-library tables (`workspace_id` NULL = shared row): `app_owner` seeds them through the

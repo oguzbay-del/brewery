@@ -7,6 +7,7 @@
 - Web payment provider (Paddle, decision O6): `POST /v1/webhooks/web-payment` calls the trait `billing::provider::WebPaymentProvider`. The Paddle adapter is not written yet, so the route answers 503 in production.
 - The service stores a verified update in `external_events` and one outbox event in one transaction (role `app_api`). A repeated notification gets 200 `duplicate` and is not stored again.
 - Device data (T2.25): `POST /v1/ingest/{key}` and `/v1/ingest/{key}/{format}` (`device.rs`). The key in the address is the credential. An unknown, rotated or deleted key gives `401`. A value out of range gives `422`. The parsers are in the `devices` crate. The body limit is 8 KiB. TODO: rate limit for each device.
+- Support webhook (T2.29): `POST /v1/webhooks/github`. It checks `X-Hub-Signature-256` with `GITHUB_WEBHOOK_SECRET` (without the secret: 503), stores each `X-GitHub-Delivery` once and writes the outbox event `support.github_event`. The worker applies it (`support` crate).
 - Port `PORT` (default 8082).
 
 ## What it does not touch

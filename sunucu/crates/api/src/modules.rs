@@ -44,6 +44,7 @@ pub const MODULES: &[Module] = &[
     crate::trash::MODULE,
     crate::devices::MODULE,
     crate::notifications::MODULE,
+    crate::support::MODULE,
 ];
 
 /// The routes of all modules, with the auth services as a request extension.

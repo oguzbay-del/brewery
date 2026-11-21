@@ -102,6 +102,29 @@ pub async fn run(stop: watch::Receiver<bool>) {
         deliverer.clone(),
         stop.clone(),
     ));
+    let issue_client = support::github::GitHub::from_env().map(std::sync::Arc::new);
+    let bot = issue_client
+        .as_ref()
+        .map_or_else(|| "demleme-support[bot]".to_owned(), |g| g.bot_login().to_owned());
+    let support_sync = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(support::SYNC_CONSUMER, &support::sync_filter()),
+        std::sync::Arc::new(support::sync::SyncHandler::new(issue_client.clone())),
+        stopped(stop.clone()),
+    ));
+    let support_hook = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(support::GITHUB_CONSUMER, &support::github_filter()),
+        std::sync::Arc::new(support::webhook::GithubHandler::new(&bot)),
+        stopped(stop.clone()),
+    ));
+    let support_jobs = tokio::spawn(support::sync::run_jobs(
+        pool.clone(),
+        issue_client.clone(),
+        stop.clone(),
+    ));
     let janitor = {
         let pool = pool.clone();
         let stop = stop.clone();
@@ -124,6 +147,9 @@ pub async fn run(stop: watch::Receiver<bool>) {
         alert_task,
         delivery_task,
         notify_tick,
+        support_sync,
+        support_hook,
+        support_jobs,
         janitor,
         maintenance_task
     );

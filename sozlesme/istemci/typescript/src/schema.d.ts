@@ -2109,6 +2109,96 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/support/requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The requests that the caller opened, newest first. */
+        get: operations["supportrequest_list"];
+        put?: never;
+        /** Opens a support request with its first message. */
+        post: operations["supportrequest_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/support/requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A request with its messages. */
+        get: operations["supportrequest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/support/requests/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Adds a message. A request that was answered or resolved opens again. A closed request takes
+         *     no message: the customer opens a new request that continues the old one.
+         */
+        post: operations["supportmessage_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/support/requests/{id}/messages/{message_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Retracts a message of the caller. The comment in the Issue is deleted. */
+        delete: operations["supportmessage_delete"];
+        options?: never;
+        head?: never;
+        /** Edits a message of the caller. The comment in the Issue changes too. */
+        patch: operations["supportmessage_update"];
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/support/requests/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** The customer marks a request as resolved. The Issue closes. */
+        post: operations["supportrequest_resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/tags": {
         parameters: {
             query?: never;
@@ -4009,6 +4099,11 @@ export interface components {
              */
             member_id: string;
         };
+        /** @description A message text. */
+        MessageBody: {
+            /** @description Text, 1..=20000 characters. */
+            body: string;
+        };
         /** @description Detail of a misc ingredient. */
         MiscDetail: {
             /** @description `boil`, `mash`, `primary`, `secondary`, `bottling`, `sparge`, `whirlpool`. */
@@ -4283,6 +4378,29 @@ export interface components {
             tag_ids?: string[];
             /** @description Content of the first draft. */
             version?: components["schemas"]["VersionInput"];
+        };
+        /** @description A new request. */
+        NewRequest: {
+            /** @description First message, 1..=20000 characters. */
+            body: string;
+            /** @description Diagnostic summary (app version and the like), without personal data. */
+            diagnostics?: Record<string, never> | null;
+            /**
+             * Format: uuid
+             * @description A closed request that this one continues.
+             */
+            previous_request_id?: string | null;
+            /**
+             * Format: uuid
+             * @description A related record.
+             */
+            related_record_id?: string | null;
+            /** @description Kind of a related record. */
+            related_record_kind?: string | null;
+            /** @description Title, 1..=200 characters. */
+            title: string;
+            /** @description Topic. */
+            topic: string;
         };
         /** @description Body of `POST /roles`. */
         NewRole: {
@@ -5228,6 +5346,57 @@ export interface components {
             next_cursor?: string | null;
         };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_SupportRequest: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: date-time
+                 * @description Created at.
+                 */
+                created_at: string;
+                /**
+                 * Format: uuid
+                 * @description Identifier.
+                 */
+                id: string;
+                /**
+                 * Format: uuid
+                 * @description The closed request that this one continues.
+                 */
+                previous_request_id?: string | null;
+                /**
+                 * Format: int64
+                 * @description Number for people (`#4182`), the same in all workspaces.
+                 */
+                public_number: number;
+                /**
+                 * Format: uuid
+                 * @description The related record.
+                 */
+                related_record_id?: string | null;
+                /** @description Kind of the related record (`recipe_version`, `batch`). */
+                related_record_kind?: string | null;
+                /** @description `open`, `answered`, `resolved` or `closed`. */
+                status: string;
+                /** @description Title. */
+                title: string;
+                /** @description `account`, `subscription`, `recipes`, `device` or `other`. */
+                topic: string;
+                /**
+                 * Format: date-time
+                 * @description Updated at.
+                 */
+                updated_at: string;
+                /**
+                 * Format: int64
+                 * @description Record version.
+                 */
+                version: number;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_Tag: {
             /** @description The rows of this page. */
             items: {
@@ -5463,6 +5632,13 @@ export interface components {
             credential: Record<string, never>;
             /** @description Name shown in the list (at most 100 characters). */
             name?: string | null;
+        };
+        /** @description A request with its messages. */
+        RequestDetail: {
+            /** @description The messages the customer may see, oldest first. */
+            messages: components["schemas"]["SupportMessage"][];
+            /** @description The request. */
+            request: components["schemas"]["SupportRequest"];
         };
         /** @description List of roles. */
         RoleList: {
@@ -6282,6 +6458,86 @@ export interface components {
             source: string;
             /** @description `trial`, `active`, `grace`, `expired` or `cancelled`. */
             status: string;
+        };
+        /** @description A message of a request. */
+        SupportMessage: {
+            /**
+             * Format: int64
+             * @description Number of attachments.
+             */
+            attachment_count: number;
+            /** @description `customer` or `staff` (the system and the support team show as `staff`). */
+            author: string;
+            /** @description The text; empty after the message was retracted. */
+            body: string;
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: date-time
+             * @description The message was edited at this time.
+             */
+            edited_at?: string | null;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description The message was retracted. */
+            retracted: boolean;
+            /**
+             * Format: int64
+             * @description Record version.
+             */
+            version: number;
+        };
+        /** @description A support request. */
+        SupportRequest: {
+            /**
+             * Format: date-time
+             * @description Created at.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @description The closed request that this one continues.
+             */
+            previous_request_id?: string | null;
+            /**
+             * Format: int64
+             * @description Number for people (`#4182`), the same in all workspaces.
+             */
+            public_number: number;
+            /**
+             * Format: uuid
+             * @description The related record.
+             */
+            related_record_id?: string | null;
+            /** @description Kind of the related record (`recipe_version`, `batch`). */
+            related_record_kind?: string | null;
+            /** @description `open`, `answered`, `resolved` or `closed`. */
+            status: string;
+            /** @description Title. */
+            title: string;
+            /** @description `account`, `subscription`, `recipes`, `device` or `other`. */
+            topic: string;
+            /**
+             * Format: date-time
+             * @description Updated at.
+             */
+            updated_at: string;
+            /**
+             * Format: int64
+             * @description Record version.
+             */
+            version: number;
         };
         /** @description Body of `POST /v1/shared-devices/{id}/switch`. */
         SwitchRequest: {
@@ -29577,6 +29833,1069 @@ export interface operations {
             };
             /** @description Not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportrequest_list: {
+        parameters: {
+            query?: {
+                /** @description Status filter */
+                status?: string;
+                /** @description Page size, 1..=200 (default 50) */
+                limit?: number;
+                /** @description `next_cursor` of the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of requests */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "created_at": "2026-11-28T12:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000b",
+                     *           "previous_request_id": null,
+                     *           "public_number": 4182,
+                     *           "related_record_id": null,
+                     *           "related_record_kind": null,
+                     *           "status": "open",
+                     *           "title": "Cannot publish a version",
+                     *           "topic": "recipes",
+                     *           "updated_at": "2026-11-28T12:00:00Z",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "next_cursor": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Page_SupportRequest"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportrequest_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewRequest"];
+            };
+        };
+        responses: {
+            /** @description The request with its first message */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "messages": [
+                     *         {
+                     *           "attachment_count": 0,
+                     *           "author": "customer",
+                     *           "body": "The publish button does nothing.",
+                     *           "created_at": "2026-11-28T12:00:00Z",
+                     *           "edited_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000c",
+                     *           "retracted": false,
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "request": {
+                     *         "created_at": "2026-11-28T12:00:00Z",
+                     *         "id": "0192f1c07a3b7000800000000000000b",
+                     *         "previous_request_id": null,
+                     *         "public_number": 4182,
+                     *         "related_record_id": null,
+                     *         "related_record_kind": null,
+                     *         "status": "open",
+                     *         "title": "Cannot publish a version",
+                     *         "topic": "recipes",
+                     *         "updated_at": "2026-11-28T12:00:00Z",
+                     *         "version": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RequestDetail"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportrequest_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Request */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "messages": [
+                     *         {
+                     *           "attachment_count": 0,
+                     *           "author": "customer",
+                     *           "body": "The publish button does nothing.",
+                     *           "created_at": "2026-11-28T12:00:00Z",
+                     *           "edited_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000c",
+                     *           "retracted": false,
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "request": {
+                     *         "created_at": "2026-11-28T12:00:00Z",
+                     *         "id": "0192f1c07a3b7000800000000000000b",
+                     *         "previous_request_id": null,
+                     *         "public_number": 4182,
+                     *         "related_record_id": null,
+                     *         "related_record_kind": null,
+                     *         "status": "open",
+                     *         "title": "Cannot publish a version",
+                     *         "topic": "recipes",
+                     *         "updated_at": "2026-11-28T12:00:00Z",
+                     *         "version": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RequestDetail"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportmessage_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Request */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageBody"];
+            };
+        };
+        responses: {
+            /** @description The message */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "attachment_count": 0,
+                     *       "author": "customer",
+                     *       "body": "The publish button does nothing.",
+                     *       "created_at": "2026-11-28T12:00:00Z",
+                     *       "edited_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000c",
+                     *       "retracted": false,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SupportMessage"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportmessage_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Request */
+                id: string;
+                /** @description Message */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Retracted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportmessage_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Request */
+                id: string;
+                /** @description Message */
+                message_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessageBody"];
+            };
+        };
+        responses: {
+            /** @description The message */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "attachment_count": 0,
+                     *       "author": "customer",
+                     *       "body": "The publish button does nothing.",
+                     *       "created_at": "2026-11-28T12:00:00Z",
+                     *       "edited_at": null,
+                     *       "id": "0192f1c07a3b7000800000000000000c",
+                     *       "retracted": false,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SupportMessage"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    supportrequest_resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+                /** @description Request */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "messages": [
+                     *         {
+                     *           "attachment_count": 0,
+                     *           "author": "customer",
+                     *           "body": "The publish button does nothing.",
+                     *           "created_at": "2026-11-28T12:00:00Z",
+                     *           "edited_at": null,
+                     *           "id": "0192f1c07a3b7000800000000000000c",
+                     *           "retracted": false,
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "request": {
+                     *         "created_at": "2026-11-28T12:00:00Z",
+                     *         "id": "0192f1c07a3b7000800000000000000b",
+                     *         "previous_request_id": null,
+                     *         "public_number": 4182,
+                     *         "related_record_id": null,
+                     *         "related_record_kind": null,
+                     *         "status": "open",
+                     *         "title": "Cannot publish a version",
+                     *         "topic": "recipes",
+                     *         "updated_at": "2026-11-28T12:00:00Z",
+                     *         "version": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RequestDetail"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

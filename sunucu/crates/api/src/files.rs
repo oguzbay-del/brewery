@@ -732,6 +732,7 @@ pub async fn attachment_create(
     let record_table = match new.record_kind.as_str() {
         "batch" => Some("batches"),
         "tasting_note" => Some("tasting_notes"),
+        "support_message" => Some("support_messages"),
         _ => None,
     };
     if record_table.is_none() {

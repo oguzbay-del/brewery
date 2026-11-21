@@ -93,6 +93,7 @@ impl World {
             apple: JwsVerifier::with_roots(vec![pki.root_der.clone()], true),
             bundle_id: Some("app.demleme".to_owned()),
             web_payment: Some(fake.clone()),
+            github_secret: None,
         });
         let client = events::connect(&nats_url()).await.unwrap();
         let js = async_nats::jetstream::new(client);

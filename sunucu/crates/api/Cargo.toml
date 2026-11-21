@@ -13,6 +13,7 @@ chrono.workspace = true
 common = { workspace = true, features = ["http", "otel"] }
 billing.workspace = true
 notifier.workspace = true
+support.workspace = true
 db.workspace = true
 devices.workspace = true
 engine-client = { path = "../engine-client" }

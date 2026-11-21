@@ -46,6 +46,9 @@ pub struct IngestState {
     pub bundle_id: Option<String>,
     /// Web payment provider; `None` until decision O6.
     pub web_payment: Option<Arc<dyn WebPaymentProvider>>,
+    /// Secret of the webhook of the support repository (`GITHUB_WEBHOOK_SECRET`); `None`
+    /// answers 503.
+    pub github_secret: Option<Arc<Vec<u8>>>,
 }
 
 impl std::fmt::Debug for IngestState {
@@ -53,6 +56,7 @@ impl std::fmt::Debug for IngestState {
         f.debug_struct("IngestState")
             .field("bundle_id", &self.bundle_id)
             .field("web_payment", &self.web_payment.is_some())
+            .field("github", &self.github_secret.is_some())
             .finish_non_exhaustive()
     }
 }
@@ -73,6 +77,7 @@ pub fn router_with(state: IngestState) -> Router {
         .route("/v1/ingest/{key}", post(device::ingest_default))
         .route("/v1/ingest/{key}/{format}", post(device::ingest_format))
         .layer(axum::extract::DefaultBodyLimit::max(device::BODY_LIMIT))
+        .route("/v1/webhooks/github", post(github_hook))
         .with_state(state);
     let hooks = hooks.merge(device_routes);
     router().merge(hooks)
@@ -91,6 +96,10 @@ pub fn state_from_env() -> Option<IngestState> {
             .ok()
             .filter(|s| !s.is_empty()),
         web_payment: None,
+        github_secret: std::env::var("GITHUB_WEBHOOK_SECRET")
+            .ok()
+            .filter(|s| !s.is_empty())
+            .map(|s| Arc::new(s.into_bytes())),
     })
 }
 
@@ -170,6 +179,44 @@ async fn web_payment(
         Ok(None) => reply(StatusCode::OK, "ignored"),
         Err(ProviderError::InvalidSignature) => reply(StatusCode::UNAUTHORIZED, "rejected"),
         Err(ProviderError::Malformed(_)) => reply(StatusCode::BAD_REQUEST, "malformed"),
+    }
+}
+
+/// Webhook of the support repository (T2.29). The signature is checked on the raw body. A repeated
+/// delivery (same `X-GitHub-Delivery`) gets 200 `duplicate`. The worker applies the event.
+async fn github_hook(
+    State(state): State<IngestState>,
+    headers: HeaderMap,
+    body: axum::body::Bytes,
+) -> Reply {
+    let Some(secret) = state.github_secret.clone() else {
+        return reply(StatusCode::SERVICE_UNAVAILABLE, "no_secret");
+    };
+    let header = |n: &str| headers.get(n).and_then(|v| v.to_str().ok());
+    if !support::webhook::verify(&secret, header("x-hub-signature-256"), &body) {
+        return reply(StatusCode::UNAUTHORIZED, "rejected");
+    }
+    let (Some(delivery), Some(event), Ok(payload)) = (
+        header("x-github-delivery"),
+        header("x-github-event"),
+        serde_json::from_slice::<Value>(&body),
+    ) else {
+        return reply(StatusCode::BAD_REQUEST, "malformed");
+    };
+    let result = async {
+        let mut tx = state.pool.begin().await?;
+        let stored = support::webhook::store(&mut tx, delivery, event, &payload).await?;
+        tx.commit().await?;
+        Ok::<_, support::Error>(stored)
+    }
+    .await;
+    match result {
+        Ok(support::webhook::Stored::Queued) => reply(StatusCode::OK, "accepted"),
+        Ok(support::webhook::Stored::Duplicate) => reply(StatusCode::OK, "duplicate"),
+        Err(e) => {
+            tracing::error!(error = %e, "storing a delivery failed");
+            reply(StatusCode::SERVICE_UNAVAILABLE, "unavailable")
+        }
     }
 }
 

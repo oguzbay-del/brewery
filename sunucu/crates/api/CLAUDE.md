@@ -18,6 +18,7 @@
 - Recently deleted (`trash.rs`, T2.37): `GET .../trash` lists the soft-deleted recipes, batches, ingredients and equipment of the last 30 days. `POST .../trash/{kind}/{id}/restore` restores one. After 30 days restore answers `409`. Each kind needs the write permission of its own endpoints.
 - Devices (`devices.rs`, T2.25): `/v1/workspaces/{ws}/devices*` (register, pair with a batch, rotate key, delete). The key is shown once on create and rotate. Only its SHA-256 digest is stored. Rotation needs the second step when the auth services run, and writes the audit event `device_key.renew`. `INGEST_PUBLIC_URL` (optional) gives the full data address in the answer.
 - Notifications (`notifications.rs`, T2.24): inbox, actions (approve, postpone, ignore), notification preferences (quiet hours, daily summary) and alert rules. The worker creates and delivers notifications (`notifier` crate).
+- Support requests (`support.rs`, T2.29): open a request, messages, edit, retract, resolve. Each change writes the outbox event `support.sync_requested`; the worker syncs with the issue tracker (`support` crate). The customer sees only messages with visibility `customer` and only own requests. Attachments use the file endpoints with `record_kind` `support_message`.
 - Port `PORT` (default 8080).
 
 ## What it does not touch
