@@ -12348,6 +12348,18 @@
           "202": {
             "content": {
               "application/json": {
+                "example": {
+                  "created_at": "2026-11-21T10:00:00Z",
+                  "download": null,
+                  "error": null,
+                  "expires_at": null,
+                  "format": "zip",
+                  "id": "0192f1c0-7a3b-7000-8000-000000000005",
+                  "scope": "account_data",
+                  "scope_id": null,
+                  "size_bytes": null,
+                  "status": "queued"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ExportJob"
                 }
@@ -12665,6 +12677,18 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "created_at": "2026-11-21T10:00:00Z",
+                  "download": null,
+                  "error": null,
+                  "expires_at": null,
+                  "format": "zip",
+                  "id": "0192f1c0-7a3b-7000-8000-000000000005",
+                  "scope": "account_data",
+                  "scope_id": null,
+                  "size_bytes": null,
+                  "status": "queued"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/ExportJob"
                 }
@@ -12815,6 +12839,12 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "purge_at": null,
+                  "requested_at": null,
+                  "retention_days": 30,
+                  "state": "none"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/DeletionStatus"
                 }
@@ -12845,7 +12875,26 @@
             "description": "Unauthenticated"
           },
           "404": {
-            "description": "No pending request"
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
           },
           "426": {
             "content": {
@@ -12944,6 +12993,12 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "purge_at": "2026-12-21T10:00:00Z",
+                  "requested_at": "2026-11-21T10:00:00Z",
+                  "retention_days": 30,
+                  "state": "pending"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/DeletionStatus"
                 }
@@ -13070,6 +13125,12 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "purge_at": "2026-12-21T10:00:00Z",
+                  "requested_at": "2026-11-21T10:00:00Z",
+                  "retention_days": 30,
+                  "state": "pending"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/DeletionStatus"
                 }

@@ -8717,6 +8717,20 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-21T10:00:00Z",
+                     *       "download": null,
+                     *       "error": null,
+                     *       "expires_at": null,
+                     *       "format": "zip",
+                     *       "id": "0192f1c0-7a3b-7000-8000-000000000005",
+                     *       "scope": "account_data",
+                     *       "scope_id": null,
+                     *       "size_bytes": null,
+                     *       "status": "queued"
+                     *     }
+                     */
                     "application/json": components["schemas"]["ExportJob"];
                 };
             };
@@ -8836,6 +8850,20 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "created_at": "2026-11-21T10:00:00Z",
+                     *       "download": null,
+                     *       "error": null,
+                     *       "expires_at": null,
+                     *       "format": "zip",
+                     *       "id": "0192f1c0-7a3b-7000-8000-000000000005",
+                     *       "scope": "account_data",
+                     *       "scope_id": null,
+                     *       "size_bytes": null,
+                     *       "status": "queued"
+                     *     }
+                     */
                     "application/json": components["schemas"]["ExportJob"];
                 };
             };
@@ -8903,6 +8931,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "purge_at": "2026-12-21T10:00:00Z",
+                     *       "requested_at": "2026-11-21T10:00:00Z",
+                     *       "retention_days": 30,
+                     *       "state": "pending"
+                     *     }
+                     */
                     "application/json": components["schemas"]["DeletionStatus"];
                 };
             };
@@ -8961,6 +8997,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "purge_at": "2026-12-21T10:00:00Z",
+                     *       "requested_at": "2026-11-21T10:00:00Z",
+                     *       "retention_days": 30,
+                     *       "state": "pending"
+                     *     }
+                     */
                     "application/json": components["schemas"]["DeletionStatus"];
                 };
             };
@@ -9063,6 +9107,14 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
+                    /**
+                     * @example {
+                     *       "purge_at": null,
+                     *       "requested_at": null,
+                     *       "retention_days": 30,
+                     *       "state": "none"
+                     *     }
+                     */
                     "application/json": components["schemas"]["DeletionStatus"];
                 };
             };
@@ -9075,12 +9127,14 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description No pending request */
+            /** @description Not found */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
             };
             /** @description Upgrade required */
             426: {

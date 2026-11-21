@@ -183,7 +183,8 @@ async fn append(
         (status = 202, description = "The request is saved; all sessions are closed", body = DeletionStatus,
             example = json!({"state": "pending", "requested_at": "2026-11-21T10:00:00Z",
                 "purge_at": "2026-12-21T10:00:00Z", "retention_days": 30})),
-        (status = 200, description = "A request was pending already", body = DeletionStatus)
+        (status = 200, description = "A request was pending already", body = DeletionStatus,
+            example = json!({"state": "pending", "requested_at": "2026-11-21T10:00:00Z", "purge_at": "2026-12-21T10:00:00Z", "retention_days": 30}))
     )
 )]
 pub async fn deletion_request(
@@ -233,8 +234,8 @@ pub async fn deletion_request(
     tag = "account",
     operation_id = "me_deletion_restore",
     responses(
-        (status = 200, description = "The account is restored", body = DeletionStatus),
-        (status = 404, description = "No pending request")
+        (status = 200, description = "The account is restored", body = DeletionStatus,
+            example = json!({"state": "none", "requested_at": null, "purge_at": null, "retention_days": 30}))
     )
 )]
 pub async fn deletion_restore(
@@ -263,7 +264,8 @@ pub async fn deletion_restore(
     path = "/v1/me/deletion",
     tag = "account",
     operation_id = "me_deletion_get",
-    responses((status = 200, description = "The state", body = DeletionStatus))
+    responses((status = 200, description = "The state", body = DeletionStatus,
+        example = json!({"state": "pending", "requested_at": "2026-11-21T10:00:00Z", "purge_at": "2026-12-21T10:00:00Z", "retention_days": 30})))
 )]
 pub async fn deletion_get(
     State(state): State<AppState>,
@@ -283,7 +285,8 @@ pub async fn deletion_get(
     tag = "account",
     operation_id = "me_data_export_create",
     request_body = NewDataExport,
-    responses((status = 202, description = "The queued job", body = ExportJob))
+    responses((status = 202, description = "The queued job", body = ExportJob,
+        example = json!({"id": "0192f1c0-7a3b-7000-8000-000000000005", "scope": "account_data", "scope_id": null, "format": "zip", "status": "queued", "error": null, "size_bytes": null, "expires_at": null, "created_at": "2026-11-21T10:00:00Z", "download": null})))
 )]
 pub async fn data_export_create(
     State(state): State<AppState>,
@@ -375,7 +378,8 @@ pub async fn data_export_create(
         ("workspace_id" = Uuid, Path, description = "Workspace that carries the job"),
         ("id" = Uuid, Path, description = "Export job")
     ),
-    responses((status = 200, description = "The job", body = ExportJob))
+    responses((status = 200, description = "The job", body = ExportJob,
+        example = json!({"id": "0192f1c0-7a3b-7000-8000-000000000005", "scope": "account_data", "scope_id": null, "format": "zip", "status": "queued", "error": null, "size_bytes": null, "expires_at": null, "created_at": "2026-11-21T10:00:00Z", "download": null})))
 )]
 pub async fn data_export_get(
     State(state): State<AppState>,
