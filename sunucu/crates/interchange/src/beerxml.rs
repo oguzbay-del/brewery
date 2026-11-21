@@ -5,6 +5,12 @@
 //! - A fermentable that is not a grain gets the usage `boil`; a grain that is not mashed gets
 //!   `steep`.
 //! - `Aroma` hops become `whirlpool`.
+//! - `OG` and `FG` are measured values in the specification. They are the source values when the
+//!   file has no estimate. `EST_OG` and `EST_FG` (text with a unit, for example `1.052 sg`) win.
+//! - `EST_COLOR` is text with a unit. A unit `EBC` is converted to SRM; any other unit is SRM.
+//! - Not checked: required fields (`VERSION`, `STYLE`, `BREWER`, ...). The reader accepts a file
+//!   that lacks them. A missing `AMOUNT_IS_WEIGHT` on a misc means weight (the usual practice;
+//!   the specification text says FALSE).
 
 use std::fmt::Write as _;
 
@@ -109,6 +115,16 @@ fn parse_equipment(e: &Element) -> Equipment {
     }
 }
 
+/// The color of `EST_COLOR` in SRM. The text has a number and an optional unit.
+fn est_color_srm(r: &Element) -> Option<f64> {
+    let v = r.number_of("EST_COLOR")?.max(0.0);
+    let ebc = r
+        .text_of("EST_COLOR")
+        .and_then(|t| t.split_whitespace().nth(1))
+        .is_some_and(|u| u.eq_ignore_ascii_case("ebc"));
+    Some(if ebc { v / 1.97 } else { v })
+}
+
 fn parse_recipe(r: &Element) -> Recipe {
     let mut warnings = Vec::new();
     let mut fermentables = Vec::new();
@@ -184,7 +200,7 @@ fn parse_recipe(r: &Element) -> Recipe {
             infusion_l: s.number_of("INFUSE_AMOUNT"),
         })
         .collect();
-    let og = r.number_of("OG");
+    let og = r.number_of("EST_OG").or_else(|| r.number_of("OG"));
     if og.is_some_and(|v| !(0.9..=1.3).contains(&v)) {
         warnings.push("OG in the file is outside 0.9 to 1.3 and was ignored".to_owned());
     }
@@ -206,12 +222,9 @@ fn parse_recipe(r: &Element) -> Recipe {
         efficiency_pct: r.number_of("EFFICIENCY"),
         source: SourceValues {
             og_sg: valid_og,
-            fg_sg: r.number_of("FG"),
+            fg_sg: r.number_of("EST_FG").or_else(|| r.number_of("FG")),
             ibu: r.number_of("IBU").or_else(|| r.number_of("EST_IBU")),
-            srm: r
-                .number_of("EST_COLOR")
-                .map(|c| c.max(0.0))
-                .or_else(|| r.number_of("COLOR")),
+            srm: est_color_srm(r).or_else(|| r.number_of("COLOR")),
             abv_pct: r.number_of("ABV").or_else(|| r.number_of("EST_ABV")),
         },
         equipment,
@@ -394,14 +407,17 @@ pub fn write(recipes: &[Recipe]) -> String {
                 _ => "Liquid",
             };
             tag(&mut o, 8, "FORM", form);
+            // AMOUNT is required by the specification. The model does not keep a volume.
+            tag(&mut o, 8, "AMOUNT", "0");
             num(&mut o, 8, "ATTENUATION", y.attenuation_pct);
             o.push_str("      </YEAST>\n");
         }
-        o.push_str("    </YEASTS>\n");
+        o.push_str("    </YEASTS>\n    <WATERS>\n    </WATERS>\n");
         if !r.mash_steps.is_empty() {
-            o.push_str("    <MASH>\n      <VERSION>1</VERSION>\n      <NAME>Mash</NAME>\n      <MASH_STEPS>\n");
+            o.push_str("    <MASH>\n      <VERSION>1</VERSION>\n      <NAME>Mash</NAME>\n      <GRAIN_TEMP>20</GRAIN_TEMP>\n      <MASH_STEPS>\n");
             for s in &r.mash_steps {
                 o.push_str("        <MASH_STEP>\n");
+                tag(&mut o, 10, "VERSION", "1");
                 tag(&mut o, 10, "NAME", s.name.as_deref().unwrap_or("Step"));
                 let kind = match s.kind.as_str() {
                     "decoction" => "Decoction",

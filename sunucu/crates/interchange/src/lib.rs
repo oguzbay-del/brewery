@@ -5,13 +5,14 @@
 //! The model uses the internal SI units: kg, L, degrees C, SRM, SG, minutes. The parsers read
 //! untrusted files: see [`xml`] for the limits and the entity rules.
 //!
-//! TODO: `.bsmx` (`BeerSmith`) needs a sample file. None is available (T2.26).
+//! `.bsmx` (`BeerSmith`) is read by [`bsmx`]. The sample file is in `tests/fixtures/bsmx`.
 
 #![allow(clippy::too_many_lines, clippy::similar_names)]
 
 pub mod beerjson;
 pub mod beerxml;
 pub mod brewfather;
+pub mod bsmx;
 pub mod convert;
 pub mod csv;
 pub mod model;

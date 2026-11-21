@@ -4224,7 +4224,7 @@ export interface components {
             equipment: string[];
             /** @description Name of the uploaded file. */
             file_name?: string | null;
-            /** @description `beerxml`, `beerjson` or `brewfather`. */
+            /** @description `beerxml`, `beerjson`, `brewfather` or `beersmith` (`.bsmx`). */
             format: string;
             /**
              * Format: uuid
@@ -20446,7 +20446,7 @@ export interface operations {
     import_create: {
         parameters: {
             query?: {
-                /** @description `beerxml`, `beerjson` or `brewfather` (default: detected) */
+                /** @description `beerxml`, `beerjson`, `brewfather` or `beersmith` (`.bsmx`) (default: detected) */
                 format?: string;
                 /** @description Name of the file */
                 file_name?: string;

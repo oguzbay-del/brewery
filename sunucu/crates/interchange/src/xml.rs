@@ -84,12 +84,89 @@ fn syntax(e: impl std::fmt::Display) -> Error {
     Error::Xml(e.to_string())
 }
 
+/// Names of the HTML entities for U+00A0 to U+00FF, in code point order.
+const LATIN1_ENTITIES: [&str; 96] = [
+    "nbsp", "iexcl", "cent", "pound", "curren", "yen", "brvbar", "sect", "uml", "copy", "ordf",
+    "laquo", "not", "shy", "reg", "macr", "deg", "plusmn", "sup2", "sup3", "acute", "micro",
+    "para", "middot", "cedil", "sup1", "ordm", "raquo", "frac14", "frac12", "frac34", "iquest",
+    "Agrave", "Aacute", "Acirc", "Atilde", "Auml", "Aring", "AElig", "Ccedil", "Egrave", "Eacute",
+    "Ecirc", "Euml", "Igrave", "Iacute", "Icirc", "Iuml", "ETH", "Ntilde", "Ograve", "Oacute",
+    "Ocirc", "Otilde", "Ouml", "times", "Oslash", "Ugrave", "Uacute", "Ucirc", "Uuml", "Yacute",
+    "THORN", "szlig", "agrave", "aacute", "acirc", "atilde", "auml", "aring", "aelig", "ccedil",
+    "egrave", "eacute", "ecirc", "euml", "igrave", "iacute", "icirc", "iuml", "eth", "ntilde",
+    "ograve", "oacute", "ocirc", "otilde", "ouml", "divide", "oslash", "ugrave", "uacute", "ucirc",
+    "uuml", "yacute", "thorn", "yuml",
+];
+
+/// A fixed table of HTML entities. The reader never reads an entity from the file itself.
+fn html_entity(name: &str) -> Option<char> {
+    if let Some(i) = LATIN1_ENTITIES.iter().position(|n| *n == name) {
+        return char::from_u32(0xA0 + u32::try_from(i).ok()?);
+    }
+    Some(match name {
+        "ndash" => '\u{2013}',
+        "mdash" => '\u{2014}',
+        "lsquo" => '\u{2018}',
+        "rsquo" => '\u{2019}',
+        "ldquo" => '\u{201c}',
+        "rdquo" => '\u{201d}',
+        "bull" => '\u{2022}',
+        "hellip" => '\u{2026}',
+        "euro" => '\u{20ac}',
+        "trade" => '\u{2122}',
+        "OElig" => '\u{152}',
+        "oelig" => '\u{153}',
+        "Scaron" => '\u{160}',
+        "scaron" => '\u{161}',
+        "Zcaron" => '\u{17d}',
+        "zcaron" => '\u{17e}',
+        "deg" => '\u{b0}',
+        _ => return None,
+    })
+}
+
+/// How lenient a parse is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Dialect {
+    /// Strict XML: UTF-8 input, five predefined entities.
+    Strict,
+    /// For files of desktop programs (`.bsmx`): bytes that are not UTF-8 become U+FFFD, characters
+    /// that XML 1.0 does not allow are dropped, and the HTML entities of a fixed table are
+    /// accepted (for example `&auml;`). A DOCTYPE and every other entity are still errors.
+    Html,
+}
+
+/// Whether XML 1.0 allows the character.
+fn xml_char(c: char) -> bool {
+    matches!(c, '\t' | '\n' | '\r')
+        || ('\u{20}'..='\u{d7ff}').contains(&c)
+        || ('\u{e000}'..='\u{fffd}').contains(&c)
+        || c >= '\u{10000}'
+}
+
 /// Parses `input` into the root element.
 pub fn parse(input: &[u8], limits: Limits) -> Result<Element> {
+    parse_with(input, limits, Dialect::Strict)
+}
+
+/// Parses `input` into the root element with a [`Dialect`].
+pub fn parse_with(input: &[u8], limits: Limits, dialect: Dialect) -> Result<Element> {
     if input.len() > limits.max_bytes {
         return Err(Error::TooLarge);
     }
-    let text = std::str::from_utf8(input).map_err(|_| Error::Xml("input is not UTF-8".into()))?;
+    let owned;
+    let text = match dialect {
+        Dialect::Strict => {
+            std::str::from_utf8(input).map_err(|_| Error::Xml("input is not UTF-8".into()))?
+        }
+        Dialect::Html => {
+            owned = String::from_utf8_lossy(input)
+                .chars()
+                .filter(|c| xml_char(*c))
+                .collect::<String>();
+            owned.as_str()
+        }
+    };
     let text = text.strip_prefix('\u{feff}').unwrap_or(text);
     let mut reader = Reader::from_str(text);
     let mut stack: Vec<Element> = Vec::new();
@@ -162,7 +239,10 @@ pub fn parse(input: &[u8], limits: Limits) -> Result<Element> {
                     "gt" => top.text.push('>'),
                     "quot" => top.text.push('"'),
                     "apos" => top.text.push('\''),
-                    _ => return Err(Error::EntityNotAllowed),
+                    other => match (dialect, html_entity(other)) {
+                        (Dialect::Html, Some(ch)) => top.text.push(ch),
+                        _ => return Err(Error::EntityNotAllowed),
+                    },
                 }
             }
             Event::Eof => break,

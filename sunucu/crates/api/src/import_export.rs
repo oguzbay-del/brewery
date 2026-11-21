@@ -64,7 +64,7 @@ const FULL_EXPORT_INTERVAL_HOURS: i64 = 24;
 /// Query of the import upload.
 #[derive(Debug, Default, Deserialize)]
 pub struct ImportQuery {
-    /// `beerxml`, `beerjson` or `brewfather`. Missing: detected from the content.
+    /// `beerxml`, `beerjson`, `brewfather` or `beersmith` (`.bsmx`). Missing: detected from the content.
     pub format: Option<String>,
     /// Name of the uploaded file (shown later).
     pub file_name: Option<String>,
@@ -111,7 +111,7 @@ pub struct ImportItem {
 pub struct ImportPreview {
     /// Identifier.
     pub id: Uuid,
-    /// `beerxml`, `beerjson` or `brewfather`.
+    /// `beerxml`, `beerjson`, `brewfather` or `beersmith` (`.bsmx`).
     pub format: String,
     /// `parsed` or `applied`.
     pub status: String,
@@ -199,6 +199,7 @@ fn preview(row: ImportRow) -> ApiResult<ImportPreview> {
 
 fn detect(body: &[u8]) -> &'static str {
     match body.iter().find(|b| !b.is_ascii_whitespace()) {
+        Some(b'<') if body.windows(11).take(4096).any(|w| w == b"<Selections") => "beersmith",
         Some(b'<') => "beerxml",
         _ if body.windows(8).take(4096).any(|w| w == b"beerjson") => "beerjson",
         _ => "brewfather",
@@ -228,7 +229,7 @@ const SELECT_IMPORT: &str = "SELECT id, format, status, file_name, parsed, mappi
     operation_id = "import_create",
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace"),
-        ("format" = Option<String>, Query, description = "`beerxml`, `beerjson` or `brewfather` (default: detected)"),
+        ("format" = Option<String>, Query, description = "`beerxml`, `beerjson`, `brewfather` or `beersmith` (`.bsmx`) (default: detected)"),
         ("file_name" = Option<String>, Query, description = "Name of the file")
     ),
     request_body(content = String, content_type = "application/octet-stream",
@@ -257,11 +258,13 @@ pub async fn import_create(
         Some("beerxml") => "beerxml",
         Some("beerjson") => "beerjson",
         Some("brewfather") => "brewfather",
+        Some("beersmith" | "bsmx") => "beersmith",
         Some(_) => return Err(issue("/format", "invalid_value")),
     };
     let parsed = match format {
         "beerxml" => interchange::beerxml::parse(&body),
         "beerjson" => interchange::beerjson::parse(&body),
+        "beersmith" => interchange::bsmx::parse(&body),
         _ => interchange::brewfather::parse(&body),
     }
     .map_err(|e| parse_error(&e))?;
@@ -275,7 +278,7 @@ pub async fn import_create(
     // The original file is kept as an attachment of the recipes (plan: "kaynak dosya saklanır").
     let key = format!("{ws}/imports/{id}");
     if let Some(store) = &state.store {
-        let content_type = if format == "beerxml" {
+        let content_type = if format == "beerxml" || format == "beersmith" {
             "application/xml"
         } else {
             "application/json"

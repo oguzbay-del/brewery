@@ -1,7 +1,7 @@
 //! Round-trip and safety tests with the sample files in `tests/fixtures`.
 #![allow(clippy::float_cmp)]
 
-use interchange::{Error, beerjson, beerxml, brewfather, csv, xml};
+use interchange::{Error, beerjson, beerxml, brewfather, bsmx, csv, xml};
 
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(format!(
@@ -151,4 +151,88 @@ fn version_input_matches_the_api_shape() {
     assert_eq!(v["fermentables"][0]["grain_type"], "grain");
     assert!(v["fermentables"][0].get("yield_pct").is_some());
     assert_eq!(v["mash_snapshot"]["steps"][0]["kind"], "infusion");
+}
+
+#[test]
+fn beerxml_estimates_with_units() {
+    let xml = b"<RECIPES><RECIPE><NAME>X</NAME><OG>1.040</OG><EST_OG>1.052 sg</EST_OG>\
+        <EST_FG>1.011 sg</EST_FG><EST_COLOR>19.7 EBC</EST_COLOR></RECIPE></RECIPES>";
+    let r = &beerxml::parse(xml).unwrap().recipes[0];
+    assert_eq!(r.source.og_sg, Some(1.052));
+    assert_eq!(r.source.fg_sg, Some(1.011));
+    assert!((r.source.srm.unwrap() - 10.0).abs() < 0.01);
+}
+
+#[test]
+fn bsmx_sample_is_read() {
+    let doc = bsmx::parse(&fixture("bsmx/recipe.bsmx")).unwrap();
+    assert_eq!(doc.recipes.len(), 1);
+    let r = &doc.recipes[0];
+    assert_eq!(r.name, "Imperial Coffee Stout");
+    assert_eq!(r.kind, "partial_mash");
+    assert_eq!(r.fermentables.len(), 6);
+    assert_eq!(r.hops.len(), 3);
+    assert_eq!(r.yeasts.len(), 1);
+    assert_eq!(r.mash_steps.len(), 1);
+    // The HTML entity `&auml;` is decoded; `&#39;` too.
+    assert_eq!(r.style.as_deref(), Some("Oktoberfest/M\u{e4}rzen"));
+    assert_eq!(r.fermentables[5].name, "Lyle's Golden Syrup");
+    // 32 oz of pale malt.
+    assert!((r.fermentables[0].amount_kg - 0.907_185).abs() < 1e-5);
+    assert_eq!(r.fermentables[0].usage.as_deref(), Some("mash"));
+    assert_eq!(r.fermentables[2].usage.as_deref(), Some("steep"));
+    // 3.49 oz of Magnum, 60 minutes.
+    assert!((r.hops[0].amount_kg - 0.098_940).abs() < 1e-5);
+    assert_eq!(r.hops[0].time_min, Some(60.0));
+    // 148 degrees F and 180 fluid ounces.
+    let step = &r.mash_steps[0];
+    assert!((step.temp_c - 64.444).abs() < 1e-2);
+    assert!((step.infusion_l.unwrap() - 5.323).abs() < 1e-2);
+    assert_eq!(step.time_min, 75.0);
+    // 640 fluid ounces are 5 US gallons.
+    assert!((r.batch_volume_l.unwrap() - 18.927).abs() < 1e-2);
+    assert_eq!(r.efficiency_pct, Some(72.0));
+    assert_eq!(r.source.og_sg, Some(1.1));
+    assert_eq!(r.source.ibu, Some(60.0));
+    assert_eq!(r.source.srm, Some(10.0));
+    assert_eq!(r.yeasts[0].attenuation_pct, Some(69.0));
+    assert!(r.equipment.is_some());
+}
+
+#[test]
+fn bsmx_html_entities_and_control_characters() {
+    let xml = "<Selections><Data><Recipe><F_R_NAME>Caf&eacute; &amp; \u{1}Stout &#233;</F_R_NAME></Recipe></Data></Selections>";
+    let doc = bsmx::parse(xml.as_bytes()).unwrap();
+    assert_eq!(doc.recipes[0].name, "Caf\u{e9} & Stout \u{e9}");
+    // Strict XML does not accept the same entity.
+    assert_eq!(
+        beerxml::parse(b"<RECIPES><RECIPE><NAME>&eacute;</NAME></RECIPE></RECIPES>").unwrap_err(),
+        Error::EntityNotAllowed
+    );
+}
+
+#[test]
+fn bsmx_entity_attacks_are_rejected() {
+    assert_eq!(
+        bsmx::parse(&fixture("xml_bomb.xml")).unwrap_err(),
+        Error::DoctypeNotAllowed
+    );
+    assert_eq!(
+        bsmx::parse(&fixture("xml_external_entity.xml")).unwrap_err(),
+        Error::DoctypeNotAllowed
+    );
+    let undeclared =
+        b"<Selections><Data><Recipe><F_R_NAME>&xxe;</F_R_NAME></Recipe></Data></Selections>";
+    assert_eq!(
+        bsmx::parse(undeclared).unwrap_err(),
+        Error::EntityNotAllowed
+    );
+    let big = vec![b' '; 9 * 1024 * 1024];
+    assert_eq!(bsmx::parse(&big).unwrap_err(), Error::TooLarge);
+    let deep = format!("{}{}", "<a>".repeat(100), "</a>".repeat(100));
+    assert_eq!(bsmx::parse(deep.as_bytes()).unwrap_err(), Error::TooComplex);
+    assert!(matches!(
+        bsmx::parse(b"<RECIPES/>").unwrap_err(),
+        Error::Format(_)
+    ));
 }

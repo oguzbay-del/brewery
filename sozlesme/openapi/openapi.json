@@ -3164,7 +3164,7 @@
             ]
           },
           "format": {
-            "description": "`beerxml`, `beerjson` or `brewfather`.",
+            "description": "`beerxml`, `beerjson`, `brewfather` or `beersmith` (`.bsmx`).",
             "type": "string"
           },
           "id": {
@@ -40101,7 +40101,7 @@
             }
           },
           {
-            "description": "`beerxml`, `beerjson` or `brewfather` (default: detected)",
+            "description": "`beerxml`, `beerjson`, `brewfather` or `beersmith` (`.bsmx`) (default: detected)",
             "in": "query",
             "name": "format",
             "required": false,

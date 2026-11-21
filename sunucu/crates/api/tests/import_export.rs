@@ -21,6 +21,7 @@ use support::{Reply, req, send};
 
 const BEERXML: &str = include_str!("../../interchange/tests/fixtures/sample.beerxml");
 const BREWFATHER: &str = include_str!("../../interchange/tests/fixtures/brewfather.json");
+const BSMX: &str = include_str!("../../interchange/tests/fixtures/bsmx/recipe.bsmx");
 const BOMB: &str = include_str!("../../interchange/tests/fixtures/xml_bomb.xml");
 const XXE: &str = include_str!("../../interchange/tests/fixtures/xml_external_entity.xml");
 
@@ -124,6 +125,44 @@ async fn brewfather_import_creates_recipe_and_equipment(pool: PgPool) {
         .await
         .unwrap();
     assert_eq!(eq, 1);
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn bsmx_import_shows_source_and_calculated_values(pool: PgPool) {
+    let w = exporter_world(&pool).await;
+    // The format is detected from the content.
+    let up = upload(&w, "?file_name=recipe.bsmx", BSMX.as_bytes().to_vec()).await;
+    assert_eq!(up.status, StatusCode::CREATED, "{}", up.body);
+    assert_eq!(up.body["format"], "beersmith");
+    assert_eq!(up.body["recipes"][0]["name"], "Imperial Coffee Stout");
+    assert_eq!(up.body["recipes"][0]["lines"], json!([6, 3, 1, 0]));
+    let id = up.body["id"].as_str().unwrap().to_owned();
+    let apply = post(&w, &format!("/imports/{id}/apply"), json!({})).await;
+    assert_eq!(apply.status, StatusCode::CREATED, "{}", apply.body);
+    let r = &apply.body["recipes"][0];
+    assert_eq!(r["source"]["og_sg"], 1.1);
+    assert_eq!(r["source"]["ibu"], 60.0);
+    assert_eq!(r["source"]["srm"], 10.0);
+    let calc = &r["calculated"];
+    assert!(calc.is_object(), "no calculated values: {}", apply.body);
+    assert!(calc["og_sg"].as_f64().unwrap() > 1.0);
+    assert!(calc["ibu"].as_f64().unwrap() > 10.0);
+    assert!(calc["color_srm"].as_f64().unwrap() > 1.0);
+    let d = &apply.body["mapping_decisions"];
+    assert_eq!(d["format"], "beersmith");
+    let stored = get(&w, &format!("/imports/{id}")).await;
+    assert_eq!(stored.body["mapping_decisions"]["format"], "beersmith");
+
+    // An explicit format value works, and an attack is rejected for the format.
+    let up = upload(&w, "?format=bsmx", BSMX.as_bytes().to_vec()).await;
+    assert_eq!(up.status, StatusCode::CREATED, "{}", up.body);
+    let attack =
+        "<Selections><Data><Recipe><F_R_NAME>&xxe;</F_R_NAME></Recipe></Data></Selections>";
+    let r = upload(&w, "?format=bsmx", attack.as_bytes().to_vec()).await;
+    assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY, "{}", r.body);
+    assert_eq!(r.body["errors"][0]["code"], "xml_entity_not_allowed");
+    let r = upload(&w, "?format=bsmx", XXE.as_bytes().to_vec()).await;
+    assert_eq!(r.body["errors"][0]["code"], "xml_doctype_not_allowed");
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
