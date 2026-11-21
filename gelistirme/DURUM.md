@@ -3,10 +3,8 @@
 Each session reads this file first. Keep it to one page. Update it after each task. Write it in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
 **Stage:** 2, core API and data. Stage 1 is closed (ADR-0006).
-**Next task (new session):** these tasks are open or in progress (2026-11-21).
-- Chain B: T2.24 notifications → T2.29 support requests → T2.30 support panel (agent in progress).
-- T2.25 device intake and T2.26 import and export (agents in progress).
-- Done on 2026-11-21: T2.23, T2.27, T2.40, T2.37.
+**Next task (new session):** stage 2 tasks T2.23–T2.30, T2.37 and T2.40 are done (2026-11-21). Read the open stage 2 rows in `gelistirme/ISLER.md` for the next task.
+- In progress: the `.bsmx` import follow-up for T2.26. The sample file and the format reference come from `cadwallion/brewscribe` (read only, do not copy code).
 - Done on 2026-11-20: T2.19, T2.20, T2.21, T2.22, T2.28, T2.38, T2.39. Full api tests: 168 passed (with mailpit, NATS and the object store running).
 - 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
 - 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
@@ -58,6 +56,10 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 - T2.23: a yeast line in `count` units is not deducted (`skipped`, `unit_mismatch`). Add a pack amount to the batch actual record. The stock endpoints do not publish SSE events yet. Search has no paging (`limit` 1–50).
 - T2.37: `trash_list` and `trash_restore` have `x-permission: none`, because the permission depends on the kind (to be decided). Restore writes no audit row and no outbox event (to be decided). `require_for` scoped permissions do not apply to trash. The list has no cursor.
+
+- T2.24, T2.29, T2.30: APNs and GitHub App tokens are to be verified against the real services. The alert scope `vessel` has no effect. No job sets a request to `closed` after 14 days. `subscription_reverify` only writes an outbox event (no store client). `deletion_request` stays `pending`. The grant note in the Issue is not written. The `INTERNAL_PROXY_TOKEN` and oauth2-proxy header names are an assumption; T2.32 must confirm them. Compose and Helm do not have the `GITHUB_*`, `GITHUB_WEBHOOK_SECRET`, `APNS_*` and `/internal` settings yet (T2.32).
+- T2.25: the device body formats are to be verified with real devices (sources in `devices/src/formats.rs`). The iSpindel gravity unit is auto (1.2 or more is Plato) unless `calibration.gravity_unit` is set. ingest has no rate limit for each device. RAPT battery, aux and external temperature, bpm and iSpindel angle are not stored. Tank pairing (`vessel_id`) needs the Business tank endpoints. Set `INGEST_PUBLIC_URL` in production.
+- T2.26: the Brewfather parser assumptions (hop grams, `potential` in SG) are to be verified with a real export. The full export ZIP builds in memory (limit 512 MiB). Water profiles, devices, support requests, documents and photos are not in the full export (T2.31). The worker export loop needs `S3_ENDPOINT`. BeerJSON has no first wort or whirlpool use.
 
 ## Recent decisions
 
