@@ -2,10 +2,10 @@
 // The decision logic (`evaluate`) is pure and is covered by agent-auto-merge.test.mjs.
 // The gate fails closed: any missing, pending or failed signal means "do not merge".
 
+import { parseReviewRecords, reviewsForSha } from "./agent-review-record.mjs";
+
 export const LABELS = {
   optIn: "auto-merge",
-  claudeReview: "review:claude-ok",
-  gptReview: "review:gpt-ok",
   block: "do-not-merge"
 };
 
@@ -14,7 +14,8 @@ export const REQUIRED_WORKFLOWS = [
   { pattern: /^marketing-site\//, workflow: "Marketing site checks" },
   { pattern: /^\.github\/workflows\/marketing-site\.yml$/, workflow: "Marketing site checks" },
   { pattern: /^(agent-bridge\/|AGENT_TEAM\.md$|\.github\/workflows\/agent-bridge-checks\.yml$)/, workflow: "Agent bridge checks" },
-  { pattern: /^\.github\/(workflows|scripts)\//, workflow: "Actionlint" },
+  { pattern: /^\.github\/workflows\//, workflow: "Actionlint" },
+  { pattern: /^\.github\/scripts\//, workflow: "Agent bridge checks" },
   { pattern: /^(sunucu\/|formuller\/testler\/vektorler\/)/, workflow: "sunucu" },
   { pattern: /^(web\/|sozlesme\/istemci\/typescript\/src\/)/, workflow: "web" },
   { pattern: /^ios\//, workflow: "ios" },
@@ -27,11 +28,11 @@ export const REQUIRED_WORKFLOWS = [
 export const GPT_ALLOWED = [/^marketing-site\//, /^web-stratejisi\//];
 
 /** Check runs that belong to this gate. They are not evidence for or against a merge. */
-export const SELF_CHECKS = new Set(["auto-merge-gate", "auto-merge-clear-reviews"]);
+export const SELF_CHECKS = new Set(["auto-merge-gate", "auto-merge-clear-reviews", "claude-review", "gpt-review"]);
 
 const OK_CONCLUSIONS = new Set(["success", "neutral", "skipped"]);
 
-export function evaluate({ pr, files, checkRuns, statuses, workflowRuns }) {
+export function evaluate({ pr, files, checkRuns, statuses, workflowRuns, comments = [] }) {
   const reasons = [];
   const labels = new Set(pr.labels.map((l) => l.name));
   const branch = pr.head.ref;
@@ -44,8 +45,14 @@ export function evaluate({ pr, files, checkRuns, statuses, workflowRuns }) {
   if (!agent) reasons.push("head branch does not start with claude/ or gpt/");
   if (!labels.has(LABELS.optIn)) reasons.push(`label ${LABELS.optIn} is missing`);
   if (labels.has(LABELS.block)) reasons.push(`label ${LABELS.block} is set`);
-  if (!labels.has(LABELS.claudeReview)) reasons.push(`label ${LABELS.claudeReview} is missing`);
-  if (!labels.has(LABELS.gptReview)) reasons.push(`label ${LABELS.gptReview} is missing`);
+  // Both independent reviews must approve the current head SHA. Records come only from
+  // comments by github-actions[bot] (the Agent review workflow), not from labels.
+  const reviews = reviewsForSha(parseReviewRecords(comments), pr.head.sha);
+  for (const agent of ["claude", "gpt"]) {
+    const r = reviews[agent];
+    if (!r) reasons.push(`no ${agent} review for the head SHA`);
+    else if (r.verdict !== "approve") reasons.push(`${agent} review requests changes`);
+  }
   if (pr.mergeable !== true) reasons.push(`mergeable is ${pr.mergeable}`);
   if (!["clean", "has_hooks"].includes(pr.mergeable_state)) reasons.push(`mergeable_state is ${pr.mergeable_state}`);
 
@@ -55,6 +62,11 @@ export function evaluate({ pr, files, checkRuns, statuses, workflowRuns }) {
     const outside = files.filter((f) => !GPT_ALLOWED.some((p) => p.test(f)));
     if (outside.length) reasons.push(`gpt branch changes paths outside its scope: ${outside.slice(0, 5).join(", ")}`);
   }
+
+  // Workflow and gate changes always need a person: an automated merge must not change the
+  // code that decides or records reviews.
+  const protectedPaths = files.filter((f) => f.startsWith(".github/"));
+  if (protectedPaths.length) reasons.push(`changes under .github/ need a manual merge: ${protectedPaths.slice(0, 3).join(", ")}`);
 
   const required = new Set(REQUIRED_WORKFLOWS.filter((r) => files.some((f) => r.pattern.test(f))).map((r) => r.workflow));
   for (const name of required) {
@@ -131,13 +143,14 @@ async function run() {
   for (const { number } of open) {
     const pr = await getPr(repo, number);
     const sha = pr.head.sha;
-    const [files, checkRuns, combined, workflowRuns] = await Promise.all([
+    const [files, checkRuns, combined, workflowRuns, comments] = await Promise.all([
       paged(`/repos/${repo}/pulls/${number}/files`).then((f) => f.map((x) => x.filename)),
       paged(`/repos/${repo}/commits/${sha}/check-runs`, "check_runs"),
       api(`/repos/${repo}/commits/${sha}/status`),
-      paged(`/repos/${repo}/actions/runs?head_sha=${sha}`, "workflow_runs")
+      paged(`/repos/${repo}/actions/runs?head_sha=${sha}`, "workflow_runs"),
+      paged(`/repos/${repo}/issues/${number}/comments`)
     ]);
-    const decision = evaluate({ pr, files, checkRuns, statuses: combined.statuses ?? [], workflowRuns });
+    const decision = evaluate({ pr, files, checkRuns, statuses: combined.statuses ?? [], workflowRuns, comments });
 
     if (!decision.merge) {
       summary.push(`- #${number} (${sha.slice(0, 7)}): not merged\n${decision.reasons.map((r) => `  - ${r}`).join("\n")}`);
@@ -159,7 +172,7 @@ async function run() {
     // GitHub App and deploys from main by itself.
     const dispatch = [];
     if (files.some((f) => f.startsWith("agent-bridge/"))) dispatch.push("deploy-agent-bridge.yml");
-    if (files.some((f) => f.startsWith("marketing-site/"))) dispatch.push("marketing-site-pages.yml");
+    if (files.some((f) => f.startsWith("marketing-site/"))) dispatch.push("marketing-site-pages.yml", "pages-production.yml");
     for (const wf of dispatch) {
       await api(`/repos/${repo}/actions/workflows/${wf}/dispatches`, {
         method: "POST",

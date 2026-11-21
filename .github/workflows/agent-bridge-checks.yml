@@ -6,6 +6,7 @@ on:
       - "agent-bridge/**"
       - "AGENT_TEAM.md"
       - ".github/workflows/agent-bridge-checks.yml"
+      - ".github/scripts/**"
   push:
     branches:
       - main
@@ -13,6 +14,7 @@ on:
       - "agent-bridge/**"
       - "AGENT_TEAM.md"
       - ".github/workflows/agent-bridge-checks.yml"
+      - ".github/scripts/**"
 
 permissions:
   contents: read
@@ -21,7 +23,7 @@ jobs:
   typecheck:
     name: typecheck, bundle, MCP e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: agent-bridge
@@ -42,3 +44,8 @@ jobs:
         run: npx wrangler deploy --dry-run --outdir dist
       - name: MCP end-to-end test (2025 and 2026 protocol clients)
         run: npm run test:e2e
+      - name: Runner integration test (Worker + mock GitHub/OpenAI + Claude CLI stub)
+        run: npm run test:runners
+      - name: Gate, review record and Pages check unit tests
+        working-directory: .
+        run: node --test .github/scripts/agent-auto-merge.test.mjs .github/scripts/pages-production-check.test.mjs

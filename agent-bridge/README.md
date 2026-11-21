@@ -80,6 +80,43 @@ For Claude Code on the web or in GitHub Actions, put the two values in the envir
 
 Use the remote MCP tool with the GPT token and a narrow tool list. See `mcp.gpt.example.json`. Field names follow the current OpenAI documentation (to be verified before first use).
 
+## Runners (GitHub Actions)
+
+| Workflow | Job | What it does |
+| --- | --- | --- |
+| **Agent runners** (every 30 min, manual) | `claude` | Resumes its claimed task or claims one queued task. Runs Claude Code on branch `claude/task-<id>`, commits, pushes, opens a PR with label `auto-merge`, completes the task with branch and PR URL, asks GPT for a review. |
+| | `gpt` | Resumes or claims one GPT task. Answers it with the OpenAI Responses API (strict JSON schema). It can create follow-up tasks for Claude. GPT does not change code. |
+| **Agent review** (PR opened/updated) | `claude-review`, `gpt-review` | Two independent reviews of the PR diff. Each posts a machine-readable record for the head SHA (author `github-actions[bot]`). |
+| **Agent auto-merge** | `auto-merge-gate` | Merges only when CI is green and both records approve the head SHA (see `AGENT_TEAM.md`; changes under `.github/` need a manual merge). |
+| **Agent config check** (daily, PR, manual) | | Shows which settings exist (true/false) and runs `runner/live-check.mjs` against the deployed Worker. |
+| **Pages production check** (after merge) | | Waits for the Cloudflare Pages production deployment of the merged commit, checks `gristora.com`, rolls back on failure. |
+
+Limits: one task per run and agent, one run per agent at a time (`concurrency`), job timeouts, `--max-budget-usd` for Claude, retries with backoff for HTTP 429/5xx. The Claude CLI runs with only `ANTHROPIC_API_KEY` in its environment; the runner (not Claude) pushes and opens the PR. Checkouts use `persist-credentials: false`.
+
+### Settings (owner, one time)
+
+GitHub › Settings › Secrets and variables › Actions:
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | secret | Cloudflare API token: Workers Scripts Edit, Cloudflare Pages Edit (account scope) |
+| `CLOUDFLARE_ACCOUNT_ID` | secret | Cloudflare account ID |
+| `MCP_TOKEN_CLAUDE` | secret | `openssl rand -hex 32` (the deploy copies it to the Worker) |
+| `MCP_TOKEN_GPT` | secret | `openssl rand -hex 32`, a different value |
+| `ANTHROPIC_API_KEY` | secret | Anthropic API key |
+| `OPENAI_API_KEY` | secret | OpenAI API key |
+| `AGENT_GITHUB_TOKEN` | secret | Fine-grained PAT or GitHub App token for this repository: Contents and Pull requests read/write. A PR opened with `GITHUB_TOKEN` starts no CI, so the Claude runner needs this token. |
+| `AGENT_BRIDGE_URL` | variable | The `workers.dev` URL from the first deploy (no `/mcp`) |
+| `OPENAI_MODEL` | variable | The OpenAI model ID for the GPT agent |
+
+### Tests
+
+- `npm run test:e2e`: MCP protocol, identity and authorization (20 checks).
+- `npm run test:runners`: real Worker + mock GitHub/OpenAI + Claude CLI stub + local git remote (19 checks: hand-off both ways, resume, PR creation, review records, gate decisions, no token leak to the Claude CLI).
+- `npm run live-check` with `AGENT_BRIDGE_URL`, `MCP_TOKEN_CLAUDE`, `MCP_TOKEN_GPT`: the acceptance flow against a deployed Worker.
+
+A passing local test does not prove a live deployment. The live evidence is the **Deploy GRISTORA Agent Bridge** and **Agent config check** runs.
+
 ## Security and rollout
 
 - The bridge only coordinates. It does not run commands, change Git refs, merge or deploy. Merge and deploy stay in GitHub Actions with the gates in `AGENT_TEAM.md`.

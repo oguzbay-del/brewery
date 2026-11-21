@@ -11,7 +11,7 @@
 
 1. Create a task with a precise scope, acceptance criteria, affected paths, and test commands (`create_task`; the assignee defaults to the other agent).
 2. Assign each task to one agent. Do not assign overlapping files to parallel agents.
-3. Claim the task before work starts (`claim_task`).
+3. Claim the task before work starts (`claim_task`). A runner resumes its own claimed task before it claims a new one.
 4. Use a separate branch for every task: `claude/<topic>` for Claude, `gpt/<topic>` for GPT. Do not commit directly to `main`.
 5. Open a pull request and include test evidence.
 6. Ask the other agent for an independent review through `send_message`.
@@ -25,12 +25,15 @@ Automatic merge and production deployment run only through the **Agent auto-merg
 A PR merges automatically only when **all** of these are true:
 
 - The head branch is `claude/*` or `gpt/*` in this repository, and the PR targets `main` and is not a draft.
-- Labels `auto-merge`, `review:claude-ok` and `review:gpt-ok` are set, and `do-not-merge` is not set. The reviewing agent sets its own review label only after a clean review of the current head.
-- A new commit removes both review labels, so each review applies to the current head SHA.
+- Label `auto-merge` is set and `do-not-merge` is not set.
+- The **Agent review** workflow posted an approving Claude record and an approving GPT record for the current head SHA. Records count only when `github-actions[bot]` wrote them, so a person cannot add one by hand. A record with a `blocking` or `major` finding, a truncated diff or an invalid model answer is never an approval. The `review:*-ok` labels are only a visible hint.
 - Every check run and commit status on the head SHA is complete and successful (or neutral/skipped). A pending or failed check stops the merge. This includes Cloudflare Pages and Workers Builds.
 - The workflow for each changed area has a successful run on the head SHA: `marketing-site/**` needs **Marketing site checks** (build, browser QA, Lighthouse), `agent-bridge/**` needs **Agent bridge checks**, workflow changes need **Actionlint**, product paths need their own workflows (`sunucu`, `web`, `ios`, `sozlesme`, `altyapi`, `belgeler`).
 - GitHub reports the PR as mergeable with state `clean` (no conflict, not behind when branch protection requires it).
 - A `gpt/*` branch changes only `marketing-site/` and `web-stratejisi/` (see `marketing-site/CHATGPT-SCOPE.md`).
+- The PR changes nothing under `.github/`. Workflow and gate changes always need a manual merge by the owner.
+
+Known limit: any workflow that runs with a write `GITHUB_TOKEN` can also post as `github-actions[bot]`. A branch that adds such a workflow could forge a review record for another PR. Keep **Settings › Actions › General › Workflow permissions** at *Read repository contents*, and review every new workflow file by hand.
 
 The merge is a squash merge with the expected head SHA, so GitHub refuses it if the head moved after evaluation.
 

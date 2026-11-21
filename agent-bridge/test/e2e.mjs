@@ -2,6 +2,9 @@
 // with a 2025-revision client (MCP SDK v1) as Claude and a 2026-revision client (SDK v2) as GPT.
 import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Client as LegacyClient } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport as LegacyTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
@@ -13,6 +16,7 @@ const tokens = { claude: randomBytes(24).toString("hex"), gpt: randomBytes(24).t
 const dev = spawn(
   "npx",
   ["wrangler", "dev", "--ip", "127.0.0.1", "--port", String(port),
+    "--persist-to", mkdtempSync(join(tmpdir(), "bridge-state-")),
     "--var", `MCP_TOKEN_CLAUDE:${tokens.claude}`, "--var", `MCP_TOKEN_GPT:${tokens.gpt}`],
   { stdio: ["ignore", "pipe", "pipe"], detached: true }
 );

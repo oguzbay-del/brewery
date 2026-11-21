@@ -59,6 +59,23 @@ jobs:
           npx wrangler deploy --message "github ${GITHUB_SHA::7}" | tee deploy.log
           url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -1)
           echo "url=${url}" >> "$GITHUB_OUTPUT"
+      - name: Sync agent tokens to Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          MCP_TOKEN_CLAUDE: ${{ secrets.MCP_TOKEN_CLAUDE }}
+          MCP_TOKEN_GPT: ${{ secrets.MCP_TOKEN_GPT }}
+        run: |
+          # GitHub secrets are the single source; the values never appear in the log.
+          for name in MCP_TOKEN_CLAUDE MCP_TOKEN_GPT; do
+            value="${!name}"
+            if [ -n "$value" ]; then
+              printf '%s' "$value" | npx wrangler secret put "$name" >/dev/null
+              echo "Worker secret $name synced."
+            else
+              echo "::warning::GitHub secret $name is not set; the Worker secret is unchanged."
+            fi
+          done
       - name: Health check
         env:
           URL: ${{ steps.deploy.outputs.url }}
@@ -73,11 +90,20 @@ jobs:
           done
           code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$URL/mcp" -H 'content-type: application/json' -d '{}')
           [ "$code" = 401 ] || { echo "::error::/mcp without a token returned $code, expected 401."; exit 1; }
-          secrets=$(npx wrangler secret list --format json)
-          for name in MCP_TOKEN_CLAUDE MCP_TOKEN_GPT; do
-            echo "$secrets" | grep -q "\"$name\"" || echo "::warning::Worker secret $name is not set. That agent cannot connect."
-          done
           echo "Health check passed: $URL"
+          echo "## Agent bridge" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployed: $URL — /health ok, /mcp without a token 401" >> "$GITHUB_STEP_SUMMARY"
+      - name: Live acceptance check
+        env:
+          AGENT_BRIDGE_URL: ${{ steps.deploy.outputs.url }}
+          MCP_TOKEN_CLAUDE: ${{ secrets.MCP_TOKEN_CLAUDE }}
+          MCP_TOKEN_GPT: ${{ secrets.MCP_TOKEN_GPT }}
+        run: |
+          if [ -z "$MCP_TOKEN_CLAUDE" ] || [ -z "$MCP_TOKEN_GPT" ]; then
+            echo "::warning::MCP_TOKEN_CLAUDE/MCP_TOKEN_GPT are not GitHub secrets; the live acceptance check is skipped."
+            exit 0
+          fi
+          node runner/live-check.mjs | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Roll back on a failed health check
         if: failure() && steps.deploy.outcome == 'success'
         env:

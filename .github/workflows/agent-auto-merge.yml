@@ -12,6 +12,8 @@ on:
     workflows:
       - Marketing site checks
       - Agent bridge checks
+      - Agent review
+      - Agent config check
       - Actionlint
       - sunucu
       - web
@@ -55,6 +57,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
         run: |
+          # Labels are only a visible hint; the gate reads the review records for the head SHA.
           for label in "review:claude-ok" "review:gpt-ok"; do
             gh api -X DELETE "repos/${REPO}/issues/${PR}/labels/${label}" >/dev/null 2>&1 || true
           done
