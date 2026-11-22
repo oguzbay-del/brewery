@@ -6,7 +6,7 @@ Do not restore the agent bridge (Cloudflare Worker `gristora-agent-bridge`), age
 
 ## Task board (GitHub labels)
 
-The board is the set of open issues and pull requests with these labels. A closed issue is done.
+The board is the set of open issues and pull requests with these labels. A closed issue is done. An issue has one `status:` label only. When you set a new status label, remove the old one.
 
 | Label | Meaning |
 |---|---|
