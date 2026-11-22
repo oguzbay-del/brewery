@@ -73,12 +73,12 @@ CREATE FUNCTION cancel_account_deletion()
     RETURNS SETOF account_deletion_requests
     LANGUAGE sql VOLATILE
     SET search_path = pg_catalog, public, pg_temp
-    AS $
+    AS $cancel$
     UPDATE account_deletion_requests AS r
     SET status = 'cancelled', restored_at = now()
     WHERE r.user_id = app_user_id() AND r.status = 'pending' AND r.purge_at > now()
     RETURNING r.*
-$;
+$cancel$;
 
 -- The row lock remains held until the caller's transaction ends. Replicas skip rows claimed
 -- by another worker. The worker marks a request done only after its purge work succeeds.
