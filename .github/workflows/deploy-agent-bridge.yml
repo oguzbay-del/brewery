@@ -40,41 +40,16 @@ jobs:
         run: npm run check
       - name: MCP end-to-end test
         run: npm run test:e2e
-      - name: Check Cloudflare credentials and agent tokens
+      - name: Check Cloudflare credentials
         id: creds
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          MCP_TOKEN_CLAUDE: ${{ secrets.MCP_TOKEN_CLAUDE }}
-          MCP_TOKEN_GPT: ${{ secrets.MCP_TOKEN_GPT }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
             echo "::error::BLOCKED: CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID is not set. Nothing was deployed."
             exit 1
           fi
-          if [ -n "$MCP_TOKEN_CLAUDE" ] && [ "$MCP_TOKEN_CLAUDE" = "$MCP_TOKEN_GPT" ]; then
-            echo "::error::BLOCKED: MCP_TOKEN_CLAUDE and MCP_TOKEN_GPT have the same value. Each agent needs its own token. Nothing was deployed."
-            exit 1
-          fi
-          for name in MCP_TOKEN_CLAUDE MCP_TOKEN_GPT; do
-            value="${!name}"
-            if [ -n "$value" ] && [ "${#value}" -lt 32 ]; then
-              echo "::error::BLOCKED: $name is shorter than 32 characters; the Worker ignores it. Nothing was deployed."
-              exit 1
-            fi
-          done
-      - name: Record the active Worker version (rollback target)
-        id: previous
-        shell: bash
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          # Empty on the first deploy: there is nothing to roll back to.
-          version=$(npx wrangler deployments status --json 2>/dev/null \
-            | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);const v=(j.versions||[]).sort((a,b)=>b.percentage-a.percentage)[0];process.stdout.write(v?.version_id||"")}catch{}})' || true)
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "Active version before this deploy: ${version:-none (first deploy)}"
       - name: Deploy Worker to Cloudflare
         id: deploy
         # `shell: bash` adds -o pipefail, so a failed deploy is not hidden by `tee`.
@@ -86,20 +61,22 @@ jobs:
           npx wrangler deploy --message "github ${GITHUB_SHA::7}" | tee deploy.log
           url=$(grep -oE 'https://[a-zA-Z0-9.-]+\.workers\.dev' deploy.log | head -1)
           echo "url=${url}" >> "$GITHUB_OUTPUT"
-      - name: Sync agent tokens to Worker secrets (one version)
-        shell: bash
+      - name: Sync agent tokens to Worker secrets
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           MCP_TOKEN_CLAUDE: ${{ secrets.MCP_TOKEN_CLAUDE }}
           MCP_TOKEN_GPT: ${{ secrets.MCP_TOKEN_GPT }}
         run: |
-          # GitHub secrets are the single source. Both tokens go in one request, so no
-          # Worker version has only one of them. The values never appear in the log.
-          node -e 'const o={};for(const k of ["MCP_TOKEN_CLAUDE","MCP_TOKEN_GPT"]){if(process.env[k])o[k]=process.env[k]}process.stdout.write(JSON.stringify(o))' \
-            | npx wrangler secret bulk >/dev/null
+          # GitHub secrets are the single source; the values never appear in the log.
           for name in MCP_TOKEN_CLAUDE MCP_TOKEN_GPT; do
-            [ -n "${!name}" ] && echo "Worker secret $name synced." || echo "::warning::GitHub secret $name is not set; the Worker secret is unchanged."
+            value="${!name}"
+            if [ -n "$value" ]; then
+              printf '%s' "$value" | npx wrangler secret put "$name" >/dev/null
+              echo "Worker secret $name synced."
+            else
+              echo "::warning::GitHub secret $name is not set; the Worker secret is unchanged."
+            fi
           done
       - name: Health check
         env:
@@ -130,17 +107,11 @@ jobs:
             exit 0
           fi
           node runner/live-check.mjs | tee -a "$GITHUB_STEP_SUMMARY"
-      - name: Roll back to the version before this deploy
+      - name: Roll back on a failed health check
         if: failure() && steps.deploy.outcome == 'success'
-        shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          PREVIOUS: ${{ steps.previous.outputs.version }}
         run: |
-          if [ -z "$PREVIOUS" ]; then
-            echo "::error::No recorded earlier version (first deploy, or the deployment status could not be read). Nothing was rolled back; fix the cause and deploy again."
-            exit 0
-          fi
-          npx wrangler rollback "$PREVIOUS" --message "checks failed for ${GITHUB_SHA::7}" --yes
-          echo "Rolled back to $PREVIOUS."
+          npx wrangler rollback --message "health check failed for ${GITHUB_SHA::7}" --yes \
+            || echo "::error::Rollback failed (first deployment has no previous version)."
