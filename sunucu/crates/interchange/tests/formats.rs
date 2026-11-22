@@ -57,7 +57,10 @@ fn beerxml_missing_required_field_names_record_and_field() {
 
 #[test]
 fn beerxml_writer_emits_required_fields_and_zero_defaults() {
-    let mut recipe = beerxml::parse(&fixture("sample.beerxml")).unwrap().recipes.remove(0);
+    let mut recipe = beerxml::parse(&fixture("sample.beerxml"))
+        .unwrap()
+        .recipes
+        .remove(0);
     recipe.brewer = None;
     recipe.hops[0].alpha_pct = None;
     recipe.fermentables[0].yield_pct = None;
@@ -193,7 +196,10 @@ fn beerxml_estimates_with_units() {
     let xml = source
         .replace("<OG>1.052</OG>", "<OG>1.040</OG><EST_OG>1.052 sg</EST_OG>")
         .replace("<FG>1.011</FG>", "<FG>1.020</FG><EST_FG>1.011 sg</EST_FG>")
-        .replace("<EST_COLOR>7.5</EST_COLOR>", "<EST_COLOR>19.7 EBC</EST_COLOR>");
+        .replace(
+            "<EST_COLOR>7.5</EST_COLOR>",
+            "<EST_COLOR>19.7 EBC</EST_COLOR>",
+        );
     let r = &beerxml::parse(xml.as_bytes()).unwrap().recipes[0];
     assert_eq!(r.source.og_sg, Some(1.052));
     assert_eq!(r.source.fg_sg, Some(1.011));
