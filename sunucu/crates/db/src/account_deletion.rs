@@ -117,7 +117,9 @@ pub async fn cancel_account_deletion(
     let row = sqlx::query("SELECT * FROM cancel_account_deletion()")
         .fetch_optional(&mut *conn)
         .await?;
-    row.as_ref().map(AccountDeletionRequest::from_row).transpose()
+    row.as_ref()
+        .map(AccountDeletionRequest::from_row)
+        .transpose()
 }
 
 /// Claims due pending requests. Keep the transaction open while processing the returned rows.
