@@ -351,11 +351,14 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     let document = Uuid::now_v7();
     let file_attachment = Uuid::now_v7();
     let photo = Uuid::now_v7();
+    let note_attachment = Uuid::now_v7();
     let document_bytes = b"SCANNED_DOCUMENT_BYTES";
     let file_bytes = b"ATTACHED_DOCUMENT_BYTES";
+    let note_bytes = b"ATTACHED_NOTE_BYTES";
     let photo_bytes = b"PHOTO_BYTES";
     store.insert_bytes("private/scanned-document", document_bytes);
     store.insert_bytes("private/file-attachment", file_bytes);
+    store.insert_bytes("private/note-attachment", note_bytes);
     store.insert_bytes("private/photo-attachment", photo_bytes);
 
     sqlx::query(
@@ -421,7 +424,9 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
          VALUES ($1, $2, 'file', 'batch', $3, 'private/file-attachment',
                  'application/pdf', $4, decode(repeat('ef', 32), 'hex'), 'Recipe notes'),
                 ($5, $2, 'photo', 'batch', $3, 'private/photo-attachment',
-                 'image/jpeg', $6, decode(repeat('12', 32), 'hex'), 'Fermentation photo')",
+                 'image/jpeg', $6, decode(repeat('12', 32), 'hex'), 'Fermentation photo'),
+                ($7, $2, 'note', 'batch', $3, 'private/note-attachment',
+                 'text/plain', $8, decode(repeat('34', 32), 'hex'), 'Brew log note')",
     )
     .bind(file_attachment)
     .bind(s.ws)
@@ -429,6 +434,8 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     .bind(i64::try_from(file_bytes.len()).unwrap())
     .bind(photo)
     .bind(i64::try_from(photo_bytes.len()).unwrap())
+    .bind(note_attachment)
+    .bind(i64::try_from(note_bytes.len()).unwrap())
     .execute(&base)
     .await
     .unwrap();
@@ -460,6 +467,7 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     let file_paths = [
         format!("files/documents/scanned-{document}"),
         format!("files/documents/attachment-{file_attachment}"),
+        format!("files/documents/attachment-{note_attachment}"),
         format!("files/photos/{photo}"),
     ];
     for name in &file_paths {
@@ -469,9 +477,11 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     assert!(!contains(&zip, "INTERNAL_STAFF_NOTE"));
     assert!(contains(&zip, document_bytes_as_str(document_bytes)));
     assert!(contains(&zip, document_bytes_as_str(file_bytes)));
+    assert!(contains(&zip, document_bytes_as_str(note_bytes)));
     assert!(contains(&zip, document_bytes_as_str(photo_bytes)));
     assert!(!contains(&zip, "private/scanned-document"));
     assert!(!contains(&zip, "private/file-attachment"));
+    assert!(!contains(&zip, "private/note-attachment"));
     assert!(!contains(&zip, "private/photo-attachment"));
     assert!(!contains(&zip, &"cd".repeat(32)));
     for secret_field in [
