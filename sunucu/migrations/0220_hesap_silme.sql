@@ -41,9 +41,7 @@ GRANT UPDATE (status, restored_at) ON account_deletion_requests TO app_worker;
 
 -- A second request while one is pending returns the existing request.
 CREATE FUNCTION request_account_deletion(p_grace_days integer DEFAULT 30)
-    RETURNS TABLE (
-        id uuid, user_id uuid, requested_at timestamptz, purge_at timestamptz,
-        status text, restored_at timestamptz)
+    RETURNS SETOF account_deletion_requests
     LANGUAGE plpgsql VOLATILE
     SET search_path = pg_catalog, public, pg_temp
     AS $$
@@ -58,7 +56,7 @@ BEGIN
         RAISE EXCEPTION 'grace period must be positive'
             USING ERRCODE = 'check_violation';
     END IF;
-    IF NOT EXISTS (SELECT 1 FROM users WHERE id = v_user_id AND deleted_at IS NULL) THEN
+    IF NOT EXISTS (SELECT 1 FROM users AS u WHERE u.id = v_user_id AND u.deleted_at IS NULL) THEN
         RAISE EXCEPTION 'active user is required'
             USING ERRCODE = 'insufficient_privilege';
     END IF;
@@ -67,24 +65,20 @@ BEGIN
     VALUES (v_user_id, now() + make_interval(days => p_grace_days))
     ON CONFLICT (user_id) WHERE status = 'pending'
     DO UPDATE SET status = 'pending'
-    RETURNING account_deletion_requests.id, account_deletion_requests.user_id,
-              account_deletion_requests.requested_at, account_deletion_requests.purge_at,
-              account_deletion_requests.status, account_deletion_requests.restored_at;
+    RETURNING account_deletion_requests.*;
 END
 $$;
 
 CREATE FUNCTION cancel_account_deletion()
-    RETURNS TABLE (
-        id uuid, user_id uuid, requested_at timestamptz, purge_at timestamptz,
-        status text, restored_at timestamptz)
+    RETURNS SETOF account_deletion_requests
     LANGUAGE sql VOLATILE
     SET search_path = pg_catalog, public, pg_temp
-    AS $$
-    UPDATE account_deletion_requests
+    AS $
+    UPDATE account_deletion_requests AS r
     SET status = 'cancelled', restored_at = now()
-    WHERE user_id = app_user_id() AND status = 'pending' AND purge_at > now()
-    RETURNING id, user_id, requested_at, purge_at, status, restored_at
-$$;
+    WHERE r.user_id = app_user_id() AND r.status = 'pending' AND r.purge_at > now()
+    RETURNING r.*
+$;
 
 -- The row lock remains held until the caller's transaction ends. Replicas skip rows claimed
 -- by another worker. The worker marks a request done only after its purge work succeeds.
