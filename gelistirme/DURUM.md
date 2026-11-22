@@ -9,7 +9,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
 - 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
 - 2026-11-22: ChatGPT is a second contributor (owner decision). The shared board is the GitHub labels. Before you start a task, read the open issues and PRs. Review a ChatGPT PR before the next task. ChatGPT issues: #193 (G2), #194 (T2.36 draft), #195 (T2.33 scenarios), #196 (P2). Claude issues: #197 (T2.32), #198 (T2.31). Rules: `marketing-site/CHATGPT-SCOPE.md`.
-- 2026-11-22: Claude merged PR #201 (P2 draft; #196 closed). PR #199 (G2) and PR #200 (T2.33 scenarios) need changes (review comments on the PRs). T2.31 (#198) moved to ChatGPT (owner request: save tokens); Claude reviews and tests the PR. Next Claude task: T2.32 (#197).
+- 2026-11-22: Claude merged PR #201 (P2 draft; #196 closed). Claude merged PR #199 (G2 report, 9 product-name matches) and PR #200 (T2.33 scenarios; Claude fixed the path names and the 503 precondition). The message channel is active (`coord/*` branches). T2.31 (#198) moved to ChatGPT (owner request: save tokens); Claude reviews and tests the PR. Next Claude task: T2.32 (#197).
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment
