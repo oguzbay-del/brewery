@@ -126,22 +126,27 @@ fn json_bytes(v: &Value) -> Vec<u8> {
 struct LimitedZip {
     inner: ZipWriter,
     total_bytes: usize,
+    limit_bytes: usize,
 }
 
 impl LimitedZip {
     fn new() -> Self {
-        Self { inner: ZipWriter::new(), total_bytes: 0 }
+        Self::with_limit(MAX_BYTES)
+    }
+
+    fn with_limit(limit_bytes: usize) -> Self {
+        Self { inner: ZipWriter::new(), total_bytes: 0, limit_bytes }
     }
 
     fn remaining(&self) -> usize {
-        MAX_BYTES.saturating_sub(self.total_bytes)
+        self.limit_bytes.saturating_sub(self.total_bytes)
     }
 
     fn add(&mut self, name: &str, data: &[u8]) -> std::result::Result<(), interchange::Error> {
         let next = self.total_bytes.checked_add(data.len()).ok_or_else(|| {
             interchange::Error::Format("EXPORT_TOO_LARGE: export exceeds 512 MiB".into())
         })?;
-        if next > MAX_BYTES {
+        if next > self.limit_bytes {
             return Err(interchange::Error::Format(
                 "EXPORT_TOO_LARGE: export exceeds 512 MiB".into(),
             ));
@@ -153,7 +158,7 @@ impl LimitedZip {
 
     fn finish(self) -> std::result::Result<Vec<u8>, interchange::Error> {
         let bytes = self.inner.finish()?;
-        if bytes.len() > MAX_BYTES {
+        if bytes.len() > self.limit_bytes {
             return Err(interchange::Error::Format(
                 "EXPORT_TOO_LARGE: ZIP archive exceeds 512 MiB".into(),
             ));
@@ -699,6 +704,24 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStor
         content_type: "application/zip",
         ext: "zip",
     })
+}
+
+
+#[cfg(test)]
+mod limited_zip_tests {
+    use super::*;
+
+    #[test]
+    fn counts_every_entry_and_checks_final_archive_overhead() {
+        let mut zip = LimitedZip::with_limit(5);
+        assert!(zip.add("first", b"123").is_ok());
+        let err = zip.add("second", b"456").unwrap_err().to_string();
+        assert!(err.contains("EXPORT_TOO_LARGE"));
+
+        let mut zip = LimitedZip::with_limit(4);
+        assert!(zip.add("entry", b"1234").is_ok());
+        assert!(zip.finish().is_err());
+    }
 }
 
 fn context(ws: Uuid) -> DbContext {
