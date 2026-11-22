@@ -33,8 +33,6 @@ CREATE POLICY owner_all ON account_deletion_requests TO app_owner
 -- These policies are only used by the SECURITY DEFINER anonymisation function.
 CREATE POLICY account_delete_owner ON passkeys TO app_owner
     USING (true) WITH CHECK (true);
-CREATE POLICY account_delete_owner ON push_targets TO app_owner
-    USING (true) WITH CHECK (true);
 
 GRANT SELECT, INSERT ON account_deletion_requests TO app_api;
 GRANT UPDATE (status, restored_at) ON account_deletion_requests TO app_api;
