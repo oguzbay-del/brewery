@@ -86,6 +86,8 @@ impl Recipe {
             notes: notes.map(str::to_owned),
             kind: t(v, "kind").unwrap_or_else(|| "all_grain".to_owned()),
             style: None,
+            brewer: None,
+            style_details: None,
             ibu_method: v
                 .get("options")
                 .and_then(|o| o.get("ibu_equation"))
@@ -147,6 +149,8 @@ impl Recipe {
                         (Some(a), Some(b)) => Some(f64::midpoint(a, b)),
                         (a, b) => a.or(b),
                     },
+                    amount: None,
+                    amount_is_weight: None,
                     packs: f(l, "packs"),
                 })
                 .collect(),
