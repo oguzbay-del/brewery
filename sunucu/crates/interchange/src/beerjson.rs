@@ -205,6 +205,8 @@ fn parse_recipe(r: &Value) -> Recipe {
             attenuation_pct: y
                 .get("attenuation")
                 .and_then(|a| plain(a.get("minimum")).or_else(|| plain(Some(a)))),
+            amount: None,
+            amount_is_weight: None,
             packs: Some(1.0),
         })
         .collect();
@@ -277,6 +279,8 @@ fn parse_recipe(r: &Value) -> Recipe {
             .get("style")
             .and_then(|s| str_of(s, "name"))
             .map(str::to_owned),
+        brewer: None,
+        style_details: None,
         ibu_method,
         batch_volume_l: batch,
         boil_volume_l: boil_volume,
