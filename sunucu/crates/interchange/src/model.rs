@@ -65,7 +65,7 @@ pub struct Yeast {
     pub form: Option<String>,
     /// Attenuation, percent.
     pub attenuation_pct: Option<f64>,
-    /// Amount in the source unit (BeerXML: L or kg).
+    /// Amount in the source unit (`BeerXML`: L or kg).
     #[serde(default)]
     pub amount: Option<f64>,
     /// Whether the source amount is a weight rather than a volume.
@@ -126,7 +126,7 @@ pub struct Equipment {
     pub boil_off_l_per_h: Option<f64>,
 }
 
-/// Style metadata from a BeerXML STYLE record.
+/// Style metadata from a `BeerXML` STYLE record.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct BeerStyle {
     pub name: String,
@@ -167,7 +167,7 @@ pub struct Recipe {
     /// Brewer name when the source format provides it.
     #[serde(default)]
     pub brewer: Option<String>,
-    /// Full BeerXML style metadata when available.
+    /// Full `BeerXML` style metadata when available.
     #[serde(default)]
     pub style_details: Option<BeerStyle>,
     /// Bitterness formula the source names (`tinseth`, `rager`, ...).
