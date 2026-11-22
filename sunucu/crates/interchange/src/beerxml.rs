@@ -9,7 +9,7 @@
 //! - `OG` and `FG` are measured values in the specification. They are the source values when the
 //!   file has no estimate. `EST_OG` and `EST_FG` (text with a unit, for example `1.052 sg`) win.
 //! - `EST_COLOR` is text with a unit. A unit `EBC` is converted to SRM; any other unit is SRM.
-//! - Required fields of BeerXML records are checked and errors name the record and field.
+//! - Required fields of `BeerXML` records are checked and errors name the record and field.
 //! - Yeast `AMOUNT` and `AMOUNT_IS_WEIGHT` are preserved; they are not interpreted as pack counts.
 
 use std::fmt::Write as _;
