@@ -525,11 +525,10 @@ pub fn write(recipes: &[Recipe]) -> String {
             if f.color_srm.is_none() {
                 let _ = writeln!(o, "        <!-- Missing color; BeerXML requires COLOR. -->");
             }
-            let color = f.color_srm.unwrap_or(0.0);
-            let beerxml_color = if f.grain_type.as_deref() == Some("extract") {
-                color
-            } else {
-                ((color + 0.76) / 1.3546).max(0.0)
+            let beerxml_color = match f.color_srm {
+                None => 0.0,
+                Some(color) if f.grain_type.as_deref() == Some("extract") => color,
+                Some(color) => ((color + 0.76) / 1.3546).max(0.0),
             };
             tag(&mut o, 8, "COLOR", &beerxml_color.to_string());
             if f.usage.as_deref() == Some("steep") {
