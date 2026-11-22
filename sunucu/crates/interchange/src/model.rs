@@ -66,10 +66,10 @@ pub struct Yeast {
     /// Attenuation, percent.
     pub attenuation_pct: Option<f64>,
     /// Amount in the source unit (`BeerXML`: L or kg).
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub amount: Option<f64>,
     /// Whether the source amount is a weight rather than a volume.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub amount_is_weight: Option<bool>,
     /// Packs.
     pub packs: Option<f64>,
@@ -165,10 +165,10 @@ pub struct Recipe {
     /// Style name in the source.
     pub style: Option<String>,
     /// Brewer name when the source format provides it.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub brewer: Option<String>,
     /// Full `BeerXML` style metadata when available.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub style_details: Option<BeerStyle>,
     /// Bitterness formula the source names (`tinseth`, `rager`, ...).
     pub ibu_method: Option<String>,
