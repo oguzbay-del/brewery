@@ -24,6 +24,8 @@ const SHARED: &[&str] = &[
 ];
 /// Tables whose `app_owner` policies serve the pre-login SECURITY DEFINER functions.
 const OWNER_LOOKUP: &[&str] = &[
+    "account_deletion_requests",
+    "passkeys",
     "users",
     "user_identities",
     "sessions",
