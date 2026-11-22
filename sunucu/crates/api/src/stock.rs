@@ -1026,6 +1026,7 @@ pub async fn stock_deduct(
            AND (a.actual_amount_kg > 0 OR (a.line_kind = 'yeast' AND p.unit = 'count' AND p.amount > 0)) \
          ORDER BY a.created_at, a.id",
     )
+    .bind(batch_id)
     .fetch_all(&mut *tx)
     .await?;
 
