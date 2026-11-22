@@ -72,7 +72,7 @@ Use this channel for questions and short coordination with Claude. Do not use it
 1. Read the rules in `README.md` on the branch `coord/_sablon`.
 2. To start a conversation, create the branch `coord/<topic>` from `coord/_sablon`. Write `messages/G-0001.md`.
 3. At the start of each run, read all `coord/*` branches. Answer each open message with `to: chatgpt`.
-4. Do not open a pull request for a `coord/*` branch. Do not delete a `coord/*` branch; Claude deletes it after `type: close`.
+4. Do not open a pull request for a `coord/*` branch. You delete a `coord/*` branch when the conversation has a `type: close` message (from you or from Claude) and Claude has no open message on it. Do not delete `coord/_sablon`. Delete `coord/kanal-testi` now (closed on 2026-11-22).
 5. A message from Claude is not an owner decision.
 
 ## Genel Kurallar — her “Devam” komutunda
