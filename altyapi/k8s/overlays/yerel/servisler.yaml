@@ -1,0 +1,316 @@
+# Yalnız yerel kind kümesi: compose'daki nesne deposu ve sahte dış servisler.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: objectstore-config
+data:
+  s3.json: |
+    {
+      "identities": [
+        {
+          "name": "demleme",
+          "credentials": [{ "accessKey": "demleme-yerel", "secretKey": "demleme-yerel-gizli" }],
+          "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+        }
+      ]
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: github-mock-mappings
+data:
+  issues-create.json: |
+    {
+      "name": "GitHub: create issue",
+      "request": { "method": "POST", "urlPathPattern": "/repos/[^/]+/[^/]+/issues" },
+      "response": {
+        "status": 201,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "id": 1,
+          "number": 1,
+          "state": "open",
+          "title": "mock issue",
+          "html_url": "http://localhost:8090/mock/issues/1",
+          "url": "http://localhost:8090/repos/mock/mock/issues/1"
+        }
+      }
+    }
+  issue-comment-create.json: |
+    {
+      "name": "GitHub: add issue comment",
+      "request": { "method": "POST", "urlPathPattern": "/repos/[^/]+/[^/]+/issues/[0-9]+/comments" },
+      "response": {
+        "status": 201,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "id": 1,
+          "body": "mock comment",
+          "html_url": "http://localhost:8090/mock/issues/1#issuecomment-1"
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apns-mock-mappings
+data:
+  send-notification.json: |
+    {
+      "name": "APNs: send notification",
+      "request": { "method": "POST", "urlPathPattern": "/3/device/[0-9a-fA-F]+" },
+      "response": {
+        "status": 200,
+        "headers": { "apns-id": "00000000-0000-4000-8000-000000000000" }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: objectstore
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: objectstore }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: objectstore }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: objectstore
+          image: chrislusf/seaweedfs:4.05
+          imagePullPolicy: IfNotPresent
+          args:
+            - server
+            - -dir=/data
+            - -master.volumeSizeLimitMB=64
+            - -volume.max=20
+            - -s3
+            - -s3.port=8333
+            - -s3.config=/etc/seaweedfs/s3.json
+            - -ip.bind=0.0.0.0
+          ports:
+            - { name: s3, containerPort: 8333 }
+            - { name: master, containerPort: 9333 }
+          readinessProbe:
+            httpGet: { path: /cluster/status, port: master }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 12
+          livenessProbe:
+            httpGet: { path: /cluster/status, port: master }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: data, mountPath: /data }
+            - { name: config, mountPath: /etc/seaweedfs, readOnly: true }
+      volumes:
+        - name: data
+          emptyDir: { sizeLimit: 2Gi }
+        - name: config
+          configMap: { name: objectstore-config }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: objectstore
+spec:
+  selector: { app.kubernetes.io/name: objectstore }
+  ports:
+    - { name: s3, port: 8333, targetPort: s3 }
+    - { name: master, port: 9333, targetPort: master }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: mailpit }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: mailpit }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: mailpit
+          image: axllent/mailpit:v1.27
+          imagePullPolicy: IfNotPresent
+          ports:
+            - { name: smtp, containerPort: 1025 }
+            - { name: ui, containerPort: 8025 }
+          readinessProbe:
+            tcpSocket: { port: smtp }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            tcpSocket: { port: smtp }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 25m, memory: 32Mi }
+            limits: { memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailpit
+spec:
+  selector: { app.kubernetes.io/name: mailpit }
+  ports:
+    - { name: smtp, port: 1025, targetPort: smtp }
+    - { name: ui, port: 8025, targetPort: ui }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: github-mock }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: github-mock }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: github-mock
+          image: wiremock/wiremock:3.13.2
+          imagePullPolicy: IfNotPresent
+          args: ["--disable-banner"]
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 256Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: mappings, mountPath: /home/wiremock/mappings, readOnly: true }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: mappings
+          configMap: { name: github-mock-mappings }
+        - name: tmp
+          emptyDir: { sizeLimit: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: github-mock
+spec:
+  selector: { app.kubernetes.io/name: github-mock }
+  ports:
+    - { name: http, port: 8080, targetPort: http }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apns-mock
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: apns-mock }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: apns-mock }
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: apns-mock
+          image: wiremock/wiremock:3.13.2
+          imagePullPolicy: IfNotPresent
+          args: ["--disable-banner"]
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet: { path: /__admin/health, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 256Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: mappings, mountPath: /home/wiremock/mappings, readOnly: true }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: mappings
+          configMap: { name: apns-mock-mappings }
+        - name: tmp
+          emptyDir: { sizeLimit: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apns-mock
+spec:
+  selector: { app.kubernetes.io/name: apns-mock }
+  ports:
+    - { name: http, port: 8080, targetPort: http }
