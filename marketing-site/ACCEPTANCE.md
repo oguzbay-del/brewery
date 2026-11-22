@@ -149,3 +149,14 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Production domain, DNS and Vercel project settings were not changed. Existing Vercel automatic production-target deployment guard remains in force; do not merge/push further to main until reviewed and adjusted with owner approval.
 
 **W12 status remains in progress.** Outstanding: investigate Home mobile Lighthouse 85, finish visual review across all routes and viewport widths, complete manual keyboard/screen-reader/zoom checks, and verify the deployed noindex Pages response.
+
+## Turkish homepage hero parity — 22 November 2026
+
+- PR [#192](https://github.com/oguzbay-del/brewery/pull/192) aligns the Turkish homepage hero with the English photo-led forest-green treatment, preserves Turkish copy and destinations, and keeps the shared GRISTORA wordmark legible on the dark hero.
+- Marketing CI [run #45042837044](https://github.com/oguzbay-del/brewery/actions/runs/45042837044) passed on commit `313f95bab52ec9773f0905f57e9d6a985c00a299`: Astro/TypeScript checks, static build, route/metadata/link validation, responsive Playwright/axe checks and Lighthouse audits.
+- Lighthouse artifact #14762377454: Home, Compare, Pricing and How it works scored **100/100/100/100** (Performance / Accessibility / Best Practices / SEO) on both mobile and desktop. Home mobile: TBT 50 ms, LCP 1.8 s, CLS 0.
+- Responsive screenshot artifact #14762122124 contains 31 screenshots. English homepage mobile (390 px) was reviewed: no obvious clipping or page-level horizontal overflow. The artifact does not contain a Turkish homepage screenshot; Turkish-specific visual comparison at 390/320 px remains pending and must be added before acceptance.
+- Cloudflare Pages branch preview deployed successfully for the PR head: [preview](https://fix-tr-homepage-hero-parity.gristora.pages.dev). Direct HTTP verification from this runtime is blocked by DNS resolution, so no live-response/header claim is made here.
+- PR remains unmerged. No production deployment or custom-domain changes were made.
+
+**Remaining for this change:** capture/review Turkish homepage at 390 and 320 px, compare EN/TR header and hero composition side by side, and complete manual keyboard/screen-reader/200% zoom checks already tracked in W12. Do not weaken existing accessibility tests.
