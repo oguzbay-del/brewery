@@ -16,7 +16,9 @@ use std::fmt::Write as _;
 
 use crate::{
     Document, Equipment, Error, Recipe, Result,
-    model::{BeerStyle, Fermentable, Hop, MashStep, Misc, SourceValues, Yeast, kind_from, kind_to_xml},
+    model::{
+        BeerStyle, Fermentable, Hop, MashStep, Misc, SourceValues, Yeast, kind_from, kind_to_xml,
+    },
     xml::{self, Element, Limits, escape},
 };
 
@@ -266,7 +268,15 @@ fn parse_recipe(r: &Element) -> Result<Recipe> {
     for water in waters.children_named("WATER") {
         required_text(water, "WATER", "NAME")?;
         required_text(water, "WATER", "VERSION")?;
-        for field in ["AMOUNT", "CALCIUM", "BICARBONATE", "SULFATE", "CHLORIDE", "SODIUM", "MAGNESIUM"] {
+        for field in [
+            "AMOUNT",
+            "CALCIUM",
+            "BICARBONATE",
+            "SULFATE",
+            "CHLORIDE",
+            "SODIUM",
+            "MAGNESIUM",
+        ] {
             required_number(water, "WATER", field)?;
         }
     }
@@ -303,10 +313,14 @@ fn parse_recipe(r: &Element) -> Result<Recipe> {
     let valid_og = og.filter(|v| (0.9..=1.3).contains(v));
     let kind = kind_from(&recipe_type);
     if kind != "extract" && r.number_of("EFFICIENCY").is_none() {
-        return Err(Error::Format("RECIPE missing required field EFFICIENCY".into()));
+        return Err(Error::Format(
+            "RECIPE missing required field EFFICIENCY".into(),
+        ));
     }
     if kind != "extract" && r.child("MASH").is_none() {
-        return Err(Error::Format("RECIPE missing required field MASH".into()));
+        return Err(Error::Format(
+            "RECIPE missing required field MASH".into(),
+        ));
     }
     let equipment = r.child("EQUIPMENT").map(parse_equipment).transpose()?;
     Ok(Recipe {
@@ -380,7 +394,13 @@ fn num(out: &mut String, indent: usize, name: &str, v: Option<f64>) {
     }
 }
 
-fn write_style(out: &mut String, indent: usize, style: Option<&BeerStyle>, name: &str, source: &SourceValues) {
+fn write_style(
+    out: &mut String,
+    indent: usize,
+    style: Option<&BeerStyle>,
+    name: &str,
+    source: &SourceValues,
+) {
     let fallback = BeerStyle {
         name: name.to_owned(),
         category: "Other".to_owned(),
@@ -467,9 +487,17 @@ pub fn write(recipes: &[Recipe]) -> String {
         tag(&mut o, 4, "NAME", &r.name);
         tag(&mut o, 4, "TYPE", kind_to_xml(&r.kind));
         if r.brewer.is_none() {
-            let _ = writeln!(o, "    <!-- Brewer was not present in the neutral model; placeholder required by BeerXML. -->");
+            let _ = writeln!(
+                o,
+                "    <!-- Brewer was not present in the neutral model; placeholder required by BeerXML. -->"
+            );
         }
-        tag(&mut o, 4, "BREWER", r.brewer.as_deref().unwrap_or("Unknown"));
+        tag(
+            &mut o,
+            4,
+            "BREWER",
+            r.brewer.as_deref().unwrap_or("Unknown"),
+        );
         num(&mut o, 4, "BATCH_SIZE", r.batch_volume_l);
         num(&mut o, 4, "BOIL_SIZE", r.boil_volume_l);
         num(&mut o, 4, "BOIL_TIME", r.boil_time_min);
@@ -501,7 +529,10 @@ pub fn write(recipes: &[Recipe]) -> String {
             tag(&mut o, 8, "VERSION", "1");
             tag(&mut o, 8, "NAME", &h.name);
             if h.alpha_pct.is_none() {
-                let _ = writeln!(o, "        <!-- Missing alpha acid; BeerXML requires ALPHA. -->");
+                let _ = writeln!(
+                    o,
+                    "        <!-- Missing alpha acid; BeerXML requires ALPHA. -->"
+                );
             }
             tag(&mut o, 8, "ALPHA", &h.alpha_pct.unwrap_or(0.0).to_string());
             tag(&mut o, 8, "AMOUNT", &format!("{}", h.amount_kg));
@@ -592,14 +623,21 @@ pub fn write(recipes: &[Recipe]) -> String {
             };
             tag(&mut o, 8, "FORM", form);
             if y.amount.is_none() {
-                let _ = writeln!(o, "        <!-- Yeast amount was not present in the source; BeerXML requires AMOUNT. -->");
+                let _ = writeln!(
+                    o,
+                    "        <!-- Yeast amount was not present in the source; BeerXML requires AMOUNT. -->"
+                );
             }
             tag(&mut o, 8, "AMOUNT", &y.amount.unwrap_or(0.0).to_string());
             tag(
                 &mut o,
                 8,
                 "AMOUNT_IS_WEIGHT",
-                if y.amount_is_weight.unwrap_or(false) { "TRUE" } else { "FALSE" },
+                if y.amount_is_weight.unwrap_or(false) {
+                    "TRUE"
+                } else {
+                    "FALSE"
+                },
             );
             num(&mut o, 8, "ATTENUATION", y.attenuation_pct);
             o.push_str("      </YEAST>\n");
