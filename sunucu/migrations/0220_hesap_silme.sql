@@ -123,7 +123,7 @@ BEGIN
     END IF;
 
     UPDATE user_identities
-    SET subject = 'deleted:' || user_id::text || ':' || provider,
+    SET subject = 'deleted:' || user_id::text || ':' || provider || ':' || id::text,
         provider_refresh_token_enc = CASE
             WHEN provider = 'apple' THEN provider_refresh_token_enc
             ELSE NULL
