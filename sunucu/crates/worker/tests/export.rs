@@ -411,10 +411,15 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     for name in [
         "water_profiles.json", "devices.json", "support_requests.json",
         "documents.json", "photos.json",
-        &format!("files/documents/scanned-{document}"),
-        &format!("files/documents/attachment-{file_attachment}"),
-        &format!("files/photos/{photo}"),
     ] {
+        assert!(contains(&zip, name), "{name} is missing");
+    }
+    let file_paths = [
+        format!("files/documents/scanned-{document}"),
+        format!("files/documents/attachment-{file_attachment}"),
+        format!("files/photos/{photo}"),
+    ];
+    for name in &file_paths {
         assert!(contains(&zip, name), "{name} is missing");
     }
     assert!(contains(&zip, "Customer-visible message"));
