@@ -7,9 +7,8 @@ mod common;
 use chrono::Utc;
 use common::{Role, create_user, create_workspace, id, pool_as, set_context};
 use db::{
-    AccountDeletionRequest, ActorKind, AuditEvent, NewAuditEntry, anonymize_user,
-    append_audit, cancel_account_deletion, due_account_deletions,
-    request_account_deletion, verify_chain,
+    AccountDeletionRequest, ActorKind, AuditEvent, NewAuditEntry, anonymize_user, append_audit,
+    cancel_account_deletion, due_account_deletions, request_account_deletion, verify_chain,
 };
 use serde_json::json;
 use sqlx::{PgPool, types::Uuid};
@@ -40,22 +39,18 @@ async fn request_is_idempotent_and_visible_only_to_its_user(pool: PgPool) {
 
     let mut tx = app.begin().await.unwrap();
     set_context(&mut tx, None, Some(u1)).await.unwrap();
-    let ids: Vec<Uuid> = sqlx::query_scalar(
-        "SELECT id FROM account_deletion_requests ORDER BY id",
-    )
-    .fetch_all(&mut *tx)
-    .await
-    .unwrap();
+    let ids: Vec<Uuid> = sqlx::query_scalar("SELECT id FROM account_deletion_requests ORDER BY id")
+        .fetch_all(&mut *tx)
+        .await
+        .unwrap();
     assert_eq!(ids, vec![first.id]);
     tx.commit().await.unwrap();
 
     let worker = pool_as(&pool, Role::Worker).await;
-    let all: Vec<Uuid> = sqlx::query_scalar(
-        "SELECT id FROM account_deletion_requests ORDER BY id",
-    )
-    .fetch_all(&worker)
-    .await
-    .unwrap();
+    let all: Vec<Uuid> = sqlx::query_scalar("SELECT id FROM account_deletion_requests ORDER BY id")
+        .fetch_all(&worker)
+        .await
+        .unwrap();
     assert_eq!(all.len(), 2);
 }
 
@@ -81,13 +76,12 @@ async fn cancellation_is_user_scoped_and_records_restoration(pool: PgPool) {
     assert!(cancel_account_deletion(&mut tx).await.unwrap().is_none());
     tx.commit().await.unwrap();
 
-    let status: String = sqlx::query_scalar(
-        "SELECT status FROM account_deletion_requests WHERE id = $1",
-    )
-    .bind(r2.id)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let status: String =
+        sqlx::query_scalar("SELECT status FROM account_deletion_requests WHERE id = $1")
+            .bind(r2.id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(status, "pending");
 }
 
@@ -97,11 +91,13 @@ async fn due_requests_are_locked_and_skipped_by_another_worker(pool: PgPool) {
     let user = id(41);
     create_user(&app, user).await.unwrap();
     let request = request_as(&app, user, 1).await;
-    sqlx::query("UPDATE account_deletion_requests SET purge_at = now() - interval '1 second' WHERE id = $1")
-        .bind(request.id)
-        .execute(&pool)
-        .await
-        .unwrap();
+    sqlx::query(
+        "UPDATE account_deletion_requests SET purge_at = now() - interval '1 second' WHERE id = $1",
+    )
+    .bind(request.id)
+    .execute(&pool)
+    .await
+    .unwrap();
 
     let worker = pool_as(&pool, Role::Worker).await;
     let mut first_tx = worker.begin().await.unwrap();
@@ -112,7 +108,10 @@ async fn due_requests_are_locked_and_skipped_by_another_worker(pool: PgPool) {
 
     let mut second_tx = worker.begin().await.unwrap();
     let second = due_account_deletions(&mut second_tx, 10).await.unwrap();
-    assert!(second.is_empty(), "a second worker must skip the locked request");
+    assert!(
+        second.is_empty(),
+        "a second worker must skip the locked request"
+    );
 
     second_tx.commit().await.unwrap();
     first_tx.commit().await.unwrap();
@@ -141,23 +140,39 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
          VALUES ($1, $2, 'apple', 'apple-subject', decode('aabb', 'hex')),
                 ($3, $2, 'google', 'google-subject', decode('ccdd', 'hex'))",
     )
-    .bind(id(61)).bind(user).bind(id(62))
-    .execute(&mut *tx).await.unwrap();
+    .bind(id(61))
+    .bind(user)
+    .bind(id(62))
+    .execute(&mut *tx)
+    .await
+    .unwrap();
     sqlx::query(
         "INSERT INTO passkeys (id, user_id, credential_id, public_key, name)
          VALUES ($1, $2, decode('0102', 'hex'), decode('0304', 'hex'), 'Personal key')",
     )
-    .bind(id(63)).bind(user).execute(&mut *tx).await.unwrap();
+    .bind(id(63))
+    .bind(user)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
     sqlx::query(
         "INSERT INTO sessions (id, user_id, token_hash, client_kind, expires_at)
          VALUES ($1, $2, decode(repeat('11', 32), 'hex'), 'ios', now() + interval '1 day')",
     )
-    .bind(id(64)).bind(user).execute(&mut *tx).await.unwrap();
+    .bind(id(64))
+    .bind(user)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
     sqlx::query(
         "INSERT INTO push_targets (id, user_id, environment, token)
          VALUES ($1, $2, 'sandbox', 'push-secret-token')",
     )
-    .bind(id(65)).bind(user).execute(&mut *tx).await.unwrap();
+    .bind(id(65))
+    .bind(user)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
     append_audit(
         &mut tx,
         ws,
@@ -167,7 +182,9 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
             event: AuditEvent::AccountDelete,
             record_kind: "user".into(),
             record_id: Some(user),
-            previous_value: Some(json!({"name": db::changed_field(), "email": db::changed_field()})),
+            previous_value: Some(
+                json!({"name": db::changed_field(), "email": db::changed_field()}),
+            ),
             new_value: Some(json!({"deleted": true})),
             reason: None,
         },
@@ -190,7 +207,10 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
 
     let user_row: (String, Option<String>, Option<chrono::DateTime<Utc>>) =
         sqlx::query_as("SELECT display_name, contact_email, deleted_at FROM users WHERE id = $1")
-            .bind(user).fetch_one(&pool).await.unwrap();
+            .bind(user)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(user_row.0, "Deleted user");
     assert!(user_row.1.is_none());
     assert!(user_row.2.is_some());
@@ -198,17 +218,26 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
     let identities: Vec<(String, Option<Vec<u8>>)> = sqlx::query_as(
         "SELECT subject, provider_refresh_token_enc FROM user_identities WHERE user_id = $1 ORDER BY provider",
     )
-    .bind(user).fetch_all(&pool).await.unwrap();
+    .bind(user)
+    .fetch_all(&pool)
+    .await
+    .unwrap();
     assert_eq!(identities.len(), 2);
-    assert!(identities.iter().all(|(subject, _)| subject.starts_with("deleted:")));
+    assert!(
+        identities
+            .iter()
+            .all(|(subject, _)| subject.starts_with("deleted:"))
+    );
     assert_eq!(identities[0].1, Some(vec![0xaa, 0xbb]));
     assert_eq!(identities[1].1, None);
 
     for table in ["sessions", "passkeys", "push_targets"] {
-        let count: i64 = sqlx::query_scalar(&format!(
-            "SELECT count(*) FROM {table} WHERE user_id = $1"
-        ))
-        .bind(user).fetch_one(&pool).await.unwrap();
+        let count: i64 =
+            sqlx::query_scalar(&format!("SELECT count(*) FROM {table} WHERE user_id = $1"))
+                .bind(user)
+                .fetch_one(&pool)
+                .await
+                .unwrap();
         assert_eq!(count, 0, "{table}");
     }
 
