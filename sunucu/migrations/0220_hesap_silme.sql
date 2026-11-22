@@ -173,7 +173,7 @@ BEGIN
     SET status = 'done'
     WHERE id = v_request_id AND status = 'pending';
 END
-$;
+$$;
 
 REVOKE ALL ON FUNCTION request_account_deletion(integer),
     cancel_account_deletion(), due_account_deletions(integer), anonymize_user(uuid) FROM PUBLIC;
