@@ -121,7 +121,7 @@ module "redis" {
 }
 
 module "storage" {
-  source                  = "../../modules/gcp-storage"
+  source = "../../modules/gcp-storage"
 
   project_id              = var.project_id
   name_prefix             = "${var.project_id}-${local.region_code}"
@@ -133,7 +133,7 @@ module "storage" {
   force_destroy           = var.storage_force_destroy
   labels                  = local.labels
 
-  depends_on              = [google_project_service.apis]
+  depends_on = [google_project_service.apis]
 }
 
 module "registry" {
