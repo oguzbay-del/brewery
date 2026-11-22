@@ -32,9 +32,9 @@ fn parse_grace_days(value: Option<&str>) -> Result<i32> {
         })?,
         None => DEFAULT_ACCOUNT_DELETION_GRACE_DAYS,
     };
-    if !(1..=365).contains(&days) {
+    if days < 1 {
         return Err(crate::Error::InvalidAccountDeletionGraceDays(
-            "value must be between 1 and 365".into(),
+            "value must be positive".into(),
         ));
     }
     Ok(days)
