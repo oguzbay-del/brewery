@@ -318,9 +318,7 @@ fn parse_recipe(r: &Element) -> Result<Recipe> {
         ));
     }
     if kind != "extract" && r.child("MASH").is_none() {
-        return Err(Error::Format(
-            "RECIPE missing required field MASH".into(),
-        ));
+        return Err(Error::Format("RECIPE missing required field MASH".into()));
     }
     let equipment = r.child("EQUIPMENT").map(parse_equipment).transpose()?;
     Ok(Recipe {
