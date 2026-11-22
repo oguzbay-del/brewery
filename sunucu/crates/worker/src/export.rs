@@ -855,7 +855,6 @@ pub async fn run(pool: PgPool, store: Arc<dyn ObjectStore>, mut stop: watch::Rec
         }
     }
 }
-
 #[cfg(test)]
 mod limited_zip_tests {
     use super::*;
