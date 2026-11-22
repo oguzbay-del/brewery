@@ -722,23 +722,6 @@ async fn build_workspace(
     })
 }
 
-#[cfg(test)]
-mod limited_zip_tests {
-    use super::*;
-
-    #[test]
-    fn counts_every_entry_and_checks_final_archive_overhead() {
-        let mut zip = LimitedZip::with_limit(5);
-        assert!(zip.add("first", b"123").is_ok());
-        let err = zip.add("second", b"456").unwrap_err().to_string();
-        assert!(err.contains("EXPORT_TOO_LARGE"));
-
-        let mut zip = LimitedZip::with_limit(4);
-        assert!(zip.add("entry", b"1234").is_ok());
-        assert!(zip.finish().is_err());
-    }
-}
-
 fn context(ws: Uuid) -> DbContext {
     DbContext {
         user_id: None,
@@ -871,3 +854,21 @@ pub async fn run(pool: PgPool, store: Arc<dyn ObjectStore>, mut stop: watch::Rec
         }
     }
 }
+
+#[cfg(test)]
+mod limited_zip_tests {
+    use super::*;
+
+    #[test]
+    fn counts_every_entry_and_checks_final_archive_overhead() {
+        let mut zip = LimitedZip::with_limit(5);
+        assert!(zip.add("first", b"123").is_ok());
+        let err = zip.add("second", b"456").unwrap_err().to_string();
+        assert!(err.contains("EXPORT_TOO_LARGE"));
+
+        let mut zip = LimitedZip::with_limit(4);
+        assert!(zip.add("entry", b"1234").is_ok());
+        assert!(zip.finish().is_err());
+    }
+}
+
