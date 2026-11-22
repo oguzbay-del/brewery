@@ -474,6 +474,14 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     assert!(!contains(&zip, "private/file-attachment"));
     assert!(!contains(&zip, "private/photo-attachment"));
     assert!(!contains(&zip, &"cd".repeat(32)));
+    for secret_field in [
+        "ingest_key_hash",
+        "provider_refresh_token_enc",
+        "token_hash",
+        "password",
+    ] {
+        assert!(!contains(&zip, secret_field), "{secret_field} leaked");
+    }
     assert!(contains(&zip, "\"file_path\""));
 }
 
