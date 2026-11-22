@@ -1056,7 +1056,7 @@ pub async fn stock_deduct(
             "SELECT COALESCE(-sum(m.quantity), 0)::float8 FROM stock_movements m \
              JOIN stock_lots l ON l.workspace_id = m.workspace_id AND l.id = m.lot_id \
              WHERE m.batch_id = $1 AND m.kind = 'consume' AND l.ingredient_id = $2 \
-               AND (($3 = 'count' AND l.unit = 'count') OR ($3 <> 'count' AND l.unit <> 'count'))",
+               AND l.unit = $3",
         )
         .bind(batch_id)
         .bind(ingredient)
@@ -1075,8 +1075,7 @@ pub async fn stock_deduct(
         // Lots in kg or L, oldest first, the preferred lot at the front.
         let mut lots: Vec<Candidate> = sqlx::query_as(
             "SELECT id, quantity FROM stock_lots \
-             WHERE ingredient_id = $1 AND deleted_at IS NULL \
-               AND (($3 = 'count' AND unit = 'count') OR ($3 <> 'count' AND unit <> 'count')) \
+             WHERE ingredient_id = $1 AND deleted_at IS NULL AND unit = $3 \
              ORDER BY (id = $2) DESC, expires_on NULLS LAST, received_on NULLS LAST, \
                  created_at, id FOR UPDATE",
         )
