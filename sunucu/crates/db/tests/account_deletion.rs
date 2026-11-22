@@ -121,15 +121,19 @@ async fn api_role_cannot_claim_or_anonymize_deletion_requests(pool: PgPool) {
     let user = id(46);
     create_user(&app, user).await.unwrap();
 
-    assert!(sqlx::query("SELECT * FROM due_account_deletions(1)")
-        .fetch_all(&app)
-        .await
-        .is_err());
-    assert!(sqlx::query("SELECT anonymize_user($1)")
-        .bind(user)
-        .execute(&app)
-        .await
-        .is_err());
+    assert!(
+        sqlx::query("SELECT * FROM due_account_deletions(1)")
+            .fetch_all(&app)
+            .await
+            .is_err()
+    );
+    assert!(
+        sqlx::query("SELECT anonymize_user($1)")
+            .bind(user)
+            .execute(&app)
+            .await
+            .is_err()
+    );
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
@@ -275,13 +279,12 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
     assert!(due_account_deletions(&mut tx, 10).await.unwrap().is_empty());
     tx.commit().await.unwrap();
 
-    let request_status: String = sqlx::query_scalar(
-        "SELECT status FROM account_deletion_requests WHERE id = $1",
-    )
-    .bind(deletion.id)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let request_status: String =
+        sqlx::query_scalar("SELECT status FROM account_deletion_requests WHERE id = $1")
+            .bind(deletion.id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(request_status, "done");
 
     let user_row: (String, Option<String>, Option<chrono::DateTime<Utc>>) =
@@ -326,13 +329,12 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
             .fetch_one(&pool)
             .await
             .unwrap();
-    let challenges: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM webauthn_challenges WHERE user_id = $1",
-    )
-    .bind(user)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let challenges: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM webauthn_challenges WHERE user_id = $1")
+            .bind(user)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!((sessions, passkeys, push_targets, challenges), (0, 0, 0, 0));
 
     let after = {
