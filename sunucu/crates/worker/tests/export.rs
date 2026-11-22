@@ -28,7 +28,10 @@ impl MemoryStore {
     }
 
     fn insert_bytes(&self, key: &str, bytes: &[u8]) {
-        self.objects.lock().unwrap().insert(key.to_owned(), bytes.to_vec());
+        self.objects
+            .lock()
+            .unwrap()
+            .insert(key.to_owned(), bytes.to_vec());
     }
 }
 
@@ -206,7 +209,12 @@ async fn seed(base: &PgPool) -> Seed {
         .await
         .unwrap();
     }
-    Seed { ws, user, recipe, batch }
+    Seed {
+        ws,
+        user,
+        recipe,
+        batch,
+    }
 }
 
 async fn queue(
@@ -354,19 +362,31 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
         "INSERT INTO water_profiles (id, workspace_id, name, kind)
          VALUES ($1, $2, 'Source water', 'source')",
     )
-    .bind(water).bind(s.ws).execute(&base).await.unwrap();
+    .bind(water)
+    .bind(s.ws)
+    .execute(&base)
+    .await
+    .unwrap();
 
     sqlx::query(
         "INSERT INTO devices (id, workspace_id, kind, name, ingest_key_hash)
          VALUES ($1, $2, 'ispindel', 'Fermenter sensor', decode(repeat('cd', 32), 'hex'))",
     )
-    .bind(device).bind(s.ws).execute(&base).await.unwrap();
+    .bind(device)
+    .bind(s.ws)
+    .execute(&base)
+    .await
+    .unwrap();
 
     sqlx::query(
         "INSERT INTO support_requests (id, workspace_id, topic, title)
          VALUES ($1, $2, 'export_help', 'Export question')",
     )
-    .bind(request).bind(s.ws).execute(&base).await.unwrap();
+    .bind(request)
+    .bind(s.ws)
+    .execute(&base)
+    .await
+    .unwrap();
 
     sqlx::query(
         "INSERT INTO support_messages (id, workspace_id, request_id, author_kind,
@@ -374,7 +394,12 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
          VALUES (gen_random_uuid(), $1, $2, 'customer', $3, 'Customer-visible message', 'customer'),
                 (gen_random_uuid(), $1, $2, 'system', NULL, 'INTERNAL_STAFF_NOTE', 'internal')",
     )
-    .bind(s.ws).bind(request).bind(s.user).execute(&base).await.unwrap();
+    .bind(s.ws)
+    .bind(request)
+    .bind(s.user)
+    .execute(&base)
+    .await
+    .unwrap();
 
     sqlx::query(
         "INSERT INTO scanned_documents (id, workspace_id, batch_id, form_type, object_key,
@@ -382,9 +407,13 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
          VALUES ($1, $2, $3, 'water_analysis', 'private/scanned-document',
             'application/pdf', $4, decode(repeat('ab', 32), 'hex'))",
     )
-    .bind(document).bind(s.ws).bind(s.batch)
+    .bind(document)
+    .bind(s.ws)
+    .bind(s.batch)
     .bind(i64::try_from(document_bytes.len()).unwrap())
-    .execute(&base).await.unwrap();
+    .execute(&base)
+    .await
+    .unwrap();
 
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id,
@@ -394,23 +423,37 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
                 ($5, $2, 'photo', 'batch', $3, 'private/photo-attachment',
                  'image/jpeg', $6, decode(repeat('12', 32), 'hex'), 'Fermentation photo')",
     )
-    .bind(file_attachment).bind(s.ws).bind(s.batch)
+    .bind(file_attachment)
+    .bind(s.ws)
+    .bind(s.batch)
     .bind(i64::try_from(file_bytes.len()).unwrap())
     .bind(photo)
     .bind(i64::try_from(photo_bytes.len()).unwrap())
-    .execute(&base).await.unwrap();
+    .execute(&base)
+    .await
+    .unwrap();
 
     let job = queue(&base, &s, "workspace", None, "zip", serde_json::json!({})).await;
     worker::export::run_pending(&pool, &store).await.unwrap();
     let (st, key) = status(&base, job).await;
-    assert_eq!(st, "done", "{:?}", sqlx::query_scalar::<_, Option<String>>(
-        "SELECT error FROM export_jobs WHERE id = $1"
-    ).bind(job).fetch_one(&base).await.unwrap());
+    assert_eq!(
+        st,
+        "done",
+        "{:?}",
+        sqlx::query_scalar::<_, Option<String>>("SELECT error FROM export_jobs WHERE id = $1")
+            .bind(job)
+            .fetch_one(&base)
+            .await
+            .unwrap()
+    );
     let zip = store.get_bytes(&key.unwrap()).unwrap();
 
     for name in [
-        "water_profiles.json", "devices.json", "support_requests.json",
-        "documents.json", "photos.json",
+        "water_profiles.json",
+        "devices.json",
+        "support_requests.json",
+        "documents.json",
+        "photos.json",
     ] {
         assert!(contains(&zip, name), "{name} is missing");
     }
