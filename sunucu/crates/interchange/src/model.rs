@@ -65,6 +65,12 @@ pub struct Yeast {
     pub form: Option<String>,
     /// Attenuation, percent.
     pub attenuation_pct: Option<f64>,
+    /// Amount in the source unit (BeerXML: L or kg).
+    #[serde(default)]
+    pub amount: Option<f64>,
+    /// Whether the source amount is a weight rather than a volume.
+    #[serde(default)]
+    pub amount_is_weight: Option<bool>,
     /// Packs.
     pub packs: Option<f64>,
 }
@@ -120,6 +126,33 @@ pub struct Equipment {
     pub boil_off_l_per_h: Option<f64>,
 }
 
+/// Style metadata from a BeerXML STYLE record.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct BeerStyle {
+    pub name: String,
+    pub category: String,
+    pub category_number: String,
+    pub style_letter: String,
+    pub style_guide: String,
+    pub kind: String,
+    pub og_min: f64,
+    pub og_max: f64,
+    pub fg_min: f64,
+    pub fg_max: f64,
+    pub ibu_min: f64,
+    pub ibu_max: f64,
+    pub color_min: f64,
+    pub color_max: f64,
+    pub carb_min: Option<f64>,
+    pub carb_max: Option<f64>,
+    pub abv_min: Option<f64>,
+    pub abv_max: Option<f64>,
+    pub notes: Option<String>,
+    pub profile: Option<String>,
+    pub ingredients: Option<String>,
+    pub examples: Option<String>,
+}
+
 /// A recipe.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct Recipe {
@@ -131,6 +164,12 @@ pub struct Recipe {
     pub kind: String,
     /// Style name in the source.
     pub style: Option<String>,
+    /// Brewer name when the source format provides it.
+    #[serde(default)]
+    pub brewer: Option<String>,
+    /// Full BeerXML style metadata when available.
+    #[serde(default)]
+    pub style_details: Option<BeerStyle>,
     /// Bitterness formula the source names (`tinseth`, `rager`, ...).
     pub ibu_method: Option<String>,
     /// Batch volume, L.
