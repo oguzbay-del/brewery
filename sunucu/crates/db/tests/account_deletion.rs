@@ -127,7 +127,7 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
     create_workspace(&app, ws, "Audit workspace").await.unwrap();
 
     let mut tx = app.begin().await.unwrap();
-    set_context(&mut tx, None, Some(user)).await.unwrap();
+    set_context(&mut tx, Some(ws), Some(user)).await.unwrap();
     sqlx::query(
         "UPDATE users SET display_name = 'Personal Name', contact_email = 'person@example.com',
             contact_email_verified_at = now() WHERE id = $1",
