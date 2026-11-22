@@ -578,7 +578,7 @@ async fn build_workspace(
                 encode(a.sha256, 'hex') AS sha256, a.kind, a.record_kind,
                 a.record_id, a.caption, a.created_at
          FROM attachments a
-         WHERE a.workspace_id = $1 AND a.deleted_at IS NULL AND a.kind = 'file'
+         WHERE a.workspace_id = $1 AND a.deleted_at IS NULL AND a.kind IN ('file', 'note')
            AND (a.record_kind <> 'support_message' OR EXISTS (
                SELECT 1 FROM support_messages m
                WHERE m.workspace_id = a.workspace_id AND m.id = a.record_id
@@ -596,7 +596,8 @@ async fn build_workspace(
         let path = format!("files/documents/attachment-{id}");
         add_object_file(&mut zip, store, &key, &path, row.get("size_bytes")).await?;
         file_attachments.push(json!({
-            "id": id, "record_kind": row.get::<String, _>("record_kind"),
+            "id": id, "kind": row.get::<String, _>("kind"),
+            "record_kind": row.get::<String, _>("record_kind"),
             "record_id": row.get::<Uuid, _>("record_id"),
             "caption": row.get::<Option<String>, _>("caption"),
             "content_type": row.get::<String, _>("content_type"),
