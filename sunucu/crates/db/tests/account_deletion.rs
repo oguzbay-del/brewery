@@ -86,6 +86,53 @@ async fn cancellation_is_user_scoped_and_records_restoration(pool: PgPool) {
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
+async fn cancellation_after_grace_period_is_rejected(pool: PgPool) {
+    let app = pool_as(&pool, Role::Api).await;
+    let user = id(45);
+    create_user(&app, user).await.unwrap();
+    let request = request_as(&app, user, 1).await;
+    sqlx::query(
+        "UPDATE account_deletion_requests
+         SET requested_at = now() - interval '2 seconds', purge_at = now() - interval '1 second'
+         WHERE id = $1",
+    )
+    .bind(request.id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    let mut tx = app.begin().await.unwrap();
+    set_context(&mut tx, None, Some(user)).await.unwrap();
+    assert!(cancel_account_deletion(&mut tx).await.unwrap().is_none());
+    tx.commit().await.unwrap();
+
+    let status: String =
+        sqlx::query_scalar("SELECT status FROM account_deletion_requests WHERE id = $1")
+            .bind(request.id)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(status, "pending");
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn api_role_cannot_claim_or_anonymize_deletion_requests(pool: PgPool) {
+    let app = pool_as(&pool, Role::Api).await;
+    let user = id(46);
+    create_user(&app, user).await.unwrap();
+
+    assert!(sqlx::query("SELECT * FROM due_account_deletions(1)")
+        .fetch_all(&app)
+        .await
+        .is_err());
+    assert!(sqlx::query("SELECT anonymize_user($1)")
+        .bind(user)
+        .execute(&app)
+        .await
+        .is_err());
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
 async fn due_requests_are_locked_and_skipped_by_another_worker(pool: PgPool) {
     let app = pool_as(&pool, Role::Api).await;
     let user = id(41);
@@ -126,6 +173,16 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
     let (user, ws) = (id(51), id(1));
     create_user(&app, user).await.unwrap();
     create_workspace(&app, ws, "Audit workspace").await.unwrap();
+    let deletion = request_as(&app, user, 1).await;
+    sqlx::query(
+        "UPDATE account_deletion_requests
+         SET requested_at = now() - interval '2 seconds', purge_at = now() - interval '1 second'
+         WHERE id = $1",
+    )
+    .bind(deletion.id)
+    .execute(&pool)
+    .await
+    .unwrap();
 
     let mut tx = app.begin().await.unwrap();
     set_context(&mut tx, Some(ws), Some(user)).await.unwrap();
@@ -153,6 +210,15 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
          VALUES ($1, $2, decode('0102', 'hex'), decode('0304', 'hex'), 'Personal key')",
     )
     .bind(id(63))
+    .bind(user)
+    .execute(&mut *tx)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO webauthn_challenges (id, user_id, kind, state, expires_at)
+         VALUES ($1, $2, 'authentication', '{}'::jsonb, now() + interval '5 minutes')",
+    )
+    .bind(id(66))
     .bind(user)
     .execute(&mut *tx)
     .await
@@ -202,10 +268,21 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
     assert!(before.is_ok(), "{before:?}");
 
     let mut tx = worker.begin().await.unwrap();
+    let due = due_account_deletions(&mut tx, 10).await.unwrap();
+    assert_eq!(due.len(), 1);
+    assert_eq!(due[0].request_id, deletion.id);
     anonymize_user(&mut tx, user).await.unwrap();
-    // A repeated call is safe.
-    anonymize_user(&mut tx, user).await.unwrap();
+    assert!(due_account_deletions(&mut tx, 10).await.unwrap().is_empty());
     tx.commit().await.unwrap();
+
+    let request_status: String = sqlx::query_scalar(
+        "SELECT status FROM account_deletion_requests WHERE id = $1",
+    )
+    .bind(deletion.id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(request_status, "done");
 
     let user_row: (String, Option<String>, Option<chrono::DateTime<Utc>>) =
         sqlx::query_as("SELECT display_name, contact_email, deleted_at FROM users WHERE id = $1")
@@ -249,7 +326,14 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
             .fetch_one(&pool)
             .await
             .unwrap();
-    assert_eq!((sessions, passkeys, push_targets), (0, 0, 0));
+    let challenges: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM webauthn_challenges WHERE user_id = $1",
+    )
+    .bind(user)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!((sessions, passkeys, push_targets, challenges), (0, 0, 0, 0));
 
     let after = {
         let mut conn = pool.acquire().await.unwrap();
