@@ -1025,7 +1025,9 @@ pub async fn stock_deduct(
          WHERE a.batch_id = $1 AND a.deleted_at IS NULL \
            AND (a.actual_amount_kg > 0 OR (a.line_kind = 'yeast' AND p.unit = 'count' AND p.amount > 0)) \
          ORDER BY a.created_at, a.id",
-    );
+    )
+    .fetch_all(&mut *tx)
+    .await?;
 
     // One entry for each ingredient: the total amount and the preferred lot.
     let mut skipped = Vec::new();
