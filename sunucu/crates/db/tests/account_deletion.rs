@@ -232,15 +232,15 @@ async fn anonymisation_removes_credentials_and_preserves_audit_chain(pool: PgPoo
     assert_eq!(identities[1].1, None);
 
     let sessions: i64 = sqlx::query_scalar("SELECT count(*) FROM sessions WHERE user_id = $1")
-            .bind(user)
-            .fetch_one(&pool)
-            .await
-            .unwrap();
+        .bind(user)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
     let passkeys: i64 = sqlx::query_scalar("SELECT count(*) FROM passkeys WHERE user_id = $1")
-            .bind(user)
-            .fetch_one(&pool)
-            .await
-            .unwrap();
+        .bind(user)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
     let push_targets: i64 =
         sqlx::query_scalar("SELECT count(*) FROM push_targets WHERE user_id = $1")
             .bind(user)
