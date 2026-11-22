@@ -26,6 +26,7 @@ const SHARED: &[&str] = &[
 const OWNER_LOOKUP: &[&str] = &[
     "account_deletion_requests",
     "passkeys",
+    "webauthn_challenges",
     "users",
     "user_identities",
     "sessions",
