@@ -128,7 +128,7 @@ module "storage" {
   location               = var.region
   cors_origins           = var.storage_cors_origins
   audit_retention_days   = var.audit_retention_days
-  audit_retention_locked = var.audit_retention_locked
+  audit_retention_locked  = var.audit_retention_locked
   digest_retention_locked = var.digest_retention_locked
   force_destroy          = var.storage_force_destroy
   labels                 = local.labels
