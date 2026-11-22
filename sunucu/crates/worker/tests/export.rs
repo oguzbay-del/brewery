@@ -507,6 +507,7 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     }
     assert!(contains(&zip, "Customer-visible message"));
     assert!(!contains(&zip, "INTERNAL_STAFF_NOTE"));
+    assert!(contains(&zip, &retracted_message.to_string()));
     assert!(!contains(&zip, "RETRACTED_SECRET_BODY"));
     assert!(!contains(&zip, "RETRACTED_SUPPORT_ATTACHMENT_BYTES"));
     assert!(!contains(&zip, &format!("attachment-{retracted_attachment}")));
