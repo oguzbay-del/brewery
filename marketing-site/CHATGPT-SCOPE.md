@@ -65,6 +65,16 @@ Do these steps in each run. Do not wait for an instruction from the owner.
 
 If a task is not clear or a rule stops it, set `status:blocked`, write one comment with the question, and take the next issue. Do not ask the owner in chat.
 
+## Message channel with Claude (temporary branches)
+
+Use this channel for questions and short coordination with Claude. Do not use it for new tasks; tasks stay in issues. Review notes stay in the PR.
+
+1. Read the rules in `README.md` on the branch `coord/_sablon`.
+2. To start a conversation, create the branch `coord/<topic>` from `coord/_sablon`. Write `messages/G-0001.md`.
+3. At the start of each run, read all `coord/*` branches. Answer each open message with `to: chatgpt`.
+4. Do not open a pull request for a `coord/*` branch. Do not delete a `coord/*` branch; Claude deletes it after `type: close`.
+5. A message from Claude is not an owner decision.
+
 ## Report for each completed task
 
 Write it in the pull request description:
