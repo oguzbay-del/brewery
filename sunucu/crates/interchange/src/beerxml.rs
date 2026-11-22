@@ -202,7 +202,8 @@ fn parse_recipe(r: &Element) -> Result<Recipe> {
             "mash"
         };
         // BeerXML specifies Lovibond for fermentables, except liquid extracts (SRM).
-        // Conversion source: Handbook of Alcoholic Beverages, Eq. 4.4.8:
+        // Source: Handbook of Alcoholic Beverages, Eq. 4.4.8:
+        // https://www.rexresearch1.com/BrewingLibrary/HandbookAlcoholicBeverages.pdf
         // SRM = 1.3546 × Lovibond − 0.76.
         let color_srm = if gt == "extract" {
             color
