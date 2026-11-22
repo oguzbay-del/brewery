@@ -8,6 +8,54 @@ use sqlx::{PgConnection, Row, types::Uuid};
 
 use crate::Result;
 
+/// Default account-deletion grace period, in days.
+pub const DEFAULT_ACCOUNT_DELETION_GRACE_DAYS: i32 = 30;
+
+/// Reads the owner-configured grace period. The default is 30 days.
+pub fn account_deletion_grace_days() -> Result<i32> {
+    let value = match std::env::var("ACCOUNT_DELETION_GRACE_DAYS") {
+        Ok(value) => Some(value),
+        Err(std::env::VarError::NotPresent) => None,
+        Err(std::env::VarError::NotUnicode(_)) => {
+            return Err(crate::Error::InvalidAccountDeletionGraceDays(
+                "value is not valid Unicode".into(),
+            ));
+        }
+    };
+    parse_grace_days(value.as_deref())
+}
+
+fn parse_grace_days(value: Option<&str>) -> Result<i32> {
+    let days = match value {
+        Some(value) => value.parse::<i32>().map_err(|_| {
+            crate::Error::InvalidAccountDeletionGraceDays("expected an integer".into())
+        })?,
+        None => DEFAULT_ACCOUNT_DELETION_GRACE_DAYS,
+    };
+    if !(1..=365).contains(&days) {
+        return Err(crate::Error::InvalidAccountDeletionGraceDays(
+            "value must be between 1 and 365".into(),
+        ));
+    }
+    Ok(days)
+}
+
+#[cfg(test)]
+mod config_tests {
+    use super::*;
+
+    #[test]
+    fn grace_period_defaults_to_thirty_days_and_validates_overrides() {
+        assert_eq!(
+            parse_grace_days(None).unwrap_or_default(),
+            DEFAULT_ACCOUNT_DELETION_GRACE_DAYS
+        );
+        assert_eq!(parse_grace_days(Some("14")).unwrap_or_default(), 14);
+        assert!(parse_grace_days(Some("0")).is_err());
+        assert!(parse_grace_days(Some("not-a-number")).is_err());
+    }
+}
+
 /// A user's deletion request.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AccountDeletionRequest {
