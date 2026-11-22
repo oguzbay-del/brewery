@@ -130,10 +130,6 @@ struct LimitedZip {
 }
 
 impl LimitedZip {
-    fn new() -> Self {
-        Self::with_limit(MAX_BYTES)
-    }
-
     fn with_limit(limit_bytes: usize) -> Self {
         Self {
             inner: ZipWriter::new(),
@@ -334,13 +330,14 @@ async fn build_batch(tx: &mut PgConnection, job: &Job) -> Result<Built> {
     })
 }
 
-async fn build_workspace(
+pub async fn build_workspace_with_limit(
     tx: &mut PgConnection,
     ws: Uuid,
     store: &dyn ObjectStore,
+    limit_bytes: usize,
 ) -> Result<Built> {
     let zerr = |e: interchange::Error| format_err(e.to_string());
-    let mut zip = LimitedZip::new();
+    let mut zip = LimitedZip::with_limit(limit_bytes);
     let db_err = |e: sqlx::Error| Error::from(db::Error::from(e));
 
     // Recipes (the newest version of each).
@@ -523,13 +520,14 @@ async fn build_workspace(
             'created_at', r.created_at, 'updated_at', r.updated_at,
             'messages', COALESCE((
                 SELECT jsonb_agg(jsonb_build_object(
-                    'id', m.id, 'author_kind', m.author_kind, 'body', m.body,
+                    'id', m.id, 'author_kind', m.author_kind,
+                    'body', CASE WHEN m.retracted_at IS NULL THEN m.body ELSE '' END,
                     'edited_at', m.edited_at, 'retracted_at', m.retracted_at,
                     'created_at', m.created_at
                 ) ORDER BY m.created_at, m.id)
                 FROM support_messages m
                 WHERE m.workspace_id = r.workspace_id AND m.request_id = r.id
-                  AND m.visibility = 'customer' AND m.deleted_at IS NULL
+                  AND m.visibility = 'customer' AND m.deleted_at IS NULL AND m.retracted_at IS NULL
             ), '[]'::jsonb)
          ) ORDER BY r.created_at, r.id), '[]'::jsonb)
          FROM support_requests r
@@ -582,7 +580,7 @@ async fn build_workspace(
            AND (a.record_kind <> 'support_message' OR EXISTS (
                SELECT 1 FROM support_messages m
                WHERE m.workspace_id = a.workspace_id AND m.id = a.record_id
-                 AND m.visibility = 'customer' AND m.deleted_at IS NULL
+                 AND m.visibility = 'customer' AND m.deleted_at IS NULL AND m.retracted_at IS NULL
            ))
          ORDER BY a.created_at, a.id",
     )
@@ -624,7 +622,7 @@ async fn build_workspace(
            AND (a.record_kind <> 'support_message' OR EXISTS (
                SELECT 1 FROM support_messages m
                WHERE m.workspace_id = a.workspace_id AND m.id = a.record_id
-                 AND m.visibility = 'customer' AND m.deleted_at IS NULL
+                 AND m.visibility = 'customer' AND m.deleted_at IS NULL AND m.retracted_at IS NULL
            ))
          ORDER BY a.created_at, a.id",
     )
@@ -762,7 +760,7 @@ pub async fn process(pool: &PgPool, store: &dyn ObjectStore, id: Uuid, ws: Uuid)
         let built = match job.scope.as_str() {
             "recipe" => build_recipe(&mut tx, &job).await?,
             "batch" => build_batch(&mut tx, &job).await?,
-            "workspace" => build_workspace(&mut tx, ws, store).await?,
+            "workspace" => build_workspace_with_limit(&mut tx, ws, store, MAX_BYTES).await?,
             other => return Err(format_err(format!("scope {other} is not supported"))),
         };
         tx.commit().await.map_err(db::Error::from)?;
