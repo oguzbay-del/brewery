@@ -376,6 +376,8 @@ export async function authenticate(request: Request, env: Env): Promise<AgentNam
   const header = request.headers.get("authorization") ?? "";
   const match = /^Bearer\s+(\S+)$/i.exec(header);
   if (!match) return null;
+  // Two equal tokens make the identity ambiguous: refuse both agents (fail closed).
+  if (env.MCP_TOKEN_CLAUDE && env.MCP_TOKEN_CLAUDE === env.MCP_TOKEN_GPT) return null;
   const given = await sha256(match[1]);
   const tokens: Array<[AgentName, string | undefined]> = [
     ["claude", env.MCP_TOKEN_CLAUDE],
