@@ -99,11 +99,15 @@ fn mash_kind(t: &str) -> &'static str {
     }
 }
 
-fn parse_equipment(e: &Element) -> Equipment {
-    Equipment {
-        name: e.text_of("NAME").unwrap_or("Imported equipment").to_owned(),
-        batch_volume_l: e.number_of("BATCH_SIZE"),
-        boil_volume_l: e.number_of("BOIL_SIZE"),
+fn parse_equipment(e: &Element) -> Result<Equipment> {
+    let name = required_text(e, "EQUIPMENT", "NAME")?;
+    required_text(e, "EQUIPMENT", "VERSION")?;
+    let batch_volume_l = required_number(e, "EQUIPMENT", "BATCH_SIZE")?;
+    let boil_volume_l = required_number(e, "EQUIPMENT", "BOIL_SIZE")?;
+    Ok(Equipment {
+        name,
+        batch_volume_l: Some(batch_volume_l),
+        boil_volume_l: Some(boil_volume_l),
         boil_time_min: e.number_of("BOIL_TIME"),
         efficiency_pct: e.number_of("EFFICIENCY"),
         trub_loss_l: e.number_of("TRUB_CHILLER_LOSS"),
@@ -112,7 +116,7 @@ fn parse_equipment(e: &Element) -> Equipment {
             // BeerXML gives the evaporation as percent of the boil volume per hour.
             |(pct, boil)| pct / 100.0 * boil,
         ),
-    }
+    })
 }
 
 /// The color of `EST_COLOR` in SRM. The text has a number and an optional unit.
@@ -257,7 +261,14 @@ fn parse_recipe(r: &Element) -> Result<Recipe> {
         });
         required_text(m, "MISC", "TYPE")?;
     }
-    required_child(r, "RECIPE", "WATERS")?;
+    let waters = required_child(r, "RECIPE", "WATERS")?;
+    for water in waters.children_named("WATER") {
+        required_text(water, "WATER", "NAME")?;
+        required_text(water, "WATER", "VERSION")?;
+        for field in ["AMOUNT", "CALCIUM", "BICARBONATE", "SULFATE", "CHLORIDE", "SODIUM", "MAGNESIUM"] {
+            required_number(water, "WATER", field)?;
+        }
+    }
 
     let mut mash_steps = Vec::new();
     if let Some(mash) = r.child("MASH") {
@@ -293,7 +304,10 @@ fn parse_recipe(r: &Element) -> Result<Recipe> {
     if kind != "extract" && r.number_of("EFFICIENCY").is_none() {
         return Err(Error::Format("RECIPE missing required field EFFICIENCY".into()));
     }
-    let equipment = r.child("EQUIPMENT").map(parse_equipment);
+    if kind != "extract" && r.child("MASH").is_none() {
+        return Err(Error::Format("RECIPE missing required field MASH".into()));
+    }
+    let equipment = r.child("EQUIPMENT").map(parse_equipment).transpose()?;
     Ok(Recipe {
         name,
         notes: r.text_of("NOTES").map(str::to_owned),
@@ -339,7 +353,7 @@ pub fn parse(input: &[u8]) -> Result<Document> {
             doc.equipment = root
                 .children_named("EQUIPMENT")
                 .map(parse_equipment)
-                .collect();
+                .collect::<Result<Vec<_>>>()?;
         }
         other => return Err(Error::Format(format!("unexpected root element {other}"))),
     }
