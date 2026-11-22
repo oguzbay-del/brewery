@@ -75,7 +75,7 @@ CREATE FUNCTION cancel_account_deletion()
     RETURNS SETOF account_deletion_requests
     LANGUAGE plpgsql VOLATILE SECURITY DEFINER
     SET search_path = pg_catalog, public, pg_temp
-    AS $
+    AS $$
 DECLARE
     v_user_id uuid := app_user_id();
     v_request account_deletion_requests%ROWTYPE;
@@ -98,7 +98,7 @@ BEGIN
     WHERE r.id = v_request.id AND r.status = 'pending' AND r.purge_at > now()
     RETURNING r.*;
 END
-$;
+$$;
 
 -- The row lock remains held until the caller's transaction ends. Replicas skip rows claimed
 -- by another worker. The worker marks a request done only after its purge work succeeds.
