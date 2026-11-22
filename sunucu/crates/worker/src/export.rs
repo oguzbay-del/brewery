@@ -122,6 +122,69 @@ fn json_bytes(v: &Value) -> Vec<u8> {
     serde_json::to_vec_pretty(v).unwrap_or_default()
 }
 
+/// A ZIP writer that accounts for every uncompressed entry and the final archive size.
+struct LimitedZip {
+    inner: ZipWriter,
+    total_bytes: usize,
+}
+
+impl LimitedZip {
+    fn new() -> Self {
+        Self { inner: ZipWriter::new(), total_bytes: 0 }
+    }
+
+    fn remaining(&self) -> usize {
+        MAX_BYTES.saturating_sub(self.total_bytes)
+    }
+
+    fn add(&mut self, name: &str, data: &[u8]) -> std::result::Result<(), interchange::Error> {
+        let next = self.total_bytes.checked_add(data.len()).ok_or_else(|| {
+            interchange::Error::Format("EXPORT_TOO_LARGE: export exceeds 512 MiB".into())
+        })?;
+        if next > MAX_BYTES {
+            return Err(interchange::Error::Format(
+                "EXPORT_TOO_LARGE: export exceeds 512 MiB".into(),
+            ));
+        }
+        self.inner.add(name, data)?;
+        self.total_bytes = next;
+        Ok(())
+    }
+
+    fn finish(self) -> std::result::Result<Vec<u8>, interchange::Error> {
+        let bytes = self.inner.finish()?;
+        if bytes.len() > MAX_BYTES {
+            return Err(interchange::Error::Format(
+                "EXPORT_TOO_LARGE: ZIP archive exceeds 512 MiB".into(),
+            ));
+        }
+        Ok(bytes)
+    }
+}
+
+async fn add_object_file(
+    zip: &mut LimitedZip,
+    store: &dyn ObjectStore,
+    object_key: &str,
+    path: &str,
+    expected_size: i64,
+) -> Result<()> {
+    let expected = usize::try_from(expected_size)
+        .map_err(|_| format_err("EXPORT_OBJECT_SIZE_INVALID"))?;
+    if expected > zip.remaining() {
+        return Err(format_err("EXPORT_TOO_LARGE: export exceeds 512 MiB"));
+    }
+    let bytes = store
+        .get(object_key, u64::try_from(zip.remaining()).unwrap_or(u64::MAX))
+        .await
+        .map_err(|_| format_err("EXPORT_OBJECT_READ_FAILED"))?
+        .ok_or_else(|| format_err("EXPORT_OBJECT_MISSING"))?;
+    if bytes.len() != expected {
+        return Err(format_err("EXPORT_OBJECT_SIZE_MISMATCH"));
+    }
+    zip.add(path, &bytes).map_err(|e| format_err(e.to_string()))
+}
+
 fn safe_name(code: &str) -> String {
     let s: String = code
         .chars()
@@ -259,9 +322,9 @@ async fn build_batch(tx: &mut PgConnection, job: &Job) -> Result<Built> {
     })
 }
 
-async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
+async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStore) -> Result<Built> {
     let zerr = |e: interchange::Error| format_err(e.to_string());
-    let mut zip = ZipWriter::new();
+    let mut zip = LimitedZip::new();
     let db_err = |e: sqlx::Error| Error::from(db::Error::from(e));
 
     // Recipes (the newest version of each).
@@ -398,6 +461,174 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
     zip.add("ingredients.json", &json_bytes(&ingredients))
         .map_err(zerr)?;
 
+    // Water profiles: explicit fields only.
+    let water_profiles: Value = sqlx::query_scalar(
+        "SELECT COALESCE(jsonb_agg(jsonb_build_object(
+            'id', id, 'name', name, 'kind', kind, 'calcium_mg_l', calcium_mg_l,
+            'magnesium_mg_l', magnesium_mg_l, 'sodium_mg_l', sodium_mg_l,
+            'chloride_mg_l', chloride_mg_l, 'sulfate_mg_l', sulfate_mg_l,
+            'bicarbonate_mg_l', bicarbonate_mg_l, 'alkalinity_mg_l', alkalinity_mg_l,
+            'ph', ph, 'source_document_id', source_document_id, 'notes', notes,
+            'created_at', created_at, 'updated_at', updated_at
+         ) ORDER BY name, id), '[]'::jsonb)
+         FROM water_profiles WHERE workspace_id = $1 AND deleted_at IS NULL",
+    )
+    .bind(ws)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    zip.add("water_profiles.json", &json_bytes(&water_profiles)).map_err(zerr)?;
+
+    // Device credentials are never exported. The key digest is deliberately absent.
+    let devices: Value = sqlx::query_scalar(
+        "SELECT COALESCE(jsonb_agg(jsonb_build_object(
+            'id', id, 'kind', kind, 'name', name, 'batch_id', batch_id,
+            'vessel_id', vessel_id, 'calibration', calibration,
+            'last_data_at', last_data_at, 'ingest_key_rotated_at', ingest_key_rotated_at,
+            'created_at', created_at, 'updated_at', updated_at
+         ) ORDER BY created_at, id), '[]'::jsonb)
+         FROM devices WHERE workspace_id = $1 AND deleted_at IS NULL",
+    )
+    .bind(ws)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    zip.add("devices.json", &json_bytes(&devices)).map_err(zerr)?;
+
+    // Customer support history only. Internal messages, staff identifiers and GitHub IDs
+    // are not part of a customer's export.
+    let support_requests: Value = sqlx::query_scalar(
+        "SELECT COALESCE(jsonb_agg(jsonb_build_object(
+            'id', r.id, 'public_number', r.public_number, 'topic', r.topic,
+            'title', r.title, 'related_record_kind', r.related_record_kind,
+            'related_record_id', r.related_record_id, 'status', r.status,
+            'created_at', r.created_at, 'updated_at', r.updated_at,
+            'messages', COALESCE((
+                SELECT jsonb_agg(jsonb_build_object(
+                    'id', m.id, 'author_kind', m.author_kind, 'body', m.body,
+                    'edited_at', m.edited_at, 'retracted_at', m.retracted_at,
+                    'created_at', m.created_at
+                ) ORDER BY m.created_at, m.id)
+                FROM support_messages m
+                WHERE m.workspace_id = r.workspace_id AND m.request_id = r.id
+                  AND m.visibility = 'customer' AND m.deleted_at IS NULL
+            ), '[]'::jsonb)
+         ) ORDER BY r.created_at, r.id), '[]'::jsonb)
+         FROM support_requests r
+         WHERE r.workspace_id = $1 AND r.deleted_at IS NULL",
+    )
+    .bind(ws)
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    zip.add("support_requests.json", &json_bytes(&support_requests)).map_err(zerr)?;
+
+    // Scanned documents and file attachments. Object-store keys stay inside this function.
+    let mut scanned_documents = Vec::new();
+    let document_rows = sqlx::query(
+        "SELECT id, object_key, content_type, size_bytes, encode(sha256, 'hex') AS sha256,
+                form_type, batch_id, retention_until, legal_hold, created_at
+         FROM scanned_documents WHERE workspace_id = $1 AND deleted_at IS NULL
+         ORDER BY created_at, id",
+    )
+    .bind(ws)
+    .fetch_all(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    for row in &document_rows {
+        let id: Uuid = row.get("id");
+        let key: String = row.get("object_key");
+        let path = format!("files/documents/scanned-{id}");
+        add_object_file(&mut zip, store, &key, &path, row.get("size_bytes")).await?;
+        scanned_documents.push(json!({
+            "id": id, "form_type": row.get::<String, _>("form_type"),
+            "batch_id": row.get::<Option<Uuid>, _>("batch_id"),
+            "content_type": row.get::<String, _>("content_type"),
+            "size_bytes": row.get::<i64, _>("size_bytes"),
+            "sha256": row.get::<String, _>("sha256"),
+            "retention_until": row.get::<Option<DateTime<Utc>>, _>("retention_until"),
+            "legal_hold": row.get::<bool, _>("legal_hold"),
+            "created_at": row.get::<DateTime<Utc>, _>("created_at"),
+            "file_path": path
+        }));
+    }
+
+    let mut file_attachments = Vec::new();
+    let attachment_rows = sqlx::query(
+        "SELECT a.id, a.object_key, a.content_type, a.size_bytes,
+                encode(a.sha256, 'hex') AS sha256, a.kind, a.record_kind,
+                a.record_id, a.caption, a.created_at
+         FROM attachments a
+         WHERE a.workspace_id = $1 AND a.deleted_at IS NULL AND a.kind = 'file'
+           AND (a.record_kind <> 'support_message' OR EXISTS (
+               SELECT 1 FROM support_messages m
+               WHERE m.workspace_id = a.workspace_id AND m.id = a.record_id
+                 AND m.visibility = 'customer' AND m.deleted_at IS NULL
+           ))
+         ORDER BY a.created_at, a.id",
+    )
+    .bind(ws)
+    .fetch_all(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    for row in &attachment_rows {
+        let id: Uuid = row.get("id");
+        let key: String = row.get("object_key");
+        let path = format!("files/documents/attachment-{id}");
+        add_object_file(&mut zip, store, &key, &path, row.get("size_bytes")).await?;
+        file_attachments.push(json!({
+            "id": id, "record_kind": row.get::<String, _>("record_kind"),
+            "record_id": row.get::<Uuid, _>("record_id"),
+            "caption": row.get::<Option<String>, _>("caption"),
+            "content_type": row.get::<String, _>("content_type"),
+            "size_bytes": row.get::<i64, _>("size_bytes"),
+            "sha256": row.get::<String, _>("sha256"),
+            "created_at": row.get::<DateTime<Utc>, _>("created_at"),
+            "file_path": path
+        }));
+    }
+    let documents = json!({
+        "scanned_documents": scanned_documents,
+        "attachments": file_attachments
+    });
+    zip.add("documents.json", &json_bytes(&documents)).map_err(zerr)?;
+
+    let mut photos = Vec::new();
+    let photo_rows = sqlx::query(
+        "SELECT a.id, a.object_key, a.content_type, a.size_bytes,
+                encode(a.sha256, 'hex') AS sha256, a.record_kind,
+                a.record_id, a.caption, a.created_at
+         FROM attachments a
+         WHERE a.workspace_id = $1 AND a.deleted_at IS NULL AND a.kind = 'photo'
+           AND (a.record_kind <> 'support_message' OR EXISTS (
+               SELECT 1 FROM support_messages m
+               WHERE m.workspace_id = a.workspace_id AND m.id = a.record_id
+                 AND m.visibility = 'customer' AND m.deleted_at IS NULL
+           ))
+         ORDER BY a.created_at, a.id",
+    )
+    .bind(ws)
+    .fetch_all(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    for row in &photo_rows {
+        let id: Uuid = row.get("id");
+        let key: String = row.get("object_key");
+        let path = format!("files/photos/{id}");
+        add_object_file(&mut zip, store, &key, &path, row.get("size_bytes")).await?;
+        photos.push(json!({
+            "id": id, "record_kind": row.get::<String, _>("record_kind"),
+            "record_id": row.get::<Uuid, _>("record_id"),
+            "caption": row.get::<Option<String>, _>("caption"),
+            "content_type": row.get::<String, _>("content_type"),
+            "size_bytes": row.get::<i64, _>("size_bytes"),
+            "sha256": row.get::<String, _>("sha256"),
+            "created_at": row.get::<DateTime<Utc>, _>("created_at"),
+            "file_path": path
+        }));
+    }
+    zip.add("photos.json", &json_bytes(&Value::Array(photos))).map_err(zerr)?;
+
     // Measurements: one CSV for each batch and year.
     let mut files: BTreeMap<String, String> = BTreeMap::new();
     let mut total = 0usize;
@@ -457,8 +688,9 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid) -> Result<Built> {
         "counts": {"recipes": recipes.len(), "batches": batch_count,
                    "measurements": measurement_count, "measurement_files": measurement_files.len()},
         "files": ["recipes.beerjson", "recipes.beerxml", "batches.csv", "stock_lots.csv",
-                  "equipment.json", "ingredients.json", "measurements/"],
-        "not_included_yet": ["water_profiles", "devices", "support_requests", "documents", "photos"],
+                  "equipment.json", "ingredients.json", "water_profiles.json", "devices.json",
+                  "support_requests.json", "documents.json", "photos.json", "measurements/",
+                  "files/documents/", "files/photos/"],
     });
     zip.add("manifest.json", &json_bytes(&manifest))
         .map_err(zerr)?;
@@ -508,7 +740,7 @@ pub async fn process(pool: &PgPool, store: &dyn ObjectStore, id: Uuid, ws: Uuid)
         let built = match job.scope.as_str() {
             "recipe" => build_recipe(&mut tx, &job).await?,
             "batch" => build_batch(&mut tx, &job).await?,
-            "workspace" => build_workspace(&mut tx, ws).await?,
+            "workspace" => build_workspace(&mut tx, ws, store).await?,
             other => return Err(format_err(format!("scope {other} is not supported"))),
         };
         tx.commit().await.map_err(db::Error::from)?;
