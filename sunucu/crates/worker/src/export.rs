@@ -135,7 +135,11 @@ impl LimitedZip {
     }
 
     fn with_limit(limit_bytes: usize) -> Self {
-        Self { inner: ZipWriter::new(), total_bytes: 0, limit_bytes }
+        Self {
+            inner: ZipWriter::new(),
+            total_bytes: 0,
+            limit_bytes,
+        }
     }
 
     fn remaining(&self) -> usize {
@@ -174,13 +178,16 @@ async fn add_object_file(
     path: &str,
     expected_size: i64,
 ) -> Result<()> {
-    let expected = usize::try_from(expected_size)
-        .map_err(|_| format_err("EXPORT_OBJECT_SIZE_INVALID"))?;
+    let expected =
+        usize::try_from(expected_size).map_err(|_| format_err("EXPORT_OBJECT_SIZE_INVALID"))?;
     if expected > zip.remaining() {
         return Err(format_err("EXPORT_TOO_LARGE: export exceeds 512 MiB"));
     }
     let bytes = store
-        .get(object_key, u64::try_from(zip.remaining()).unwrap_or(u64::MAX))
+        .get(
+            object_key,
+            u64::try_from(zip.remaining()).unwrap_or(u64::MAX),
+        )
         .await
         .map_err(|_| format_err("EXPORT_OBJECT_READ_FAILED"))?
         .ok_or_else(|| format_err("EXPORT_OBJECT_MISSING"))?;
@@ -327,7 +334,11 @@ async fn build_batch(tx: &mut PgConnection, job: &Job) -> Result<Built> {
     })
 }
 
-async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStore) -> Result<Built> {
+async fn build_workspace(
+    tx: &mut PgConnection,
+    ws: Uuid,
+    store: &dyn ObjectStore,
+) -> Result<Built> {
     let zerr = |e: interchange::Error| format_err(e.to_string());
     let mut zip = LimitedZip::new();
     let db_err = |e: sqlx::Error| Error::from(db::Error::from(e));
@@ -482,7 +493,8 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStor
     .fetch_one(&mut *tx)
     .await
     .map_err(db_err)?;
-    zip.add("water_profiles.json", &json_bytes(&water_profiles)).map_err(zerr)?;
+    zip.add("water_profiles.json", &json_bytes(&water_profiles))
+        .map_err(zerr)?;
 
     // Device credentials are never exported. The key digest is deliberately absent.
     let devices: Value = sqlx::query_scalar(
@@ -498,7 +510,8 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStor
     .fetch_one(&mut *tx)
     .await
     .map_err(db_err)?;
-    zip.add("devices.json", &json_bytes(&devices)).map_err(zerr)?;
+    zip.add("devices.json", &json_bytes(&devices))
+        .map_err(zerr)?;
 
     // Customer support history only. Internal messages, staff identifiers and GitHub IDs
     // are not part of a customer's export.
@@ -526,7 +539,8 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStor
     .fetch_one(&mut *tx)
     .await
     .map_err(db_err)?;
-    zip.add("support_requests.json", &json_bytes(&support_requests)).map_err(zerr)?;
+    zip.add("support_requests.json", &json_bytes(&support_requests))
+        .map_err(zerr)?;
 
     // Scanned documents and file attachments. Object-store keys stay inside this function.
     let mut scanned_documents = Vec::new();
@@ -596,7 +610,8 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStor
         "scanned_documents": scanned_documents,
         "attachments": file_attachments
     });
-    zip.add("documents.json", &json_bytes(&documents)).map_err(zerr)?;
+    zip.add("documents.json", &json_bytes(&documents))
+        .map_err(zerr)?;
 
     let mut photos = Vec::new();
     let photo_rows = sqlx::query(
@@ -632,7 +647,8 @@ async fn build_workspace(tx: &mut PgConnection, ws: Uuid, store: &dyn ObjectStor
             "file_path": path
         }));
     }
-    zip.add("photos.json", &json_bytes(&Value::Array(photos))).map_err(zerr)?;
+    zip.add("photos.json", &json_bytes(&Value::Array(photos)))
+        .map_err(zerr)?;
 
     // Measurements: one CSV for each batch and year.
     let mut files: BTreeMap<String, String> = BTreeMap::new();
