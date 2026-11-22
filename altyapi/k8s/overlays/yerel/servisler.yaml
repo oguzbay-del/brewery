@@ -123,11 +123,14 @@ spec:
           volumeMounts:
             - { name: data, mountPath: /data }
             - { name: config, mountPath: /etc/seaweedfs, readOnly: true }
+            - { name: tmp, mountPath: /tmp }
       volumes:
         - name: data
           emptyDir: { sizeLimit: 2Gi }
         - name: config
           configMap: { name: objectstore-config }
+        - name: tmp
+          emptyDir: { sizeLimit: 64Mi }
 ---
 apiVersion: v1
 kind: Service
@@ -156,6 +159,7 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
+        fsGroup: 1000
         seccompProfile: { type: RuntimeDefault }
       containers:
         - name: mailpit
@@ -182,6 +186,11 @@ spec:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
             capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: { sizeLimit: 64Mi }
 ---
 apiVersion: v1
 kind: Service
