@@ -8,6 +8,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - Done on 2026-11-20: T2.19, T2.20, T2.21, T2.22, T2.28, T2.38, T2.39. Full api tests: 168 passed (with mailpit, NATS and the object store running).
 - 2026-11-14: the module registry is done. A new endpoint module adds one line to `api/src/modules.rs` only (`sunucu/CLAUDE.md` gives the steps). The ADR-0007 implementation notes are in `adr/0007-notlar/`.
 - 2026-11-14: T2.9 is done (migrations 0100–0102). New decision items 9–12 are in the F2.1 report › Karar gerektiren konular.
+- 2026-11-22: ChatGPT is a second contributor (owner decision). The shared board is the GitHub labels. Before you start a task, read the open issues and PRs. Review a ChatGPT PR before the next task. ChatGPT issues: #193 (G2), #194 (T2.36 draft), #195 (T2.33 scenarios), #196 (P2). Claude issues: #197 (T2.32), #198 (T2.31). Rules: `marketing-site/CHATGPT-SCOPE.md`.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment

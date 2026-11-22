@@ -23,6 +23,15 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 6. Kullanıcıya en fazla beş satırla bildir: ne bitti, test sonucu, sıradaki iş. Kullanıcıdan karar gerekirse sor ve dur.
 7. Aşama kapısı kapanınca kullanıcıya yeni oturum açmasını öner.
 
+## ChatGPT ile ortak çalışma (Oğuz, 22.11.2026)
+
+- ChatGPT bağımsız bir katkıcıdır. Kuralları `marketing-site/CHATGPT-SCOPE.md`'de; ChatGPT o dosyayı okur.
+- **Ortak pano GitHub etiketleridir:** `assigned-claude` / `assigned-chatgpt`, `status:ready|in-progress|review|blocked`, `area:product|marketing`. Kapanan issue bitmiş sayılır. Ayrıntılı ürün tanımı ISLER.md'de kalır. Bir ürün işi yalnız "ready" olunca issue'ya çevrilir ve ISLER.md satırı issue numarasını gösterir.
+- **Pazarlama** (`marketing-site/`, `web-stratejisi/`): işler ChatGPT'nindir; kendi PR'ını CI yeşilken kendisi merge eder.
+- **Ürün:** ChatGPT yalnız `assigned-chatgpt` etiketli ürün issue'larında çalışır. `chatgpt/...` dalında PR açar; Claude inceler, yerelde test eder, merge eder. ISLER.md, DURUM.md, ADR'ler ve `CLAUDE.md` dosyalarını yalnız Claude düzenler.
+- **"Devam" adımına ek:** işe başlamadan önce açık issue ve PR'lara bak. ChatGPT'nin açık işiyle aynı dosyaya dokunuyorsan sırayla yap. Kendi issue'nun etiketini güncelle; commit veya PR'da `Closes #N` yaz. ChatGPT'den gelen PR'ı incelemek sıradaki işten önce gelir.
+- `main`'e gönderim 11.11 kuralıyla sürer (testler yeşilse onaysız). Production yayını, sürüm çıkarma ve production ayarı kullanıcı onayındadır. Ajan köprüsü ve otomatik merge altyapısı yeniden kurulmaz (22.11 iptali).
+
 ## Token verimliliği (Oğuz, 14.11.2026)
 
 - **Oturum kısa tutulur:** her aşamada ve ana oturumun bağlamı büyüyünce (yaklaşık 5–6 iş birleştirildikten sonra) iş tutarlı bir noktada kesilir, DURUM.md güncellenir ve kullanıcıya yeni oturum önerilir. Kayıt DURUM.md'dedir, sohbet geçmişine güvenilmez.
