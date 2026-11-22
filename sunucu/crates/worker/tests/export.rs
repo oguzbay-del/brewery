@@ -510,7 +510,10 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     assert!(contains(&zip, &retracted_message.to_string()));
     assert!(!contains(&zip, "RETRACTED_SECRET_BODY"));
     assert!(!contains(&zip, "RETRACTED_SUPPORT_ATTACHMENT_BYTES"));
-    assert!(!contains(&zip, &format!("attachment-{retracted_attachment}")));
+    assert!(!contains(
+        &zip,
+        &format!("attachment-{retracted_attachment}")
+    ));
     assert!(contains(&zip, document_bytes_as_str(document_bytes)));
     assert!(contains(&zip, document_bytes_as_str(file_bytes)));
     assert!(contains(&zip, document_bytes_as_str(note_bytes)));
@@ -530,7 +533,6 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     }
     assert!(contains(&zip, "\"file_path\""));
 }
-
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn full_export_excludes_data_and_files_from_other_workspaces(base: PgPool) {
