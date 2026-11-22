@@ -52,6 +52,19 @@ Before you start a task:
 - `main`: Claude merges product pull requests when the tests are green (owner rule of 11 November 2026). ChatGPT merges its own marketing pull requests when the marketing CI is green.
 - Production: do not deploy to production, change production configuration or publish a release without the approval of the owner.
 
+## Work loop (each run, without a request from the owner)
+
+Do these steps in each run. Do not wait for an instruction from the owner.
+
+1. Read this file again.
+2. Read the open issues and pull requests.
+3. If a pull request of yours has a review comment or a red CI, fix it first.
+4. Take the first issue that has `assigned-chatgpt` and `status:ready`. Do the oldest issue first. If there is no such issue, find a marketing website task and open an issue for it.
+5. Set `status:in-progress`, do the task, open the pull request, set `status:review`.
+6. Go back to step 2. Stop when no issue is ready, or when the run has no time or capacity.
+
+If a task is not clear or a rule stops it, set `status:blocked`, write one comment with the question, and take the next issue. Do not ask the owner in chat.
+
 ## Report for each completed task
 
 Write it in the pull request description:
