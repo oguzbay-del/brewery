@@ -158,6 +158,8 @@ fn parse_yeast(y: &Element) -> Yeast {
         name: y.text_of("F_Y_NAME").unwrap_or("Yeast").to_owned(),
         form: Some(form.to_owned()),
         attenuation_pct: attenuation,
+        amount: None,
+        amount_is_weight: None,
         packs: y.number_of("F_Y_AMOUNT").or(Some(1.0)),
     }
 }
@@ -228,6 +230,8 @@ fn parse_recipe(r: &Element) -> Recipe {
             .child("F_R_STYLE")
             .and_then(|s| s.text_of("F_S_NAME"))
             .map(str::to_owned),
+        brewer: None,
+        style_details: None,
         ibu_method: None,
         batch_volume_l: batch,
         boil_volume_l: equipment.as_ref().and_then(|e| e.boil_volume_l),
