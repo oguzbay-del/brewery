@@ -26,6 +26,10 @@ impl MemoryStore {
     fn get_bytes(&self, key: &str) -> Option<Vec<u8>> {
         self.objects.lock().unwrap().get(key).cloned()
     }
+
+    fn insert_bytes(&self, key: &str, bytes: &[u8]) {
+        self.objects.lock().unwrap().insert(key.to_owned(), bytes.to_vec());
+    }
 }
 
 impl ObjectStore for MemoryStore {
@@ -99,6 +103,7 @@ async fn worker_pool(base: &PgPool) -> PgPool {
 
 struct Seed {
     ws: Uuid,
+    user: Uuid,
     recipe: Uuid,
     batch: Uuid,
 }
@@ -201,7 +206,7 @@ async fn seed(base: &PgPool) -> Seed {
         .await
         .unwrap();
     }
-    Seed { ws, recipe, batch }
+    Seed { ws, user, recipe, batch }
 }
 
 async fn queue(
@@ -324,6 +329,108 @@ async fn full_export_has_one_measurement_file_for_each_batch_and_year(base: PgPo
     assert!(!contains(&zip, ",=HYPERLINK"));
     assert!(contains(&zip, "2027-12-25T10:00:00+00:00,sg,1.03,manual,"));
     assert!(contains(&zip, "\"measurements\":3") || contains(&zip, "\"measurements\": 3"));
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn full_export_includes_customer_data_and_document_photo_bytes_without_secrets(base: PgPool) {
+    let s = seed(&base).await;
+    let pool = worker_pool(&base).await;
+    let store = MemoryStore::default();
+
+    let water = Uuid::now_v7();
+    let device = Uuid::now_v7();
+    let request = Uuid::now_v7();
+    let document = Uuid::now_v7();
+    let file_attachment = Uuid::now_v7();
+    let photo = Uuid::now_v7();
+    let document_bytes = b"SCANNED_DOCUMENT_BYTES";
+    let file_bytes = b"ATTACHED_DOCUMENT_BYTES";
+    let photo_bytes = b"PHOTO_BYTES";
+    store.insert_bytes("private/scanned-document", document_bytes);
+    store.insert_bytes("private/file-attachment", file_bytes);
+    store.insert_bytes("private/photo-attachment", photo_bytes);
+
+    sqlx::query(
+        "INSERT INTO water_profiles (id, workspace_id, name, kind)
+         VALUES ($1, $2, 'Source water', 'source')",
+    )
+    .bind(water).bind(s.ws).execute(&base).await.unwrap();
+
+    sqlx::query(
+        "INSERT INTO devices (id, workspace_id, kind, name, ingest_key_hash)
+         VALUES ($1, $2, 'ispindel', 'Fermenter sensor', decode(repeat('cd', 32), 'hex'))",
+    )
+    .bind(device).bind(s.ws).execute(&base).await.unwrap();
+
+    sqlx::query(
+        "INSERT INTO support_requests (id, workspace_id, topic, title)
+         VALUES ($1, $2, 'export_help', 'Export question')",
+    )
+    .bind(request).bind(s.ws).execute(&base).await.unwrap();
+
+    sqlx::query(
+        "INSERT INTO support_messages (id, workspace_id, request_id, author_kind,
+            author_user_id, body, visibility)
+         VALUES (gen_random_uuid(), $1, $2, 'customer', $3, 'Customer-visible message', 'customer'),
+                (gen_random_uuid(), $1, $2, 'system', NULL, 'INTERNAL_STAFF_NOTE', 'internal')",
+    )
+    .bind(s.ws).bind(request).bind(s.user).execute(&base).await.unwrap();
+
+    sqlx::query(
+        "INSERT INTO scanned_documents (id, workspace_id, batch_id, form_type, object_key,
+            content_type, size_bytes, sha256)
+         VALUES ($1, $2, $3, 'water_analysis', 'private/scanned-document',
+            'application/pdf', $4, decode(repeat('ab', 32), 'hex'))",
+    )
+    .bind(document).bind(s.ws).bind(s.batch)
+    .bind(i64::try_from(document_bytes.len()).unwrap())
+    .execute(&base).await.unwrap();
+
+    sqlx::query(
+        "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id,
+            object_key, content_type, size_bytes, sha256, caption)
+         VALUES ($1, $2, 'file', 'batch', $3, 'private/file-attachment',
+                 'application/pdf', $4, decode(repeat('ef', 32), 'hex'), 'Recipe notes'),
+                ($5, $2, 'photo', 'batch', $3, 'private/photo-attachment',
+                 'image/jpeg', $6, decode(repeat('12', 32), 'hex'), 'Fermentation photo')",
+    )
+    .bind(file_attachment).bind(s.ws).bind(s.batch)
+    .bind(i64::try_from(file_bytes.len()).unwrap())
+    .bind(photo)
+    .bind(i64::try_from(photo_bytes.len()).unwrap())
+    .execute(&base).await.unwrap();
+
+    let job = queue(&base, &s, "workspace", None, "zip", serde_json::json!({})).await;
+    worker::export::run_pending(&pool, &store).await.unwrap();
+    let (st, key) = status(&base, job).await;
+    assert_eq!(st, "done", "{:?}", sqlx::query_scalar::<_, Option<String>>(
+        "SELECT error FROM export_jobs WHERE id = $1"
+    ).bind(job).fetch_one(&base).await.unwrap());
+    let zip = store.get_bytes(&key.unwrap()).unwrap();
+
+    for name in [
+        "water_profiles.json", "devices.json", "support_requests.json",
+        "documents.json", "photos.json",
+        &format!("files/documents/scanned-{document}"),
+        &format!("files/documents/attachment-{file_attachment}"),
+        &format!("files/photos/{photo}"),
+    ] {
+        assert!(contains(&zip, name), "{name} is missing");
+    }
+    assert!(contains(&zip, "Customer-visible message"));
+    assert!(!contains(&zip, "INTERNAL_STAFF_NOTE"));
+    assert!(contains(&zip, document_bytes_as_str(document_bytes)));
+    assert!(contains(&zip, document_bytes_as_str(file_bytes)));
+    assert!(contains(&zip, document_bytes_as_str(photo_bytes)));
+    assert!(!contains(&zip, "private/scanned-document"));
+    assert!(!contains(&zip, "private/file-attachment"));
+    assert!(!contains(&zip, "private/photo-attachment"));
+    assert!(!contains(&zip, &"cd".repeat(32)));
+    assert!(contains(&zip, "\"file_path\""));
+}
+
+fn document_bytes_as_str(bytes: &[u8]) -> &str {
+    std::str::from_utf8(bytes).unwrap()
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
