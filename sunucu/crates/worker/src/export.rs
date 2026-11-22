@@ -527,7 +527,7 @@ pub async fn build_workspace_with_limit(
                 ) ORDER BY m.created_at, m.id)
                 FROM support_messages m
                 WHERE m.workspace_id = r.workspace_id AND m.request_id = r.id
-                  AND m.visibility = 'customer' AND m.deleted_at IS NULL AND m.retracted_at IS NULL
+                  AND m.visibility = 'customer' AND m.deleted_at IS NULL
             ), '[]'::jsonb)
          ) ORDER BY r.created_at, r.id), '[]'::jsonb)
          FROM support_requests r
