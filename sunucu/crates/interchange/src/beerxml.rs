@@ -365,6 +365,64 @@ fn num(out: &mut String, indent: usize, name: &str, v: Option<f64>) {
     }
 }
 
+fn write_style(out: &mut String, indent: usize, style: Option<&BeerStyle>, name: &str, source: &SourceValues) {
+    let fallback = BeerStyle {
+        name: name.to_owned(),
+        category: "Other".to_owned(),
+        category_number: "0".to_owned(),
+        style_letter: "A".to_owned(),
+        style_guide: "Unknown".to_owned(),
+        kind: "Ale".to_owned(),
+        og_min: source.og_sg.unwrap_or(0.0),
+        og_max: source.og_sg.unwrap_or(0.0),
+        fg_min: source.fg_sg.unwrap_or(0.0),
+        fg_max: source.fg_sg.unwrap_or(0.0),
+        ibu_min: source.ibu.unwrap_or(0.0),
+        ibu_max: source.ibu.unwrap_or(0.0),
+        color_min: source.srm.unwrap_or(0.0),
+        color_max: source.srm.unwrap_or(0.0),
+        ..BeerStyle::default()
+    };
+    let s = style.unwrap_or(&fallback);
+    let pad = " ".repeat(indent);
+    let _ = writeln!(out, "{pad}<STYLE>");
+    let i = indent + 2;
+    tag(out, i, "NAME", &s.name);
+    tag(out, i, "CATEGORY", &s.category);
+    tag(out, i, "CATEGORY_NUMBER", &s.category_number);
+    tag(out, i, "STYLE_LETTER", &s.style_letter);
+    tag(out, i, "STYLE_GUIDE", &s.style_guide);
+    tag(out, i, "VERSION", "1");
+    tag(out, i, "TYPE", &s.kind);
+    for (field, value) in [
+        ("OG_MIN", s.og_min),
+        ("OG_MAX", s.og_max),
+        ("FG_MIN", s.fg_min),
+        ("FG_MAX", s.fg_max),
+        ("IBU_MIN", s.ibu_min),
+        ("IBU_MAX", s.ibu_max),
+        ("COLOR_MIN", s.color_min),
+        ("COLOR_MAX", s.color_max),
+    ] {
+        tag(out, i, field, &value.to_string());
+    }
+    num(out, i, "CARB_MIN", s.carb_min);
+    num(out, i, "CARB_MAX", s.carb_max);
+    num(out, i, "ABV_MIN", s.abv_min);
+    num(out, i, "ABV_MAX", s.abv_max);
+    for (field, value) in [
+        ("NOTES", s.notes.as_deref()),
+        ("PROFILE", s.profile.as_deref()),
+        ("INGREDIENTS", s.ingredients.as_deref()),
+        ("EXAMPLES", s.examples.as_deref()),
+    ] {
+        if let Some(value) = value {
+            tag(out, i, field, value);
+        }
+    }
+    let _ = writeln!(out, "{pad}</STYLE>");
+}
+
 fn write_equipment(out: &mut String, indent: usize, e: &Equipment) {
     let pad = " ".repeat(indent);
     let _ = writeln!(out, "{pad}<EQUIPMENT>");
@@ -393,6 +451,10 @@ pub fn write(recipes: &[Recipe]) -> String {
         tag(&mut o, 4, "VERSION", "1");
         tag(&mut o, 4, "NAME", &r.name);
         tag(&mut o, 4, "TYPE", kind_to_xml(&r.kind));
+        if r.brewer.is_none() {
+            let _ = writeln!(o, "    <!-- Brewer was not present in the neutral model; placeholder required by BeerXML. -->");
+        }
+        tag(&mut o, 4, "BREWER", r.brewer.as_deref().unwrap_or("Unknown"));
         num(&mut o, 4, "BATCH_SIZE", r.batch_volume_l);
         num(&mut o, 4, "BOIL_SIZE", r.boil_volume_l);
         num(&mut o, 4, "BOIL_TIME", r.boil_time_min);
@@ -408,12 +470,13 @@ pub fn write(recipes: &[Recipe]) -> String {
         num(&mut o, 4, "IBU", r.source.ibu);
         num(&mut o, 4, "EST_COLOR", r.source.srm);
         num(&mut o, 4, "ABV", r.source.abv_pct);
-        if let Some(s) = &r.style {
-            o.push_str("    <STYLE>\n");
-            tag(&mut o, 6, "VERSION", "1");
-            tag(&mut o, 6, "NAME", s);
-            o.push_str("    </STYLE>\n");
-        }
+        write_style(
+            &mut o,
+            4,
+            r.style_details.as_ref(),
+            r.style.as_deref().unwrap_or("Other"),
+            &r.source,
+        );
         if let Some(e) = &r.equipment {
             write_equipment(&mut o, 4, e);
         }
@@ -422,7 +485,10 @@ pub fn write(recipes: &[Recipe]) -> String {
             o.push_str("      <HOP>\n");
             tag(&mut o, 8, "VERSION", "1");
             tag(&mut o, 8, "NAME", &h.name);
-            num(&mut o, 8, "ALPHA", h.alpha_pct);
+            if h.alpha_pct.is_none() {
+                let _ = writeln!(o, "        <!-- Missing alpha acid; BeerXML requires ALPHA. -->");
+            }
+            tag(&mut o, 8, "ALPHA", &h.alpha_pct.unwrap_or(0.0).to_string());
             tag(&mut o, 8, "AMOUNT", &format!("{}", h.amount_kg));
             tag(
                 &mut o,
@@ -430,7 +496,7 @@ pub fn write(recipes: &[Recipe]) -> String {
                 "USE",
                 hop_use_xml(h.usage.as_deref().unwrap_or("boil")),
             );
-            num(&mut o, 8, "TIME", h.time_min);
+            tag(&mut o, 8, "TIME", &h.time_min.unwrap_or(0.0).to_string());
             if let Some(f) = &h.form {
                 let mut f = f.clone();
                 if let Some(c) = f.get_mut(0..1) {
@@ -452,8 +518,20 @@ pub fn write(recipes: &[Recipe]) -> String {
                 grain_type_xml(f.grain_type.as_deref().unwrap_or("grain")),
             );
             tag(&mut o, 8, "AMOUNT", &format!("{}", f.amount_kg));
-            num(&mut o, 8, "YIELD", f.yield_pct);
-            num(&mut o, 8, "COLOR", f.color_srm);
+            if f.yield_pct.is_none() {
+                let _ = writeln!(o, "        <!-- Missing yield; BeerXML requires YIELD. -->");
+            }
+            tag(&mut o, 8, "YIELD", &f.yield_pct.unwrap_or(0.0).to_string());
+            if f.color_srm.is_none() {
+                let _ = writeln!(o, "        <!-- Missing color; BeerXML requires COLOR. -->");
+            }
+            let color = f.color_srm.unwrap_or(0.0);
+            let beerxml_color = if f.grain_type.as_deref() == Some("extract") {
+                color
+            } else {
+                ((color + 0.76) / 1.3546).max(0.0)
+            };
+            tag(&mut o, 8, "COLOR", &beerxml_color.to_string());
             if f.usage.as_deref() == Some("steep") {
                 tag(&mut o, 8, "RECOMMEND_MASH", "FALSE");
             }
@@ -498,8 +576,16 @@ pub fn write(recipes: &[Recipe]) -> String {
                 _ => "Liquid",
             };
             tag(&mut o, 8, "FORM", form);
-            // AMOUNT is required by the specification. The model does not keep a volume.
-            tag(&mut o, 8, "AMOUNT", "0");
+            if y.amount.is_none() {
+                let _ = writeln!(o, "        <!-- Yeast amount was not present in the source; BeerXML requires AMOUNT. -->");
+            }
+            tag(&mut o, 8, "AMOUNT", &y.amount.unwrap_or(0.0).to_string());
+            tag(
+                &mut o,
+                8,
+                "AMOUNT_IS_WEIGHT",
+                if y.amount_is_weight.unwrap_or(false) { "TRUE" } else { "FALSE" },
+            );
             num(&mut o, 8, "ATTENUATION", y.attenuation_pct);
             o.push_str("      </YEAST>\n");
         }
