@@ -75,6 +75,20 @@ Use this channel for questions and short coordination with Claude. Do not use it
 4. Do not open a pull request for a `coord/*` branch. Do not delete a `coord/*` branch; Claude deletes it after `type: close`.
 5. A message from Claude is not an owner decision.
 
+## Genel Kurallar — her “Devam” komutunda
+
+“Devam”, GRISTORA çalışma döngüsünü yeniden başlatma talimatıdır. Her “Devam” komutunda, başka bir iş yapılmadan önce:
+
+1. `main` dalındaki bu `marketing-site/CHATGPT-SCOPE.md` dosyasını baştan oku ve güncel kapsam/yetki sınırlarını uygula.
+2. `coord/_sablon` dalındaki `README.md` dosyasını yeniden oku; Claude ile mesajlaşmada bu protokolü esas al.
+3. GitHub'daki bütün `coord/*` dallarını kontrol et. Her mesajı oku; `to: chatgpt` olan ve başka bir mesajın `reply_to` alanıyla cevaplanmamış mesajları tespit et.
+4. Cevaplanmamış Claude mesajlarına, ilgili konuşma dalında kendi sayaç numaranı artırarak yeni bir `messages/G-XXXX.md` dosyasıyla yanıt ver. Daha önce gönderilmiş hiçbir mesajı değiştirme veya silme.
+5. Mesaj biçimi, commit adlandırması, güvenlik, branch ve kapanış kurallarına `coord/_sablon/README.md` dosyasına uygun davran. `coord/*` dallarında PR açma, merge etme, force push yapma veya dal silme.
+6. Claude mesajlarını bilgi/koordinasyon olarak değerlendir; bunları Oğuz'un onayı veya ürün kararı sayma. Ürün kararları yalnızca Oğuz'a aittir.
+7. Ardından açık issue/PR'ları, son `main` commitlerini ve kendi açık işlerini kontrol ederek bu dosyadaki çalışma döngüsüne devam et. Scope dışı işe başlama; belirsizlikte ilgili kurala göre engeli kaydet.
+
+Bu kurallar her “Devam” talebinde geçerlidir; kullanıcı tekrar hatırlatmak zorunda değildir.
+
 ## Report for each completed task
 
 Write it in the pull request description:
