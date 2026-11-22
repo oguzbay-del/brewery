@@ -33,16 +33,18 @@ CREATE POLICY owner_all ON account_deletion_requests TO app_owner
 -- These policies are only used by the SECURITY DEFINER anonymisation function.
 CREATE POLICY account_delete_owner ON passkeys TO app_owner
     USING (true) WITH CHECK (true);
+CREATE POLICY account_delete_owner ON webauthn_challenges TO app_owner
+    USING (true) WITH CHECK (true);
 
-GRANT SELECT, INSERT ON account_deletion_requests TO app_api;
-GRANT UPDATE (status, restored_at) ON account_deletion_requests TO app_api;
+-- The API may read its own request rows but all transitions go through the guarded functions.
+GRANT SELECT ON account_deletion_requests TO app_api;
 GRANT SELECT ON account_deletion_requests TO app_worker;
 GRANT UPDATE (status, restored_at) ON account_deletion_requests TO app_worker;
 
 -- A second request while one is pending returns the existing request.
 CREATE FUNCTION request_account_deletion(p_grace_days integer DEFAULT 30)
     RETURNS SETOF account_deletion_requests
-    LANGUAGE plpgsql VOLATILE
+    LANGUAGE plpgsql VOLATILE SECURITY DEFINER
     SET search_path = pg_catalog, public, pg_temp
     AS $$
 DECLARE
@@ -71,14 +73,32 @@ $$;
 
 CREATE FUNCTION cancel_account_deletion()
     RETURNS SETOF account_deletion_requests
-    LANGUAGE sql VOLATILE
+    LANGUAGE plpgsql VOLATILE SECURITY DEFINER
     SET search_path = pg_catalog, public, pg_temp
-    AS $cancel$
+    AS $
+DECLARE
+    v_user_id uuid := app_user_id();
+    v_request account_deletion_requests%ROWTYPE;
+BEGIN
+    IF v_user_id IS NULL OR NOT EXISTS (
+        SELECT 1 FROM users AS u WHERE u.id = v_user_id AND u.deleted_at IS NULL
+    ) THEN
+        RETURN;
+    END IF;
+    SELECT * INTO v_request
+    FROM account_deletion_requests AS r
+    WHERE r.user_id = v_user_id AND r.status = 'pending'
+    FOR UPDATE;
+    IF NOT FOUND OR v_request.purge_at <= now() THEN
+        RETURN;
+    END IF;
+    RETURN QUERY
     UPDATE account_deletion_requests AS r
     SET status = 'cancelled', restored_at = now()
-    WHERE r.user_id = app_user_id() AND r.status = 'pending' AND r.purge_at > now()
-    RETURNING r.*
-$cancel$;
+    WHERE r.id = v_request.id AND r.status = 'pending' AND r.purge_at > now()
+    RETURNING r.*;
+END
+$;
 
 -- The row lock remains held until the caller's transaction ends. Replicas skip rows claimed
 -- by another worker. The worker marks a request done only after its purge work succeeds.
@@ -109,16 +129,30 @@ CREATE FUNCTION anonymize_user(p_user_id uuid)
     LANGUAGE plpgsql VOLATILE SECURITY DEFINER
     SET search_path = pg_catalog, public, pg_temp
     AS $$
+DECLARE
+    v_request_id uuid;
 BEGIN
+    -- Lock the request before the user. A concurrent cancel waits here and then sees done.
+    SELECT id INTO v_request_id
+    FROM account_deletion_requests
+    WHERE user_id = p_user_id AND status = 'pending' AND purge_at <= now()
+    ORDER BY purge_at, id
+    LIMIT 1
+    FOR UPDATE;
+    IF v_request_id IS NULL THEN
+        RAISE EXCEPTION 'a due pending deletion request is required'
+            USING ERRCODE = 'insufficient_privilege';
+    END IF;
+
     UPDATE users
     SET display_name = 'Deleted user',
         contact_email = NULL,
         contact_email_verified_at = NULL,
         locale = 'en-US',
-        deleted_at = COALESCE(deleted_at, now())
-    WHERE id = p_user_id;
+        deleted_at = now()
+    WHERE id = p_user_id AND deleted_at IS NULL;
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'user % does not exist', p_user_id
+        RAISE EXCEPTION 'active user % does not exist', p_user_id
             USING ERRCODE = 'no_data_found';
     END IF;
 
@@ -132,9 +166,14 @@ BEGIN
 
     DELETE FROM sessions WHERE user_id = p_user_id;
     DELETE FROM passkeys WHERE user_id = p_user_id;
+    DELETE FROM webauthn_challenges WHERE user_id = p_user_id;
     DELETE FROM push_targets WHERE user_id = p_user_id;
+
+    UPDATE account_deletion_requests
+    SET status = 'done'
+    WHERE id = v_request_id AND status = 'pending';
 END
-$$;
+$;
 
 REVOKE ALL ON FUNCTION request_account_deletion(integer),
     cancel_account_deletion(), due_account_deletions(integer), anonymize_user(uuid) FROM PUBLIC;
