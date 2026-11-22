@@ -24,7 +24,7 @@
 2. Keep all implementation changes inside `marketing-site/`. Website-specific strategy and handoff documents may be updated in `web-stratejisi/`, `marketing-site/`, and the marketing section of `OTURUM.md`.
 3. Keep public claims aligned with the current product maturity. Do not invent availability, features, integrations, customers, metrics, prices, certifications, or conversion flows.
 4. Run the isolated marketing checks, static build, generated-site validation, responsive browser tests and accessibility checks relevant to each change. Review the diff and CI before merging.
-5. Merge website pull requests only after the website CI is green. Automatic merge is allowed only through the guarded **Agent auto-merge** workflow on a `gpt/*` branch (owner instruction, 21 November 2026; gates in `AGENT_TEAM.md`). Do not merge manually around a failed or pending check. Do not deploy publicly without the required hosting, domain and owner launch approvals.
+5. Do not use auto-merge. Merge website pull requests manually only after the website CI is green. Do not deploy publicly without the required hosting, domain and owner launch approvals.
 6. Do not wait for unrelated product work. Do not switch to the product task queue when the marketing website is blocked; record the website blocker and continue with another independent website task.
 
 ## Definition of done — stop condition
