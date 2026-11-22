@@ -1,16 +1,16 @@
 //! `BeerXML` 1.0 reader and writer.
 //!
 //! Decisions (recorded as warnings when they change a value):
-//! - Fermentable `COLOR` is read as SRM (the usual practice of exporters). The spec says Lovebond.
+//! - Fermentable `COLOR` is Lovibond, except liquid extract which is SRM; the neutral model stores
+//!   SRM. The conversion is documented beside the reader.
 //! - A fermentable that is not a grain gets the usage `boil`; a grain that is not mashed gets
 //!   `steep`.
 //! - `Aroma` hops become `whirlpool`.
 //! - `OG` and `FG` are measured values in the specification. They are the source values when the
 //!   file has no estimate. `EST_OG` and `EST_FG` (text with a unit, for example `1.052 sg`) win.
 //! - `EST_COLOR` is text with a unit. A unit `EBC` is converted to SRM; any other unit is SRM.
-//! - Not checked: required fields (`VERSION`, `STYLE`, `BREWER`, ...). The reader accepts a file
-//!   that lacks them. A missing `AMOUNT_IS_WEIGHT` on a misc means weight (the usual practice;
-//!   the specification text says FALSE).
+//! - Required fields of BeerXML records are checked and errors name the record and field.
+//! - Yeast `AMOUNT` and `AMOUNT_IS_WEIGHT` are preserved; they are not interpreted as pack counts.
 
 use std::fmt::Write as _;
 
@@ -542,6 +542,7 @@ pub fn write(recipes: &[Recipe]) -> String {
             let beerxml_color = match f.color_srm {
                 None => 0.0,
                 Some(color) if f.grain_type.as_deref() == Some("extract") => color,
+                Some(color) if color <= 0.0 => 0.0,
                 Some(color) => ((color + 0.76) / 1.3546).max(0.0),
             };
             tag(&mut o, 8, "COLOR", &beerxml_color.to_string());
