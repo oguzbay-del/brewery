@@ -352,14 +352,18 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     let file_attachment = Uuid::now_v7();
     let photo = Uuid::now_v7();
     let note_attachment = Uuid::now_v7();
+    let retracted_message = Uuid::now_v7();
+    let retracted_attachment = Uuid::now_v7();
     let document_bytes = b"SCANNED_DOCUMENT_BYTES";
     let file_bytes = b"ATTACHED_DOCUMENT_BYTES";
     let note_bytes = b"ATTACHED_NOTE_BYTES";
     let photo_bytes = b"PHOTO_BYTES";
+    let retracted_bytes = b"RETRACTED_SUPPORT_ATTACHMENT_BYTES";
     store.insert_bytes("private/scanned-document", document_bytes);
     store.insert_bytes("private/file-attachment", file_bytes);
     store.insert_bytes("private/note-attachment", note_bytes);
     store.insert_bytes("private/photo-attachment", photo_bytes);
+    store.insert_bytes("private/retracted-support-attachment", retracted_bytes);
 
     sqlx::query(
         "INSERT INTO water_profiles (id, workspace_id, name, kind)
@@ -400,6 +404,34 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     .bind(s.ws)
     .bind(request)
     .bind(s.user)
+    .execute(&base)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO support_messages (id, workspace_id, request_id, author_kind,
+            author_user_id, body, visibility, retracted_at)
+         VALUES ($1, $2, $3, 'customer', $4, 'RETRACTED_SECRET_BODY', 'customer', now())",
+    )
+    .bind(retracted_message)
+    .bind(s.ws)
+    .bind(request)
+    .bind(s.user)
+    .execute(&base)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id,
+            object_key, content_type, size_bytes, sha256, caption)
+         VALUES ($1, $2, 'file', 'support_message', $3,
+            'private/retracted-support-attachment', 'text/plain', $4,
+            decode(repeat('56', 32), 'hex'), 'retracted support attachment')",
+    )
+    .bind(retracted_attachment)
+    .bind(s.ws)
+    .bind(retracted_message)
+    .bind(i64::try_from(retracted_bytes.len()).unwrap())
     .execute(&base)
     .await
     .unwrap();
@@ -475,6 +507,9 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
     }
     assert!(contains(&zip, "Customer-visible message"));
     assert!(!contains(&zip, "INTERNAL_STAFF_NOTE"));
+    assert!(!contains(&zip, "RETRACTED_SECRET_BODY"));
+    assert!(!contains(&zip, "RETRACTED_SUPPORT_ATTACHMENT_BYTES"));
+    assert!(!contains(&zip, &format!("attachment-{retracted_attachment}")));
     assert!(contains(&zip, document_bytes_as_str(document_bytes)));
     assert!(contains(&zip, document_bytes_as_str(file_bytes)));
     assert!(contains(&zip, document_bytes_as_str(note_bytes)));
@@ -493,6 +528,112 @@ async fn full_export_includes_customer_data_and_document_photo_bytes_without_sec
         assert!(!contains(&zip, secret_field), "{secret_field} leaked");
     }
     assert!(contains(&zip, "\"file_path\""));
+}
+
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn full_export_excludes_data_and_files_from_other_workspaces(base: PgPool) {
+    let s = seed(&base).await;
+    let pool = worker_pool(&base).await;
+    let store = MemoryStore::default();
+    let other_ws = Uuid::now_v7();
+    let other_water = Uuid::now_v7();
+    let other_device = Uuid::now_v7();
+    let other_request = Uuid::now_v7();
+    let other_document = Uuid::now_v7();
+    let other_bytes = b"OTHER_WORKSPACE_FILE_BYTES";
+    store.insert_bytes("private/other-workspace-file", other_bytes);
+
+    sqlx::query(
+        "INSERT INTO workspaces (id, name, mode, region, country, time_zone, support_pseudonym)
+         VALUES ($1, 'Other workspace', 'home', 'us', 'US', 'America/New_York', 'other-' || $1::text)",
+    )
+    .bind(other_ws)
+    .execute(&base)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO water_profiles (id, workspace_id, name, kind)
+         VALUES ($1, $2, 'OTHER_WORKSPACE_WATER', 'source')",
+    )
+    .bind(other_water)
+    .bind(other_ws)
+    .execute(&base)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO devices (id, workspace_id, kind, name, ingest_key_hash)
+         VALUES ($1, $2, 'ispindel', 'OTHER_WORKSPACE_DEVICE', decode(repeat('de', 32), 'hex'))",
+    )
+    .bind(other_device)
+    .bind(other_ws)
+    .execute(&base)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO support_requests (id, workspace_id, topic, title)
+         VALUES ($1, $2, 'export_help', 'OTHER_WORKSPACE_SUPPORT_REQUEST')",
+    )
+    .bind(other_request)
+    .bind(other_ws)
+    .execute(&base)
+    .await
+    .unwrap();
+
+    sqlx::query(
+        "INSERT INTO scanned_documents (id, workspace_id, form_type, object_key,
+            content_type, size_bytes, sha256)
+         VALUES ($1, $2, 'water_analysis', 'private/other-workspace-file',
+            'application/pdf', $3, decode(repeat('ad', 32), 'hex'))",
+    )
+    .bind(other_document)
+    .bind(other_ws)
+    .bind(i64::try_from(other_bytes.len()).unwrap())
+    .execute(&base)
+    .await
+    .unwrap();
+
+    let job = queue(&base, &s, "workspace", None, "zip", serde_json::json!({})).await;
+    worker::export::run_pending(&pool, &store).await.unwrap();
+    let (st, key) = status(&base, job).await;
+    assert_eq!(st, "done");
+    let zip = store.get_bytes(&key.unwrap()).unwrap();
+
+    for marker in [
+        "OTHER_WORKSPACE_WATER",
+        "OTHER_WORKSPACE_DEVICE",
+        "OTHER_WORKSPACE_SUPPORT_REQUEST",
+        "OTHER_WORKSPACE_FILE_BYTES",
+    ] {
+        assert!(!contains(&zip, marker), "{marker} leaked into the export");
+    }
+    assert!(!contains(&zip, &format!("scanned-{other_document}")));
+    assert!(!contains(&zip, "private/other-workspace-file"));
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn full_export_reports_too_large_through_workspace_builder(base: PgPool) {
+    let s = seed(&base).await;
+    let pool = worker_pool(&base).await;
+    let store = MemoryStore::default();
+    let mut tx = db::begin(
+        &pool,
+        &db::DbContext {
+            user_id: None,
+            workspace_id: Some(s.ws),
+            actor_kind: db::ActorKind::System,
+        },
+    )
+    .await
+    .unwrap();
+
+    let error = worker::export::build_workspace_with_limit(&mut tx, s.ws, &store, 16)
+        .await
+        .unwrap_err();
+    assert!(error.to_string().contains("EXPORT_TOO_LARGE"));
 }
 
 fn document_bytes_as_str(bytes: &[u8]) -> &str {
