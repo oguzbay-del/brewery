@@ -58,6 +58,10 @@ BEGIN
         RAISE EXCEPTION 'grace period must be between 1 and 365 days'
             USING ERRCODE = 'check_violation';
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM users WHERE id = v_user_id AND deleted_at IS NULL) THEN
+        RAISE EXCEPTION 'active user is required'
+            USING ERRCODE = 'insufficient_privilege';
+    END IF;
     RETURN QUERY
     INSERT INTO account_deletion_requests (user_id, purge_at)
     VALUES (v_user_id, now() + make_interval(days => p_grace_days))
