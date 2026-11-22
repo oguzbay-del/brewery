@@ -92,7 +92,9 @@ async fn due_requests_are_locked_and_skipped_by_another_worker(pool: PgPool) {
     create_user(&app, user).await.unwrap();
     let request = request_as(&app, user, 1).await;
     sqlx::query(
-        "UPDATE account_deletion_requests SET purge_at = now() - interval '1 second' WHERE id = $1",
+        "UPDATE account_deletion_requests
+         SET requested_at = now() - interval '2 seconds', purge_at = now() - interval '1 second'
+         WHERE id = $1",
     )
     .bind(request.id)
     .execute(&pool)
