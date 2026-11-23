@@ -246,7 +246,8 @@ async fn workspace_object_keys(tx: &mut PgConnection, workspace_id: Uuid) -> Res
          ORDER BY c.table_name, c.column_name",
     )
     .fetch_all(&mut *tx)
-    .await?;
+    .await
+    .map_err(db::Error::from)?;
 
     let mut keys = BTreeSet::new();
     for (table, column) in columns {
