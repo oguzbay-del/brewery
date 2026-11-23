@@ -1,10 +1,6 @@
 //! Scheduled account deletion (T2.31c): workspace purge, object cleanup and anonymisation.
 
-#![allow(
-    clippy::unwrap_used,
-    clippy::expect_used,
-    clippy::too_many_lines
-)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::too_many_lines)]
 
 mod common;
 
@@ -263,7 +259,10 @@ async fn due_deletion_purges_home_files_removes_business_membership_and_anonymiz
             .fetch_one(&base)
             .await
             .unwrap();
-        assert_eq!(remaining, 0, "{table}.{column} still references deleted user");
+        assert_eq!(
+            remaining, 0,
+            "{table}.{column} still references deleted user"
+        );
     }
 
     let deleted_at: Option<chrono::DateTime<chrono::Utc>> =
