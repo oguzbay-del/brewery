@@ -392,6 +392,17 @@ fn num(out: &mut String, indent: usize, name: &str, v: Option<f64>) {
     }
 }
 
+fn required_num(out: &mut String, indent: usize, name: &str, value: Option<f64>) {
+    if value.is_none() {
+        let _ = writeln!(
+            out,
+            "{:indent$}<!-- Missing {name}; using 0 placeholder required by BeerXML. -->",
+            ""
+        );
+    }
+    tag(out, indent, name, &value.unwrap_or(0.0).to_string());
+}
+
 fn write_style(
     out: &mut String,
     indent: usize,
@@ -462,8 +473,8 @@ fn write_equipment(out: &mut String, indent: usize, e: &Equipment) {
     let i = indent + 2;
     tag(out, i, "VERSION", "1");
     tag(out, i, "NAME", &e.name);
-    num(out, i, "BOIL_SIZE", e.boil_volume_l);
-    num(out, i, "BATCH_SIZE", e.batch_volume_l);
+    required_num(out, i, "BOIL_SIZE", e.boil_volume_l);
+    required_num(out, i, "BATCH_SIZE", e.batch_volume_l);
     num(out, i, "BOIL_TIME", e.boil_time_min);
     num(out, i, "EFFICIENCY", e.efficiency_pct);
     num(out, i, "TRUB_CHILLER_LOSS", e.trub_loss_l);
@@ -496,10 +507,10 @@ pub fn write(recipes: &[Recipe]) -> String {
             "BREWER",
             r.brewer.as_deref().unwrap_or("Unknown"),
         );
-        num(&mut o, 4, "BATCH_SIZE", r.batch_volume_l);
-        num(&mut o, 4, "BOIL_SIZE", r.boil_volume_l);
-        num(&mut o, 4, "BOIL_TIME", r.boil_time_min);
-        num(&mut o, 4, "EFFICIENCY", r.efficiency_pct);
+        required_num(&mut o, 4, "BATCH_SIZE", r.batch_volume_l);
+        required_num(&mut o, 4, "BOIL_SIZE", r.boil_volume_l);
+        required_num(&mut o, 4, "BOIL_TIME", r.boil_time_min);
+        required_num(&mut o, 4, "EFFICIENCY", r.efficiency_pct);
         if let Some(m) = &r.ibu_method {
             tag(&mut o, 4, "IBU_METHOD", m);
         }
@@ -593,7 +604,7 @@ pub fn write(recipes: &[Recipe]) -> String {
                 "USE",
                 misc_use_xml(m.usage.as_deref().unwrap_or("boil")),
             );
-            num(&mut o, 8, "TIME", m.time_min);
+            required_num(&mut o, 8, "TIME", m.time_min);
             tag(&mut o, 8, "AMOUNT", &format!("{}", m.amount));
             tag(
                 &mut o,
@@ -641,7 +652,7 @@ pub fn write(recipes: &[Recipe]) -> String {
             o.push_str("      </YEAST>\n");
         }
         o.push_str("    </YEASTS>\n    <WATERS>\n    </WATERS>\n");
-        if !r.mash_steps.is_empty() {
+        if !r.mash_steps.is_empty() || r.kind != "extract" {
             o.push_str("    <MASH>\n      <VERSION>1</VERSION>\n      <NAME>Mash</NAME>\n      <GRAIN_TEMP>20</GRAIN_TEMP>\n      <MASH_STEPS>\n");
             for s in &r.mash_steps {
                 o.push_str("        <MASH_STEP>\n");
@@ -653,7 +664,11 @@ pub fn write(recipes: &[Recipe]) -> String {
                     _ => "Infusion",
                 };
                 tag(&mut o, 10, "TYPE", kind);
-                num(&mut o, 10, "INFUSE_AMOUNT", s.infusion_l);
+                if s.kind == "infusion" {
+                    required_num(&mut o, 10, "INFUSE_AMOUNT", s.infusion_l);
+                } else {
+                    num(&mut o, 10, "INFUSE_AMOUNT", s.infusion_l);
+                }
                 tag(&mut o, 10, "STEP_TEMP", &format!("{}", s.temp_c));
                 tag(&mut o, 10, "STEP_TIME", &format!("{}", s.time_min));
                 o.push_str("        </MASH_STEP>\n");
