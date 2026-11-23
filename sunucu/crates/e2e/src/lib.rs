@@ -53,9 +53,6 @@ impl Context {
         if base_url.trim().is_empty() {
             return None;
         }
-        // reqwest uses rustls-no-provider in the workspace; install the shared ring
-        // provider before constructing any HTTP client in this test process.
-        let _ = rustls::crypto::ring::default_provider().install_default();
         Some(Self {
             client: Client::new(),
             base_url: base_url.trim_end_matches('/').to_owned(),
