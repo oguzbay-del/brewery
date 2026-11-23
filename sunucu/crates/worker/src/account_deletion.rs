@@ -203,7 +203,7 @@ async fn scrub_workspace_user_references(
              WHERE workspace_id = $1 AND \"{column}\" = $2)"
         );
         if !nullable {
-            let references_user: bool = sqlx::query_scalar(AssertSqlSafe(&sql))
+            let references_user: bool = sqlx::query_scalar(AssertSqlSafe(sql.as_str()))
                 .bind(workspace_id)
                 .bind(user_id)
                 .fetch_one(&mut *tx)
@@ -220,7 +220,7 @@ async fn scrub_workspace_user_references(
             "UPDATE \"{table}\" SET \"{column}\" = NULL \
              WHERE workspace_id = $1 AND \"{column}\" = $2"
         );
-        sqlx::query(AssertSqlSafe(&sql))
+        sqlx::query(AssertSqlSafe(sql.as_str()))
             .bind(workspace_id)
             .bind(user_id)
             .execute(&mut *tx)
@@ -257,7 +257,7 @@ async fn workspace_object_keys(tx: &mut PgConnection, workspace_id: Uuid) -> Res
             "SELECT \"{column}\" FROM \"{table}\" \
              WHERE workspace_id = $1 AND \"{column}\" IS NOT NULL"
         );
-        let found: Vec<String> = sqlx::query_scalar(AssertSqlSafe(&sql))
+        let found: Vec<String> = sqlx::query_scalar(AssertSqlSafe(sql.as_str()))
             .bind(workspace_id)
             .fetch_all(&mut *tx)
             .await
