@@ -63,8 +63,8 @@ pub async fn run(stop: watch::Receiver<bool>) {
         stop.clone(),
     ));
     // Export jobs (T2.26) and account deletion use the normal workspace object store.
-    let export_task = file_store
-        .map(|store| tokio::spawn(crate::export::run(pool.clone(), store, stop.clone())));
+    let export_task =
+        file_store.map(|store| tokio::spawn(crate::export::run(pool.clone(), store, stop.clone())));
     let client = match events::connect(&nats_url).await {
         Ok(c) => c,
         Err(e) => {
