@@ -135,7 +135,7 @@ pub async fn cancel_account_deletion(
         .transpose()
 }
 
-/// Lists due pending requests. Each user must be re-locked and rechecked through account_deletion_memberships before processing.
+/// Lists due pending requests. Each user must be re-locked and rechecked through `account_deletion_memberships` before processing.
 pub async fn due_account_deletions(
     conn: &mut PgConnection,
     limit: i32,
