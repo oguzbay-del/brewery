@@ -15,7 +15,7 @@ export DATABASE_URL
 .PHONY: help up down logs ps smoke test e2e lint migrate sqlx-prepare kind-up kind-test kind-down vektor
 
 help: ## Hedefleri listeler
-	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
+	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\\n", $$1, $$2}'
 
 up: ## Derler, tüm servisleri başlatır, sağlık denetimini bekler
 	@if [ -n "$(BUILD_CA_FILE)" ]; then cp "$(BUILD_CA_FILE)" $(BUILD_CA); else : > $(BUILD_CA); fi
@@ -44,7 +44,7 @@ E2E_MAILPIT_URL ?= http://127.0.0.1:8025
 
 e2e: ## Compose uçtan uca testleri (önce make up)
 	@set -eu; \
-	api_id=$($(COMPOSE) run --no-deps -d --rm \
+	api_id=$($(COMPOSE) run --no-deps -d \
 		-p 127.0.0.1:$(E2E_KEYED_API_PORT):8080 \
 		-e BREW_PACKAGE_KEY=gristora-e2e-only-signing-key-not-production \
 		-e BREW_PACKAGE_KEY_ID=e2e \
@@ -55,7 +55,12 @@ e2e: ## Compose uçtan uca testleri (önce make up)
 		if curl -fsS "$(E2E_BASE_URL)/healthz" >/dev/null; then break; fi; \
 		sleep 1; \
 	done; \
-	curl -fsS "$(E2E_BASE_URL)/healthz" >/dev/null; \
+	if ! curl -fsS "$(E2E_BASE_URL)/healthz" >/dev/null; then \
+		echo "E2E keyed API did not become healthy; container state and logs follow:" >&2; \
+		docker inspect "$$api_id" --format 'state={{.State.Status}} exit={{.State.ExitCode}} error={{.State.Error}}' >&2 || true; \
+		docker logs "$$api_id" >&2 || true; \
+		exit 1; \
+	fi; \
 	cd sunucu && E2E_BASE_URL="$(E2E_BASE_URL)" E2E_NO_KEY_BASE_URL="$(E2E_NO_KEY_BASE_URL)" E2E_FAKE_OIDC_URL="$(E2E_FAKE_OIDC_URL)" E2E_MAILPIT_URL="$(E2E_MAILPIT_URL)" cargo test -p e2e -- --test-threads=1
 
 vektor: ## Parite vektörlerini Python referansından üretir (ADR-0003)
