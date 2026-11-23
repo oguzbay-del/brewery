@@ -7,7 +7,7 @@
 use std::collections::BTreeSet;
 
 use db::{ActorKind, AuditEvent, NewAuditEntry};
-use sqlx::PgConnection;
+use sqlx::{AssertSqlSafe, PgConnection};
 use storage::ObjectStore;
 use uuid::Uuid;
 
@@ -17,13 +17,13 @@ const BATCH_LIMIT: i32 = 100;
 
 /// Processes one batch of due deletion requests in a single transaction.
 pub async fn purge_due(pool: &sqlx::PgPool, store: Option<&dyn ObjectStore>) -> Result<usize> {
-    let mut tx = pool.begin().await?;
+    let mut tx = pool.begin().await.map_err(db::Error::from)?;
     db::set_actor_kind(&mut tx, ActorKind::System).await?;
     let due = db::due_account_deletions(&mut tx, BATCH_LIMIT).await?;
     for request in &due {
         purge_user(&mut tx, request.user_id, store).await?;
     }
-    tx.commit().await?;
+    tx.commit().await.map_err(db::Error::from)?;
     Ok(due.len())
 }
 
@@ -43,14 +43,16 @@ async fn purge_user(
     )
     .bind(user_id)
     .fetch_all(&mut *tx)
-    .await?;
+    .await
+    .map_err(db::Error::from)?;
 
     for (member_id, workspace_id) in memberships {
         db::set_workspace_id(tx, workspace_id).await?;
         let mode: Option<String> = sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1")
             .bind(workspace_id)
             .fetch_optional(&mut *tx)
-            .await?;
+            .await
+            .map_err(db::Error::from)?;
         match mode.as_deref() {
             Some("home") => purge_home_workspace(tx, workspace_id, user_id, store).await?,
             Some("business") => {
@@ -111,11 +113,13 @@ async fn purge_home_workspace(
     )
     .bind(workspace_id)
     .execute(&mut *tx)
-    .await?;
+    .await
+    .map_err(db::Error::from)?;
     sqlx::query("SELECT purge_workspace($1, NULL, 'account deletion')")
         .bind(workspace_id)
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(db::Error::from)?;
 
     if let Some(store) = store {
         for key in keys {
@@ -196,11 +200,12 @@ async fn scrub_workspace_user_references(
              WHERE workspace_id = $1 AND \"{column}\" = $2)"
         );
         if !nullable {
-            let references_user: bool = sqlx::query_scalar(&sql)
+            let references_user: bool = sqlx::query_scalar(AssertSqlSafe(&sql))
                 .bind(workspace_id)
                 .bind(user_id)
                 .fetch_one(&mut *tx)
-                .await?;
+                .await
+                .map_err(db::Error::from)?;
             if references_user {
                 return Err(Error::Format(format!(
                     "non-nullable {table}.{column} still references deleted user {user_id}"
@@ -212,11 +217,12 @@ async fn scrub_workspace_user_references(
             "UPDATE \"{table}\" SET \"{column}\" = NULL \
              WHERE workspace_id = $1 AND \"{column}\" = $2"
         );
-        sqlx::query(&sql)
+        sqlx::query(AssertSqlSafe(&sql))
             .bind(workspace_id)
             .bind(user_id)
             .execute(&mut *tx)
-            .await?;
+            .await
+            .map_err(db::Error::from)?;
     }
     Ok(())
 }
@@ -250,7 +256,8 @@ async fn workspace_object_keys(tx: &mut PgConnection, workspace_id: Uuid) -> Res
         let found: Vec<String> = sqlx::query_scalar(&sql)
             .bind(workspace_id)
             .fetch_all(&mut *tx)
-            .await?;
+            .await
+            .map_err(db::Error::from)?;
         keys.extend(found);
     }
     Ok(keys.into_iter().collect())
