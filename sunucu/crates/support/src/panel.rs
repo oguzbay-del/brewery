@@ -317,7 +317,9 @@ pub async fn apply_correction(
         .await?;
     }
     sqlx::query(
-        "UPDATE support_corrections SET status = 'applied', result = $2, applied_at = now()
+        "UPDATE support_corrections
+         SET status = 'applied', result = $2, applied_at = now(),
+             params = CASE WHEN kind = 'deletion_request' THEN params - 'user_id' ELSE params END
          WHERE id = $1",
     )
     .bind(id)
