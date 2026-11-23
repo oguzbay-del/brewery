@@ -77,11 +77,14 @@ BEGIN
                 FROM role_assignments ra
                 JOIN roles r
                   ON r.workspace_id = ra.workspace_id AND r.id = ra.role_id
+                 AND r.deleted_at IS NULL
+                JOIN role_permissions rp
+                  ON rp.workspace_id = r.workspace_id AND rp.role_id = r.id
+                 AND rp.permission = 'users.manage'
                 WHERE ra.workspace_id = v_member.workspace_id
                   AND ra.member_id = v_member.id
                   AND ra.deleted_at IS NULL
-                  AND r.deleted_at IS NULL
-                  AND lower(r.name) = 'owner'
+                  AND ra.scope_kind IS NULL
             ) INTO v_is_owner;
         END IF;
 
@@ -93,14 +96,18 @@ BEGIN
               ON owner_assignment.workspace_id = owner_member.workspace_id
              AND owner_assignment.member_id = owner_member.id
              AND owner_assignment.deleted_at IS NULL
+             AND owner_assignment.scope_kind IS NULL
             JOIN roles owner_role
               ON owner_role.workspace_id = owner_assignment.workspace_id
              AND owner_role.id = owner_assignment.role_id
              AND owner_role.deleted_at IS NULL
+            JOIN role_permissions owner_permission
+              ON owner_permission.workspace_id = owner_role.workspace_id
+             AND owner_permission.role_id = owner_role.id
+             AND owner_permission.permission = 'users.manage'
             WHERE owner_member.workspace_id = v_member.workspace_id
               AND owner_member.status = 'active'
-              AND owner_member.deleted_at IS NULL
-              AND lower(owner_role.name) = 'owner';
+              AND owner_member.deleted_at IS NULL;
 
             IF v_active_owners <= 1 THEN
                 RAISE EXCEPTION USING ERRCODE = 'P0001', MESSAGE = 'last_owner';
