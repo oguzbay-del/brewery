@@ -197,7 +197,37 @@ impl Context {
         self.post_json(
             &format!("/v1/workspaces/{workspace_id}/recipes"),
             Some(user),
-            &json!({"name": name}),
+            &json!({
+                "name": name,
+                "version": {
+                    "kind": "all_grain",
+                    "batch_volume_l": 20.0,
+                    "boil_volume_l": 25.0,
+                    "boil_time_min": 60.0,
+                    "efficiency_pct": 72.0,
+                    "fermentables": [{
+                        "name": "Pale Malt",
+                        "amount_kg": 5.0,
+                        "yield_pct": 80.0,
+                        "color_srm": 2.0,
+                        "grain_type": "grain"
+                    }],
+                    "hops": [{
+                        "name": "Cascade",
+                        "amount_kg": 0.05,
+                        "alpha_pct": 5.5,
+                        "time_min": 60.0,
+                        "usage": "boil"
+                    }],
+                    "yeasts": [{
+                        "name": "US-05",
+                        "form": "dry",
+                        "amount_kg": 0.011,
+                        "min_attenuation_pct": 78.0,
+                        "max_attenuation_pct": 80.0
+                    }]
+                }
+            }),
         )
         .await
     }
