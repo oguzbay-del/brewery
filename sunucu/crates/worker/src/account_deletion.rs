@@ -63,7 +63,7 @@ async fn purge_user(
                     "unsupported workspace mode {other} for {workspace_id}"
                 )));
             }
-            None => continue,
+            None => {},
         }
     }
 
