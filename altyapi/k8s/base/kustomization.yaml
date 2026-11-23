@@ -18,5 +18,22 @@ configMapGenerator:
       - RUST_LOG=info
       - NATS_URL=nats://nats:4222
       - ENGINE_URL=http://engine-service:50051
+      - S3_ENDPOINT=
+      - S3_PUBLIC_ENDPOINT=
+      - S3_BUCKET=demleme-files
+      - S3_REGION=us-east-1
+      - S3_PATH_STYLE=true
+      - S3_CREATE_BUCKET=false
+      - S3_PRESIGN_TTL_SECS=600
+      - S3_DIGEST_BUCKET=demleme-digests
+      - GITHUB_API_URL=https://api.github.com
+      - GITHUB_REPO=
+      - GITHUB_BOT_LOGIN=demleme-support[bot]
+      - GITHUB_APP_KEY_FILE=/var/run/secrets/github/app.pem
+      - APNS_URL=
+      - APNS_TOPIC=
+      - APNS_KEY_FILE=/var/run/secrets/apns/AuthKey.p8
+      - INGEST_PUBLIC_URL=
+      - BREW_PACKAGE_KEY_ID=k1
 generatorOptions:
   disableNameSuffixHash: true

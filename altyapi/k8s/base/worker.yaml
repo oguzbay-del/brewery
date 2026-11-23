@@ -29,6 +29,27 @@ spec:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef: { name: demleme-dis-servisler, key: WORKER_DATABASE_URL }
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: S3_ACCESS_KEY, optional: true }
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: S3_SECRET_KEY, optional: true }
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: GITHUB_TOKEN, optional: true }
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: GITHUB_APP_ID, optional: true }
+            - name: GITHUB_APP_INSTALLATION_ID
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: GITHUB_APP_INSTALLATION_ID, optional: true }
+            - name: APNS_KEY_ID
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: APNS_KEY_ID, optional: true }
+            - name: APNS_TEAM_ID
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: APNS_TEAM_ID, optional: true }
           envFrom:
             - configMapRef: { name: demleme-config }
             - secretRef: { name: demleme-dis-servisler }
@@ -52,9 +73,23 @@ spec:
             capabilities: { drop: [ALL] }
           volumeMounts:
             - { name: tmp, mountPath: /tmp }
+            - { name: apns-key, mountPath: /var/run/secrets/apns, readOnly: true }
+            - { name: github-key, mountPath: /var/run/secrets/github, readOnly: true }
       volumes:
         - name: tmp
           emptyDir: { sizeLimit: 64Mi }
+        - name: apns-key
+          secret:
+            secretName: demleme-apns
+            optional: true
+            items:
+              - { key: APNS_KEY, path: AuthKey.p8 }
+        - name: github-key
+          secret:
+            secretName: demleme-github
+            optional: true
+            items:
+              - { key: GITHUB_APP_KEY, path: app.pem }
 ---
 apiVersion: v1
 kind: Service
