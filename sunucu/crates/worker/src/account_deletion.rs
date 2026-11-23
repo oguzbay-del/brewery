@@ -16,10 +16,7 @@ use crate::{Error, Result};
 const BATCH_LIMIT: i32 = 100;
 
 /// Processes one batch of due deletion requests in a single transaction.
-pub async fn purge_due(
-    pool: &sqlx::PgPool,
-    store: Option<&dyn ObjectStore>,
-) -> Result<usize> {
+pub async fn purge_due(pool: &sqlx::PgPool, store: Option<&dyn ObjectStore>) -> Result<usize> {
     let mut tx = pool.begin().await?;
     db::set_actor_kind(&mut tx, ActorKind::System).await?;
     let due = db::due_account_deletions(&mut tx, BATCH_LIMIT).await?;
