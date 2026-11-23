@@ -231,6 +231,16 @@ async fn run_worker(base: &PgPool, store: Option<&dyn ObjectStore>) {
     worker::maintenance::tick_with_files(&worker, None, store).await;
 }
 
+async fn maintenance_detail(base: &PgPool) -> String {
+    sqlx::query_scalar::<_, String>(
+        "SELECT last_detail FROM maintenance_runs WHERE job = 'account-deletion-purge'",
+    )
+    .fetch_optional(base)
+    .await
+    .unwrap_or_default()
+    .unwrap_or_else(|| "<no maintenance detail>".to_owned())
+}
+
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn due_deletion_purges_home_and_disables_business_membership_without_erasing_attribution(
     base: PgPool,
@@ -258,7 +268,7 @@ async fn due_deletion_purges_home_and_disables_business_membership_without_erasi
             .fetch_one(&base)
             .await
             .unwrap();
-    assert!(!home_exists);
+    assert!(!home_exists, "maintenance detail: {}", maintenance_detail(&base).await);
     let tombstones: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM workspace_tombstones WHERE former_workspace_id = $1",
     )
@@ -333,7 +343,7 @@ async fn last_owner_stays_pending_and_worker_continues_with_the_next_due_user(ba
             .fetch_one(&base)
             .await
             .unwrap();
-    assert_eq!(owner_status, "pending");
+    assert_eq!(owner_status, "pending", "maintenance detail: {}", maintenance_detail(&base).await);
     let (member_status, member_deleted_at): (String, Option<chrono::DateTime<chrono::Utc>>) =
         sqlx::query_as("SELECT status, deleted_at FROM workspace_members WHERE id = $1")
             .bind(owner_member)
@@ -417,7 +427,9 @@ async fn failed_object_delete_is_recorded_and_retried_on_the_next_run(base: PgPo
             .as_array()
             .unwrap()
             .iter()
-            .any(|key| key.as_str() == Some(&object_key))
+            .any(|key| key.as_str() == Some(&object_key)),
+        "maintenance detail: {}",
+        detail
     );
 
     sqlx::query(
