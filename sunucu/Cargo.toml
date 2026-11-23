@@ -17,6 +17,7 @@ members = [
     "crates/storage",
     "crates/interchange",
     "crates/fake-oidc",
+    "crates/e2e",
 ]
 
 [workspace.package]
