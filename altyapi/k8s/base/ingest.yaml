@@ -25,6 +25,9 @@ spec:
           env:
             - { name: PORT, value: "8082" }
             - { name: SERVICE_NAME, value: ingest }
+            - name: GITHUB_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: GITHUB_WEBHOOK_SECRET, optional: true }
           envFrom:
             - configMapRef: { name: demleme-config }
             - secretRef: { name: demleme-dis-servisler }
