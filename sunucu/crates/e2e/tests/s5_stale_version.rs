@@ -2,7 +2,6 @@
 
 use e2e::Context;
 use reqwest::{Method, StatusCode};
-use serde_json::json;
 
 #[tokio::test]
 async fn stale_recipe_version_update_returns_412() {
