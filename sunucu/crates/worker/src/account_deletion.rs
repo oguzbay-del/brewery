@@ -233,7 +233,7 @@ async fn workspace_object_keys(
         "SELECT c.table_name, c.column_name
          FROM information_schema.columns c
          WHERE c.table_schema = 'public'
-           AND c.data_type = 'text'
+           AND c.data_type IN ('text', 'character varying')
            AND (c.column_name = 'object_key' OR c.column_name LIKE '%_object_key')
            AND EXISTS (
                SELECT 1 FROM information_schema.columns w
