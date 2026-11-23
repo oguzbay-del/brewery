@@ -253,7 +253,7 @@ async fn due_deletion_purges_home_files_removes_business_membership_and_anonymiz
         let sql = format!(
             "SELECT count(*) FROM \"{table}\" WHERE workspace_id = $1 AND \"{column}\" = $2"
         );
-        let remaining: i64 = sqlx::query_scalar(AssertSqlSafe(&sql))
+        let remaining: i64 = sqlx::query_scalar(AssertSqlSafe(sql.as_str()))
             .bind(business_ws)
             .bind(s.user)
             .fetch_one(&base)
