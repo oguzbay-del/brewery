@@ -41,6 +41,10 @@ impl Context {
     /// Returns a client for the Compose API instance without the package signing key.
     #[must_use]
     pub fn from_no_key_env() -> Option<Self> {
+        let enabled = env::var("E2E_BASE_URL").ok()?;
+        if enabled.trim().is_empty() {
+            return None;
+        }
         let base_url = env::var("E2E_NO_KEY_BASE_URL").ok()?;
         Self::with_base_url(base_url)
     }
