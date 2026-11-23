@@ -2,6 +2,21 @@
 -- No direct table grants are added. app_worker can call only these guarded functions.
 SET LOCAL ROLE app_owner;
 
+-- These tables force RLS even for their owner. The worker functions below run as app_owner
+-- and must enumerate memberships across workspaces before they can set a workspace context.
+-- Keep this policy scoped to app_owner; app_api and app_worker only receive function execution.
+CREATE POLICY account_deletion_owner ON workspaces
+    TO app_owner USING (true) WITH CHECK (true);
+CREATE POLICY account_deletion_owner ON workspace_members
+    TO app_owner USING (true) WITH CHECK (true);
+CREATE POLICY account_deletion_owner ON roles
+    TO app_owner USING (true) WITH CHECK (true);
+CREATE POLICY account_deletion_owner ON role_assignments
+    TO app_owner USING (true) WITH CHECK (true);
+CREATE POLICY account_deletion_owner ON role_permissions
+    TO app_owner USING (true) WITH CHECK (true);
+
+
 CREATE FUNCTION account_deletion_memberships(p_user_id uuid)
     RETURNS TABLE (
         workspace_id uuid,
