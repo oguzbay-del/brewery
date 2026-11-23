@@ -957,6 +957,7 @@ struct Need {
     ingredient_id: Option<Uuid>,
     lot_id: Option<Uuid>,
     amount: f64,
+    unit: String,
 }
 
 #[derive(FromRow)]
@@ -1005,15 +1006,24 @@ pub async fn stock_deduct(
     }
     let needs: Vec<Need> = sqlx::query_as(
         "SELECT COALESCE(a.substitute_ingredient_id, p.ingredient_id) AS ingredient_id, \
-             a.lot_id, a.actual_amount_kg AS amount \
+             a.lot_id, \
+             CASE WHEN a.line_kind = 'yeast' AND p.unit = 'count' THEN ceil(p.amount) \
+                  ELSE a.actual_amount_kg END AS amount, \
+             COALESCE(p.unit, 'kg') AS unit \
          FROM batch_ingredient_actuals a \
          LEFT JOIN LATERAL ( \
-             SELECT ingredient_id FROM recipe_fermentables WHERE a.line_kind = 'fermentable' AND id = a.line_id \
-             UNION ALL SELECT ingredient_id FROM recipe_hops WHERE a.line_kind = 'hop' AND id = a.line_id \
-             UNION ALL SELECT ingredient_id FROM recipe_yeasts WHERE a.line_kind = 'yeast' AND id = a.line_id \
-             UNION ALL SELECT ingredient_id FROM recipe_miscs WHERE a.line_kind = 'misc' AND id = a.line_id \
+             SELECT ingredient_id, 'kg'::text AS unit, amount_kg AS amount \
+                 FROM recipe_fermentables WHERE a.line_kind = 'fermentable' AND id = a.line_id \
+             UNION ALL SELECT ingredient_id, 'kg', amount_kg \
+                 FROM recipe_hops WHERE a.line_kind = 'hop' AND id = a.line_id \
+             UNION ALL SELECT ingredient_id, CASE WHEN use_packages THEN 'count' ELSE 'kg' END, \
+                 CASE WHEN use_packages THEN packs ELSE amount_kg END \
+                 FROM recipe_yeasts WHERE a.line_kind = 'yeast' AND id = a.line_id \
+             UNION ALL SELECT ingredient_id, CASE WHEN is_liquid THEN 'l' ELSE 'kg' END, amount \
+                 FROM recipe_miscs WHERE a.line_kind = 'misc' AND id = a.line_id \
          ) p ON true \
-         WHERE a.batch_id = $1 AND a.deleted_at IS NULL AND a.actual_amount_kg > 0 \
+         WHERE a.batch_id = $1 AND a.deleted_at IS NULL \
+           AND (a.actual_amount_kg > 0 OR (a.line_kind = 'yeast' AND p.unit = 'count' AND p.amount > 0)) \
          ORDER BY a.created_at, a.id",
     )
     .bind(batch_id)
@@ -1022,7 +1032,7 @@ pub async fn stock_deduct(
 
     // One entry for each ingredient: the total amount and the preferred lot.
     let mut skipped = Vec::new();
-    let mut per_ingredient: BTreeMap<Uuid, (f64, Option<Uuid>)> = BTreeMap::new();
+    let mut per_ingredient: BTreeMap<(Uuid, String), (f64, Option<Uuid>)> = BTreeMap::new();
     for need in needs {
         let Some(ingredient) = need.ingredient_id else {
             skipped.push(SkippedLine {
@@ -1032,21 +1042,25 @@ pub async fn stock_deduct(
             });
             continue;
         };
-        let entry = per_ingredient.entry(ingredient).or_insert((0.0, None));
+        let entry = per_ingredient
+            .entry((ingredient, need.unit))
+            .or_insert((0.0, None));
         entry.0 += need.amount;
         entry.1 = entry.1.or(need.lot_id);
     }
 
     let mut movements = Vec::new();
     let mut touched: Vec<Uuid> = Vec::new();
-    for (ingredient, (total, preferred)) in per_ingredient {
+    for ((ingredient, unit), (total, preferred)) in per_ingredient {
         let done: f64 = sqlx::query_scalar(
             "SELECT COALESCE(-sum(m.quantity), 0)::float8 FROM stock_movements m \
              JOIN stock_lots l ON l.workspace_id = m.workspace_id AND l.id = m.lot_id \
-             WHERE m.batch_id = $1 AND m.kind = 'consume' AND l.ingredient_id = $2",
+             WHERE m.batch_id = $1 AND m.kind = 'consume' AND l.ingredient_id = $2 \
+               AND l.unit = $3",
         )
         .bind(batch_id)
         .bind(ingredient)
+        .bind(&unit)
         .fetch_one(&mut *tx)
         .await?;
         let mut remaining = total - done;
@@ -1061,12 +1075,13 @@ pub async fn stock_deduct(
         // Lots in kg or L, oldest first, the preferred lot at the front.
         let mut lots: Vec<Candidate> = sqlx::query_as(
             "SELECT id, quantity FROM stock_lots \
-             WHERE ingredient_id = $1 AND deleted_at IS NULL AND unit <> 'count' \
+             WHERE ingredient_id = $1 AND deleted_at IS NULL AND unit = $3 \
              ORDER BY (id = $2) DESC, expires_on NULLS LAST, received_on NULLS LAST, \
                  created_at, id FOR UPDATE",
         )
         .bind(ingredient)
         .bind(preferred)
+        .bind(&unit)
         .fetch_all(&mut *tx)
         .await?;
         if lots.is_empty() {

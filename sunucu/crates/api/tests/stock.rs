@@ -57,6 +57,17 @@ async fn receive(w: &World, ingredient: &str, quantity: f64) -> Value {
     r.body
 }
 
+async fn receive_count(w: &World, ingredient: &str, quantity: f64) -> Value {
+    let r = post(
+        w,
+        "/stock/receipts",
+        json!({"ingredient_id": ingredient, "quantity": quantity, "unit": "count"}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{}", r.body);
+    r.body
+}
+
 async fn put(w: &World, id: &str, line: &str, amount: f64) -> support::Reply {
     call_as(
         w,
@@ -221,6 +232,105 @@ async fn batch_deduction_is_safe_to_repeat(pool: PgPool) {
     assert_eq!(more.body["warnings"][0]["kind"], "negative_stock");
     let by_batch = get(&w, &format!("/stock/movements?batch_id={id}")).await;
     assert_eq!(by_batch.body["items"].as_array().unwrap().len(), 2);
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn packaged_yeast_deducts_rounded_packs_from_count_lot_and_is_idempotent(pool: PgPool) {
+    let w = stock_world(&pool).await;
+    let yeast = ingredient(
+        &w,
+        "yeast",
+        "US-05",
+        json!({"form": "dry", "min_attenuation_pct": 73.0, "max_attenuation_pct": 80.0}),
+    )
+    .await;
+    let mut body = ipa();
+    body["version"]["yeasts"][0]["ingredient_id"] = json!(yeast);
+    body["version"]["yeasts"][0]["use_packages"] = json!(true);
+    body["version"]["yeasts"][0]["packs"] = json!(1.2);
+    let (_, version) = published_recipe(&w, body).await;
+    let v = get(&w, &format!("/recipe-versions/{version}")).await.body;
+    let line = v["yeasts"][0]["id"].as_str().unwrap().to_owned();
+    let batch = post(&w, "/batches", json!({"recipe_version_id": version})).await;
+    let batch_id = batch.body["id"].as_str().unwrap().to_owned();
+    let actual = call_as(
+        &w,
+        w.admin,
+        "PUT",
+        &format!("/batches/{batch_id}/actuals/yeast/{line}"),
+        Some(json!({"actual_amount_kg": 0.01})),
+        &[],
+    )
+    .await;
+    assert_eq!(actual.status, StatusCode::OK, "{}", actual.body);
+
+    let lot = receive_count(&w, &yeast, 5.0).await["lot"]["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let deduction = post(
+        &w,
+        &format!("/batches/{batch_id}/stock-deduction"),
+        json!({}),
+    )
+    .await;
+    assert_eq!(deduction.status, StatusCode::OK, "{}", deduction.body);
+    assert_eq!(deduction.body["movements"].as_array().unwrap().len(), 1);
+    assert_eq!(deduction.body["movements"][0]["quantity"], -2.0);
+    assert_eq!(
+        get(&w, &format!("/stock/lots/{lot}")).await.body["quantity"],
+        3.0
+    );
+
+    let repeated = post(
+        &w,
+        &format!("/batches/{batch_id}/stock-deduction"),
+        json!({}),
+    )
+    .await;
+    assert_eq!(repeated.body["movements"], json!([]));
+    assert_eq!(repeated.body["skipped"][0]["reason"], "already_deducted");
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn mass_based_yeast_does_not_deduct_a_count_lot(pool: PgPool) {
+    let w = stock_world(&pool).await;
+    let yeast = ingredient(
+        &w,
+        "yeast",
+        "US-05",
+        json!({"form": "dry", "min_attenuation_pct": 73.0, "max_attenuation_pct": 80.0}),
+    )
+    .await;
+    let mut body = ipa();
+    body["version"]["yeasts"][0]["ingredient_id"] = json!(yeast);
+    body["version"]["yeasts"][0]["use_packages"] = json!(false);
+    body["version"]["yeasts"][0]["amount_kg"] = json!(0.05);
+    let (_, version) = published_recipe(&w, body).await;
+    let v = get(&w, &format!("/recipe-versions/{version}")).await.body;
+    let line = v["yeasts"][0]["id"].as_str().unwrap().to_owned();
+    let batch = post(&w, "/batches", json!({"recipe_version_id": version})).await;
+    let batch_id = batch.body["id"].as_str().unwrap().to_owned();
+    let actual = call_as(
+        &w,
+        w.admin,
+        "PUT",
+        &format!("/batches/{batch_id}/actuals/yeast/{line}"),
+        Some(json!({"actual_amount_kg": 0.05})),
+        &[],
+    )
+    .await;
+    assert_eq!(actual.status, StatusCode::OK, "{}", actual.body);
+    receive_count(&w, &yeast, 5.0).await;
+
+    let deduction = post(
+        &w,
+        &format!("/batches/{batch_id}/stock-deduction"),
+        json!({}),
+    )
+    .await;
+    assert_eq!(deduction.body["movements"], json!([]));
+    assert_eq!(deduction.body["skipped"][0]["reason"], "unit_mismatch");
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
