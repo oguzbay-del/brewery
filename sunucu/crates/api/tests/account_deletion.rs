@@ -197,7 +197,9 @@ async fn cancellation_works_during_grace_and_fails_after_it(pool: PgPool) {
     let requested = as_user(&w, &token, "POST", "/v1/me/deletion").await;
     assert_eq!(requested.status, StatusCode::OK, "{:?}", requested.body);
     sqlx::query(
-        "UPDATE account_deletion_requests SET purge_at = now() - interval '1 second'
+        "UPDATE account_deletion_requests
+         SET requested_at = now() - interval '30 days',
+             purge_at = now() - interval '1 second'
          WHERE user_id = $1 AND status = 'pending'",
     )
     .bind(user)
