@@ -12,6 +12,9 @@ async fn home_user_completes_the_main_flow() {
         return;
     };
     let user = ctx.login().await.unwrap();
+    let session = ctx.request(Method::GET, "/v1/me/session", Some(&user))
+        .send().await.unwrap();
+    assert_eq!(session.status(), reqwest::StatusCode::OK);
     let workspace = ctx.create_workspace(&user, "home", "E2E Home Flow").await.unwrap();
     let ws = workspace["id"].as_str().unwrap();
 
