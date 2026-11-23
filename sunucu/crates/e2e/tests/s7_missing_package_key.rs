@@ -6,10 +6,9 @@ use serde_json::{Value, json};
 use uuid::Uuid;
 
 #[tokio::test]
-#[ignore = "requires a second isolated Compose stack with the package signing key unset; the standard Compose workflow provides one shared stack"]
 async fn package_operations_fail_without_the_package_key_but_manual_measurements_work() {
-    let Some(ctx) = Context::from_env() else {
-        eprintln!("skipping E2E: E2E_BASE_URL is not set");
+    let Some(ctx) = Context::from_no_key_env() else {
+        eprintln!("skipping E2E: E2E_NO_KEY_BASE_URL is not set");
         return;
     };
     let user = ctx.login().await.unwrap();
