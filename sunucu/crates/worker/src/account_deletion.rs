@@ -50,11 +50,10 @@ async fn purge_user(
 
     for (member_id, workspace_id) in memberships {
         db::set_workspace_id(tx, workspace_id).await?;
-        let mode: Option<String> =
-            sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1")
-                .bind(workspace_id)
-                .fetch_optional(&mut *tx)
-                .await?;
+        let mode: Option<String> = sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1")
+            .bind(workspace_id)
+            .fetch_optional(&mut *tx)
+            .await?;
         match mode.as_deref() {
             Some("home") => purge_home_workspace(tx, workspace_id, user_id, store).await?,
             Some("business") => {
@@ -225,10 +224,7 @@ async fn scrub_workspace_user_references(
     Ok(())
 }
 
-async fn workspace_object_keys(
-    tx: &mut PgConnection,
-    workspace_id: Uuid,
-) -> Result<Vec<String>> {
+async fn workspace_object_keys(tx: &mut PgConnection, workspace_id: Uuid) -> Result<Vec<String>> {
     let columns: Vec<(String, String)> = sqlx::query_as(
         "SELECT c.table_name, c.column_name
          FROM information_schema.columns c
