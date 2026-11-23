@@ -11,7 +11,7 @@ use sqlx::PgPool;
 use storage::ObjectStore;
 use uuid::Uuid;
 
-use crate::{Error, Result};
+use crate::Result;
 
 const BATCH_LIMIT: i32 = 100;
 const JOB_NAME: &str = "account-deletion-purge";
