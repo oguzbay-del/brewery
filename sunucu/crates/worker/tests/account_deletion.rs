@@ -268,7 +268,11 @@ async fn due_deletion_purges_home_and_disables_business_membership_without_erasi
             .fetch_one(&base)
             .await
             .unwrap();
-    assert!(!home_exists, "maintenance detail: {}", maintenance_detail(&base).await);
+    assert!(
+        !home_exists,
+        "maintenance detail: {}",
+        maintenance_detail(&base).await
+    );
     let tombstones: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM workspace_tombstones WHERE former_workspace_id = $1",
     )
