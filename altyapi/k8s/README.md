@@ -26,7 +26,8 @@ Doğrulama: `kubectl kustomize altyapi/k8s/overlays/<ad>` ve `kubectl apply --dr
 - **CNI:** kind'ın varsayılan CNI'si (kindnet) NetworkPolicy için nftables ister; bazı çekirdeklerde çalışmaz. Bu yüzden kind-up Calico (iptables) kurar; manifest sürüme ve sağlama toplamına sabit, imajlar quay.io'dan.
 - **Güvenlik:** root olmayan kullanıcı, salt okunur kök dosya sistemi, bütün yetenekler kapalı, `seccomp: RuntimeDefault`, ad alanında Pod Security `restricted`.
 - **Göç:** `base/migrate.yaml` tek seferlik Job; `migrate` imajı `sunucu/migrations`'ı uygular, göç rolünün adresini (`MIGRATE_DATABASE_URL`) ve `app_api`/`app_worker` parolalarını `demleme-migrate` Secret'ından alır, göçten sonra bu iki role oturum açma hakkı ve parolayı verir. `make kind-up` Job'ın bitmesini bekler; servislerin göçten sonra başlaması henüz zorlanmıyor (servisler veritabanı kullanmıyor; T2.10'da eklenir). Job şablonu değişmez olduğundan imaj etiketi değişen canlı dağıtımda önce eski Job silinir (`ttlSecondsAfterFinished` 1 saat sonra kendisi siler).
-- **Gizli bilgi:** test ve canlıda `demleme` ad alanında `demleme-dis-servisler` Secret'ı (anahtarlar `DATABASE_URL` = `app_api`, `WORKER_DATABASE_URL` = `app_worker`, `REDIS_URL`) ve `demleme-migrate` Secret'ı (`MIGRATE_DATABASE_URL`, `APP_API_PASSWORD`, `APP_WORKER_PASSWORD`) dışarıdan sağlanır; depoda değer yoktur. Yerelde aynı ad compose'daki örnek değerlerle üretilir.
+- **Gizli bilgi:** test ve canlıda `demleme` ad alanında `demleme-dis-servisler` Secret'ı (`DATABASE_URL` = `app_api`, `WORKER_DATABASE_URL` = `app_worker`, `REDIS_URL`) ve `demleme-migrate` Secret'ı (`MIGRATE_DATABASE_URL`, `APP_API_PASSWORD`, `APP_WORKER_PASSWORD`) dışarıdan sağlanır; depoda değer yoktur. Yerelde aynı ad compose'daki örnek değerlerle üretilir.
+
 - **İmajlar:** test ve canlıda `KAYIT-DEFTERI` ve `SURUM` yer tutucudur; CI `kustomize edit set image` ile doldurur (kayıt defteri doğrulanacak).
 
 ## Bilinen sınırlar
