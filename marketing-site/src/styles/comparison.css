@@ -9,3 +9,5 @@
 @media (max-width: 620px) { .compare-hero-actions { align-items: flex-start; flex-direction: column; } .compare-stage-key ul { flex-direction: column; gap: 10px; } }
 
 .comparison-module-label{display:block;margin-top:4px;color:var(--muted);font-size:10px;font-weight:500;line-height:1.4}
+
+.comparison-table-wrap:focus-visible { outline: 3px solid #0066cc; outline-offset: 4px; }
