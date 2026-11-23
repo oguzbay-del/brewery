@@ -21,9 +21,11 @@ mod roles;
 pub mod seed;
 
 pub use account_deletion::{
-    AccountDeletionRequest, DEFAULT_ACCOUNT_DELETION_GRACE_DAYS, DueAccountDeletion,
-    account_deletion_grace_days, anonymize_user, cancel_account_deletion, due_account_deletions,
-    request_account_deletion,
+    AccountDeletionMembership, AccountDeletionRequest, DEFAULT_ACCOUNT_DELETION_GRACE_DAYS,
+    DueAccountDeletion, account_deletion_from_support, account_deletion_grace_days,
+    account_deletion_leave_business, account_deletion_memberships, account_deletion_object_keys,
+    account_deletion_soft_delete_home, anonymize_user, cancel_account_deletion,
+    due_account_deletions, request_account_deletion,
 };
 pub use audit::{
     AuditEvent, AuditRecord, CanonicalFields, ChainBreak, ChainReport, GENESIS_HASH, NewAuditEntry,
