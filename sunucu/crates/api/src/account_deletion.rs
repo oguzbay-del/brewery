@@ -280,7 +280,7 @@ pub async fn account_deletion_cancel(
     let purge_at: Option<DateTime<Utc>> = sqlx::query_scalar(
         "SELECT purge_at FROM account_deletion_requests
          WHERE user_id = $1 AND status = 'pending'
-         ORDER BY requested_at DESC LIMIT 1 FOR UPDATE",
+         ORDER BY requested_at DESC LIMIT 1",
     )
     .bind(user_id)
     .fetch_optional(&mut *tx)
