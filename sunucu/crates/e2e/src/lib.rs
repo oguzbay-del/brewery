@@ -69,7 +69,10 @@ impl Context {
             .as_str()
             .ok_or("nonce response did not contain nonce")?;
         let digest = Sha256::digest(nonce.as_bytes());
-        let nonce_hash = digest.iter().map(|byte| format!("{byte:02x}")).collect::<String>();
+        let nonce_hash = digest
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
         let subject = format!("e2e-{}", Uuid::new_v4());
 
         let minted: Value = self
@@ -198,9 +201,7 @@ impl Context {
             .ok_or("Mailpit response did not contain a messages array")?;
 
         for message in messages {
-            let id = message["ID"]
-                .as_str()
-                .or_else(|| message["id"].as_str());
+            let id = message["ID"].as_str().or_else(|| message["id"].as_str());
             let Some(id) = id else { continue };
             let detail: Value = self
                 .client
@@ -231,5 +232,9 @@ fn token_after(content: &str, marker: &str) -> Option<String> {
         .split(|c: char| matches!(c, '&' | '"' | '\'' | '<' | '>' | ' ' | ')' | '\\'))
         .next()?
         .trim();
-    if token.is_empty() { None } else { Some(token.to_owned()) }
+    if token.is_empty() {
+        None
+    } else {
+        Some(token.to_owned())
+    }
 }
