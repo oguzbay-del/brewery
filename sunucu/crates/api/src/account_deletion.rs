@@ -59,16 +59,14 @@ pub fn routes(state: &AppState) -> Router<AppState> {
     if state.auth_services.is_none() {
         return Router::new();
     }
-    let create = idempotent(
+    let reads = Router::new()
+        .route("/v1/me/deletion", get(account_deletion_get))
+        .route("/v1/me/deletion", delete(account_deletion_cancel));
+    let writes = idempotent(
         state,
         Router::new().route("/v1/me/deletion", post(account_deletion_request)),
     );
-    authenticated(
-        state,
-        create
-            .route("/v1/me/deletion", get(account_deletion_get))
-            .route("/v1/me/deletion", delete(account_deletion_cancel)),
-    )
+    authenticated(state, reads.merge(writes))
 }
 
 fn last_admin() -> ApiError {
@@ -337,11 +335,19 @@ mod spec {
         Internal,
         Unavailable,
     ];
+    const CANCEL: &[ErrorCode] = &[
+        Unauthenticated,
+        Conflict,
+        NotFound,
+        RateLimited,
+        Internal,
+        Unavailable,
+    ];
 
     pub(super) const OPERATIONS: &[OperationSpec] = &[
         file_op("account_deletion_get", None, None, READ),
         file_op("account_deletion_request", None, None, WRITE),
-        file_op("account_deletion_cancel", None, None, WRITE),
+        file_op("account_deletion_cancel", None, None, CANCEL),
     ];
 }
 
