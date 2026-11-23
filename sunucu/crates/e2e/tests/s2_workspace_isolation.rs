@@ -15,12 +15,12 @@ async fn user_cannot_read_or_change_another_workspace() {
     ctx.create_workspace(&user_a, "home", "E2E Workspace A").await.unwrap();
     let workspace_b = ctx.create_workspace(&user_b, "home", "E2E Workspace B").await.unwrap();
     let ws_b = workspace_b["id"].as_str().unwrap();
-    let recipe = ctx.create_recipe(&user_b, ws_b, "Private Recipe B").await.unwrap()
+    let recipe_response = ctx.create_recipe(&user_b, ws_b, "Private Recipe B").await.unwrap()
         .error_for_status().unwrap();
-    let recipe: serde_json::Value = recipe.json().await.unwrap();
-    let recipe_id = recipe["id"].as_str().unwrap();
-    let etag = recipe.headers().get("etag").map(|v| v.to_str().unwrap().to_owned())
+    let etag = recipe_response.headers().get("etag").map(|v| v.to_str().unwrap().to_owned())
         .unwrap_or_else(|| "\"1\"".to_owned());
+    let recipe: serde_json::Value = recipe_response.json().await.unwrap();
+    let recipe_id = recipe["id"].as_str().unwrap();
 
     for endpoint in [
         format!("/v1/workspaces/{ws_b}/recipes"),
