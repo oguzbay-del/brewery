@@ -93,7 +93,9 @@ impl ObjectStore for MemoryStore {
     fn delete<'a>(&'a self, key: &'a str) -> BoxFuture<'a, StorageResult<()>> {
         Box::pin(async move {
             if self.fail_once.lock().unwrap().remove(key) {
-                return Err(StorageError::Config("simulated object deletion failure".into()));
+                return Err(StorageError::Config(
+                    "simulated object deletion failure".into(),
+                ));
             }
             self.objects.lock().unwrap().remove(key);
             Ok(())
