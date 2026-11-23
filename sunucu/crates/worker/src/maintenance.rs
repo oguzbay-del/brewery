@@ -19,6 +19,8 @@ pub const JOB_VERIFY: &str = "audit-digest-verify-weekly";
 pub const JOB_RETENTION: &str = "external-events-retention";
 /// Job name: permanent delete of records soft-deleted more than 30 days ago (T2.37).
 pub const JOB_SOFT_DELETES: &str = "soft-delete-purge";
+/// Job name: account deletion after its grace period (T2.31c).
+pub const JOB_ACCOUNT_DELETIONS: &str = "account-deletion-purge";
 
 const DAY: Duration = Duration::from_hours(23);
 const WEEK: Duration = Duration::from_hours(7 * 24 - 1);
@@ -77,8 +79,17 @@ async fn record(pool: &PgPool, job: &str, outcome: Result<(RunStatus, String)>) 
 
 /// Runs every due job once.
 pub async fn tick(pool: &PgPool, store: Option<&dyn ObjectStore>) {
+    tick_with_files(pool, store, None).await;
+}
+
+/// Runs the maintenance jobs with the normal workspace object store as well as the digest store.
+pub async fn tick_with_files(
+    pool: &PgPool,
+    digest_store: Option<&dyn ObjectStore>,
+    file_store: Option<&dyn ObjectStore>,
+) {
     let now = Utc::now();
-    if let Some(store) = store {
+    if let Some(store) = digest_store {
         if claim(pool, JOB_DIGEST, DAY).await {
             let outcome = audit_anchor::write_daily_digest(pool, store, now)
                 .await
@@ -118,6 +129,17 @@ pub async fn tick(pool: &PgPool, store: Option<&dyn ObjectStore>) {
         });
         record(pool, JOB_RETENTION, outcome).await;
     }
+    if claim(pool, JOB_ACCOUNT_DELETIONS, TICK).await {
+        let outcome = crate::account_deletion::purge_due(pool, file_store)
+            .await
+            .map(|count| {
+                (
+                    RunStatus::Ok,
+                    format!("{count} account deletion requests completed"),
+                )
+            });
+        record(pool, JOB_ACCOUNT_DELETIONS, outcome).await;
+    }
     if claim(pool, JOB_SOFT_DELETES, DAY).await {
         let outcome = retention::purge_soft_deletes(pool, now)
             .await
@@ -146,14 +168,15 @@ async fn claim(pool: &PgPool, job: &str, interval: Duration) -> bool {
 /// Runs the ticks until `stop` turns `true`.
 pub async fn run(
     pool: PgPool,
-    store: Option<Arc<dyn ObjectStore>>,
+    digest_store: Option<Arc<dyn ObjectStore>>,
+    file_store: Option<Arc<dyn ObjectStore>>,
     mut stop: watch::Receiver<bool>,
 ) {
-    if store.is_none() {
+    if digest_store.is_none() {
         tracing::warn!("no object store; audit digests and their check are off");
     }
     loop {
-        tick(&pool, store.as_deref()).await;
+        tick_with_files(&pool, digest_store.as_deref(), file_store.as_deref()).await;
         tokio::select! {
             _ = stop.wait_for(|stopped| *stopped) => return,
             () = tokio::time::sleep(TICK) => {}
