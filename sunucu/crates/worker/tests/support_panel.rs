@@ -184,6 +184,14 @@ async fn the_worker_applies_corrections_and_the_api_cannot_write_entitlements(ba
         .await
         .unwrap();
     assert_eq!(status, "applied");
+    let target_retained: bool = sqlx::query_scalar(
+        "SELECT params ? 'user_id' FROM support_corrections WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_one(&base)
+    .await
+    .unwrap();
+    assert!(!target_retained);
     let (request_status, purge_at): (String, chrono::DateTime<chrono::Utc>) = sqlx::query_as(
         "SELECT status, purge_at FROM account_deletion_requests WHERE user_id = $1",
     )
