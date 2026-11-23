@@ -264,30 +264,8 @@ pub async fn apply_correction(
             )
         }
         "deletion_request" => {
-            let Some(user_id) = params
-                .get("user_id")
-                .and_then(Value::as_str)
-                .and_then(|value| Uuid::parse_str(value).ok())
-            else {
-                return Ok(None);
-            };
-            let is_member: bool = sqlx::query_scalar(
-                "SELECT EXISTS (
-                    SELECT 1 FROM workspace_members
-                    WHERE workspace_id = $1 AND user_id = $2
-                      AND status = 'active' AND deleted_at IS NULL
-                )",
-            )
-            .bind(workspace_id)
-            .bind(user_id)
-            .fetch_one(&mut *conn)
-            .await?;
-            if !is_member {
-                return Ok(None);
-            }
-            db::set_user_id(conn, user_id).await?;
             let grace_days = db::account_deletion_grace_days()?;
-            let request = db::request_account_deletion(conn, grace_days).await?;
+            let request = db::account_deletion_from_support(conn, id, grace_days).await?;
             (
                 format!("account deletion scheduled until {}", request.purge_at),
                 Some((
