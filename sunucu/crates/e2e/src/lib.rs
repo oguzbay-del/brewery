@@ -10,6 +10,8 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
 
+const HEX: &[u8; 16] = b"0123456789abcdef";
+
 pub type TestResult<T> = Result<T, Box<dyn Error + Send + Sync>>;
 
 /// A configured HTTP client for the Compose API and its fake external services.
@@ -70,7 +72,6 @@ impl Context {
             .ok_or("nonce response did not contain nonce")?;
         let digest = Sha256::digest(nonce.as_bytes());
         let mut nonce_hash = String::with_capacity(digest.len() * 2);
-        const HEX: &[u8; 16] = b"0123456789abcdef";
         for byte in digest {
             nonce_hash.push(char::from(HEX[usize::from(byte >> 4)]));
             nonce_hash.push(char::from(HEX[usize::from(byte & 0x0f)]));
