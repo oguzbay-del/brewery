@@ -177,10 +177,7 @@ pub async fn account_deletion_memberships(
 }
 
 /// Disables Business memberships, refusing to remove the last active owner.
-pub async fn account_deletion_leave_business(
-    conn: &mut PgConnection,
-    user_id: Uuid,
-) -> Result<()> {
+pub async fn account_deletion_leave_business(conn: &mut PgConnection, user_id: Uuid) -> Result<()> {
     sqlx::query("SELECT account_deletion_leave_business($1)")
         .bind(user_id)
         .execute(&mut *conn)
@@ -194,10 +191,12 @@ pub async fn account_deletion_soft_delete_home(
     conn: &mut PgConnection,
     user_id: Uuid,
 ) -> Result<Vec<Uuid>> {
-    Ok(sqlx::query_scalar("SELECT account_deletion_soft_delete_home($1)")
-        .bind(user_id)
-        .fetch_all(&mut *conn)
-        .await?)
+    Ok(
+        sqlx::query_scalar("SELECT account_deletion_soft_delete_home($1)")
+            .bind(user_id)
+            .fetch_all(&mut *conn)
+            .await?,
+    )
 }
 
 /// Returns object keys for a soft-deleted Home workspace.
@@ -205,10 +204,12 @@ pub async fn account_deletion_object_keys(
     conn: &mut PgConnection,
     workspace_id: Uuid,
 ) -> Result<Vec<String>> {
-    Ok(sqlx::query_scalar("SELECT account_deletion_object_keys($1)")
-        .bind(workspace_id)
-        .fetch_all(&mut *conn)
-        .await?)
+    Ok(
+        sqlx::query_scalar("SELECT account_deletion_object_keys($1)")
+            .bind(workspace_id)
+            .fetch_all(&mut *conn)
+            .await?,
+    )
 }
 
 /// Creates the support-originated request with the configured grace period. The database
