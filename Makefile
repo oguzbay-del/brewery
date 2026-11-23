@@ -44,7 +44,7 @@ E2E_MAILPIT_URL ?= http://127.0.0.1:8025
 
 e2e: ## Compose uçtan uca testleri (önce make up)
 	@set -eu; \
-	api_id=$($(COMPOSE) run --no-deps -d \
+	api_id=$$($(COMPOSE) run --no-deps -d \
 		-p 127.0.0.1:$(E2E_KEYED_API_PORT):8080 \
 		-e BREW_PACKAGE_KEY=gristora-e2e-only-signing-key-not-production \
 		-e BREW_PACKAGE_KEY_ID=e2e \
