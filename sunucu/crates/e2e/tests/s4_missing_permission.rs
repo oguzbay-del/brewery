@@ -14,7 +14,7 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
     let owner = ctx.login().await.unwrap();
     let invited_email = format!("e2e-invite-{}@example.test", Uuid::new_v4());
     let workspace = ctx
-        .create_workspace(&owner, "home", "E2E Permissions")
+        .create_workspace(&owner, "business", "E2E Permissions")
         .await
         .unwrap();
     let ws = workspace["id"].as_str().unwrap();
