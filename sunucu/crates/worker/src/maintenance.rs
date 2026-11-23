@@ -130,14 +130,7 @@ pub async fn tick_with_files(
         record(pool, JOB_RETENTION, outcome).await;
     }
     if claim(pool, JOB_ACCOUNT_DELETIONS, TICK).await {
-        let outcome = crate::account_deletion::purge_due(pool, file_store)
-            .await
-            .map(|count| {
-                (
-                    RunStatus::Ok,
-                    format!("{count} account deletion requests completed"),
-                )
-            });
+        let outcome = crate::account_deletion::purge_due(pool, file_store).await;
         record(pool, JOB_ACCOUNT_DELETIONS, outcome).await;
     }
     if claim(pool, JOB_SOFT_DELETES, DAY).await {
