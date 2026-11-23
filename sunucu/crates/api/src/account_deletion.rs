@@ -20,7 +20,8 @@ use uuid::Uuid;
 use crate::{
     AppState, RequestContext,
     auth::{AuthServices, step_up::ProtectedAction},
-    authenticated, idempotent,
+    authenticated,
+    idempotent,
     error::{ApiError, ApiResult, ErrorCode, FieldIssue},
 };
 
