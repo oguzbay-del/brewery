@@ -48,4 +48,15 @@ async fn stale_recipe_version_update_returns_412() {
     .body(r#"{"change_note":"stale update"}"#)
     .send().await.unwrap();
     assert_eq!(stale.status(), StatusCode::PRECONDITION_FAILED);
+    let stale_body: serde_json::Value = stale.json().await.unwrap();
+    assert!(stale_body["current"].is_object());
+    assert!(stale_body["conflicting_fields"].is_array());
+
+    let unchanged = ctx.request(
+        Method::GET,
+        &format!("/v1/workspaces/{ws}/recipe-versions/{version_id}"),
+        Some(&user),
+    ).send().await.unwrap().error_for_status().unwrap();
+    let unchanged: serde_json::Value = unchanged.json().await.unwrap();
+    assert_eq!(unchanged["change_note"], "first update");
 }
