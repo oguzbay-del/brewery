@@ -53,3 +53,9 @@ variable "labels" {
   type        = map(string)
   default     = {}
 }
+
+variable "digest_retention_locked" {
+  description = "Denetim özeti kovasının saklama politikasını kilitle (WORM, geri alınamaz); canlıda yalnız sahip kararıyla true yap."
+  type        = bool
+  default     = false
+}

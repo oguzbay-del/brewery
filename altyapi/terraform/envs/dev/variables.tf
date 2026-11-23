@@ -141,3 +141,9 @@ variable "secret_ids" {
     "redis-auth",
   ]
 }
+
+variable "digest_retention_locked" {
+  description = "Denetim zinciri özetleri kovasının saklama politikasını kalıcı kilitle (WORM, geri alınamaz). Sahip kararı olmadan true yapma."
+  type        = bool
+  default     = false
+}

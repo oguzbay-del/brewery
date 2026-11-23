@@ -77,3 +77,31 @@ resource "google_storage_bucket" "audit" {
     }
   }
 }
+
+# Denetim zincirinin özetleri: 400 günlük saklama, kilit yalnız açıkça seçilirse geri alınamaz.
+resource "google_storage_bucket" "digest" {
+  project                     = var.project_id
+  name                        = "${var.name_prefix}-digest"
+  location                    = var.location
+  storage_class               = "STANDARD"
+  uniform_bucket_level_access = true
+  public_access_prevention    = "enforced"
+  force_destroy               = false
+  labels                      = var.labels
+
+  versioning {
+    enabled = true
+  }
+
+  retention_policy {
+    retention_period = 400 * 86400
+    is_locked        = var.digest_retention_locked
+  }
+
+  dynamic "encryption" {
+    for_each = var.kms_key_name == null ? [] : [var.kms_key_name]
+    content {
+      default_kms_key_name = encryption.value
+    }
+  }
+}
