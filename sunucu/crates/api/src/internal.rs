@@ -482,7 +482,7 @@ pub struct CorrectionBody {
 }
 
 /// Asks the worker for a correction: manual entitlement, ending an entitlement, subscription
-/// re-verification, or a deletion request (a support_admin selects a member; the worker starts the normal grace period).
+/// re-verification, or a deletion request (support staff selects a member; the worker starts the normal grace period).
 async fn correction_create(
     State(state): State<AppState>,
     StaffCtx(staff): StaffCtx,
@@ -499,9 +499,6 @@ async fn correction_create(
     };
     if b.valid_until.is_some_and(|t| t <= chrono::Utc::now()) {
         return Err(issue("/valid_until", "must_be_in_the_future"));
-    }
-    if kind == "deletion_request" && staff.role != "support_admin" {
-        return Err(ApiError::new(ErrorCode::Forbidden));
     }
     if kind == "deletion_request" && b.valid_until.is_some() {
         return Err(issue("/valid_until", "not_allowed"));
