@@ -97,12 +97,15 @@ async fn ensure_business_admin_can_leave(
 
     for (member_id, workspace_id) in memberships {
         db::set_workspace_id(tx, workspace_id).await?;
-        let mode: String = sqlx::query_scalar(
+        let mode: Option<String> = sqlx::query_scalar(
             "SELECT mode FROM workspaces WHERE id = $1 AND deleted_at IS NULL",
         )
         .bind(workspace_id)
-        .fetch_one(&mut *tx)
+        .fetch_optional(&mut *tx)
         .await?;
+        let Some(mode) = mode else {
+            continue;
+        };
         if mode != "business" {
             continue;
         }
