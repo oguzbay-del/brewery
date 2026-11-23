@@ -1,6 +1,6 @@
 //! HTTP-only end-to-end helpers for the local Compose stack.
 //!
-//! Tests are skipped when E2E_BASE_URL is not set, so the ordinary workspace test suite
+//! Tests are skipped when `E2E_BASE_URL` is not set, so the ordinary workspace test suite
 //! does not require a running Compose environment.
 
 use std::{env, error::Error};
@@ -29,7 +29,7 @@ pub struct User {
 }
 
 impl Context {
-    /// Returns None when E2E_BASE_URL is absent; this is the normal workspace-test mode.
+    /// Returns `None` when `E2E_BASE_URL` is absent; this is the normal workspace-test mode.
     #[must_use]
     pub fn from_env() -> Option<Self> {
         let base_url = env::var("E2E_BASE_URL").ok()?;
@@ -69,10 +69,12 @@ impl Context {
             .as_str()
             .ok_or("nonce response did not contain nonce")?;
         let digest = Sha256::digest(nonce.as_bytes());
-        let nonce_hash = digest
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>();
+        let mut nonce_hash = String::with_capacity(digest.len() * 2);
+        const HEX: &[u8; 16] = b"0123456789abcdef";
+        for byte in digest {
+            nonce_hash.push(char::from(HEX[usize::from(byte >> 4)]));
+            nonce_hash.push(char::from(HEX[usize::from(byte & 0x0f)]));
+        }
         let subject = format!("e2e-{}", Uuid::new_v4());
 
         let minted: Value = self
@@ -122,7 +124,6 @@ impl Context {
     }
 
     /// Builds an API request with optional bearer authentication.
-    #[must_use]
     pub fn request(&self, method: Method, path: &str, user: Option<&User>) -> RequestBuilder {
         let request = self.client.request(
             method,
@@ -229,7 +230,7 @@ impl Context {
 fn token_after(content: &str, marker: &str) -> Option<String> {
     let start = content.find(marker)? + marker.len();
     let token = content[start..]
-        .split(|c: char| matches!(c, '&' | '"' | '\'' | '<' | '>' | ' ' | ')' | '\\'))
+        .split(['&', '"', '\'', '<', '>', ' ', ')', '\\'])
         .next()?
         .trim();
     if token.is_empty() {
