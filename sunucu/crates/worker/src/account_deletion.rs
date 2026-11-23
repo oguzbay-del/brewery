@@ -178,3 +178,4 @@ async fn delete_object(
     };
     store.delete(key).await.map_err(|error| error.to_string())
 }
+
