@@ -5,6 +5,7 @@ use reqwest::{Method, StatusCode};
 use serde_json::{Value, json};
 use uuid::Uuid;
 
+#[allow(clippy::too_many_lines)]
 #[tokio::test]
 async fn member_without_permissions_cannot_perform_protected_actions() {
     let Some(ctx) = Context::from_env() else {
