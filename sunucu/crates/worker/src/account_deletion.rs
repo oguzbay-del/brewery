@@ -1,287 +1,181 @@
 //! Scheduled account purge (T2.31c).
 //!
-//! The due-request row stays locked until all workspace cleanup, object deletion and account
-//! anonymisation have committed. A failure rolls the transaction back and the maintenance claim
-//! is released for retry on the next hourly tick.
+//! Database changes are committed once per user before object storage is touched. Failed object
+//! deletions are persisted in maintenance_runs.last_detail and retried on the next hourly tick.
 
 use std::collections::BTreeSet;
 
-use db::{ActorKind, AuditEvent, NewAuditEntry};
-use sqlx::{AssertSqlSafe, PgConnection};
+use db::{ActorKind, maintenance::RunStatus};
+use serde_json::{Value, json};
+use sqlx::PgPool;
 use storage::ObjectStore;
 use uuid::Uuid;
 
 use crate::{Error, Result};
 
 const BATCH_LIMIT: i32 = 100;
+const JOB_NAME: &str = "account-deletion-purge";
 
-/// Processes one batch of due deletion requests in a single transaction.
-pub async fn purge_due(pool: &sqlx::PgPool, store: Option<&dyn ObjectStore>) -> Result<usize> {
+/// Processes due users independently and retries object keys left by an earlier run.
+pub async fn purge_due(
+    pool: &PgPool,
+    store: Option<&dyn ObjectStore>,
+) -> Result<(RunStatus, String)> {
+    let mut pending_keys = BTreeSet::new();
+    let mut object_delete_errors = Vec::new();
+
+    for key in load_pending_object_keys(pool).await? {
+        match delete_object(store, &key).await {
+            Ok(()) => {}
+            Err(error) => {
+                pending_keys.insert(key.clone());
+                object_delete_errors.push(json!({"key": key, "error": error}));
+            }
+        }
+    }
+
+    let due_users = due_user_ids(pool).await?;
+    let mut processed_users = Vec::new();
+    let mut failed_users = Vec::new();
+    let mut membership_summary = Vec::new();
+
+    for user_id in due_users {
+        match process_user(pool, user_id).await {
+            Ok((memberships, object_keys)) => {
+                processed_users.push(user_id);
+                membership_summary.push(json!({
+                    "user_id": user_id,
+                    "memberships": memberships.iter().map(|m| json!({
+                        "workspace_id": m.workspace_id,
+                        "mode": m.mode,
+                        "member_status": m.member_status,
+                        "other_active_members": m.other_active_members,
+                    })).collect::<Vec<_>>()
+                }));
+                for key in object_keys {
+                    match delete_object(store, &key).await {
+                        Ok(()) => {}
+                        Err(error) => {
+                            pending_keys.insert(key.clone());
+                            object_delete_errors.push(json!({"key": key, "error": error}));
+                        }
+                    }
+                }
+            }
+            Err(error) => {
+                let message = error.to_string();
+                let code = if message.contains("last_owner") {
+                    "last_owner"
+                } else {
+                    "account_purge_failed"
+                };
+                failed_users.push(json!({
+                    "user_id": user_id,
+                    "code": code,
+                    "message": message,
+                }));
+            }
+        }
+    }
+
+    let status = if failed_users.is_empty() && pending_keys.is_empty() {
+        RunStatus::Ok
+    } else {
+        RunStatus::Findings
+    };
+    let detail = json!({
+        "processed_users": processed_users,
+        "failed_users": failed_users,
+        "membership_summary": membership_summary,
+        "pending_object_keys": pending_keys.into_iter().collect::<Vec<_>>(),
+        "object_delete_errors": object_delete_errors,
+    });
+    Ok((status, detail.to_string()))
+}
+
+async fn due_user_ids(pool: &PgPool) -> Result<Vec<Uuid>> {
     let mut tx = pool.begin().await.map_err(db::Error::from)?;
-    db::set_actor_kind(&mut tx, ActorKind::System).await?;
     let due = db::due_account_deletions(&mut tx, BATCH_LIMIT).await?;
-    for request in &due {
-        purge_user(&mut tx, request.user_id, store).await?;
-    }
     tx.commit().await.map_err(db::Error::from)?;
-    Ok(due.len())
+    Ok(due.into_iter().map(|request| request.user_id).collect())
 }
 
-async fn purge_user(
-    tx: &mut PgConnection,
+async fn process_user(
+    pool: &PgPool,
     user_id: Uuid,
-    store: Option<&dyn ObjectStore>,
-) -> Result<()> {
-    clear_workspace_context(tx).await?;
-    db::set_user_id(tx, user_id).await?;
+) -> Result<(Vec<db::AccountDeletionMembership>, Vec<String>)> {
+    let mut tx = pool.begin().await.map_err(db::Error::from)?;
+    let outcome = process_user_transaction(&mut tx, user_id).await;
+    match outcome {
+        Ok(result) => {
+            tx.commit().await.map_err(db::Error::from)?;
+            Ok(result)
+        }
+        Err(error) => {
+            let _ = tx.rollback().await;
+            Err(error)
+        }
+    }
+}
 
-    // The user-scoped member policy exposes all of this user's memberships, including disabled
-    // or soft-deleted rows. A workspace context is then set for each workspace operation.
-    let memberships: Vec<(Uuid, Uuid)> = sqlx::query_as(
-        "SELECT id, workspace_id FROM workspace_members
-         WHERE user_id = $1 ORDER BY workspace_id, id",
-    )
-    .bind(user_id)
-    .fetch_all(&mut *tx)
-    .await
-    .map_err(db::Error::from)?;
+async fn process_user_transaction(
+    tx: &mut sqlx::PgConnection,
+    user_id: Uuid,
+) -> Result<(Vec<db::AccountDeletionMembership>, Vec<String>)> {
+    db::set_actor_kind(tx, ActorKind::System).await?;
 
-    for (member_id, workspace_id) in memberships {
+    // This guarded function locks and rechecks the due request before exposing memberships.
+    let memberships = db::account_deletion_memberships(tx, user_id).await?;
+
+    // 1. Leave Business workspaces. A last-owner exception aborts only this user's transaction.
+    db::account_deletion_leave_business(tx, user_id).await?;
+
+    // 2. Soft-delete sole-member Home workspaces; shared Home memberships are disabled.
+    let home_workspaces = db::account_deletion_soft_delete_home(tx, user_id).await?;
+
+    // 3. Collect keys, then purge each Home workspace in the same transaction.
+    let mut object_keys = BTreeSet::new();
+    for workspace_id in home_workspaces {
+        object_keys.extend(db::account_deletion_object_keys(tx, workspace_id).await?);
         db::set_workspace_id(tx, workspace_id).await?;
-        let mode: Option<String> = sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1")
+        sqlx::query("SELECT purge_workspace($1, NULL, 'account deletion')")
             .bind(workspace_id)
-            .fetch_optional(&mut *tx)
-            .await
-            .map_err(db::Error::from)?;
-        match mode.as_deref() {
-            Some("home") => purge_home_workspace(tx, workspace_id, user_id, store).await?,
-            Some("business") => {
-                remove_business_member(tx, workspace_id, member_id, user_id).await?;
-            }
-            Some(other) => {
-                return Err(Error::Format(format!(
-                    "unsupported workspace mode {other} for {workspace_id}"
-                )));
-            }
-            None => {},
-        }
-    }
-
-    clear_workspace_context(tx).await?;
-    db::anonymize_user(tx, user_id).await?;
-    Ok(())
-}
-
-async fn purge_home_workspace(
-    tx: &mut PgConnection,
-    workspace_id: Uuid,
-    user_id: Uuid,
-    store: Option<&dyn ObjectStore>,
-) -> Result<()> {
-    let keys = workspace_object_keys(tx, workspace_id).await?;
-    if !keys.is_empty() && store.is_none() {
-        return Err(Error::Format(format!(
-            "workspace {workspace_id} has {} objects but object storage is unavailable",
-            keys.len()
-        )));
-    }
-
-    db::append_audit(
-        tx,
-        workspace_id,
-        &NewAuditEntry {
-            actor_kind: ActorKind::System,
-            actor_id: None,
-            event: AuditEvent::AccountDelete,
-            record_kind: "workspace".to_owned(),
-            record_id: Some(workspace_id),
-            previous_value: None,
-            new_value: Some(serde_json::json!({
-                "action": "home_workspace_purged",
-                "user_id": user_id,
-            })),
-            reason: Some("account deletion grace period elapsed".to_owned()),
-        },
-    )
-    .await?;
-
-    // purge_workspace only accepts soft-deleted workspaces. Null updated_by so the tombstone
-    // does not retain the deleted user's identity as deleted_by.
-    sqlx::query(
-        "UPDATE workspaces SET deleted_at = COALESCE(deleted_at, now()), updated_by = NULL
-         WHERE id = $1",
-    )
-    .bind(workspace_id)
-    .execute(&mut *tx)
-    .await
-    .map_err(db::Error::from)?;
-    sqlx::query("SELECT purge_workspace($1, NULL, 'account deletion')")
-        .bind(workspace_id)
-        .execute(&mut *tx)
-        .await
-        .map_err(db::Error::from)?;
-
-    if let Some(store) = store {
-        for key in keys {
-            store.delete(&key).await?;
-        }
-    }
-    Ok(())
-}
-
-async fn remove_business_member(
-    tx: &mut PgConnection,
-    workspace_id: Uuid,
-    member_id: Uuid,
-    user_id: Uuid,
-) -> Result<()> {
-    db::append_audit(
-        tx,
-        workspace_id,
-        &NewAuditEntry {
-            actor_kind: ActorKind::User,
-            actor_id: Some(user_id),
-            event: AuditEvent::AccountDelete,
-            record_kind: "workspace_member".to_owned(),
-            record_id: Some(member_id),
-            previous_value: None,
-            new_value: Some(serde_json::json!({"action": "business_membership_removed"})),
-            reason: Some("account deletion grace period elapsed".to_owned()),
-        },
-    )
-    .await?;
-
-    // Keep the business records, but remove the deleted user's creator/updater attribution.
-    // The users row remains as the anonymised tombstone referenced by immutable audit rows.
-    scrub_workspace_user_references(tx, workspace_id, user_id).await?;
-    sqlx::query("UPDATE workspaces SET created_by = NULL, updated_by = NULL WHERE id = $1")
-        .bind(workspace_id)
-        .execute(&mut *tx)
-        .await
-        .map_err(db::Error::from)?;
-    sqlx::query(
-        "DELETE FROM workspace_members
-         WHERE workspace_id = $1 AND id = $2 AND user_id = $3",
-    )
-    .bind(workspace_id)
-    .bind(member_id)
-    .bind(user_id)
-    .execute(&mut *tx)
-    .await
-    .map_err(db::Error::from)?;
-    Ok(())
-}
-
-async fn scrub_workspace_user_references(
-    tx: &mut PgConnection,
-    workspace_id: Uuid,
-    user_id: Uuid,
-) -> Result<()> {
-    let columns: Vec<(String, String, bool)> = sqlx::query_as(
-        "SELECT c.table_name, c.column_name, c.is_nullable = 'YES'
-         FROM information_schema.columns c
-         WHERE c.table_schema = 'public'
-           AND c.column_name IN ('user_id', 'created_by', 'updated_by')
-           AND c.table_name <> 'workspace_members'
-           AND EXISTS (
-               SELECT 1 FROM information_schema.columns w
-               WHERE w.table_schema = c.table_schema
-                 AND w.table_name = c.table_name
-                 AND w.column_name = 'workspace_id'
-           )
-         ORDER BY c.table_name, c.column_name",
-    )
-    .fetch_all(&mut *tx)
-    .await
-    .map_err(db::Error::from)?;
-
-    for (table, column, nullable) in columns {
-        ensure_identifier(&table)?;
-        ensure_identifier(&column)?;
-        let sql = format!(
-            "SELECT EXISTS (SELECT 1 FROM \"{table}\" \
-             WHERE workspace_id = $1 AND \"{column}\" = $2)"
-        );
-        if !nullable {
-            let references_user: bool = sqlx::query_scalar(AssertSqlSafe(sql.as_str()))
-                .bind(workspace_id)
-                .bind(user_id)
-                .fetch_one(&mut *tx)
-                .await
-                .map_err(db::Error::from)?;
-            if references_user {
-                return Err(Error::Format(format!(
-                    "non-nullable {table}.{column} still references deleted user {user_id}"
-                )));
-            }
-            continue;
-        }
-        let sql = format!(
-            "UPDATE \"{table}\" SET \"{column}\" = NULL \
-             WHERE workspace_id = $1 AND \"{column}\" = $2"
-        );
-        sqlx::query(AssertSqlSafe(sql.as_str()))
-            .bind(workspace_id)
-            .bind(user_id)
             .execute(&mut *tx)
             .await
             .map_err(db::Error::from)?;
     }
-    Ok(())
+
+    // 4. The existing guarded function marks the request done and anonymises the account.
+    db::anonymize_user(tx, user_id).await?;
+    Ok((memberships, object_keys.into_iter().collect()))
 }
 
-async fn workspace_object_keys(tx: &mut PgConnection, workspace_id: Uuid) -> Result<Vec<String>> {
-    let columns: Vec<(String, String)> = sqlx::query_as(
-        "SELECT c.table_name, c.column_name
-         FROM information_schema.columns c
-         WHERE c.table_schema = 'public'
-           AND c.data_type IN ('text', 'character varying')
-           AND (c.column_name = 'object_key' OR c.column_name LIKE '%_object_key')
-           AND EXISTS (
-               SELECT 1 FROM information_schema.columns w
-               WHERE w.table_schema = c.table_schema
-                 AND w.table_name = c.table_name
-                 AND w.column_name = 'workspace_id'
-           )
-         ORDER BY c.table_name, c.column_name",
+async fn load_pending_object_keys(pool: &PgPool) -> Result<Vec<String>> {
+    let detail: Option<Option<String>> = sqlx::query_scalar(
+        "SELECT last_detail FROM maintenance_runs WHERE job = $1",
     )
-    .fetch_all(&mut *tx)
+    .bind(JOB_NAME)
+    .fetch_optional(pool)
     .await
     .map_err(db::Error::from)?;
-
-    let mut keys = BTreeSet::new();
-    for (table, column) in columns {
-        ensure_identifier(&table)?;
-        ensure_identifier(&column)?;
-        let sql = format!(
-            "SELECT \"{column}\" FROM \"{table}\" \
-             WHERE workspace_id = $1 AND \"{column}\" IS NOT NULL"
-        );
-        let found: Vec<String> = sqlx::query_scalar(AssertSqlSafe(sql.as_str()))
-            .bind(workspace_id)
-            .fetch_all(&mut *tx)
-            .await
-            .map_err(db::Error::from)?;
-        keys.extend(found);
-    }
-    Ok(keys.into_iter().collect())
+    let Some(Some(detail)) = detail else {
+        return Ok(Vec::new());
+    };
+    let value: Value = serde_json::from_str(&detail).unwrap_or(Value::Null);
+    Ok(value
+        .get("pending_object_keys")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .map(str::to_owned)
+        .collect())
 }
 
-fn ensure_identifier(value: &str) -> Result<()> {
-    if value.is_empty()
-        || !value
-            .bytes()
-            .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'_')
-    {
-        return Err(Error::Format("unsafe database identifier".to_owned()));
-    }
-    Ok(())
+async fn delete_object(store: Option<&dyn ObjectStore>, key: &str) -> std::result::Result<(), String> {
+    let Some(store) = store else {
+        return Err("workspace object store is unavailable".to_owned());
+    };
+    store.delete(key).await.map_err(|error| error.to_string())
 }
 
-async fn clear_workspace_context(tx: &mut PgConnection) -> Result<()> {
-    sqlx::query("SELECT set_config('app.workspace_id', '', true)")
-        .execute(&mut *tx)
-        .await
-        .map_err(db::Error::from)?;
-    Ok(())
-}
