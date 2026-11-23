@@ -20,7 +20,7 @@ use uuid::Uuid;
 use crate::{
     AppState, RequestContext,
     auth::{AuthServices, step_up::ProtectedAction},
-    authenticated,
+    authenticated, idempotent,
     error::{ApiError, ApiResult, ErrorCode, FieldIssue},
 };
 
@@ -58,11 +58,14 @@ pub fn routes(state: &AppState) -> Router<AppState> {
     if state.auth_services.is_none() {
         return Router::new();
     }
+    let create = idempotent(
+        state,
+        Router::new().route("/v1/me/deletion", post(account_deletion_request)),
+    );
     authenticated(
         state,
-        Router::new()
+        create
             .route("/v1/me/deletion", get(account_deletion_get))
-            .route("/v1/me/deletion", post(account_deletion_request))
             .route("/v1/me/deletion", delete(account_deletion_cancel)),
     )
 }
@@ -79,15 +82,6 @@ fn not_found() -> ApiError {
 /// The user-scoped member policy permits listing the caller's memberships; the workspace context
 /// is then switched one workspace at a time to inspect its mode and administrator assignments.
 async fn ensure_business_admin_can_leave(tx: &mut PgConnection, user_id: Uuid) -> ApiResult<()> {
-    let memberships: Vec<(Uuid, Uuid)> = sqlx::query_as(
-        "SELECT id, workspace_id FROM workspace_members
-         WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
-         ORDER BY workspace_id",
-    )
-    .bind(user_id)
-    .fetch_all(&mut *tx)
-    .await?;
-
     const ADMINS: &str = "SELECT count(DISTINCT m.id) FROM workspace_members m
         JOIN role_assignments a ON a.workspace_id = m.workspace_id AND a.member_id = m.id
              AND a.deleted_at IS NULL AND a.scope_kind IS NULL
@@ -96,6 +90,15 @@ async fn ensure_business_admin_can_leave(tx: &mut PgConnection, user_id: Uuid) -
         JOIN role_permissions p ON p.workspace_id = r.workspace_id AND p.role_id = r.id
              AND p.permission = 'users.manage'
         WHERE m.workspace_id = $1 AND m.status = 'active' AND m.deleted_at IS NULL";
+
+    let memberships: Vec<(Uuid, Uuid)> = sqlx::query_as(
+        "SELECT id, workspace_id FROM workspace_members
+         WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
+         ORDER BY workspace_id",
+    )
+    .bind(user_id)
+    .fetch_all(&mut *tx)
+    .await?;
 
     for (member_id, workspace_id) in memberships {
         db::set_workspace_id(tx, workspace_id).await?;
@@ -311,7 +314,7 @@ pub async fn account_deletion_cancel(
 mod spec {
     use crate::error::ErrorCode;
     use crate::error::ErrorCode::{
-        Conflict, Forbidden, Internal, NotFound, RateLimited, Unauthenticated, Unavailable,
+        Conflict, Internal, NotFound, RateLimited, StepUpRequired, Unauthenticated, Unavailable,
         UpgradeRequired,
     };
     use crate::openapi::{OperationSpec, file_op};
@@ -326,7 +329,7 @@ mod spec {
     ];
     const WRITE: &[ErrorCode] = &[
         Unauthenticated,
-        Forbidden,
+        StepUpRequired,
         Conflict,
         RateLimited,
         UpgradeRequired,
