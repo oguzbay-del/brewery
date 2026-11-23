@@ -437,8 +437,7 @@ async fn failed_object_delete_is_recorded_and_retried_on_the_next_run(base: PgPo
             .unwrap()
             .iter()
             .any(|key| key.as_str() == Some(&object_key)),
-        "maintenance detail: {}",
-        detail
+        "maintenance detail: {detail}"
     );
 
     sqlx::query(
