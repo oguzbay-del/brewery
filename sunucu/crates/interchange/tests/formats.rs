@@ -37,6 +37,59 @@ fn beerxml_round_trip() {
 }
 
 #[test]
+fn beerxml_lovibond_color_is_converted_to_srm() {
+    let source = String::from_utf8(fixture("sample.beerxml")).unwrap();
+    let xml = source.replacen("<COLOR>2.5</COLOR>", "<COLOR>40</COLOR>", 1);
+    let recipe = &beerxml::parse(xml.as_bytes()).unwrap().recipes[0];
+    assert!((recipe.fermentables[0].color_srm.unwrap() - 53.424).abs() < 1e-9);
+}
+
+#[test]
+fn beerxml_missing_required_field_names_record_and_field() {
+    let source = String::from_utf8(fixture("sample.beerxml")).unwrap();
+    let xml = source.replacen("<YIELD>80</YIELD>", "", 1);
+    assert!(matches!(
+        beerxml::parse(xml.as_bytes()),
+        Err(Error::Format(message))
+            if message.contains("FERMENTABLE") && message.contains("YIELD")
+    ));
+}
+
+#[test]
+fn beerxml_writer_emits_required_fields_and_zero_defaults() {
+    let mut recipe = beerxml::parse(&fixture("sample.beerxml"))
+        .unwrap()
+        .recipes
+        .remove(0);
+    recipe.brewer = None;
+    recipe.batch_volume_l = None;
+    recipe.boil_volume_l = None;
+    recipe.boil_time_min = None;
+    recipe.efficiency_pct = None;
+    recipe.mash_steps.clear();
+    if let Some(equipment) = recipe.equipment.as_mut() {
+        equipment.batch_volume_l = None;
+        equipment.boil_volume_l = None;
+    }
+    recipe.miscs[0].time_min = None;
+    recipe.hops[0].alpha_pct = None;
+    recipe.fermentables[0].yield_pct = None;
+    recipe.fermentables[0].color_srm = None;
+    let xml = beerxml::write(&[recipe]);
+    assert!(xml.contains("<BREWER>Unknown</BREWER>"));
+    assert!(xml.contains("<CATEGORY_NUMBER>18</CATEGORY_NUMBER>"));
+    assert!(xml.contains("<ALPHA>0</ALPHA>"));
+    assert!(xml.contains("<YIELD>0</YIELD>"));
+    assert!(xml.contains("<COLOR>0</COLOR>"));
+    assert!(xml.contains("<BATCH_SIZE>0</BATCH_SIZE>"));
+    assert!(xml.contains("<BOIL_SIZE>0</BOIL_SIZE>"));
+    assert!(xml.contains("<BOIL_TIME>0</BOIL_TIME>"));
+    assert!(xml.contains("<EFFICIENCY>0</EFFICIENCY>"));
+    assert!(xml.contains("<MASH_STEPS>"));
+    assert!(beerxml::parse(xml.as_bytes()).is_ok());
+}
+
+#[test]
 fn beerjson_round_trip_from_beerxml() {
     let a = beerxml::parse(&fixture("sample.beerxml")).unwrap();
     let text = beerjson::write(&a.recipes);
@@ -155,14 +208,19 @@ fn version_input_matches_the_api_shape() {
 
 #[test]
 fn beerxml_estimates_with_units() {
-    let xml = b"<RECIPES><RECIPE><NAME>X</NAME><OG>1.040</OG><EST_OG>1.052 sg</EST_OG>\
-        <EST_FG>1.011 sg</EST_FG><EST_COLOR>19.7 EBC</EST_COLOR></RECIPE></RECIPES>";
-    let r = &beerxml::parse(xml).unwrap().recipes[0];
+    let source = String::from_utf8(fixture("sample.beerxml")).unwrap();
+    let xml = source
+        .replace("<OG>1.052</OG>", "<OG>1.040</OG><EST_OG>1.052 sg</EST_OG>")
+        .replace("<FG>1.011</FG>", "<FG>1.020</FG><EST_FG>1.011 sg</EST_FG>")
+        .replace(
+            "<EST_COLOR>7.5</EST_COLOR>",
+            "<EST_COLOR>19.7 EBC</EST_COLOR>",
+        );
+    let r = &beerxml::parse(xml.as_bytes()).unwrap().recipes[0];
     assert_eq!(r.source.og_sg, Some(1.052));
     assert_eq!(r.source.fg_sg, Some(1.011));
     assert!((r.source.srm.unwrap() - 10.0).abs() < 0.01);
 }
-
 #[test]
 fn bsmx_sample_is_read() {
     let doc = bsmx::parse(&fixture("bsmx/recipe.bsmx")).unwrap();

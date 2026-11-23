@@ -159,6 +159,8 @@ fn parse_recipe(r: &Value) -> Recipe {
                 .to_owned(),
             ),
             attenuation_pct: n(y, &["attenuation"]),
+            amount: None,
+            amount_is_weight: None,
             packs: Some(n(y, &["amount"]).filter(|a| *a > 0.0).unwrap_or(1.0)),
         })
         .collect();
@@ -203,6 +205,8 @@ fn parse_recipe(r: &Value) -> Recipe {
         notes: s(r, "notes").map(str::to_owned),
         kind: kind_from(s(r, "type").unwrap_or("All Grain")),
         style: r.get("style").and_then(|x| s(x, "name")).map(str::to_owned),
+        brewer: None,
+        style_details: None,
         ibu_method: s(r, "ibuFormula").map(str::to_ascii_lowercase),
         batch_volume_l: n(r, &["batchSize"]),
         boil_volume_l: n(r, &["boilSize"]),
