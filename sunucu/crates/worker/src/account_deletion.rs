@@ -1,7 +1,7 @@
 //! Scheduled account purge (T2.31c).
 //!
 //! Database changes are committed once per user before object storage is touched. Failed object
-//! deletions are persisted in maintenance_runs.last_detail and retried on the next hourly tick.
+//! deletions are persisted in `maintenance_runs.last_detail` and retried on the next hourly tick.
 
 use std::collections::BTreeSet;
 
