@@ -30,6 +30,9 @@ for (const width of [320, 390]) {
     await page.keyboard.press("ArrowRight");
     const afterScroll = await region.evaluate((element) => element.scrollLeft);
     expect(afterScroll).toBeGreaterThan(beforeScroll);
+    await page.keyboard.press("ArrowLeft");
+    const restoredScroll = await region.evaluate((element) => element.scrollLeft);
+    expect(restoredScroll).toBeLessThan(afterScroll);
 
     const pageWidth = await page.evaluate(() => ({
       viewport: window.innerWidth,
