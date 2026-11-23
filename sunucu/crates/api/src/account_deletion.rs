@@ -276,7 +276,7 @@ pub async fn account_deletion_request(
     tag = "account deletion",
     operation_id = "account_deletion_cancel",
     responses(
-        (status = 200, description = "Deletion request cancelled", body = AccountDeletionView, example = json!({"id": "0192f1c07a3b7000800000000000000a", "requested_at": "2026-11-23T10:00:00Z", "purge_at": "2026-12-23T10:00:00Z", "status": "pending", "restored_at": null})),
+        (status = 200, description = "Deletion request cancelled", body = AccountDeletionView, example = json!({"id": "0192f1c07a3b7000800000000000000a", "requested_at": "2026-11-23T10:00:00Z", "purge_at": "2026-12-23T10:00:00Z", "status": "cancelled", "restored_at": "2026-11-25T09:00:00Z"})),
         (status = 401, description = "Unauthenticated"),
         (status = 404, description = "No pending request"),
         (status = 409, description = "The grace period has ended"),
