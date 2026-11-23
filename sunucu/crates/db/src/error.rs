@@ -40,6 +40,9 @@ pub enum Error {
     /// A stored audit row cannot be read back in the canonical form.
     #[error("unreadable audit row: {0}")]
     AuditCanonical(String),
+    /// The account-deletion grace-period setting is missing or invalid.
+    #[error("invalid ACCOUNT_DELETION_GRACE_DAYS: {0}")]
+    InvalidAccountDeletionGraceDays(String),
     /// Audit verification was asked for with a role that cannot see every workspace.
     #[error("verifying all workspaces needs a role that bypasses row level security")]
     VerifyNeedsBypass,

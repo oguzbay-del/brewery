@@ -9,6 +9,7 @@
 //! - [`DbContext`], [`begin`], [`set_context`]: request context for row level security
 //!   (ADR-0007).
 
+mod account_deletion;
 mod audit;
 mod context;
 mod error;
@@ -19,6 +20,11 @@ mod pool;
 mod roles;
 pub mod seed;
 
+pub use account_deletion::{
+    AccountDeletionRequest, DEFAULT_ACCOUNT_DELETION_GRACE_DAYS, DueAccountDeletion,
+    account_deletion_grace_days, anonymize_user, cancel_account_deletion, due_account_deletions,
+    request_account_deletion,
+};
 pub use audit::{
     AuditEvent, AuditRecord, CanonicalFields, ChainBreak, ChainReport, GENESIS_HASH, NewAuditEntry,
     append_audit, canonical_row, chain_hash, changed_field, verify_all_chains, verify_chain,
