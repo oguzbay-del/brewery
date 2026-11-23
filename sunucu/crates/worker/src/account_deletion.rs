@@ -149,13 +149,12 @@ async fn process_user_transaction(
 }
 
 async fn load_pending_object_keys(pool: &PgPool) -> Result<Vec<String>> {
-    let detail: Option<Option<String>> = sqlx::query_scalar(
-        "SELECT last_detail FROM maintenance_runs WHERE job = $1",
-    )
-    .bind(crate::maintenance::JOB_ACCOUNT_DELETIONS)
-    .fetch_optional(pool)
-    .await
-    .map_err(db::Error::from)?;
+    let detail: Option<Option<String>> =
+        sqlx::query_scalar("SELECT last_detail FROM maintenance_runs WHERE job = $1")
+            .bind(crate::maintenance::JOB_ACCOUNT_DELETIONS)
+            .fetch_optional(pool)
+            .await
+            .map_err(db::Error::from)?;
     let Some(Some(detail)) = detail else {
         return Ok(Vec::new());
     };
@@ -170,10 +169,12 @@ async fn load_pending_object_keys(pool: &PgPool) -> Result<Vec<String>> {
         .collect())
 }
 
-async fn delete_object(store: Option<&dyn ObjectStore>, key: &str) -> std::result::Result<(), String> {
+async fn delete_object(
+    store: Option<&dyn ObjectStore>,
+    key: &str,
+) -> std::result::Result<(), String> {
     let Some(store) = store else {
         return Err("workspace object store is unavailable".to_owned());
     };
     store.delete(key).await.map_err(|error| error.to_string())
 }
-
