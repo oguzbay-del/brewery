@@ -7,7 +7,7 @@ mod common;
 use std::{collections::HashMap, sync::Mutex, time::Duration};
 
 use common::{api_pool, seed, worker_pool};
-use sqlx::PgPool;
+use sqlx::{AssertSqlSafe, PgPool};
 use storage::{
     BoxFuture, Digest, ObjectMeta, ObjectStore, PresignedRequest, StorageError, StorageResult,
     UploadLimits,
@@ -253,7 +253,7 @@ async fn due_deletion_purges_home_files_removes_business_membership_and_anonymiz
         let sql = format!(
             "SELECT count(*) FROM \"{table}\" WHERE workspace_id = $1 AND \"{column}\" = $2"
         );
-        let remaining: i64 = sqlx::query_scalar(&sql)
+        let remaining: i64 = sqlx::query_scalar(AssertSqlSafe(&sql))
             .bind(business_ws)
             .bind(s.user)
             .fetch_one(&base)
