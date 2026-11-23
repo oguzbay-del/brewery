@@ -19,6 +19,7 @@ configMapGenerator:
       - S3_ENDPOINT=http://objectstore:8333
       - S3_PUBLIC_ENDPOINT=http://127.0.0.1:8333
       - S3_CREATE_BUCKET=true
+      - S3_DIGEST_BUCKET=
       - GITHUB_API_URL=http://github-mock:8080
       - APNS_URL=http://apns-mock:8080
       - APNS_TOPIC=com.demleme.app.dev
