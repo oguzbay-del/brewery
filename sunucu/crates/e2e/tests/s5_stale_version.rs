@@ -34,7 +34,9 @@ async fn stale_recipe_version_update_returns_412() {
     .header("If-Match", &etag)
     .body(r#"{"change_note":"first update"}"#)
     .send().await.unwrap();
-    assert_eq!(first.status(), StatusCode::OK, "{}", first.text().await.unwrap());
+    let first_status = first.status();
+    let first_body = first.text().await.unwrap();
+    assert_eq!(first_status, StatusCode::OK, "{first_body}");
 
     let stale = ctx.request(
         Method::PATCH,
