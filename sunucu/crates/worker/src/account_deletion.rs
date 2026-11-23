@@ -21,6 +21,7 @@ pub async fn purge_due(
     store: Option<&dyn ObjectStore>,
 ) -> Result<usize> {
     let mut tx = pool.begin().await?;
+    db::set_actor_kind(&mut tx, ActorKind::System).await?;
     let due = db::due_account_deletions(&mut tx, BATCH_LIMIT).await?;
     for request in &due {
         purge_user(&mut tx, request.user_id, store).await?;
