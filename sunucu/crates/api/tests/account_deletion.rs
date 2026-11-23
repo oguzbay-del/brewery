@@ -51,8 +51,7 @@ async fn world(pool: &PgPool) -> World {
         cfg.auth.clone(),
         Arc::new(MemoryMailer::default()),
     ));
-    let state =
-        AppState::new(app_db, Redis::disabled(), svc.clone(), cfg).with_auth_services(svc);
+    let state = AppState::new(app_db, Redis::disabled(), svc.clone(), cfg).with_auth_services(svc);
     World {
         app: api::router(state),
         oidc,
@@ -92,9 +91,7 @@ async fn as_user(w: &World, token: &str, method: &str, path: &str) -> Reply {
 
 /// New Apple user; the sign-in itself is a valid second step for a Home user for ten minutes.
 async fn sign_in(w: &World, subject: &str) -> String {
-    let nonce = call(w, "POST", "/v1/auth/nonce", None, None)
-        .await
-        .body["nonce"]
+    let nonce = call(w, "POST", "/v1/auth/nonce", None, None).await.body["nonce"]
         .as_str()
         .unwrap()
         .to_owned();
