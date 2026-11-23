@@ -343,7 +343,12 @@ async fn last_owner_stays_pending_and_worker_continues_with_the_next_due_user(ba
             .fetch_one(&base)
             .await
             .unwrap();
-    assert_eq!(owner_status, "pending", "maintenance detail: {}", maintenance_detail(&base).await);
+    assert_eq!(
+        owner_status,
+        "pending",
+        "maintenance detail: {}",
+        maintenance_detail(&base).await
+    );
     let (member_status, member_deleted_at): (String, Option<chrono::DateTime<chrono::Utc>>) =
         sqlx::query_as("SELECT status, deleted_at FROM workspace_members WHERE id = $1")
             .bind(owner_member)
