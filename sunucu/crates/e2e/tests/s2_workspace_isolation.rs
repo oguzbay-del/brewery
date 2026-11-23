@@ -29,8 +29,7 @@ async fn user_cannot_read_or_change_another_workspace() {
     let etag = recipe_response
         .headers()
         .get("etag")
-        .map(|v| v.to_str().unwrap().to_owned())
-        .unwrap_or_else(|| "\"1\"".to_owned());
+        .map_or_else(|| "\"1\"".to_owned(), |v| v.to_str().unwrap().to_owned());
     let recipe: serde_json::Value = recipe_response.json().await.unwrap();
     let recipe_id = recipe["id"].as_str().unwrap();
 
