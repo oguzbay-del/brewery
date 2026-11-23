@@ -1,7 +1,7 @@
 //! Account deletion request and anonymisation operations (T2.31a).
 //!
 //! The caller owns the transaction and must set the user context for API operations.
-//! Worker operations use the narrowly granted database functions in migration 0220.
+//! Worker operations use the narrowly granted SECURITY DEFINER functions in migration 0221.
 
 use chrono::{DateTime, Utc};
 use sqlx::{PgConnection, Row, types::Uuid};
@@ -135,7 +135,7 @@ pub async fn cancel_account_deletion(
         .transpose()
 }
 
-/// Claims due pending requests. Keep the transaction open while processing the returned rows.
+/// Lists due pending requests. Each user must be re-locked and rechecked through account_deletion_memberships before processing.
 pub async fn due_account_deletions(
     conn: &mut PgConnection,
     limit: i32,
