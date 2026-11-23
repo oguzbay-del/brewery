@@ -188,7 +188,6 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
     }
 }
 
-
 /// Regression reproducer for a known API permission gap; see PR #230's risk note.
 /// The endpoint currently checks membership but does not enforce a notification-read permission.
 #[tokio::test]
@@ -199,7 +198,10 @@ async fn member_without_notification_read_permission_cannot_list_notifications()
         return;
     };
     let owner = ctx.login().await.unwrap();
-    let invited_email = format!("e2e-notification-permission-{}@example.test", Uuid::new_v4());
+    let invited_email = format!(
+        "e2e-notification-permission-{}@example.test",
+        Uuid::new_v4()
+    );
     let workspace = ctx
         .create_workspace(&owner, "business", "E2E Notification Permissions")
         .await
