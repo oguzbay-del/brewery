@@ -15,9 +15,11 @@ async fn home_user_completes_the_main_flow() {
     let workspace = ctx.create_workspace(&user, "home", "E2E Home Flow").await.unwrap();
     let ws = workspace["id"].as_str().unwrap();
 
-    let recipe = ctx.create_recipe(&user, ws, "E2E House IPA").await.unwrap();
-    assert_eq!(recipe.status(), reqwest::StatusCode::CREATED, "{}", recipe.text().await.unwrap());
-    let recipe: Value = recipe.json().await.unwrap();
+    let recipe_response = ctx.create_recipe(&user, ws, "E2E House IPA").await.unwrap();
+    let recipe_status = recipe_response.status();
+    let recipe_body = recipe_response.text().await.unwrap();
+    assert_eq!(recipe_status, reqwest::StatusCode::CREATED, "{recipe_body}");
+    let recipe: Value = serde_json::from_str(&recipe_body).unwrap();
     let version_id = recipe["draft_version_id"].as_str().unwrap();
 
     let version = ctx.request(
@@ -35,7 +37,9 @@ async fn home_user_completes_the_main_flow() {
     .header("Idempotency-Key", Uuid::new_v4().to_string())
     .json(&json!({}))
     .send().await.unwrap();
-    assert_eq!(publish.status(), reqwest::StatusCode::OK, "{}", publish.text().await.unwrap());
+    let publish_status = publish.status();
+    let publish_body = publish.text().await.unwrap();
+    assert_eq!(publish_status, reqwest::StatusCode::OK, "{publish_body}");
 
     let batch = ctx.post_json(
         &format!("/v1/workspaces/{ws}/batches"),
@@ -87,7 +91,9 @@ async fn home_user_completes_the_main_flow() {
             "body": "The end-to-end test is checking the customer support flow."
         }),
     ).await.unwrap();
-    assert_eq!(support.status(), reqwest::StatusCode::CREATED, "{}", support.text().await.unwrap());
-    let support: Value = support.json().await.unwrap();
+    let support_status = support.status();
+    let support_body = support.text().await.unwrap();
+    assert_eq!(support_status, reqwest::StatusCode::CREATED, "{support_body}");
+    let support: Value = serde_json::from_str(&support_body).unwrap();
     assert!(support["request"]["id"].as_str().is_some());
 }
