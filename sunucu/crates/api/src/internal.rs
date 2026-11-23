@@ -477,6 +477,7 @@ async fn request_message(
 pub struct CorrectionBody {
     kind: String,
     valid_until: Option<chrono::DateTime<chrono::Utc>>,
+    user_id: Option<Uuid>,
     reason: Option<String>,
 }
 
@@ -499,13 +500,39 @@ async fn correction_create(
     if b.valid_until.is_some_and(|t| t <= chrono::Utc::now()) {
         return Err(issue("/valid_until", "must_be_in_the_future"));
     }
+    if kind == "deletion_request" && staff.role != "support_admin" {
+        return Err(ApiError::new(ErrorCode::Forbidden));
+    }
+    if kind != "deletion_request" && b.user_id.is_some() {
+        return Err(issue("/user_id", "not_allowed"));
+    }
     let mut tx = staff_tx(&state, ws, None).await?;
+    let params = if kind == "deletion_request" {
+        let user_id = b.user_id.ok_or_else(|| issue("/user_id", "required"))?;
+        let is_member: bool = sqlx::query_scalar(
+            "SELECT EXISTS (
+                SELECT 1 FROM workspace_members
+                WHERE workspace_id = $1 AND user_id = $2
+                  AND status = 'active' AND deleted_at IS NULL
+            )",
+        )
+        .bind(ws)
+        .bind(user_id)
+        .fetch_one(&mut *tx)
+        .await?;
+        if !is_member {
+            return Err(issue("/user_id", "not_a_workspace_member"));
+        }
+        json!({"user_id": user_id})
+    } else {
+        json!({"valid_until": b.valid_until})
+    };
     let id = panel::request_correction(
         &mut tx,
         ws,
         staff.id,
         kind,
-        &json!({"valid_until": b.valid_until}),
+        &params,
         &why,
     )
     .await
