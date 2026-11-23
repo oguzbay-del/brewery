@@ -5,7 +5,11 @@
 
 use std::sync::Arc;
 
-use axum::{Extension, Json, Router, extract::State, routing::{delete, get, post}};
+use axum::{
+    Extension, Json, Router,
+    extract::State,
+    routing::{delete, get, post},
+};
 use chrono::{DateTime, Utc};
 use db::{AccountDeletionRequest, AuditEvent, NewAuditEntry};
 use serde::Serialize;
@@ -14,8 +18,9 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::{
-    AppState, RequestContext, authenticated,
+    AppState, RequestContext,
     auth::{AuthServices, step_up::ProtectedAction},
+    authenticated,
     error::{ApiError, ApiResult, ErrorCode, FieldIssue},
 };
 
@@ -73,10 +78,7 @@ fn not_found() -> ApiError {
 /// Refuses deletion when the caller is the only active administrator of a Business workspace.
 /// The user-scoped member policy permits listing the caller's memberships; the workspace context
 /// is then switched one workspace at a time to inspect its mode and administrator assignments.
-async fn ensure_business_admin_can_leave(
-    tx: &mut PgConnection,
-    user_id: Uuid,
-) -> ApiResult<()> {
+async fn ensure_business_admin_can_leave(tx: &mut PgConnection, user_id: Uuid) -> ApiResult<()> {
     let memberships: Vec<(Uuid, Uuid)> = sqlx::query_as(
         "SELECT id, workspace_id FROM workspace_members
          WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
@@ -97,12 +99,11 @@ async fn ensure_business_admin_can_leave(
 
     for (member_id, workspace_id) in memberships {
         db::set_workspace_id(tx, workspace_id).await?;
-        let mode: Option<String> = sqlx::query_scalar(
-            "SELECT mode FROM workspaces WHERE id = $1 AND deleted_at IS NULL",
-        )
-        .bind(workspace_id)
-        .fetch_optional(&mut *tx)
-        .await?;
+        let mode: Option<String> =
+            sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1 AND deleted_at IS NULL")
+                .bind(workspace_id)
+                .fetch_optional(&mut *tx)
+                .await?;
         let Some(mode) = mode else {
             continue;
         };
@@ -191,7 +192,16 @@ pub async fn account_deletion_get(
     ctx: RequestContext,
 ) -> ApiResult<Json<Option<AccountDeletionView>>> {
     let mut tx = ctx.begin(&state.db).await?;
-    let row = sqlx::query_as::<_, (Uuid, DateTime<Utc>, DateTime<Utc>, String, Option<DateTime<Utc>>)>(
+    let row = sqlx::query_as::<
+        _,
+        (
+            Uuid,
+            DateTime<Utc>,
+            DateTime<Utc>,
+            String,
+            Option<DateTime<Utc>>,
+        ),
+    >(
         "SELECT id, requested_at, purge_at, status, restored_at
          FROM account_deletion_requests WHERE user_id = $1
          ORDER BY requested_at DESC LIMIT 1",
@@ -200,9 +210,15 @@ pub async fn account_deletion_get(
     .fetch_optional(&mut *tx)
     .await?;
     tx.commit().await?;
-    Ok(Json(row.map(|(id, requested_at, purge_at, status, restored_at)| {
-        AccountDeletionView { id, requested_at, purge_at, status, restored_at }
-    })))
+    Ok(Json(row.map(
+        |(id, requested_at, purge_at, status, restored_at)| AccountDeletionView {
+            id,
+            requested_at,
+            purge_at,
+            status,
+            restored_at,
+        },
+    )))
 }
 
 /// Requests permanent account deletion after the configured grace period.
@@ -224,7 +240,8 @@ pub async fn account_deletion_request(
     ctx: RequestContext,
     auth: Svc,
 ) -> ApiResult<Json<AccountDeletionView>> {
-    auth.require_step_up(&ctx, ProtectedAction::AccountDelete).await?;
+    auth.require_step_up(&ctx, ProtectedAction::AccountDelete)
+        .await?;
     let user_id = ctx.identity.user_id;
     let grace_days = db::account_deletion_grace_days()?;
     let mut tx = ctx.begin(&state.db).await?;
@@ -292,11 +309,30 @@ pub async fn account_deletion_cancel(
 }
 
 mod spec {
-    use crate::error::ErrorCode::{Conflict, Forbidden, Internal, NotFound, RateLimited, Unauthenticated, Unavailable, UpgradeRequired};
+    use crate::error::ErrorCode;
+    use crate::error::ErrorCode::{
+        Conflict, Forbidden, Internal, NotFound, RateLimited, Unauthenticated, Unavailable,
+        UpgradeRequired,
+    };
     use crate::openapi::{OperationSpec, file_op};
 
-    const READ: &[ErrorCode] = &[Unauthenticated, NotFound, RateLimited, UpgradeRequired, Internal, Unavailable];
-    const WRITE: &[ErrorCode] = &[Unauthenticated, Forbidden, Conflict, RateLimited, UpgradeRequired, Internal, Unavailable];
+    const READ: &[ErrorCode] = &[
+        Unauthenticated,
+        NotFound,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+    const WRITE: &[ErrorCode] = &[
+        Unauthenticated,
+        Forbidden,
+        Conflict,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
 
     pub(super) const OPERATIONS: &[OperationSpec] = &[
         file_op("account_deletion_get", None, None, READ),
