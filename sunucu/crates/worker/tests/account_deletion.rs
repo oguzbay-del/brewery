@@ -125,7 +125,9 @@ async fn create_due_request(base: &PgPool, user_id: Uuid) -> Uuid {
     let request = db::request_account_deletion(&mut tx, 30).await.unwrap();
     tx.commit().await.unwrap();
     sqlx::query(
-        "UPDATE account_deletion_requests SET purge_at = now() - interval '1 second'
+        "UPDATE account_deletion_requests
+         SET requested_at = now() - interval '2 seconds',
+             purge_at = now() - interval '1 second'
          WHERE id = $1",
     )
     .bind(request.id)
