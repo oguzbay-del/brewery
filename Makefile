@@ -36,12 +36,27 @@ smoke: ## Her servisin sağlığını denetler (önce make up)
 test: ## Sunucu testleri: cargo test --workspace (PostgreSQL gerekir: make up)
 	cd sunucu && cargo test --workspace
 
-E2E_BASE_URL ?= http://127.0.0.1:8080
+E2E_KEYED_API_PORT ?= 8081
+E2E_BASE_URL ?= http://127.0.0.1:$(E2E_KEYED_API_PORT)
+E2E_NO_KEY_BASE_URL ?= http://127.0.0.1:8080
 E2E_FAKE_OIDC_URL ?= http://127.0.0.1:9000
 E2E_MAILPIT_URL ?= http://127.0.0.1:8025
 
 e2e: ## Compose uçtan uca testleri (önce make up)
-	cd sunucu && E2E_BASE_URL="$(E2E_BASE_URL)" E2E_FAKE_OIDC_URL="$(E2E_FAKE_OIDC_URL)" E2E_MAILPIT_URL="$(E2E_MAILPIT_URL)" cargo test -p e2e -- --test-threads=1
+	@set -eu; \
+	api_id=$($(COMPOSE) run --no-deps -d --rm \
+		-p 127.0.0.1:$(E2E_KEYED_API_PORT):8080 \
+		-e BREW_PACKAGE_KEY=gristora-e2e-only-signing-key-not-production \
+		-e BREW_PACKAGE_KEY_ID=e2e \
+		api); \
+	cleanup() { docker rm -f "$api_id" >/dev/null 2>&1 || true; }; \
+	trap cleanup EXIT; \
+	for attempt in $(seq 1 60); do \
+		if curl -fsS "$(E2E_BASE_URL)/healthz" >/dev/null; then break; fi; \
+		sleep 1; \
+	done; \
+	curl -fsS "$(E2E_BASE_URL)/healthz" >/dev/null; \
+	cd sunucu && E2E_BASE_URL="$(E2E_BASE_URL)" E2E_NO_KEY_BASE_URL="$(E2E_NO_KEY_BASE_URL)" E2E_FAKE_OIDC_URL="$(E2E_FAKE_OIDC_URL)" E2E_MAILPIT_URL="$(E2E_MAILPIT_URL)" cargo test -p e2e -- --test-threads=1
 
 vektor: ## Parite vektörlerini Python referansından üretir (ADR-0003)
 	python3 -I formuller/testler/parite/uret.py
