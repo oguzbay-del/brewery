@@ -281,7 +281,7 @@ REVOKE ALL ON FUNCTION
     account_deletion_soft_delete_home(uuid),
     account_deletion_object_keys(uuid),
     account_deletion_from_support(uuid)
-FROM PUBLIC;
+FROM PUBLIC, app_api;
 
 GRANT EXECUTE ON FUNCTION
     account_deletion_memberships(uuid),
