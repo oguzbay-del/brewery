@@ -5,6 +5,7 @@ use reqwest::Method;
 use serde_json::{Value, json};
 use uuid::Uuid;
 
+#[allow(clippy::too_many_lines)]
 #[tokio::test]
 async fn home_user_completes_the_main_flow() {
     let Some(ctx) = Context::from_env() else {
