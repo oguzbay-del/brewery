@@ -89,7 +89,7 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
         .post_json(
             &format!("/v1/workspaces/{ws}/roles"),
             Some(&owner),
-            &json!({"name":"E2E Read Only","permissions":["recipe.view"]}),
+            &json!({"name":"E2E Cost Viewer","permissions":["cost.view"]}),
         )
         .await
         .unwrap()
