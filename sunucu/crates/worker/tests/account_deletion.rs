@@ -212,6 +212,14 @@ async fn due_deletion_purges_home_files_removes_business_membership_and_anonymiz
             .await
             .unwrap();
     assert!(business_exists);
+    let (workspace_created_by, workspace_updated_by): (Option<Uuid>, Option<Uuid>) =
+        sqlx::query_as("SELECT created_by, updated_by FROM workspaces WHERE id = $1")
+            .bind(business_ws)
+            .fetch_one(&base)
+            .await
+            .unwrap();
+    assert_eq!(workspace_created_by, None);
+    assert_eq!(workspace_updated_by, None);
     let membership_count: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM workspace_members WHERE workspace_id = $1 AND user_id = $2",
     )
@@ -237,7 +245,7 @@ async fn due_deletion_purges_home_files_removes_business_membership_and_anonymiz
         "SELECT c.table_name, c.column_name
          FROM information_schema.columns c
          WHERE c.table_schema = 'public'
-           AND c.column_name IN ('user_id', 'created_by')
+           AND c.column_name IN ('user_id', 'created_by', 'updated_by')
            AND EXISTS (
                SELECT 1 FROM information_schema.columns w
                WHERE w.table_schema = c.table_schema
