@@ -46,7 +46,7 @@ impl Context {
             return None;
         }
         let base_url = env::var("E2E_NO_KEY_BASE_URL").ok()?;
-        Self::with_base_url(base_url)
+        Self::with_base_url(&base_url)
     }
 
     fn with_base_url(base_url: &str) -> Option<Self> {
