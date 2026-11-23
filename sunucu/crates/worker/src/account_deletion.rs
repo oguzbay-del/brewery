@@ -157,7 +157,8 @@ async fn remove_business_member(
     sqlx::query("UPDATE workspaces SET created_by = NULL, updated_by = NULL WHERE id = $1")
         .bind(workspace_id)
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(db::Error::from)?;
     sqlx::query(
         "DELETE FROM workspace_members
          WHERE workspace_id = $1 AND id = $2 AND user_id = $3",
@@ -166,7 +167,8 @@ async fn remove_business_member(
     .bind(member_id)
     .bind(user_id)
     .execute(&mut *tx)
-    .await?;
+    .await
+    .map_err(db::Error::from)?;
     Ok(())
 }
 
@@ -190,7 +192,8 @@ async fn scrub_workspace_user_references(
          ORDER BY c.table_name, c.column_name",
     )
     .fetch_all(&mut *tx)
-    .await?;
+    .await
+    .map_err(db::Error::from)?;
 
     for (table, column, nullable) in columns {
         ensure_identifier(&table)?;
@@ -253,7 +256,7 @@ async fn workspace_object_keys(tx: &mut PgConnection, workspace_id: Uuid) -> Res
             "SELECT \"{column}\" FROM \"{table}\" \
              WHERE workspace_id = $1 AND \"{column}\" IS NOT NULL"
         );
-        let found: Vec<String> = sqlx::query_scalar(&sql)
+        let found: Vec<String> = sqlx::query_scalar(AssertSqlSafe(&sql))
             .bind(workspace_id)
             .fetch_all(&mut *tx)
             .await
@@ -277,6 +280,7 @@ fn ensure_identifier(value: &str) -> Result<()> {
 async fn clear_workspace_context(tx: &mut PgConnection) -> Result<()> {
     sqlx::query("SELECT set_config('app.workspace_id', '', true)")
         .execute(&mut *tx)
-        .await?;
+        .await
+        .map_err(db::Error::from)?;
     Ok(())
 }
