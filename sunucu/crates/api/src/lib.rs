@@ -1,6 +1,6 @@
 //! `api` service: HTTP core (ADR-0008). Error envelope, request context, idempotency, `ETag`,
- //! pagination, rate limit, request ids and tracing, and the `OpenAPI` document. Resource
- //! endpoints come in later jobs and use these building blocks.
+//! pagination, rate limit, request ids and tracing, and the `OpenAPI` document. Resource
+//! endpoints come in later jobs and use these building blocks.
 
 pub mod account_deletion;
 pub mod app_version;
