@@ -52,9 +52,16 @@ spec:
             capabilities: { drop: [ALL] }
           volumeMounts:
             - { name: tmp, mountPath: /tmp }
+            - { name: apns-key, mountPath: /var/run/secrets/apns, readOnly: true }
       volumes:
         - name: tmp
           emptyDir: { sizeLimit: 64Mi }
+        - name: apns-key
+          secret:
+            secretName: demleme-apns
+            optional: true
+            items:
+              - { key: APNS_KEY, path: AuthKey.p8 }
 ---
 apiVersion: v1
 kind: Service
