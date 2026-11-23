@@ -530,16 +530,9 @@ async fn correction_create(
     } else {
         json!({"valid_until": b.valid_until})
     };
-    let id = panel::request_correction(
-        &mut tx,
-        ws,
-        staff.id,
-        kind,
-        &params,
-        &why,
-    )
-    .await
-    .map_err(se)?;
+    let id = panel::request_correction(&mut tx, ws, staff.id, kind, &params, &why)
+        .await
+        .map_err(se)?;
     panel::record_action(
         &mut tx,
         ws,
