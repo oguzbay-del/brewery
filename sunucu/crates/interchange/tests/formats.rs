@@ -62,6 +62,16 @@ fn beerxml_writer_emits_required_fields_and_zero_defaults() {
         .recipes
         .remove(0);
     recipe.brewer = None;
+    recipe.batch_volume_l = None;
+    recipe.boil_volume_l = None;
+    recipe.boil_time_min = None;
+    recipe.efficiency_pct = None;
+    recipe.mash_steps.clear();
+    if let Some(equipment) = recipe.equipment.as_mut() {
+        equipment.batch_volume_l = None;
+        equipment.boil_volume_l = None;
+    }
+    recipe.miscs[0].time_min = None;
     recipe.hops[0].alpha_pct = None;
     recipe.fermentables[0].yield_pct = None;
     recipe.fermentables[0].color_srm = None;
@@ -71,6 +81,12 @@ fn beerxml_writer_emits_required_fields_and_zero_defaults() {
     assert!(xml.contains("<ALPHA>0</ALPHA>"));
     assert!(xml.contains("<YIELD>0</YIELD>"));
     assert!(xml.contains("<COLOR>0</COLOR>"));
+    assert!(xml.contains("<BATCH_SIZE>0</BATCH_SIZE>"));
+    assert!(xml.contains("<BOIL_SIZE>0</BOIL_SIZE>"));
+    assert!(xml.contains("<BOIL_TIME>0</BOIL_TIME>"));
+    assert!(xml.contains("<EFFICIENCY>0</EFFICIENCY>"));
+    assert!(xml.contains("<MASH_STEPS>"));
+    assert!(beerxml::parse(xml.as_bytes()).is_ok());
 }
 
 #[test]
