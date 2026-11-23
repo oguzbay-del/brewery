@@ -12,7 +12,7 @@ DATABASE_URL ?= postgres://$(or $(POSTGRES_USER),demleme):$(or $(POSTGRES_PASSWO
 export DATABASE_URL
 
 .DEFAULT_GOAL := help
-.PHONY: help up down logs ps smoke test lint migrate sqlx-prepare kind-up kind-test kind-down vektor
+.PHONY: help up down logs ps smoke test e2e lint migrate sqlx-prepare kind-up kind-test kind-down vektor
 
 help: ## Hedefleri listeler
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\n", $$1, $$2}'
@@ -35,6 +35,13 @@ smoke: ## Her servisin sağlığını denetler (önce make up)
 
 test: ## Sunucu testleri: cargo test --workspace (PostgreSQL gerekir: make up)
 	cd sunucu && cargo test --workspace
+
+E2E_BASE_URL ?= http://127.0.0.1:8080
+E2E_FAKE_OIDC_URL ?= http://127.0.0.1:9000
+E2E_MAILPIT_URL ?= http://127.0.0.1:8025
+
+e2e: ## Compose uçtan uca testleri (önce make up)
+	cd sunucu && E2E_BASE_URL="$(E2E_BASE_URL)" E2E_FAKE_OIDC_URL="$(E2E_FAKE_OIDC_URL)" E2E_MAILPIT_URL="$(E2E_MAILPIT_URL)" cargo test -p e2e -- --test-threads=1
 
 vektor: ## Parite vektörlerini Python referansından üretir (ADR-0003)
 	python3 -I formuller/testler/parite/uret.py
