@@ -186,6 +186,16 @@ async fn create_business_workspace(
             .await
             .unwrap();
         sqlx::query(
+            "INSERT INTO role_permissions (workspace_id, role_id, permission, created_by)
+             VALUES ($1, $2, 'users.manage', $3)",
+        )
+        .bind(workspace_id)
+        .bind(role_id)
+        .bind(user_id)
+        .execute(base)
+        .await
+        .unwrap();
+        sqlx::query(
             "INSERT INTO role_assignments (id, workspace_id, member_id, role_id, created_by, updated_by)
              VALUES ($1, $2, $3, $4, $5, $5)",
         )
