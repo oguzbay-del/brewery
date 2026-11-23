@@ -231,7 +231,7 @@ pub async fn account_deletion_get(
     operation_id = "account_deletion_request",
     responses(
         (status = 200, description = "Deletion request", body = AccountDeletionView, example = json!({"id": "0192f1c07a3b7000800000000000000a", "requested_at": "2026-11-23T10:00:00Z", "purge_at": "2026-12-23T10:00:00Z", "status": "pending", "restored_at": null})),
-        (status = 401, description = "Unauthenticated"),
+        (status = 401, description = "Unauthenticated", body = ProblemDetails, example = json!({"type": "about:blank", "title": "Unauthenticated", "status": 401})),
         (status = 403, description = "A fresh second step is required", body = ProblemDetails),
         (status = 409, description = "The caller is the only Business workspace administrator", body = ProblemDetails),
         (status = 429, description = "Rate limited")
@@ -275,7 +275,7 @@ pub async fn account_deletion_request(
     operation_id = "account_deletion_cancel",
     responses(
         (status = 200, description = "Deletion request cancelled", body = AccountDeletionView, example = json!({"id": "0192f1c07a3b7000800000000000000a", "requested_at": "2026-11-23T10:00:00Z", "purge_at": "2026-12-23T10:00:00Z", "status": "cancelled", "restored_at": "2026-11-25T09:00:00Z"})),
-        (status = 401, description = "Unauthenticated"),
+        (status = 401, description = "Unauthenticated", body = ProblemDetails, example = json!({"type": "about:blank", "title": "Unauthenticated", "status": 401})),
         (status = 404, description = "No pending request", body = ProblemDetails),
         (status = 409, description = "The grace period has ended", body = ProblemDetails),
         (status = 429, description = "Rate limited")
