@@ -49,9 +49,9 @@ e2e: ## Compose uçtan uca testleri (önce make up)
 		-e BREW_PACKAGE_KEY=gristora-e2e-only-signing-key-not-production \
 		-e BREW_PACKAGE_KEY_ID=e2e \
 		api); \
-	cleanup() { docker rm -f "$api_id" >/dev/null 2>&1 || true; }; \
+	cleanup() { docker rm -f "$$api_id" >/dev/null 2>&1 || true; }; \
 	trap cleanup EXIT; \
-	for attempt in $(seq 1 60); do \
+	for attempt in $$(seq 1 60); do \
 		if curl -fsS "$(E2E_BASE_URL)/healthz" >/dev/null; then break; fi; \
 		sleep 1; \
 	done; \
