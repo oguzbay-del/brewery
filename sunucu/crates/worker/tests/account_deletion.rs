@@ -27,7 +27,10 @@ struct MemoryStore {
 
 impl MemoryStore {
     fn insert(&self, key: &str, bytes: &[u8]) {
-        self.objects.lock().unwrap().insert(key.to_owned(), bytes.to_vec());
+        self.objects
+            .lock()
+            .unwrap()
+            .insert(key.to_owned(), bytes.to_vec());
     }
 
     fn fail_once(&self, key: &str) {
@@ -221,8 +224,7 @@ async fn due_deletion_purges_home_and_disables_business_membership_without_erasi
     base: PgPool,
 ) {
     let s = seed(&base).await;
-    let (business_ws, member_id, recipe_id) =
-        create_business_workspace(&base, s.user, false).await;
+    let (business_ws, member_id, recipe_id) = create_business_workspace(&base, s.user, false).await;
     let object_key = create_export_object(&base, s.ws).await;
     let request_id = create_due_request(&base, s.user).await;
     let store = MemoryStore::default();
@@ -307,8 +309,7 @@ async fn due_deletion_purges_home_and_disables_business_membership_without_erasi
 async fn last_owner_stays_pending_and_worker_continues_with_the_next_due_user(base: PgPool) {
     let owner = seed(&base).await;
     let next_user = seed(&base).await;
-    let (business_ws, owner_member, _) =
-        create_business_workspace(&base, owner.user, true).await;
+    let (business_ws, owner_member, _) = create_business_workspace(&base, owner.user, true).await;
     let owner_request = create_due_request(&base, owner.user).await;
     let next_request = create_due_request(&base, next_user.user).await;
 
@@ -352,11 +353,12 @@ async fn last_owner_stays_pending_and_worker_continues_with_the_next_due_user(ba
             .unwrap();
     assert!(!next_home_exists);
 
-    let detail: String =
-        sqlx::query_scalar("SELECT last_detail FROM maintenance_runs WHERE job = 'account-deletion-purge'")
-            .fetch_one(&base)
-            .await
-            .unwrap();
+    let detail: String = sqlx::query_scalar(
+        "SELECT last_detail FROM maintenance_runs WHERE job = 'account-deletion-purge'",
+    )
+    .fetch_one(&base)
+    .await
+    .unwrap();
     let value: Value = serde_json::from_str(&detail).unwrap();
     assert_eq!(
         value["failed_users"][0]["code"].as_str(),
@@ -391,11 +393,12 @@ async fn failed_object_delete_is_recorded_and_retried_on_the_next_run(base: PgPo
     assert_eq!(status, "done");
     assert!(store.contains(&object_key));
 
-    let detail: String =
-        sqlx::query_scalar("SELECT last_detail FROM maintenance_runs WHERE job = 'account-deletion-purge'")
-            .fetch_one(&base)
-            .await
-            .unwrap();
+    let detail: String = sqlx::query_scalar(
+        "SELECT last_detail FROM maintenance_runs WHERE job = 'account-deletion-purge'",
+    )
+    .fetch_one(&base)
+    .await
+    .unwrap();
     let value: Value = serde_json::from_str(&detail).unwrap();
     assert!(
         value["pending_object_keys"]
@@ -415,11 +418,12 @@ async fn failed_object_delete_is_recorded_and_retried_on_the_next_run(base: PgPo
     run_worker(&base, Some(&store)).await;
     assert!(!store.contains(&object_key));
 
-    let detail: String =
-        sqlx::query_scalar("SELECT last_detail FROM maintenance_runs WHERE job = 'account-deletion-purge'")
-            .fetch_one(&base)
-            .await
-            .unwrap();
+    let detail: String = sqlx::query_scalar(
+        "SELECT last_detail FROM maintenance_runs WHERE job = 'account-deletion-purge'",
+    )
+    .fetch_one(&base)
+    .await
+    .unwrap();
     let value: Value = serde_json::from_str(&detail).unwrap();
     assert_eq!(value["pending_object_keys"].as_array().unwrap().len(), 0);
 }
@@ -432,11 +436,17 @@ async fn worker_functions_are_not_callable_by_api_and_require_a_due_request(base
         .bind(s.user)
         .fetch_all(&api)
         .await;
-    assert!(denied.is_err(), "app_api must not execute worker-only functions");
+    assert!(
+        denied.is_err(),
+        "app_api must not execute worker-only functions"
+    );
 
     let worker = worker_pool(&base).await;
     let mut tx = worker.begin().await.unwrap();
     let not_due = db::account_deletion_memberships(&mut tx, s.user).await;
-    assert!(not_due.is_err(), "a user without a due request must be refused");
+    assert!(
+        not_due.is_err(),
+        "a user without a due request must be refused"
+    );
     tx.rollback().await.unwrap();
 }
