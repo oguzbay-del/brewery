@@ -60,6 +60,8 @@ jobs:
         run: make up
       - name: make smoke
         run: make smoke
+      - name: make e2e
+        run: make e2e
       - name: Günlükler (başarısızlıkta)
         if: failure()
         run: docker compose -f altyapi/compose/compose.yaml logs --no-color --tail=200
