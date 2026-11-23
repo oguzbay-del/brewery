@@ -22,7 +22,7 @@ Doğrulama: `kubectl kustomize altyapi/k8s/overlays/<ad>` ve `kubectl apply --dr
 
 ## Kararlar
 
-- **Ağ:** ad alanında girişler varsayılan kapalı. engine-service'e yalnız api erişir; api ve ingest dışarıdan gelen trafiği alır; NATS, PostgreSQL ve Redis yalnız api, worker, ingest'e açık. Çıkış kısıtlanmaz.
+- **Ağ:** ad alanında girişler varsayılan kapalı. engine-service'e yalnız api erişir; api ve ingest dışarıdan gelen trafiği alır; NATS, PostgreSQL ve Redis yalnız api, worker, ingest'e açık; nesne deposunun S3 portu yalnız api ve worker'a açık. Çıkış kısıtlanmaz.
 - **CNI:** kind'ın varsayılan CNI'si (kindnet) NetworkPolicy için nftables ister; bazı çekirdeklerde çalışmaz. Bu yüzden kind-up Calico (iptables) kurar; manifest sürüme ve sağlama toplamına sabit, imajlar quay.io'dan.
 - **Güvenlik:** root olmayan kullanıcı, salt okunur kök dosya sistemi, bütün yetenekler kapalı, `seccomp: RuntimeDefault`, ad alanında Pod Security `restricted`.
 - **Göç:** `base/migrate.yaml` tek seferlik Job; `migrate` imajı `sunucu/migrations`'ı uygular, göç rolünün adresini (`MIGRATE_DATABASE_URL`) ve `app_api`/`app_worker` parolalarını `demleme-migrate` Secret'ından alır, göçten sonra bu iki role oturum açma hakkı ve parolayı verir. `make kind-up` Job'ın bitmesini bekler; servislerin göçten sonra başlaması henüz zorlanmıyor (servisler veritabanı kullanmıyor; T2.10'da eklenir). Job şablonu değişmez olduğundan imaj etiketi değişen canlı dağıtımda önce eski Job silinir (`ttlSecondsAfterFinished` 1 saat sonra kendisi siler).

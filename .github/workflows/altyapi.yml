@@ -90,11 +90,23 @@ jobs:
         run: make kind-up
       - name: make kind-test
         run: make kind-test
-      - name: Küme durumu (başarısızlıkta)
+      - name: Küme durumu ve başarısız pod günlükleri (başarısızlıkta)
         if: failure()
         run: |
+          set +e
           kubectl --context kind-demleme -n demleme get pods,jobs -o wide || true
-          kubectl --context kind-demleme -n demleme describe pods | tail -n 200 || true
+          kubectl --context kind-demleme -n demleme describe pods || true
+          kubectl --context kind-demleme -n demleme get pods -o json \
+            | jq -r '.items[] | select(any(.status.containerStatuses[]?; .ready == false)) | .metadata.name' \
+            | while read -r pod; do
+                [ -n "$pod" ] || continue
+                echo "::group::Önceki container günlükleri: $pod"
+                kubectl --context kind-demleme -n demleme logs "$pod" --all-containers=true --previous --tail=150 || true
+                echo "::endgroup::"
+                echo "::group::Güncel container günlükleri: $pod"
+                kubectl --context kind-demleme -n demleme logs "$pod" --all-containers=true --tail=150 || true
+                echo "::endgroup::"
+              done
       - name: make kind-down
         if: always()
         run: make kind-down

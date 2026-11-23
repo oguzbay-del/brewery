@@ -35,6 +35,8 @@ secretGenerator:
       - APP_API_PASSWORD=demleme-api-yerel
       - APP_WORKER_PASSWORD=demleme-worker-yerel
   - name: demleme-dis-servisler
+    files:
+      - s3.json=./s3.json
     literals:
       - DATABASE_URL=postgres://app_api:demleme-api-yerel@postgres:5432/demleme
       - WORKER_DATABASE_URL=postgres://app_worker:demleme-worker-yerel@postgres:5432/demleme
