@@ -36,7 +36,7 @@ smoke: ## Her servisin sağlığını denetler (önce make up)
 test: ## Sunucu testleri: cargo test --workspace (PostgreSQL gerekir: make up)
 	cd sunucu && cargo test --workspace
 
-E2E_KEYED_API_PORT ?= 8081
+E2E_KEYED_API_PORT ?= 18081
 E2E_BASE_URL ?= http://127.0.0.1:$(E2E_KEYED_API_PORT)
 E2E_NO_KEY_BASE_URL ?= http://127.0.0.1:8080
 E2E_FAKE_OIDC_URL ?= http://127.0.0.1:9000
