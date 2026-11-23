@@ -14,8 +14,6 @@ use uuid::Uuid;
 use crate::Result;
 
 const BATCH_LIMIT: i32 = 100;
-const JOB_NAME: &str = "account-deletion-purge";
-
 /// Processes due users independently and retries object keys left by an earlier run.
 pub async fn purge_due(
     pool: &PgPool,
@@ -154,7 +152,7 @@ async fn load_pending_object_keys(pool: &PgPool) -> Result<Vec<String>> {
     let detail: Option<Option<String>> = sqlx::query_scalar(
         "SELECT last_detail FROM maintenance_runs WHERE job = $1",
     )
-    .bind(JOB_NAME)
+    .bind(crate::maintenance::JOB_ACCOUNT_DELETIONS)
     .fetch_optional(pool)
     .await
     .map_err(db::Error::from)?;
