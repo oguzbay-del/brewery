@@ -35,6 +35,17 @@ impl Context {
     #[must_use]
     pub fn from_env() -> Option<Self> {
         let base_url = env::var("E2E_BASE_URL").ok()?;
+        Self::with_base_url(base_url)
+    }
+
+    /// Returns a client for the Compose API instance without the package signing key.
+    #[must_use]
+    pub fn from_no_key_env() -> Option<Self> {
+        let base_url = env::var("E2E_NO_KEY_BASE_URL").ok()?;
+        Self::with_base_url(base_url)
+    }
+
+    fn with_base_url(base_url: String) -> Option<Self> {
         if base_url.trim().is_empty() {
             return None;
         }
