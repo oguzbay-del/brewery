@@ -20,16 +20,16 @@ const structuredData = {
   "@type": "WebPage",
   name: "Brewery Production Software | GRISTORA",
   url: canonicalUrl,
-  description: "Brewing software for professional teams working with recipe decisions and production records.",
+  description: "Brewing software being designed for professional teams working with recipe decisions and production records.",
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
 };
 const workflow = [
-  { number: "01", title: "Review the recipe", question: "Which recipe definition and targets guide the batch?", body: "Keep recipe intent, target values and version context visible before production begins.", feature: "Recipe design & management", href: "recipe-design" },
-  { number: "02", title: "Plan the work", question: "What needs to happen, and when?", body: "Business mode includes production planning, task views and tank scheduling.", feature: "Planning & scheduling", href: "planning-scheduling" },
-  { number: "03", title: "Record the batch", question: "What was planned, and what actually happened?", body: "Connect the recipe reference with actual quantities, times, temperatures, measurements and production notes.", feature: "Brew day & production records", href: "brew-day" },
-  { number: "04", title: "Review fermentation and vessels", question: "Which observations belong to this batch and vessel?", body: "Business mode includes batch timelines, vessel context and recorded observations.", feature: "Fermentation & batch tracking", href: "fermentation-monitoring" },
-  { number: "05", title: "Connect quality and traceability", question: "Can a result be understood in its batch and material context?", body: "Business mode includes quality records, ingredient-lot relationships and release workflows.", feature: "Quality, laboratory & release", href: "quality-laboratory" },
+  { number: "01", title: "Review the recipe", question: "Which recipe definition and targets guide the batch?", body: "The planned workflow is intended to keep recipe intent, target values and version context together before production begins.", feature: "Recipe design & management", href: "recipe-design" },
+  { number: "02", title: "Plan the work", question: "What needs to happen, and when?", body: "The planned Business workflow is intended to bring production planning, task views and tank scheduling into one operational view.", feature: "Planning & scheduling", href: "planning-scheduling" },
+  { number: "03", title: "Record the batch", question: "What was planned, and what actually happened?", body: "The planned batch record is intended to connect the recipe reference with actual quantities, times, temperatures, measurements and production notes.", feature: "Brew day & production records", href: "brew-day" },
+  { number: "04", title: "Review fermentation and vessels", question: "Which observations belong to this batch and vessel?", body: "The planned Business workflow is intended to connect batch timelines, vessel context and recorded observations.", feature: "Fermentation & batch tracking", href: "fermentation-monitoring" },
+  { number: "05", title: "Connect quality and traceability", question: "Can a result be understood in its batch and material context?", body: "The planned Business workflow is intended to connect quality records, ingredient-lot relationships and release decisions.", feature: "Quality, laboratory & release", href: "quality-laboratory" },
 ];
 const roles = [
   { role: "Head brewer", need: "Recipe intent, target values and batch review", focus: "Recipe decisions and consistency" },
@@ -39,8 +39,8 @@ const roles = [
 const faqs = [
   { q: "Does GRISTORA replace a brewery ERP?", a: "No. GRISTORA focuses on brewing-related recipe, batch and production information. It is not positioned as a general ERP." },
   { q: "Does it manage sales, orders, distribution or keg tracking?", a: "No. Sales, customer orders, distribution and shipping, keg tracking at customer sites and keg deposits, CRM and accounting are outside the stated product scope." },
-  { q: "Does GRISTORA offer APIs and webhooks?", a: "Business mode includes an open API and production-data webhooks. Homebrew device webhook scope is separate." },
-  { q: "How are roles, permissions and approvals handled?", a: "Business mode includes role-based workflows and approval queues." },
+  { q: "Does GRISTORA offer APIs and webhooks?", a: "Public APIs and webhooks are not currently available. Business API and production-data webhook capabilities remain roadmap items; Homebrew device connectivity is considered separately." },
+  { q: "How are roles, permissions and approvals handled?", a: "Role-based workflows and approval queues are planned for Business mode and remain subject to implementation and validation." },
 ];
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Breweries", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
@@ -82,7 +82,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR PROFESSIONAL BREWERIES</p>
         <h1>From recipe review to <em>production records.</em></h1>
-        <p>GRISTORA is built for professional brewing teams that need a clearer view of recipe decisions, batch information and production records.</p>
+        <p>GRISTORA is being designed for professional brewing teams that need a clearer view of recipe decisions, batch information and production records.</p>
         <a class="button button-primary" href="#brewery-workflow">Explore the brewery workflow <span aria-hidden="true">↗</span></a>
       </section>
       <section class="shell audience-hero">
@@ -94,7 +94,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> THE PROFESSIONAL BREWING WORKFLOW</p>
             <h2>Connect the decisions with <em>the records.</em></h2>
-            <p>Business mode is built around brewing-specific work.</p>
+            <p>The planned Business workflow is being shaped around brewing-specific work.</p>
           </div>
           <ol class="workflow-grid business-workflow-grid">
             {workflow.map((step) => (
@@ -125,33 +125,33 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> THE RECORD MODEL</p>
             <h2>Follow the context <em>behind each batch.</em></h2>
-            <p>The record model connects a brewing decision to the work, materials and observations that explain the finished batch.</p>
+            <p>The planned record model is designed to connect a brewing decision with the work, materials and observations that could explain the finished batch.</p>
           </div>
           <ol class="record-model-flow business-record-flow">
             <li>
               <span class="record-model-index">01 · RECIPE</span>
               <h3>Recipe version</h3>
-              <p>Approved recipe definition, target values and the version selected for a batch.</p>
+              <p>A planned recipe reference would hold the definition, target values and version selected for a batch.</p>
             </li>
             <li>
               <span class="record-model-index">02 · BATCH</span>
               <h3>Production record</h3>
-              <p>Planned work alongside actual quantities, times, temperatures, measurements and deviations.</p>
+              <p>A planned production record would keep intended work alongside actual quantities, times, temperatures, measurements and deviations.</p>
             </li>
             <li>
               <span class="record-model-index">03 · MATERIALS</span>
               <h3>Ingredient lots</h3>
-              <p>Material usage and lot references that connect receiving and stock records to the batch.</p>
+              <p>The planned model may connect material usage and lot references from receiving and stock records to the batch.</p>
             </li>
             <li>
               <span class="record-model-index">04 · VESSEL</span>
               <h3>Vessel events</h3>
-              <p>Tank assignment, occupancy, transfers, volumes and recorded process observations.</p>
+              <p>The planned model may record tank assignment, occupancy, transfers, volumes and process observations.</p>
             </li>
             <li>
               <span class="record-model-index">05 · REVIEW</span>
               <h3>Quality records</h3>
-              <p>Measurements, laboratory results, deviations and a documented review or release decision.</p>
+              <p>The planned model is intended to bring measurements, laboratory results, deviations and a documented review or release decision together.</p>
             </li>
           </ol>
           <p class="record-model-note">Traceability depends on the records captured and the supported lot relationships.</p>
@@ -161,14 +161,14 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="audience-feature-section section-pad">
         <div class="shell">
           <div class="section-heading">
-            <p class="eyebrow"><span class="eyebrow-line"></span> BUSINESS PRODUCT AREAS</p>
+            <p class="eyebrow"><span class="eyebrow-line"></span> PLANNED BUSINESS PRODUCT AREAS</p>
             <h2>Brewing operations, <em>clearly bounded.</em></h2>
-            <p>Explore the Business capabilities.</p>
+            <p>Explore the planned Business product areas.</p>
           </div>
           <div class="audience-feature-grid">
             {breweryAreas.map((feature) => (
               <a class="audience-feature-link" href={`${base}features/${feature.slug}/`}>
-                <span>{feature.eyebrow}</span><strong>{feature.title}</strong><small>Explore capabilities ↗</small>
+                <span>{feature.eyebrow}</span><strong>{feature.title}</strong><small>Explore planned scope ↗</small>
               </a>
             ))}
           </div>
