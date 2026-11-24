@@ -23,9 +23,7 @@ interface AppShellProps {
 
 export function AppShell({ labels, children }: AppShellProps) {
   const { theme, setTheme } = useTheme();
-  const hasThemeLabels = Boolean(
-    labels.theme && labels.light && labels.dark && labels.highContrast,
-  );
+  const hasThemeLabels = Boolean(labels.theme && labels.light && labels.dark && labels.highContrast);
   const hasNavigationLabels = Boolean(
     labels.navigation &&
       labels.home &&
