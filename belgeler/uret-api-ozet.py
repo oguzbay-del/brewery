@@ -12,7 +12,7 @@ METHODS = ("get", "post", "put", "patch", "delete", "head", "options")
 
 
 def cell(value):
-    return str(value or "").replace("|", r"\\|").replace("\\n", " ").strip()
+    return str(value or "").replace("|", r"\|").replace("\n", " ").strip()
 
 
 def operation_rows(spec):
@@ -25,9 +25,9 @@ def operation_rows(spec):
             parameters = list(path_item.get("parameters", []))
             parameters.extend(operation.get("parameters", []))
             headers = {
-                str(p.get("name", "")).lower(): p
-                for p in parameters
-                if p.get("in") == "header"
+                str(parameter.get("name", "")).lower(): parameter
+                for parameter in parameters
+                if parameter.get("in") == "header"
             }
             permission = operation.get("x-permission")
             description = " ".join(
@@ -83,28 +83,33 @@ def render(spec):
             "| Yöntem | Yol | Açıklama | Yetki / ek adım | Idempotency-Key | If-Match |",
             "|---|---|---|---|---|---|",
         ])
-        for row in sorted(grouped[tag], key=lambda x: (x["path"], x["method"])):
+        for row in sorted(grouped[tag], key=lambda item: (item["path"], item["method"])):
             lines.append(
                 f"| {row['method']} | `{row['path']}` | {cell(row['summary'])} | "
                 f"{cell(row['auth'])} | {row['idem']} | {row['match']} |"
             )
         lines.append("")
 
-    codes = spec.get("components", {}).get("schemas", {}).get("ErrorCode", {}).get("enum", [])
+    schemas = spec.get("components", {}).get("schemas", {})
+    codes = schemas.get("ErrorCode", {}).get("enum", [])
     lines.extend(["## Ortak hata kodları", "", "OpenAPI ErrorCode enum:", ""])
     lines.extend(f"- `{code}`" for code in codes)
-    problem = spec.get("components", {}).get("schemas", {}).get("ProblemDetails", {})
+    problem = schemas.get("ProblemDetails", {})
     properties = problem.get("properties", {})
-    names = [name for name in ("type", "title", "status", "code", "current", "errors", "request_id") if name in properties]
+    required = problem.get("required", [])
+    optional = [name for name in properties if name not in required]
     request_id_desc = properties.get("request_id", {}).get("description", "")
     lines.extend([
         "",
-        "Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Spec'te tanımlanan alanlar: "
-        + ", ".join(names) + ".",
+        "Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Zorunlu alanlar: "
+        + ", ".join(required) + ". İsteğe bağlı alanlar: " + ", ".join(optional)
+        + ". request_id açıklaması: " + request_id_desc,
+        "",
+        "## Ortak ve operasyonel başlıklar",
+        "",
+        "| Başlık | Kullanım |",
+        "|---|---|",
     ])
-    if request_id_desc:
-        lines.append(request_id_desc)
-    lines.extend(["", "## Ortak ve operasyonel başlıklar", "", "| Başlık | Kullanım |", "|---|---|"])
 
     headers = {}
     for path_item in spec.get("paths", {}).values():
@@ -127,7 +132,7 @@ def render(spec):
         lines.append(f"| `{name}` | {cell(item['description'])} ({state}) |")
     if request_id_desc:
         lines.append(f"| `X-Request-Id` | {cell(request_id_desc)} |")
-    return "\\n".join(lines).rstrip() + "\\n"
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def main():
