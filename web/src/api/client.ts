@@ -1,7 +1,6 @@
 import { apiErrorFromResponse } from './errors';
 
-export interface ApiRequestOptions
-  extends Omit<RequestInit, 'body' | 'headers' | 'method'> {
+export interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'headers' | 'method'> {
   method?: string;
   body?: unknown;
   headers?: HeadersInit;
@@ -36,18 +35,8 @@ function requestId(): string {
 }
 
 /** Sends a JSON API request and returns its decoded response. */
-export async function apiFetch<T>(
-  path: string,
-  options: ApiRequestOptions = {},
-): Promise<T> {
-  const {
-    method,
-    body,
-    headers: suppliedHeaders,
-    ifMatch,
-    idempotencyKey,
-    ...rest
-  } = options;
+export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  const { method, body, headers: suppliedHeaders, ifMatch, idempotencyKey, ...rest } = options;
   const headers = new Headers(suppliedHeaders);
   headers.set('Accept', 'application/json');
   headers.set('X-Request-ID', requestId());
