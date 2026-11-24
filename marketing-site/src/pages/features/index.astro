@@ -12,7 +12,7 @@ import { features } from "../../data/features";
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}features/`, import.meta.env.SITE).href;
-const description = "Explore GRISTORA’s professional brewery workflows and product capabilities, with a separate Homebrewers path.";
+const description = "Explore GRISTORA’s planned professional brewery workflows and roadmap stages, with a separate Homebrewers path.";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
@@ -60,7 +60,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="feature-hero shell">
         <p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT</p>
         <h1>A connected workspace for <em>professional brewing.</em></h1>
-        <p class="feature-lead">GRISTORA is designed first around professional brewery workflows: recipe standards, production planning, batch records and quality context. A distinct Homebrewers path is part of the product.</p>
+        <p class="feature-lead">GRISTORA’s planned scope starts with professional brewery workflows: recipe standards, production planning, batch records and quality context. A distinct Homebrewers path is planned separately.</p>
         <div class="feature-hero-meta"><span>16 product areas</span><span>Business first · Homebrewers path separate</span></div>
       </section>
       <div class="page-photo-band"><PagePhoto name="features-hero" lang="en" eager /></div>
@@ -69,7 +69,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="section-heading feature-section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> EXPLORE THE PRODUCT</p>
             <h2>Every part of the brewing workflow has <em>a place.</em></h2>
-            <p>Each area has its own page with workflows, detailed capabilities and intended audience.</p>
+            <p>Each area has its own page describing intended workflows, roadmap stages and audience.</p>
           </div>
           <div class="feature-card-grid">
             {features.map((feature, index) => (
@@ -78,6 +78,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <span class="feature-card-eyebrow">{feature.eyebrow}</span>
                 <h2>{feature.title}</h2>
                 <p>{feature.summary}</p>
+                <span class="feature-card-eyebrow">ROADMAP STAGES · {feature.stages.join(" · ")}</span>
                 <span class="feature-card-link">Explore details <span aria-hidden="true">↗</span></span>
               </a>
             ))}

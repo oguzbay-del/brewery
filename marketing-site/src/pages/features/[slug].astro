@@ -22,7 +22,7 @@ const { feature } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}features/${feature.slug}/`, import.meta.env.SITE).href;
-const description = feature.summary;
+const description = `Planned product direction: ${feature.summary}`;
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
@@ -68,12 +68,13 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <main id="main-content" class="feature-detail-page">
       <Breadcrumbs items={breadcrumbItems} />
       <section class="feature-detail-hero shell">
-        <p class="eyebrow feature-detail-chip"><span class="eyebrow-line"></span> {feature.eyebrow}</p>
+        <p class="eyebrow feature-detail-chip"><span class="eyebrow-line"></span> PLANNED PRODUCT AREA · {feature.eyebrow}</p>
         <h1>{feature.title}</h1>
-        <p class="feature-lead">{feature.summary}</p>
+        <p class="feature-lead">Planned scope: {feature.summary}</p>
         <div class="feature-tags">
           {feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}
           {feature.modules.map((moduleId) => <a class="feature-tag feature-module-tag" href={`${base}modules/#${moduleId}`}>{moduleLabels[moduleId]}</a>)}
+          <span class="feature-tag">Roadmap stages: {feature.stages.join(" · ")}</span>
         </div>
       </section>
       {featurePhoto(feature.slug) && <div class="page-photo-band"><PagePhoto name={featurePhoto(feature.slug)!} lang="en" eager /></div>}
@@ -96,20 +97,20 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="feature-evidence-section section-pad">
         <div class="shell feature-evidence-layout">
           <div>
-            <p class="eyebrow"><span class="eyebrow-line"></span> INPUTS · RECORDS · OUTPUTS</p>
-            <h2>Inputs, records and <em>outputs.</em></h2>
+            <p class="eyebrow"><span class="eyebrow-line"></span> PLANNED INPUTS · RECORDS · OUTPUTS</p>
+            <h2>Intended inputs, records and <em>outputs.</em></h2>
           </div>
           <div class="feature-evidence-content">
-            <p><strong>Inputs and records:</strong> Inputs depend on the feature. They include recipe definitions, ingredient and equipment information, measurements, material records or team-entered observations.</p>
-            <p><strong>Outputs:</strong> Depending on the feature, outputs include calculations, recipe versions, schedules, batch records, measurement history or review context.</p>
+            <p><strong>Planned inputs and records:</strong> Depending on the feature, the intended scope covers recipe definitions, ingredient and equipment information, measurements, material records or team-entered observations.</p>
+            <p><strong>Intended outputs:</strong> The planned product direction may include calculations, recipe versions, schedules, batch records, measurement history or review context.</p>
           </div>
         </div>
       </section>
       {feature.note && <section class="feature-caveat"><div class="shell"><p>{feature.note}</p></div></section>}
       <section class="feature-next section-pad">
         <div class="shell feature-next-inner">
-          <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See the complete <em>GRISTORA product.</em></h2></div>
-          <div><p>Explore the other product areas or choose the workspace that matches your brewing.</p><a class="button button-primary" href={`${base}features/`}>Browse all product features <span aria-hidden="true">↗</span></a></div>
+          <div><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>Explore the planned <em>GRISTORA product areas.</em></h2></div>
+          <div><p>Explore the other planned product areas or choose the workspace that matches your brewing.</p><a class="button button-primary" href={`${base}features/`}>Browse all product features <span aria-hidden="true">↗</span></a></div>
         </div>
       </section>
     </main>
