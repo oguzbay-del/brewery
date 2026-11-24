@@ -52,10 +52,9 @@ describe('app shell', () => {
         </AppShell>
       </ThemeProvider>,
     );
-    expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute(
-      'href',
-      '#main-content',
-    );
+    expect(
+      screen.getByRole('link', { name: 'Skip to content' }),
+    ).toHaveAttribute('href', '#main-content');
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
   });
 
@@ -71,9 +70,7 @@ describe('app shell', () => {
     control.focus();
     expect(control).toHaveFocus();
     fireEvent.change(control, { target: { value: 'dark' } });
-    await waitFor(() => {
-      expect(document.documentElement.dataset.theme).toBe('dark');
-    });
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
     expect(window.localStorage.getItem('demleme.theme')).toBe('dark');
   });
 
@@ -88,9 +85,7 @@ describe('app shell', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Theme' }), {
       target: { value: 'high-contrast' },
     });
-    await waitFor(() => {
-      expect(document.documentElement.dataset.theme).toBe('contrast');
-    });
+    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('contrast'));
     expect(document.documentElement.dataset.themePreference).toBe('high-contrast');
   });
 
