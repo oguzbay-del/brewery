@@ -74,7 +74,7 @@ async fn stale_recipe_version_update_returns_412() {
     assert_eq!(stale.status(), StatusCode::PRECONDITION_FAILED);
     let stale_body: serde_json::Value = stale.json().await.unwrap();
     assert!(stale_body["current"].is_object());
-    assert!(stale_body["conflicting_fields"].is_array());
+    assert!(stale_body["current"]["conflicting_fields"].is_array());
 
     let unchanged = ctx
         .request(
