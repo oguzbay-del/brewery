@@ -404,7 +404,7 @@ OpenAPI ErrorCode enum:
 - `internal`
 - `unavailable`
 
-Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Spec'te tanımlanan alanlar: type, title, status, code; isteğe bağlı current, errors ve request_id. request_id açıklaması X-Request-Id yanıt başlığını işaret eder.
+Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Zorunlu alanlar: type, title, status, code. İsteğe bağlı alanlar: current, errors, request_id. request_id açıklaması: Request id (`X-Request-Id`).
 
 ## Ortak ve operasyonel başlıklar
 
@@ -415,4 +415,4 @@ Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Spec'te tanımlanan alanlar
 | `If-None-Match` | Version `ETag` the client holds (optional) |
 | `Last-Event-ID` | Last event id the client saw; the server replays what followed (one hour) (optional) |
 | `X-Device-Key` | The device key (required) |
-| `X-Request-Id` | ProblemDetails.request_id açıklamasında yanıt korelasyon kimliği olarak belirtilir. |
+| `X-Request-Id` | Request id (`X-Request-Id`). |
