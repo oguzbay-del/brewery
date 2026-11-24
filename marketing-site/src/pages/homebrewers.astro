@@ -20,22 +20,22 @@ const structuredData = {
   "@type": "WebPage",
   name: "Homebrewing Software | GRISTORA",
   url: canonicalUrl,
-  description: "Brewing software for homebrewers who want to understand the details behind every batch.",
+  description: "Brewing software being designed for homebrewers who want to understand the details behind every batch.",
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
 };
 const workflow = [
-  { number: "01", title: "Shape the recipe", question: "What are you trying to brew?", body: "Start with the style, ingredients, equipment and batch size that define your recipe. Keep the choices and their context together.", feature: "Recipe design & management", href: "recipe-design" },
-  { number: "02", title: "Understand ingredients and water", question: "What is going into the batch?", body: "Bring fermentables, hops, yeast, water assumptions and mash choices into the same recipe picture.", feature: "Water, mash & yeast", href: "water-mash-yeast" },
-  { number: "03", title: "Make sense of the numbers", question: "How do the estimates relate to your recipe?", body: "Brewing calculations use explicit inputs, units, methods and assumptions.", feature: "Brewing calculations", href: "brewing-calculations" },
-  { number: "04", title: "Record brew day", question: "What actually happened?", body: "The workflow separates recipe targets from actual quantities, times, temperatures and measurements recorded during the brew.", feature: "Brew day & production records", href: "brew-day" },
-  { number: "05", title: "Follow fermentation", question: "What are you observing over time?", body: "Batch timelines hold manual or connected readings.", feature: "Fermentation & batch tracking", href: "fermentation-monitoring" },
-  { number: "06", title: "Review the batch", question: "What would you carry into the next brew?", body: "Bring measurements, recipe context and tasting notes together to understand differences between batches.", feature: "Reports, insights & sustainability", href: "analytics-reports" },
+  { number: "01", title: "Shape the recipe", question: "What are you trying to brew?", body: "The planned workflow starts with the style, ingredients, equipment and batch size that define a recipe, with the choices and their context kept together.", feature: "Recipe design & management", href: "recipe-design" },
+  { number: "02", title: "Understand ingredients and water", question: "What is going into the batch?", body: "The planned recipe view is intended to bring fermentables, hops, yeast, water assumptions and mash choices into the same picture.", feature: "Water, mash & yeast", href: "water-mash-yeast" },
+  { number: "03", title: "Make sense of the numbers", question: "How do the estimates relate to your recipe?", body: "The planned calculation approach is intended to make inputs, units, methods and assumptions explicit.", feature: "Brewing calculations", href: "brewing-calculations" },
+  { number: "04", title: "Record brew day", question: "What actually happened?", body: "The planned workflow is intended to separate recipe targets from actual quantities, times, temperatures and measurements recorded during the brew.", feature: "Brew day & production records", href: "brew-day" },
+  { number: "05", title: "Follow fermentation", question: "What are you observing over time?", body: "The planned batch timeline is intended to keep manual observations and, subject to implementation, connected readings together.", feature: "Fermentation & batch tracking", href: "fermentation-monitoring" },
+  { number: "06", title: "Review the batch", question: "What would you carry into the next brew?", body: "The planned review is intended to bring measurements, recipe context and tasting notes together to help explain differences between batches.", feature: "Reports, insights & sustainability", href: "analytics-reports" },
 ];
 const faqs = [
-  { q: "Which brewing calculations are supported?", a: "GRISTORA supports gravity, alcohol, bitterness, colour, mash and volume calculations, with explicit inputs, units and methods." },
-  { q: "Can I connect a fermentation device?", a: "GRISTORA supports Tilt hydrometers, iSpindel and RAPT devices, plus a webhook data endpoint for TiltBridge, Pitch and compatible bridges." },
-  { q: "Can I import or export my existing recipes?", a: "GRISTORA imports and exports BeerXML and BeerJSON, and imports BeerSmith .bsmx, Brewfather and Brewer's Friend recipes." },
+  { q: "Which brewing calculations are supported?", a: "The planned Homebrewers path is intended to explain gravity, alcohol, bitterness, colour, mash and volume calculations with explicit inputs, units and methods. Results require validation before they can be described as supported or accurate." },
+  { q: "Can I connect a fermentation device?", a: "Device connectivity is a roadmap area. The initial direction is read-only fermentation data; named device and bridge compatibility will be confirmed only after implementation and testing." },
+  { q: "Can I import or export my existing recipes?", a: "Recipe import and export are roadmap items. Supported formats will be listed only after each implementation is verified." },
 ];
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Homebrewers", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
@@ -50,7 +50,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Explore GRISTORA's homebrewing workflow: recipe design, ingredients, calculations, brew-day records and batch review." />
+    <meta name="description" content="Explore the planned GRISTORA Homebrewers direction: recipe design, ingredient context, calculations, brew-day records and batch review." />
     <title>Homebrewing Software | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
@@ -77,7 +77,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> FOR HOME BREWERS</p>
         <h1>A more considered approach to <em>every brew.</em></h1>
-        <p>GRISTORA is brewing software for homebrewers who want to understand the ingredients, calculations and observations behind each batch.</p>
+        <p>GRISTORA is being designed as brewing software for homebrewers who want to understand the ingredients, calculations and observations behind each batch.</p>
         <a class="button button-primary" href="#homebrewing-workflow">Explore the homebrewing workflow <span aria-hidden="true">↗</span></a>
       </section>
       <section class="shell audience-hero">
@@ -118,7 +118,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <tr><th scope="row">Recipe and targets</th><td>Recipe version, style, batch size, equipment assumptions and target values.</td><td>Which plan you started from, and what you intended to make.</td></tr>
                 <tr><th scope="row">Ingredients and water</th><td>Ingredient choices, quantities, source-water information and selected adjustments.</td><td>Which inputs shaped the recipe and its calculated expectations.</td></tr>
                 <tr><th scope="row">Brew-day actuals</th><td>Measured volumes, temperatures, times, additions and differences from the plan.</td><td>Where the real brew differed from the recipe assumptions.</td></tr>
-                <tr><th scope="row">Fermentation observations</th><td>Manual or supported-device gravity and temperature readings, with their source identified.</td><td>How the batch changed over time.</td></tr>
+                <tr><th scope="row">Fermentation observations</th><td>Manual readings and, if implemented, supported-device gravity and temperature readings, with their source identified.</td><td>How the batch changed over time.</td></tr>
                 <tr><th scope="row">Tasting and review</th><td>Packaging context, tasting notes and a comparison with the original targets.</td><td>What you learned and what you may choose to change next time.</td></tr>
               </tbody>
             </table>
@@ -131,14 +131,14 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="audience-feature-section section-pad">
         <div class="shell">
           <div class="section-heading">
-            <p class="eyebrow"><span class="eyebrow-line"></span> PRODUCT AREAS</p>
+            <p class="eyebrow"><span class="eyebrow-line"></span> PLANNED PRODUCT AREAS</p>
             <h2>Explore the work behind <em>the brew.</em></h2>
             <p>Every capability is described with its intended audience.</p>
           </div>
           <div class="audience-feature-grid">
             {homeAreas.map((feature) => (
               <a class="audience-feature-link" href={`${base}features/${feature.slug}/`}>
-                <span>{feature.eyebrow}</span><strong>{feature.title}</strong><small>Explore capabilities ↗</small>
+                <span>{feature.eyebrow}</span><strong>{feature.title}</strong><small>Explore planned scope ↗</small>
               </a>
             ))}
           </div>
@@ -147,7 +147,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="technical-clarity-section section-pad">
         <div class="shell technical-clarity-grid">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> TECHNICAL CLARITY</p><h2>Understand the number, <em>not just the result.</em></h2></div>
-          <div><p>A calculation or technical guide explains its method, inputs, units, assumptions, worked example and limitations together.</p><p>Each calculation shows its method, inputs and units.</p><a class="text-link" href={`${base}features/brewing-calculations/`}>Read about brewing calculations <span aria-hidden="true">→</span></a></div>
+          <div><p>A calculation or technical guide explains its method, inputs, units, assumptions, worked example and limitations together.</p><p>The planned calculation experience is intended to show its method, inputs and units.</p><a class="text-link" href={`${base}features/brewing-calculations/`}>Read about brewing calculations <span aria-hidden="true">→</span></a></div>
         </div>
       </section>
       <section class="audience-faq-section section-pad">
