@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { ReactNode } from 'react';
 
 export type ThemeChoice = 'light' | 'dark' | 'high-contrast';
@@ -25,24 +32,30 @@ function readStoredTheme(): ThemeChoice | null {
 }
 
 export function systemTheme(): ThemeChoice {
-  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'light';
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+    return 'light';
+  }
   if (window.matchMedia('(prefers-contrast: more)').matches) return 'high-contrast';
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function applyTheme(theme: ThemeChoice): void {
   if (typeof document === 'undefined') return;
-  const dark = typeof window !== 'undefined'
-    && typeof window.matchMedia === 'function'
-    && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
   // tokens.css names the high-contrast token sets "contrast" and "contrast-dark".
-  const cssTheme = theme === 'high-contrast' ? (dark ? 'contrast-dark' : 'contrast') : theme;
+  const cssTheme =
+    theme === 'high-contrast' ? (dark ? 'contrast-dark' : 'contrast') : theme;
   document.documentElement.dataset.theme = cssTheme;
   document.documentElement.dataset.themePreference = theme;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeChoice>(() => readStoredTheme() ?? systemTheme());
+  const [theme, setThemeState] = useState<ThemeChoice>(
+    () => readStoredTheme() ?? systemTheme(),
+  );
   const hasSavedPreference = useRef(readStoredTheme() !== null);
 
   useEffect(() => {
@@ -50,7 +63,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return;
+    }
     const colorScheme = window.matchMedia('(prefers-color-scheme: dark)');
     const contrast = window.matchMedia('(prefers-contrast: more)');
     const update = (): void => {
@@ -78,7 +93,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  return <ThemeContext.Provider value={{ theme, setTheme }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
 }
 
 export function useTheme(): ThemeContextValue {
