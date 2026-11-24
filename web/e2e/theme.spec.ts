@@ -19,19 +19,7 @@ test.beforeEach(async ({ page }) => {
     const apply = (): boolean => {
       const root = document.getElementById('root');
       if (!root) return false;
-      Object.assign(root.dataset, {
-        appName: labels.appName,
-        skipToContent: labels.skipToContent,
-        navigation: labels.navigation,
-        home: labels.home,
-        recipes: labels.recipes,
-        batches: labels.batches,
-        settings: labels.settings,
-        theme: labels.theme,
-        light: labels.light,
-        dark: labels.dark,
-        highContrast: labels.highContrast,
-      });
+      Object.assign(root.dataset, labels);
       return true;
     };
     if (!apply()) {
@@ -43,26 +31,24 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test(
-  'theme switch changes the document theme and the skip link reaches main content',
-  async ({ page }) => {
-    await page.goto('/');
-    const theme = page.getByRole('combobox', { name: 'Theme' });
-    await expect(theme).toBeVisible();
+test('theme and skip link work', async ({ page }) => {
+  await page.goto('/');
+  const theme = page.getByRole('combobox', { name: 'Theme' });
+  const html = page.locator('html');
+  await expect(theme).toBeVisible();
 
-    await theme.selectOption('dark');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await theme.selectOption('dark');
+  await expect(html).toHaveAttribute('data-theme', 'dark');
 
-    await theme.selectOption('high-contrast');
-    await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'high-contrast');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', /contrast/);
+  await theme.selectOption('high-contrast');
+  await expect(html).toHaveAttribute('data-theme-preference', 'high-contrast');
+  await expect(html).toHaveAttribute('data-theme', /contrast/);
 
-    await theme.selectOption('light');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await theme.selectOption('light');
+  await expect(html).toHaveAttribute('data-theme', 'light');
 
-    const skip = page.getByRole('link', { name: 'Skip to content' });
-    await skip.focus();
-    await page.keyboard.press('Enter');
-    await expect(page.locator('#main-content')).toBeFocused();
-  },
-);
+  const skip = page.getByRole('link', { name: 'Skip to content' });
+  await skip.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#main-content')).toBeFocused();
+});
