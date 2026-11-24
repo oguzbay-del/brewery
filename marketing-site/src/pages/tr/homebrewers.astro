@@ -20,7 +20,7 @@ const structuredData = {
   "@type": "WebPage",
   name: "Evde Bira Yapımı Yazılımı | GRISTORA",
   url: canonicalUrl,
-  description: "Her partinin ardındaki ayrıntıları anlamak isteyen ev biracıları için bira yapım yazılımı.",
+  description: "Ev biracılarının her partinin ardındaki ayrıntıları anlamasına yönelik planlanan GRISTORA yaklaşımı.",
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
 };
@@ -50,17 +50,17 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="GRISTORA'nın evde bira yapımı iş akışını keşfedin: reçete tasarımı, malzemeler, hesaplamalar, demleme günü kayıtları ve parti incelemesi." />
+    <meta name="description" content="Ev biracıları için planlanan GRISTORA yaklaşımını keşfedin: reçete tasarımı, malzemeler, hesaplamalar, demleme günü kayıtları ve parti incelemesi." />
     <title>Evde Bira Yapımı Yazılımı | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="Evde Bira Yapımı Yazılımı | GRISTORA" />
-    <meta property="og:description" content="Her partiye daha özenli bir yaklaşım. GRISTORA evde bira yapımı iş akışını keşfedin." />
+    <meta property="og:description" content="Her partiye daha özenli bir yaklaşım. Evde bira yapımı için planlanan GRISTORA iş akışını keşfedin." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Evde Bira Yapımı Yazılımı | GRISTORA" />
-    <meta name="twitter:description" content="Her partiye daha özenli bir yaklaşım." />
+    <meta name="twitter:description" content="Her partiye daha özenli bir yaklaşım. Evde bira yapımı için planlanan GRISTORA iş akışı." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
@@ -77,7 +77,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> EV BİRACILARI İÇİN</p>
         <h1>Her partiye <em>daha özenli bir yaklaşım.</em></h1>
-        <p>GRISTORA, her partinin ardındaki malzemeleri, hesaplamaları ve gözlemleri anlamak isteyen ev biracıları için bira yapım yazılımıdır.</p>
+        <p>GRISTORA, her partinin ardındaki malzemeleri, hesaplamaları ve gözlemleri anlamayı hedefleyen ev biracıları için geliştirilmektedir.</p>
         <a class="button button-primary" href="#homebrewing-workflow">Evde bira yapımı iş akışını keşfedin <span aria-hidden="true">↗</span></a>
       </section>
       <section class="shell audience-hero">
