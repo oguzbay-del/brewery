@@ -22,7 +22,8 @@ const SHARED: &[&str] = &[
     "tax_rate_tables",
     "tax_rate_bands",
 ];
-/// Tables whose `app_owner` policies serve the pre-login SECURITY DEFINER functions.
+/// Tables whose `app_owner` policies serve SECURITY DEFINER functions that need
+/// cross-workspace or pre-login access. Keep this list aligned with the migrations.
 const OWNER_LOOKUP: &[&str] = &[
     "account_deletion_requests",
     "passkeys",
@@ -37,6 +38,11 @@ const OWNER_LOOKUP: &[&str] = &[
     "idempotency_keys",
     "workspaces",
     "workspace_tombstones",
+    // Account-deletion worker enumerates memberships before setting each workspace context.
+    "workspace_members",
+    "roles",
+    "role_assignments",
+    "role_permissions",
     "audit_heads",
     "push_targets",
     "devices",
