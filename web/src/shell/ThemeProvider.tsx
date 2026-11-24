@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 export type ThemeChoice = 'light' | 'dark' | 'high-contrast';
@@ -43,7 +36,6 @@ function applyTheme(theme: ThemeChoice): void {
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-color-scheme: dark)').matches;
-  // tokens.css names the high-contrast token sets "contrast" and "contrast-dark".
   const cssTheme = theme === 'high-contrast' ? (dark ? 'contrast-dark' : 'contrast') : theme;
   document.documentElement.dataset.theme = cssTheme;
   document.documentElement.dataset.themePreference = theme;
