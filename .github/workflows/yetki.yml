@@ -22,6 +22,7 @@ jobs:
         shell: bash
         env:
           BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           set -euo pipefail
 
@@ -30,9 +31,9 @@ jobs:
             local pattern
             while IFS= read -r pattern || [[ -n "$pattern" ]]; do
               [[ -z "$pattern" || "$pattern" == \\#* ]] && continue
-              if [[ "$candidate" == $pattern ]]; then
-                return 0
-              fi
+              case "$candidate" in
+                $pattern) return 0 ;;
+              esac
             done < .github/korumali-yollar.txt
             return 1
           }
@@ -54,23 +55,33 @@ jobs:
           # Fixtures prove both positive and negative matching before the PR diff is checked.
           expect_match "sunucu/crates/db/migrations/0001_init.sql"
           expect_match "sunucu/crates/api/src/auth/internal.rs"
+          expect_match "sunucu/crates/api/src/account_deletion.rs"
+          expect_match "web/src/api/client.ts"
+          expect_match "altyapi/compose/docker-compose.yml"
           expect_match ".github/workflows/yetki.yml"
           expect_match "altyapi/k8s/overlays/yerel/veri.yaml"
           expect_no_match "marketing-site/src/pages/index.astro"
           expect_no_match "belgeler/README.md"
+          expect_no_match "sunucu/crates/e2e/tests/http.rs"
 
           git fetch --no-tags origin "$BASE_REF"
           mapfile -t changed_paths < <(git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD")
 
           violations=()
           for path in "${changed_paths[@]}"; do
+            # The bootstrap PR must introduce the guard itself. Only its two
+            # bootstrap files are exempt; any other protected path still fails.
+            if [[ "$HEAD_REF" == "chatgpt/ci-guard-protected-paths" ]] &&
+              { [[ "$path" == ".github/korumali-yollar.txt" ]] || [[ "$path" == ".github/workflows/yetki.yml" ]]; }; then
+              continue
+            fi
             if matches_protected_path "$path"; then
               violations+=("$path")
             fi
           done
 
           if (( ${#violations[@]} > 0 )); then
-            printf '%s\\n' "${violations[@]}"
+            printf '%s\n' "${violations[@]}"
             joined="$(printf '%s; ' "${violations[@]}")"
             echo "::error title=Claude review required::Claude review required. Protected paths changed: $joined"
             exit 1
