@@ -6,24 +6,30 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function response(status: number, body: unknown, headers: Record<string, string> = {}): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'content-type': 'application/problem+json', ...headers },
-  });
+function problem(status: number, code: string, extra: Record<string, unknown> = {}): Response {
+  return new Response(
+    JSON.stringify({
+      type: `/errors/${code}`,
+      title: code,
+      status,
+      code,
+      request_id: `request-${status}`,
+      ...extra,
+    }),
+    { status, headers: { 'content-type': 'application/problem+json' } },
+  );
 }
 
 describe('apiFetch', () => {
-  it('returns decoded JSON on success and includes credentials and a request id', async () => {
+  it('returns JSON and sets credentials and request ID', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ id: 'recipe-1' }), {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      }),
+      new Response(JSON.stringify({ id: 'recipe-1' }), { status: 200 }),
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(apiFetch<{ id: string }>('/v1/recipes')).resolves.toEqual({ id: 'recipe-1' });
+    await expect(apiFetch<{ id: string }>('/v1/recipes')).resolves.toEqual({
+      id: 'recipe-1',
+    });
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = new Headers(init.headers);
     expect(init.credentials).toBe('include');
@@ -33,20 +39,8 @@ describe('apiFetch', () => {
     );
   });
 
-  it('parses a 401 problem into ApiError', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        response(401, {
-          type: '/errors/unauthenticated',
-          title: 'Unauthenticated',
-          status: 401,
-          code: 'unauthenticated',
-          request_id: 'request-401',
-        }),
-      ),
-    );
-
+  it('parses 401 errors', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(problem(401, 'unauthenticated')));
     await expect(apiFetch('/v1/me')).rejects.toMatchObject({
       name: 'ApiError',
       status: 401,
@@ -55,61 +49,41 @@ describe('apiFetch', () => {
     });
   });
 
-  it('maps 412 to StaleVersionError and preserves conflicting fields', async () => {
+  it('maps 412 to StaleVersionError and retains conflicting fields', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn().mockResolvedValue(
-        response(412, {
-          type: '/errors/version_mismatch',
-          title: 'Version mismatch',
-          status: 412,
-          code: 'version_mismatch',
-          request_id: 'request-412',
+        problem(412, 'version_mismatch', {
           current: { version: 4, conflicting_fields: ['efficiency_pct', 'batch_volume_l'] },
         }),
       ),
     );
-
     const request = apiFetch('/v1/recipes/1', { method: 'PATCH', body: {} });
     await expect(request).rejects.toBeInstanceOf(StaleVersionError);
     await expect(request).rejects.toMatchObject({
-      name: 'StaleVersionError',
       status: 412,
       current: { version: 4, conflicting_fields: ['efficiency_pct', 'batch_volume_l'] },
     });
   });
 
-  it('parses a 409 conflict', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        response(409, {
-          type: '/errors/conflict',
-          title: 'Conflict',
-          status: 409,
-          code: 'conflict',
-          request_id: 'request-409',
-        }),
-      ),
-    );
-
+  it('parses 409 conflicts', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(problem(409, 'conflict')));
     const request = apiFetch('/v1/recipes');
     await expect(request).rejects.toBeInstanceOf(ApiError);
     await expect(request).rejects.toMatchObject({ status: 409, code: 'conflict' });
   });
 
-  it('lets network errors propagate without disguising them as HTTP errors', async () => {
+  it('preserves network errors', async () => {
     const failure = new TypeError('network unavailable');
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(failure));
     await expect(apiFetch('/v1/me')).rejects.toBe(failure);
   });
 
-  it('sets JSON body, If-Match and Idempotency-Key headers', async () => {
+  it('sets JSON, If-Match and Idempotency-Key headers', async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), { status: 200 }),
     );
     vi.stubGlobal('fetch', fetchMock);
-
     await apiFetch('/v1/recipes/1', {
       method: 'PATCH',
       body: { name: 'Pale ale' },
