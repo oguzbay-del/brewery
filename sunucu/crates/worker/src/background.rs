@@ -55,14 +55,16 @@ pub async fn run(stop: watch::Receiver<bool>) {
         }
     };
     // Maintenance (audit digests, retention) needs the database only, not NATS.
+    let file_store = export_store_from_env();
     let maintenance_task = tokio::spawn(crate::maintenance::run(
         pool.clone(),
         crate::maintenance::digest_store_from_env(),
+        file_store.clone(),
         stop.clone(),
     ));
-    // Export jobs (T2.26) need the database and the object store only, not NATS.
-    let export_task = export_store_from_env()
-        .map(|store| tokio::spawn(crate::export::run(pool.clone(), store, stop.clone())));
+    // Export jobs (T2.26) and account deletion use the normal workspace object store.
+    let export_task =
+        file_store.map(|store| tokio::spawn(crate::export::run(pool.clone(), store, stop.clone())));
     let client = match events::connect(&nats_url).await {
         Ok(c) => c,
         Err(e) => {

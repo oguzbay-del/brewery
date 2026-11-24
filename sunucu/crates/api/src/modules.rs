@@ -48,6 +48,7 @@ pub const MODULES: &[Module] = &[
     crate::support_access::MODULE,
     crate::internal::MODULE,
     crate::import_export::MODULE,
+    crate::account_deletion::MODULE,
 ];
 
 /// The routes of all modules, with the auth services as a request extension.
@@ -61,7 +62,7 @@ pub fn routes(state: &AppState) -> Router<AppState> {
     }
 }
 
-/// The rows of all modules.
+/// The rows of all operations.
 pub fn operations() -> impl Iterator<Item = &'static OperationSpec> {
     MODULES.iter().flat_map(|m| m.operations)
 }

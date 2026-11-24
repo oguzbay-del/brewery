@@ -143,6 +143,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current deletion request. A null result means there is no request. */
+        get: operations["account_deletion_get"];
+        put?: never;
+        /** Requests permanent account deletion after the configured grace period. */
+        post: operations["account_deletion_request"];
+        /** Cancels a pending request while its grace period remains open. */
+        delete: operations["account_deletion_cancel"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me/identities": {
         parameters: {
             query?: never;
@@ -2784,6 +2803,31 @@ export interface components {
          * @enum {string}
          */
         AccessSourceDto: "trial" | "subscription" | "promo" | "manual" | "none";
+        /** @description Public view of the caller's deletion request. */
+        AccountDeletionView: {
+            /**
+             * Format: uuid
+             * @description Request identifier.
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Earliest permanent deletion time.
+             */
+            purge_at: string;
+            /**
+             * Format: date-time
+             * @description When the request was created.
+             */
+            requested_at: string;
+            /**
+             * Format: date-time
+             * @description When the request was cancelled.
+             */
+            restored_at?: string | null;
+            /** @description Current request state. */
+            status: string;
+        };
         /** @description Sign-in methods of other accounts that use the same verified address (ADR-0009 rule 1.6). */
         AccountHint: {
             /** @description Providers (`apple`, `google`, `email`) the other account signs in with. */
@@ -8604,6 +8648,276 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    account_deletion_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current deletion request */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "0192f1c07a3b7000800000000000000a",
+                     *       "purge_at": "2026-12-23T10:00:00Z",
+                     *       "requested_at": "2026-11-23T10:00:00Z",
+                     *       "restored_at": null,
+                     *       "status": "pending"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AccountDeletionView"] | null;
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    account_deletion_request: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deletion request */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "0192f1c07a3b7000800000000000000a",
+                     *       "purge_at": "2026-12-23T10:00:00Z",
+                     *       "requested_at": "2026-11-23T10:00:00Z",
+                     *       "restored_at": null,
+                     *       "status": "pending"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AccountDeletionView"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Second factor required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    account_deletion_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deletion request cancelled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "0192f1c07a3b7000800000000000000a",
+                     *       "purge_at": "2026-12-23T10:00:00Z",
+                     *       "requested_at": "2026-11-23T10:00:00Z",
+                     *       "restored_at": "2026-11-25T09:00:00Z",
+                     *       "status": "cancelled"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AccountDeletionView"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {
