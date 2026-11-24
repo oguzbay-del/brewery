@@ -1,0 +1,88 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--label);
+}
+
+.app-shell__skip-link {
+  position: absolute;
+  z-index: 10;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  transform: translateY(-160%);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--tint-fill);
+  color: var(--tint-ink);
+}
+
+.app-shell__skip-link:focus {
+  transform: translateY(0);
+}
+
+.app-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-block-end: 1px solid var(--sep);
+  background: var(--card);
+}
+
+.app-shell__brand {
+  color: var(--label);
+  font-weight: var(--t-headline-weight);
+  text-decoration: none;
+}
+
+.app-shell__navigation {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.app-shell__navigation a {
+  color: var(--label2);
+  text-decoration: none;
+}
+
+.app-shell__navigation a[aria-current='page'] {
+  color: var(--tint);
+}
+
+.app-shell__theme-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--label2);
+}
+
+.app-shell__theme-control select {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--sep);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--label);
+  font: inherit;
+}
+
+.app-shell__main {
+  flex: 1;
+  padding: var(--space-4);
+}
+
+.app-shell__main:focus {
+  outline: none;
+}
+
+.app-shell a:focus-visible,
+.app-shell select:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
