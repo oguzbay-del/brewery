@@ -74,6 +74,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 
 ## Recent decisions
 
+- 2026-11-24 (O9, Oğuz): Sentry receives errors and crash reports from the server, the web and iOS (ADR-0010). Traces, metrics and logs stay in OpenTelemetry. Do not send personal data to Sentry. Write the Sentry tasks into the task lists for stages 3, 4 and 5. The web payment provider stays Paddle (O6).
+
 - 2026-11-20 (Oğuz): the iPhone shows data and does short tasks in the field. Design, planning and management are on the iPad and the web only (plan › iPhone kapsamı). In Home mode, the recipe wizard, the equipment wizard and the quick batch start stay on the iPhone. Business version 2 gets a field view on the iPhone: one scan screen for tank, lot and container QR codes, with the new role "Saha" and three new permissions. The concept has 64 screens. Tasks K1, K2 and K4 changed.
 
 - 2026-11-20 (Oğuz): Business version 2 gets light keg and cask tracking in the Production module. It has a QR label for each container, a status from a scan, and a link to the lot at fill. Customers, deposits and overdue alerts stay out of scope (ERP). Tasks K1–K4 are in stage 6. The concept has the new screen "Fıçılar" (63 screens). The marketing site now says that only customer keg tracking and keg deposits are out of scope.
