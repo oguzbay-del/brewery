@@ -263,7 +263,18 @@ pub async fn apply_correction(
                 Some((AuditEvent::SubscriptionManualAdjust, "subscription", None)),
             )
         }
-        // A deletion needs a person to decide; the request stays pending.
+        "deletion_request" => {
+            let grace_days = db::account_deletion_grace_days()?;
+            let request = db::account_deletion_from_support(conn, id, grace_days).await?;
+            (
+                format!("account deletion scheduled until {}", request.purge_at),
+                Some((
+                    AuditEvent::AccountDelete,
+                    "account_deletion_request",
+                    Some(request.id),
+                )),
+            )
+        }
         _ => return Ok(None),
     };
     if let Some((audit_event, record_kind, record_id)) = event {
@@ -284,7 +295,9 @@ pub async fn apply_correction(
         .await?;
     }
     sqlx::query(
-        "UPDATE support_corrections SET status = 'applied', result = $2, applied_at = now()
+        "UPDATE support_corrections
+         SET status = 'applied', result = $2, applied_at = now(),
+             params = CASE WHEN kind = 'deletion_request' THEN params - 'user_id' ELSE params END
          WHERE id = $1",
     )
     .bind(id)

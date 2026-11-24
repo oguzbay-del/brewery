@@ -133,7 +133,7 @@ pub async fn claim_job(
         "INSERT INTO maintenance_runs (job, last_started_at, last_status) VALUES ($1, $2, 'running')
          ON CONFLICT (job) DO UPDATE
             SET last_started_at = EXCLUDED.last_started_at, last_finished_at = NULL,
-                last_status = 'running', last_detail = NULL
+                last_status = 'running'
             WHERE maintenance_runs.last_started_at <= $2 - make_interval(secs => $3)
          RETURNING job",
     )
