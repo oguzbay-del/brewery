@@ -22,8 +22,8 @@ Doğrulama: `kubectl kustomize altyapi/k8s/overlays/<ad>` ve `kubectl apply --dr
 
 ## Kararlar
 
-- **Ağ:** ad alanında girişler varsayılan kapalı. engine-service'e yalnız api erişir; api ve ingest dışarıdan gelen trafiği alır; NATS, PostgreSQL ve Redis yalnız api, worker, ingest'e açık; nesne deposunun S3 portu yalnız api ve worker'a açık. Çıkış kısıtlanmaz.
-- **CNI:** kind'ın varsayılan CNI'si (kindnet) NetworkPolicy için nftables ister; bazı çekirdeklerde çalışmaz. Bu yüzden kind-up Calico (iptables) kurar; manifest sürüme ve sağlama toplamına sabit, imajlar quay.io'dan.
+- **Ağ:** ad alanında girişler varsayılan kapalı. engine-service'e yalnız api erişir; api ve ingest dışarıdan gelen trafiği alır; PostgreSQL'e api, worker, ingest ve migrate erişir; Redis'e yalnız api erişir; NATS'a api, worker ve ingest erişir; nesne deposunun S3 portuna yalnız api ve worker erişir. Çıkış kısıtlanmaz.
+- **CNI:** kind'ın varsayılan CNI'si devre dışıdır; kind-up Calico (iptables) kurar. Manifest sürüme ve sağlama toplamına sabit, imajlar quay.io'dan.
 - **Güvenlik:** root olmayan kullanıcı, salt okunur kök dosya sistemi, bütün yetenekler kapalı, `seccomp: RuntimeDefault`, ad alanında Pod Security `restricted`.
 - **Göç:** `base/migrate.yaml` tek seferlik Job; `migrate` imajı `sunucu/migrations`'ı uygular, göç rolünün adresini (`MIGRATE_DATABASE_URL`) ve `app_api`/`app_worker` parolalarını `demleme-migrate` Secret'ından alır, göçten sonra bu iki role oturum açma hakkı ve parolayı verir. `make kind-up` Job'ın bitmesini bekler; servislerin göçten sonra başlaması henüz zorlanmıyor (servisler veritabanı kullanmıyor; T2.10'da eklenir). Job şablonu değişmez olduğundan imaj etiketi değişen canlı dağıtımda önce eski Job silinir (`ttlSecondsAfterFinished` 1 saat sonra kendisi siler).
 - **Gizli bilgi:** test ve canlıda `demleme` ad alanında `demleme-dis-servisler` Secret'ı (`DATABASE_URL` = `app_api`, `WORKER_DATABASE_URL` = `app_worker`, `REDIS_URL`) ve `demleme-migrate` Secret'ı (`MIGRATE_DATABASE_URL`, `APP_API_PASSWORD`, `APP_WORKER_PASSWORD`) dışarıdan sağlanır; depoda değer yoktur. Yerelde aynı ad compose'daki örnek değerlerle üretilir.
@@ -33,6 +33,6 @@ Doğrulama: `kubectl kustomize altyapi/k8s/overlays/<ad>` ve `kubectl apply --dr
 
 ## Bilinen sınırlar
 
-- NATS her ortamda tek kopya; üç düğümlü kümeleme ayrı iş (doğrulanacak). Test ve canlı overlay'leri kümede denenmedi, yalnız `kustomize` ve `dry-run` ile doğrulandı.
+- NATS her ortamda tek kopya; üç düğümlü kümeleme ayrı iş, doğrulanacak. Test ve canlı overlay'leri kümede denenmedi, yalnız `kustomize` ve `dry-run` ile doğrulandı.
 - kind yapılandırmasında iki ortam yaması var: cgroup v1 ana makine için `failCgroupV1: false`, CAP_SYS_RESOURCE'suz Docker için containerd `restrict_oom_score_adj` (açıklamaları `kind/kind.yaml` içinde).
 - `kind load docker-image` Docker'ın containerd imaj deposunda başarısız olabildiğinden imajlar `docker save --platform` ile yüklenir.
