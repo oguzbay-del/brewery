@@ -28,14 +28,12 @@ function isLocale(value: string | null | undefined): value is Locale {
   return value === 'tr' || value === 'en';
 }
 
-/** Resolves an explicit preference first, then the browser language, then English. */
 export function resolveLocale(
   storage?: Pick<Storage, 'getItem'>,
   browserLanguage?: string,
 ): Locale {
   try {
-    const store = storage ?? globalThis.localStorage;
-    const saved = store?.getItem(LOCALE_STORAGE_KEY);
+    const saved = (storage ?? globalThis.localStorage)?.getItem(LOCALE_STORAGE_KEY);
     if (isLocale(saved)) return saved;
   } catch {
     // Storage can be disabled by browser privacy settings.
@@ -55,12 +53,8 @@ export function resolveLocale(
 function lookup(locale: Locale, key: string): string | undefined {
   const texts = catalog.texts[locale];
 
-  if (key.startsWith('quantities.')) {
-    return texts.quantities[key.slice('quantities.'.length)];
-  }
-  if (key.startsWith('errors.')) {
-    return texts.errors[key.slice('errors.'.length)];
-  }
+  if (key.startsWith('quantities.')) return texts.quantities[key.slice(11)];
+  if (key.startsWith('errors.')) return texts.errors[key.slice(7)];
   if (key.startsWith('units.')) {
     const [, unit, property] = key.split('.');
     if (unit && (property === 'name' || property === 'symbol')) {
@@ -68,7 +62,7 @@ function lookup(locale: Locale, key: string): string | undefined {
     }
   }
   if (key.startsWith('fields.')) {
-    const rest = key.slice('fields.'.length);
+    const rest = key.slice(7);
     const field = Object.keys(texts.fields).find((candidate) =>
       rest.startsWith(`${candidate}.`),
     );
@@ -80,7 +74,6 @@ function lookup(locale: Locale, key: string): string | undefined {
   return undefined;
 }
 
-/** Lists every string leaf; used to enforce exact TR/EN key parity. */
 export function getTextKeys(locale: Locale): string[] {
   const keys: string[] = [];
   const visit = (value: unknown, prefix: string): void => {
@@ -97,7 +90,13 @@ export function getTextKeys(locale: Locale): string[] {
   return keys.sort();
 }
 
-/** Resolves a catalog key and replaces the supplied named placeholders. */
+function interpolate(value: string, params: TextParams): string {
+  return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, name: string) => {
+    const replacement = params[name];
+    return replacement === undefined ? match : String(replacement);
+  });
+}
+
 export function translate(key: string, locale: Locale, params: TextParams = {}): string {
   const value = lookup(locale, key);
   if (value === undefined) {
@@ -107,12 +106,9 @@ export function translate(key: string, locale: Locale, params: TextParams = {}):
     }
     return key;
   }
-  return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, name: string) =>
-    Object.hasOwn(params, name) ? String(params[name]) : match,
-  );
+  return interpolate(value, params);
 }
 
-/** Returns the requested catalog text in the active browser language. */
 export function useText(key: TextKey | string, params: TextParams = {}): string {
   const [locale, setLocale] = useState<Locale>(() => resolveLocale());
 
