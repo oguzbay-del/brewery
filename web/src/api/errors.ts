@@ -13,6 +13,13 @@ function readProblem(value: unknown): ApiProblem | null {
   return value as unknown as ApiProblem;
 }
 
+function readConflictingFields(current: Record<string, unknown>): string[] {
+  const value = current.conflicting_fields;
+  return Array.isArray(value)
+    ? value.filter((field): field is string => typeof field === 'string')
+    : [];
+}
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code: ApiErrorCode;
@@ -40,10 +47,7 @@ export class StaleVersionError extends ApiError {
     this.name = 'StaleVersionError';
     const raw = problem?.current;
     const current = isRecord(raw) ? raw : {};
-    const fields = Array.isArray(current.conflicting_fields)
-      ? current.conflicting_fields.filter((field): field is string => typeof field === 'string')
-      : [];
-    this.current = { ...current, conflicting_fields: fields };
+    this.current = { ...current, conflicting_fields: readConflictingFields(current) };
   }
 }
 
