@@ -1,17 +1,25 @@
 # One glob per line. Changes to these paths require Claude review.
-# Keep this list aligned with marketing-site/CHATGPT-SCOPE.md.
+# Includes class B paths while the guard is the condition for independent merge.
 
+# Class B (guarded until this workflow is approved and active)
+web/src/**
+altyapi/compose/**
+
+# Class C: database, engine and contracts
 sunucu/crates/db/**
 sunucu/crates/engine*/**
 sozlesme/proto/**
+
+# Class C: authentication, step-up and account deletion
 sunucu/crates/api/src/auth/**
 sunucu/crates/api/src/**/step-up/**
 sunucu/crates/api/src/**/step_up/**
 sunucu/crates/api/src/**/account-deletion/**
 sunucu/crates/api/src/**/account_deletion/**
-sunucu/crates/api/src/**/hesap-silme/**
-sunucu/crates/api/src/**/hesap_silme/**
+sunucu/crates/api/src/**/account_deletion.rs
 sunucu/crates/api/src/**/internal.rs
+
+# Class C: infrastructure and governance
 altyapi/k8s/**
 altyapi/terraform/**
 .github/workflows/**
@@ -19,5 +27,4 @@ altyapi/terraform/**
 adr/**
 gelistirme/ISLER.md
 gelistirme/DURUM.md
-CLAUDE.md
 **/CLAUDE.md
