@@ -135,8 +135,10 @@ Bu komut OpenAPI belgesini, TypeScript istemci tiplerini ve katalog çıktısın
 | ios.yml | Token/proje doğrulaması, XcodeGen, SwiftLint ve iOS simülatör testleri | macOS ve Xcode gerekir; CI adımları ios/scripts/validate.py, xcodegen generate, swiftlint lint --strict ve xcodebuild test |
 | yetki.yml | PR'daki değişen yolların korumalı yol listesine karşı kontrolü | GitHub PR bağlamı ve base ref gerekir; yerel tek-komut karşılığı tanımlanmamıştır |
 
+**Belgeler CI notu:** `.github/workflows/belgeler.yml` yol filtresi `belgeler/**` içermiyor. Bu nedenle yalnız bu klasördeki dokümanları değiştiren bir PR ilgili iş akışını otomatik başlatmaz. Bu PR CI yapılandırmasını değiştirmez; tetikleyici kapsamı Claude incelemesinden sonra ayrı bir korumalı değişiklik olarak ele alınmalıdır.
+
 ## Sorun giderme
 
 - Bir servis hazır değilse make ps ile durumuna bakın; make logs S=<servis> ile günlükleri izleyin. Compose başlangıcında API ve diğer Rust servisleri PostgreSQL göçünün tamamlanmasını bekler; göç sorunu için make logs S=migrate çıktısını inceleyin.
 - Bir port başka süreç tarafından kullanılıyorsa Compose portu yayımlayamaz. Port değerlerini altyapi/compose/compose.yaml içindeki ilgili *_PORT ortam değişkeniyle değiştirin.
-- Docker Hub 429 için depodaki kaynaklarda doğrulanmış çözüm adımı bulunmuyor (to be verified); bu kılavuz belirli bir çözüm önermiyor.
+- Docker Hub 429 geçici hız sınırı olabilir. kind-up.sh üç çekme denemesi yapar; üçü de başarısızsa imajlar yerelde mevcutsa uyarı verip mevcut imajlarla devam eder. İmajları yeniden derlemeyi/çekmeyi tamamen atlamak için SKIP_BUILD=1 kullanılabilir.
