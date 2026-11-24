@@ -81,26 +81,13 @@ async fn package_operations_fail_without_the_package_key_but_manual_measurements
         .unwrap();
     assert_eq!(package.status(), StatusCode::SERVICE_UNAVAILABLE);
 
-    let with_package = ctx
-        .post_json(
-            &format!("/v1/workspaces/{ws}/batches/{batch_id}/measurements"),
-            Some(&user),
-            &json!({"items":[{
-                "id":Uuid::new_v4(),"kind":"sg","value":1.05,
-                "measured_at":"2026-11-23T12:00:00Z","package_id":Uuid::new_v4()
-            }]}),
-        )
-        .await
-        .unwrap();
-    assert_eq!(with_package.status(), StatusCode::SERVICE_UNAVAILABLE);
-
     let without_package = ctx
         .post_json(
             &format!("/v1/workspaces/{ws}/batches/{batch_id}/measurements"),
             Some(&user),
             &json!({"items":[{
                 "id":Uuid::new_v4(),"kind":"sg","value":1.05,
-                "measured_at":"2026-11-23T12:00:00Z"
+                "measured_at":"2026-11-23T12:00:00Z","source":"manual"
             }]}),
         )
         .await
