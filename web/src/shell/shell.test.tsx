@@ -19,23 +19,27 @@ const labels: ShellLabels = {
 };
 
 function media(matches: Record<string, boolean>) {
-  return (query: string) => ({
-    matches: matches[query] ?? false,
-    media: query,
-    onchange: null,
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  }) as unknown as MediaQueryList;
+  return (query: string) =>
+    ({
+      matches: matches[query] ?? false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }) as unknown as MediaQueryList;
 }
 
 beforeEach(() => {
   window.localStorage.clear();
   Object.defineProperty(window, 'matchMedia', {
     configurable: true,
-    value: media({ '(prefers-color-scheme: dark)': false, '(prefers-contrast: more)': false }),
+    value: media({
+      '(prefers-color-scheme: dark)': false,
+      '(prefers-contrast: more)': false,
+    }),
   });
 });
 
@@ -43,44 +47,60 @@ describe('app shell', () => {
   it('provides a skip link and a main landmark', () => {
     render(
       <ThemeProvider>
-        <AppShell labels={labels}><h1>Page</h1></AppShell>
+        <AppShell labels={labels}>
+          <h1>Page</h1>
+        </AppShell>
       </ThemeProvider>,
     );
-    expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main-content');
+    expect(screen.getByRole('link', { name: 'Skip to content' })).toHaveAttribute(
+      'href',
+      '#main-content',
+    );
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
   });
 
   it('keeps the theme control keyboard reachable and applies the selected theme', async () => {
     render(
       <ThemeProvider>
-        <AppShell labels={labels}><h1>Page</h1></AppShell>
+        <AppShell labels={labels}>
+          <h1>Page</h1>
+        </AppShell>
       </ThemeProvider>,
     );
     const control = screen.getByRole('combobox', { name: 'Theme' });
     control.focus();
     expect(control).toHaveFocus();
     fireEvent.change(control, { target: { value: 'dark' } });
-    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('dark'));
+    await waitFor(() => {
+      expect(document.documentElement.dataset.theme).toBe('dark');
+    });
     expect(window.localStorage.getItem('demleme.theme')).toBe('dark');
   });
 
   it('maps high contrast to the existing light and dark token sets', async () => {
     render(
       <ThemeProvider>
-        <AppShell labels={labels}><h1>Page</h1></AppShell>
+        <AppShell labels={labels}>
+          <h1>Page</h1>
+        </AppShell>
       </ThemeProvider>,
     );
     fireEvent.change(screen.getByRole('combobox', { name: 'Theme' }), {
       target: { value: 'high-contrast' },
     });
-    await waitFor(() => expect(document.documentElement.dataset.theme).toBe('contrast'));
+    await waitFor(() => {
+      expect(document.documentElement.dataset.theme).toBe('contrast');
+    });
     expect(document.documentElement.dataset.themePreference).toBe('high-contrast');
   });
 
   it('follows system contrast and colour scheme when no preference is saved', () => {
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
-      value: media({ '(prefers-color-scheme: dark)': true, '(prefers-contrast: more)': true }),
+      value: media({
+        '(prefers-color-scheme: dark)': true,
+        '(prefers-contrast: more)': true,
+      }),
     });
     expect(systemTheme()).toBe('high-contrast');
   });
