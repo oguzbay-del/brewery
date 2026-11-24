@@ -20,11 +20,7 @@ export class ApiError extends Error {
   readonly errors: ApiFieldIssue[];
   readonly problem: ApiProblem | null;
 
-  constructor(
-    status: number,
-    problem: ApiProblem | null,
-    fallbackRequestId?: string | null,
-  ) {
+  constructor(status: number, problem: ApiProblem | null, fallbackRequestId?: string | null) {
     const code = problem?.code ?? ('internal' as ApiErrorCode);
     super(`HTTP ${status} (${code})`);
     this.name = 'ApiError';
@@ -39,19 +35,13 @@ export class ApiError extends Error {
 export class StaleVersionError extends ApiError {
   readonly current: Record<string, unknown> & { conflicting_fields: string[] };
 
-  constructor(
-    status: number,
-    problem: ApiProblem | null,
-    fallbackRequestId?: string | null,
-  ) {
+  constructor(status: number, problem: ApiProblem | null, fallbackRequestId?: string | null) {
     super(status, problem, fallbackRequestId);
     this.name = 'StaleVersionError';
     const raw = problem?.current;
     const current = isRecord(raw) ? raw : {};
     const fields = Array.isArray(current.conflicting_fields)
-      ? current.conflicting_fields.filter(
-          (field): field is string => typeof field === 'string',
-        )
+      ? current.conflicting_fields.filter((field): field is string => typeof field === 'string')
       : [];
     this.current = { ...current, conflicting_fields: fields };
   }
