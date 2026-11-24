@@ -5,7 +5,7 @@ import './shell/shell.css';
 
 function defaultLabels(): ShellLabels {
   return {
-    appName: typeof document === 'undefined' ? 'Demleme' : document.title || 'Demleme',
+    appName: typeof document === 'undefined' ? '' : document.title,
     skipToContent: '',
     navigation: '',
     home: '',
