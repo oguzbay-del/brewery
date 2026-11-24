@@ -32,6 +32,16 @@ function media(matches: Record<string, boolean>) {
     }) as unknown as MediaQueryList;
 }
 
+function renderShell() {
+  return render(
+    <ThemeProvider>
+      <AppShell labels={labels}>
+        <h1>Page</h1>
+      </AppShell>
+    </ThemeProvider>,
+  );
+}
+
 beforeEach(() => {
   window.localStorage.clear();
   Object.defineProperty(window, 'matchMedia', {
@@ -44,28 +54,15 @@ beforeEach(() => {
 });
 
 describe('app shell', () => {
-  it('provides a skip link and a main landmark', () => {
-    render(
-      <ThemeProvider>
-        <AppShell labels={labels}>
-          <h1>Page</h1>
-        </AppShell>
-      </ThemeProvider>,
-    );
-    expect(
-      screen.getByRole('link', { name: 'Skip to content' }),
-    ).toHaveAttribute('href', '#main-content');
+  it('provides a skip link and main landmark', () => {
+    renderShell();
+    const skip = screen.getByRole('link', { name: 'Skip to content' });
+    expect(skip).toHaveAttribute('href', '#main-content');
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
   });
 
-  it('keeps the theme control keyboard reachable and applies the selected theme', async () => {
-    render(
-      <ThemeProvider>
-        <AppShell labels={labels}>
-          <h1>Page</h1>
-        </AppShell>
-      </ThemeProvider>,
-    );
+  it('supports keyboard theme selection and persistence', async () => {
+    renderShell();
     const control = screen.getByRole('combobox', { name: 'Theme' });
     control.focus();
     expect(control).toHaveFocus();
@@ -74,14 +71,8 @@ describe('app shell', () => {
     expect(window.localStorage.getItem('demleme.theme')).toBe('dark');
   });
 
-  it('maps high contrast to the existing light and dark token sets', async () => {
-    render(
-      <ThemeProvider>
-        <AppShell labels={labels}>
-          <h1>Page</h1>
-        </AppShell>
-      </ThemeProvider>,
-    );
+  it('maps high contrast to the existing token set', async () => {
+    renderShell();
     fireEvent.change(screen.getByRole('combobox', { name: 'Theme' }), {
       target: { value: 'high-contrast' },
     });
@@ -89,7 +80,7 @@ describe('app shell', () => {
     expect(document.documentElement.dataset.themePreference).toBe('high-contrast');
   });
 
-  it('follows system contrast and colour scheme when no preference is saved', () => {
+  it('follows system contrast and colour scheme', () => {
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       value: media({
@@ -100,7 +91,7 @@ describe('app shell', () => {
     expect(systemTheme()).toBe('high-contrast');
   });
 
-  it('accepts only the four supported hash routes', () => {
+  it('accepts only supported hash routes', () => {
     expect(readHashRoute('#/recipes')).toBe('/recipes');
     expect(readHashRoute('#/batches')).toBe('/batches');
     expect(readHashRoute('#/settings')).toBe('/settings');
