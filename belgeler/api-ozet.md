@@ -410,9 +410,10 @@ Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Zorunlu alanlar: type, titl
 
 | Başlık | Kullanım |
 |---|---|
-| `Idempotency-Key` | Client generated key (ADR-0008 rule 6) (required) |
-| `If-Match` | Version `ETag` of the record (optional) (required) |
-| `If-None-Match` | Version `ETag` the client holds (optional) |
-| `Last-Event-ID` | Last event id the client saw; the server replays what followed (one hour) (optional) |
-| `X-Device-Key` | The device key (required) |
-| `X-Request-Id` | Request id (`X-Request-Id`). |
+| `Idempotency-Key` | Client generated key (ADR-0008 rule 6) (zorunlu) |
+| `If-Match` | Version `ETag` of the record (optional) (bazı operasyonlarda zorunlu, bazılarında isteğe bağlı) |
+| `If-None-Match` | Version `ETag` the client holds (optional) (isteğe bağlı) |
+| `Last-Event-ID` | Last event id the client saw; the server replays what followed (one hour) (isteğe bağlı) |
+| `Retry-After` | Seconds to wait before retrying (yanıt başlığı) |
+| `X-Device-Key` | The device key (zorunlu) |
+| `X-Request-Id` | Request id (`X-Request-Id`) (yanıt başlığı) |
