@@ -6,7 +6,8 @@ export type AppRoute = (typeof ROUTES)[number];
 
 export function readHashRoute(hash: string): AppRoute {
   const candidate = hash.startsWith('#') ? hash.slice(1) : hash;
-  return ROUTES.includes((candidate || '/') as AppRoute) ? (candidate || '/') as AppRoute : '/';
+  const route = candidate || '/';
+  return ROUTES.includes(route as AppRoute) ? (route as AppRoute) : '/';
 }
 
 function subscribe(onChange: () => void): () => void {
