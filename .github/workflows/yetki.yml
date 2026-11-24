@@ -1,0 +1,79 @@
+name: protected-path-guard
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  protected-paths:
+    name: Protected path review gate
+    if: startsWith(github.head_ref, 'chatgpt/') || startsWith(github.head_ref, 'grok/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out pull request and base history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Verify protected-path matcher and inspect changed files
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+
+          matches_protected_path() {
+            local candidate="$1"
+            local pattern
+            while IFS= read -r pattern || [[ -n "$pattern" ]]; do
+              [[ -z "$pattern" || "$pattern" == \\#* ]] && continue
+              if [[ "$candidate" == $pattern ]]; then
+                return 0
+              fi
+            done < .github/korumali-yollar.txt
+            return 1
+          }
+
+          expect_match() {
+            if ! matches_protected_path "$1"; then
+              echo "::error::Protected-path fixture failed: expected match for $1"
+              exit 1
+            fi
+          }
+
+          expect_no_match() {
+            if matches_protected_path "$1"; then
+              echo "::error::Protected-path fixture failed: unexpected match for $1"
+              exit 1
+            fi
+          }
+
+          # Fixtures prove both positive and negative matching before the PR diff is checked.
+          expect_match "sunucu/crates/db/migrations/0001_init.sql"
+          expect_match "sunucu/crates/api/src/auth/internal.rs"
+          expect_match ".github/workflows/yetki.yml"
+          expect_match "altyapi/k8s/overlays/yerel/veri.yaml"
+          expect_no_match "marketing-site/src/pages/index.astro"
+          expect_no_match "belgeler/README.md"
+
+          git fetch --no-tags origin "$BASE_REF"
+          mapfile -t changed_paths < <(git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD")
+
+          violations=()
+          for path in "${changed_paths[@]}"; do
+            if matches_protected_path "$path"; then
+              violations+=("$path")
+            fi
+          done
+
+          if (( ${#violations[@]} > 0 )); then
+            printf '%s\\n' "${violations[@]}"
+            joined="$(printf '%s; ' "${violations[@]}")"
+            echo "::error title=Claude review required::Claude review required. Protected paths changed: $joined"
+            exit 1
+          fi
+
+          echo "No protected paths changed."
