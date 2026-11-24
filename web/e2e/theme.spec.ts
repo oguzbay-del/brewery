@@ -54,10 +54,7 @@ test(
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     await theme.selectOption('high-contrast');
-    await expect(page.locator('html')).toHaveAttribute(
-      'data-theme-preference',
-      'high-contrast',
-    );
+    await expect(page.locator('html')).toHaveAttribute('data-theme-preference', 'high-contrast');
     await expect(page.locator('html')).toHaveAttribute('data-theme', /contrast/);
 
     await theme.selectOption('light');
