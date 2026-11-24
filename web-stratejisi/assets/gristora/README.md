@@ -20,7 +20,7 @@
 - `gristora-favicon.svg` — 200 px favicon master
 - `gristora-favicon-16.svg`, `gristora-favicon-32.svg`, `gristora-favicon-48.svg` — explicit-size favicon SVGs
 - `gristora-social-avatar.svg` — 512 px social avatar
-- `gristora-proof-board.svg` — linked proof board for dark/light, horizontal, small-size and monochrome contexts
+- `gristora-proof-board.svg` — self-contained proof board for dark/light, horizontal, small-size and monochrome contexts
 
 ## Review still required
 
