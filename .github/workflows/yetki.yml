@@ -31,9 +31,9 @@ jobs:
             local pattern
             while IFS= read -r pattern || [[ -n "$pattern" ]]; do
               [[ -z "$pattern" || "$pattern" == "#"* ]] && continue
-              if [[ "$candidate" == $pattern ]]; then
-                return 0
-              fi
+              case "$candidate" in
+                $pattern) return 0 ;;
+              esac
             done < .github/korumali-yollar.txt
             return 1
           }
