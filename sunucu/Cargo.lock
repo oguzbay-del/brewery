@@ -1277,6 +1277,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "e2e"
+version = "0.1.0"
+dependencies = [
+ "reqwest",
+ "serde_json",
+ "sha2 0.11.1",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "fake-oidc"
 version = "0.1.0"
 dependencies = [
