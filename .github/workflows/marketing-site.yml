@@ -88,6 +88,8 @@ jobs:
           }
           run_audit home / mobile
           run_audit home / desktop
+          run_audit home-tr /tr/ mobile
+          run_audit home-tr /tr/ desktop
           run_audit compare /compare/ mobile
           run_audit compare /compare/ desktop
           run_audit pricing /pricing/ mobile
