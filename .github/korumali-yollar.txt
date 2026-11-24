@@ -1,0 +1,21 @@
+# One bash glob per line ("*" also matches "/"). Changes to these paths require Claude review.
+# Keep this list aligned with marketing-site/CHATGPT-SCOPE.md.
+
+sunucu/crates/db/**
+sunucu/crates/engine*/**
+sozlesme/proto/**
+sunucu/crates/api/src/auth/**
+sunucu/crates/api/src/*step_up*
+sunucu/crates/api/src/*account_deletion*
+sunucu/crates/api/src/internal.rs
+sunucu/crates/api/src/internal/**
+sunucu/crates/worker/src/*account_deletion*
+altyapi/k8s/**
+altyapi/terraform/**
+.github/workflows/**
+.github/korumali-yollar.txt
+adr/**
+gelistirme/ISLER.md
+gelistirme/DURUM.md
+CLAUDE.md
+**/CLAUDE.md
