@@ -12336,20 +12336,39 @@
             "description": "Deletion request cancelled"
           },
           "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
             "description": "Unauthenticated"
           },
-          "403": {
+          "404": {
             "content": {
               "application/problem+json": {
                 "examples": {
-                  "step_up_required": {
-                    "summary": "Second factor required",
+                  "not_found": {
+                    "summary": "Not found",
                     "value": {
-                      "code": "step_up_required",
+                      "code": "not_found",
                       "request_id": "0192f1c07a3b7000800000000000000a",
-                      "status": 403,
-                      "title": "Second factor required",
-                      "type": "/errors/step_up_required"
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
                     }
                   }
                 },
@@ -12358,26 +12377,26 @@
                 }
               }
             },
-            "description": "Second factor required"
-          },
-          "404": {
-            "description": "No pending request"
+            "description": "Not found"
           },
           "409": {
-            "description": "The grace period has ended"
-          },
-          "426": {
             "content": {
               "application/problem+json": {
                 "examples": {
-                  "upgrade_required": {
-                    "summary": "Upgrade required",
+                  "conflict": {
+                    "summary": "Conflict",
                     "value": {
-                      "code": "upgrade_required",
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
                       "request_id": "0192f1c07a3b7000800000000000000a",
-                      "status": 426,
-                      "title": "Upgrade required",
-                      "type": "/errors/upgrade_required"
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
                     }
                   }
                 },
@@ -12386,10 +12405,38 @@
                 }
               }
             },
-            "description": "Upgrade required"
+            "description": "Conflict"
           },
           "429": {
-            "description": "Rate limited"
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
           },
           "500": {
             "content": {
@@ -12488,6 +12535,25 @@
             "description": "Current deletion request"
           },
           "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
             "description": "Unauthenticated"
           },
           "404": {
@@ -12535,7 +12601,35 @@
             "description": "Upgrade required"
           },
           "429": {
-            "description": "Rate limited"
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
           },
           "500": {
             "content": {
@@ -12627,13 +12721,76 @@
             "description": "Deletion request"
           },
           "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
             "description": "Unauthenticated"
           },
           "403": {
-            "description": "A fresh second step is required"
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Second factor required"
           },
           "409": {
-            "description": "The caller is the only Business workspace administrator"
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
           },
           "426": {
             "content": {
@@ -12658,7 +12815,35 @@
             "description": "Upgrade required"
           },
           "429": {
-            "description": "Rate limited"
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
           },
           "500": {
             "content": {
