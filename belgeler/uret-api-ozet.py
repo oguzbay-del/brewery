@@ -33,7 +33,7 @@ def operation_rows(spec):
             description = " ".join(
                 (operation.get("summary") or "", operation.get("description") or "")
             ).lower()
-            step_up = any(
+            step_up = bool(operation.get("x-step-up")) or any(
                 marker in description
                 for marker in ("second step", "step-up", "passkey check")
             )
@@ -112,26 +112,53 @@ def render(spec):
     ])
 
     headers = {}
+
+    def remember_header(name, description="", required=None, response=False):
+        if not name:
+            return
+        item = headers.setdefault(
+            name,
+            {"description": "", "required": False, "optional": False, "response": False},
+        )
+        if description and not item["description"]:
+            item["description"] = description
+        if response:
+            item["response"] = True
+        elif required:
+            item["required"] = True
+        else:
+            item["optional"] = True
+
     for path_item in spec.get("paths", {}).values():
         for method in METHODS:
             operation = path_item.get(method)
             if not isinstance(operation, dict):
                 continue
-            for parameter in list(path_item.get("parameters", [])) + list(operation.get("parameters", [])):
-                if parameter.get("in") != "header":
-                    continue
-                name = parameter.get("name", "")
-                old = headers.get(name, {"description": "", "required": False})
-                headers[name] = {
-                    "description": parameter.get("description", "") or old["description"],
-                    "required": bool(parameter.get("required")) or old["required"],
-                }
+            parameters = list(path_item.get("parameters", [])) + list(operation.get("parameters", []))
+            for parameter in parameters:
+                if parameter.get("in") == "header":
+                    remember_header(
+                        parameter.get("name", ""),
+                        parameter.get("description", ""),
+                        bool(parameter.get("required")),
+                    )
+            for response in operation.get("responses", {}).values():
+                for name, header in response.get("headers", {}).items():
+                    remember_header(name, header.get("description", ""), response=True)
+
     for name in sorted(headers):
         item = headers[name]
-        state = "required" if item["required"] else "optional"
+        if item["response"]:
+            state = "yanıt başlığı"
+        elif item["required"] and item["optional"]:
+            state = "bazı operasyonlarda zorunlu, bazılarında isteğe bağlı"
+        elif item["required"]:
+            state = "zorunlu"
+        else:
+            state = "isteğe bağlı"
         lines.append(f"| `{name}` | {cell(item['description'])} ({state}) |")
     if request_id_desc:
-        lines.append(f"| `X-Request-Id` | {cell(request_id_desc)} |")
+        lines.append(f"| `X-Request-Id` | {cell(request_id_desc)} (yanıt başlığı) |")
     return "\n".join(lines).rstrip() + "\n"
 
 
