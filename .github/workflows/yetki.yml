@@ -31,6 +31,7 @@ jobs:
             local pattern
             while IFS= read -r pattern || [[ -n "$pattern" ]]; do
               [[ -z "$pattern" || "$pattern" == \\#* ]] && continue
+              # shellcheck disable=SC2254 # The pattern is intentionally interpreted as a glob.
               case "$candidate" in
                 $pattern) return 0 ;;
               esac
