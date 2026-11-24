@@ -6,11 +6,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function response(
-  status: number,
-  body: unknown,
-  headers: Record<string, string> = {},
-): Response {
+function response(status: number, body: unknown, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'content-type': 'application/problem+json', ...headers },
@@ -27,9 +23,7 @@ describe('apiFetch', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(apiFetch<{ id: string }>('/v1/recipes')).resolves.toEqual({
-      id: 'recipe-1',
-    });
+    await expect(apiFetch<{ id: string }>('/v1/recipes')).resolves.toEqual({ id: 'recipe-1' });
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     const headers = new Headers(init.headers);
     expect(init.credentials).toBe('include');
