@@ -10,7 +10,7 @@ if (!root) throw new Error('Missing #root element');
 
 const data = root.dataset;
 const labels: ShellLabels = {
-  appName: data.appName || document.title || 'Demleme',
+  appName: data.appName || document.title,
   skipToContent: data.skipToContent || '',
   navigation: data.navigation || '',
   home: data.home || '',
