@@ -12,11 +12,12 @@ sozlesme/proto/**
 
 # Class C: authentication, step-up and account deletion
 sunucu/crates/api/src/auth/**
-sunucu/crates/api/src/**/step-up/**
-sunucu/crates/api/src/**/step_up/**
-sunucu/crates/api/src/**/account-deletion/**
-sunucu/crates/api/src/**/account_deletion/**
-sunucu/crates/api/src/**/account_deletion.rs
+sunucu/crates/api/src/step-up/**
+sunucu/crates/api/src/step_up/**
+sunucu/crates/api/src/account_deletion.rs
+sunucu/crates/api/src/account_deletion/**
+sunucu/crates/api/src/account-deletion/**
+sunucu/crates/api/src/internal.rs
 sunucu/crates/api/src/**/internal.rs
 
 # Class C: infrastructure and governance
