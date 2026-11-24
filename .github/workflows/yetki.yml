@@ -82,3 +82,155 @@ jobs:
           fi
 
           echo "No protected paths changed."
+
+  dependency-review:
+    name: Dependency review gate
+    if: ${{ !startsWith(github.head_ref, 'claude/') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out pull request and base history
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Reject newly added package dependencies
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          import tomllib
+          from pathlib import Path
+
+          DEPENDENCY_SECTIONS = (
+              "dependencies",
+              "dev-dependencies",
+              "build-dependencies",
+          )
+          PACKAGE_SECTIONS = (
+              "dependencies",
+              "devDependencies",
+              "peerDependencies",
+              "optionalDependencies",
+          )
+
+          def package_dependencies(source):
+              data = json.loads(source) if source.strip() else {}
+              names = set()
+              for section in PACKAGE_SECTIONS:
+                  table = data.get(section, {})
+                  if isinstance(table, dict):
+                      names.update(table)
+              return names
+
+          def cargo_dependencies(source):
+              data = tomllib.loads(source) if source.strip() else {}
+              names = set()
+
+              def add_sections(table):
+                  if not isinstance(table, dict):
+                      return
+                  for section in DEPENDENCY_SECTIONS:
+                      values = table.get(section, {})
+                      if isinstance(values, dict):
+                          names.update(values)
+
+              add_sections(data)
+              add_sections(data.get("workspace", {}))
+              targets = data.get("target", {})
+              if isinstance(targets, dict):
+                  for target in targets.values():
+                      add_sections(target)
+              return names
+
+          def assert_added(parser, base, head, expected):
+              actual = parser(head) - parser(base)
+              if actual != expected:
+                  raise AssertionError(
+                      f"dependency fixture mismatch: expected {sorted(expected)}, got {sorted(actual)}"
+                  )
+
+          package_base = '{"dependencies":{"react":"^19"},"devDependencies":{"vitest":"^5"}}'
+          package_version_bump = '{"dependencies":{"react":"^20"},"devDependencies":{"vitest":"^6"}}'
+          package_added = '{"dependencies":{"react":"^19","new-ui-lib":"^1"},"devDependencies":{"vitest":"^5"}}'
+          assert_added(package_dependencies, package_base, package_version_bump, set())
+          assert_added(package_dependencies, package_base, package_added, {"new-ui-lib"})
+
+          cargo_base = """
+          [workspace.dependencies]
+          serde = "1"
+          [dependencies]
+          axum = "0.8"
+          [target.'cfg(unix)'.dependencies]
+          nix = "0.29"
+          """
+          cargo_version_bump = """
+          [workspace.dependencies]
+          serde = "2"
+          [dependencies]
+          axum = "0.9"
+          [target.'cfg(unix)'.dependencies]
+          nix = "0.30"
+          """
+          cargo_added = cargo_base + '\n[build-dependencies]\nnew-build-tool = "0.1"\n'
+          assert_added(cargo_dependencies, cargo_base, cargo_version_bump, set())
+          assert_added(cargo_dependencies, cargo_base, cargo_added, {"new-build-tool"})
+          print("Dependency guard fixtures passed.")
+
+          base_sha = os.environ["BASE_SHA"]
+          subprocess.run(
+              ["git", "cat-file", "-e", f"{base_sha}^{{commit}}"],
+              check=True,
+              stdout=subprocess.DEVNULL,
+          )
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", "--no-renames", f"{base_sha}...HEAD"],
+              text=True,
+          ).splitlines()
+
+          manifests = sorted(
+              path
+              for path in changed
+              if path == "web/package.json" or Path(path).name == "Cargo.toml"
+          )
+          violations = []
+
+          for path in manifests:
+              current_path = Path(path)
+              if not current_path.is_file():
+                  continue
+              base_result = subprocess.run(
+                  ["git", "show", f"{base_sha}:{path}"],
+                  check=False,
+                  capture_output=True,
+                  text=True,
+              )
+              base_source = base_result.stdout if base_result.returncode == 0 else ""
+              current_source = current_path.read_text(encoding="utf-8")
+              parser = package_dependencies if path == "web/package.json" else cargo_dependencies
+              try:
+                  added = sorted(parser(current_source) - parser(base_source))
+              except (json.JSONDecodeError, tomllib.TOMLDecodeError) as error:
+                  print(
+                      f"::error title=Claude review required::{path} could not be parsed: {error}"
+                  )
+                  sys.exit(1)
+              if added:
+                  violations.append((path, added))
+
+          if violations:
+              details = "; ".join(f"{path}: {', '.join(names)}" for path, names in violations)
+              print(f"::error title=Claude review required::Claude review required. New dependencies: {details}")
+              sys.exit(1)
+
+          if manifests:
+              print("No new dependencies added.")
+          else:
+              print("No dependency manifests changed.")
+          PY
