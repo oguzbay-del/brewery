@@ -20,22 +20,22 @@ const structuredData = {
   "@type": "WebPage",
   name: "Evde Bira Yapımı Yazılımı | GRISTORA",
   url: canonicalUrl,
-  description: "Her partinin ardındaki ayrıntıları anlamak isteyen ev biracıları için bira yapım yazılımı.",
+  description: "Ev biracılarının her partinin ardındaki ayrıntıları anlamasına yönelik planlanan GRISTORA yaklaşımı.",
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
 };
 const workflow = [
   { number: "01", title: "Reçeteyi şekillendirin", question: "Ne tür bir bira yapmak istiyorsunuz?", body: "Reçetenizi tanımlayan stil, malzeme, ekipman ve parti büyüklüğüyle başlayın. Seçimleri bağlamlarıyla birlikte tutun.", feature: "Reçete tasarımı ve yönetimi", href: "recipe-design" },
   { number: "02", title: "Malzemeyi ve suyu anlayın", question: "Partiye ne giriyor?", body: "Fermente edilebilir malzemeleri, şerbetçiotunu, mayayı, su varsayımlarını ve mayşe seçimlerini aynı reçete görünümüne getirin.", feature: "Su, mayşe ve maya", href: "water-mash-yeast" },
-  { number: "03", title: "Sayıları anlamlandırın", question: "Tahminler reçetenizle nasıl ilişkili?", body: "Bira hesaplamaları açık girdiler, birimler, yöntemler ve varsayımlar kullanır.", feature: "Bira hesaplamaları", href: "brewing-calculations" },
+  { number: "03", title: "Sayıları anlamlandırın", question: "Tahminler reçetenizle nasıl ilişkili?", body: "Planlanan hesaplama yaklaşımı; açık girdileri, birimleri, yöntemleri ve varsayımları görünür kılmayı hedefler.", feature: "Bira hesaplamaları", href: "brewing-calculations" },
   { number: "04", title: "Demleme gününü kaydedin", question: "Gerçekte ne oldu?", body: "İş akışı, reçete hedeflerini üretim sırasında kaydedilen fiili miktarlardan, sürelerden, sıcaklıklardan ve ölçümlerden ayırır.", feature: "Demleme günü ve üretim kayıtları", href: "brew-day" },
-  { number: "05", title: "Fermantasyonu izleyin", question: "Zaman içinde neyi gözlemliyorsunuz?", body: "Parti zaman çizelgeleri elle girilen ya da bağlı cihazlardan gelen okumaları tutar.", feature: "Fermantasyon ve parti takibi", href: "fermentation-monitoring" },
+  { number: "05", title: "Fermantasyonu izleyin", question: "Zaman içinde neyi gözlemliyorsunuz?", body: "Planlanan parti zaman çizelgeleri, elle girilen gözlemleri ve ileride desteklenmesi değerlendirilecek cihaz verilerini kaynaklarıyla ayırmayı hedefler.", feature: "Fermantasyon ve parti takibi", href: "fermentation-monitoring" },
   { number: "06", title: "Partiyi gözden geçirin", question: "Bir sonraki partiye neyi taşırsınız?", body: "Partiler arasındaki farkları anlamak için ölçümleri, reçete bağlamını ve tadım notlarını bir araya getirin.", feature: "Raporlar, içgörüler ve sürdürülebilirlik", href: "analytics-reports" },
 ];
 const faqs = [
-  { q: "Hangi bira hesaplamaları destekleniyor?", a: "GRISTORA; yoğunluk, alkol, acılık, renk, mayşe ve hacim hesaplamalarını açık girdiler, birimler ve yöntemlerle destekler." },
-  { q: "Bir fermantasyon cihazı bağlayabilir miyim?", a: "GRISTORA; Tilt hidrometreleri, iSpindel ve RAPT cihazlarını, ayrıca TiltBridge, Pitch ve uyumlu köprüler için bir webhook veri uç noktasını destekler." },
-  { q: "Mevcut reçetelerimi içe veya dışa aktarabilir miyim?", a: "GRISTORA; BeerXML ve BeerJSON içe ve dışa aktarır, BeerSmith .bsmx, Brewfather ve Brewer's Friend reçetelerini içe aktarır." },
+  { q: "Hangi bira hesaplamaları planlanıyor?", a: "Ev modu yol haritasında yoğunluk, alkol, acılık, renk, mayşe ve hacim hesaplamaları yer alır. Bu hesaplamalar şu anda kullanıma sunulmuş veya doğrulanmış değildir." },
+  { q: "Bir fermantasyon cihazı bağlayabilir miyim?", a: "Tilt, iSpindel ve RAPT gibi cihazlarla bağlantı, Ev modu yol haritasında planlanan bir alandır. TiltBridge, Pitch ve uyumlu köprüler de değerlendirme kapsamındadır; şu anda kullanılabilir bir cihaz bağlantısı veya webhook uç noktası sunulmamaktadır ve uyumluluk henüz doğrulanmamıştır." },
+  { q: "Hangi reçete içe/dışa aktarma biçimleri planlanıyor?", a: "BeerXML, BeerJSON, BeerSmith .bsmx, Brewfather ve Brewer's Friend biçimleri yol haritasında ele alınan taşınabilirlik alanlarıdır. İçe veya dışa aktarma yönleri ve biçim uyumluluğu henüz kullanıma sunulmuş ya da doğrulanmış değildir." },
 ];
 const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Ev biracıları", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
@@ -50,17 +50,17 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="GRISTORA'nın evde bira yapımı iş akışını keşfedin: reçete tasarımı, malzemeler, hesaplamalar, demleme günü kayıtları ve parti incelemesi." />
+    <meta name="description" content="Ev biracıları için planlanan GRISTORA yaklaşımını keşfedin: reçete tasarımı, malzemeler, hesaplamalar, demleme günü kayıtları ve parti incelemesi." />
     <title>Evde Bira Yapımı Yazılımı | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="Evde Bira Yapımı Yazılımı | GRISTORA" />
-    <meta property="og:description" content="Her partiye daha özenli bir yaklaşım. GRISTORA evde bira yapımı iş akışını keşfedin." />
+    <meta property="og:description" content="Her partiye daha özenli bir yaklaşım. Evde bira yapımı için planlanan GRISTORA iş akışını keşfedin." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Evde Bira Yapımı Yazılımı | GRISTORA" />
-    <meta name="twitter:description" content="Her partiye daha özenli bir yaklaşım." />
+    <meta name="twitter:description" content="Her partiye daha özenli bir yaklaşım. Evde bira yapımı için planlanan GRISTORA iş akışı." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
@@ -77,7 +77,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="shell audience-page-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> EV BİRACILARI İÇİN</p>
         <h1>Her partiye <em>daha özenli bir yaklaşım.</em></h1>
-        <p>GRISTORA, her partinin ardındaki malzemeleri, hesaplamaları ve gözlemleri anlamak isteyen ev biracıları için bira yapım yazılımıdır.</p>
+        <p>GRISTORA, her partinin ardındaki malzemeleri, hesaplamaları ve gözlemleri anlamayı hedefleyen ev biracıları için geliştirilmektedir.</p>
         <a class="button button-primary" href="#homebrewing-workflow">Evde bira yapımı iş akışını keşfedin <span aria-hidden="true">↗</span></a>
       </section>
       <section class="shell audience-hero">
@@ -147,7 +147,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <section class="technical-clarity-section section-pad">
         <div class="shell technical-clarity-grid">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> TEKNİK NETLİK</p><h2>Yalnızca sonucu değil, <em>sayıyı anlayın.</em></h2></div>
-          <div><p>Bir hesaplama ya da teknik rehber; yöntemini, girdilerini, birimlerini, varsayımlarını, çalışılmış örneğini ve sınırlamalarını birlikte açıklar.</p><p>Her hesaplama yöntemini, girdilerini ve birimlerini gösterir.</p><a class="text-link" href={`${base}tr/features/brewing-calculations/`}>Bira hesaplamaları hakkında okuyun <span aria-hidden="true">→</span></a></div>
+          <div><p>Planlanan teknik yaklaşımda, her hesaplama ya da teknik rehberin yöntemini, girdilerini, birimlerini, varsayımlarını, çalışılmış örneğini ve sınırlamalarını birlikte açıklaması hedeflenir.</p><p>Hesaplama tasarımının, yöntemleri, girdileri ve birimleri açıkça göstermesi hedeflenir.</p><a class="text-link" href={`${base}tr/features/brewing-calculations/`}>Bira hesaplamaları hakkında okuyun <span aria-hidden="true">→</span></a></div>
         </div>
       </section>
       <section class="audience-faq-section section-pad">
