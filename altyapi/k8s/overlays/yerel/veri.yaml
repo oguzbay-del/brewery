@@ -131,35 +131,3 @@ spec:
         accessModes: [ReadWriteOnce]
         resources:
           requests: { storage: 256Mi }
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: postgres-uygulama-servisleri
-spec:
-  podSelector:
-    matchLabels: { app.kubernetes.io/name: postgres }
-  policyTypes: [Ingress]
-  ingress:
-    - from:
-        - podSelector:
-            matchExpressions:
-              - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest, migrate] }
-      ports:
-        - { protocol: TCP, port: 5432 }
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: redis-uygulama-servisleri
-spec:
-  podSelector:
-    matchLabels: { app.kubernetes.io/name: redis }
-  policyTypes: [Ingress]
-  ingress:
-    - from:
-        - podSelector:
-            matchExpressions:
-              - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest] }
-      ports:
-        - { protocol: TCP, port: 6379 }
