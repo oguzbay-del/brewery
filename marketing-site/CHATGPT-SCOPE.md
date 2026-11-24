@@ -40,6 +40,44 @@ Before you start a task:
 - Do not add a database migration while an open issue of Claude adds one. Two new migrations at the same time cause a number conflict.
 - Read the `CLAUDE.md` file of the area that you change (`sunucu/`, `web/`, `ios/`). Write `TODO` notes, issue text and handoff notes in ASD-STE100 (root `CLAUDE.md` › Yazım standardı).
 
+## Permission classes (owner decision, Oğuz, 2026-11-24)
+
+This section replaces "Change only the files that the issue names" and the product rule "Do not merge a product pull request" for the paths below. The aim: fewer round trips with Claude and the same architecture.
+
+| Class | Paths | Who merges |
+|---|---|---|
+| A: free | `belgeler/`, `marketing-site/`, `web-stratejisi/`, test files (`**/tests/**`, `web/e2e/`, `*.test.ts`), `sunucu/crates/e2e/` | ChatGPT, when CI is green |
+| B: free when CI is green and the guard check passes | `web/src/**`, `altyapi/compose/` | ChatGPT, when CI is green |
+| C: Claude approval | All other paths, in particular the protected paths below | Claude, after review |
+
+Protected paths (always class C):
+
+- `sunucu/crates/db/` (migrations and roles), `sunucu/crates/engine*`, `sozlesme/proto/`
+- `sunucu/crates/api/src/auth/`, step-up, account deletion, `internal.rs`
+- `altyapi/k8s/` (network policies, ingress, mTLS, secrets), `altyapi/terraform/`
+- `.github/workflows/`, `adr/`, `gelistirme/ISLER.md`, `gelistirme/DURUM.md`, all `CLAUDE.md` files
+
+Rules for all classes:
+
+1. In an issue, you own the folder that the issue names, not only the listed files. If a change needs a path of class C that the issue does not name, write it in the PR body and request a Claude review.
+2. Do not add a new dependency (`package.json`, `Cargo.toml`) without a Claude review. A new library is an architecture decision.
+3. Do not put calculation code or formulas in `web/` or `ios/`. The calculation engine runs only on the server.
+4. A breaking change of the API contract (OpenAPI) needs a Claude review.
+5. Rebase or merge `main` into your own branch yourself. Then run CI again. Do not ask Claude to rebase.
+6. If a detail is not clear, apply the safest option and write it under `## Assumptions` in the PR body. Do not use assumptions in class C paths; ask in the issue there.
+7. A chain of dependent tasks can be one issue with steps. Do the steps in order, one PR for each step.
+
+Until the guard check exists (issue "CI guard for protected paths"), class B is the same as class C.
+
+## Recent owner decisions (keep this list short)
+
+- 2026-11-24: Vercel is not used. The W12 deployment guard is cleared. Previews run on Cloudflare Pages.
+- 2026-11-24: mTLS uses Istio ambient (ADR-0009). #207 step 2 starts after #206; Claude writes its scope.
+- 2026-11-24: GitHub Issues of a deleted account: edit the content and close the issue. Do not delete it.
+- 2026-11-24: prepare the gristora.com setup (#146). The owner applies DNS.
+- 2026-11-24: delete only branches of merged or closed PRs (#255).
+- 2026-11-24: continue the logo work (#145). The owner gives the final approval.
+
 ## Git and quality
 
 - Use one branch for each task: `chatgpt/<task>-<short-name>`. Do not push to `main` directly.
