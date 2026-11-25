@@ -11,7 +11,13 @@ use api::{
     modules::{self, MODULES},
     redis_client::Redis,
 };
-use axum::{Router, body::Body, http::StatusCode, middleware::from_fn_with_state, routing::{get, post}};
+use axum::{
+    Router,
+    body::Body,
+    http::StatusCode,
+    middleware::from_fn_with_state,
+    routing::{get, post},
+};
 use serde_json::Value;
 use sqlx::PgPool;
 use support::{FakeAuth, insert_user, insert_workspace, send, state_with};
