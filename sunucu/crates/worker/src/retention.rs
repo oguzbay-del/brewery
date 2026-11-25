@@ -14,6 +14,20 @@ pub const PAYLOAD_DAYS: i64 = 30;
 /// Age at which an event row (its delivery ID) is deleted.
 pub const ID_MONTHS: u32 = 13;
 
+/// Days after resolution before a support request is closed (T2.43).
+pub const CLOSE_AFTER_DAYS: i64 = 14;
+
+
+/// Closes resolved support requests older than `CLOSE_AFTER_DAYS` days and queues their
+/// GitHub synchronization events. Running it again changes no rows.
+pub async fn close_resolved_support_requests(pool: &PgPool, now: DateTime<Utc>) -> Result<u64> {
+    db::maintenance::close_resolved_support_requests(
+        pool,
+        now - Duration::days(CLOSE_AFTER_DAYS),
+    )
+    .await
+}
+
 /// Days a soft-deleted recipe, batch, ingredient or equipment record can be restored (T2.37).
 pub const SOFT_DELETE_DAYS: i64 = 30;
 
