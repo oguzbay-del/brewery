@@ -140,7 +140,6 @@ async fn a_record_of_another_workspace_gives_404(pool: PgPool) {
     assert_eq!(restore(&b, "recipe", &recipe).await.status, StatusCode::OK);
 }
 
-
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn trash_cursor_returns_each_record_once_in_order(pool: PgPool) {
     let w = world(&pool).await;
@@ -159,19 +158,11 @@ async fn trash_cursor_returns_each_record_once_in_order(pool: PgPool) {
     assert_eq!(first.status, StatusCode::OK, "{}", first.body);
     assert_eq!(first.body["items"].as_array().unwrap().len(), 2);
     let cursor1 = first.body["next_cursor"].as_str().unwrap();
-    let second = get(
-        &w,
-        &format!("/trash?kind=recipe&limit=2&cursor={cursor1}"),
-    )
-    .await;
+    let second = get(&w, &format!("/trash?kind=recipe&limit=2&cursor={cursor1}")).await;
     assert_eq!(second.status, StatusCode::OK, "{}", second.body);
     assert_eq!(second.body["items"].as_array().unwrap().len(), 2);
     let cursor2 = second.body["next_cursor"].as_str().unwrap();
-    let third = get(
-        &w,
-        &format!("/trash?kind=recipe&limit=2&cursor={cursor2}"),
-    )
-    .await;
+    let third = get(&w, &format!("/trash?kind=recipe&limit=2&cursor={cursor2}")).await;
     assert_eq!(third.status, StatusCode::OK, "{}", third.body);
     assert_eq!(third.body["items"].as_array().unwrap().len(), 1);
     assert!(third.body["next_cursor"].is_null());
@@ -192,7 +183,10 @@ async fn trash_cursor_returns_each_record_once_in_order(pool: PgPool) {
         .map(|item| item["deleted_at"].as_str().unwrap())
         .collect();
     for pair in times.windows(2) {
-        assert!(pair[0] >= pair[1], "deletions are not newest first: {times:?}");
+        assert!(
+            pair[0] >= pair[1],
+            "deletions are not newest first: {times:?}"
+        );
     }
 }
 
