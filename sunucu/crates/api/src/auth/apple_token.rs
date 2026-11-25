@@ -72,11 +72,11 @@ impl AppleTokenClient {
     /// # Errors
     /// Returns an error when no unique configured audience can be selected.
     pub fn client_id_for_audiences<'a>(&'a self, audiences: &[String]) -> Result<&'a str, AppleTokenError> {
-        let mut matching = audiences
-            .iter()
-            .filter(|audience| self.settings.client_ids.iter().any(|id| id == *audience));
-        let client_id = matching.next().ok_or(AppleTokenError::InvalidClientId)?;
-        if matching.next().is_some() {
+        if audiences.len() != 1 {
+            return Err(AppleTokenError::InvalidClientId);
+        }
+        let client_id = audiences.first().ok_or(AppleTokenError::InvalidClientId)?;
+        if !self.settings.client_ids.iter().any(|id| id == client_id) {
             return Err(AppleTokenError::InvalidClientId);
         }
         Ok(client_id)
