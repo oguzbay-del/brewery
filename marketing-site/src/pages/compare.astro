@@ -15,7 +15,7 @@ import { modules, moduleLabels } from "../data/modules";
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}compare/`, import.meta.env.SITE).href;
-const description = "Compare the GRISTORA Homebrewer and Professional Brewery feature paths.";
+const description = "Compare the planned GRISTORA Homebrewer and Professional Brewery product scope and release sequence.";
 const rows: { group: string; items: [string, string][] }[] = [
   { group: "Recipes & formulation", items: [
     ["Recipe design & management", "recipe-design"],
@@ -39,9 +39,9 @@ const stageFor = (slug: string, audience: FeatureAudience) => {
   const feature = features.find((item) => item.slug === slug);
   if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
   const availability = feature.modules.map((id) => modules.find((module) => module.id === id)).filter(Boolean).map((module) => audience === "Homebrewers" ? module!.home : module!.brewery);
-  if (availability.includes("Included")) return "Included";
-  if (availability.includes("Simplified")) return "Simplified";
-  if (availability.includes("Second release")) return "Second release";
+  if (availability.includes("Included")) return "Planned core scope";
+  if (availability.includes("Simplified")) return "Planned simplified scope";
+  if (availability.includes("Second release")) return "Planned for second release";
   return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
 };
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Function comparison", url: canonicalUrl }];
@@ -70,6 +70,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
       <div class="page-photo-band"><PagePhoto name="compare-hero" lang="en" eager /></div>
       <section class="compare-table-section section-pad">
         <div class="shell">
+        <p class="pricing-footnote">The labels below describe intended product scope and planned release sequence; they do not indicate that a feature is currently available.</p>
         <div class="comparison-table-wrap" role="region" aria-label="Scrollable Homebrewer and Professional Brewery function comparison" tabindex="0">
           <table class="comparison-table" aria-label="Comparison of GRISTORA product areas for Homebrewers and Professional Breweries">
             <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
@@ -78,7 +79,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
             </tbody>
           </table>
         </div>
-        <p class="pricing-footnote">Open each feature for detailed scope. <a href={`${base}modules/`}>Explore the nine-module plan and availability →</a></p>
+        <p class="pricing-footnote">Open each feature for detailed scope. <a href={`${base}modules/`}>Explore the nine-module plan and scope →</a></p>
         </div>
       </section>
       <section class="compare-decision section-pad"><div class="shell"><div class="compare-decision-grid"><article><p class="eyebrow">HOME BREWERS</p><figure class="compare-audience-visual"><img src={`${base}audience/homebrewer.svg`} alt="Illustration of a home brewer’s small-batch setup with a kettle, glass fermenter, ingredients and recipe notebook." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>SMALL-BATCH · PERSONAL WORKSPACE</figcaption></figure><h2>One person, <em>one brewing journey.</em></h2><p>Choose Home if you brew for yourself and want your recipes, calculations, measurements and batch learning in one personal workspace.</p><a class="button button-primary" href={`${base}get-started/?audience=home`}>Configure Home plan →</a></article><article><p class="eyebrow">PROFESSIONAL BREWERIES</p><figure class="compare-audience-visual"><img src={`${base}audience/professional-brewery.svg`} alt="Illustration of a professional brewery with stainless-steel brewing tanks and connected pipework." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>PRODUCTION · SHARED BY A TEAM</figcaption></figure><h2>Production work, <em>shared by a team.</em></h2><p>Choose Brewery if several people need a shared professional workflow around recipe standards, production planning and batch records.</p><a class="button button-primary" href={`${base}get-started/?audience=business`}>Configure Brewery plan →</a></article></div><p class="compare-all-features"><a href={`${base}features/`}>Browse all feature details and the complete catalogue ↗</a></p></div></section>
