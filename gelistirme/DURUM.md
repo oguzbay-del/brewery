@@ -15,6 +15,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - 2026-11-24 (owner decisions): ChatGPT has permission classes A, B and C (root `CLAUDE.md`, `marketing-site/CHATGPT-SCOPE.md` › Permission classes). Class B is the same as class C until the CI guard for protected paths is merged (#256). Vercel is not used; the W12 guard is cleared. mTLS uses Istio ambient (#207 step 2 after #206; Claude writes its scope). #216: edit and close the issues. #146: ChatGPT prepares the domain setup; Oğuz applies DNS. #255: ChatGPT deletes the branches of merged or closed PRs. #145: the logo work continues. O8: Oğuz reviews `gelistirme/raporlar/P2-kademe-matrisi.md` now.
 - 2026-11-24: new ChatGPT tasks: #250 (T3.a API client), #251 (T3.b text catalog), #252 (T3.c app shell), #253 (local guide), #254 (API summary), #255 (branches), #256 (CI guards). #205 scope now includes `veri.yaml` (Redis: `api` only).
 - 2026-11-24: Claude merged #257 (guard step 1, with fixes), #227 (T2.31b, contract regenerated), #228 (T2.31c, migration 0221) and #230 (T2.33). Local tests: api `account_deletion`, db, worker (needs NATS and mailpit), e2e (skip without `E2E_BASE_URL`), fmt and clippy are clean. #215 and #216 can start now. Open follow-ups: in T2.31b, `revoke_all` runs after the commit, so a failure leaves the sessions active until the next call; a user with no workspace gets no audit row. T2.33 scenario 6 is ignored (no HTTP seam). The oasdiff check is not installed locally (#256 step 4).
+- 2026-11-24: the first Grok task is #266 (T2.41, Paddle adapter; `billing` and `ingest` only). Claude reviews, tests and merges the PR.
 - Next for Claude: review the #256 steps and the T3 PRs (#250–#252) when they open.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
@@ -73,6 +74,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - BeerXML 1.0 check: the reader reads fermentable `COLOR` as SRM, but the specification says Lovibond. The writer omits `BREWER`, the `STYLE` sub-fields and empty `ALPHA`, `YIELD`, `COLOR`. The reader does not check required fields and sets yeast `packs` to 1. Decide if the writer must make a fully valid BeerXML 1.0 file.
 
 ## Recent decisions
+
+- 2026-11-24 (O9, Oğuz): Sentry receives errors and crash reports from the server, the web and iOS (ADR-0010). Traces, metrics and logs stay in OpenTelemetry. Do not send personal data to Sentry. Write the Sentry tasks into the task lists for stages 3, 4 and 5. The web payment provider stays Paddle (O6).
 
 - 2026-11-20 (Oğuz): the iPhone shows data and does short tasks in the field. Design, planning and management are on the iPad and the web only (plan › iPhone kapsamı). In Home mode, the recipe wizard, the equipment wizard and the quick batch start stay on the iPhone. Business version 2 gets a field view on the iPhone: one scan screen for tank, lot and container QR codes, with the new role "Saha" and three new permissions. The concept has 64 screens. Tasks K1, K2 and K4 changed.
 
