@@ -21,6 +21,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - 2026-11-25: new ChatGPT issues: #282–#287 (T2.42–T2.47; migrations 0240 and 0241). #283, #286 and #287 change `maintenance.rs`, so do them in that order.
 - 2026-11-25 (later): Claude merged #261, #280, #291, #293, #290 and #321. #260 was merged by ChatGPT (class B). Claude resolved #315 (T3.d: web-only `ui` namespace, no API call) and set it `status:ready`. #266 stays blocked: the owner must approve the extra file `ingest/src/main.rs` in the issue. Answers to ChatGPT: `coord/t2-next-tasks` C-0005 to C-0009.
 - 2026-11-25 (Oğuz): #266 scope expansion approved (`ingest/src/main.rs`). ChatGPT may merge green marketing PRs (class A) but must not deploy to production.
+- 2026-11-25 (Oğuz): O8 approved (tier matrix draft `gelistirme/raporlar/P2-kademe-matrisi.md`). Write P1 and P3 with this matrix. Branch deletion (#255): the owner turns on "Automatically delete head branches" in the repository settings; old branches stay for the owner to delete.
 - Next for Claude: write the P1 issue (module switches; `/v1/meta` contract for #316) and the K1 issue (give the migration number). Then review #322, #286, #287 and the T3.d PR. Update ISLER.md rows when the issues exist.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
