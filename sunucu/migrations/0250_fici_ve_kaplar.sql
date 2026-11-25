@@ -51,7 +51,7 @@ CREATE TABLE scan_code (
     UNIQUE (workspace_id, code_hash),
     CHECK (num_nonnulls(container_id, vessel_id, lot_id) = 1),
     FOREIGN KEY (workspace_id, container_id)
-        REFERENCES container (workspace_id, id) ON DELETE CASCADE,
+        REFERENCES container (workspace_id, id) ON DELETE SET NULL (container_id),
     FOREIGN KEY (workspace_id, vessel_id)
         REFERENCES vessels (workspace_id, id) ON DELETE CASCADE,
     FOREIGN KEY (workspace_id, lot_id)
@@ -67,7 +67,8 @@ CREATE INDEX scan_code_target_lot_idx ON scan_code (workspace_id, lot_id)
 CREATE TABLE container_event (
     id                uuid PRIMARY KEY,
     workspace_id      uuid NOT NULL REFERENCES workspaces (id) ON DELETE CASCADE,
-    container_id      uuid NOT NULL,
+    container_id      uuid,
+    container_serial_snapshot text NOT NULL CHECK (char_length(container_serial_snapshot) BETWEEN 1 AND 100),
     event_type        text NOT NULL CHECK (event_type IN ('scan', 'status_changed', 'fill', 'note')),
     scan_code_id      uuid,
     user_id           uuid REFERENCES users (id),
@@ -120,8 +121,9 @@ CREATE FUNCTION container_event_reject_change() RETURNS trigger
     AS $$
 BEGIN
     IF TG_OP = 'UPDATE' AND pg_trigger_depth() > 1
-       AND (to_jsonb(NEW) - ARRAY['scan_code_id', 'last_fill_line_id', 'last_lot_id'])
-           = (to_jsonb(OLD) - ARRAY['scan_code_id', 'last_fill_line_id', 'last_lot_id'])
+       AND (to_jsonb(NEW) - ARRAY['container_id', 'scan_code_id', 'last_fill_line_id', 'last_lot_id'])
+           = (to_jsonb(OLD) - ARRAY['container_id', 'scan_code_id', 'last_fill_line_id', 'last_lot_id'])
+       AND (NEW.container_id IS NULL OR NEW.container_id IS NOT DISTINCT FROM OLD.container_id)
        AND (NEW.scan_code_id IS NULL OR NEW.scan_code_id IS NOT DISTINCT FROM OLD.scan_code_id)
        AND (NEW.last_fill_line_id IS NULL OR NEW.last_fill_line_id IS NOT DISTINCT FROM OLD.last_fill_line_id)
        AND (NEW.last_lot_id IS NULL OR NEW.last_lot_id IS NOT DISTINCT FROM OLD.last_lot_id) THEN
