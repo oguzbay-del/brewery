@@ -86,7 +86,6 @@ pub fn router_with(state: IngestState) -> Router {
 
 /// Builds the state from the environment: `DATABASE_URL` (role `app_api`) and the optional
 /// `APPLE_BUNDLE_ID`. Returns `None` without a database.
-#[must_use]
 pub fn state_from_env() -> common::Result<Option<IngestState>> {
     let web_payment = PaddleProvider::from_env()?
         .map(|provider| Arc::new(provider) as Arc<dyn WebPaymentProvider>);
