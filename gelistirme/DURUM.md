@@ -19,7 +19,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - 2026-11-25 (Oğuz): #266 (T2.41) moved from Grok to ChatGPT. Grok made no branch and no PR. The task is class C: Claude reviews, tests and merges.
 - 2026-11-25: Claude merged #281 (CI guard step 2). Claude closed #257 (step 1 is already on main) and #252 (#262 is merged). ChatGPT merged #262 itself, but `web/` is class C until #256 is done. Changes requested: #260 and #261 (prettier; #261 also needs a Vite fix), #278 (`kind-test.sh` lost its executable bit), #280 (the API summary is not up to date). Unblocked: #215 (Claude gave the Apple token contract; Oğuz can confirm the setting names), #194. Still blocked: #216 (waits for #215), #206 (waits for #278), #207 (waits for #206), #255 (Oğuz must delete the branches).
 - 2026-11-25: new ChatGPT issues: #282–#287 (T2.42–T2.47; migrations 0240 and 0241). #283, #286 and #287 change `maintenance.rs`, so do them in that order.
-- Next for Claude: review the #256 steps and the T3 PRs (#250–#252) when they open.
+- 2026-11-25 (later): Claude merged #261, #280, #291, #293, #290 and #321. #260 was merged by ChatGPT (class B). Claude resolved #315 (T3.d: web-only `ui` namespace, no API call) and set it `status:ready`. #266 stays blocked: the owner must approve the extra file `ingest/src/main.rs` in the issue. Answers to ChatGPT: `coord/t2-next-tasks` C-0005 to C-0009.
+- Next for Claude: write the P1 issue (module switches; `/v1/meta` contract for #316) and the K1 issue (give the migration number). Then review #322, #286, #287 and the T3.d PR. Update ISLER.md rows when the issues exist.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment
