@@ -19,6 +19,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - 2026-11-25 (Oğuz): #266 (T2.41) moved from Grok to ChatGPT. Grok made no branch and no PR. The task is class C: Claude reviews, tests and merges.
 - 2026-11-25: Claude merged #281 (CI guard step 2). Claude closed #257 (step 1 is already on main) and #252 (#262 is merged). ChatGPT merged #262 itself, but `web/` is class C until #256 is done. Changes requested: #260 and #261 (prettier; #261 also needs a Vite fix), #278 (`kind-test.sh` lost its executable bit), #280 (the API summary is not up to date). Unblocked: #215 (Claude gave the Apple token contract; Oğuz can confirm the setting names), #194. Still blocked: #216 (waits for #215), #206 (waits for #278), #207 (waits for #206), #255 (Oğuz must delete the branches).
 - 2026-11-25: new ChatGPT issues: #282–#287 (T2.42–T2.47; migrations 0240 and 0241). #283, #286 and #287 change `maintenance.rs`, so do them in that order.
+- 2026-11-25 (Oğuz): Meta AI is the fourth contributor. Rules: `gelistirme/META-SCOPE.md`; prompt: `gelistirme/META-PROMPT.md`. Tasks: K1 (#333, ready, migration 0250) and K2 (#334, blocked until K1). Claude waived the T2.35 dependency for K1 because K1 adds new tables only. Claude reviews, tests and merges the PRs.
 - Next for Claude: review the #256 steps and the T3 PRs (#250–#252) when they open.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
