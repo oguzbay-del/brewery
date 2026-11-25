@@ -355,6 +355,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/meta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Product modules for one workspace. The caller must be an active workspace member. */
+        get: operations["meta_modules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/meta/client-requirements": {
         parameters: {
             query?: never;
@@ -3879,7 +3896,7 @@ export interface components {
          *     catalog are generated from it (ADR-0008 rule 3.2).
          * @enum {string}
          */
-        ErrorCode: "malformed_request" | "unauthenticated" | "forbidden" | "step_up_required" | "entitlement_required" | "not_found" | "conflict" | "idempotency_in_progress" | "version_mismatch" | "payload_too_large" | "unsupported_media_type" | "validation_failed" | "idempotency_mismatch" | "calculation_failed" | "upgrade_required" | "precondition_required" | "rate_limited" | "internal" | "unavailable";
+        ErrorCode: "malformed_request" | "unauthenticated" | "forbidden" | "step_up_required" | "entitlement_required" | "module_disabled" | "not_found" | "conflict" | "idempotency_in_progress" | "version_mismatch" | "payload_too_large" | "unsupported_media_type" | "validation_failed" | "idempotency_mismatch" | "calculation_failed" | "upgrade_required" | "precondition_required" | "rate_limited" | "internal" | "unavailable";
         /** @description An export job. */
         ExportJob: {
             /**
@@ -4648,6 +4665,19 @@ export interface components {
             /** @description Text, 1..=20000 characters. */
             body: string;
         };
+        /** @description Query for the workspace-specific module state. */
+        MetaModulesQuery: {
+            /**
+             * Format: uuid
+             * @description Workspace whose modules the signed-in caller wants to inspect.
+             */
+            workspace_id: string;
+        };
+        /** @description Response of GET /v1/meta. */
+        MetaModulesResponse: {
+            /** @description All product modules and their current state. */
+            modules: components["schemas"]["ModuleState"][];
+        };
         /** @description Detail of a misc ingredient. */
         MiscDetail: {
             /** @description `boil`, `mash`, `primary`, `secondary`, `bottling`, `sparge`, `whirlpool`. */
@@ -4685,6 +4715,15 @@ export interface components {
             time_min?: number | null;
             /** @description `boil` (default), `mash`, `primary`, `secondary`, `bottling`, `sparge`, `whirlpool`. */
             usage?: string | null;
+        };
+        /** @description One product module and whether it is enabled for this workspace. */
+        ModuleState: {
+            /** @description Whether the mode and active `PAID_FEATURE` entitlement enable this module. */
+            enabled: boolean;
+            /** @description Stable product module id. */
+            id: string;
+            /** @description Whether the workspace can only read this module. */
+            read_only: boolean;
         };
         /** @description Body of a movement on a lot. */
         MoveBody: {
@@ -10539,6 +10578,165 @@ export interface operations {
             };
         };
     };
+    meta_modules_get: {
+        parameters: {
+            query: {
+                /** @description Workspace to inspect; the caller must be an active member */
+                workspace_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Product module state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "modules": [
+                     *         {
+                     *           "enabled": true,
+                     *           "id": "core",
+                     *           "read_only": false
+                     *         },
+                     *         {
+                     *           "enabled": true,
+                     *           "id": "devices",
+                     *           "read_only": false
+                     *         },
+                     *         {
+                     *           "enabled": true,
+                     *           "id": "stock",
+                     *           "read_only": false
+                     *         },
+                     *         {
+                     *           "enabled": false,
+                     *           "id": "production",
+                     *           "read_only": false
+                     *         },
+                     *         {
+                     *           "enabled": false,
+                     *           "id": "quality",
+                     *           "read_only": false
+                     *         },
+                     *         {
+                     *           "enabled": false,
+                     *           "id": "cost_reports",
+                     *           "read_only": false
+                     *         },
+                     *         {
+                     *           "enabled": false,
+                     *           "id": "tax_compliance",
+                     *           "read_only": false
+                     *         },
+                     *         {
+                     *           "enabled": false,
+                     *           "id": "team",
+                     *           "read_only": false
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MetaModulesResponse"];
+                };
+            };
+            /** @description Malformed query */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "malformed_request",
+                     *       "request_id": "0192f1c07a3b7000800000000000000a",
+                     *       "status": 400,
+                     *       "title": "Malformed request",
+                     *       "type": "/errors/malformed_request"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "unauthenticated",
+                     *       "request_id": "0192f1c07a3b7000800000000000000a",
+                     *       "status": 401,
+                     *       "title": "Unauthenticated",
+                     *       "type": "/errors/unauthenticated"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Workspace not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "not_found",
+                     *       "request_id": "0192f1c07a3b7000800000000000000a",
+                     *       "status": 404,
+                     *       "title": "Not found",
+                     *       "type": "/errors/not_found"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "rate_limited",
+                     *       "request_id": "0192f1c07a3b7000800000000000000a",
+                     *       "status": 429,
+                     *       "title": "Rate limited",
+                     *       "type": "/errors/rate_limited"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "internal",
+                     *       "request_id": "0192f1c07a3b7000800000000000000a",
+                     *       "status": 500,
+                     *       "title": "Internal error",
+                     *       "type": "/errors/internal"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     meta_client_requirements_get: {
         parameters: {
             query?: never;
@@ -10699,6 +10897,15 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
+            /** @description Module disabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -10800,6 +11007,15 @@ export interface operations {
             };
             /** @description Unauthenticated */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Module disabled */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10921,6 +11137,15 @@ export interface operations {
             };
             /** @description Unauthenticated */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Module disabled */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22040,7 +22265,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22146,7 +22371,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22272,7 +22497,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24200,7 +24425,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24288,7 +24513,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24401,7 +24626,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24553,7 +24778,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24681,7 +24906,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28154,7 +28379,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28264,7 +28489,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28393,7 +28618,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28551,7 +28776,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28709,7 +28934,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -30265,7 +30490,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -35242,7 +35467,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -35375,7 +35600,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -35531,7 +35756,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -35631,7 +35856,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -35787,7 +36012,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -35934,7 +36159,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -36053,7 +36278,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -37277,7 +37502,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Second factor required */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -37392,7 +37617,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Second factor required */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -37519,7 +37744,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Second factor required */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -37648,7 +37873,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Second factor required */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -37774,7 +37999,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Second factor required */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -37893,7 +38118,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Second factor required */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
