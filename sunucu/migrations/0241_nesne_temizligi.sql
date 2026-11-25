@@ -52,7 +52,8 @@ BEGIN
                deleted_at = CASE WHEN uploaded_at IS NULL
                                  THEN COALESCE(deleted_at, now())
                                  ELSE deleted_at END
-         WHERE id = p_id AND object_purged_at IS NULL;
+         WHERE id = p_id AND object_purged_at IS NULL
+           AND (deleted_at IS NOT NULL OR uploaded_at IS NULL);
     ELSIF p_kind = 'scanned_document' THEN
         UPDATE public.scanned_documents
            SET object_purged_at = now(),
@@ -61,6 +62,7 @@ BEGIN
                                  ELSE deleted_at END
          WHERE id = p_id
            AND object_purged_at IS NULL
+           AND (deleted_at IS NOT NULL OR uploaded_at IS NULL)
            AND (NOT legal_hold
                 OR (retention_until IS NOT NULL AND retention_until <= now()));
     ELSE

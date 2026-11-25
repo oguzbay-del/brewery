@@ -62,6 +62,13 @@ pub async fn run(
                     break;
                 }
                 attempted += 1;
+                if row.incomplete
+                    && !row.deleted
+                    && !maintenance::close_incomplete_upload(pool, workspace_id, &row.kind, row.id)
+                        .await?
+                {
+                    continue;
+                }
                 if store.delete(&row.object_key).await.is_err() {
                     report.failed = report.failed.saturating_add(1);
                     failed_rows.insert((row.kind, row.id));

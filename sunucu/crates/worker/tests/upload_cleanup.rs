@@ -375,3 +375,39 @@ async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool
     let third = upload_cleanup::run(&worker, &store, now).await.unwrap();
     assert_eq!(third, UploadCleanupReport::default());
 }
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn completion_after_listing_preserves_upload(pool: PgPool) {
+    let now = Utc::now();
+    let seed = common::seed(&pool).await;
+    let keys = create_attachment_rows(&pool, seed.ws, seed.batch, 1000, now).await;
+    let worker = common::worker_pool(&pool).await;
+    let rows = db::maintenance::list_purgeable_uploads(
+        &worker,
+        seed.ws,
+        now - chrono::Duration::hours(24),
+        200,
+    )
+    .await
+    .unwrap();
+    let row = rows.iter().find(|row| row.object_key == keys[1]).unwrap();
+    assert!(row.incomplete && !row.deleted);
+    sqlx::query("UPDATE attachments SET uploaded_at = now() WHERE id = $1")
+        .bind(row.id)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let closed = db::maintenance::close_incomplete_upload(&worker, seed.ws, &row.kind, row.id)
+        .await
+        .unwrap();
+    assert!(!closed);
+    let marked = db::maintenance::mark_upload_purged(&worker, seed.ws, &row.kind, row.id)
+        .await
+        .unwrap();
+    assert!(!marked);
+    let store = MemoryStore::default();
+    store.insert(&row.object_key);
+    upload_cleanup::run(&worker, &store, now).await.unwrap();
+    assert!(store.contains(&row.object_key));
+}

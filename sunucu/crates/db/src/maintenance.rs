@@ -286,6 +286,8 @@ pub struct PurgeableUpload {
     pub object_key: String,
     /// True when the upload never reached its complete step.
     pub incomplete: bool,
+    /// True when the row already has a deletion timestamp.
+    pub deleted: bool,
 }
 
 /// Lists at most `limit` purgeable uploads in one workspace.
@@ -300,7 +302,9 @@ pub async fn list_purgeable_uploads(
     let rows = sqlx::query(
         "SELECT p.kind, p.id, p.object_key,
                 CASE WHEN p.kind = 'attachment' THEN a.uploaded_at IS NULL
-                     ELSE d.uploaded_at IS NULL END AS incomplete
+                     ELSE d.uploaded_at IS NULL END AS incomplete,
+                CASE WHEN p.kind = 'attachment' THEN a.deleted_at IS NOT NULL
+                     ELSE d.deleted_at IS NOT NULL END AS deleted
          FROM list_purgeable_uploads($1, $2) AS p
          LEFT JOIN attachments AS a ON p.kind = 'attachment' AND a.id = p.id
          LEFT JOIN scanned_documents AS d ON p.kind = 'scanned_document' AND d.id = p.id",
@@ -317,9 +321,36 @@ pub async fn list_purgeable_uploads(
                 id: row.try_get("id")?,
                 object_key: row.try_get("object_key")?,
                 incomplete: row.try_get("incomplete")?,
+                deleted: row.try_get("deleted")?,
             })
         })
         .collect()
+}
+
+/// Closes a stale upload before deletion. A concurrent completion wins if it commits first.
+pub async fn close_incomplete_upload(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    kind: &str,
+    id: Uuid,
+) -> Result<bool> {
+    let statement = match kind {
+        "attachment" => {
+            "UPDATE attachments SET deleted_at = now()
+             WHERE id = $1 AND uploaded_at IS NULL AND deleted_at IS NULL AND object_purged_at IS NULL"
+        }
+        "scanned_document" => {
+            "UPDATE scanned_documents SET deleted_at = now()
+             WHERE id = $1 AND uploaded_at IS NULL AND deleted_at IS NULL AND object_purged_at IS NULL
+               AND (NOT legal_hold OR (retention_until IS NOT NULL AND retention_until <= now()))"
+        }
+        _ => return Ok(false),
+    };
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let result = sqlx::query(statement).bind(id).execute(&mut *tx).await?;
+    tx.commit().await?;
+    Ok(result.rows_affected() == 1)
 }
 
 /// Marks one upload after its object bytes have been deleted.
