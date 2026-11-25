@@ -202,30 +202,32 @@ async fn configure_apple_token_mock(code: &str, id_token: &str) -> String {
         parsed.host_str().unwrap(),
         parsed.port_or_known_default().unwrap_or(80)
     );
+    let mapping = json!({
+        "priority": 1,
+        "request": {
+            "method": "POST",
+            "urlPath": "/auth/token",
+            "bodyPatterns": [
+                {"contains": "grant_type=authorization_code"},
+                {"contains": format!("code={code}")}
+            ]
+        },
+        "response": {
+            "status": 200,
+            "headers": {"Content-Type": "application/json"},
+            "jsonBody": {
+                "access_token": "local-apple-access-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "refresh_token": "local-apple-refresh-token",
+                "id_token": id_token
+            }
+        }
+    });
     let response = reqwest::Client::new()
         .post(admin_url)
-        .json(&json!({
-            "priority": 1,
-            "request": {
-                "method": "POST",
-                "urlPath": "/auth/token",
-                "bodyPatterns": [
-                    {"contains": "grant_type=authorization_code"},
-                    {"contains": format!("code={code}")}
-                ]
-            },
-            "response": {
-                "status": 200,
-                "headers": {"Content-Type": "application/json"},
-                "jsonBody": {
-                    "access_token": "local-apple-access-token",
-                    "token_type": "Bearer",
-                    "expires_in": 3600,
-                    "refresh_token": "local-apple-refresh-token",
-                    "id_token": id_token
-                }
-            }
-        }))
+        .header(reqwest::header::CONTENT_TYPE, "application/json")
+        .body(mapping.to_string())
         .send()
         .await
         .unwrap();
