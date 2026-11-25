@@ -695,16 +695,17 @@ async fn provider_login(
         claim.display_name = req.display_name.unwrap_or_default();
     }
     let refresh_token_enc = if provider == "apple" {
-        if let Some(code) = authorization_code.as_deref() {
+        if let Some(code) = authorization_code {
             let client = svc
                 .apple_token_client
                 .as_ref()
+                .cloned()
                 .ok_or_else(|| ApiError::unavailable(30))?;
             let client_id = client
                 .client_id_for_audiences(&claim.audiences)
                 .map_err(|_| problem("apple_client_id_invalid", "/authorization_code"))?
                 .to_owned();
-            let refresh_token = match client.exchange_code(code, &client_id).await {
+            let refresh_token = match client.exchange_code(&code, &client_id).await {
                 Ok(token) => token,
                 Err(AppleTokenError::InvalidCode | AppleTokenError::InvalidClientId) => {
                     return Err(problem("apple_code_invalid", "/authorization_code"));
