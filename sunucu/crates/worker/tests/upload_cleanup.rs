@@ -329,12 +329,11 @@ async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool
         );
     }
 
-    let purged_attachments: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM attachments WHERE object_purged_at IS NOT NULL",
-    )
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let purged_attachments: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM attachments WHERE object_purged_at IS NOT NULL")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(purged_attachments, 4);
 
     let purged_documents: i64 = sqlx::query_scalar(
@@ -355,7 +354,10 @@ async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool
         .fetch_one(&pool)
         .await
         .unwrap();
-        assert!(deleted_at_set && purged_at_set, "old incomplete upload is soft-deleted and purged");
+        assert!(
+            deleted_at_set && purged_at_set,
+            "old incomplete upload is soft-deleted and purged"
+        );
 
         let retry_purged: bool = sqlx::query_scalar(
             "SELECT object_purged_at IS NOT NULL FROM attachments WHERE id = $1",
