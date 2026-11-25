@@ -38,6 +38,7 @@ struct TokenResponse {
 }
 
 /// Exchanges Apple authorization codes and returns refresh tokens.
+#[derive(Clone)]
 pub struct AppleTokenClient {
     settings: AppleTokenSettings,
     http: reqwest::Client,
