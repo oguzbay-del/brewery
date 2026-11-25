@@ -177,13 +177,16 @@ async fn scan_codes_have_one_target_and_can_be_revoked(pool: PgPool) -> sqlx::Re
 async fn deleting_a_container_keeps_its_event_snapshot(pool: PgPool) -> sqlx::Result<()> {
     let (api, workspace_a, _workspace_b, container_id, _container_b) = setup(&pool).await;
     let event_id = id(909);
+    let scan_code_id = id(910);
     run(
         &api,
         workspace_a,
         None,
         &format!(
-            "INSERT INTO container_event (id, workspace_id, container_id, container_serial_snapshot, event_type)
-             VALUES ('{event_id}', '{workspace_a}', '{container_id}', 'CAN-A', 'scan')"
+            "INSERT INTO scan_code (id, workspace_id, code_hash, container_id)
+             VALUES ('{scan_code_id}', '{workspace_a}', decode(repeat('ef', 32), 'hex'), '{container_id}');
+             INSERT INTO container_event (id, workspace_id, container_id, container_serial_snapshot, event_type, scan_code_id)
+             VALUES ('{event_id}', '{workspace_a}', '{container_id}', 'CAN-A', 'scan', '{scan_code_id}')"
         ),
     )
     .await?;
@@ -197,12 +200,18 @@ async fn deleting_a_container_keeps_its_event_snapshot(pool: PgPool) -> sqlx::Re
     )
     .await?;
 
-    let row: (Option<uuid::Uuid>, String) = sqlx::query_as(
-        "SELECT container_id, container_serial_snapshot FROM container_event WHERE id = $1",
+    let row: (Option<uuid::Uuid>, Option<uuid::Uuid>, String) = sqlx::query_as(
+        "SELECT container_id, scan_code_id, container_serial_snapshot
+         FROM container_event WHERE id = $1",
     )
     .bind(event_id)
     .fetch_one(&pool)
     .await?;
-    assert_eq!(row, (None, "CAN-A".to_owned()));
+    assert_eq!(row, (None, None, "CAN-A".to_owned()));
+    let scan_count: i64 = sqlx::query_scalar("SELECT count(*) FROM scan_code WHERE id = $1")
+        .bind(scan_code_id)
+        .fetch_one(&pool)
+        .await?;
+    assert_eq!(scan_count, 0);
     Ok(())
 }
