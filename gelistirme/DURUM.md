@@ -20,6 +20,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - 2026-11-25: new ChatGPT issues: #282–#287 (T2.42–T2.47; migrations 0240 and 0241). #283, #286 and #287 change `maintenance.rs`, so do them in that order.
 - 2026-11-25: P1 (#335) and K1 (#333, migration 0250) moved to ChatGPT. Claude reviews, tests and merges. K2 follows K1 and P1.
 - 2026-11-25 (Oğuz): #146 clearance reviewed; GRISTORA stays. O7: the owner buys `gristora.com`. O4: the owner opens the Google Cloud organization and billing. G7 (DNS, email, redirect URIs) can start when the domain exists.
+- 2026-11-25 (Oğuz): development loop v2 runs only in the cloud. Rules: `gelistirme/dongu/README.md`; Codex reads `AGENTS.md`; ADR-0011. The Claude loop session is `session_01DL3udGsAD478rdQFh8h2an` (Sonnet, repository attached). The hourly task `trig_012BVZoxD9sjwKa7SRopZZbt` (`:17` UTC) fires into it. The old tasks "ChatGPT iş atama A/B" had no repository and did nothing (GitHub 403); the owner must disable them. Stop switch: label `loop:pause` on issue #344 (LOOP-CONTROL). Pilot issues: #345 (Claude), #346 (Codex). Owner steps: README › 9 (Codex cloud environment, ChatGPT tasks, optional Claude GitHub trigger).
 - Next for Claude: review the #256 steps and the T3 PRs (#250–#252) when they open.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
