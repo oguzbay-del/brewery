@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  resolveLocale,
-  translate,
-  type Locale,
-  type TextKey,
-  type TextParams,
-} from './catalog';
+import { resolveLocale, translate, type Locale, type TextKey, type TextParams } from './catalog';
 
 export function useText(key: TextKey | string, params: TextParams = {}): string {
   const [locale, setLocale] = useState<Locale>(() => resolveLocale());
