@@ -135,7 +135,7 @@ async fn create_upload_rows(
     ];
     sqlx::query(
         "INSERT INTO support_requests (id, workspace_id, topic, title)
-         VALUES ($1, $2, 'export_help', 'Upload cleanup test')",
+         VALUES ($1, $2, 'recipes', 'Upload cleanup test')",
     )
     .bind(request_id)
     .bind(workspace_id)
