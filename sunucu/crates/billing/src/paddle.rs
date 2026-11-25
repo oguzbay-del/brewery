@@ -197,15 +197,15 @@ impl PaddleProvider {
             .cloned()
             .ok_or_else(|| malformed("unknown Paddle price id"))?;
 
-        let workspace_id = data
-            .pointer("/custom_data/workspace_id")
+        let workspace_id = envelope
+            .pointer("/data/custom_data/workspace_id")
             .and_then(Value::as_str)
             .and_then(|value| Uuid::parse_str(value).ok());
 
         let (kind, period_ends_at) = match status {
             "active" | "trialing" => {
-                let period = data
-                    .pointer("/current_billing_period/ends_at")
+                let period = envelope
+                    .pointer("/data/current_billing_period/ends_at")
                     .and_then(Value::as_str)
                     .ok_or_else(|| malformed("active subscription has no billing period end"))?;
                 (
