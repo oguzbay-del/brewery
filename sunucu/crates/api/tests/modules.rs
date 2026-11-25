@@ -99,6 +99,10 @@ fn paths_resolve_to_product_modules_and_exports_are_exempt() {
     let team_path = team_path_template();
     assert_eq!(modules::module_for_path(&team_path), Some("team"));
     assert_eq!(
+        modules::module_for_path("/v1/shared-devices/{id}/members"),
+        Some("team")
+    );
+    assert_eq!(
         modules::module_for_path("/v1/workspaces/{workspace_id}/vessels"),
         Some("production")
     );
