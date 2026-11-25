@@ -22,6 +22,7 @@ use axum::{
 };
 use billing::{
     SubscriptionUpdate, apply,
+    paddle::PaddleProvider,
     provider::{ProviderError, WebPaymentProvider},
 };
 use serde::Deserialize;
@@ -85,22 +86,28 @@ pub fn router_with(state: IngestState) -> Router {
 
 /// Builds the state from the environment: `DATABASE_URL` (role `app_api`) and the optional
 /// `APPLE_BUNDLE_ID`. Returns `None` without a database.
-#[must_use]
-pub fn state_from_env() -> Option<IngestState> {
-    let url = db::database_url().ok()?;
-    let pool = db::connect_lazy(&url, 4).ok()?;
-    Some(IngestState {
+pub fn state_from_env() -> Result<Option<IngestState>, String> {
+    let web_payment = PaddleProvider::from_env()
+        .map_err(|error| error.to_string())?
+        .map(|provider| Arc::new(provider) as Arc<dyn WebPaymentProvider>);
+    let Ok(url) = db::database_url() else {
+        return Ok(None);
+    };
+    let Ok(pool) = db::connect_lazy(&url, 4) else {
+        return Ok(None);
+    };
+    Ok(Some(IngestState {
         pool,
         apple: jws::JwsVerifier::apple(),
         bundle_id: std::env::var("APPLE_BUNDLE_ID")
             .ok()
             .filter(|s| !s.is_empty()),
-        web_payment: None,
+        web_payment,
         github_secret: std::env::var("GITHUB_WEBHOOK_SECRET")
             .ok()
             .filter(|s| !s.is_empty())
             .map(|s| Arc::new(s.into_bytes())),
-    })
+    }))
 }
 
 type Reply = (StatusCode, Json<Value>);
