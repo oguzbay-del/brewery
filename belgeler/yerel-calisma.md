@@ -135,7 +135,7 @@ Bu komut OpenAPI belgesini, TypeScript istemci tiplerini ve katalog çıktısın
 | ios.yml | Token/proje doğrulaması, XcodeGen, SwiftLint ve iOS simülatör testleri | macOS ve Xcode gerekir; CI adımları ios/scripts/validate.py, xcodegen generate, swiftlint lint --strict ve xcodebuild test |
 | yetki.yml | PR'daki değişen yolların korumalı yol listesine karşı kontrolü | GitHub PR bağlamı ve base ref gerekir; yerel tek-komut karşılığı tanımlanmamıştır |
 
-**Belgeler CI notu:** `.github/workflows/belgeler.yml` yol filtresi `belgeler/**` içermiyor. Bu nedenle yalnız bu klasördeki dokümanları değiştiren bir PR ilgili iş akışını otomatik başlatmaz. Bu PR CI yapılandırmasını değiştirmez; tetikleyici kapsamı Claude incelemesinden sonra ayrı bir korumalı değişiklik olarak ele alınmalıdır.
+**Belgeler CI notu (25 Kasım 2026):** Ana daldaki `.github/workflows/belgeler.yml` yol filtresi henüz `belgeler/**` içermiyor. PR #321 bu klasörü tetikleyici kapsamına ekler ve `python3 -I belgeler/uret-api-ozet.py --check` denetimini çalıştırır. PR #321 Claude incelemesinden geçip ana dala alındığında bu kılavuzdaki değişiklikler de ilgili iş akışını başlatır.
 
 ## Sorun giderme
 
