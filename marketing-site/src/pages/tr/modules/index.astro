@@ -21,15 +21,15 @@ const homeLabel=(value:string)=>value==="—"?"Ev · Dahil değil":value==="Incl
 const businessLabel=(value:string)=>value==="—"?"İşletme · Dahil değil":value==="Included"?"İşletme · Dahil":"İşletme · İkinci sürüm";
 const featureTitle=(slug:string)=>featuresTr.find((feature)=>feature.slug===slug)?.title ?? slug.replaceAll("-"," ");
 const descriptions: Record<string,string> = {
-  core:"Tarifler, bira üretimi hesaplamaları, stil kılavuzları, ekipman profilleri ve kalibrasyon, demleme günü, fermantasyon, ölçümler, bildirimler ve içe/dışa aktarma temeli.",
-  devices:"iSpindel, RAPT, Tilt, webhook ve bağlı cihaz okumaları; işletme çalışma alanlarında tank sensörleri.",
+  core:"Tarifler, bira üretimi hesaplamaları, stil kılavuzları, demleme günü, fermantasyon, ölçümler ve bildirimler; içe/dışa aktarma biçimleri değerlendirme ve doğrulama aşamasındadır.",
+  devices:"Fermantasyon cihazlarından salt okunur veri bağlantıları planlanmaktadır. Belirli cihaz uyumluluğu ancak uygulama ve testlerden sonra doğrulanacaktır; profesyonel tank sensörleri daha sonraki bir yol haritası alanıdır.",
   stock:"Malzemeler, lotlar, mal kabul, sayım, ayırma, düşük stok uyarıları, alışveriş listeleri ve temel satın alma.",
   production:"Tanklar ve doluluk, transferler, üretim panosu, takvim, ambalaj kayıtları, QR kap takibi, saha taraması ve ekipman bakımı.",
   quality:"Spesifikasyonlar, laboratuvar sonuçları, serbest bırakma, CIP, maya jenerasyonları ve geri çağırma raporları.",
   "cost-reports":"Parti ve litre maliyeti, ay sonu stok değerleme ve XLSX/CSV dışa aktarma.",
   "tax-compliance":"TTB ve HMRC hesaplamaları, beyannameye hazır raporlar, saklama ve yasal tutma.",
   team:"Roller, yetkiler, ortak cihazlar, onay akışları ve denetim kayıtları.",
-  connections:"MCP ile kendi ajanınızı bağlama ve açık API."
+  connections:"İkinci sürüm için planlanmıştır: MCP üzerinden kendi ajanlarınızı bağlama ve açık API'yi kullanma."
 };
 const details: Record<string,string> = {
   stock:"Ev yolunda sadeleştirilmiş kapsam. Tedarikçi faturaları, ödemeler ve muhasebe kapsam dışıdır.",
