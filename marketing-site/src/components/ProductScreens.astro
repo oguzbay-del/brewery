@@ -1,0 +1,45 @@
+---
+import { placements, screens } from "../data/productScreens";
+
+interface Props { page: string; lang: "en" | "tr" }
+const { page, lang } = Astro.props;
+const keys = placements[page] ?? [];
+const tr = lang === "tr";
+---
+{keys.length > 0 && <section id="product-screens" class="shell gallery" aria-labelledby="screen-title">
+  <header>
+    <p class="eyebrow">{tr ? "ÜRÜN TASARIMINDAN" : "FROM THE PRODUCT DESIGN"}</p>
+    <h2 id="screen-title">{tr ? "Ekranlarda iş akışı" : "The workflow on screen"}</h2>
+  </header>
+  <div class="frames">
+    {keys.map(key => {
+      const screen = screens[key];
+      const [title, caption] = screen[lang];
+      const src = import.meta.env.BASE_URL + "images/product/" + key + ".webp";
+      return <figure>
+        <a href={src} aria-label={tr ? title + " · Tam boy aç" : title + " · Open full size"}>
+          <div class="screen-crop"><img src={src} width={screen.width} height={screen.height} alt={title} loading="lazy" decoding="async" /></div>
+          <span>{tr ? "Tam boy aç" : "Open full size"} ↗</span>
+        </a>
+        <figcaption><strong>{title}</strong><p>{caption}</p></figcaption>
+      </figure>;
+    })}
+  </div>
+</section>}
+<style>
+  .gallery { margin-block: clamp(2.5rem,6vw,5.5rem); }
+  header { margin-bottom: 1.4rem; }
+  .frames { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:clamp(1rem,2vw,2rem); }
+  figure { margin:0; min-width:0; }
+  a { display:block; position:relative; overflow:hidden; border-radius:14px; background:#e7e8e1; padding:12px; }
+  img { width:100%; height:auto; display:block; border-radius:6px; }
+  a span { display:block; width:fit-content; margin:.5rem 0 0 auto; color:#233a30; text-decoration:underline; font-size:.87rem; }
+  figcaption { padding:.8rem .1rem; }
+  figcaption strong { font-size:1.15rem; color:var(--ink); }
+  figcaption p { margin:.35rem 0 0; }
+  @media(max-width:600px) {
+    .frames { grid-template-columns:1fr; }
+    .screen-crop { overflow:hidden; border-radius:6px; }
+    .screen-crop img { width:135%; max-width:none; margin-inline-start:-17.5%; }
+  }
+</style>

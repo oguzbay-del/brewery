@@ -1,5 +1,7 @@
 # GRISTORA — Public marketing site strategy
 
+[Web sitesindeki ürün ekranları ve kullanım yerleri](53-site-ekran-yerlesimleri.md)
+
 Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi yazılım uygulamasının kendisi değildir. GRISTORA marka dokümanları bu klasördeki 33–44 numaralı dosyalarda kanonik kayıttır. **Birincil ticari hedef Professional Breweries (Business)**; **Homebrewers (Home)** ikincil audience ve ayrı ürün yoludur.
 
 ## Kararlar

@@ -1,4 +1,5 @@
 ---
+import ProductScreens from "../components/ProductScreens.astro";
 import PagePhoto from "../components/PagePhoto.astro";
 import FontPreload from "../components/FontPreload.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -89,6 +90,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <a class="text-link explain-audience-link" href={`${base}breweries/`}>Explore the Professional Breweries page <span aria-hidden="true">→</span></a>
         </div>
       </section>
+      <ProductScreens page="how-it-works" lang="en" />
       <section class="explain-audience-section section-pad" id="home-workflow">
         <div class="shell">
           <div class="explain-section-head"><div><p class="eyebrow"><span class="eyebrow-line"></span> 02 · HOMEBREWERS</p><h2>Planned: from recipe idea to <em>batch learning.</em></h2></div><p>A planned workflow for the brewer who designs, makes, measures and reviews their own batches.</p></div>
