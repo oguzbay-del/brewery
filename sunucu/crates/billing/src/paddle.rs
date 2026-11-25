@@ -57,7 +57,9 @@ impl PaddleProvider {
         grace_days: i64,
         tolerance_secs: i64,
     ) -> Self {
-        Self::with_clock(secret, prices, grace_days, tolerance_secs, || Utc::now().timestamp())
+        Self::with_clock(secret, prices, grace_days, tolerance_secs, || {
+            Utc::now().timestamp()
+        })
     }
 
     /// Builds a provider with an injectable Unix clock for deterministic tests.
@@ -99,11 +101,16 @@ impl PaddleProvider {
         };
         let prices = parse_price_map(&price_map)?;
         if secret.is_some() && prices.is_empty() {
-            return Err(env_error("PADDLE_PRICE_MAP", "set at least one price_id=product_key pair"));
+            return Err(env_error(
+                "PADDLE_PRICE_MAP",
+                "set at least one price_id=product_key pair",
+            ));
         }
         let grace_days = parse_env_i64("PADDLE_GRACE_DAYS", DEFAULT_GRACE_DAYS)?;
-        let tolerance_secs =
-            parse_env_i64("PADDLE_SIGNATURE_TOLERANCE_SECS", DEFAULT_SIGNATURE_TOLERANCE_SECS)?;
+        let tolerance_secs = parse_env_i64(
+            "PADDLE_SIGNATURE_TOLERANCE_SECS",
+            DEFAULT_SIGNATURE_TOLERANCE_SECS,
+        )?;
         if grace_days < 0 {
             return Err(env_error("PADDLE_GRACE_DAYS", "must not be negative"));
         }
@@ -201,7 +208,10 @@ impl PaddleProvider {
                     .pointer("/current_billing_period/ends_at")
                     .and_then(Value::as_str)
                     .ok_or_else(|| malformed("active subscription has no billing period end"))?;
-                (UpdateKind::Active, Some(parse_datetime(period, "current_billing_period.ends_at")?))
+                (
+                    UpdateKind::Active,
+                    Some(parse_datetime(period, "current_billing_period.ends_at")?),
+                )
             }
             "past_due" => {
                 let period = data
@@ -213,12 +223,13 @@ impl PaddleProvider {
                 (UpdateKind::Grace, Some(end))
             }
             "paused" => {
-                let end = optional_datetime(data.get("paused_at"), "paused_at")?.unwrap_or(occurred_at);
+                let end =
+                    optional_datetime(data.get("paused_at"), "paused_at")?.unwrap_or(occurred_at);
                 (UpdateKind::Expired, Some(end))
             }
             "canceled" => {
-                let end =
-                    optional_datetime(data.get("canceled_at"), "canceled_at")?.unwrap_or(occurred_at);
+                let end = optional_datetime(data.get("canceled_at"), "canceled_at")?
+                    .unwrap_or(occurred_at);
                 (UpdateKind::Expired, Some(end))
             }
             _ => return Err(malformed("unsupported subscription status")),
@@ -265,11 +276,13 @@ fn required_str<'a>(value: &'a Value, key: &str) -> Result<&'a str, ProviderErro
 fn parse_datetime(value: &str, field: &str) -> Result<DateTime<Utc>, ProviderError> {
     DateTime::parse_from_rfc3339(value)
         .map(|date| date.with_timezone(&Utc))
-        .map_err(|_| malformed(match field {
-            "occurred_at" => "invalid occurred_at timestamp",
-            "current_billing_period.ends_at" => "invalid billing period timestamp",
-            _ => "invalid subscription timestamp",
-        }))
+        .map_err(|_| {
+            malformed(match field {
+                "occurred_at" => "invalid occurred_at timestamp",
+                "current_billing_period.ends_at" => "invalid billing period timestamp",
+                _ => "invalid subscription timestamp",
+            })
+        })
 }
 
 fn optional_datetime(
@@ -321,7 +334,10 @@ fn parse_price_map(raw: &str) -> common::Result<HashMap<String, String>> {
     }
     for entry in raw.split(',') {
         let Some((price, product)) = entry.split_once('=') else {
-            return Err(env_error("PADDLE_PRICE_MAP", "expected price_id=product_key pairs"));
+            return Err(env_error(
+                "PADDLE_PRICE_MAP",
+                "expected price_id=product_key pairs",
+            ));
         };
         let price = price.trim();
         let product = product.trim();
@@ -379,7 +395,11 @@ mod tests {
         signed.push(b':');
         signed.extend_from_slice(body);
         let tag = hmac::sign(&Key::new(hmac::HMAC_SHA256, secret), &signed);
-        let hex = tag.as_ref().iter().map(|byte| format!("{byte:02x}")).collect::<String>();
+        let hex = tag
+            .as_ref()
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
         format!("ts={timestamp};h1={hex}")
     }
 
@@ -408,7 +428,10 @@ mod tests {
         let provider = provider();
         let body = payload("subscription.activated", "active");
         let good = sign(&body, NOW, b"test-secret");
-        let header = format!("ts={NOW};h1=00;{}", good.split_once(';').map_or("", |(_, h)| h));
+        let header = format!(
+            "ts={NOW};h1=00;{}",
+            good.split_once(';').map_or("", |(_, h)| h)
+        );
         assert!(provider.parse_webhook(Some(&header), &body).is_ok());
         let stale = sign(&body, NOW - 301, b"test-secret");
         assert_eq!(
@@ -426,16 +449,22 @@ mod tests {
     fn maps_active_trialing_grace_paused_and_canceled() {
         let provider = provider();
         let active = payload("subscription.activated", "active");
-        let update = provider.parse_webhook(Some(&sign(&active, NOW, b"test-secret")), &active)
-            .ok().flatten().unwrap();
+        let update = provider
+            .parse_webhook(Some(&sign(&active, NOW, b"test-secret")), &active)
+            .ok()
+            .flatten()
+            .unwrap();
         assert_eq!(update.kind, UpdateKind::Active);
         assert_eq!(update.notification_id, "evt_stable");
         assert_eq!(update.workspace_id, Uuid::parse_str(WORKSPACE).ok());
 
         for status in ["trialing", "past_due", "paused", "canceled"] {
             let body = payload("subscription.updated", status);
-            let update = provider.parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body)
-                .ok().flatten().unwrap();
+            let update = provider
+                .parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body)
+                .ok()
+                .flatten()
+                .unwrap();
             let expected = match status {
                 "trialing" => UpdateKind::Active,
                 "past_due" => UpdateKind::Grace,
@@ -454,8 +483,11 @@ mod tests {
         value["data"]["scheduled_change"] = serde_json::json!({"action":"cancel"});
         value["data"]["custom_data"] = Value::Null;
         let body = serde_json::to_vec(&value).unwrap_or_default();
-        let update = provider.parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body)
-            .ok().flatten().unwrap();
+        let update = provider
+            .parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body)
+            .ok()
+            .flatten()
+            .unwrap();
         assert_eq!(update.kind, UpdateKind::Active);
         assert_eq!(update.workspace_id, None);
     }
@@ -498,7 +530,11 @@ mod tests {
             || NOW,
         );
         let header = sign(body, NOW, b"test-secret");
-        let update = provider.parse_webhook(Some(&header), body).ok().flatten().unwrap();
+        let update = provider
+            .parse_webhook(Some(&header), body)
+            .ok()
+            .flatten()
+            .unwrap();
         assert_eq!(update.notification_id, "evt_01j00000000000000000000001");
     }
 
