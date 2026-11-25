@@ -2,11 +2,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
-use std::{
-    collections::HashSet,
-    sync::Mutex,
-    time::Duration,
-};
+use std::{collections::HashSet, sync::Mutex, time::Duration};
 
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, postgres::PgPoolOptions, types::Uuid};
@@ -58,12 +54,7 @@ impl ObjectStore for MemoryStore {
         Box::pin(async { Ok(None) })
     }
 
-    fn put<'a>(
-        &'a self,
-        key: &'a str,
-        _: &'a str,
-        _: Vec<u8>,
-    ) -> BoxFuture<'a, StorageResult<()>> {
+    fn put<'a>(&'a self, key: &'a str, _: &'a str, _: Vec<u8>) -> BoxFuture<'a, StorageResult<()>> {
         Box::pin(async move {
             self.objects.lock().unwrap().insert(key.to_owned());
             Ok(())
@@ -263,8 +254,10 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool) {
     let now = Utc::now();
-    let workspaces = [Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0101),
-                      Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0102)];
+    let workspaces = [
+        Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0101),
+        Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0102),
+    ];
     for (index, workspace_id) in workspaces.iter().enumerate() {
         create_workspace(&pool, *workspace_id).await;
         create_upload_rows(&pool, *workspace_id, 10_000 + (index as u128 * 100), now).await;
@@ -297,12 +290,11 @@ async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool
     assert!(store.contains("cleanup/legal-hold-document"));
     assert!(store.contains("cleanup/retry-attachment"));
 
-    let purged: i64 = sqlx::query_scalar(
-        "SELECT count(*) FROM attachments WHERE object_purged_at IS NOT NULL",
-    )
-    .fetch_one(&pool)
-    .await
-    .unwrap();
+    let purged: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM attachments WHERE object_purged_at IS NOT NULL")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
     assert_eq!(purged, 4);
 
     // Remove the injected failure: the next run deletes both retry rows.
