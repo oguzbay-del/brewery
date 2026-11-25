@@ -1,4 +1,4 @@
-/* Demleme Tasarım Sistemi — generated from tokens.json */
+/* GRISTORA Tasarım Sistemi — generated from tokens.json */
 :root, [data-theme="light"] {
   --bg: #f2f2f7;
   --card: #ffffff;
@@ -9,7 +9,7 @@
   --label2: rgba(60,60,67,.75);
   --label3: rgba(60,60,67,.35);
   --tint: #985600;
-  --tint-fill: #e8901f;
+  --tint-fill: #F4A261;
   --tint-ink: #1a1206;
   --tint-soft: rgba(152,86,0,.13);
   --green: #1d7233;
@@ -39,8 +39,8 @@
   --label: #ffffff;
   --label2: rgba(235,235,245,.62);
   --label3: rgba(235,235,245,.32);
-  --tint: #f0a03c;
-  --tint-fill: #f0a03c;
+  --tint: #F4A261;
+  --tint-fill: #F4A261;
   --tint-ink: #1a1206;
   --tint-soft: rgba(240,160,60,.18);
   --green: #30d158;

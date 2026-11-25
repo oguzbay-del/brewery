@@ -1,4 +1,4 @@
-Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışan (Apple Watch ileride opsiyonel) bir tarif ve üretim uygulaması. Görsel dil Apple'ın kendi uygulamalarını izler: sistem yazısı, sistem renkleri, standart bileşenler ve tek bir vurgu rengi, mayşe amberi.
+GRISTORA; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışan (Apple Watch ileride opsiyonel) bir tarif ve üretim uygulaması. Görsel dil Apple'ın kendi uygulamalarını izler: sistem yazısı, sistem renkleri, standart bileşenler ve tek bir vurgu rengi, marka Amber Gold (#F4A261).
 
 ## İçerik ve dil
 
@@ -13,7 +13,7 @@ Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web
 ## Renk
 
 - Zemin `bg`, üzerindeki gruplar ve kartlar `card`; düğme ve ray zemini `fill`. Birincil metin `label`, ikincil `label2`, yalnız süs için `label3`.
-- Vurgu tek renk, iki tonda: yazı ve ikonda koyu amber `tint`, geniş alanlarda parlak amber `tint-fill` ve üzerinde her zaman `tint-ink`. Parlak amberin üstüne beyaz yazma.
+- Vurgu tek renk, iki tonda: yazı ve ikonda koyu amber `tint` (açık temada `#985600`), geniş alanlarda marka Amber Gold `tint-fill` (`#F4A261`, açık ve koyu temada) ve üzerinde her zaman `tint-ink`. Amber Gold üstüne beyaz yazma: `#F4A261` üzerinde beyaz 2.06:1 verir. `tint-ink` (`#1a1206`) `tint-fill` üzerinde 8.99:1 verir. Koyu temada `tint` de `#F4A261` olur: `#000000` üzerinde 10.19:1, `card` (`#1c1c1e`) üzerinde 8.25:1. Açık temada `#F4A261` yazı rengi olmaz, yalnız dolgu olur (`#f2f2f7` üzerinde 1.85:1). Yüksek karşıtlık temaları marka rengini kullanmaz.
 - `tint-fill` kullanılan yerler: ana düğme, demleme sayaç halkası, `BrewReturnBar`, seçili kenar çubuğu, grafik çubukları, takvim şeritleri. Ekranda tek ana düğme olur.
 - Durum renkleri yalnız durum için: `green` tamam, `yellow` uyarı (açık temada turuncu), `red` hata ve acil, `blue` bilgi ve sistem eylemi. Hiçbiri marka rengi değil; durum her zaman bir kelime veya ikonla birlikte.
 - Seçili satır `tint-soft`. Ayırıcı ve ince kenar `sep`.
@@ -68,4 +68,16 @@ Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web
 ## İkonlar ve logo
 
 - Uygulamada Apple SF Symbols kullanılır; çizgi kalınlığı metin ağırlığını izler. Konsept ve buradaki önizlemeler SF Symbols'e benzeyen basit çizgi ikonlarla çizilmiştir; web uygulamasında SF Symbols lisansı web'e izin vermediği için ayrı bir ikon seti seçilmesi gerekir.
-- Logo henüz yok; ürün adı düz yazıyla yazılır. Logo hazır olunca `assets/Logos/` grubuna eklenecek.
+- Logo ve marka kuralları için aşağıdaki Marka bölümüne bak.
+
+## Marka
+
+- Ürün adı GRISTORA'dır (ADR-0012). Uygulama başlığında `gristora-symbol.svg` ve yanında metin olarak GRISTORA yazılır.
+- Tam logo ve tanımlayıcı sözler (tagline) uygulamada kullanılmaz; pazarlama sitesine aittir.
+- Forest Green (`#0B2F26`) yalnız uygulama ikonunda (Forest Green zemin, Amber Gold sembol) ve yazdırılan formlarda görünür. Arayüzde renk token'ı olmaz.
+- Vurgu rengi marka Amber Gold `#F4A261`'dir (`tint-fill`); bkz. Renk bölümü.
+
+## Mod ayrımı: roller ve paylaşım
+
+- Ev modunda rol yönetimi, kullanıcı daveti, ortak cihaz, denetim kaydı ve tarif paylaşımı ekranı yoktur; menü ve ayarlarda da gösterilmez.
+- Hazır roller (yönetici, düzenleyici, izleyici) ve tarif paylaşımı yalnız İşletme modundadır (karar: 25.11.2026).
