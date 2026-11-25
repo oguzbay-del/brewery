@@ -309,6 +309,7 @@ pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) 
             if let Some(workspace_id) = ctx.workspace_id
                 && !modules::is_export_path(&path)
                 && let Some(module_id) = modules::module_for_path(&path)
+                && !modules::is_free_module(module_id)
             {
                 match module_enabled(&state.db, &ctx.db_context(), workspace_id, module_id).await {
                     Ok(true) => {}
