@@ -62,15 +62,33 @@ async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgP
     }))
     .unwrap();
     let timestamp = chrono::Utc::now().timestamp();
-    let mut signed = timestamp.to_string().into_bytes();
-    signed.push(b':');
-    signed.extend_from_slice(&body);
-    let tag = hmac::sign(&hmac::Key::new(hmac::HMAC_SHA256, b"test-secret"), &signed);
-    let hex = tag.as_ref().iter().fold(String::new(), |mut output, byte| {
-        let _ = write!(&mut output, "{byte:02x}");
-        output
-    });
-    let signature = format!("ts={timestamp};h1={hex}");
+    let sign = |payload: &[u8]| {
+        let mut signed = timestamp.to_string().into_bytes();
+        signed.push(b':');
+        signed.extend_from_slice(payload);
+        let tag = hmac::sign(&hmac::Key::new(hmac::HMAC_SHA256, b"test-secret"), &signed);
+        let hex = tag.as_ref().iter().fold(String::new(), |mut output, byte| {
+            let _ = write!(&mut output, "{byte:02x}");
+            output
+        });
+        format!("ts={timestamp};h1={hex}")
+    };
+    let signature = sign(&body);
+    let retry_body = serde_json::to_vec(&json!({
+        "event_id": event_id,
+        "event_type": "subscription.activated",
+        "occurred_at": "2026-11-25T12:00:00Z",
+        "notification_id": "ntf_second_delivery",
+        "data": {
+            "id": "sub_test",
+            "status": "active",
+            "items": [{"price": {"id": "pri_home"}}],
+            "custom_data": null,
+            "current_billing_period": {"ends_at": "2026-12-25T00:00:00Z"}
+        }
+    }))
+    .unwrap();
+    let retry_signature = sign(&retry_body);
 
     let send = |sig: String, payload: Vec<u8>| {
         let app = app.clone();
@@ -97,7 +115,7 @@ async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgP
     assert_eq!(first_status, StatusCode::OK);
     assert_eq!(first_body["status"], "accepted");
 
-    let (second_status, second_body) = send(signature, body.clone()).await;
+    let (second_status, second_body) = send(retry_signature, retry_body).await;
     assert_eq!(second_status, StatusCode::OK);
     assert_eq!(second_body["status"], "duplicate");
 
