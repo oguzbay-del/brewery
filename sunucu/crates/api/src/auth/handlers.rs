@@ -728,11 +728,10 @@ async fn provider_login(
     } else {
         None
     };
-    Ok(svc
-        .login_response(
-            svc.login(&claim, &device, refresh_token_enc.as_deref())
-                .await?,
-        ))
+    Ok(svc.login_response(
+        svc.login(&claim, &device, refresh_token_enc.as_deref())
+            .await?,
+    ))
 }
 
 /// Signs in with an Apple ID token.
