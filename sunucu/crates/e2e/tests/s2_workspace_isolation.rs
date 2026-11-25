@@ -4,7 +4,6 @@ use e2e::{Context, User};
 use reqwest::{Method, StatusCode};
 use serde_json::json;
 
-
 async fn create_scanned_document(ctx: &Context, workspace_id: &str, user: &User) -> String {
     let response = ctx
         .post_json(
