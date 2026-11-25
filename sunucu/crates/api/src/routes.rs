@@ -202,11 +202,11 @@ pub struct MetaModulesResponse {
                 ]
             })
         ),
-        (status = 400, description = "Malformed query", body = ProblemDetails),
-        (status = 401, description = "Unauthenticated", body = ProblemDetails),
-        (status = 404, description = "Workspace not found", body = ProblemDetails),
-        (status = 429, description = "Rate limited", body = ProblemDetails),
-        (status = 500, description = "Internal error", body = ProblemDetails)
+        (status = 400, description = "Malformed query", body = ProblemDetails, example = json!({"type": "https://gristora.app/problems/malformed_request", "title": "Malformed request", "status": 400, "code": "malformed_request", "request_id": "0192f1c07a3b7000800000000000000a"})),
+        (status = 401, description = "Unauthenticated", body = ProblemDetails, example = json!({"type": "https://gristora.app/problems/unauthenticated", "title": "Unauthenticated", "status": 401, "code": "unauthenticated", "request_id": "0192f1c07a3b7000800000000000000a"})),
+        (status = 404, description = "Workspace not found", body = ProblemDetails, example = json!({"type": "https://gristora.app/problems/not_found", "title": "Not found", "status": 404, "code": "not_found", "request_id": "0192f1c07a3b7000800000000000000a"})),
+        (status = 429, description = "Rate limited", body = ProblemDetails, example = json!({"type": "https://gristora.app/problems/rate_limited", "title": "Rate limited", "status": 429, "code": "rate_limited", "request_id": "0192f1c07a3b7000800000000000000a"})),
+        (status = 500, description = "Internal error", body = ProblemDetails, example = json!({"type": "https://gristora.app/problems/internal", "title": "Internal error", "status": 500, "code": "internal", "request_id": "0192f1c07a3b7000800000000000000a"}))
     )
 )]
 pub async fn meta_modules(
