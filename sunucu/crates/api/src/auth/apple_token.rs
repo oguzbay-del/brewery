@@ -10,7 +10,10 @@ use ring::{
 };
 use serde::Deserialize;
 
-use super::{config::AppleTokenSettings, oidc::{OidcError, OidcVerifier}};
+use super::{
+    config::AppleTokenSettings,
+    oidc::{OidcError, OidcVerifier},
+};
 
 /// Errors from the Apple authorization-code exchange.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
@@ -195,7 +198,10 @@ impl AppleTokenClient {
         })?;
         if claims.sub != expected_subject
             || claims.audiences.len() != 1
-            || claims.audiences.first().is_none_or(|audience| audience != client_id)
+            || claims
+                .audiences
+                .first()
+                .is_none_or(|audience| audience != client_id)
         {
             return Err(AppleTokenError::IdentityMismatch);
         }
