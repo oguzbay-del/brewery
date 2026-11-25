@@ -330,6 +330,7 @@ fn parse_price_map(raw: &str) -> common::Result<HashMap<String, String>> {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::unwrap_used, clippy::expect_used)]
     use super::*;
     use ring::hmac::{self, Key};
 
@@ -479,12 +480,26 @@ mod tests {
     }
 
     #[test]
+    fn official_activation_fixture_maps_event_id() {
+        let body = include_bytes!("../tests/fixtures/paddle/subscription_activated.json");
+        let provider = PaddleProvider::with_clock(
+            "test-secret",
+            HashMap::from([("pri_example_home".to_owned(), "home_pro".to_owned())]),
+            16,
+            300,
+            || NOW,
+        );
+        let header = sign(body, NOW, b"test-secret");
+        let update = provider.parse_webhook(Some(&header), body).ok().flatten().unwrap();
+        assert_eq!(update.notification_id, "evt_01j00000000000000000000001");
+    }
+
+    #[test]
     fn malformed_price_maps_are_rejected() {
         assert!(parse_price_map("pri_a=home,broken").is_err());
         assert!(parse_price_map("pri_a=home,pri_a=business").is_err());
         assert_eq!(
-            parse_price_map("pri_a=home,pri_b=business").map(|map| map.len()),
-            Ok(2)
+            parse_price_map("pri_a=home,pri_b=business").is_ok_and(|map| map.len() == 2)
         );
     }
 }
