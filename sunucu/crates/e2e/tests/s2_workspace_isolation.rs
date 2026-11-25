@@ -66,7 +66,6 @@ async fn user_cannot_read_or_change_another_workspace() {
         assert_eq!(response.status(), StatusCode::NOT_FOUND, "{endpoint}");
     }
 
-
     let recipe_get = ctx
         .request(
             Method::GET,
