@@ -102,9 +102,10 @@ impl ErrorCode {
         match self {
             Self::MalformedRequest => StatusCode::BAD_REQUEST,
             Self::Unauthenticated => StatusCode::UNAUTHORIZED,
-            Self::Forbidden | Self::StepUpRequired | Self::EntitlementRequired | Self::ModuleDisabled => {
-                StatusCode::FORBIDDEN
-            }
+            Self::Forbidden
+            | Self::StepUpRequired
+            | Self::EntitlementRequired
+            | Self::ModuleDisabled => StatusCode::FORBIDDEN,
             Self::NotFound => StatusCode::NOT_FOUND,
             Self::Conflict | Self::IdempotencyInProgress => StatusCode::CONFLICT,
             Self::VersionMismatch => StatusCode::PRECONDITION_FAILED,
