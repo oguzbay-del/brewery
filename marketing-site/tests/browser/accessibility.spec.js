@@ -3,6 +3,7 @@ import { test, expect } from "@playwright/test";
 
 const routes = [
   "/",
+  "/tr/",
   "/homebrewers/",
   "/breweries/",
   "/how-it-works/",

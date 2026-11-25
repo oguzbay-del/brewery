@@ -88,14 +88,14 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 | Responsive coverage | 11 routes × 5 viewport widths (1440, 1024, 768, 390, 320); document/body overflow assertions passed |
 | Accessibility automation | WCAG 2.2 AA axe-tag audit on 11 routes at desktop/mobile; suite passed. Keyboard skip link, mobile nav, FAQ disclosure, reduced-motion and focusable scroll region checks are included |
 | Visual review sample | Homepage desktop/mobile, Breweries mobile, Pricing mobile, Compare desktop/mobile, How It Works mobile and social card reviewed; no obvious clipping in sampled layouts |
-| Open visual item | `/compare/` audience decision cards show two large empty dashed media frames at desktop and mobile. Needs owner-approved imagery or a deliberate non-image treatment; no asset invented/added |
+| Compare audience imagery | **Resolved.** The two audience cards show the Homebrewer and Professional Brewery illustrations at desktop (1440 px) and mobile (390 px). Screenshot evidence: artifact #14763286642 (run #45044334275) and artifact #14767685935 (PR #192; compare captures at 390 and 1440 px). Source assets: `public/audience/homebrewer.svg` and `public/audience/professional-brewery.svg` |
 | Manual accessibility | Keyboard-only full-site, screen-reader and 200% zoom review still pending |
 | Stitch parity | Not verified: no active Stitch connector/export available in this environment |
 | Production launch | Deferred; no production deployment initiated |
 
 The mobile comparison table is intentionally horizontally scrollable within its labelled, keyboard-focusable region; this is not page-level horizontal overflow. The pricing preview keeps commercial pricing unannounced and explicitly states that proposed trials are not active. Do not treat either as a live offer. The GitHub Pages workflow uses `preview: false`; therefore the GitHub Pages URL is public (although noindex), not a private/ephemeral preview. The custom production domain remains untouched.
 
-**Acceptance remains in progress.** Do not close W12 until the empty media-frame decision, remaining route-by-route visual review, manual accessibility/zoom review, preview HTTP/content check and performance review are resolved or explicitly accepted by the owner.
+**The empty media-frame defect is resolved. W12 remains in progress.** Remaining items: route-by-route visual review, manual keyboard/screen-reader/200% zoom review, preview HTTP/content verification and performance review.
 
 
 ## Compare audience imagery — 19 November 2026
@@ -103,7 +103,8 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Owner approved filling the two empty audience media frames on `/compare/`.
 - Added two original, locally hosted SVG illustrations: `public/audience/homebrewer.svg` and `public/audience/professional-brewery.svg`; no external image requests, stock-photo licensing dependency, customer logos or product UI claims.
 - The illustrations use the existing forest/stone/amber palette and 16:9 editorial composition. Meaningful alt text, explicit dimensions, lazy loading and async decoding are included.
-- Automated build, route validation, responsive screenshot review and accessibility checks for this change remain pending. W12 stays **in progress** until evidence is recorded.
+- The visual result is verified in screenshot artifact #14763286642 (run #45044334275) at 1440 px and 390 px. PR #192's successful Marketing CI run #45055406807 also produced artifact #14767685935; its `/compare/` captures at 1440 px and 390 px show both audience illustrations, with no empty dashed frames.
+- Source assets: `public/audience/homebrewer.svg` and `public/audience/professional-brewery.svg`. The visual defect is resolved; unrelated W12 acceptance items remain open.
 
 
 ## Lighthouse performance audit — 19 November 2026
@@ -149,3 +150,14 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Production domain, DNS and Vercel project settings were not changed. Existing Vercel automatic production-target deployment guard remains in force; do not merge/push further to main until reviewed and adjusted with owner approval.
 
 **W12 status remains in progress.** Outstanding: investigate Home mobile Lighthouse 85, finish visual review across all routes and viewport widths, complete manual keyboard/screen-reader/zoom checks, and verify the deployed noindex Pages response.
+
+## Turkish homepage hero parity — 22 November 2026
+
+- PR [#192](https://github.com/oguzbay-del/brewery/pull/192) aligns the Turkish homepage hero with the English photo-led forest-green treatment, preserves Turkish copy and destinations, and keeps the shared GRISTORA wordmark legible on the dark hero.
+- Marketing CI [run #45042837044](https://github.com/oguzbay-del/brewery/actions/runs/45042837044) passed on commit `313f95bab52ec9773f0905f57e9d6a985c00a299`: Astro/TypeScript checks, static build, route/metadata/link validation, responsive Playwright/axe checks and Lighthouse audits.
+- Lighthouse artifact #14762377454: Home, Compare, Pricing and How it works scored **100/100/100/100** (Performance / Accessibility / Best Practices / SEO) on both mobile and desktop. Home mobile: TBT 50 ms, LCP 1.8 s, CLS 0.
+- Responsive screenshot artifact #14762122124 contains 31 screenshots. English homepage mobile (390 px) was reviewed: no obvious clipping or page-level horizontal overflow. The artifact does not contain a Turkish homepage screenshot. The current PR adds `/tr/` to responsive and accessibility browser QA and adds mobile/desktop Lighthouse audits. The new artifact and Turkish visual review are pending.
+- Cloudflare Pages branch preview deployed successfully for the PR head: [preview](https://fix-tr-homepage-hero-parity.gristora.pages.dev). Direct HTTP verification from this runtime is blocked by DNS resolution, so no live-response/header claim is made here.
+- PR remains unmerged. No production deployment or custom-domain changes were made.
+
+**Remaining for this change:** wait for the new CI run, review Turkish homepage screenshots at all configured widths, compare EN/TR header and hero composition side by side, and complete manual keyboard/screen-reader/200% zoom checks already tracked in W12. Do not weaken existing accessibility tests.

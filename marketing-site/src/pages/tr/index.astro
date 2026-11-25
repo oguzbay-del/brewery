@@ -58,45 +58,29 @@ const structuredData = {
   </head>
   <body>
     <a class="skip-link" href="#main-content">Ana içeriğe geç</a>
-    <SiteHeader home lang="tr" />
-
     <main id="main-content">
-      <section class="sx-hero">
-        <div class="shell sx-hero-grid">
-          <div class="hero-copy sx-hero-copy">
-            <div class="sx-chip-row">
-              <p class="sx-chip sx-chip-amber"><span class="sx-dot" aria-hidden="true"></span> BREWING INTELLIGENCE</p>
+      <section class="sx-hero sx-home-hero">
+        <PagePhoto name="home-hero" lang="tr" eager class="sx-home-hero-photo" />
+        <div class="sx-home-hero-shade" aria-hidden="true"></div>
+        <div class="sx-home-hero-content">
+          <SiteHeader home lang="tr" />
+          <div class="shell sx-hero-grid sx-home-hero-grid">
+            <div class="hero-copy sx-hero-copy">
+              <div class="sx-chip-row">
+                <p class="sx-chip sx-chip-amber"><span class="sx-dot" aria-hidden="true"></span> BREWING INTELLIGENCE</p>
+              </div>
+              <h1>GRISTORA</h1>
+              <p class="hero-intro">
+                Reçete standartlarının, üretim bağlamının ve parti kayıtlarının bira üretim ekipleri için nasıl bir araya geldiğini keşfedin.
+              </p>
+              <div class="hero-actions">
+                <a class="button button-primary" href={`${base}tr/breweries/`}>Profesyonel bira üreticilerini keşfedin <span aria-hidden="true">↗</span></a>
+                <a class="button hero-secondary" href={`${base}tr/homebrewers/`}>Ev biracıları için <span aria-hidden="true">→</span></a>
+              </div>
             </div>
-
-            <h1>GRISTORA</h1>
-            <p class="hero-intro">
-              Reçete standartlarının, üretim bağlamının ve parti kayıtlarının bira üretim ekipleri için nasıl bir araya geldiğini keşfedin.
-            </p>
-            <div class="hero-actions">
-              <a class="button button-primary" href={`${base}tr/breweries/`}>Profesyonel bira üreticilerini keşfedin <span aria-hidden="true">↗</span></a>
-              <a class="text-link hero-secondary" href={`${base}tr/homebrewers/`}>Ev biracıları için <span aria-hidden="true">→</span></a>
-            </div>
-            <ul class="sx-facts" aria-label="Proje özeti">
-              <li><span>BİRİNCİL KİTLE</span><strong>Profesyonel bira üreticileri</strong></li>
-              <li><span>İKİNCİL YOL</span><strong>Ev biracıları</strong></li>
-            </ul>
           </div>
-
-          <aside class="sx-panel" aria-labelledby="sx-panel-title">
-            <div class="sx-panel-head">
-              <p class="sx-panel-kicker" id="sx-panel-title">İŞ AKIŞI</p>
-            </div>
-
-            <ol class="sx-panel-steps">
-              <li><span class="sx-step-no">01</span><div><strong>Reçete standardı</strong><p>Malzemeler, hedefler ve yöntem, sürüm bağlamıyla birlikte tutulur.</p></div></li>
-              <li><span class="sx-step-no">02</span><div><strong>Üretim bağlamı</strong><p>Planlanan işler, tanklar ve her partinin arkasındaki kararlar.</p></div></li>
-              <li><span class="sx-step-no">03</span><div><strong>Parti kaydı</strong><p>Neyin planlandığı ve fiilen neyin kaydedildiği.</p></div></li>
-            </ol>
-
-          </aside>
         </div>
       </section>
-      <div class="page-photo-band"><PagePhoto name="home-hero" lang="tr" /></div>
 
       <section class="sx-band section-pad" id="approach">
         <div class="shell">

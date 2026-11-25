@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const routes = [
   "/",
+  "/tr/",
   "/homebrewers/",
   "/breweries/",
   "/how-it-works/",
@@ -14,7 +15,7 @@ const routes = [
   "/features/recipe-design/",
 ];
 const widths = [1440, 1024, 768, 390, 320];
-const screenshotRoutes = new Set(["/", "/homebrewers/", "/breweries/"]);
+const screenshotRoutes = new Set(["/", "/tr/", "/homebrewers/", "/breweries/"]);
 
 for (const route of routes) {
   for (const width of widths) {
@@ -88,7 +89,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
   });
 }
 
-for (const route of routes.filter((item) => item !== "/")) {
+for (const route of routes.filter((item) => item !== "/" && item !== "/tr/")) {
   test(`visible breadcrumb navigation is complete on ${route}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto(route, { waitUntil: "domcontentloaded" });
@@ -181,9 +182,9 @@ test("Business wizard routes teams above 20 seats to custom quote", async ({ pag
   await page.getByRole("button", { name: /Continue/ }).click();
   await page.getByLabel(/More than 20 users/).check();
   await expect(page.locator("#contact-tier")).toBeVisible();
-  await page.getByRole("button", { name: /Review contact request/ }).click();
+  await page.getByRole("button", { name: /Review custom quote details/ }).click();
   await expect(page.locator('[data-step="4"]')).toBeVisible();
   await expect(page.locator("#review-seats")).toContainText("custom quote");
-  await expect(page.locator("#wizard-feedback")).toContainText("tailored quote");
+  await expect(page.locator("#wizard-feedback")).toContainText("custom-quote guidance only");
   await expect(page.locator("#summary-seats")).toContainText("custom quote");
 });
