@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use storage::{ObjectLockMode, ObjectStore, S3Config, S3Store};
 use tokio::sync::watch;
 
-use crate::{Result, audit_anchor, retention};
+use crate::{Result, audit_anchor, retention, upload_cleanup};
 
 /// Job name: daily audit digest.
 pub const JOB_DIGEST: &str = "audit-digest-daily";
