@@ -1,7 +1,7 @@
 //! Scheduled maintenance jobs (T2.39). A tick runs every hour; `maintenance_runs` makes each
 //! job run once per interval, even with several worker replicas or restarts.
 
-use std::{sync::Arc, time::Duration};
+use std::{collections::BTreeSet, sync::Arc, time::Duration};
 
 use chrono::Utc;
 use db::maintenance::{RunStatus, claim_job, finish_job};
@@ -81,6 +81,58 @@ async fn record(pool: &PgPool, job: &str, outcome: Result<(RunStatus, String)>) 
     }
 }
 
+/// Summarizes one completed verification, emitting at most one system event.
+pub async fn report_findings(
+    pool: &PgPool,
+    report: &audit_anchor::VerifyReport,
+) -> (RunStatus, String) {
+    let status = if report.is_ok() {
+        RunStatus::Ok
+    } else {
+        if let Err(error) = enqueue_findings(pool, report).await {
+            tracing::error!(%error, "could not enqueue the audit digest findings event");
+        }
+        RunStatus::Findings
+    };
+    let details: Vec<_> = report
+        .findings
+        .iter()
+        .map(|finding| finding.detail.as_str())
+        .collect();
+    let detail = format!(
+        "chains {}, digests {}, missing days {}, findings: {}",
+        report.chains_verified,
+        report.digests_checked,
+        report.digests_missing,
+        details.join("; ")
+    );
+    (status, detail)
+}
+
+async fn enqueue_findings(pool: &PgPool, report: &audit_anchor::VerifyReport) -> db::Result<()> {
+    let kinds: BTreeSet<_> = report
+        .findings
+        .iter()
+        .map(|finding| finding.kind.code())
+        .collect();
+    let event = db::outbox::NewOutboxEvent {
+        topic: "audit.digest_check_failed".into(),
+        workspace_id: None,
+        entity: None,
+        data: Some(serde_json::json!({
+            "chains_verified": report.chains_verified,
+            "digests_checked": report.digests_checked,
+            "digests_missing": report.digests_missing,
+            "findings": report.findings.len(),
+            "kinds": kinds,
+        })),
+    };
+    let mut tx = pool.begin().await?;
+    db::outbox::enqueue(&mut tx, &event).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
 /// Runs every due job once.
 pub async fn tick(pool: &PgPool, store: Option<&dyn ObjectStore>) {
     tick_with_files(pool, store, None).await;
@@ -101,23 +153,10 @@ pub async fn tick_with_files(
             record(pool, JOB_DIGEST, outcome).await;
         }
         if claim(pool, JOB_VERIFY, WEEK).await {
-            let outcome = audit_anchor::verify_against_digests(pool, store, now)
-                .await
-                .map(|r| {
-                    let status = if r.is_ok() {
-                        RunStatus::Ok
-                    } else {
-                        RunStatus::Findings
-                    };
-                    let detail = format!(
-                        "chains {}, digests {}, missing days {}, findings: {}",
-                        r.chains_verified,
-                        r.digests_checked,
-                        r.digests_missing,
-                        r.findings.join("; ")
-                    );
-                    (status, detail)
-                });
+            let outcome = match audit_anchor::verify_against_digests(pool, store, now).await {
+                Ok(report) => Ok(report_findings(pool, &report).await),
+                Err(error) => Err(error),
+            };
             record(pool, JOB_VERIFY, outcome).await;
         }
     }

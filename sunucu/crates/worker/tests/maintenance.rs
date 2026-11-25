@@ -251,6 +251,28 @@ async fn daily_job_writes_a_locked_digest_once(pool: PgPool) {
     assert_eq!(again, DigestOutcome::Exists { key });
 }
 
+async fn findings_events(pool: &PgPool) -> Vec<(Option<Uuid>, serde_json::Value)> {
+    sqlx::query_as(
+        "SELECT workspace_id, payload FROM outbox WHERE topic = 'audit.digest_check_failed'",
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap()
+}
+
+#[test]
+fn finding_kinds_have_stable_event_codes() {
+    use audit_anchor::FindingKind::{ChainBroken, DigestMismatch, DigestMissing, Other};
+    for (kind, expected) in [
+        (ChainBroken, "chain_broken"),
+        (DigestMismatch, "digest_mismatch"),
+        (DigestMissing, "digest_missing"),
+        (Other, "other"),
+    ] {
+        assert_eq!(kind.code(), expected);
+    }
+}
+
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn weekly_check_passes_on_an_untouched_chain(pool: PgPool) {
     let (worker, ..) = setup(&pool).await;
@@ -273,6 +295,8 @@ async fn weekly_check_passes_on_an_untouched_chain(pool: PgPool) {
         report.digests_missing,
         usize::try_from(audit_anchor::VERIFY_WINDOW_DAYS).unwrap()
     );
+    worker::maintenance::tick(&worker, Some(&store)).await;
+    assert!(findings_events(&pool).await.is_empty());
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
@@ -296,9 +320,54 @@ async fn weekly_check_fails_when_a_chain_row_changes(pool: PgPool) {
         .unwrap();
     assert!(!report.is_ok());
     assert!(
-        report.findings.iter().any(|f| f.contains(&a.to_string())),
+        report
+            .findings
+            .iter()
+            .any(|f| f.detail.contains(&a.to_string())),
         "{report:?}"
     );
+    worker::maintenance::tick(&worker, Some(&store)).await;
+    worker::maintenance::tick(&worker, Some(&store)).await;
+    assert_eq!(
+        findings_events(&pool).await,
+        vec![(
+            None,
+            serde_json::json!({
+                "schema_version": 1,
+                "data": {
+                    "chains_verified": 2,
+                    "digests_checked": 1,
+                    "digests_missing": audit_anchor::VERIFY_WINDOW_DAYS,
+                    "findings": 1,
+                    "kinds": ["chain_broken"],
+                }
+            })
+        )]
+    );
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn enqueue_failure_preserves_recorded_findings(pool: PgPool) {
+    let (worker, ws, _) = setup(&pool).await;
+    tamper(
+        &pool,
+        "UPDATE audit_log SET reason = 'x' WHERE workspace_id = $1 AND seq = 2",
+        ws,
+    )
+    .await;
+    sqlx::query("ALTER TABLE outbox ADD CHECK (topic <> 'audit.digest_check_failed')")
+        .execute(&pool)
+        .await
+        .unwrap();
+    worker::maintenance::tick(&worker, Some(&MemoryStore::default())).await;
+    let status: String =
+        sqlx::query_scalar("SELECT last_status FROM maintenance_runs WHERE job = $1")
+            .bind(worker::maintenance::JOB_VERIFY)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(status, "findings");
+    assert!(findings_events(&pool).await.is_empty());
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
@@ -331,12 +400,18 @@ async fn weekly_check_fails_when_rows_and_head_are_cut_off_together(pool: PgPool
         .await
         .unwrap();
     assert!(
-        report.findings.iter().any(|f| f.contains("is missing")),
+        report
+            .findings
+            .iter()
+            .any(|f| f.detail.contains("is missing")),
         "{report:?}"
     );
     // The in-database chain check alone does not see this.
     assert!(
-        report.findings.iter().all(|f| !f.contains("is broken")),
+        report
+            .findings
+            .iter()
+            .all(|f| !f.detail.contains("is broken")),
         "{report:?}"
     );
 }
