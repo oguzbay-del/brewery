@@ -12,8 +12,8 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use uuid::Uuid;
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 use crate::{
     AppState, SERVICE_NAME,
@@ -294,10 +294,7 @@ pub fn routes(state: &AppState) -> Router<AppState> {
         .route("/v1/version", get(version))
         .route("/v1/meta/fields", get(meta_fields))
         .route("/v1/meta/client-requirements", get(client_requirements));
-    let protected = crate::authenticated(
-        state,
-        Router::new().route("/v1/meta", get(meta_modules)),
-    );
+    let protected = crate::authenticated(state, Router::new().route("/v1/meta", get(meta_modules)));
     public.merge(protected)
 }
 
@@ -306,7 +303,9 @@ pub fn routes(state: &AppState) -> Router<AppState> {
 /// Operation specs of this module (rows for `crate::openapi`).
 mod spec {
     use crate::error::ErrorCode;
-    use crate::error::ErrorCode::{Internal, MalformedRequest, NotFound, RateLimited, Unauthenticated, UpgradeRequired};
+    use crate::error::ErrorCode::{
+        Internal, MalformedRequest, NotFound, RateLimited, Unauthenticated, UpgradeRequired,
+    };
     use crate::openapi::OperationSpec;
 
     pub(super) const OPERATIONS: &[OperationSpec] = &[
@@ -336,7 +335,13 @@ mod spec {
             public: false,
             permission: None,
             concurrency: None,
-            errors: &[MalformedRequest, Unauthenticated, NotFound, RateLimited, Internal],
+            errors: &[
+                MalformedRequest,
+                Unauthenticated,
+                NotFound,
+                RateLimited,
+                Internal,
+            ],
         },
         OperationSpec {
             operation_id: "meta_client_requirements_get",
