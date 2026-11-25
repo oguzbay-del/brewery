@@ -89,6 +89,8 @@ The branch name also shows the actor: `claude/...`, `chatgpt/...`, `codex/...`.
 - When the head SHA changes, Claude reviews again (new `ref`, round + 1). When the PR is good, Claude removes `loop:fix-requested` and merges by section 7.
 - Codex reviews Claude PRs automatically (Codex setting). Codex reports only P0 and P1 points. Claude fixes each valid point on its branch and writes one `fix-done` marker with the list. Claude does not answer a point that it rejects more than once; it writes the reason in the `fix-done` comment.
 
+**Codex task path is off (owner decision, 2026-11-25).** The Codex connector answers task requests with "create an environment". Do not write `@codex` in a `fix-request` or `ci-fix` comment. Write the request without it. The ChatGPT scheduled task reads `loop:fix-requested` and takes the fix. Codex review (`@codex review` on Claude PRs) works and stays.
+
 ### 6.4 CI failures
 
 - Red CI on a ChatGPT or Codex PR: Claude writes one `ci-fix` comment with the job name and the first error lines, and `@codex fix the CI failures on this PR. Push to this branch.` The round limit applies.
