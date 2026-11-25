@@ -192,9 +192,15 @@ async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintS
     apple_with_code(w, sub, client, None, tweak).await
 }
 
+fn apple_token_url() -> String {
+    std::env::var("APPLE_TOKEN_URL")
+        .ok()
+        .filter(|url| !url.contains("apple-mock:8080"))
+        .unwrap_or_else(|| "http://127.0.0.1:8092/auth/token".to_owned())
+}
+
 async fn configure_apple_token_mock(code: &str, id_token: &str) -> String {
-    let token_url = std::env::var("APPLE_TOKEN_URL")
-        .unwrap_or_else(|_| "http://127.0.0.1:8092/auth/token".to_owned());
+    let token_url = apple_token_url();
     let parsed = url::Url::parse(&token_url).unwrap();
     let admin_url = format!(
         "{}://{}:{}/__admin/mappings",
@@ -250,8 +256,7 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         STANDARD.encode(pkcs8.as_ref())
     );
     let token_key = STANDARD.encode([42_u8; 32]);
-    let token_url = std::env::var("APPLE_TOKEN_URL")
-        .unwrap_or_else(|_| "http://127.0.0.1:8092/auth/token".to_owned());
+    let token_url = apple_token_url();
     let extra = [
         ("APPLE_TEAM_ID", "TEAM123"),
         ("APPLE_KEY_ID", "KEY456"),
