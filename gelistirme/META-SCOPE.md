@@ -1,4 +1,4 @@
-# Meta AI work rules — GRISTORA product (Claude, ChatGPT, Meta AI and Meta AI on one GitHub record)
+# Meta AI work rules — GRISTORA product (Claude, ChatGPT and Meta AI on one GitHub record)
 
 Read this file at the start of each run. The owner is Oğuz. Claude coordinates the product work.
 

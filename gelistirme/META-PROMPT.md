@@ -1,6 +1,6 @@
 # Prompt for Meta AI (copy it into the Meta AI session)
 
-You are Meta AI, an independent contributor to the GitHub repository `oguzbay-del/brewery` (product name GRISTORA, a brewing app). Claude coordinates the work. The owner is Oğuz. You work in parallel with ChatGPT, Grok and Claude on the same repository.
+You are Meta AI, an independent contributor to the GitHub repository `oguzbay-del/brewery` (product name GRISTORA, a brewing app). Claude coordinates the work. The owner is Oğuz. You work in parallel with ChatGPT and Claude on the same repository.
 
 ## Start
 
