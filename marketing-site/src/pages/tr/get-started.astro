@@ -60,8 +60,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <Breadcrumbs lang="tr" items={breadcrumbItems} />
       <section class="wizard-intro">
         <p class="eyebrow"><span class="eyebrow-line"></span> GRISTORA PLANINIZ</p>
-        <h1>Birkaç seçim. <em>Daha net bir uyum.</em></h1>
-        <p>Yolunuzu seçin, ekip büyüklüğünü belirleyin ve bir faturalama süresi seçin. Bu yalnızca bir yapılandırma önizlemesidir; hesap, deneme, ödeme veya talep oluşturulmaz.</p>
+        <h1>Ekibinize uygun <em>planı oluşturun.</em></h1>
+        <p>Üretim türünüzü, kullanıcı sayısını ve ödeme döneminizi seçerek örnek planınızı görün. Seçimleriniz abonelik başlatmaz veya teklif talebi göndermez.</p>
       </section>
       <div class="page-photo-band"><PagePhoto name="get-started-hero" lang="tr" eager /></div>
 
@@ -70,7 +70,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <ol class="wizard-progress" aria-label="Yapılandırma adımları">
             <li class="is-current" data-progress="1"><span>01</span><small>Yolunuz</small></li>
             <li data-progress="2"><span>02</span><small>Ekip büyüklüğü</small></li>
-            <li data-progress="3"><span>03</span><small>Faturalama</small></li>
+            <li data-progress="3"><span>03</span><small>Dönem</small></li>
             <li data-progress="4"><span>04</span><small>Gözden geçirme</small></li>
           </ol>
 
@@ -98,18 +98,18 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <label><input type="radio" name="seats" value="10" aria-label="10 kullanıcı" /><span>10 <small>kullanıcı</small></span></label>
                 <label><input type="radio" name="seats" value="15" aria-label="15 kullanıcı" /><span>15 <small>kullanıcı</small></span></label>
                 <label><input type="radio" name="seats" value="20" aria-label="20 kullanıcı" /><span>20 <small>kullanıcı</small></span></label>
-                <label><input type="radio" name="seats" value="20+" aria-label="20'den fazla kullanıcı" /><span>20+ <small>iletişim</small></span></label>
+                <label><input type="radio" name="seats" value="20+" aria-label="20'den fazla kullanıcı" /><span>20+ <small>özel plan</small></span></label>
               </fieldset>
-              <div class="contact-tier" id="contact-tier" hidden><strong>20'den fazla kişi mi?</strong><p>Size özel bir ekip seçeneği hazırlarız.</p><span>20+ kullanıcı · iletişim gerekir</span></div>
+              <div class="contact-tier" id="contact-tier" hidden><strong>20'den fazla kişi mi?</strong><p>Bu büyüklükteki ekipler için standart ödeme dönemi yok. Bir sonraki adımda seçimlerinizi görebilirsiniz.</p></div>
               <p class="step-helper"><a href={`${base}tr/compare/`}>Ev ve bira üreticisi işlev karşılaştırmasını inceleyin</a>.</p>
             </section>
 
             <section class="wizard-step" data-step="3" hidden>
               <p class="step-kicker">ADIM 03 / 04</p>
-              <h2 tabindex="-1"><em>Faturalama süresini</em> seçin.</h2>
+              <h2 tabindex="-1"><em>Ödeme dönemini</em> seçin.</h2>
               <p class="step-description">Daha uzun taahhütler, aylık referans fiyata göre daha büyük indirim alır.</p>
               <fieldset class="billing-options">
-                <legend>Faturalama sıklığı</legend>
+                <legend>Ödeme dönemi</legend>
                 <label><input type="radio" name="term" value="monthly" aria-label="Aylık faturalama" checked /><span><strong>Aylık</strong><small>Esnek, ay ay</small><b>%0 tasarruf</b></span></label>
                 <label><input type="radio" name="term" value="annual" aria-label="Yıllık faturalama" /><span><strong>Yıllık</strong><small>Bir yıllık taahhüt</small><b>%15 tasarruf</b></span></label>
                 <label><input type="radio" name="term" value="two-year" aria-label="İki yıllık faturalama" /><span><strong>2 yıl</strong><small>İki yıllık taahhüt</small><b>%25 tasarruf</b></span></label>
@@ -122,8 +122,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
             <section class="wizard-step" data-step="4" hidden>
               <p class="step-kicker">ADIM 04 / 04</p>
               <h2 tabindex="-1"><em>Planınızı</em> gözden geçirin.</h2>
-              <p class="step-description">Yapılandırmanızı kontrol edin.</p>
-              <dl class="review-list"><div><dt>Yol</dt><dd id="review-audience">—</dd></div><div><dt>Kullanıcılar</dt><dd id="review-seats">—</dd></div><div><dt>Faturalama</dt><dd id="review-term">—</dd></div><div><dt>Tasarruf</dt><dd id="review-discount">—</dd></div><div><dt>Deneme</dt><dd id="review-trial">—</dd></div><div><dt>Öngörülen ödeme yöntemi</dt><dd>Kredi veya banka kartı · burada toplanmaz</dd></div></dl>
+              <p class="step-description">Üretim türünüz, ekip büyüklüğünüz ve ödeme döneminiz aşağıda. Bu özet teklif talebi oluşturmaz.</p>
+              <dl class="review-list"><div><dt>Üretim türü</dt><dd id="review-audience">—</dd></div><div><dt>Kullanıcılar</dt><dd id="review-seats">—</dd></div><div><dt>Ödeme dönemi</dt><dd id="review-term">—</dd></div><div><dt>Tasarruf</dt><dd id="review-discount">—</dd></div><div><dt>Deneme</dt><dd id="review-trial">—</dd></div><div><dt>Öngörülen ödeme yöntemi</dt><dd>Kredi veya banka kartı · burada toplanmaz</dd></div></dl>
               <p class="step-helper">Herhangi bir seçimi değiştirmek için geri dönebilirsiniz. <a href={`${base}tr/pricing/`}>Tüm planları ve koşulları inceleyin</a>.</p>
             </section>
 
@@ -133,7 +133,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
         <aside class="wizard-summary" aria-live="polite">
           <p class="eyebrow">SEÇİMİNİZ</p><h2>Plan <em>özeti</em></h2>
-          <dl><div><dt>Yol</dt><dd id="summary-audience">Bir yol seçin</dd></div><div><dt>Kullanıcılar</dt><dd id="summary-seats">—</dd></div><div><dt>Süre</dt><dd id="summary-term">Aylık</dd></div><div><dt>Tasarruf</dt><dd id="summary-discount">%0</dd></div><div><dt>Deneme</dt><dd id="summary-trial">Bir yol seçin</dd></div></dl>
+          <dl><div><dt>Üretim türü</dt><dd id="summary-audience">Bir yol seçin</dd></div><div><dt>Kullanıcılar</dt><dd id="summary-seats">—</dd></div><div><dt>Süre</dt><dd id="summary-term">Aylık</dd></div><div><dt>Tasarruf</dt><dd id="summary-discount">%0</dd></div><div><dt>Deneme</dt><dd id="summary-trial">Bir yol seçin</dd></div></dl>
           <p class="summary-note">Yalnızca önerilen koşullar: Ev için planlanan üç aylık, bira üreticisi için planlanan bir aylık deneme vardır. Bu önizlemede iki deneme de etkin değildir.</p>
           <a href={`${base}tr/compare/`}>İşlevleri karşılaştırın ↗</a>
         </aside>
@@ -163,8 +163,6 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
             if (n === step) item.setAttribute("aria-current", "step"); else item.removeAttribute("aria-current");
           });
           byId("wizard-back").disabled = step === 1;
-          byId("wizard-next").textContent = step === 4 ? "Gözden geçirme tamamlandı" : "Devam →";
-          byId("wizard-next").disabled = step === 4;
           byId("home-seat").hidden = state.audience !== "home";
           byId("business-seats").hidden = state.audience !== "business";
           byId("contact-tier").hidden = state.seats !== "20+";
@@ -183,7 +181,9 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           byId("review-discount").textContent = state.seats === "20+" ? "Üzerinde anlaşılacak" : discounts[state.term];
           byId("review-trial").textContent = state.audience === "home" ? "3 ay" : "1 ay";
           byId("wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
-          byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "İletişim talebini gözden geçirin →" : step === 4 ? "Gözden geçirme tamamlandı" : "Devam →";
+          const nextIsSummary = step === 3 || (step === 2 && state.seats === "20+");
+          byId("wizard-next").hidden = step === 4;
+          byId("wizard-next").textContent = nextIsSummary ? "Plan özetini gör" : "Devam";
           if (!(step === 4 && state.seats === "20+")) byId("wizard-feedback").textContent = "";
         };
         form.querySelectorAll('input[name="audience"]').forEach((input) => input.addEventListener("change", () => {
@@ -198,12 +198,18 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           if (step < 4) {
             step = step === 2 && state.seats === "20+" ? 4 : step + 1;
             update();
-            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "20'den fazla kişilik bir ekip, size özel bir teklif gerektirir.";
+            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "20 kişiyi aşan ekipler için ödeme koşulları ayrıca belirlenir.";
             const heading = document.querySelector(".wizard-step:not([hidden]) h2");
             if (heading) heading.focus();
           }
         });
-        byId("wizard-back").addEventListener("click", () => { if (step > 1) { step -= 1; update(); } });
+        byId("wizard-back").addEventListener("click", () => {
+          if (step > 1) {
+            step = step === 4 && state.seats === "20+" ? 2 : step - 1;
+            update();
+            document.querySelector(".wizard-step:not([hidden]) h2")?.focus();
+          }
+        });
         if (state.audience) {
           const selected = form.querySelector('input[name="audience"][value="' + state.audience + '"]');
           if (selected) selected.checked = true;

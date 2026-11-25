@@ -11,6 +11,7 @@ import "../../../styles/learning-pages.css";
 import "../../../styles/faq-evidence.css";
 import "../../../styles/modules.css";
 import "../../../styles/stitch-layout.css";
+import { moduleLabelsTr } from "../../../data/modules.tr";
 import { featuresTr, audienceLabelTr } from "../../../data/features.tr";
 
 export function getStaticPaths() {
@@ -68,11 +69,12 @@ const audienceText = feature.audiences.map((audience) => audienceLabelTr[audienc
     <main id="main-content" class="feature-detail-page">
       <Breadcrumbs lang="tr" items={breadcrumbItems} />
       <section class="feature-detail-hero shell">
-        <p class="eyebrow feature-detail-chip"><span class="eyebrow-line"></span> {feature.eyebrow}</p>
+        <p class="eyebrow feature-detail-chip"><span class="eyebrow-line"></span> PLANLANAN İŞ AKIŞI · {feature.eyebrow}</p>
         <h1>{feature.title}</h1>
         <p class="feature-lead">{feature.summary}</p>
         <div class="feature-tags">
           {audienceText.map((audience) => <span class="feature-tag">{audience}</span>)}
+          {feature.modules.map((moduleId) => <a class="feature-tag feature-module-tag" href={`${base}tr/modules/#${moduleId}`}>Modül · {moduleLabelsTr[moduleId]}</a>)}
         </div>
       </section>
       {featurePhoto(feature.slug) && <div class="page-photo-band"><PagePhoto name={featurePhoto(feature.slug)!} lang="tr" eager /></div>}

@@ -159,7 +159,6 @@ spec:
   ingress:
     - from:
         - podSelector:
-            matchExpressions:
-              - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest] }
+            matchLabels: { app.kubernetes.io/name: api }
       ports:
         - { protocol: TCP, port: 6379 }

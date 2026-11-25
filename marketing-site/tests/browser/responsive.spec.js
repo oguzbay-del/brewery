@@ -157,7 +157,7 @@ test("plan wizard supports Home and Business journeys, terms and review", async 
   await page.getByRole("button", { name: /Continue/ }).click();
   await expect(page.locator('[data-step="3"]')).toBeVisible();
   await page.getByLabel(/Annual billing/).check();
-  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.getByRole("button", { name: /View plan summary/ }).click();
   await expect(page.locator('[data-step="4"]')).toBeVisible();
   await expect(page.locator("#review-audience")).toHaveText("Homebrewer");
   await expect(page.locator("#review-seats")).toHaveText("1 user");
@@ -169,7 +169,7 @@ test("plan wizard supports Home and Business journeys, terms and review", async 
   await expect(page.locator("#business-seats")).toBeVisible();
   await page.getByLabel(/10/).check();
   await page.getByRole("button", { name: /Continue/ }).click();
-  await page.getByRole("button", { name: /Continue/ }).click();
+  await page.getByRole("button", { name: /View plan summary/ }).click();
   await expect(page.locator("#review-audience")).toHaveText("Professional Brewery");
   await expect(page.locator("#review-seats")).toHaveText("10 users");
   await expect(page.locator("#review-trial")).toHaveText("1 month");
@@ -182,9 +182,11 @@ test("Business wizard routes teams above 20 seats to custom quote", async ({ pag
   await page.getByRole("button", { name: /Continue/ }).click();
   await page.getByLabel(/More than 20 users/).check();
   await expect(page.locator("#contact-tier")).toBeVisible();
-  await page.getByRole("button", { name: /Review custom quote details/ }).click();
+  await page.getByRole("button", { name: /View plan summary/ }).click();
   await expect(page.locator('[data-step="4"]')).toBeVisible();
   await expect(page.locator("#review-seats")).toContainText("custom quote");
   await expect(page.locator("#wizard-feedback")).toContainText("custom-quote guidance only");
   await expect(page.locator("#summary-seats")).toContainText("custom quote");
+  await page.getByRole("button", { name: "Back" }).click();
+  await expect(page.locator('[data-step="2"]')).toBeVisible();
 });
