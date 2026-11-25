@@ -11,7 +11,7 @@ use ingest::{IngestState, jws::JwsVerifier};
 use ring::hmac;
 use serde_json::{Value, json};
 use sqlx::{PgPool, postgres::PgPoolOptions};
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, fmt::Write as _, sync::Arc};
 use tower::ServiceExt;
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
