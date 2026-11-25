@@ -32,9 +32,7 @@ export function resolveLocale(
   browserLanguage?: string,
 ): Locale {
   try {
-    const saved = (storage ?? globalThis.localStorage)?.getItem(
-      LOCALE_STORAGE_KEY,
-    );
+    const saved = (storage ?? globalThis.localStorage)?.getItem(LOCALE_STORAGE_KEY);
     if (isLocale(saved)) return saved;
   } catch {
     // Storage can be disabled by browser privacy settings.
@@ -64,9 +62,7 @@ function lookup(locale: Locale, key: string): string | undefined {
   }
   if (key.startsWith('fields.')) {
     const rest = key.slice(7);
-    const field = Object.keys(texts.fields).find((candidate) =>
-      rest.startsWith(`${candidate}.`),
-    );
+    const field = Object.keys(texts.fields).find((candidate) => rest.startsWith(`${candidate}.`));
     if (field) {
       const property = rest.slice(field.length + 1);
       if (property === 'label' || property === 'hint') {
@@ -100,11 +96,7 @@ function interpolate(value: string, params: TextParams): string {
   });
 }
 
-export function translate(
-  key: string,
-  locale: Locale,
-  params: TextParams = {},
-): string {
+export function translate(key: string, locale: Locale, params: TextParams = {}): string {
   const value = lookup(locale, key);
   if (value === undefined) {
     if (!warnedKeys.has(key)) {
