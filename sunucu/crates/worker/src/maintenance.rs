@@ -19,6 +19,10 @@ pub const JOB_VERIFY: &str = "audit-digest-verify-weekly";
 pub const JOB_RETENTION: &str = "external-events-retention";
 /// Job name: permanent delete of records soft-deleted more than 30 days ago (T2.37).
 pub const JOB_SOFT_DELETES: &str = "soft-delete-purge";
+/// Job name: close support requests resolved more than 14 days ago.
+pub const JOB_SUPPORT_CLOSE: &str = "support-close-resolved";
+/// Days a resolved support request stays open for the customer before it is closed.
+pub const CLOSE_AFTER_DAYS: i64 = 14;
 /// Job name: account deletion after its grace period (T2.31c).
 pub const JOB_ACCOUNT_DELETIONS: &str = "account-deletion-purge";
 
@@ -132,6 +136,13 @@ pub async fn tick_with_files(
     if claim(pool, JOB_ACCOUNT_DELETIONS, TICK).await {
         let outcome = crate::account_deletion::purge_due(pool, file_store).await;
         record(pool, JOB_ACCOUNT_DELETIONS, outcome).await;
+    }
+    if claim(pool, JOB_SUPPORT_CLOSE, DAY).await {
+        let cutoff = now - chrono::Duration::days(CLOSE_AFTER_DAYS);
+        let outcome = db::maintenance::close_resolved_support_requests(pool, cutoff)
+            .await
+            .map(|n| (RunStatus::Ok, format!("closed {n}")));
+        record(pool, JOB_SUPPORT_CLOSE, outcome).await;
     }
     if claim(pool, JOB_SOFT_DELETES, DAY).await {
         let outcome = retention::purge_soft_deletes(pool, now)
