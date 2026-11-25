@@ -192,7 +192,7 @@ pub fn is_free_module(module_id: &str) -> bool {
         .any(|module| module.id == module_id && module.free)
 }
 
-/// Evaluates the mode + single PAID_FEATURE rule.
+/// Evaluates the mode + single `PAID_FEATURE` rule.
 #[must_use]
 pub fn is_module_enabled(module_id: &str, mode: &str, has_paid_feature: bool) -> bool {
     let Some(module) = PRODUCT_MODULES.iter().find(|module| module.id == module_id) else {
@@ -239,7 +239,7 @@ fn path_module_map() -> &'static [(String, &'static str)] {
     })
 }
 
-/// Resolves a request path (or OpenAPI path template) to its product module.
+/// Resolves a request path (or `OpenAPI` path template) to its product module.
 #[must_use]
 pub fn module_for_path(path: &str) -> Option<&'static str> {
     // Accepting an invitation is onboarding; workspace-scoped invitation management is Team.
