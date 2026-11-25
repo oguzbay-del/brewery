@@ -219,7 +219,8 @@ pub(crate) async fn workspace_mode_and_paid(
     tx.commit().await?;
     let has_paid_feature = matches!(
         access.source,
-        billing::access::AccessSource::Subscription
+        billing::access::AccessSource::Trial
+            | billing::access::AccessSource::Subscription
             | billing::access::AccessSource::Promo
             | billing::access::AccessSource::Manual
     );
