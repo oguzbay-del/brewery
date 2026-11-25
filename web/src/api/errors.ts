@@ -27,11 +27,7 @@ export class ApiError extends Error {
   readonly errors: ApiFieldIssue[];
   readonly problem: ApiProblem | null;
 
-  constructor(
-    status: number,
-    problem: ApiProblem | null,
-    fallbackRequestId?: string | null,
-  ) {
+  constructor(status: number, problem: ApiProblem | null, fallbackRequestId?: string | null) {
     const code = problem?.code ?? ('internal' as ApiErrorCode);
     super(`HTTP ${status} (${code})`);
     this.name = 'ApiError';
@@ -46,11 +42,7 @@ export class ApiError extends Error {
 export class StaleVersionError extends ApiError {
   readonly current: Record<string, unknown> & { conflicting_fields: string[] };
 
-  constructor(
-    status: number,
-    problem: ApiProblem | null,
-    fallbackRequestId?: string | null,
-  ) {
+  constructor(status: number, problem: ApiProblem | null, fallbackRequestId?: string | null) {
     super(status, problem, fallbackRequestId);
     this.name = 'StaleVersionError';
     const raw = problem?.current;
@@ -62,10 +54,11 @@ export class StaleVersionError extends ApiError {
   }
 }
 
-export async function apiErrorFromResponse(
-  response: Response,
-): Promise<ApiError> {
-  const value: unknown = await response.clone().json().catch(() => null);
+export async function apiErrorFromResponse(response: Response): Promise<ApiError> {
+  const value: unknown = await response
+    .clone()
+    .json()
+    .catch(() => null);
   const problem = readProblem(value);
   const requestId = response.headers.get('x-request-id');
   if (response.status === 412) {
