@@ -126,10 +126,11 @@ Haftalık rapor bekleme. Her işin başında aşağıdaki yönlendirmeyi uygula:
 
 - Model seçimi için `gelistirme/ISLER.md)'deki açık Model sütunu önceliklidir.
 - Claude ana oturum modelini kendi değiştiremez. Alt ajan görevinde iş için yeterli en düşük modeli seç. Kullanıcıya ana oturum modeli değişikliği gerekiyorsa tek satır öneri ver.
+- Alt ajan çağrısında `model` parametresini her zaman açıkça ver; verilmezse ajan ana oturumun modelini (Opus) kullanır ve limit hızla biter. Opus alt ajanı yalnız güvenlik yollu C sınıfı inceleme, ADR, mimari ve ürün kararı için; diğer inceleme, test ve düzeltme Sonnet, liste ve etiket işi Haiku (döngüdeki karşılığı: `gelistirme/dongu/README.md` › 7b; Oğuz, 25.11.2026).
 - Bir alt görev başarısız olursa yalnız o görevi bir üst modele yükselt. Varsayılan olarak tüm işleri Opus'a verme.
 - Önce ilgili dosyayı ve ilgili başlığı oku. Tam repo, tam plan veya tüm geçmişi her görevde yeniden yükleme.
 - Alt ajan talimatında yalnız gerekli dosya yollarını/bölümlerini, görev kapsamını, bitti ölçütünü ve test komutlarını ver. Alt ajan raporu en fazla 20 satır olsun.
 - Test ve derleme çıktısını filtrele; tam çıktıyı yalnız hata ayıklamak için oku. Tam workspace testlerini ve kapsamlı denetimleri uygun aşamada bir kez çalıştır.
-- Bağımlı işleri tek ajan içinde sırayla yürüt. Yalnız bağımsız işleri paralel çalıştır; aynı anda en fazla 2–3 ajan kullan.
+- Bağımlı işleri tek ajan içinde sırayla yürüt. Yalnız bağımsız işleri paralel çalıştır; aynı anda en fazla 2 ajan kullan.
 - İşin kapsamı büyür veya bağlam gereksiz büyürse tutarlı bir noktada dur, `OTURUM.md)'yi güncelle ve yeni oturum için devir notu bırak.
 - Token telemetrisi yoksa tüketim, maliyet veya tasarruf yüzdesi uydurma. Gözlenen veri ile tahmini öneriyi açıkça ayır.
