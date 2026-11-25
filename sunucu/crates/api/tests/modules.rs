@@ -169,7 +169,9 @@ async fn team_routes_require_business_mode_and_one_active_paid_feature(pool: PgP
     assert_eq!(disabled.body["code"], "module_disabled");
 
     insert_paid_feature(&pool, workspace).await;
-    let request = support::req("GET", &path, Some(user)).body(Body::empty()).unwrap();
+    let request = support::req("GET", &path, Some(user))
+        .body(Body::empty())
+        .unwrap();
     let enabled = send(&app, request).await;
     assert_eq!(enabled.status, StatusCode::OK);
 }
