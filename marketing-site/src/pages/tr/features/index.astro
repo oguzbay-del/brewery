@@ -1,4 +1,5 @@
 ---
+import WorkflowLinks from "../../../components/WorkflowLinks.astro";
 import PagePhoto from "../../../components/PagePhoto.astro";
 import FontPreload from "../../../components/FontPreload.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
@@ -59,17 +60,17 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <Breadcrumbs lang="tr" items={breadcrumbItems} />
       <section class="feature-hero shell">
         <p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜN</p>
-        <h1>Profesyonel bira üretimi için <em>bağlantılı bir çalışma alanı.</em></h1>
-        <p class="feature-lead">GRISTORA önce profesyonel bira üreticisi iş akışları etrafında tasarlanır: reçete standartları, üretim planlaması, parti kayıtları ve kalite bağlamı. Ev biracıları için ayrı bir yol da ürünün parçasıdır.</p>
-        <div class="feature-hero-meta"><span>16 ürün alanı</span><span>Önce işletme · Ev biracıları yolu ayrı</span></div>
+        <h1>Üretimde hangi işi <em>incelemek istersiniz?</em></h1>
+        <p class="feature-lead">GRISTORA geliştirme aşamasında. Bir iş seçerek planlanan adımları ve o işi kapsayan modülleri inceleyebilirsiniz.</p>
+        <WorkflowLinks lang="tr" />
       </section>
       <div class="page-photo-band"><PagePhoto name="features-hero" lang="tr" eager /></div>
       <section class="feature-directory section-pad">
         <div class="shell">
           <div class="section-heading feature-section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> ÜRÜNÜ KEŞFEDİN</p>
-            <h2>Bira üretim akışının her parçasının <em>bir yeri var.</em></h2>
-            <p>Her alanın kendi sayfasında iş akışları, ayrıntılı yetenekler ve hedef kitle yer alır.</p>
+            <h2>Tüm üretim <em>iş akışları</em></h2>
+            <p>Önce profesyonel bira üreticileri için planlanan iş akışlarını inceleyin. Her sayfada ilgili modülleri ve o işin ev biracılarını da kapsayıp kapsamadığını görebilirsiniz.</p>
           </div>
           <div class="feature-card-grid">
             {featuresTr.map((feature, index) => (
