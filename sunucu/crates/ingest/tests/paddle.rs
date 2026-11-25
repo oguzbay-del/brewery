@@ -111,7 +111,7 @@ async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgP
         }
     };
 
-    let (first_status, first_body) = send(signature.clone(), body.clone()).await;
+    let (first_status, first_body) = send(signature, body.clone()).await;
     assert_eq!(first_status, StatusCode::OK);
     assert_eq!(first_body["status"], "accepted");
 
@@ -128,14 +128,18 @@ async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgP
     .unwrap();
     assert_eq!(count, 1);
 
-    let (bad_status, _) = send(format!("ts={timestamp};h1=00"), body).await;
+    let rejected_id = format!("evt_{}", uuid::Uuid::now_v7().simple());
+    let mut rejected: Value = serde_json::from_slice(&body).unwrap();
+    rejected["event_id"] = json!(rejected_id);
+    let rejected_body = serde_json::to_vec(&rejected).unwrap();
+    let (bad_status, _) = send(format!("ts={timestamp};h1=00"), rejected_body).await;
     assert_eq!(bad_status, StatusCode::UNAUTHORIZED);
     let count: i64 = sqlx::query_scalar(
         "SELECT count(*) FROM external_events WHERE source='web_payment' AND delivery_id=$1",
     )
-    .bind(&event_id)
+    .bind(&rejected_id)
     .fetch_one(&base)
     .await
     .unwrap();
-    assert_eq!(count, 1);
+    assert_eq!(count, 0);
 }

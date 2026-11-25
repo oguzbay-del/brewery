@@ -467,20 +467,38 @@ mod tests {
         assert_eq!(update.notification_id, "evt_stable");
         assert_eq!(update.workspace_id, Uuid::parse_str(WORKSPACE).ok());
 
-        for status in ["trialing", "past_due", "paused", "canceled"] {
+        let period_end = "2026-12-31T00:00:00Z";
+        assert_eq!(update.period_ends_at, Some(period_end.parse().unwrap()));
+
+        for (status, kind, end) in [
+            ("trialing", UpdateKind::Active, period_end),
+            ("past_due", UpdateKind::Grace, "2027-01-16T00:00:00Z"),
+            ("paused", UpdateKind::Expired, "2026-12-20T00:00:00Z"),
+            ("canceled", UpdateKind::Expired, "2026-12-21T00:00:00Z"),
+        ] {
             let body = payload("subscription.updated", status);
             let update = provider
                 .parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body)
                 .ok()
                 .flatten()
                 .unwrap();
-            let expected = match status {
-                "past_due" => UpdateKind::Grace,
-                "paused" | "canceled" => UpdateKind::Expired,
-                _ => UpdateKind::Active,
-            };
-            assert_eq!(update.kind, expected);
+            assert_eq!(update.kind, kind);
+            assert_eq!(update.period_ends_at, Some(end.parse().unwrap()));
         }
+    }
+
+    #[test]
+    fn cancellation_without_canceled_at_uses_occurrence_time() {
+        let mut event: Value =
+            serde_json::from_slice(&payload("subscription.updated", "canceled")).unwrap();
+        event["data"].as_object_mut().unwrap().remove("canceled_at");
+        let body = serde_json::to_vec(&event).unwrap();
+        let update = provider()
+            .parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body)
+            .unwrap()
+            .unwrap();
+        assert_eq!(update.kind, UpdateKind::Expired);
+        assert_eq!(update.period_ends_at, Some(update.occurred_at));
     }
 
     #[test]
