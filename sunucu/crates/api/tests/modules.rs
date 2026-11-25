@@ -4,27 +4,24 @@
 
 mod support;
 
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use api::{
     AppState,
     modules::{self, MODULES},
     redis_client::Redis,
 };
-use axum::{
-    Router,
-    body::Body,
-    http::StatusCode,
-    middleware::from_fn_with_state,
-    routing::get,
-};
+use axum::{Router, body::Body, http::StatusCode, middleware::from_fn_with_state, routing::get};
 use serde_json::Value;
 use sqlx::PgPool;
 use support::{FakeAuth, insert_user, insert_workspace, send, state_with};
 use uuid::Uuid;
 
 fn team_path_template() -> String {
-    let module = MODULES.iter().find(|module| module.name == "access").unwrap();
+    let module = MODULES
+        .iter()
+        .find(|module| module.name == "access")
+        .unwrap();
     let document = (module.openapi)();
     document
         .paths
@@ -110,8 +107,12 @@ fn paths_resolve_to_product_modules_and_exports_are_exempt() {
         modules::module_for_path("/v1/workspaces/{workspace_id}/vessels"),
         Some("production")
     );
-    assert!(modules::is_export_path("/v1/workspaces/{workspace_id}/exports"));
-    assert!(!modules::is_export_path("/v1/workspaces/{workspace_id}/stock/lots"));
+    assert!(modules::is_export_path(
+        "/v1/workspaces/{workspace_id}/exports"
+    ));
+    assert!(!modules::is_export_path(
+        "/v1/workspaces/{workspace_id}/stock/lots"
+    ));
 }
 
 #[test]
@@ -160,7 +161,9 @@ async fn team_routes_require_business_mode_and_one_active_paid_feature(pool: PgP
     let template = team_path_template();
     let path = concrete_path(&template, workspace);
     let app = module_gate_router(state, &template);
-    let request = support::req("GET", &path, Some(user)).body(Body::empty()).unwrap();
+    let request = support::req("GET", &path, Some(user))
+        .body(Body::empty())
+        .unwrap();
     let disabled = send(&app, request).await;
     assert_eq!(disabled.status, StatusCode::FORBIDDEN);
     assert_eq!(disabled.body["code"], "module_disabled");
@@ -222,9 +225,11 @@ async fn meta_endpoint_returns_the_callers_workspace_module_state(pool: PgPool) 
     let paid_reply = send(&app, request).await;
     assert_eq!(paid_reply.status, StatusCode::OK);
     let paid_modules = paid_reply.body["modules"].as_array().unwrap();
-    assert!(paid_modules
-        .iter()
-        .find(|module| module["id"] == "team")
-        .and_then(|module| module["enabled"].as_bool())
-        .unwrap());
+    assert!(
+        paid_modules
+            .iter()
+            .find(|module| module["id"] == "team")
+            .and_then(|module| module["enabled"].as_bool())
+            .unwrap()
+    );
 }
