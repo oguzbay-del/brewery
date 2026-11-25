@@ -225,7 +225,7 @@ services:
       APPLE_KEY_ID: ${APPLE_KEY_ID:-}
       APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
       # Local-only development key. Production must use a secret-manager value.
-      PROVIDER_TOKEN_KEY: ${PROVIDER_TOKEN_KEY:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
+      PROVIDER_TOKEN_KEY: ${PROVIDER_TOKEN_KEY:-ZGVtbGVtZS1sb2NhbC1wcm92aWRlci1rZXktMDAwMDE=}
       GOOGLE_CLIENT_IDS: demleme-dev.apps.googleusercontent.example
       GOOGLE_ISSUER: http://fake-oidc:9000/google
       GOOGLE_JWKS_URL: http://fake-oidc:9000/google/jwks
