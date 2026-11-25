@@ -116,9 +116,23 @@ async fn create_workspace(pool: &PgPool, workspace_id: Uuid) {
     .unwrap();
 }
 
-async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: DateTime<Utc>) {
+async fn create_upload_rows(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    base: u128,
+    now: DateTime<Utc>,
+) -> Vec<String> {
     let request_id = Uuid::from_u128(base + 1);
     let message_id = Uuid::from_u128(base + 2);
+    let keys = vec![
+        format!("{workspace_id}/attachments/deleted-attachment"),
+        format!("{workspace_id}/attachments/incomplete-attachment"),
+        format!("{workspace_id}/attachments/complete-attachment"),
+        format!("{workspace_id}/attachments/retry-attachment"),
+        format!("{workspace_id}/documents/deleted-document"),
+        format!("{workspace_id}/documents/recent-document"),
+        format!("{workspace_id}/documents/legal-hold-document"),
+    ];
     sqlx::query(
         "INSERT INTO support_requests (id, workspace_id, topic, title)
          VALUES ($1, $2, 'export_help', 'Upload cleanup test')",
@@ -134,8 +148,8 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
          VALUES ($1, $2, $3, 'system', NULL, 'test', 'internal')",
     )
     .bind(message_id)
-    .bind(workspace_id)
     .bind(request_id)
+    .bind(workspace_id)
     .execute(pool)
     .await
     .unwrap();
@@ -144,12 +158,13 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, uploaded_at, created_at, deleted_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, 'cleanup/deleted-attachment',
-            'text/plain', 4, decode(repeat('11', 32), 'hex'), $4, $5, $6)",
+         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+            'text/plain', 4, decode(repeat('11', 32), 'hex'), $5, $6, $7)",
     )
     .bind(Uuid::from_u128(base + 3))
     .bind(workspace_id)
     .bind(message_id)
+    .bind(&keys[0])
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(2))
@@ -161,12 +176,13 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, created_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, 'cleanup/incomplete-attachment',
-            'text/plain', 4, decode(repeat('22', 32), 'hex'), $4)",
+         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+            'text/plain', 4, decode(repeat('22', 32), 'hex'), $5)",
     )
     .bind(Uuid::from_u128(base + 4))
     .bind(workspace_id)
     .bind(message_id)
+    .bind(&keys[1])
     .bind(now - chrono::Duration::hours(25))
     .execute(pool)
     .await
@@ -176,12 +192,13 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, uploaded_at, created_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, 'cleanup/complete-attachment',
-            'text/plain', 4, decode(repeat('33', 32), 'hex'), $4, $5)",
+         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+            'text/plain', 4, decode(repeat('33', 32), 'hex'), $5, $6)",
     )
     .bind(Uuid::from_u128(base + 5))
     .bind(workspace_id)
     .bind(message_id)
+    .bind(&keys[2])
     .bind(now - chrono::Duration::days(2))
     .bind(now - chrono::Duration::days(2))
     .execute(pool)
@@ -192,12 +209,13 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, uploaded_at, created_at, deleted_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, 'cleanup/retry-attachment',
-            'text/plain', 4, decode(repeat('44', 32), 'hex'), $4, $5, $6)",
+         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+            'text/plain', 4, decode(repeat('44', 32), 'hex'), $5, $6, $7)",
     )
     .bind(Uuid::from_u128(base + 6))
     .bind(workspace_id)
     .bind(message_id)
+    .bind(&keys[3])
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(2))
@@ -209,11 +227,12 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
     sqlx::query(
         "INSERT INTO scanned_documents (id, workspace_id, form_type, object_key,
             content_type, size_bytes, sha256, uploaded_at, created_at, deleted_at)
-         VALUES ($1, $2, 'brew_log', 'cleanup/deleted-document',
-            'application/pdf', 4, decode(repeat('55', 32), 'hex'), $3, $4, $5)",
+         VALUES ($1, $2, 'brew_log', $3,
+            'application/pdf', 4, decode(repeat('55', 32), 'hex'), $4, $5, $6)",
     )
     .bind(Uuid::from_u128(base + 7))
     .bind(workspace_id)
+    .bind(&keys[4])
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(2))
@@ -225,11 +244,12 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
     sqlx::query(
         "INSERT INTO scanned_documents (id, workspace_id, form_type, object_key,
             content_type, size_bytes, sha256, created_at)
-         VALUES ($1, $2, 'brew_log', 'cleanup/recent-document',
-            'application/pdf', 4, decode(repeat('66', 32), 'hex'), $3)",
+         VALUES ($1, $2, 'brew_log', $3,
+            'application/pdf', 4, decode(repeat('66', 32), 'hex'), $4)",
     )
     .bind(Uuid::from_u128(base + 8))
     .bind(workspace_id)
+    .bind(&keys[5])
     .bind(now - chrono::Duration::hours(23))
     .execute(pool)
     .await
@@ -239,16 +259,19 @@ async fn create_upload_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: 
     sqlx::query(
         "INSERT INTO scanned_documents (id, workspace_id, form_type, object_key,
             content_type, size_bytes, sha256, legal_hold, retention_until, created_at)
-         VALUES ($1, $2, 'brew_log', 'cleanup/legal-hold-document',
-            'application/pdf', 4, decode(repeat('77', 32), 'hex'), true, $3, $4)",
+         VALUES ($1, $2, 'brew_log', $3,
+            'application/pdf', 4, decode(repeat('77', 32), 'hex'), true, $4, $5)",
     )
     .bind(Uuid::from_u128(base + 9))
     .bind(workspace_id)
+    .bind(&keys[6])
     .bind(now + chrono::Duration::days(30))
     .bind(now - chrono::Duration::days(2))
     .execute(pool)
     .await
     .unwrap();
+
+    keys
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
