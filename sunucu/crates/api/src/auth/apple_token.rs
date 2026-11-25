@@ -216,7 +216,7 @@ mod tests {
         assert_eq!(claims["iss"], "TEAM123");
         assert_eq!(claims["sub"], "com.example.ios");
         assert_eq!(claims["aud"], "https://appleid.apple.com");
-        assert!(claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap() == 300);
+        assert_eq!(claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap(), 300);
         let signing_input = token.rsplit_once('.').unwrap().0;
         UnparsedPublicKey::new(
             &signature::ECDSA_P256_SHA256_FIXED,
