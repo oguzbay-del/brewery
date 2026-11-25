@@ -1,0 +1,16 @@
+{
+  "event_id": "evt_01j00000000000000000000001",
+  "event_type": "subscription.activated",
+  "occurred_at": "2026-11-25T12:00:00Z",
+  "notification_id": "ntf_01j00000000000000000000001",
+  "data": {
+    "id": "sub_01j00000000000000000000001",
+    "status": "active",
+    "items": [{"price": {"id": "pri_example_home"}}],
+    "custom_data": {"workspace_id": "123e4567-e89b-12d3-a456-426614174000"},
+    "current_billing_period": {
+      "starts_at": "2026-11-25T12:00:00Z",
+      "ends_at": "2026-12-25T12:00:00Z"
+    }
+  }
+}
