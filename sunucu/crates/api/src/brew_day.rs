@@ -2,13 +2,15 @@
 //! signed and with an expiry time.
 //!
 //! The package is a snapshot of what the recipe version says on the brew day. The client works
-//! from it without a connection. The server signs the package (HMAC-SHA256) with a key from the
-//! environment: `BREW_PACKAGE_KEY` or `BREW_PACKAGE_KEY_FILE`, and `BREW_PACKAGE_KEY_ID` (default
-//! `k1`). A measurement that names the package ID is accepted only when the package belongs to
-//! the batch, has not expired, is not revoked and still has a valid signature
-//! ([`check_package`]).
+//! from it without a connection. The server signs the package (HMAC-SHA256).
 //!
-//! TODO: key rotation with a list of previous keys. Today only the current key verifies.
+//! The current key is `BREW_PACKAGE_KEY` or `BREW_PACKAGE_KEY_FILE`, with `BREW_PACKAGE_KEY_ID`
+//! (default `k1`). Previous IDs come from `BREW_PACKAGE_PREVIOUS_KEY_IDS` (comma separated); each
+//! secret uses `BREW_PACKAGE_KEY_<ID>` or `BREW_PACKAGE_KEY_<ID>_FILE` (uppercase ID, `-` to `_`).
+//! New packages use only the current key; verification selects a key by the stored `key_id`.
+//!
+//! A measurement that names the package ID is accepted only when the package belongs to the
+//! batch, has not expired, is not revoked and still has a valid signature ([`check_package`]).
 
 #![allow(
     clippy::too_many_lines,
@@ -54,14 +56,35 @@ pub const MAX_VALID_HOURS: i64 = 168;
 
 // --- signing key --------------------------------------------------------------------------
 
-static KEY_OVERRIDE: RwLock<Option<(Vec<u8>, String)>> = RwLock::new(None);
-static KEY_ENV: OnceLock<Option<(Vec<u8>, String)>> = OnceLock::new();
+#[derive(Clone, Default)]
+struct SigningKeys {
+    current: Option<(Vec<u8>, String)>,
+    previous: Vec<(String, Vec<u8>)>,
+}
 
-/// Sets the signing key in code (tests, or a service that loads the key itself). It has priority
-/// over the environment.
+static KEY_OVERRIDE: RwLock<Option<SigningKeys>> = RwLock::new(None);
+static KEY_ENV: OnceLock<SigningKeys> = OnceLock::new();
+
+/// Sets the current signing key in code (tests, or a service that loads the key itself).
+/// It has priority over the environment and leaves the previous-key list unchanged.
 pub fn set_signing_key(key: &[u8], key_id: &str) {
+    let mut keys = loaded_keys();
+    keys.current = Some((key.to_vec(), key_id.to_owned()));
     if let Ok(mut g) = KEY_OVERRIDE.write() {
-        *g = Some((key.to_vec(), key_id.to_owned()));
+        *g = Some(keys);
+    }
+}
+
+/// Sets the previous signing keys in code. An empty slice resets the previous-key list.
+/// It has priority over `BREW_PACKAGE_PREVIOUS_KEY_IDS` and is intended for tests.
+pub fn set_previous_keys(keys: &[(&str, &[u8])]) {
+    let mut loaded = loaded_keys();
+    loaded.previous = keys
+        .iter()
+        .map(|(id, key)| ((*id).to_owned(), key.to_vec()))
+        .collect();
+    if let Ok(mut g) = KEY_OVERRIDE.write() {
+        *g = Some(loaded);
     }
 }
 
@@ -72,22 +95,112 @@ fn key_from_env() -> Option<(Vec<u8>, String)> {
             .ok()
             .flatten()?;
     let id = lookup("BREW_PACKAGE_KEY_ID")
-        .filter(|v| !v.trim().is_empty())
+        .map(|value| value.trim().to_owned())
+        .filter(|value| !value.is_empty())
         .unwrap_or_else(|| "k1".to_owned());
     Some((secret.into_bytes(), id))
 }
 
-/// The signing key and its identifier. `503` when no key is configured.
-fn signing_key() -> ApiResult<(Vec<u8>, String)> {
-    if let Ok(g) = KEY_OVERRIDE.read()
-        && let Some(k) = g.as_ref()
-    {
-        return Ok(k.clone());
+fn valid_key_id(id: &str) -> bool {
+    (1..=32).contains(&id.len())
+        && id
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
+}
+
+fn previous_keys_from_lookup<F>(lookup: F, current_id: &str) -> Vec<(String, Vec<u8>)>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let Some(raw_ids) = lookup("BREW_PACKAGE_PREVIOUS_KEY_IDS") else {
+        return Vec::new();
+    };
+    let mut previous = Vec::new();
+    for raw_id in raw_ids.split(',') {
+        let id = raw_id.trim();
+        if id.is_empty() {
+            continue;
+        }
+        if !valid_key_id(id) {
+            tracing::error!(
+                key_id = id,
+                reason = "invalid_id",
+                "previous brew package key skipped"
+            );
+            continue;
+        }
+        if id == current_id {
+            tracing::error!(
+                key_id = id,
+                reason = "same_as_current",
+                "previous brew package key skipped"
+            );
+            continue;
+        }
+
+        let suffix = id.to_ascii_uppercase().replace('-', "_");
+        let key_name = format!("BREW_PACKAGE_KEY_{suffix}");
+        let file_name = format!("{key_name}_FILE");
+        let secret = common::config::secret_from_lookup(
+            |name| match name {
+                "PREVIOUS_BREW_PACKAGE_KEY" => lookup(&key_name),
+                "PREVIOUS_BREW_PACKAGE_KEY_FILE" => lookup(&file_name),
+                _ => None,
+            },
+            "PREVIOUS_BREW_PACKAGE_KEY",
+            "PREVIOUS_BREW_PACKAGE_KEY_FILE",
+        );
+        match secret {
+            Ok(Some(secret)) => previous.push((id.to_owned(), secret.into_bytes())),
+            Ok(None) => tracing::error!(
+                key_id = id,
+                reason = "missing_secret",
+                "previous brew package key skipped"
+            ),
+            Err(error) => tracing::error!(
+                key_id = id,
+                reason = %error,
+                "previous brew package key skipped"
+            ),
+        }
     }
-    KEY_ENV.get_or_init(key_from_env).clone().ok_or_else(|| {
+    previous
+}
+
+fn keys_from_env() -> SigningKeys {
+    let current = key_from_env();
+    let current_id = current.as_ref().map_or("", |(_, id)| id.as_str());
+    let previous = previous_keys_from_lookup(|name| std::env::var(name).ok(), current_id);
+    SigningKeys { current, previous }
+}
+
+fn loaded_keys() -> SigningKeys {
+    if let Ok(g) = KEY_OVERRIDE.read()
+        && let Some(keys) = g.as_ref()
+    {
+        return keys.clone();
+    }
+    KEY_ENV.get_or_init(keys_from_env).clone()
+}
+
+/// The current signing key and its identifier. `503` when no current key is configured.
+fn signing_key() -> ApiResult<(Vec<u8>, String)> {
+    loaded_keys().current.ok_or_else(|| {
         tracing::error!("BREW_PACKAGE_KEY is not set; brew day packages cannot be signed");
         ApiError::unavailable(30)
     })
+}
+
+fn verification_key<'a>(keys: &'a SigningKeys, key_id: &str) -> Option<&'a [u8]> {
+    if let Some((key, current_id)) = keys.current.as_ref()
+        && current_id == key_id
+    {
+        return Some(key);
+    }
+    keys.previous
+        .iter()
+        .find(|(id, _)| id == key_id)
+        .map(|(_, key)| key.as_slice())
 }
 
 /// Canonical text of a JSON value: object keys sorted, no spaces. It does not depend on the
@@ -429,7 +542,7 @@ pub(crate) async fn check_package(
     if expired {
         return Ok(Err(PackageProblem::Expired));
     }
-    let (key, current_id) = signing_key()?;
+    let keys = loaded_keys();
     let input = signing_input(
         package_id,
         ws,
@@ -438,7 +551,10 @@ pub(crate) async fn check_package(
         expires_at,
         &content,
     );
-    if key_id != current_id || !verify(&key, &input, &signature) {
+    let Some(key) = verification_key(&keys, &key_id) else {
+        return Ok(Err(PackageProblem::BadSignature));
+    };
+    if !verify(key, &input, &signature) {
         return Ok(Err(PackageProblem::BadSignature));
     }
     Ok(Ok(()))
@@ -805,6 +921,58 @@ pub const MODULE: crate::modules::Module = crate::modules::Module {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn previous_key_ids_parse_valid_entries_and_ignore_empty_items() {
+        let keys = previous_keys_from_lookup(
+            |name| match name {
+                "BREW_PACKAGE_PREVIOUS_KEY_IDS" => Some(" k1, ,k2,, ".to_owned()),
+                "BREW_PACKAGE_KEY_K1" => Some("first-secret".to_owned()),
+                "BREW_PACKAGE_KEY_K2" => Some("second-secret".to_owned()),
+                _ => None,
+            },
+            "k0",
+        );
+        assert_eq!(
+            keys,
+            vec![
+                ("k1".to_owned(), b"first-secret".to_vec()),
+                ("k2".to_owned(), b"second-secret".to_vec()),
+            ]
+        );
+    }
+
+    #[test]
+    fn previous_key_ids_skip_invalid_current_and_missing_secrets() {
+        let keys = previous_keys_from_lookup(
+            |name| match name {
+                "BREW_PACKAGE_PREVIOUS_KEY_IDS" => Some("k1, bad id, k0, k-missing".to_owned()),
+                "BREW_PACKAGE_KEY_K1" => Some("first-secret".to_owned()),
+                _ => None,
+            },
+            "k0",
+        );
+        assert_eq!(keys, vec![("k1".to_owned(), b"first-secret".to_vec())]);
+    }
+
+    #[test]
+    fn previous_key_secret_can_be_loaded_from_a_file() {
+        let path = std::env::temp_dir().join(format!("brew-package-key-{}.txt", Uuid::now_v7()));
+        let write = std::fs::write(&path, "file-secret\n");
+        assert!(write.is_ok(), "temporary key file should be written");
+        let file_name = path.to_string_lossy().into_owned();
+        let keys = previous_keys_from_lookup(
+            |name| match name {
+                "BREW_PACKAGE_PREVIOUS_KEY_IDS" => Some("k-file".to_owned()),
+                "BREW_PACKAGE_KEY_K_FILE_FILE" => Some(file_name.clone()),
+                _ => None,
+            },
+            "k0",
+        );
+        let remove = std::fs::remove_file(path);
+        assert!(remove.is_ok(), "temporary key file should be removed");
+        assert_eq!(keys, vec![("k-file".to_owned(), b"file-secret".to_vec())]);
+    }
 
     #[test]
     fn canonical_text_does_not_depend_on_key_order() {
