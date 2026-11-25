@@ -17,6 +17,7 @@ use uuid::Uuid;
 
 use super::{
     AuthServices,
+    apple_token::AppleTokenError,
     email::{normalize_email, sign_in_mail},
     oidc::{OidcError, OidcVerifier},
     session::{self, ClientKind, SessionRecord},
@@ -701,10 +702,16 @@ async fn provider_login(
             let client_id = client
                 .client_id_for_audiences(&claim.audiences)
                 .map_err(|_| problem("apple_client_id_invalid", "/authorization_code"))?;
-            let refresh_token = client.exchange_code(code, client_id).await.map_err(|_| {
-                tracing::error!("Apple authorization-code exchange failed");
-                ApiError::unavailable(30)
-            })?;
+            let refresh_token = match client.exchange_code(code, client_id).await {
+                Ok(token) => token,
+                Err(AppleTokenError::InvalidCode | AppleTokenError::InvalidClientId) => {
+                    return Err(problem("apple_code_invalid", "/authorization_code"));
+                }
+                Err(error) => {
+                    tracing::error!(error = ?error, "Apple authorization-code exchange failed");
+                    return Err(ApiError::unavailable(30));
+                }
+            };
             let cipher = svc
                 .config
                 .provider_token_cipher
