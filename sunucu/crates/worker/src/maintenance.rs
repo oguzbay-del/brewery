@@ -156,23 +156,23 @@ pub async fn tick_with_files(
             .map(|closed| (RunStatus::Ok, format!("closed {closed}")));
         record(pool, JOB_SUPPORT_CLOSE, outcome).await;
     }
-    if let Some(store) = file_store {
-        if claim(pool, JOB_UPLOAD_CLEANUP, TICK).await {
-            let outcome = upload_cleanup::run(pool, store, now).await.map(|report| {
-                if report.failed > 0 {
-                    (RunStatus::Error, format!("failed {}", report.failed))
-                } else {
-                    (
-                        RunStatus::Ok,
-                        format!(
-                            "deleted {}, incomplete {}, failed 0",
-                            report.deleted, report.incomplete
-                        ),
-                    )
-                }
-            });
-            record(pool, JOB_UPLOAD_CLEANUP, outcome).await;
-        }
+    if let Some(store) = file_store
+        && claim(pool, JOB_UPLOAD_CLEANUP, TICK).await
+    {
+        let outcome = upload_cleanup::run(pool, store, now).await.map(|report| {
+            if report.failed > 0 {
+                (RunStatus::Error, format!("failed {}", report.failed))
+            } else {
+                (
+                    RunStatus::Ok,
+                    format!(
+                        "deleted {}, incomplete {}, failed 0",
+                        report.deleted, report.incomplete
+                    ),
+                )
+            }
+        });
+        record(pool, JOB_UPLOAD_CLEANUP, outcome).await;
     }
 }
 
