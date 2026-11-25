@@ -10,14 +10,17 @@ use axum::{
     response::{IntoResponse, Response},
     routing::get,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use uuid::Uuid;
 use utoipa::ToSchema;
 
 use crate::{
     AppState, SERVICE_NAME,
     app_version::ClientRequirements,
-    error::{ApiError, ApiResult},
+    context::{RequestContext, workspace_mode_and_paid},
+    error::{ApiError, ApiQuery, ApiResult, ErrorCode, ProblemDetails},
+    modules,
 };
 
 /// Response of `GET /healthz`.
@@ -147,6 +150,81 @@ pub async fn client_requirements(State(state): State<AppState>) -> Json<ClientRe
     Json(ClientRequirements::from(&state.config.min_versions))
 }
 
+/// Query for the workspace-specific module state.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct MetaModulesQuery {
+    /// Workspace whose modules the signed-in caller wants to inspect.
+    pub workspace_id: Uuid,
+}
+
+/// One product module and whether it is enabled for this workspace.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct ModuleState {
+    /// Stable product module id.
+    pub id: String,
+    /// Whether the mode and active PAID_FEATURE entitlement enable this module.
+    pub enabled: bool,
+}
+
+/// Response of GET /v1/meta.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct MetaModulesResponse {
+    /// All product modules and their current state.
+    pub modules: Vec<ModuleState>,
+}
+
+/// Product modules for one workspace. The caller must be an active workspace member.
+#[utoipa::path(
+    get,
+    path = "/v1/meta",
+    tag = "meta",
+    operation_id = "meta_modules_get",
+    params((
+        "workspace_id" = Uuid,
+        Query,
+        description = "Workspace to inspect; the caller must be an active member"
+    )),
+    responses(
+        (status = 200, description = "Product module state", body = MetaModulesResponse),
+        (status = 400, description = "Malformed query", body = ProblemDetails),
+        (status = 401, description = "Unauthenticated", body = ProblemDetails),
+        (status = 404, description = "Workspace not found", body = ProblemDetails),
+        (status = 429, description = "Rate limited", body = ProblemDetails),
+        (status = 500, description = "Internal error", body = ProblemDetails)
+    )
+)]
+pub async fn meta_modules(
+    State(state): State<AppState>,
+    ctx: RequestContext,
+    ApiQuery(query): ApiQuery<MetaModulesQuery>,
+) -> ApiResult<Json<MetaModulesResponse>> {
+    let membership = state
+        .auth
+        .membership(&ctx.identity, query.workspace_id)
+        .await?
+        .ok_or_else(|| ApiError::new(ErrorCode::NotFound))?;
+    let workspace_context = RequestContext {
+        identity: ctx.identity,
+        workspace_id: Some(query.workspace_id),
+        permissions: membership.permissions,
+        scoped: membership.scoped,
+    };
+    let (mode, has_paid_feature) = workspace_mode_and_paid(
+        &state.db,
+        &workspace_context.db_context(),
+        query.workspace_id,
+    )
+    .await?;
+    let modules = modules::PRODUCT_MODULES
+        .iter()
+        .map(|module_id| ModuleState {
+            id: (*module_id).to_owned(),
+            enabled: modules::is_module_enabled(module_id, &mode, has_paid_feature),
+        })
+        .collect();
+    Ok(Json(MetaModulesResponse { modules }))
+}
+
 /// Seconds clients may reuse the field definitions without asking again.
 const FIELDS_MAX_AGE_SECS: u32 = 3600;
 
@@ -208,14 +286,19 @@ pub async fn meta_fields(headers: HeaderMap) -> Response {
     response
 }
 
-/// The core routes: health, readiness, version and meta. None needs a sign-in.
-pub fn routes(_state: &AppState) -> Router<AppState> {
-    Router::new()
+/// The core routes: public health/version/catalog plus authenticated workspace metadata.
+pub fn routes(state: &AppState) -> Router<AppState> {
+    let public = Router::new()
         .route("/healthz", get(healthz))
         .route("/readyz", get(readyz))
         .route("/v1/version", get(version))
         .route("/v1/meta/fields", get(meta_fields))
-        .route("/v1/meta/client-requirements", get(client_requirements))
+        .route("/v1/meta/client-requirements", get(client_requirements));
+    let protected = crate::authenticated(
+        state,
+        Router::new().route("/v1/meta", get(meta_modules)),
+    );
+    public.merge(protected)
 }
 
 // --- registry entry ----------------------------------------------------------------------
@@ -223,7 +306,7 @@ pub fn routes(_state: &AppState) -> Router<AppState> {
 /// Operation specs of this module (rows for `crate::openapi`).
 mod spec {
     use crate::error::ErrorCode;
-    use crate::error::ErrorCode::{Internal, MalformedRequest, RateLimited, UpgradeRequired};
+    use crate::error::ErrorCode::{Internal, MalformedRequest, NotFound, RateLimited, Unauthenticated, UpgradeRequired};
     use crate::openapi::OperationSpec;
 
     pub(super) const OPERATIONS: &[OperationSpec] = &[
@@ -247,6 +330,13 @@ mod spec {
             permission: None,
             concurrency: None,
             errors: &[MalformedRequest, UpgradeRequired, RateLimited, Internal],
+        },
+        OperationSpec {
+            operation_id: "meta_modules_get",
+            public: false,
+            permission: None,
+            concurrency: None,
+            errors: &[MalformedRequest, Unauthenticated, NotFound, RateLimited, Internal],
         },
         OperationSpec {
             operation_id: "meta_client_requirements_get",
@@ -273,13 +363,17 @@ mod spec {
         readyz,
         version,
         client_requirements,
+        meta_modules,
         meta_fields
     ),
     components(schemas(
         HealthResponse,
         ReadyResponse,
         VersionResponse,
-        crate::app_version::ClientRequirements
+        crate::app_version::ClientRequirements,
+        MetaModulesQuery,
+        ModuleState,
+        MetaModulesResponse
     )),
     tags(
         (name = "system", description = "Service status and version"),
