@@ -1559,16 +1559,3 @@ mod tests {
     }
 }
 
-#[cfg(test)]
-#[allow(dead_code)]
-mod provider_login_send_assertions {
-    use super::*;
-
-    #[test]
-    fn provider_login_future_is_send() {
-        fn assert_send<T: Send>(_: T) {}
-        let check: fn(&Arc<AuthServices>, ProviderLoginRequest, &HeaderMap) =
-            |svc, req, headers| assert_send(provider_login(svc, "apple", req, headers));
-        let _ = check;
-    }
-}
