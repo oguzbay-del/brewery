@@ -126,7 +126,7 @@ mod tests {
         let encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
         assert_eq!(encrypted[0], VERSION);
         assert_eq!(encrypted.len(), 1 + NONCE_LEN + b"refresh-token-value".len() + TAG_LEN);
-        assert_eq!(cipher.decrypt(&encrypted).unwrap(), b"refresh-token-value");
+        assert_eq!(cipher.decrypt(&encrypted).unwrap().as_slice(), b"refresh-token-value");
     }
 
     #[test]
