@@ -231,7 +231,7 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
     .unwrap();
     let cipher = Aes256GcmTokenCipher::new([42_u8; 32]);
     assert_eq!(
-        cipher.decrypt(&encrypted).unwrap(),
+        cipher.decrypt(&encrypted).unwrap().as_slice(),
         b"local-apple-refresh-token"
     );
 }
