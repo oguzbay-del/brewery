@@ -698,8 +698,7 @@ async fn provider_login(
         if let Some(code) = authorization_code {
             let client = svc
                 .apple_token_client
-                .as_ref()
-                .cloned()
+                .clone()
                 .ok_or_else(|| ApiError::unavailable(30))?;
             let client_id = client
                 .client_id_for_audiences(&claim.audiences)
