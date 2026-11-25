@@ -893,7 +893,7 @@ pub async fn email_verify(
         &headers,
     )?;
     let claim = svc.verify_email_token(&req.token).await?;
-    Ok(svc.login_response(svc.login(&claim, &device).await?))
+    Ok(svc.login_response(svc.login(&claim, &device, None).await?))
 }
 
 // --- session endpoints ---------------------------------------------------------------------
