@@ -19,6 +19,8 @@ use serde_json::{Value, json};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+static PACKAGE_KEY_TEST_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+
 fn key() {
     api::brew_day::set_signing_key(b"test-signing-key-of-the-brew-day-package", "k-test");
 }
@@ -79,6 +81,74 @@ async fn count_measurements(pool: &PgPool, id: Uuid) -> i64 {
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
+async fn package_verification_uses_previous_key_and_new_packages_use_current_key(pool: PgPool) {
+    const OLD_KEY: &[u8] = b"old-brew-package-signing-key";
+    const NEW_KEY: &[u8] = b"new-brew-package-signing-key";
+    let _key_guard = PACKAGE_KEY_TEST_LOCK.lock().await;
+
+    api::brew_day::set_signing_key(OLD_KEY, "k1");
+    api::brew_day::set_previous_keys(&[]);
+    let w = world(&pool).await;
+    let (_, version) = published_recipe(&w, ipa()).await;
+    let batch = start_batch(&w, &version, json!({})).await;
+    let batch_id = batch["id"].as_str().unwrap();
+    let old_package = make_package(&w, batch_id).await;
+    let old_package_id = old_package["id"].as_str().unwrap();
+    assert_eq!(old_package["key_id"], "k1");
+
+    api::brew_day::set_signing_key(NEW_KEY, "k2");
+    api::brew_day::set_previous_keys(&[("k1", OLD_KEY)]);
+
+    let accepted = post(
+        &w,
+        &format!("/batches/{batch_id}/measurements"),
+        measurement(Uuid::now_v7(), 1.05, Some(old_package_id)),
+    )
+    .await;
+    assert_eq!(accepted.status, StatusCode::OK, "{}", accepted.body);
+
+    api::brew_day::set_previous_keys(&[]);
+    let missing_previous = post(
+        &w,
+        &format!("/batches/{batch_id}/measurements"),
+        measurement(Uuid::now_v7(), 1.05, Some(old_package_id)),
+    )
+    .await;
+    assert_eq!(
+        missing_previous.body["errors"][0]["code"],
+        "package_signature_invalid"
+    );
+
+    api::brew_day::set_previous_keys(&[("k1", OLD_KEY)]);
+    sqlx::query("UPDATE brew_day_packages SET key_id = 'k2' WHERE id = $1")
+        .bind(Uuid::parse_str(old_package_id).unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+    let changed_id = post(
+        &w,
+        &format!("/batches/{batch_id}/measurements"),
+        measurement(Uuid::now_v7(), 1.05, Some(old_package_id)),
+    )
+    .await;
+    assert_eq!(
+        changed_id.body["errors"][0]["code"],
+        "package_signature_invalid"
+    );
+
+    let new_package = make_package(&w, batch_id).await;
+    assert_eq!(new_package["key_id"], "k2");
+    let new_package_id = new_package["id"].as_str().unwrap();
+    let accepted_new = post(
+        &w,
+        &format!("/batches/{batch_id}/measurements"),
+        measurement(Uuid::now_v7(), 1.05, Some(new_package_id)),
+    )
+    .await;
+    assert_eq!(accepted_new.status, StatusCode::OK, "{}", accepted_new.body);
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
 async fn batch_starts_only_from_an_approved_version(pool: PgPool) {
     let w = world(&pool).await;
     let draft = post(&w, "/recipes", ipa()).await;
@@ -134,6 +204,7 @@ async fn batch_starts_only_from_an_approved_version(pool: PgPool) {
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn same_measurement_twice_gives_one_record(pool: PgPool) {
+    let _key_guard = PACKAGE_KEY_TEST_LOCK.lock().await;
     key();
     let w = world(&pool).await;
     let (_, version) = published_recipe(&w, ipa()).await;
@@ -195,6 +266,7 @@ async fn same_measurement_twice_gives_one_record(pool: PgPool) {
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn package_of_another_batch_expired_or_changed_is_rejected(pool: PgPool) {
+    let _key_guard = PACKAGE_KEY_TEST_LOCK.lock().await;
     key();
     let w = world(&pool).await;
     let (_, version) = published_recipe(&w, ipa()).await;
@@ -327,6 +399,7 @@ async fn package_of_another_batch_expired_or_changed_is_rejected(pool: PgPool) {
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn stages_steps_actuals_and_summary(pool: PgPool) {
+    let _key_guard = PACKAGE_KEY_TEST_LOCK.lock().await;
     key();
     let w = world(&pool).await;
     let (_, version) = published_recipe(&w, ipa()).await;
@@ -520,6 +593,7 @@ async fn stages_steps_actuals_and_summary(pool: PgPool) {
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn batch_update_and_permissions(pool: PgPool) {
+    let _key_guard = PACKAGE_KEY_TEST_LOCK.lock().await;
     key();
     let w = world(&pool).await;
     let (_, version) = published_recipe(&w, ipa()).await;
