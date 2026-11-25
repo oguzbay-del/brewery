@@ -90,7 +90,7 @@ export function getTextKeys(locale: Locale): string[] {
 }
 
 function interpolate(value: string, params: TextParams): string {
-  return value.replace(/\\{([a-zA-Z0-9_]+)\\}/g, (match, name: string) => {
+  return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, name: string) => {
     const replacement = params[name];
     return replacement === undefined ? match : String(replacement);
   });
