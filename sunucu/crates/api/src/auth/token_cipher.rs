@@ -157,10 +157,7 @@ mod tests {
         let mut encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
         let last = encrypted.len() - 1;
         encrypted[last] ^= 1;
-        assert_eq!(
-            cipher.decrypt(&encrypted),
-            Err(TokenCipherError::Decrypt)
-        );
+        assert_eq!(cipher.decrypt(&encrypted), Err(TokenCipherError::Decrypt));
     }
 
     #[test]
