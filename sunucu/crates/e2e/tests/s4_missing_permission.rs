@@ -1,5 +1,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
+use std::{env, process::Command};
+
 use e2e::Context;
 use reqwest::{Method, StatusCode};
 use serde_json::{Value, json};
@@ -19,6 +21,20 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
         .await
         .unwrap();
     let ws = workspace["id"].as_str().unwrap();
+
+    // The role fixture needs full Team access independently of the trial period.
+    let workspace_id = Uuid::parse_str(ws).unwrap();
+    let entitlement = format!(
+        "INSERT INTO entitlements (id, workspace_id, feature, source, valid_from, valid_until)
+         VALUES ('{}', '{workspace_id}', 'paid_features', 'promo', now(), now() + interval '1 day')",
+        Uuid::new_v4()
+    );
+    let seeded = Command::new("psql")
+        .env("PGDATABASE", env::var("DATABASE_URL").unwrap())
+        .args(["-X", "-v", "ON_ERROR_STOP=1", "-c", &entitlement])
+        .status()
+        .expect("seed the Compose database with psql");
+    assert!(seeded.success());
 
     // Prepare valid records as the owner so every denied request reaches its permission check.
     let recipe_response = ctx

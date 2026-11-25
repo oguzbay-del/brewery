@@ -61,6 +61,14 @@ fn concrete_path(template: &str, workspace_id: Uuid) -> String {
         .join("/")
 }
 
+async fn expire_trial(pool: &PgPool, workspace: Uuid) {
+    sqlx::query("UPDATE workspaces SET created_at = now() - interval '2 months' WHERE id = $1")
+        .bind(workspace)
+        .execute(pool)
+        .await
+        .unwrap();
+}
+
 async fn insert_paid_feature(pool: &PgPool, workspace_id: Uuid) {
     sqlx::query(
         "INSERT INTO entitlements (id, workspace_id, feature, source, valid_from, valid_until)
@@ -76,7 +84,10 @@ async fn insert_paid_feature(pool: &PgPool, workspace_id: Uuid) {
 
 fn module_gate_router(state: AppState, path: &str) -> Router {
     Router::new()
-        .route(path, get(|| async { StatusCode::OK }))
+        .route(
+            path,
+            get(|| async { StatusCode::OK }).post(|| async { StatusCode::OK }),
+        )
         .route_layer(from_fn_with_state(state.clone(), api::context::layer))
         .with_state(state)
 }
@@ -162,6 +173,7 @@ async fn team_routes_require_business_mode_and_one_active_paid_feature(pool: PgP
     let workspace = Uuid::now_v7();
     insert_user(&pool, user).await;
     insert_workspace(&pool, workspace).await;
+    expire_trial(&pool, workspace).await;
 
     let auth = Arc::new(FakeAuth::default());
     auth.add(user, workspace, &[]);
@@ -176,7 +188,13 @@ async fn team_routes_require_business_mode_and_one_active_paid_feature(pool: PgP
     let template = team_path_template();
     let path = concrete_path(&template, workspace);
     let app = module_gate_router(state, &template);
-    let request = support::req("GET", &path, Some(user))
+    for method in ["GET", "HEAD"] {
+        let request = support::req(method, &path, Some(user))
+            .body(Body::empty())
+            .unwrap();
+        assert_eq!(send(&app, request).await.status, StatusCode::OK);
+    }
+    let request = support::req("POST", &path, Some(user))
         .body(Body::empty())
         .unwrap();
     let disabled = send(&app, request).await;
@@ -184,7 +202,7 @@ async fn team_routes_require_business_mode_and_one_active_paid_feature(pool: PgP
     assert_eq!(disabled.body["code"], "module_disabled");
 
     insert_paid_feature(&pool, workspace).await;
-    let request = support::req("GET", &path, Some(user))
+    let request = support::req("POST", &path, Some(user))
         .body(Body::empty())
         .unwrap();
     let enabled = send(&app, request).await;
@@ -197,6 +215,7 @@ async fn meta_endpoint_returns_the_callers_workspace_module_state(pool: PgPool) 
     let workspace = Uuid::now_v7();
     insert_user(&pool, user).await;
     insert_workspace(&pool, workspace).await;
+    expire_trial(&pool, workspace).await;
 
     let auth = Arc::new(FakeAuth::default());
     auth.add(user, workspace, &[]);
@@ -230,6 +249,11 @@ async fn meta_endpoint_returns_the_callers_workspace_module_state(pool: PgPool) 
     assert!(enabled("devices"));
     assert!(enabled("stock"));
     assert!(!enabled("team"));
+    let team = modules
+        .iter()
+        .find(|module| module["id"] == "team")
+        .unwrap();
+    assert_eq!(team["read_only"], true);
 
     insert_paid_feature(&pool, workspace).await;
     let request = support::req(
@@ -246,8 +270,7 @@ async fn meta_endpoint_returns_the_callers_workspace_module_state(pool: PgPool) 
         paid_modules
             .iter()
             .find(|module| module["id"] == "team")
-            .and_then(|module| module["enabled"].as_bool())
-            .unwrap()
+            .is_some_and(|module| module["enabled"] == true && module["read_only"] == false)
     );
 }
 
@@ -257,6 +280,7 @@ async fn export_routes_remain_available_without_a_paid_entitlement(pool: PgPool)
     let workspace = Uuid::now_v7();
     insert_user(&pool, user).await;
     insert_workspace(&pool, workspace).await;
+    expire_trial(&pool, workspace).await;
 
     let auth = Arc::new(FakeAuth::default());
     auth.add(user, workspace, &[]);

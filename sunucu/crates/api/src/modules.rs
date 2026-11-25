@@ -195,15 +195,33 @@ pub fn is_free_module(module_id: &str) -> bool {
 /// Evaluates the mode + single `PAID_FEATURE` rule.
 #[must_use]
 pub fn is_module_enabled(module_id: &str, mode: &str, has_paid_feature: bool) -> bool {
+    module_access(module_id, mode, has_paid_feature) == ModuleAccess::Full
+}
+
+/// Workspace access to an individual module.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ModuleAccess {
+    Disabled,
+    ReadOnly,
+    Full,
+}
+
+pub(crate) fn module_access(module_id: &str, mode: &str, has_paid_feature: bool) -> ModuleAccess {
     let Some(module) = PRODUCT_MODULES.iter().find(|module| module.id == module_id) else {
-        return false;
+        return ModuleAccess::Disabled;
     };
     let included = match mode {
         "home" => module.home,
         "business" => module.business,
         _ => false,
     };
-    included && (module.free || has_paid_feature)
+    if !included {
+        ModuleAccess::Disabled
+    } else if module.free || has_paid_feature {
+        ModuleAccess::Full
+    } else {
+        ModuleAccess::ReadOnly
+    }
 }
 
 /// Whether the path is an export operation. Exports remain available even when paid modules are off.

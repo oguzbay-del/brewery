@@ -227,18 +227,23 @@ pub(crate) async fn workspace_mode_and_paid(
     Ok((mode, has_paid_feature))
 }
 
-async fn module_enabled(
+async fn module_access(
     pool: &PgPool,
     db_context: &DbContext,
     workspace_id: Uuid,
     module_id: &str,
-) -> ApiResult<bool> {
+) -> ApiResult<modules::ModuleAccess> {
     let (mode, has_paid_feature) = workspace_mode_and_paid(pool, db_context, workspace_id).await?;
-    Ok(modules::is_module_enabled(
-        module_id,
-        &mode,
-        has_paid_feature,
-    ))
+    let access = modules::module_access(module_id, &mode, has_paid_feature);
+    Ok(access)
+}
+
+fn allows_method(access: modules::ModuleAccess, method: &Method) -> bool {
+    match access {
+        modules::ModuleAccess::Disabled => false,
+        modules::ModuleAccess::ReadOnly => method == Method::GET || method == Method::HEAD,
+        modules::ModuleAccess::Full => true,
+    }
 }
 
 /// Parses the device id from a shared-device key route.
@@ -292,9 +297,9 @@ pub async fn device_module_layer(
         workspace_id: Some(workspace_id),
         actor_kind: ActorKind::Device,
     };
-    match module_enabled(&services.db, &db_context, workspace_id, module_id).await {
-        Ok(true) => next.run(req).await,
-        Ok(false) => ApiError::new(ErrorCode::ModuleDisabled).into_response(),
+    match module_access(&services.db, &db_context, workspace_id, module_id).await {
+        Ok(access) if allows_method(access, req.method()) => next.run(req).await,
+        Ok(_) => ApiError::new(ErrorCode::ModuleDisabled).into_response(),
         Err(error) => error.into_response(),
     }
 }
@@ -311,9 +316,9 @@ pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) 
                 && let Some(module_id) = modules::module_for_path(&path)
                 && !modules::is_free_module(module_id)
             {
-                match module_enabled(&state.db, &ctx.db_context(), workspace_id, module_id).await {
-                    Ok(true) => {}
-                    Ok(false) => {
+                match module_access(&state.db, &ctx.db_context(), workspace_id, module_id).await {
+                    Ok(access) if allows_method(access, &method) => {}
+                    Ok(_) => {
                         return ApiError::new(ErrorCode::ModuleDisabled).into_response();
                     }
                     Err(error) => return error.into_response(),

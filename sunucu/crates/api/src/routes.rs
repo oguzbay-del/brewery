@@ -164,6 +164,8 @@ pub struct ModuleState {
     pub id: String,
     /// Whether the mode and active `PAID_FEATURE` entitlement enable this module.
     pub enabled: bool,
+    /// Whether the workspace can only read this module.
+    pub read_only: bool,
 }
 
 /// Response of GET /v1/meta.
@@ -191,14 +193,14 @@ pub struct MetaModulesResponse {
             body = MetaModulesResponse,
             example = json!({
                 "modules": [
-                    {"id": "core", "enabled": true},
-                    {"id": "devices", "enabled": true},
-                    {"id": "stock", "enabled": true},
-                    {"id": "production", "enabled": false},
-                    {"id": "quality", "enabled": false},
-                    {"id": "cost_reports", "enabled": false},
-                    {"id": "tax_compliance", "enabled": false},
-                    {"id": "team", "enabled": false}
+                    {"id": "core", "enabled": true, "read_only": false},
+                    {"id": "devices", "enabled": true, "read_only": false},
+                    {"id": "stock", "enabled": true, "read_only": false},
+                    {"id": "production", "enabled": false, "read_only": false},
+                    {"id": "quality", "enabled": false, "read_only": false},
+                    {"id": "cost_reports", "enabled": false, "read_only": false},
+                    {"id": "tax_compliance", "enabled": false, "read_only": false},
+                    {"id": "team", "enabled": false, "read_only": false}
                 ]
             })
         ),
@@ -233,9 +235,13 @@ pub async fn meta_modules(
     .await?;
     let modules = modules::PRODUCT_MODULES
         .iter()
-        .map(|module| ModuleState {
-            id: module.id.to_owned(),
-            enabled: modules::is_module_enabled(module.id, &mode, has_paid_feature),
+        .map(|module| {
+            let access = modules::module_access(module.id, &mode, has_paid_feature);
+            ModuleState {
+                id: module.id.to_owned(),
+                enabled: access == modules::ModuleAccess::Full,
+                read_only: access == modules::ModuleAccess::ReadOnly,
+            }
         })
         .collect();
     Ok(Json(MetaModulesResponse { modules }))
