@@ -148,8 +148,8 @@ async fn create_upload_rows(
          VALUES ($1, $2, $3, 'system', NULL, 'test', 'internal')",
     )
     .bind(message_id)
-    .bind(request_id)
     .bind(workspace_id)
+    .bind(request_id)
     .execute(pool)
     .await
     .unwrap();
@@ -281,52 +281,112 @@ async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool
         Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0101),
         Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0102),
     ];
+    let mut keys = Vec::new();
     for (index, workspace_id) in workspaces.iter().enumerate() {
         create_workspace(&pool, *workspace_id).await;
-        create_upload_rows(&pool, *workspace_id, 10_000 + (index as u128 * 100), now).await;
+        keys.extend(
+            create_upload_rows(&pool, *workspace_id, 10_000 + (index as u128 * 100), now).await,
+        );
     }
 
     let worker = worker_pool(&pool).await;
     let store = MemoryStore::default();
-    for key in [
-        "cleanup/deleted-attachment",
-        "cleanup/incomplete-attachment",
-        "cleanup/complete-attachment",
-        "cleanup/retry-attachment",
-        "cleanup/deleted-document",
-        "cleanup/recent-document",
-        "cleanup/legal-hold-document",
-    ] {
+    for key in &keys {
         store.insert(key);
+        if key.ends_with("/retry-attachment") {
+            store.fail(key);
+        }
     }
-    store.fail("cleanup/retry-attachment");
 
     let first = upload_cleanup::run(&worker, &store, now).await.unwrap();
     assert_eq!(first.deleted, 4);
     assert_eq!(first.incomplete, 2);
     assert_eq!(first.failed, 2);
-    assert!(!store.contains("cleanup/deleted-attachment"));
-    assert!(!store.contains("cleanup/incomplete-attachment"));
-    assert!(!store.contains("cleanup/deleted-document"));
-    assert!(store.contains("cleanup/complete-attachment"));
-    assert!(store.contains("cleanup/recent-document"));
-    assert!(store.contains("cleanup/legal-hold-document"));
-    assert!(store.contains("cleanup/retry-attachment"));
 
-    let purged: i64 =
-        sqlx::query_scalar("SELECT count(*) FROM attachments WHERE object_purged_at IS NOT NULL")
-            .fetch_one(&pool)
-            .await
-            .unwrap();
-    assert_eq!(purged, 4);
+    for suffix in [
+        "/deleted-attachment",
+        "/incomplete-attachment",
+        "/deleted-document",
+    ] {
+        assert!(
+            keys.iter()
+                .filter(|key| key.ends_with(suffix))
+                .all(|key| !store.contains(key)),
+            "{suffix} objects should be deleted in both workspaces"
+        );
+    }
+    for suffix in [
+        "/complete-attachment",
+        "/recent-document",
+        "/legal-hold-document",
+        "/retry-attachment",
+    ] {
+        assert!(
+            keys.iter()
+                .filter(|key| key.ends_with(suffix))
+                .all(|key| store.contains(key)),
+            "{suffix} objects should remain after the first run"
+        );
+    }
 
-    // Remove the injected failure: the next run deletes both retry rows.
+    let purged_attachments: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM attachments WHERE object_purged_at IS NOT NULL",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(purged_attachments, 4);
+
+    let purged_documents: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM scanned_documents WHERE object_purged_at IS NOT NULL",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(purged_documents, 2);
+
+    for (index, _) in workspaces.iter().enumerate() {
+        let base = 10_000 + (index as u128 * 100);
+        let (deleted_at_set, purged_at_set): (bool, bool) = sqlx::query_as(
+            "SELECT deleted_at IS NOT NULL, object_purged_at IS NOT NULL
+             FROM attachments WHERE id = $1",
+        )
+        .bind(Uuid::from_u128(base + 4))
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(deleted_at_set && purged_at_set, "old incomplete upload is soft-deleted and purged");
+
+        let retry_purged: bool = sqlx::query_scalar(
+            "SELECT object_purged_at IS NOT NULL FROM attachments WHERE id = $1",
+        )
+        .bind(Uuid::from_u128(base + 6))
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(!retry_purged, "failed delete must not be marked as purged");
+
+        let legal_hold_purged: bool = sqlx::query_scalar(
+            "SELECT object_purged_at IS NOT NULL FROM scanned_documents WHERE id = $1",
+        )
+        .bind(Uuid::from_u128(base + 9))
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert!(!legal_hold_purged, "active legal hold must not be touched");
+    }
+
+    // Remove the injected failures: the next run retries both failed objects.
     store.failures.lock().unwrap().clear();
     let second = upload_cleanup::run(&worker, &store, now).await.unwrap();
     assert_eq!(second.deleted, 2);
     assert_eq!(second.incomplete, 0);
     assert_eq!(second.failed, 0);
-    assert!(!store.contains("cleanup/retry-attachment"));
+    assert!(
+        keys.iter()
+            .filter(|key| key.ends_with("/retry-attachment"))
+            .all(|key| !store.contains(key))
+    );
 
     let third = upload_cleanup::run(&worker, &store, now).await.unwrap();
     assert_eq!(third, Default::default());
