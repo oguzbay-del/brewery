@@ -5,9 +5,9 @@ ALTER TABLE attachments ADD COLUMN object_purged_at timestamptz;
 ALTER TABLE scanned_documents ADD COLUMN object_purged_at timestamptz;
 
 CREATE INDEX attachments_purgeable_idx
-    ON attachments (created_at, id) WHERE object_purged_at IS NULL;
+    ON attachments (workspace_id, created_at, id) WHERE object_purged_at IS NULL;
 CREATE INDEX scanned_documents_purgeable_idx
-    ON scanned_documents (created_at, id) WHERE object_purged_at IS NULL;
+    ON scanned_documents (workspace_id, created_at, id) WHERE object_purged_at IS NULL;
 
 -- The caller sets app.workspace_id and remains under forced workspace RLS.
 CREATE FUNCTION list_purgeable_uploads(
@@ -16,6 +16,7 @@ CREATE FUNCTION list_purgeable_uploads(
 )
 RETURNS TABLE (kind text, id uuid, object_key text)
 LANGUAGE sql STABLE
+SECURITY INVOKER
 SET search_path = pg_catalog, public, pg_temp
 AS $$
     SELECT candidates.kind, candidates.id, candidates.object_key
@@ -35,12 +36,13 @@ AS $$
                   OR (d.retention_until IS NOT NULL AND d.retention_until <= now()))
       ) AS candidates
      ORDER BY candidates.created_at, candidates.id
-     LIMIT GREATEST(0, p_limit)
+     LIMIT LEAST(GREATEST(0, p_limit), 200)
 $$;
 
 CREATE FUNCTION mark_upload_purged(p_kind text, p_id uuid)
 RETURNS boolean
 LANGUAGE plpgsql VOLATILE
+SECURITY INVOKER
 SET search_path = pg_catalog, public, pg_temp
 AS $$
 BEGIN
@@ -72,5 +74,9 @@ REVOKE ALL ON FUNCTION list_purgeable_uploads(timestamptz, integer) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION list_purgeable_uploads(timestamptz, integer) TO app_worker;
 REVOKE ALL ON FUNCTION mark_upload_purged(text, uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION mark_upload_purged(text, uuid) TO app_worker;
+
+-- The invoker functions need only the columns used by the cleanup worker.
+GRANT SELECT ON attachments, scanned_documents TO app_worker;
+GRANT UPDATE (object_purged_at, deleted_at) ON attachments, scanned_documents TO app_worker;
 
 RESET ROLE;
