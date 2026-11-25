@@ -39,6 +39,8 @@ pub enum ErrorCode {
     StepUpRequired,
     /// 403: the subscription or trial does not unlock this feature.
     EntitlementRequired,
+    /// 403: this workspace mode or entitlement does not enable the module.
+    ModuleDisabled,
     /// 404: no such record, deleted, or in another workspace.
     NotFound,
     /// 409: business rule conflict.
@@ -71,12 +73,13 @@ pub enum ErrorCode {
 
 impl ErrorCode {
     /// All codes, in table order.
-    pub const ALL: [Self; 19] = [
+    pub const ALL: [Self; 20] = [
         Self::MalformedRequest,
         Self::Unauthenticated,
         Self::Forbidden,
         Self::StepUpRequired,
         Self::EntitlementRequired,
+        Self::ModuleDisabled,
         Self::NotFound,
         Self::Conflict,
         Self::IdempotencyInProgress,
@@ -99,7 +102,7 @@ impl ErrorCode {
         match self {
             Self::MalformedRequest => StatusCode::BAD_REQUEST,
             Self::Unauthenticated => StatusCode::UNAUTHORIZED,
-            Self::Forbidden | Self::StepUpRequired | Self::EntitlementRequired => {
+            Self::Forbidden | Self::StepUpRequired | Self::EntitlementRequired | Self::ModuleDisabled => {
                 StatusCode::FORBIDDEN
             }
             Self::NotFound => StatusCode::NOT_FOUND,
@@ -127,6 +130,7 @@ impl ErrorCode {
             Self::Forbidden => "forbidden",
             Self::StepUpRequired => "step_up_required",
             Self::EntitlementRequired => "entitlement_required",
+            Self::ModuleDisabled => "module_disabled",
             Self::NotFound => "not_found",
             Self::Conflict => "conflict",
             Self::IdempotencyInProgress => "idempotency_in_progress",
@@ -153,6 +157,7 @@ impl ErrorCode {
             Self::Forbidden => "Forbidden",
             Self::StepUpRequired => "Second factor required",
             Self::EntitlementRequired => "Subscription required",
+            Self::ModuleDisabled => "Module disabled",
             Self::NotFound => "Not found",
             Self::Conflict => "Conflict",
             Self::IdempotencyInProgress => "Request with this idempotency key is in progress",
@@ -474,6 +479,8 @@ mod tests {
             assert!(seen.insert(c.as_str()), "{c:?}");
             assert_eq!(serde_json::to_value(c).unwrap(), c.as_str());
         }
+        assert_eq!(ErrorCode::ModuleDisabled.status(), 403);
+        assert_eq!(ErrorCode::ModuleDisabled.as_str(), "module_disabled");
         assert_eq!(ErrorCode::VersionMismatch.status(), 412);
         assert_eq!(ErrorCode::UpgradeRequired.status(), 426);
         assert_eq!(ErrorCode::PreconditionRequired.status(), 428);
