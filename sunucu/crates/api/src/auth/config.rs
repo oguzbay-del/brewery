@@ -378,7 +378,7 @@ mod tests {
         )
         .unwrap();
         let pem = format!(
-            "-----BEGIN PRIVATE KEY-----\\n{}\\n-----END PRIVATE KEY-----",
+            "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
             STANDARD.encode(pkcs8.as_ref())
         );
         let cipher_key = STANDARD.encode([9_u8; 32]);
@@ -415,7 +415,7 @@ mod tests {
             "APPLE_CLIENT_IDS" => Some("com.example.ios".to_owned()),
             "APPLE_TEAM_ID" => Some("TEAM123".to_owned()),
             "APPLE_KEY_ID" => Some("KEY456".to_owned()),
-            "APPLE_PRIVATE_KEY" => Some("-----BEGIN PRIVATE KEY-----\\nAA==\\n-----END PRIVATE KEY-----".to_owned()),
+            "APPLE_PRIVATE_KEY" => Some("-----BEGIN PRIVATE KEY-----\nAA==\n-----END PRIVATE KEY-----".to_owned()),
             "CSRF_HMAC_KEY" => Some("test-csrf-key-0123456789".to_owned()),
             _ => None,
         };
