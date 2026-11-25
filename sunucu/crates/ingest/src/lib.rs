@@ -22,8 +22,8 @@ use axum::{
 };
 use billing::{
     SubscriptionUpdate, apply,
-    provider::{ProviderError, WebPaymentProvider},
     paddle::PaddleProvider,
+    provider::{ProviderError, WebPaymentProvider},
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
