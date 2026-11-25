@@ -204,7 +204,7 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
     )
     .unwrap();
     let private_key = format!(
-        "-----BEGIN PRIVATE KEY-----\\n{}\\n-----END PRIVATE KEY-----",
+        "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
         STANDARD.encode(pkcs8.as_ref())
     );
     let token_key = STANDARD.encode([42_u8; 32]);
