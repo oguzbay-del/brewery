@@ -1,6 +1,12 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { LOCALE_STORAGE_KEY, getTextKeys, resolveLocale, translate, useText } from './catalog';
+import {
+  LOCALE_STORAGE_KEY,
+  getTextKeys,
+  resolveLocale,
+  translate,
+} from './catalog';
+import { useText } from './useText';
 
 afterEach(() => {
   window.localStorage.clear();
@@ -12,17 +18,20 @@ describe('text catalog', () => {
     expect(getTextKeys('tr')).toEqual(getTextKeys('en'));
   });
 
-  it('replaces named placeholders and leaves unspecified placeholders intact', () => {
-    expect(
-      translate('errors.out_of_range', 'en', {
-        label: 'Original gravity',
-        min: 1,
-        max: 1.12,
-        unit: 'SG',
-      }),
-    ).toBe('Original gravity must be between 1 and 1.12 SG.');
-    expect(translate('errors.required', 'tr')).toContain('{label}');
-  });
+  it(
+    'replaces named placeholders and leaves unspecified placeholders intact',
+    () => {
+      expect(
+        translate('errors.out_of_range', 'en', {
+          label: 'Original gravity',
+          min: 1,
+          max: 1.12,
+          unit: 'SG',
+        }),
+      ).toBe('Original gravity must be between 1 and 1.12 SG.');
+      expect(translate('errors.required', 'tr')).toContain('{label}');
+    },
+  );
 
   it('returns the missing key and warns once for that key', () => {
     const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
