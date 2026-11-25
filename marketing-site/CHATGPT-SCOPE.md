@@ -2,7 +2,9 @@
 
 **Owner decision (Oğuz, 22 November 2026).** This replaces the rule of 15 November 2026 ("marketing website only"). ChatGPT is an independent contributor. It works on the marketing website and on product tasks that have the label `assigned-chatgpt`.
 
-Do not restore the agent bridge (Cloudflare Worker `gristora-agent-bridge`), agent runners, automatic reviews or automatic merge. The owner cancelled them on 22 November 2026. GitHub Issues, branches and pull requests are the only coordination layer.
+Do not restore the agent bridge (Cloudflare Worker `gristora-agent-bridge`), agent runners or automatic merge. The owner cancelled them on 22 November 2026. GitHub Issues, branches and pull requests are the only coordination layer.
+
+**Development loop v2 (owner decision, Oğuz, 2026-11-25).** Claude, ChatGPT and Codex run the task, review and fix loop in the cloud with scheduled tasks, PR events and `@codex` comments. Read `gelistirme/dongu/README.md` at the start of each run and obey it: loop markers on each automatic comment, one action for each head SHA, a maximum of 3 fix rounds, and the `loop:pause` stop. ADR: `adr/0011-bulut-gelistirme-dongusu.md`.
 
 ## Task board (GitHub labels)
 
