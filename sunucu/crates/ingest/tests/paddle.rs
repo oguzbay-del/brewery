@@ -16,8 +16,7 @@ use tower::ServiceExt;
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgPool) {
-    let nats_url =
-        std::env::var("NATS_URL").unwrap_or_else(|_| "nats://127.0.0.1:4222".to_owned());
+    let nats_url = std::env::var("NATS_URL").unwrap_or_else(|_| "nats://127.0.0.1:4222".to_owned());
     let nats = events::connect(&nats_url).await.unwrap();
     let jetstream = async_nats::jetstream::new(nats);
     events::ensure_streams(&jetstream, 1).await.unwrap();
