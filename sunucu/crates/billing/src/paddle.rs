@@ -530,9 +530,8 @@ mod tests {
     #[test]
     fn falls_back_to_notification_id_only_when_event_id_is_missing() {
         let provider = provider();
-        let mut value: Value =
-            serde_json::from_slice(&payload("subscription.activated", "active"))
-                .unwrap_or(Value::Null);
+        let mut value: Value = serde_json::from_slice(&payload("subscription.activated", "active"))
+            .unwrap_or(Value::Null);
         value.as_object_mut().unwrap().remove("event_id");
         let body = serde_json::to_vec(&value).unwrap_or_default();
         let update = provider
