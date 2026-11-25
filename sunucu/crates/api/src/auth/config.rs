@@ -307,25 +307,25 @@ impl AuthConfig {
         };
         let provider_token_cipher =
             match secret_from_lookup(lookup, "PROVIDER_TOKEN_KEY", "PROVIDER_TOKEN_KEY_FILE")? {
-            Some(raw) => {
-                let decoded = STANDARD.decode(raw.trim()).map_err(|e| Error::InvalidEnv {
-                    name: "PROVIDER_TOKEN_KEY",
-                    reason: format!("must be base64: {e}"),
-                })?;
-                let key: [u8; 32] = decoded.try_into().map_err(|_| Error::InvalidEnv {
-                    name: "PROVIDER_TOKEN_KEY",
-                    reason: "must decode to exactly 32 bytes".to_owned(),
-                })?;
-                Some(Aes256GcmTokenCipher::new(key))
-            }
-            None if apple_token.is_some() => {
-                return Err(Error::InvalidEnv {
-                    name: "PROVIDER_TOKEN_KEY",
-                    reason: "required when Apple token exchange is configured".to_owned(),
-                });
-            }
-            None => None,
-        };
+                Some(raw) => {
+                    let decoded = STANDARD.decode(raw.trim()).map_err(|e| Error::InvalidEnv {
+                        name: "PROVIDER_TOKEN_KEY",
+                        reason: format!("must be base64: {e}"),
+                    })?;
+                    let key: [u8; 32] = decoded.try_into().map_err(|_| Error::InvalidEnv {
+                        name: "PROVIDER_TOKEN_KEY",
+                        reason: "must decode to exactly 32 bytes".to_owned(),
+                    })?;
+                    Some(Aes256GcmTokenCipher::new(key))
+                }
+                None if apple_token.is_some() => {
+                    return Err(Error::InvalidEnv {
+                        name: "PROVIDER_TOKEN_KEY",
+                        reason: "required when Apple token exchange is configured".to_owned(),
+                    });
+                }
+                None => None,
+            };
         Ok(Self {
             apple,
             google: provider(
