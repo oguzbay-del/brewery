@@ -6123,6 +6123,33 @@ export interface components {
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
         };
+        /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
+        Page_TrashItem: {
+            /** @description The rows of this page. */
+            items: {
+                /**
+                 * Format: date-time
+                 * @description When the record was deleted.
+                 */
+                deleted_at: string;
+                /**
+                 * Format: uuid
+                 * @description Record id.
+                 */
+                id: string;
+                /** @description `recipe`, `batch`, `ingredient` or `equipment`. */
+                kind: string;
+                /** @description Name of the record. */
+                name: string;
+                /**
+                 * Format: date-time
+                 * @description Last instant a restore works.
+                 */
+                restorable_until: string;
+            }[];
+            /** @description Cursor of the next page; `null` on the last page. */
+            next_cursor?: string | null;
+        };
         /** @description A registered passkey. */
         PasskeySummary: {
             /**
@@ -7401,11 +7428,6 @@ export interface components {
              * @description Last instant a restore works.
              */
             restorable_until: string;
-        };
-        /** @description The trash, newest deletion first. */
-        TrashList: {
-            /** @description Deleted records of the last 30 days. */
-            items: components["schemas"]["TrashItem"][];
         };
         /** @description Body of an unplanned ingredient. */
         UnplannedActual: {
@@ -34938,8 +34960,10 @@ export interface operations {
             query?: {
                 /** @description Only this kind */
                 kind?: string;
-                /** @description Largest number of items (1..=200) */
+                /** @description Page size (1..=200, default 50) */
                 limit?: number;
+                /** @description Opaque cursor from the previous page */
+                cursor?: string;
             };
             header?: never;
             path: {
@@ -34966,10 +34990,11 @@ export interface operations {
                      *           "name": "House IPA",
                      *           "restorable_until": "2026-12-20T10:00:00Z"
                      *         }
-                     *       ]
+                     *       ],
+                     *       "next_cursor": null
                      *     }
                      */
-                    "application/json": components["schemas"]["TrashList"];
+                    "application/json": components["schemas"]["Page_TrashItem"];
                 };
             };
             /** @description Malformed request */
