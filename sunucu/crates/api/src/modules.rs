@@ -201,6 +201,10 @@ fn path_module_map() -> &'static [(String, &'static str)] {
 /// Resolves a request path (or OpenAPI path template) to its product module.
 #[must_use]
 pub fn module_for_path(path: &str) -> Option<&'static str> {
+    // Accepting an invitation is onboarding; workspace-scoped invitation management is Team.
+    if path == "/v1/invitations/accept" {
+        return Some("core");
+    }
     // Vessel/tank endpoints currently live in the mixed settings API module.
     // Keep general settings free; gate the vessel resource as Production.
     if path.split('/').any(|segment| segment == "vessels") {
