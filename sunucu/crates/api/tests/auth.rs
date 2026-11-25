@@ -25,9 +25,8 @@ use api::{
 use axum::{
     Json, Router,
     body::Body,
-    extract::State,
     http::{Request, StatusCode, header},
-    routing::{get, post},
+    routing::get,
 };
 use fake_oidc::{KeyChoice, MintSpec, Provider, Running};
 use serde_json::{Value, json};
@@ -193,28 +192,45 @@ async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintS
     apple_with_code(w, sub, client, None, tweak).await
 }
 
-async fn apple_token_server(id_token: Arc<tokio::sync::RwLock<String>>) -> String {
-    async fn token(
-        State(id_token): State<Arc<tokio::sync::RwLock<String>>>,
-    ) -> Json<Value> {
-        Json(json!({
-            "access_token": "local-apple-access-token",
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "refresh_token": "local-apple-refresh-token",
-            "id_token": id_token.read().await.clone()
+async fn configure_apple_token_mock(code: &str, id_token: &str) -> String {
+    let token_url = std::env::var("APPLE_TOKEN_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:8092/auth/token".to_owned());
+    let parsed = url::Url::parse(&token_url).unwrap();
+    let admin_url = format!(
+        "{}://{}:{}/__admin/mappings",
+        parsed.scheme(),
+        parsed.host_str().unwrap(),
+        parsed.port_or_known_default().unwrap_or(80)
+    );
+    let response = reqwest::Client::new()
+        .post(admin_url)
+        .json(&json!({
+            "priority": 1,
+            "request": {
+                "method": "POST",
+                "urlPath": "/auth/token",
+                "bodyPatterns": [
+                    {"contains": "grant_type=authorization_code"},
+                    {"contains": format!("code={code}")}
+                ]
+            },
+            "response": {
+                "status": 200,
+                "headers": {"Content-Type": "application/json"},
+                "jsonBody": {
+                    "access_token": "local-apple-access-token",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                    "refresh_token": "local-apple-refresh-token",
+                    "id_token": id_token
+                }
+            }
         }))
-    }
-
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let address = listener.local_addr().unwrap();
-    let app = Router::new()
-        .route("/auth/token", post(token))
-        .with_state(id_token);
-    tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
-    });
-    format!("http://{address}/auth/token")
+        .send()
+        .await
+        .unwrap();
+    assert!(response.status().is_success(), "WireMock mapping failed");
+    token_url
 }
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -232,8 +248,8 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         STANDARD.encode(pkcs8.as_ref())
     );
     let token_key = STANDARD.encode([42_u8; 32]);
-    let response_id_token = Arc::new(tokio::sync::RwLock::new(String::new()));
-    let token_url = apple_token_server(response_id_token.clone()).await;
+    let token_url = std::env::var("APPLE_TOKEN_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:8092/auth/token".to_owned());
     let extra = [
         ("APPLE_TEAM_ID", "TEAM123"),
         ("APPLE_KEY_ID", "KEY456"),
@@ -246,7 +262,7 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         .oidc
         .oidc
         .mint(Provider::Apple, &spec("apple-refresh-user", APPLE_AUD, None));
-    *response_id_token.write().await = response_token;
+    configure_apple_token_mock("mock-auth-code", &response_token).await;
     let response = apple_with_code(
         &w,
         "apple-refresh-user",
@@ -286,8 +302,8 @@ async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgP
         STANDARD.encode(pkcs8.as_ref())
     );
     let token_key = STANDARD.encode([42_u8; 32]);
-    let response_id_token = Arc::new(tokio::sync::RwLock::new(String::new()));
-    let token_url = apple_token_server(response_id_token.clone()).await;
+    let token_url = std::env::var("APPLE_TOKEN_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:8092/auth/token".to_owned());
     let client_ids = format!("{APPLE_AUD},other.apple.client");
     let extra = [
         ("APPLE_CLIENT_IDS", client_ids.as_str()),
@@ -303,7 +319,7 @@ async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgP
         .oidc
         .oidc
         .mint(Provider::Apple, &spec("different-apple-user", APPLE_AUD, None));
-    *response_id_token.write().await = wrong_subject;
+    configure_apple_token_mock("mock-auth-code-subject", &wrong_subject).await;
     let subject_mismatch = apple_with_code(
         &w,
         "apple-response-user",
@@ -322,7 +338,7 @@ async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgP
             Provider::Apple,
             &spec("apple-response-user", "other.apple.client", None),
         );
-    *response_id_token.write().await = wrong_audience;
+    configure_apple_token_mock("mock-auth-code-audience", &wrong_audience).await;
     let audience_mismatch = apple_with_code(
         &w,
         "apple-response-user",
