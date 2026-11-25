@@ -122,11 +122,19 @@ where
             continue;
         }
         if !valid_key_id(id) {
-            tracing::error!(key_id = id, reason = "invalid_id", "previous brew package key skipped");
+            tracing::error!(
+                key_id = id,
+                reason = "invalid_id",
+                "previous brew package key skipped"
+            );
             continue;
         }
         if id == current_id {
-            tracing::error!(key_id = id, reason = "same_as_current", "previous brew package key skipped");
+            tracing::error!(
+                key_id = id,
+                reason = "same_as_current",
+                "previous brew package key skipped"
+            );
             continue;
         }
 
@@ -938,9 +946,7 @@ mod tests {
     fn previous_key_ids_skip_invalid_current_and_missing_secrets() {
         let keys = previous_keys_from_lookup(
             |name| match name {
-                "BREW_PACKAGE_PREVIOUS_KEY_IDS" => {
-                    Some("k1, bad id, k0, k-missing".to_owned())
-                }
+                "BREW_PACKAGE_PREVIOUS_KEY_IDS" => Some("k1, bad id, k0, k-missing".to_owned()),
                 "BREW_PACKAGE_KEY_K1" => Some("first-secret".to_owned()),
                 _ => None,
             },
