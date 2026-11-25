@@ -5,7 +5,7 @@
 **Baseline:** `main` at `c4aff1dfceb9841b01e69b2a515a6ace7a6f4ea0` (17 November 2026)  
 **Production:** Intentionally deferred; this gate validates the noindex preview only.
 
-This is the current release-readiness record for W12. The current acceptance evidence is from the latest `main` commit and its dedicated marketing CI and GitHub Pages preview deployment runs. Use only the screenshot and social-card artifacts recorded below for visual review.
+This is the current release-readiness record for W12. The CI and GitHub Pages evidence below is retained as historical traceability; current branch previews are served by Cloudflare Pages. Use only current-run screenshot and social-card artifacts for visual review.
 
 ## 1. Automated acceptance
 
@@ -53,10 +53,10 @@ Automated axe and responsive checks do not replace these manual checks.
 
 ## 5. Preview, performance and launch boundary
 
-- [ ] GitHub Pages preview build/deployment succeeds from the merged current-main acceptance commit.
+- [ ] Cloudflare Pages branch preview succeeds for the acceptance PR; verify that the preview remains noindex and does not change production domains or DNS.
 - [ ] Preview serves the `/brewery` base path and remains `noindex, nofollow` with `Disallow: /`.
 - [ ] Record a Lighthouse or equivalent performance review for the current preview (Performance, Accessibility, Best Practices and SEO); investigate material regressions rather than treating a successful build as a performance pass.
-- [ ] Confirm production domain, DNS, Vercel production deployment and public launch remain untouched.
+- [ ] Confirm production domain, DNS, production deployment and public launch remain untouched.
 
 ## 6. Completion record
 
@@ -64,10 +64,11 @@ Do not mark W12 complete until all automated checks pass, current-run screenshot
 
 | Evidence | Result |
 |---|---|
-| Current-main CI run | **Run [44090051170](https://github.com/oguzbay-del/brewery/actions/runs/44090051170) passed** at `ff8a1f423b1e7ddcf9cb1ed17109345eeeaf5c94`; current `main` has an empty/no-file-change commit on top, so the tested tree is identical |
+| Historical baseline CI run | **Run [44090051170](https://github.com/oguzbay-del/brewery/actions/runs/44090051170) passed** at `ff8a1f423b1e7ddcf9cb1ed17109345eeeaf5c94`; retained as historical evidence |
 | Responsive screenshot artifact | **#14330514342** (`marketing-responsive-qa-screenshots`, 12,185,910 bytes); review pending |
 | Social-card artifact | **#14329774380** (`marketing-social-card-png`, 59,560 bytes); review pending |
-| GitHub Pages preview deployment | **Run [44090051147](https://github.com/oguzbay-del/brewery/actions/runs/44090051147) succeeded** for tested source tree; live HTTP/content verification still pending |
+| Historical GitHub Pages deployment | **Run [44090051147](https://github.com/oguzbay-del/brewery/actions/runs/44090051147) succeeded** for the older source tree; retained as historical evidence only |
+| Current Cloudflare Pages branch preview | Pending verification on the W21 branch; no production deployment is part of this task |
 | Manual visual review | Sample review: home 1440/390/320, breweries 1440/390, pricing 390, compare 390 and social card; no obvious clipping. Full route-by-route review pending |
 | Keyboard / screen-reader / 200% zoom | Pending |
 | Performance review | Pending |
@@ -115,11 +116,13 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Initial measurements are pending the PR workflow run. No performance score is claimed until the runner completes and reports are reviewed.
 ## Deployment guard investigation — 19 November 2026
 
+**Historical incident — resolved 24 November 2026.** The Vercel automatic-deployment finding below records the situation at that time. It is not a current deployment guard or a current instruction to stop merges.
+
 - Post-merge main workflows [marketing CI #44398637229](https://github.com/oguzbay-del/brewery/actions/runs/44398637229) and [GitHub Pages #44398637250](https://github.com/oguzbay-del/brewery/actions/runs/44398637250) both passed for commit `b92d3774e8fec92d74a66b31d1f4cc79c76615bb`.
 - **Deployment boundary correction:** Vercel Git integration automatically created READY deployments with `target: production` after documentation-only commits landed on `main`. Latest deployment: `brewery-33oa7zrx5-demleme.vercel.app`, aliases `brewery-rho.vercel.app`, `brewery-demleme.vercel.app`, `brewery-git-main-demleme.vercel.app`. Vercel project details report SSO protection enabled for all deployments except custom domains, no custom domains attached, and `live: false`. This is not an unrestricted public custom-domain launch, but it is a Vercel production-target deployment and must not be described as "no production deployment."
 - GitHub Pages is a separate public `noindex, nofollow` deployment at `https://oguzbay-del.github.io/brewery/`; its workflow uses `preview: false`.
 - No `gristora.com` custom domain is attached to the Vercel project; no DNS/custom-domain launch, rollback, deployment cancellation or Vercel settings change was performed.
-- **Guardrail:** avoid further merges/pushes to `main` until the Vercel Git production-branch/automatic-deployment behavior is reviewed and adjusted with owner approval. Use feature branches and preview deployments for continued work. Live HTTP checks were blocked by DNS resolution failure in the current runtime and remain pending.
+- **Historical guardrail at the time:** avoid further merges/pushes to `main` until the Vercel Git production-branch/automatic-deployment behavior was reviewed. This restriction was superseded by the owner's 24 November decision recorded at the end of this file. Live HTTP checks were blocked by DNS resolution failure in the current runtime and remained pending.
 
 
 ### Additional QA sample — 19 November 2026
@@ -147,7 +150,7 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - Lighthouse scores (Performance / Accessibility / Best Practices / SEO): Home desktop 100/100/100/100; Home mobile **85/100/100/100**; Compare desktop/mobile 100/100/100/100; Pricing desktop/mobile 100/100/100/100; How it works desktop/mobile 100/100/100/100.
 - Home mobile's Performance score is the only material score variance. Report identifies 590 ms total blocking time, 2.0 s main-thread work and an oversized responsive home-hero image (estimated 24 KiB savings); this needs investigation/optimization before W12 closure.
 - Manual keyboard-only, screen-reader and 200% zoom review remain outstanding. Stitch parity remains unverified without a live Stitch connector/export.
-- Production domain, DNS and Vercel project settings were not changed. Existing Vercel automatic production-target deployment guard remains in force; do not merge/push further to main until reviewed and adjusted with owner approval.
+- Production domain, DNS and Vercel project settings were not changed. At the time of this 21 November note, the Vercel automatic-deployment guard remained in force; it was superseded by the owner's 24 November decision recorded below.
 
 **W12 status remains in progress.** Outstanding: investigate Home mobile Lighthouse 85, finish visual review across all routes and viewport widths, complete manual keyboard/screen-reader/zoom checks, and verify the deployed noindex Pages response.
 
@@ -161,3 +164,10 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - PR remains unmerged. No production deployment or custom-domain changes were made.
 
 **Remaining for this change:** wait for the new CI run, review Turkish homepage screenshots at all configured widths, compare EN/TR header and hero composition side by side, and complete manual keyboard/screen-reader/200% zoom checks already tracked in W12. Do not weaken existing accessibility tests.
+
+
+## Owner deployment decision — 24 November 2026 (current)
+
+- The owner confirmed that Vercel is not used for GRISTORA. The previous Vercel automatic-deployment finding and the temporary main-branch stop instruction above are historical and resolved; they are not active guardrails.
+- Branch previews are provided by Cloudflare Pages. Review the Cloudflare Pages preview for the relevant PR; do not treat a branch preview as a production release.
+- This acceptance-record update does not authorize or perform a production deployment, public launch, production-domain attachment or DNS change. Those actions remain subject to explicit owner approval.
