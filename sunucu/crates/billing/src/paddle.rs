@@ -137,10 +137,10 @@ impl PaddleProvider {
                 if timestamp.replace(parsed).is_some() {
                     return false;
                 }
-            } else if let Some(value) = field.strip_prefix("h1=") {
-                if let Some(bytes) = decode_hex(value) {
-                    signatures.push(bytes);
-                }
+            } else if let Some(value) = field.strip_prefix("h1=")
+                && let Some(bytes) = decode_hex(value)
+            {
+                signatures.push(bytes);
             }
         }
         let Some(timestamp) = timestamp else {
