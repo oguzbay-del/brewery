@@ -25,8 +25,9 @@ use api::{
 use axum::{
     Json, Router,
     body::Body,
+    extract::State,
     http::{Request, StatusCode, header},
-    routing::get,
+    routing::{get, post},
 };
 use fake_oidc::{KeyChoice, MintSpec, Provider, Running};
 use serde_json::{Value, json};
@@ -192,6 +193,30 @@ async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintS
     apple_with_code(w, sub, client, None, tweak).await
 }
 
+async fn apple_token_server(id_token: Arc<tokio::sync::RwLock<String>>) -> String {
+    async fn token(
+        State(id_token): State<Arc<tokio::sync::RwLock<String>>>,
+    ) -> Json<Value> {
+        Json(json!({
+            "access_token": "local-apple-access-token",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "refresh_token": "local-apple-refresh-token",
+            "id_token": id_token.read().await.clone()
+        }))
+    }
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let address = listener.local_addr().unwrap();
+    let app = Router::new()
+        .route("/auth/token", post(token))
+        .with_state(id_token);
+    tokio::spawn(async move {
+        axum::serve(listener, app).await.unwrap();
+    });
+    format!("http://{address}/auth/token")
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(pool: PgPool) {
     use ring::{
@@ -207,8 +232,8 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         STANDARD.encode(pkcs8.as_ref())
     );
     let token_key = STANDARD.encode([42_u8; 32]);
-    let token_url = std::env::var("APPLE_TOKEN_URL")
-        .unwrap_or_else(|_| "http://127.0.0.1:8092/auth/token".to_owned());
+    let response_id_token = Arc::new(tokio::sync::RwLock::new(String::new()));
+    let token_url = apple_token_server(response_id_token.clone()).await;
     let extra = [
         ("APPLE_TEAM_ID", "TEAM123"),
         ("APPLE_KEY_ID", "KEY456"),
@@ -217,6 +242,11 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         ("APPLE_TOKEN_URL", token_url.as_str()),
     ];
     let w = world_with(&pool, Redis::disabled(), &extra).await;
+    let response_token = w
+        .oidc
+        .oidc
+        .mint(Provider::Apple, &spec("apple-refresh-user", APPLE_AUD, None));
+    *response_id_token.write().await = response_token;
     let response = apple_with_code(
         &w,
         "apple-refresh-user",
@@ -239,6 +269,79 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         cipher.decrypt(&encrypted).unwrap().as_slice(),
         b"local-apple-refresh-token"
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgPool) {
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
+
+    let rng = SystemRandom::new();
+    let pkcs8 =
+        EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng).unwrap();
+    let private_key = format!(
+        "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
+        STANDARD.encode(pkcs8.as_ref())
+    );
+    let token_key = STANDARD.encode([42_u8; 32]);
+    let response_id_token = Arc::new(tokio::sync::RwLock::new(String::new()));
+    let token_url = apple_token_server(response_id_token.clone()).await;
+    let client_ids = format!("{APPLE_AUD},other.apple.client");
+    let extra = [
+        ("APPLE_CLIENT_IDS", client_ids.as_str()),
+        ("APPLE_TEAM_ID", "TEAM123"),
+        ("APPLE_KEY_ID", "KEY456"),
+        ("APPLE_PRIVATE_KEY", private_key.as_str()),
+        ("PROVIDER_TOKEN_KEY", token_key.as_str()),
+        ("APPLE_TOKEN_URL", token_url.as_str()),
+    ];
+    let w = world_with(&pool, Redis::disabled(), &extra).await;
+
+    let wrong_subject = w
+        .oidc
+        .oidc
+        .mint(Provider::Apple, &spec("different-apple-user", APPLE_AUD, None));
+    *response_id_token.write().await = wrong_subject;
+    let subject_mismatch = apple_with_code(
+        &w,
+        "apple-response-user",
+        "ios",
+        Some("mock-auth-code-subject"),
+        |_| {},
+    )
+    .await;
+    assert_eq!(subject_mismatch.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&subject_mismatch), "apple_code_invalid");
+
+    let wrong_audience = w
+        .oidc
+        .oidc
+        .mint(
+            Provider::Apple,
+            &spec("apple-response-user", "other.apple.client", None),
+        );
+    *response_id_token.write().await = wrong_audience;
+    let audience_mismatch = apple_with_code(
+        &w,
+        "apple-response-user",
+        "ios",
+        Some("mock-auth-code-audience"),
+        |_| {},
+    )
+    .await;
+    assert_eq!(audience_mismatch.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&audience_mismatch), "apple_code_invalid");
+
+    let identities: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_identities
+         WHERE provider = 'apple' AND subject = 'apple-response-user'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(identities, 0);
 }
 
 async fn google(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
