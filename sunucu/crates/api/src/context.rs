@@ -238,12 +238,31 @@ async fn module_access(
     Ok(access)
 }
 
-fn allows_method(access: modules::ModuleAccess, method: &Method) -> bool {
+fn allows_method(access: modules::ModuleAccess, method: &Method, path: &str) -> bool {
     match access {
         modules::ModuleAccess::Disabled => false,
-        modules::ModuleAccess::ReadOnly => method == Method::GET || method == Method::HEAD,
+        modules::ModuleAccess::ReadOnly => {
+            method == Method::GET || method == Method::HEAD || ends_access(method, path)
+        }
         modules::ModuleAccess::Full => true,
     }
+}
+
+/// Requests that only end access. A read-only module must still allow them, so that
+/// an expired subscription never keeps a shared terminal open.
+fn ends_access(method: &Method, path: &str) -> bool {
+    let segments: Vec<&str> = path.trim_start_matches('/').split('/').collect();
+    match segments.as_slice() {
+        ["v1", "shared-devices", _, "lock"] => method == Method::POST,
+        ["v1", "workspaces", _, "shared-devices", _] => method == Method::DELETE,
+        _ => false,
+    }
+}
+
+/// A device id never needs percent-encoding. The handler decodes the path segment, so an
+/// encoded id would skip [`device_module_layer`]; the layer refuses such a path.
+fn is_encoded_device_path(path: &str) -> bool {
+    path.starts_with("/v1/shared-devices/") && path.contains('%')
 }
 
 /// Parses the device id from a shared-device key route.
@@ -262,6 +281,9 @@ pub async fn device_module_layer(
     next: Next,
 ) -> Response {
     let path = req.uri().path().to_owned();
+    if is_encoded_device_path(&path) {
+        return ApiError::new(ErrorCode::NotFound).into_response();
+    }
     let Some(device_id) = shared_device_in_path(&path) else {
         return next.run(req).await;
     };
@@ -298,7 +320,7 @@ pub async fn device_module_layer(
         actor_kind: ActorKind::Device,
     };
     match module_access(&services.db, &db_context, workspace_id, module_id).await {
-        Ok(access) if allows_method(access, req.method()) => next.run(req).await,
+        Ok(access) if allows_method(access, req.method(), &path) => next.run(req).await,
         Ok(_) => ApiError::new(ErrorCode::ModuleDisabled).into_response(),
         Err(error) => error.into_response(),
     }
@@ -317,7 +339,7 @@ pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) 
                 && !modules::is_free_module(module_id)
             {
                 match module_access(&state.db, &ctx.db_context(), workspace_id, module_id).await {
-                    Ok(access) if allows_method(access, &method) => {}
+                    Ok(access) if allows_method(access, &method, &path) => {}
                     Ok(_) => {
                         return ApiError::new(ErrorCode::ModuleDisabled).into_response();
                     }
@@ -334,6 +356,39 @@ pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_requests_that_end_access_pass_a_read_only_module() {
+        let device = Uuid::now_v7();
+        let ws = Uuid::now_v7();
+        let lock = format!("/v1/shared-devices/{device}/lock");
+        let remove = format!("/v1/workspaces/{ws}/shared-devices/{device}");
+        let switch = format!("/v1/shared-devices/{device}/switch");
+        assert!(ends_access(&Method::POST, &lock));
+        assert!(ends_access(&Method::DELETE, &remove));
+        assert!(!ends_access(&Method::POST, &switch));
+        assert!(!ends_access(&Method::PATCH, &remove));
+        let read_only = modules::ModuleAccess::ReadOnly;
+        assert!(allows_method(read_only, &Method::POST, &lock));
+        assert!(!allows_method(read_only, &Method::POST, &switch));
+        assert!(!allows_method(
+            modules::ModuleAccess::Disabled,
+            &Method::POST,
+            &lock
+        ));
+    }
+
+    #[test]
+    fn an_encoded_device_id_is_refused() {
+        let device = Uuid::now_v7().to_string();
+        let encoded = format!("%{:02X}{}", device.as_bytes()[0], &device[1..]);
+        let encoded_path = format!("/v1/shared-devices/{encoded}/switch");
+        assert!(shared_device_in_path(&encoded_path).is_none());
+        assert!(is_encoded_device_path(&encoded_path));
+        assert!(!is_encoded_device_path(&format!(
+            "/v1/shared-devices/{device}/switch"
+        )));
+    }
 
     #[test]
     fn workspace_is_read_from_the_path() {
