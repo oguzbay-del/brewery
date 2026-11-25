@@ -12,7 +12,7 @@ DECLARE
     previous_workspace text := current_setting('app.workspace_id', true);
 BEGIN
     -- support_requests has forced workspace RLS; set one workspace at a time under the definer.
-    FOR target_workspace IN SELECT id FROM list_workspace_ids()
+    FOR target_workspace IN SELECT w.id FROM list_workspace_ids() AS w(id)
     LOOP
         PERFORM set_config('app.workspace_id', target_workspace::text, true);
         RETURN QUERY
