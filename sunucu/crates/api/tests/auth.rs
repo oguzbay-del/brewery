@@ -192,17 +192,16 @@ async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintS
     apple_with_code(w, sub, client, None, tweak).await
 }
 
-
 #[sqlx::test(migrations = "../../migrations")]
 async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(pool: PgPool) {
-    use ring::{rand::SystemRandom, signature::{self, EcdsaKeyPair}};
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
 
     let rng = SystemRandom::new();
-    let pkcs8 = EcdsaKeyPair::generate_pkcs8(
-        &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
-        &rng,
-    )
-    .unwrap();
+    let pkcs8 =
+        EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng).unwrap();
     let private_key = format!(
         "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
         STANDARD.encode(pkcs8.as_ref())
@@ -218,8 +217,14 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         ("APPLE_TOKEN_URL", token_url.as_str()),
     ];
     let w = world_with(&pool, Redis::disabled(), &extra).await;
-    let response = apple_with_code(&w, "apple-refresh-user", "ios", Some("mock-auth-code"), |_| {})
-        .await;
+    let response = apple_with_code(
+        &w,
+        "apple-refresh-user",
+        "ios",
+        Some("mock-auth-code"),
+        |_| {},
+    )
+    .await;
     assert_eq!(response.status, StatusCode::OK, "{:?}", response.body);
 
     let encrypted: Vec<u8> = sqlx::query_scalar(
