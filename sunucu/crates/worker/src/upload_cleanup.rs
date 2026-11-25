@@ -42,13 +42,9 @@ pub async fn run(
 
         while attempted < MAX_ROWS_PER_RUN {
             let limit = BATCH_SIZE.min(MAX_ROWS_PER_RUN - attempted) as i32;
-            let rows = maintenance::list_purgeable_uploads(
-                pool,
-                workspace_id,
-                incomplete_before,
-                limit,
-            )
-            .await?;
+            let rows =
+                maintenance::list_purgeable_uploads(pool, workspace_id, incomplete_before, limit)
+                    .await?;
             let pending: Vec<PurgeableUpload> = rows
                 .into_iter()
                 .filter(|row| !failed_rows.contains(&(row.kind.clone(), row.id)))
