@@ -240,7 +240,9 @@ async fn module_access(
 
 fn allows_method(access: modules::ModuleAccess, method: &Method, path: &str) -> bool {
     match access {
-        modules::ModuleAccess::Disabled => false,
+        // Requests that end access pass even when the module is off (Home has no Team
+        // module, but old shares and invitations must still be removable).
+        modules::ModuleAccess::Disabled => ends_access(method, path),
         modules::ModuleAccess::ReadOnly => {
             method == Method::GET || method == Method::HEAD || ends_access(method, path)
         }
@@ -256,6 +258,7 @@ fn ends_access(method: &Method, path: &str) -> bool {
         ["v1", "shared-devices", _, "lock"] => method == Method::POST,
         ["v1", "workspaces", _, "shared-devices", _] => method == Method::DELETE,
         // Remove or disable a member; the handler keeps its admin and self-lockout checks.
+        ["v1", "workspaces", _, "invitations", _] => method == Method::DELETE,
         ["v1", "workspaces", _, "members", _] => {
             method == Method::DELETE || method == Method::PATCH
         }
@@ -382,10 +385,14 @@ mod tests {
         let read_only = modules::ModuleAccess::ReadOnly;
         assert!(allows_method(read_only, &Method::POST, &lock));
         assert!(!allows_method(read_only, &Method::POST, &switch));
-        assert!(!allows_method(
-            modules::ModuleAccess::Disabled,
+        let disabled = modules::ModuleAccess::Disabled;
+        assert!(allows_method(disabled, &Method::POST, &lock));
+        assert!(!allows_method(disabled, &Method::POST, &switch));
+        let invitation = format!("/v1/workspaces/{ws}/invitations/{device}");
+        assert!(ends_access(&Method::DELETE, &invitation));
+        assert!(!ends_access(
             &Method::POST,
-            &lock
+            &format!("/v1/workspaces/{ws}/invitations")
         ));
     }
 
