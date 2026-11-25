@@ -66,11 +66,10 @@ async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgP
     signed.push(b':');
     signed.extend_from_slice(&body);
     let tag = hmac::sign(&hmac::Key::new(hmac::HMAC_SHA256, b"test-secret"), &signed);
-    let hex = tag
-        .as_ref()
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect::<String>();
+    let hex = tag.as_ref().iter().fold(String::new(), |mut output, byte| {
+        let _ = write!(&mut output, "{byte:02x}");
+        output
+    });
     let signature = format!("ts={timestamp};h1={hex}");
 
     let send = |sig: String, payload: Vec<u8>| {
