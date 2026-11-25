@@ -121,7 +121,10 @@ impl AuthServices {
         let verifier = |s: &Option<config::ProviderSettings>| {
             s.clone().map(|s| OidcVerifier::new(s, min_refresh))
         };
-        let apple_token_client = config.apple_token.clone().map(apple_token::AppleTokenClient::new);
+        let apple_token_client = config
+            .apple_token
+            .clone()
+            .map(apple_token::AppleTokenClient::new);
         Self {
             apple: verifier(&config.apple),
             apple_token_client,
