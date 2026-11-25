@@ -102,7 +102,7 @@ impl TokenCipher for Aes256GcmTokenCipher {
         if ciphertext[0] != VERSION {
             return Err(TokenCipherError::UnsupportedVersion);
         }
-        let nonce = Nonce::try_assume_unique_for_key(&ciphertext[1..1 + NONCE_LEN])
+        let nonce = Nonce::try_assume_unique_for_key(&ciphertext[1..=NONCE_LEN])
             .map_err(|_| TokenCipherError::InvalidCiphertext)?;
         let mut encrypted = ciphertext[1 + NONCE_LEN..].to_vec();
         let plaintext = self
@@ -140,7 +140,7 @@ mod tests {
         let cipher = Aes256GcmTokenCipher::new([7; 32]);
         let first = cipher.encrypt(b"same").unwrap();
         let second = cipher.encrypt(b"same").unwrap();
-        assert_ne!(&first[1..1 + NONCE_LEN], &second[1..1 + NONCE_LEN]);
+        assert_ne!(&first[1..=NONCE_LEN], &second[1..=NONCE_LEN]);
         assert_ne!(first, second);
     }
 
