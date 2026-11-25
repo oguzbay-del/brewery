@@ -321,7 +321,7 @@ mod spec {
 #[derive(Debug, utoipa::OpenApi)]
 #[openapi(
     paths(trash_list, trash_restore),
-    components(schemas(TrashItem, TrashFilter, ListParams, Page<TrashItem>)),
+    components(schemas(TrashItem, Page<TrashItem>)),
     tags((name = "trash", description = "Recently deleted records (30 days) and their restore"))
 )]
 struct ModuleDoc;
