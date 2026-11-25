@@ -158,7 +158,8 @@ fn apply_operation_specs(doc: &mut Value) {
             let Some(spec) = modules::operation(id) else {
                 continue;
             };
-            if let Some(module_id) = modules::module_for_path(path) {
+            let module_id = modules::module_for_path(path);
+            if let Some(module_id) = module_id {
                 operation.insert("x-module".to_owned(), json!(module_id));
             }
             operation.insert(
@@ -181,8 +182,17 @@ fn apply_operation_specs(doc: &mut Value) {
                 .get_mut("responses")
                 .and_then(Value::as_object_mut)
             {
-                for (status, response) in problem_responses(spec.errors) {
-                    responses.entry(status).or_insert(response);
+                let mut error_codes = spec.errors.to_vec();
+                let module_is_paid = module_id.is_some_and(|id| !modules::is_free_module(id));
+                if module_is_paid {
+                    error_codes.push(ErrorCode::ModuleDisabled);
+                }
+                for (status, response) in problem_responses(&error_codes) {
+                    if status == "403" && module_is_paid {
+                        responses.insert(status, response);
+                    } else {
+                        responses.entry(status).or_insert(response);
+                    }
                 }
             }
         }
