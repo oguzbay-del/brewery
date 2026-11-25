@@ -81,9 +81,7 @@ async fn count_measurements(pool: &PgPool, id: Uuid) -> i64 {
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
-async fn package_verification_uses_previous_key_and_new_packages_use_current_key(
-    pool: PgPool,
-) {
+async fn package_verification_uses_previous_key_and_new_packages_use_current_key(pool: PgPool) {
     let _key_guard = PACKAGE_KEY_TEST_LOCK.lock().await;
     const OLD_KEY: &[u8] = b"old-brew-package-signing-key";
     const NEW_KEY: &[u8] = b"new-brew-package-signing-key";
