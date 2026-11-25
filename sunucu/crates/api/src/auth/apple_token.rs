@@ -10,7 +10,7 @@ use ring::{
 };
 use serde::Deserialize;
 
-use super::config::AppleTokenSettings;
+use super::{config::AppleTokenSettings, oidc::{OidcError, OidcVerifier}};
 
 /// Errors from the Apple authorization-code exchange.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
@@ -30,11 +30,24 @@ pub enum AppleTokenError {
     /// Apple did not return a refresh token.
     #[error("Apple token response has no refresh token")]
     MissingRefreshToken,
+    /// Apple did not return an ID token.
+    #[error("Apple token response has no ID token")]
+    MissingIdToken,
+    /// The response ID token could not be verified.
+    #[error("Apple token response ID token is invalid")]
+    InvalidIdToken,
+    /// The response ID token belongs to a different identity or client.
+    #[error("Apple token response identity does not match the sign-in identity")]
+    IdentityMismatch,
+    /// The Apple JWKS endpoint could not be reached.
+    #[error("Apple ID token verification is temporarily unavailable")]
+    VerificationUnavailable,
 }
 
 #[derive(Deserialize)]
 struct TokenResponse {
     refresh_token: Option<String>,
+    id_token: Option<String>,
 }
 
 /// Exchanges Apple authorization codes and returns refresh tokens.
@@ -131,6 +144,8 @@ impl AppleTokenClient {
         &self,
         code: &str,
         client_id: &str,
+        verifier: &OidcVerifier,
+        expected_subject: &str,
     ) -> Result<String, AppleTokenError> {
         if code.is_empty() || code.len() > 4096 {
             return Err(AppleTokenError::InvalidCode);
@@ -167,6 +182,23 @@ impl AppleTokenClient {
         }
         let response: TokenResponse =
             serde_json::from_slice(&bytes).map_err(|_| AppleTokenError::Request)?;
+        let id_token = response
+            .id_token
+            .filter(|token| !token.is_empty())
+            .ok_or(AppleTokenError::MissingIdToken)?;
+        let claims = verifier.verify(&id_token).await.map_err(|error| {
+            if error == OidcError::JwksUnavailable {
+                AppleTokenError::VerificationUnavailable
+            } else {
+                AppleTokenError::InvalidIdToken
+            }
+        })?;
+        if claims.sub != expected_subject
+            || claims.audiences.len() != 1
+            || claims.audiences.first().is_none_or(|audience| audience != client_id)
+        {
+            return Err(AppleTokenError::IdentityMismatch);
+        }
         response
             .refresh_token
             .filter(|token| !token.is_empty())
