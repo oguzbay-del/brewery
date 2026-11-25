@@ -211,6 +211,17 @@ Destek ekibinin müşteri sorunlarını çözdüğü ayrı bir web uygulaması. 
 - Her işlem değiştirilemez denetim kaydına yazılır.
 - Yol haritası: Ev MVP'de arama, abonelik, oturum, silme talepleri, destek talebi ve mesaj (GitHub eşitlemesi dahil) ve erişim kuralları; diğerleri İşletme aşamasıyla.
 
+### Özellik talebi ve görüş
+
+Özellik önerisi ve genel görüş, hata ve şikâyet talebiyle aynı sistemden geçer: aynı ekran, aynı SupportRequest kaydı, aynı özel GitHub deposu. Ayrı bir sistem, eşitleme, bildirim ve kişisel veri kurallarını ikinci kez yazmayı gerektirirdi.
+
+- **Konular:** `feature_request` (özellik önerisi) ve `feedback` (genel görüş). Yardım ve destek ekranında "Sorun bildir" yanında "Özellik öner" ve "Görüş bildir" seçilir; yeni ekran gelmez, yalnız konu seçimi genişler.
+- **GitHub:** Issue özel destek deposunda `ozellik` etiketiyle açılır. Müşteri GitHub'ı görmez; herkese açık liste ve topluluk oylaması yoktur (kapsam dışı: topluluk).
+- **Durumlar:** Alındı → Planlandı → Yapıldı, ya da Yapılmayacak. "Çözüldü" ve 14 gün sonra "Kapandı" kuralı bu talepler için geçmez. Durumu destek ekibi GitHub etiketiyle (`durum:planlandi`, `durum:yapildi`, `durum:yapilmayacak`) ya da destek panelinden değiştirir; müşteri durumu talep ekranında görür.
+- **Bildirim:** müşteriye yalnız **Yapıldı** olunca bildirim gider (bildirim kutusu ve push), sürüm notundaki sürüm numarasıyla. Alındı, Planlandı ve Yapılmayacak için bildirim gitmez; Planlandı bir söz gibi okunur. Müşteri yine de talep ekranında durumu görür. Ekibin `/yanit` yorumu önerilere de yanıt olarak gider.
+- **Söz verilmez:** yanıt süresi hedefi ve yapılma tarihi bu talepler için yayımlanmaz.
+- **Kişisel veri ve hesap silme:** Kişisel veri kuralları aynen geçerlidir; hesap silinince bu talepler ve Issue'ları da silinir.
+
 ### Destek talepleri: GitHub Issues
 
 Destek ekibi talepleri GitHub Issues'ta yürütür. Müşteri GitHub'ı görmez; talebini uygulamadaki Yardım ve destek ekranından açar ve izler. Talebin asıl kaydı çekirdek API'dedir (SupportRequest, SupportMessage); GitHub Issue ekibin çalışma yüzeyidir ve iki yönlü eşitlenir. GitHub'a ulaşılamazsa müşteri yine talep açar ve yazışmasını görür; eşitleme kuyrukta bekler.
@@ -224,7 +235,7 @@ Destek ekibi talepleri GitHub Issues'ta yürütür. Müşteri GitHub'ı görmez;
 | Hata bağlantısı | – | Destek Issue'su bir geliştirme Issue'suna bağlanır; düzeltmeyi içeren sürüm yayınlanınca müşteriye "2.3.2'de düzeltildi" bildirimi gider |
 | Erişim izni | Müşteri izin verdiyse Issue'ya yalnız "izin var, bitiş: …" ve panel bağlantısı yazılır | – |
 
-Etiketler: konu (hesap, abonelik, tarif ve hesap, cihaz, diğer), mod (ev, işletme), öncelik, `bekliyor:musteri`.
+Etiketler: konu (hesap, abonelik, tarif ve hesap, cihaz, diğer, özellik önerisi, görüş), mod (ev, işletme), öncelik, `bekliyor:musteri`.
 
 **Talep durumları**
 
@@ -301,7 +312,7 @@ Hedef: aynı sistem AWS, Azure veya Google Cloud'a kod değişmeden kurulabilsin
 
 - **Ortamlar:** geliştirme, test, canlı. Hepsi aynı altyapı koduyla; test ortamında anonimleştirilmiş veri.
 - **Dağıtım:** GitOps; her değişiklik depo üzerinden. Hesap motoru yeni sürümü önce küçük bir trafik payıyla (canary) açılır.
-- **Gözlem:** log, metrik ve iz OpenTelemetry ile; hangi araca gideceği değiştirilebilir. Hesap motoru süresi ve hata oranı için alarm.
+- **Gözlem:** log, metrik ve iz OpenTelemetry ile; hangi araca gideceği değiştirilebilir. Hesap motoru süresi ve hata oranı için alarm. Hata ve çökme raporları (sunucu, web, iOS) Sentry'ye gider; kişisel veri gönderilmez (ADR-0010, Oğuz, 24.11.2026).
 - **Güvenlik:** servisler arası mTLS, Kubernetes ağ politikaları (hesap motoruna yalnız çekirdek API erişir), sırlar sır yöneticisinde ve KMS ile şifreli, imaj ve bağımlılık taraması (ayrıntı: Güvenlik bölümü).
 
 ### Mimari kararlar
@@ -353,7 +364,7 @@ Amaç: Claude yazdığı her şeyi kendi ortamında çalıştırıp doğrulayabi
 | Kenar | Cloud Load Balancing, Cloud Armor (WAF), Cloud CDN | ALB, AWS WAF, CloudFront; Azure Front Door |
 | Sır ve şifreleme | Secret Manager, Cloud KMS (Kubernetes'e External Secrets ile) | Secrets Manager ve KMS; Key Vault |
 | İmaj deposu | Artifact Registry | ECR, ACR |
-| Gözlem | Cloud Logging, Monitoring, Trace (OpenTelemetry üzerinden) | CloudWatch, Azure Monitor veya Grafana |
+| Gözlem | Cloud Logging, Monitoring, Trace (OpenTelemetry üzerinden); hata ve çökme takibi Sentry (SaaS, buluttan bağımsız) | CloudWatch, Azure Monitor veya Grafana |
 | E-posta | Google Cloud'da yok; ayrı sağlayıcı (ör. Postmark, SendGrid) \[doğrulanacak\] | Aynı sağlayıcı |
 | Bölgeler | ABD: us-east4 (Virginia); İngiltere: europe-west2 (Londra) \[doğrulanacak\] | Aynı şehirlerdeki bölgeler |
 | Destek paneli girişi | Kubernetes'te OIDC ters vekili (ör. oauth2-proxy), Google Workspace ile giriş | Aynı (buluttan bağımsız) |
