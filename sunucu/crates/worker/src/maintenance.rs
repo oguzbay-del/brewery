@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use storage::{ObjectLockMode, ObjectStore, S3Config, S3Store};
 use tokio::sync::watch;
 
-use crate::{Result, audit_anchor, retention};
+use crate::{Result, audit_anchor, retention, upload_cleanup};
 
 /// Job name: daily audit digest.
 pub const JOB_DIGEST: &str = "audit-digest-daily";
@@ -21,6 +21,8 @@ pub const JOB_RETENTION: &str = "external-events-retention";
 pub const JOB_SOFT_DELETES: &str = "soft-delete-purge";
 /// Job name: close resolved support requests after 14 days (T2.43).
 pub const JOB_SUPPORT_CLOSE: &str = "support-close-resolved";
+/// Job name: delete object bytes of deleted and incomplete uploads (T2.44).
+pub const JOB_UPLOAD_CLEANUP: &str = "upload-cleanup";
 /// Job name: account deletion after its grace period (T2.31c).
 pub const JOB_ACCOUNT_DELETIONS: &str = "account-deletion-purge";
 
@@ -153,6 +155,24 @@ pub async fn tick_with_files(
             .await
             .map(|closed| (RunStatus::Ok, format!("closed {closed}")));
         record(pool, JOB_SUPPORT_CLOSE, outcome).await;
+    }
+    if let Some(store) = file_store
+        && claim(pool, JOB_UPLOAD_CLEANUP, TICK).await
+    {
+        let outcome = upload_cleanup::run(pool, store, now).await.map(|report| {
+            if report.failed > 0 {
+                (RunStatus::Error, format!("failed {}", report.failed))
+            } else {
+                (
+                    RunStatus::Ok,
+                    format!(
+                        "deleted {}, incomplete {}, failed 0",
+                        report.deleted, report.incomplete
+                    ),
+                )
+            }
+        });
+        record(pool, JOB_UPLOAD_CLEANUP, outcome).await;
     }
 }
 
