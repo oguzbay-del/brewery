@@ -367,4 +367,59 @@ mod tests {
         let lookup = |n: &str| (n == "CSRF_HMAC_KEY").then(|| "short".to_owned());
         assert!(AuthConfig::from_lookup(&lookup).is_err());
     }
+    #[test]
+    fn apple_token_settings_decode_private_key_and_require_cipher_key() {
+        use ring::{rand::SystemRandom, signature::{self, EcdsaKeyPair}};
+
+        let rng = SystemRandom::new();
+        let pkcs8 = EcdsaKeyPair::generate_pkcs8(
+            &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
+            &rng,
+        )
+        .unwrap();
+        let pem = format!(
+            "-----BEGIN PRIVATE KEY-----\\n{}\\n-----END PRIVATE KEY-----",
+            STANDARD.encode(pkcs8.as_ref())
+        );
+        let cipher_key = STANDARD.encode([9_u8; 32]);
+        let lookup = |name: &str| match name {
+            "APPLE_CLIENT_IDS" => Some("com.example.ios,com.example.web".to_owned()),
+            "APPLE_TEAM_ID" => Some("TEAM123".to_owned()),
+            "APPLE_KEY_ID" => Some("KEY456".to_owned()),
+            "APPLE_PRIVATE_KEY" => Some(pem.clone()),
+            "PROVIDER_TOKEN_KEY" => Some(cipher_key.clone()),
+            "WEB_BASE_URL" => Some("https://app.example.com".to_owned()),
+            "CSRF_HMAC_KEY" => Some("test-csrf-key-0123456789".to_owned()),
+            _ => None,
+        };
+        let config = AuthConfig::from_lookup(&lookup).unwrap();
+        let apple = config.apple_token.unwrap();
+        assert_eq!(apple.team_id, "TEAM123");
+        assert_eq!(apple.key_id, "KEY456");
+        assert_eq!(apple.client_ids, ["com.example.ios", "com.example.web"]);
+        assert_eq!(apple.token_url, "https://appleid.apple.com/auth/token");
+        assert_eq!(apple.revoke_url, "https://appleid.apple.com/auth/revoke");
+        assert!(config.provider_token_cipher.is_some());
+    }
+
+    #[test]
+    fn apple_token_settings_reject_partial_secrets_and_missing_cipher_key() {
+        let partial = |name: &str| match name {
+            "APPLE_CLIENT_IDS" => Some("com.example.ios".to_owned()),
+            "APPLE_TEAM_ID" => Some("TEAM123".to_owned()),
+            _ => None,
+        };
+        assert!(AuthConfig::from_lookup(&partial).is_err());
+
+        let no_cipher = |name: &str| match name {
+            "APPLE_CLIENT_IDS" => Some("com.example.ios".to_owned()),
+            "APPLE_TEAM_ID" => Some("TEAM123".to_owned()),
+            "APPLE_KEY_ID" => Some("KEY456".to_owned()),
+            "APPLE_PRIVATE_KEY" => Some("-----BEGIN PRIVATE KEY-----\\nAA==\\n-----END PRIVATE KEY-----".to_owned()),
+            "CSRF_HMAC_KEY" => Some("test-csrf-key-0123456789".to_owned()),
+            _ => None,
+        };
+        assert!(AuthConfig::from_lookup(&no_cipher).is_err());
+    }
+
 }
