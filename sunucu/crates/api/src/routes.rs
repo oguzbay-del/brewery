@@ -185,7 +185,23 @@ pub struct MetaModulesResponse {
         description = "Workspace to inspect; the caller must be an active member"
     )),
     responses(
-        (status = 200, description = "Product module state", body = MetaModulesResponse),
+        (
+            status = 200,
+            description = "Product module state",
+            body = MetaModulesResponse,
+            example = json!({
+                "modules": [
+                    {"id": "core", "enabled": true},
+                    {"id": "devices", "enabled": true},
+                    {"id": "stock", "enabled": true},
+                    {"id": "production", "enabled": false},
+                    {"id": "quality", "enabled": false},
+                    {"id": "cost_reports", "enabled": false},
+                    {"id": "tax_compliance", "enabled": false},
+                    {"id": "team", "enabled": false}
+                ]
+            })
+        ),
         (status = 400, description = "Malformed query", body = ProblemDetails),
         (status = 401, description = "Unauthenticated", body = ProblemDetails),
         (status = 404, description = "Workspace not found", body = ProblemDetails),
