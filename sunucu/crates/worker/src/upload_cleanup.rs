@@ -20,7 +20,7 @@ pub struct UploadCleanupReport {
     pub failed: u64,
 }
 
-const INCOMPLETE_AFTER_HOURS: i64 = 24;
+pub const INCOMPLETE_AFTER_HOURS: i64 = 24;
 const BATCH_SIZE: usize = 200;
 const MAX_ROWS_PER_RUN: usize = 5_000;
 
@@ -65,7 +65,13 @@ pub async fn run(
                     continue;
                 }
 
-                maintenance::mark_upload_purged(pool, workspace_id, &row.kind, row.id).await?;
+                let marked =
+                    maintenance::mark_upload_purged(pool, workspace_id, &row.kind, row.id).await?;
+                if !marked {
+                    report.failed = report.failed.saturating_add(1);
+                    failed_rows.insert((row.kind, row.id));
+                    continue;
+                }
                 if row.incomplete {
                     report.incomplete = report.incomplete.saturating_add(1);
                 } else {
