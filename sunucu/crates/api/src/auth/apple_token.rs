@@ -71,7 +71,7 @@ impl AppleTokenClient {
     ///
     /// # Errors
     /// Returns an error when no unique configured audience can be selected.
-    pub fn client_id_for_audiences(&self, audiences: &[String]) -> Result<&str, AppleTokenError> {
+    pub fn client_id_for_audiences<'a>(&'a self, audiences: &[String]) -> Result<&'a str, AppleTokenError> {
         let mut matching = audiences
             .iter()
             .filter(|audience| self.settings.client_ids.iter().any(|id| id == *audience));
@@ -135,12 +135,12 @@ impl AppleTokenClient {
             return Err(AppleTokenError::InvalidClientId);
         }
         let client_secret = self.client_secret(client_id)?;
-        let body = url::form_urlencoded::Serializer::new(String::new())
-            .append_pair("grant_type", "authorization_code")
-            .append_pair("code", code)
-            .append_pair("client_id", client_id)
-            .append_pair("client_secret", &client_secret)
-            .finish();
+        let mut form = url::form_urlencoded::Serializer::new(String::new());
+        form.append_pair("grant_type", "authorization_code");
+        form.append_pair("code", code);
+        form.append_pair("client_id", client_id);
+        form.append_pair("client_secret", &client_secret);
+        let body = form.finish();
         let response = self
             .http
             .post(&self.settings.token_url)
