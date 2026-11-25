@@ -1,0 +1,14 @@
+diff --git a/web/vite.config.ts b/web/vite.config.ts
+index b48dcb6..4a7a549 100644
+--- a/web/vite.config.ts
++++ b/web/vite.config.ts
+@@ -3,6 +3,9 @@ import { defineConfig } from 'vitest/config';
+ 
+ export default defineConfig({
+   plugins: [react()],
++  server: {
++    fs: { allow: ['..'] },
++  },
+   test: {
+     environment: 'jsdom',
+     globals: true,

@@ -1,0 +1,105 @@
+diff --git a/web/src/i18n/catalog.ts b/web/src/i18n/catalog.ts
+index 99ebce7..79cedf0 100644
+--- a/web/src/i18n/catalog.ts
++++ b/web/src/i18n/catalog.ts
+@@ -32,9 +32,7 @@ export function resolveLocale(
+   browserLanguage?: string,
+ ): Locale {
+   try {
+-    const saved = (storage ?? globalThis.localStorage)?.getItem(
+-      LOCALE_STORAGE_KEY,
+-    );
++    const saved = (storage ?? globalThis.localStorage)?.getItem(LOCALE_STORAGE_KEY);
+     if (isLocale(saved)) return saved;
+   } catch {
+     // Storage can be disabled by browser privacy settings.
+@@ -64,9 +62,7 @@ function lookup(locale: Locale, key: string): string | undefined {
+   }
+   if (key.startsWith('fields.')) {
+     const rest = key.slice(7);
+-    const field = Object.keys(texts.fields).find((candidate) =>
+-      rest.startsWith(`${candidate}.`),
+-    );
++    const field = Object.keys(texts.fields).find((candidate) => rest.startsWith(`${candidate}.`));
+     if (field) {
+       const property = rest.slice(field.length + 1);
+       if (property === 'label' || property === 'hint') {
+@@ -100,11 +96,7 @@ function interpolate(value: string, params: TextParams): string {
+   });
+ }
+ 
+-export function translate(
+-  key: string,
+-  locale: Locale,
+-  params: TextParams = {},
+-): string {
++export function translate(key: string, locale: Locale, params: TextParams = {}): string {
+   const value = lookup(locale, key);
+   if (value === undefined) {
+     if (!warnedKeys.has(key)) {
+diff --git a/web/src/i18n/i18n.test.ts b/web/src/i18n/i18n.test.ts
+index e15a2eb..6afa8d4 100644
+--- a/web/src/i18n/i18n.test.ts
++++ b/web/src/i18n/i18n.test.ts
+@@ -1,11 +1,6 @@
+ import { act, renderHook } from '@testing-library/react';
+ import { afterEach, describe, expect, it, vi } from 'vitest';
+-import {
+-  LOCALE_STORAGE_KEY,
+-  getTextKeys,
+-  resolveLocale,
+-  translate,
+-} from './catalog';
++import { LOCALE_STORAGE_KEY, getTextKeys, resolveLocale, translate } from './catalog';
+ import { useText } from './useText';
+ 
+ afterEach(() => {
+@@ -18,20 +13,17 @@ describe('text catalog', () => {
+     expect(getTextKeys('tr')).toEqual(getTextKeys('en'));
+   });
+ 
+-  it(
+-    'replaces named placeholders and leaves unspecified placeholders intact',
+-    () => {
+-      expect(
+-        translate('errors.out_of_range', 'en', {
+-          label: 'Original gravity',
+-          min: 1,
+-          max: 1.12,
+-          unit: 'SG',
+-        }),
+-      ).toBe('Original gravity must be between 1 and 1.12 SG.');
+-      expect(translate('errors.required', 'tr')).toContain('{label}');
+-    },
+-  );
++  it('replaces named placeholders and leaves unspecified placeholders intact', () => {
++    expect(
++      translate('errors.out_of_range', 'en', {
++        label: 'Original gravity',
++        min: 1,
++        max: 1.12,
++        unit: 'SG',
++      }),
++    ).toBe('Original gravity must be between 1 and 1.12 SG.');
++    expect(translate('errors.required', 'tr')).toContain('{label}');
++  });
+ 
+   it('returns the missing key and warns once for that key', () => {
+     const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+diff --git a/web/src/i18n/useText.ts b/web/src/i18n/useText.ts
+index c8bcb92..e45cf71 100644
+--- a/web/src/i18n/useText.ts
++++ b/web/src/i18n/useText.ts
+@@ -1,11 +1,5 @@
+ import { useEffect, useState } from 'react';
+-import {
+-  resolveLocale,
+-  translate,
+-  type Locale,
+-  type TextKey,
+-  type TextParams,
+-} from './catalog';
++import { resolveLocale, translate, type Locale, type TextKey, type TextParams } from './catalog';
+ 
+ export function useText(key: TextKey | string, params: TextParams = {}): string {
+   const [locale, setLocale] = useState<Locale>(() => resolveLocale());

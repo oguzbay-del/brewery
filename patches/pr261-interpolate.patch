@@ -1,0 +1,13 @@
+diff --git a/web/src/i18n/catalog.ts b/web/src/i18n/catalog.ts
+index 99ebce7..1fac919 100644
+--- a/web/src/i18n/catalog.ts
++++ b/web/src/i18n/catalog.ts
+@@ -94,7 +94,7 @@ export function getTextKeys(locale: Locale): string[] {
+ }
+ 
+ function interpolate(value: string, params: TextParams): string {
+-  return value.replace(/\\{([a-zA-Z0-9_]+)\\}/g, (match, name: string) => {
++  return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, name: string) => {
+     const replacement = params[name];
+     return replacement === undefined ? match : String(replacement);
+   });
