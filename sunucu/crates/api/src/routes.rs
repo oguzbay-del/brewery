@@ -217,9 +217,9 @@ pub async fn meta_modules(
     .await?;
     let modules = modules::PRODUCT_MODULES
         .iter()
-        .map(|module_id| ModuleState {
-            id: (*module_id).to_owned(),
-            enabled: modules::is_module_enabled(module_id, &mode, has_paid_feature),
+        .map(|module| ModuleState {
+            id: module.id.to_owned(),
+            enabled: modules::is_module_enabled(module.id, &mode, has_paid_feature),
         })
         .collect();
     Ok(Json(MetaModulesResponse { modules }))
