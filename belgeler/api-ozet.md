@@ -155,9 +155,9 @@ The signed-in user: session, sessions, sign-in methods
 | POST | `/v1/me/identities` | Links another sign-in method to the account. The session is replaced. |  |  |  |
 | DELETE | `/v1/me/identities/{id}` | Removes a sign-in method. The last one stays; a sign-in in the last 10 minutes is needed. |  |  |  |
 | GET | `/v1/me/passkeys` | Lists the user's passkeys. |  |  |  |
-| DELETE | `/v1/me/passkeys/{id}` | Removes a passkey. Needs the second step. | step-up |  |  |
 | POST | `/v1/me/passkeys/registration/finish` | Finishes a passkey registration. The new session carries the second step. | step-up |  |  |
 | POST | `/v1/me/passkeys/registration/start` | Starts a passkey registration. Needs the second step (a passkey check when the user already has one, otherwise a sign-in in the last 10 minutes). | step-up |  |  |
+| DELETE | `/v1/me/passkeys/{id}` | Removes a passkey. Needs the second step. | step-up |  |  |
 | DELETE | `/v1/me/session` | Signs out of the current session. |  |  |  |
 | GET | `/v1/me/session` | The current session, the user and the user's workspaces. |  |  |  |
 | DELETE | `/v1/me/sessions` | Signs out everywhere, this session included. |  |  |  |
@@ -249,13 +249,13 @@ Equipment, profiles, vessels, workspace and user settings (last writer wins for 
 | POST | `/v1/workspaces/{workspace_id}/carbonation-profiles/{id}/history/{history_id}/restore` | Writes the values of a history row back (a new change with its own history row) | settings.equipment |  |  |
 | GET | `/v1/workspaces/{workspace_id}/equipment` | Lists records: Equipment profile: volumes, losses, efficiency, altitude and hop utilization | recipe.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/equipment` | Creates a record: Equipment profile: volumes, losses, efficiency, altitude and hop utilization | settings.equipment | required |  |
+| POST | `/v1/workspaces/{workspace_id}/equipment/wizard` | Creates an equipment record from the four answers of the equipment wizard | settings.equipment | required |  |
 | DELETE | `/v1/workspaces/{workspace_id}/equipment/{id}` | Deletes a record (soft delete; the history can restore it) | settings.equipment |  | optional |
 | GET | `/v1/workspaces/{workspace_id}/equipment/{id}` | Reads one record | recipe.view |  |  |
 | PATCH | `/v1/workspaces/{workspace_id}/equipment/{id}` | Changes fields of a record (merge patch). Last writer wins for each field; `If-Match` is optional | settings.equipment |  | optional |
 | POST | `/v1/workspaces/{workspace_id}/equipment/{id}/calibration-proposal` | Proposes a new efficiency from measured results of past batches (the engine calculates the yields). Changes nothing | settings.equipment |  |  |
 | GET | `/v1/workspaces/{workspace_id}/equipment/{id}/history` | Change history of a record, newest first. `previous_value` holds the replaced values of the changed fields | recipe.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/equipment/{id}/history/{history_id}/restore` | Writes the values of a history row back (a new change with its own history row) | settings.equipment |  |  |
-| POST | `/v1/workspaces/{workspace_id}/equipment/wizard` | Creates an equipment record from the four answers of the equipment wizard | settings.equipment | required |  |
 | GET | `/v1/workspaces/{workspace_id}/fermentation-profiles` | Lists records: Fermentation profile with its temperature steps | recipe.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/fermentation-profiles` | Creates a record: Fermentation profile with its temperature steps | settings.equipment | required |  |
 | DELETE | `/v1/workspaces/{workspace_id}/fermentation-profiles/{id}` | Deletes a record (soft delete; the history can restore it) | settings.equipment |  | optional |
@@ -317,9 +317,9 @@ Stock lots, the movement ledger, goods receipt, count, deduction for a batch and
 |---|---|---|---|---|---|
 | POST | `/v1/workspaces/{workspace_id}/batches/{id}/stock-deduction` | Deducts the actual amounts of a batch from stock. Each ingredient is taken from the oldest lots first (best-before day, then receipt day); a lot that the actual record names comes first. The call is safe to repeat: it deducts only what the earlier calls did not deduct. A shortage goes to the last lot, which then shows a `negative_stock` warning. | stock.move | required |  |
 | GET | `/v1/workspaces/{workspace_id}/shopping-list` | Lists the shopping list. | recipe.view |  |  |
+| POST | `/v1/workspaces/{workspace_id}/shopping-list/from-recipe` | Builds shopping list items from a recipe version: the amounts of the recipe (scaled to the batch volume) minus the stock on hand. An item for the same ingredient, unit and recipe version that is still open gets a new amount, so the call is safe to repeat. | stock.move | required |  |
 | DELETE | `/v1/workspaces/{workspace_id}/shopping-list/{id}` | Removes an item from the list (soft delete). | stock.move |  | required |
 | PATCH | `/v1/workspaces/{workspace_id}/shopping-list/{id}` | Ticks off an item or changes its amount. | stock.move |  | required |
-| POST | `/v1/workspaces/{workspace_id}/shopping-list/from-recipe` | Builds shopping list items from a recipe version: the amounts of the recipe (scaled to the batch volume) minus the stock on hand. An item for the same ingredient, unit and recipe version that is still open gets a new amount, so the call is safe to repeat. | stock.move | required |  |
 | GET | `/v1/workspaces/{workspace_id}/stock/lots` | Lists the stock lots of the workspace. | recipe.view |  |  |
 | GET | `/v1/workspaces/{workspace_id}/stock/lots/{id}` | Reads one lot. | recipe.view |  |  |
 | PATCH | `/v1/workspaces/{workspace_id}/stock/lots/{id}` | Changes the supplier, best-before day, cost or notes of a lot. The amount changes only with a movement. | stock.move |  | required |
@@ -410,10 +410,11 @@ Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Zorunlu alanlar: type, titl
 
 | Başlık | Kullanım |
 |---|---|
+| `ETag` | Strong entity tag: the record version (yanıt başlığı) |
 | `Idempotency-Key` | Client generated key (ADR-0008 rule 6) (zorunlu) |
-| `If-Match` | Version `ETag` of the record (optional) (bazı operasyonlarda zorunlu, bazılarında isteğe bağlı) |
-| `If-None-Match` | Version `ETag` the client holds (optional) (isteğe bağlı) |
+| `If-Match` | Version `ETag` of the batch (bazı operasyonlarda zorunlu, bazılarında isteğe bağlı) |
+| `If-None-Match` | Version `ETag` the client holds (isteğe bağlı) |
 | `Last-Event-ID` | Last event id the client saw; the server replays what followed (one hour) (isteğe bağlı) |
 | `Retry-After` | Seconds to wait before retrying (yanıt başlığı) |
 | `X-Device-Key` | The device key (zorunlu) |
-| `X-Request-Id` | Request id (`X-Request-Id`) (yanıt başlığı) |
+| `X-Request-Id` | Request id (`X-Request-Id`). (yanıt başlığı) |
