@@ -162,7 +162,7 @@ pub struct MetaModulesQuery {
 pub struct ModuleState {
     /// Stable product module id.
     pub id: String,
-    /// Whether the mode and active PAID_FEATURE entitlement enable this module.
+    /// Whether the mode and active `PAID_FEATURE` entitlement enable this module.
     pub enabled: bool,
 }
 
