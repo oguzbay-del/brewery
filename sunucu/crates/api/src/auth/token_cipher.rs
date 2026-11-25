@@ -125,8 +125,14 @@ mod tests {
         let cipher = Aes256GcmTokenCipher::new([7; 32]);
         let encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
         assert_eq!(encrypted[0], VERSION);
-        assert_eq!(encrypted.len(), 1 + NONCE_LEN + b"refresh-token-value".len() + TAG_LEN);
-        assert_eq!(cipher.decrypt(&encrypted).unwrap().as_slice(), b"refresh-token-value");
+        assert_eq!(
+            encrypted.len(),
+            1 + NONCE_LEN + b"refresh-token-value".len() + TAG_LEN
+        );
+        assert_eq!(
+            cipher.decrypt(&encrypted).unwrap().as_slice(),
+            b"refresh-token-value"
+        );
     }
 
     #[test]
@@ -143,7 +149,10 @@ mod tests {
         let cipher = Aes256GcmTokenCipher::new([7; 32]);
         let mut encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
         encrypted[0] = 2;
-        assert_eq!(cipher.decrypt(&encrypted), Err(TokenCipherError::UnsupportedVersion));
+        assert_eq!(
+            cipher.decrypt(&encrypted),
+            Err(TokenCipherError::UnsupportedVersion)
+        );
 
         let mut encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
         let last = encrypted.len() - 1;
@@ -154,6 +163,9 @@ mod tests {
     #[test]
     fn rejects_short_ciphertext() {
         let cipher = Aes256GcmTokenCipher::new([7; 32]);
-        assert_eq!(cipher.decrypt(&[VERSION; 4]), Err(TokenCipherError::InvalidCiphertext));
+        assert_eq!(
+            cipher.decrypt(&[VERSION; 4]),
+            Err(TokenCipherError::InvalidCiphertext)
+        );
     }
 }
