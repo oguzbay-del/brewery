@@ -444,7 +444,7 @@ mod tests {
             "APPLE_KEY_ID" => Some("KEY456".to_owned()),
             "APPLE_PRIVATE_KEY" => {
                 Some("-----BEGIN PRIVATE KEY-----\nAA==\n-----END PRIVATE KEY-----".to_owned())
-            },
+            }
             "CSRF_HMAC_KEY" => Some("test-csrf-key-0123456789".to_owned()),
             _ => None,
         };
