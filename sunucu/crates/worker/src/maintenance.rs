@@ -19,6 +19,8 @@ pub const JOB_VERIFY: &str = "audit-digest-verify-weekly";
 pub const JOB_RETENTION: &str = "external-events-retention";
 /// Job name: permanent delete of records soft-deleted more than 30 days ago (T2.37).
 pub const JOB_SOFT_DELETES: &str = "soft-delete-purge";
+/// Job name: close resolved support requests after 14 days (T2.43).
+pub const JOB_SUPPORT_CLOSE: &str = "support-close-resolved";
 /// Job name: account deletion after its grace period (T2.31c).
 pub const JOB_ACCOUNT_DELETIONS: &str = "account-deletion-purge";
 
@@ -145,6 +147,12 @@ pub async fn tick_with_files(
                 (RunStatus::Ok, detail)
             });
         record(pool, JOB_SOFT_DELETES, outcome).await;
+    }
+    if claim(pool, JOB_SUPPORT_CLOSE, DAY).await {
+        let outcome = retention::close_resolved_support_requests(pool, now)
+            .await
+            .map(|closed| (RunStatus::Ok, format!("closed {closed}")));
+        record(pool, JOB_SUPPORT_CLOSE, outcome).await;
     }
 }
 

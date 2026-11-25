@@ -7,7 +7,11 @@
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Row, types::Uuid};
 
-use crate::{Error, Result, set_workspace_id};
+use crate::{
+    Error, Result,
+    outbox::{Entity, NewOutboxEvent, enqueue},
+    set_workspace_id,
+};
 
 /// Head of one workspace's audit chain.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -196,6 +200,36 @@ pub async fn delete_old_external_events(pool: &PgPool, cutoff: DateTime<Utc>) ->
         .execute(pool)
         .await?;
     Ok(done.rows_affected())
+}
+
+/// Closes resolved support requests older than `cutoff` in every workspace and enqueues the
+/// normal support sync event in the same transaction. Returns the number of requests closed.
+/// The SECURITY DEFINER function exposes only changed row identities and versions to the worker.
+pub async fn close_resolved_support_requests(pool: &PgPool, cutoff: DateTime<Utc>) -> Result<u64> {
+    let mut tx = pool.begin().await?;
+    let rows: Vec<(Uuid, Uuid, i64)> =
+        sqlx::query_as("SELECT workspace_id, id, version FROM close_resolved_support_requests($1)")
+            .bind(cutoff)
+            .fetch_all(&mut *tx)
+            .await?;
+    for (workspace_id, request_id, version) in &rows {
+        enqueue(
+            &mut tx,
+            &NewOutboxEvent {
+                topic: "support.sync_requested".to_owned(),
+                workspace_id: Some(*workspace_id),
+                entity: Some(Entity {
+                    kind: "support_request".to_owned(),
+                    id: *request_id,
+                    version: *version,
+                }),
+                data: None,
+            },
+        )
+        .await?;
+    }
+    tx.commit().await?;
+    Ok(rows.iter().fold(0_u64, |count, _| count.saturating_add(1)))
 }
 
 /// Result of [`purge_expired_soft_deletes`] for one kind of record.
