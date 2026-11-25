@@ -1558,4 +1558,3 @@ mod tests {
         assert_eq!(country_of(&h), None);
     }
 }
-
