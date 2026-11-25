@@ -1,10 +1,9 @@
 import { ESLint } from 'eslint';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const webRoot = fileURLToPath(new URL('..', import.meta.url));
-const configPath = fileURLToPath(new URL('../eslint.config.js', import.meta.url));
-const probePath = fileURLToPath(new URL('./__boundary_probe__.ts', import.meta.url));
+const webRoot = new URL('..', import.meta.url).pathname;
+const configPath = new URL('../eslint.config.js', import.meta.url).pathname;
+const probePath = new URL('./__boundary_probe__.ts', import.meta.url).pathname;
 const eslint = new ESLint({ cwd: webRoot, overrideConfigFile: configPath });
 
 async function restrictedImportMessages(source: string) {
