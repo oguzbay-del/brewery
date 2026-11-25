@@ -111,10 +111,23 @@ fn every_openapi_operation_has_a_product_module_extension() {
     let document: Value = serde_json::from_str(&api::openapi_json().unwrap()).unwrap();
     for (path, item) in document["paths"].as_object().unwrap() {
         for (method, operation) in item.as_object().unwrap() {
-            assert!(
-                operation["x-module"].as_str().is_some(),
-                "missing x-module for {method} {path}"
-            );
+            if !matches!(
+                method.as_str(),
+                "get" | "post" | "put" | "patch" | "delete" | "head" | "options" | "trace"
+            ) {
+                continue;
+            }
+            let module_id = operation["x-module"]
+                .as_str()
+                .unwrap_or_else(|| panic!("missing x-module for {method} {path}"));
+            if !modules::is_free_module(module_id) {
+                assert!(
+                    operation["responses"]["403"]["content"]["application/problem+json"]
+                        ["examples"]["module_disabled"]
+                        .is_object(),
+                    "missing module_disabled response for {method} {path}"
+                );
+            }
         }
     }
 }
