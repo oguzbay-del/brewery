@@ -182,9 +182,9 @@ test("Business wizard routes teams above 20 seats to custom quote", async ({ pag
   await page.getByRole("button", { name: /Continue/ }).click();
   await page.getByLabel(/More than 20 users/).check();
   await expect(page.locator("#contact-tier")).toBeVisible();
-  await page.getByRole("button", { name: /Review contact request/ }).click();
+  await page.getByRole("button", { name: /Review custom quote details/ }).click();
   await expect(page.locator('[data-step="4"]')).toBeVisible();
   await expect(page.locator("#review-seats")).toContainText("custom quote");
-  await expect(page.locator("#wizard-feedback")).toContainText("tailored quote");
+  await expect(page.locator("#wizard-feedback")).toContainText("custom-quote guidance only");
   await expect(page.locator("#summary-seats")).toContainText("custom quote");
 });

@@ -99,7 +99,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <label><input type="radio" name="seats" value="20" aria-label="20 users" /><span>20 <small>users</small></span></label>
                 <label><input type="radio" name="seats" value="20+" aria-label="More than 20 users" /><span>20+ <small>contact</small></span></label>
               </fieldset>
-              <div class="contact-tier" id="contact-tier" hidden><strong>More than 20 people?</strong><p>We’ll prepare a tailored team option.</p><span>20+ users · contact required</span></div>
+              <div class="contact-tier" id="contact-tier" hidden><strong>More than 20 people?</strong><p>Teams above 20 would need a separate custom-quote discussion.</p><span>20+ users · custom-quote guidance only</span></div>
               <p class="step-helper"><a href={`${base}compare/`}>Review the Home and Brewery function comparison</a>.</p>
             </section>
 
@@ -182,7 +182,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           byId("review-discount").textContent = state.seats === "20+" ? "To be agreed" : discounts[state.term];
           byId("review-trial").textContent = state.audience === "home" ? "3 months" : "1 month";
           byId("wizard-next").disabled = step === 4 || (step === 1 && !state.audience);
-          byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review contact request →" : step === 4 ? "Review complete" : "Continue →";
+          byId("wizard-next").textContent = step === 2 && state.seats === "20+" ? "Review custom quote details →" : step === 4 ? "Review complete" : "Continue →";
           if (!(step === 4 && state.seats === "20+")) byId("wizard-feedback").textContent = "";
         };
         form.querySelectorAll('input[name="audience"]').forEach((input) => input.addEventListener("change", () => {
@@ -197,7 +197,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           if (step < 4) {
             step = step === 2 && state.seats === "20+" ? 4 : step + 1;
             update();
-            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "A team of more than 20 needs a tailored quote.";
+            if (step === 4 && state.seats === "20+") byId("wizard-feedback").textContent = "This is custom-quote guidance only. No contact request has been sent.";
             const heading = document.querySelector(".wizard-step:not([hidden]) h2");
             if (heading) heading.focus();
           }
