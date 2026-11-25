@@ -120,3 +120,37 @@ async fn scan_codes_have_one_target_and_can_be_revoked(pool: PgPool) -> sqlx::Re
     assert_eq!(sqlstate(&error).as_deref(), Some("23514"));
     Ok(())
 }
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn deleting_a_container_keeps_its_event_snapshot(pool: PgPool) -> sqlx::Result<()> {
+    let (api, workspace_a, _workspace_b, container_id, _container_b) = setup(&pool).await;
+    let event_id = id(909);
+    run(
+        &api,
+        workspace_a,
+        None,
+        &format!(
+            "INSERT INTO container_event (id, workspace_id, container_id, container_serial_snapshot, event_type)
+             VALUES ('{event_id}', '{workspace_a}', '{container_id}', 'CAN-A', 'scan')"
+        ),
+    )
+    .await?;
+
+    let owner = pool_as(&pool, Role::Owner).await;
+    run(
+        &owner,
+        workspace_a,
+        None,
+        &format!("DELETE FROM container WHERE id = '{container_id}'"),
+    )
+    .await?;
+
+    let row: (Option<uuid::Uuid>, String) = sqlx::query_as(
+        "SELECT container_id, container_serial_snapshot FROM container_event WHERE id = $1",
+    )
+    .bind(event_id)
+    .fetch_one(&pool)
+    .await?;
+    assert_eq!(row, (None, "CAN-A".to_owned()));
+    Ok(())
+}
