@@ -171,7 +171,17 @@ impl PaddleProvider {
             .get("data")
             .and_then(Value::as_object)
             .ok_or_else(|| malformed("missing subscription data"))?;
-        let event_id = required_str(envelope, "event_id")?;
+        let delivery_id = envelope
+            .get("event_id")
+            .and_then(Value::as_str)
+            .filter(|value| !value.is_empty())
+            .or_else(|| {
+                envelope
+                    .get("notification_id")
+                    .and_then(Value::as_str)
+                    .filter(|value| !value.is_empty())
+            })
+            .ok_or_else(|| malformed("missing event_id and notification_id"))?;
         let occurred_at = parse_datetime(required_str(envelope, "occurred_at")?, "occurred_at")?;
         let external_id = data
             .get("id")
@@ -238,7 +248,7 @@ impl PaddleProvider {
             schema_version: UPDATE_SCHEMA_VERSION,
             source: Source::Web,
             // The project decision uses event_id as the stable deduplication key.
-            notification_id: event_id.to_owned(),
+            notification_id: delivery_id.to_owned(),
             kind,
             workspace_id,
             external_id: external_id.to_owned(),
@@ -515,6 +525,22 @@ mod tests {
             provider.parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body),
             Err(ProviderError::Malformed(_))
         ));
+    }
+
+    #[test]
+    fn falls_back_to_notification_id_only_when_event_id_is_missing() {
+        let provider = provider();
+        let mut value: Value =
+            serde_json::from_slice(&payload("subscription.activated", "active"))
+                .unwrap_or(Value::Null);
+        value.as_object_mut().unwrap().remove("event_id");
+        let body = serde_json::to_vec(&value).unwrap_or_default();
+        let update = provider
+            .parse_webhook(Some(&sign(&body, NOW, b"test-secret")), &body)
+            .ok()
+            .flatten()
+            .unwrap();
+        assert_eq!(update.notification_id, "ntf_retry");
     }
 
     #[test]
