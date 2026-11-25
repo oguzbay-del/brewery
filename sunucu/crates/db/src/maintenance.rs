@@ -7,6 +7,7 @@
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Row, types::Uuid};
 
+use crate::outbox::{Entity, NewOutboxEvent, enqueue};
 use crate::{Error, Result, set_workspace_id};
 
 /// Head of one workspace's audit chain.
@@ -250,8 +251,6 @@ pub async fn purge_expired_soft_deletes(
 /// # Errors
 /// Database errors.
 pub async fn close_resolved_support_requests(pool: &PgPool, cutoff: DateTime<Utc>) -> Result<u64> {
-    use crate::outbox::{Entity, NewOutboxEvent, enqueue};
-
     let mut tx = pool.begin().await?;
     let rows = sqlx::query(
         "SELECT workspace_id, request_id, version
