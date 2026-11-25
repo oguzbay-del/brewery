@@ -11,7 +11,6 @@
 pub mod apple;
 pub mod device;
 pub mod jws;
-pub mod paddle;
 
 use std::sync::Arc;
 
