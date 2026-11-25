@@ -16,12 +16,13 @@ const homebrewerAreas = features.filter((feature) => feature.audiences.includes(
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(base, import.meta.env.SITE).href;
+const description = "Planned brewing software for professional breweries, with a separate Homebrewers path. Explore intended recipe, production and batch-record workflows.";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "GRISTORA",
   url: canonicalUrl,
-  description: "GRISTORA — Brewing Intelligence for the craft and science of brewing.",
+  description,
   inLanguage: "en",
 };
 
@@ -38,18 +39,18 @@ const structuredData = {
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta
       name="description"
-      content="GRISTORA — Brewing Intelligence for the craft and science of brewing."
+      content={description}
     />
     <title>GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="GRISTORA" />
-    <meta property="og:description" content="GRISTORA — Brewing Intelligence." />
+    <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="GRISTORA" />
-    <meta name="twitter:description" content="GRISTORA — Brewing Intelligence." />
+    <meta name="twitter:description" content={description} />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
