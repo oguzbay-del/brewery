@@ -92,7 +92,15 @@ impl PaddleProvider {
             "PADDLE_WEBHOOK_SECRET",
             "PADDLE_WEBHOOK_SECRET_FILE",
         )?;
-        let prices = parse_price_map(&std::env::var("PADDLE_PRICE_MAP").unwrap_or_default())?;
+        let price_map = match std::env::var("PADDLE_PRICE_MAP") {
+            Ok(value) => value,
+            Err(std::env::VarError::NotPresent) => String::new(),
+            Err(error) => return Err(env_error("PADDLE_PRICE_MAP", &error.to_string())),
+        };
+        let prices = parse_price_map(&price_map)?;
+        if secret.is_some() && prices.is_empty() {
+            return Err(env_error("PADDLE_PRICE_MAP", "set at least one price_id=product_key pair"));
+        }
         let grace_days = parse_env_i64("PADDLE_GRACE_DAYS", DEFAULT_GRACE_DAYS)?;
         let tolerance_secs =
             parse_env_i64("PADDLE_SIGNATURE_TOLERANCE_SECS", DEFAULT_SIGNATURE_TOLERANCE_SECS)?;
@@ -498,8 +506,6 @@ mod tests {
     fn malformed_price_maps_are_rejected() {
         assert!(parse_price_map("pri_a=home,broken").is_err());
         assert!(parse_price_map("pri_a=home,pri_a=business").is_err());
-        assert_eq!(
-            parse_price_map("pri_a=home,pri_b=business").is_ok_and(|map| map.len() == 2)
-        );
+        assert!(parse_price_map("pri_a=home,pri_b=business").is_ok_and(|map| map.len() == 2));
     }
 }
