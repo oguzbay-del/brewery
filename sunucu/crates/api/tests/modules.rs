@@ -11,7 +11,7 @@ use api::{
     modules::{self, MODULES},
     redis_client::Redis,
 };
-use axum::{Router, body::Body, http::StatusCode, middleware::from_fn_with_state, routing::get};
+use axum::{Router, body::Body, http::StatusCode, middleware::from_fn_with_state, routing::{get, post}};
 use serde_json::Value;
 use sqlx::PgPool;
 use support::{FakeAuth, insert_user, insert_workspace, send, state_with};
@@ -28,6 +28,21 @@ fn team_path_template() -> String {
         .paths
         .keys()
         .find(|path| path.starts_with("/v1/workspaces/"))
+        .unwrap()
+        .clone()
+}
+
+fn export_path_template() -> String {
+    let module = MODULES
+        .iter()
+        .find(|module| module.name == "import-export")
+        .unwrap();
+    let document = (module.openapi)();
+    document
+        .paths
+        .paths
+        .keys()
+        .find(|path| path.ends_with("/exports"))
         .unwrap()
         .clone()
 }
