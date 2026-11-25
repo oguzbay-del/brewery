@@ -6,7 +6,7 @@ use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::Utc;
 use ring::{
     rand::SystemRandom,
-    signature::{self, EcdsaKeyPair, KeyPair},
+    signature::{self, EcdsaKeyPair},
 };
 use serde::Deserialize;
 
@@ -178,7 +178,7 @@ mod tests {
     #![allow(clippy::unwrap_used)]
 
     use super::*;
-    use ring::signature::UnparsedPublicKey;
+    use ring::signature::{KeyPair, UnparsedPublicKey};
 
     fn settings(private_key: Vec<u8>) -> AppleTokenSettings {
         AppleTokenSettings {
@@ -204,9 +204,8 @@ mod tests {
         .unwrap();
         let public_key = key.public_key().as_ref().to_vec();
         let client = AppleTokenClient::new(settings(pkcs8.as_ref().to_vec()));
-        let client_id = client
-            .client_id_for_audiences(&["com.example.ios".to_owned()])
-            .unwrap();
+        let audiences = ["com.example.ios".to_owned()];
+        let client_id = client.client_id_for_audiences(&audiences).unwrap();
         assert_eq!(client_id, "com.example.ios");
 
         let token = client.client_secret(client_id).unwrap();
