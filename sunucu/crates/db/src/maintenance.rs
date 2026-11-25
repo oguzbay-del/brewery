@@ -227,7 +227,7 @@ pub async fn close_resolved_support_requests(pool: &PgPool, cutoff: DateTime<Utc
         .await?;
     }
     tx.commit().await?;
-    Ok(u64::try_from(rows.len()).unwrap_or(u64::MAX))
+    Ok(rows.iter().fold(0_u64, |count, _| count.saturating_add(1)))
 }
 
 /// Result of [`purge_expired_soft_deletes`] for one kind of record.
