@@ -41,7 +41,8 @@ pub async fn run(
         let mut failed_rows: HashSet<(String, Uuid)> = HashSet::new();
 
         while attempted < MAX_ROWS_PER_RUN {
-            let limit = BATCH_SIZE.min(MAX_ROWS_PER_RUN - attempted) as i32;
+            let limit = i32::try_from(BATCH_SIZE.min(MAX_ROWS_PER_RUN - attempted))
+                .map_err(|_| crate::Error::Format("upload cleanup batch size exceeds i32".into()))?;
             let rows =
                 maintenance::list_purgeable_uploads(pool, workspace_id, incomplete_before, limit)
                     .await?;
@@ -62,6 +63,7 @@ pub async fn run(
                 if store.delete(&row.object_key).await.is_err() {
                     report.failed = report.failed.saturating_add(1);
                     failed_rows.insert((row.kind, row.id));
+                    tracing::warn!("upload object deletion failed; will retry next run");
                     continue;
                 }
 
@@ -70,6 +72,7 @@ pub async fn run(
                 if !marked {
                     report.failed = report.failed.saturating_add(1);
                     failed_rows.insert((row.kind, row.id));
+                    tracing::warn!("upload row could not be marked as purged; will retry next run");
                     continue;
                 }
                 if row.incomplete {
