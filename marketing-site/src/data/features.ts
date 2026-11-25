@@ -32,7 +32,7 @@ export const features: FeaturePage[] = [
     modules: ["core"],
     title: "Recipe design & management",
     eyebrow: "RECIPES",
-    summary: "From a guided first recipe to a deeply configurable professional formulation, the planned GRISTORA direction aims to keep recipes understandable from version to version.",
+    summary: "From a guided first recipe to a deeply configurable professional formulation, GRISTORA keeps recipes understandable from version to version.",
     audiences: ["Breweries", "Homebrewers"],
     stages: ["Homebrew MVP", "Business core"],
     sections: [
@@ -223,8 +223,8 @@ export const features: FeaturePage[] = [
     stages: ["Homebrew MVP", "Homebrew second release"],
     sections: [
       { heading: "Recipe portability", intro: "The roadmap may evaluate recipe portability through established brewing formats.", items: ["Potential BeerXML and BeerJSON import/export paths, subject to format validation.", "A possible BeerSmith .bsmx import path, subject to format validation.", "Possible Brewfather and Brewer's Friend recipe export paths, subject to format validation.", "Planned import mapping would evaluate ingredient, equipment, style and unit matching.", "A planned review step could show source-versus-GRISTORA calculation differences before saving."] },
-      { heading: "Focused brewing tools", intro: "Focused utilities sit within the relevant recipe or batch context.", items: ["Refractometer correction and gravity tools", "Carbonation and priming calculators for bottles, kegs and casks", "Dilution, volume and unit conversion", "Extract brewing tools for partial boils, top-up water and LME/DME/honey conversions", "Decoction and parti-gyle tools; parti-gyle is available in Home mode", "No-chill IBU adjustment and bottle/keg carbonation tracking in Home mode", "Optional recipe transfer to supported brewing controllers in Home mode"] },
-      { heading: "Reports and custom records", intro: "Make useful records portable and printable.", items: ["Brew sheets, tank rounds, fermentation and packaging forms", "Custom brew-sheet fields and layouts in Home mode", "Recipe, batch, equipment, water profile, ingredient, device and support data export", "CSV and JSON exports plus scanned documents and photos in downloadable archives", "Competition-form output and custom recipe/batch fields in Home mode", "Bring in laboratory water reports in Home mode"] }
+      { heading: "Focused brewing tools", intro: "Focused utilities sit within the relevant recipe or batch context.", items: ["Refractometer correction and gravity tools", "Carbonation and priming calculators for bottles, kegs and casks", "Dilution, volume and unit conversion", "Extract brewing tools for partial boils, top-up water and LME/DME/honey conversions", "Decoction and parti-gyle tools; parti-gyle is available in Home mode", "No-chill IBU adjustment and bottle/keg carbonation tracking in Home mode", "A future Home mode path may evaluate recipe transfer to selected brewing controllers, subject to implementation and validation."] },
+      { heading: "Reports and custom records", intro: "Make useful records portable and printable.", items: ["Brew sheets, tank rounds, fermentation and packaging forms", "Custom brew-sheet fields and layouts in Home mode", "The planned export scope may cover recipe, batch, equipment, water-profile, ingredient, device and support data.", "Potential CSV and JSON exports, with scanned documents and photos in downloadable archives, remain subject to implementation and validation.", "Competition-form output and custom recipe/batch fields in Home mode", "A possible Home mode path may evaluate laboratory water-report imports after format validation."] }
     ]
   },
   {
