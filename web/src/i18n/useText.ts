@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { resolveLocale, translate, type Locale, type TextKey, type TextParams } from './catalog';
+import { translateUi } from './ui';
 
 export function useText(key: TextKey | string, params: TextParams = {}): string {
   const [locale, setLocale] = useState<Locale>(() => resolveLocale());
@@ -10,5 +11,6 @@ export function useText(key: TextKey | string, params: TextParams = {}): string 
     return () => window.removeEventListener('storage', update);
   }, []);
 
+  if (key.startsWith('ui.')) return translateUi(key, locale) ?? key;
   return translate(key, locale, params);
 }
