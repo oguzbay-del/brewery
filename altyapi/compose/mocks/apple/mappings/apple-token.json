@@ -1,0 +1,45 @@
+{
+  "mappings": [
+    {
+      "name": "Apple authorization-code token exchange",
+      "request": {
+        "method": "POST",
+        "urlPath": "/auth/token",
+        "bodyPatterns": [
+          { "contains": "grant_type=authorization_code" },
+          { "contains": "code=" },
+          { "contains": "client_id=" },
+          { "contains": "client_secret=" }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {
+          "access_token": "local-apple-access-token",
+          "token_type": "Bearer",
+          "expires_in": 3600,
+          "refresh_token": "local-apple-refresh-token",
+          "id_token": "local-apple-id-token"
+        }
+      }
+    },
+    {
+      "name": "Apple token revoke",
+      "request": {
+        "method": "POST",
+        "urlPath": "/auth/revoke",
+        "bodyPatterns": [
+          { "contains": "token=" },
+          { "contains": "client_id=" },
+          { "contains": "client_secret=" }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": {}
+      }
+    }
+  ]
+}
