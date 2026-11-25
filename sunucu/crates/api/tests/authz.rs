@@ -413,46 +413,17 @@ async fn every_cell_of_the_matrix_holds_for_every_preset_role(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn home_workspaces_get_admin_editor_and_viewer_only(pool: PgPool) {
+async fn home_workspaces_cannot_list_team_roles(pool: PgPool) {
     let w = world(&pool).await;
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "home").await;
-    let all = roles(&w, ws, &owner).await;
-    let keys: BTreeSet<_> = all
-        .iter()
-        .map(|r| r["template_key"].as_str().unwrap().to_owned())
-        .collect();
+    let reply = get_as(&w, &format!("/v1/workspaces/{ws}/roles"), &owner).await;
     assert_eq!(
-        keys,
-        ["admin", "share_editor", "share_viewer"]
-            .iter()
-            .map(|s| (*s).to_owned())
-            .collect()
-    );
-    let (editor, _) = join(
-        &w,
-        ws,
-        &owner,
-        json!({"role_id": role_id(&all, "share_editor")}),
-    )
-    .await;
-    assert_eq!(
-        perms_of(&probe(&w, ws, &editor).await),
-        ["batch.record", "recipe.edit", "recipe.view"]
-            .iter()
-            .map(|s| (*s).to_owned())
-            .collect()
-    );
-    let (viewer, _) = join(
-        &w,
-        ws,
-        &owner,
-        json!({"role_id": role_id(&all, "share_viewer")}),
-    )
-    .await;
-    assert_eq!(
-        perms_of(&probe(&w, ws, &viewer).await),
-        ["recipe.view".to_owned()].into_iter().collect()
+        (
+            reply.status,
+            reply.body["code"].as_str().unwrap_or_default()
+        ),
+        (StatusCode::FORBIDDEN, "module_disabled")
     );
 }
 
@@ -1267,144 +1238,27 @@ async fn invitation_mail_reaches_mailpit(pool: PgPool) {
 // --- Home sharing ---------------------------------------------------------------------------
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn home_owner_shares_a_recipe_as_editor_or_viewer(pool: PgPool) {
+async fn home_owner_cannot_share_a_recipe_as_editor_or_viewer(pool: PgPool) {
     let w = world(&pool).await;
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "home").await;
-    let base = format!("/v1/workspaces/{ws}");
-    let (mine, other) = (
-        insert_recipe(&pool, ws, "IPA").await,
-        insert_recipe(&pool, ws, "Stout").await,
-    );
-
-    let (wr, ow, bs) = (&w, &owner, &base);
-    let share = |access: &'static str, email: String| async move {
-        let body = json!({"kind": "recipe", "id": mine, "access": access, "email": email});
-        post_as(wr, &format!("{bs}/shares"), ow, body).await
-    };
-    // Viewer: sees the shared recipe, cannot edit it, does not know the other one.
-    let email = unique_email();
-    let r = share("viewer", email.clone()).await;
-    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
-    assert_eq!(r.body["scope_kind"], "recipe");
-    let friend = login(&w).await;
-    assert_eq!(
-        accept(&w, &friend, &token_for(&w, &email)).await.status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/view"), &friend)
-            .await
-            .status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/edit"), &friend)
-            .await
-            .status,
-        StatusCode::FORBIDDEN
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{other}/view"), &friend)
-            .await
-            .status,
-        StatusCode::NOT_FOUND
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/roles"), &friend).await.status,
-        StatusCode::FORBIDDEN
-    );
-
-    // Editor: can edit the shared recipe only.
-    let email = unique_email();
-    assert_eq!(
-        share("editor", email.clone()).await.status,
-        StatusCode::CREATED
-    );
-    let friend2 = login(&w).await;
-    assert_eq!(
-        accept(&w, &friend2, &token_for(&w, &email)).await.status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/edit"), &friend2)
-            .await
-            .status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{other}/edit"), &friend2)
-            .await
-            .status,
-        StatusCode::NOT_FOUND
-    );
-
-    // Removing the assignment ends the share at once.
-    let members = get_as(&w, &format!("{base}/members"), &owner).await.body["items"].clone();
-    let m = members
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|m| m["user_id"] == friend2.id.to_string())
-        .unwrap()
-        .clone();
-    let (mid, aid) = (
-        m["id"].as_str().unwrap(),
-        m["assignments"][0]["id"].as_str().unwrap(),
-    );
-    assert_eq!(
-        delete_as(
+    let recipe = insert_recipe(&pool, ws, "IPA").await;
+    for access in ["editor", "viewer"] {
+        let reply = post_as(
             &w,
-            &format!("{base}/members/{mid}/assignments/{aid}"),
-            &owner
+            &format!("/v1/workspaces/{ws}/shares"),
+            &owner,
+            json!({"kind": "recipe", "id": recipe, "access": access, "email": unique_email()}),
         )
-        .await
-        .status,
-        StatusCode::NO_CONTENT
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/edit"), &friend2)
-            .await
-            .status,
-        StatusCode::NOT_FOUND
-    );
-
-    // Bad input: unknown kind or access, a target that is not there, a friend (no users.manage).
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &owner,
-        json!({"kind": "tank", "id": mine, "access": "viewer", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &owner,
-        json!({"kind": "recipe", "id": mine, "access": "owner", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &owner,
-        json!({"kind": "batch", "id": Uuid::now_v7(), "access": "viewer", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(
-        (r.status, code(&r)),
-        (StatusCode::UNPROCESSABLE_ENTITY, "scope_target_not_found")
-    );
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &friend,
-        json!({"kind": "recipe", "id": mine, "access": "viewer", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(r.status, StatusCode::FORBIDDEN);
+        .await;
+        assert_eq!(
+            (
+                reply.status,
+                reply.body["code"].as_str().unwrap_or_default()
+            ),
+            (StatusCode::FORBIDDEN, "module_disabled")
+        );
+    }
 
     // Business workspaces have no sharing endpoint effect.
     let biz_owner = login(&w).await;

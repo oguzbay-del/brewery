@@ -2386,6 +2386,7 @@
           "forbidden",
           "step_up_required",
           "entitlement_required",
+          "module_disabled",
           "not_found",
           "conflict",
           "idempotency_in_progress",
@@ -4103,6 +4104,36 @@
         ],
         "type": "object"
       },
+      "MetaModulesQuery": {
+        "description": "Query for the workspace-specific module state.",
+        "properties": {
+          "workspace_id": {
+            "description": "Workspace whose modules the signed-in caller wants to inspect.",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id"
+        ],
+        "type": "object"
+      },
+      "MetaModulesResponse": {
+        "description": "Response of GET /v1/meta.",
+        "properties": {
+          "modules": {
+            "description": "All product modules and their current state.",
+            "items": {
+              "$ref": "#/components/schemas/ModuleState"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "modules"
+        ],
+        "type": "object"
+      },
       "MiscDetail": {
         "additionalProperties": false,
         "description": "Detail of a misc ingredient.",
@@ -4184,6 +4215,29 @@
         },
         "required": [
           "amount"
+        ],
+        "type": "object"
+      },
+      "ModuleState": {
+        "description": "One product module and whether it is enabled for this workspace.",
+        "properties": {
+          "enabled": {
+            "description": "Whether the mode and active `PAID_FEATURE` entitlement enable this module.",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Stable product module id.",
+            "type": "string"
+          },
+          "read_only": {
+            "description": "Whether the workspace can only read this module.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "enabled",
+          "read_only"
         ],
         "type": "object"
       },
@@ -10870,6 +10924,7 @@
           "system"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -10952,6 +11007,7 @@
           "system"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -11228,6 +11284,7 @@
           "auth"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -11416,6 +11473,7 @@
           "auth"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -11696,6 +11754,7 @@
           "auth"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -11972,6 +12031,7 @@
           "auth"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -12097,6 +12157,7 @@
           "auth"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -12358,6 +12419,7 @@
           "access"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -12552,6 +12614,7 @@
           "account deletion"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "get": {
@@ -12745,6 +12808,7 @@
           "account deletion"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "post": {
@@ -12959,6 +13023,7 @@
           "account deletion"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -13164,6 +13229,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "post": {
@@ -13494,6 +13560,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -13731,6 +13798,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -14059,6 +14127,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -14401,6 +14470,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -14730,6 +14800,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -15052,6 +15123,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -15239,6 +15311,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "get": {
@@ -15455,6 +15528,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -15642,6 +15716,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "get": {
@@ -15849,6 +15924,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -16048,6 +16124,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -16385,6 +16462,7 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -16711,6 +16789,180 @@
           "me"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/meta": {
+      "get": {
+        "operationId": "meta_modules_get",
+        "parameters": [
+          {
+            "description": "Workspace to inspect; the caller must be an active member",
+            "in": "query",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "modules": [
+                    {
+                      "enabled": true,
+                      "id": "core",
+                      "read_only": false
+                    },
+                    {
+                      "enabled": true,
+                      "id": "devices",
+                      "read_only": false
+                    },
+                    {
+                      "enabled": true,
+                      "id": "stock",
+                      "read_only": false
+                    },
+                    {
+                      "enabled": false,
+                      "id": "production",
+                      "read_only": false
+                    },
+                    {
+                      "enabled": false,
+                      "id": "quality",
+                      "read_only": false
+                    },
+                    {
+                      "enabled": false,
+                      "id": "cost_reports",
+                      "read_only": false
+                    },
+                    {
+                      "enabled": false,
+                      "id": "tax_compliance",
+                      "read_only": false
+                    },
+                    {
+                      "enabled": false,
+                      "id": "team",
+                      "read_only": false
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/MetaModulesResponse"
+                }
+              }
+            },
+            "description": "Product module state"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "malformed_request",
+                  "request_id": "0192f1c07a3b7000800000000000000a",
+                  "status": 400,
+                  "title": "Malformed request",
+                  "type": "/errors/malformed_request"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed query"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "unauthenticated",
+                  "request_id": "0192f1c07a3b7000800000000000000a",
+                  "status": 401,
+                  "title": "Unauthenticated",
+                  "type": "/errors/unauthenticated"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "not_found",
+                  "request_id": "0192f1c07a3b7000800000000000000a",
+                  "status": 404,
+                  "title": "Not found",
+                  "type": "/errors/not_found"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Workspace not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "rate_limited",
+                  "request_id": "0192f1c07a3b7000800000000000000a",
+                  "status": 429,
+                  "title": "Rate limited",
+                  "type": "/errors/rate_limited"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "code": "internal",
+                  "request_id": "0192f1c07a3b7000800000000000000a",
+                  "status": 500,
+                  "title": "Internal error",
+                  "type": "/errors/internal"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Product modules for one workspace. The caller must be an active workspace member.",
+        "tags": [
+          "meta"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -16792,6 +17044,7 @@
           "meta"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -16921,6 +17174,7 @@
           "meta"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -16995,6 +17249,28 @@
               }
             },
             "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Module disabled"
           },
           "404": {
             "content": {
@@ -17154,6 +17430,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "none"
       }
     },
@@ -17244,6 +17521,28 @@
               }
             },
             "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Module disabled"
           },
           "404": {
             "content": {
@@ -17403,6 +17702,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "none"
       }
     },
@@ -17509,6 +17809,28 @@
               }
             },
             "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Module disabled"
           },
           "404": {
             "content": {
@@ -17668,6 +17990,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "none"
       }
     },
@@ -17793,6 +18116,7 @@
           "system"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -18088,6 +18412,7 @@
           "workspaces"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -18379,6 +18704,7 @@
           "notifications"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -18783,6 +19109,7 @@
           "notifications"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -19127,6 +19454,7 @@
           "notifications"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       },
       "patch": {
@@ -19503,6 +19831,7 @@
           "notifications"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -19788,6 +20117,7 @@
           "files"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "post": {
@@ -20207,6 +20537,7 @@
           "files"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -20501,6 +20832,7 @@
           "files"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       },
       "get": {
@@ -20742,6 +21074,7 @@
           "files"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -21036,6 +21369,7 @@
           "files"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -21295,6 +21629,7 @@
           "files"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -21647,6 +21982,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -22055,6 +22391,7 @@
           "batches"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "batch.plan"
       }
     },
@@ -22456,6 +22793,7 @@
           "batches"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "batch.plan"
       },
       "get": {
@@ -22725,6 +23063,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -23162,6 +23501,7 @@
           "batches"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "batch.plan"
       }
     },
@@ -23428,6 +23768,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -23839,6 +24180,7 @@
           "batches"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -24233,6 +24575,7 @@
           "batches"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -24497,6 +24840,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -24911,6 +25255,7 @@
           "batches"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "batch.plan"
       }
     },
@@ -25260,6 +25605,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -25629,6 +25975,7 @@
           "batches"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -25895,6 +26242,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -26340,6 +26688,7 @@
           "batches"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -26747,6 +27096,7 @@
           "stock"
         ],
         "x-concurrency": "append",
+        "x-module": "stock",
         "x-permission": "stock.move"
       }
     },
@@ -27025,6 +27375,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -27464,6 +27815,7 @@
           "batches"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -27728,6 +28080,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -27992,6 +28345,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "batch.plan"
       }
     },
@@ -28291,6 +28645,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -28649,6 +29004,7 @@
           "batches"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -28959,6 +29315,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -29344,6 +29701,7 @@
           "settings"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -29670,6 +30028,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       },
       "get": {
@@ -29949,6 +30308,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -30314,6 +30674,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -30596,6 +30957,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -30951,6 +31313,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -31269,6 +31632,7 @@
           "devices"
         ],
         "x-concurrency": "none",
+        "x-module": "devices",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -31672,6 +32036,7 @@
           "devices"
         ],
         "x-concurrency": "none",
+        "x-module": "devices",
         "x-permission": "devices.manage"
       }
     },
@@ -32052,6 +32417,7 @@
           "devices"
         ],
         "x-concurrency": "none",
+        "x-module": "devices",
         "x-permission": "devices.manage"
       },
       "get": {
@@ -32347,6 +32713,7 @@
           "devices"
         ],
         "x-concurrency": "none",
+        "x-module": "devices",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -32755,6 +33122,7 @@
           "devices"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "devices",
         "x-permission": "devices.manage"
       }
     },
@@ -33160,6 +33528,7 @@
           "devices"
         ],
         "x-concurrency": "none",
+        "x-module": "devices",
         "x-permission": "devices.manage"
       }
     },
@@ -33488,6 +33857,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -33909,6 +34279,7 @@
           "settings"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -34313,6 +34684,7 @@
           "settings"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -34639,6 +35011,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       },
       "get": {
@@ -34936,6 +35309,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -35319,6 +35693,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -35667,6 +36042,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -35949,6 +36325,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -36322,6 +36699,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -36688,6 +37066,7 @@
           "import-export"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "reports.export"
       }
     },
@@ -36950,6 +37329,7 @@
           "import-export"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "reports.export"
       }
     },
@@ -37264,6 +37644,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -37649,6 +38030,7 @@
           "settings"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -37975,6 +38357,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       },
       "get": {
@@ -38258,6 +38641,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -38627,6 +39011,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -38909,6 +39294,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -39268,6 +39654,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -39588,6 +39975,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -39983,6 +40371,7 @@
           "recipes"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -40365,6 +40754,7 @@
           "recipes"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       },
       "patch": {
@@ -40770,6 +41160,7 @@
           "recipes"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -41175,6 +41566,7 @@
           "import-export"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -41457,6 +41849,7 @@
           "import-export"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -41851,6 +42244,7 @@
           "import-export"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -42199,6 +42593,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "post": {
@@ -42613,6 +43008,7 @@
           "library"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -42910,6 +43306,7 @@
           "library"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       },
       "get": {
@@ -43160,6 +43557,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "patch": {
@@ -43570,6 +43968,7 @@
           "library"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -43659,6 +44058,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -43666,7 +44075,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -43779,6 +44188,7 @@
           "access"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "users.manage"
       },
       "post": {
@@ -43891,6 +44301,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -43898,7 +44318,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -44144,6 +44564,7 @@
           "access"
         ],
         "x-concurrency": "append",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -44233,6 +44654,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -44240,7 +44671,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -44381,6 +44812,7 @@
           "access"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -44702,6 +45134,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -45098,6 +45531,7 @@
           "settings"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -45424,6 +45858,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       },
       "get": {
@@ -45714,6 +46149,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -46090,6 +46526,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -46372,6 +46809,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -46738,6 +47176,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -47016,6 +47455,7 @@
           "notifications"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "put": {
@@ -47374,6 +47814,7 @@
           "notifications"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -47640,6 +48081,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "patch": {
@@ -47990,6 +48432,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -48262,6 +48705,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -48602,6 +49046,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -48709,6 +49154,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -48716,7 +49171,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -48829,6 +49284,7 @@
           "access"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -48918,6 +49374,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -48925,7 +49391,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -49066,6 +49532,7 @@
           "access"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "team",
         "x-permission": "users.manage"
       },
       "patch": {
@@ -49178,6 +49645,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -49185,7 +49662,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -49428,6 +49905,7 @@
           "access"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -49551,6 +50029,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -49558,7 +50046,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -49804,6 +50292,7 @@
           "access"
         ],
         "x-concurrency": "append",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -49903,6 +50392,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -49910,7 +50409,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -50051,6 +50550,7 @@
           "access"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -50371,6 +50871,7 @@
           "notifications"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -50749,6 +51250,7 @@
           "notifications"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -51016,6 +51518,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -51449,6 +51952,7 @@
           "recipes"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -51794,6 +52298,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -52072,6 +52577,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -52555,6 +53061,7 @@
           "recipes"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -52909,6 +53416,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -53275,6 +53783,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -53678,6 +54187,7 @@
           "recipes"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -54079,6 +54589,7 @@
           "recipes"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       },
       "get": {
@@ -54343,6 +54854,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -54775,6 +55287,7 @@
           "recipes"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -55119,6 +55632,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       },
       "get": {
@@ -55411,6 +55925,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -55778,6 +56293,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       },
       "put": {
@@ -56135,6 +56651,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -56479,6 +56996,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "put": {
@@ -56821,6 +57339,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -57175,6 +57694,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       },
       "put": {
@@ -57527,6 +58047,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -57788,6 +58309,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -58202,6 +58724,7 @@
           "recipes"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -58306,6 +58829,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -58313,7 +58846,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -58426,6 +58959,7 @@
           "access"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "users.manage"
       },
       "post": {
@@ -58542,6 +59076,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -58549,7 +59093,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -58795,6 +59339,7 @@
           "access"
         ],
         "x-concurrency": "append",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -58893,6 +59438,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -58900,7 +59455,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -59143,6 +59698,7 @@
           "access"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "team",
         "x-permission": "users.manage"
       },
       "patch": {
@@ -59270,6 +59826,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -59277,7 +59843,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -59520,6 +60086,7 @@
           "access"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -59649,6 +60216,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -59656,7 +60233,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -59902,6 +60479,7 @@
           "access"
         ],
         "x-concurrency": "append",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -60187,6 +60765,7 @@
           "files"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "post": {
@@ -60606,6 +61185,7 @@
           "files"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -60900,6 +61480,7 @@
           "files"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       },
       "get": {
@@ -61141,6 +61722,7 @@
           "files"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -61435,6 +62017,7 @@
           "files"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "batch.record"
       }
     },
@@ -61694,6 +62277,7 @@
           "files"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -62003,6 +62587,7 @@
           "search"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -62269,6 +62854,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "patch": {
@@ -62619,6 +63205,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "workspace.manage"
       }
     },
@@ -62891,6 +63478,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -63231,6 +63819,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "workspace.manage"
       }
     },
@@ -63345,6 +63934,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -63352,7 +63951,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -63598,6 +64197,7 @@
           "access"
         ],
         "x-concurrency": "append",
+        "x-module": "team",
         "x-permission": "users.manage"
       }
     },
@@ -63922,6 +64522,7 @@
           "stock"
         ],
         "x-concurrency": "none",
+        "x-module": "stock",
         "x-permission": "recipe.view"
       }
     },
@@ -64329,6 +64930,7 @@
           "stock"
         ],
         "x-concurrency": "append",
+        "x-module": "stock",
         "x-permission": "stock.move"
       }
     },
@@ -64730,6 +65332,7 @@
           "stock"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "stock",
         "x-permission": "stock.move"
       },
       "patch": {
@@ -65157,6 +65760,7 @@
           "stock"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "stock",
         "x-permission": "stock.move"
       }
     },
@@ -65506,6 +66110,7 @@
           "stock"
         ],
         "x-concurrency": "none",
+        "x-module": "stock",
         "x-permission": "recipe.view"
       }
     },
@@ -65774,6 +66379,7 @@
           "stock"
         ],
         "x-concurrency": "none",
+        "x-module": "stock",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -66208,6 +66814,7 @@
           "stock"
         ],
         "x-concurrency": "optimistic",
+        "x-module": "stock",
         "x-permission": "stock.move"
       }
     },
@@ -66639,6 +67246,7 @@
           "stock"
         ],
         "x-concurrency": "append",
+        "x-module": "stock",
         "x-permission": "stock.move"
       }
     },
@@ -66982,6 +67590,7 @@
           "stock"
         ],
         "x-concurrency": "none",
+        "x-module": "stock",
         "x-permission": "recipe.view"
       }
     },
@@ -67403,6 +68012,7 @@
           "stock"
         ],
         "x-concurrency": "append",
+        "x-module": "stock",
         "x-permission": "stock.move"
       }
     },
@@ -67654,6 +68264,7 @@
           "stock"
         ],
         "x-concurrency": "none",
+        "x-module": "stock",
         "x-permission": "recipe.view"
       }
     },
@@ -67973,6 +68584,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -68212,6 +68824,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -68555,6 +69168,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -68900,6 +69514,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -69243,6 +69858,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -69496,6 +70112,7 @@
           "library"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -69787,6 +70404,7 @@
           "support"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "support.grant"
       }
     },
@@ -70185,6 +70803,7 @@
           "support"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "support.grant"
       }
     },
@@ -70529,6 +71148,7 @@
           "support"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "support.grant"
       }
     },
@@ -70845,6 +71465,7 @@
           "support"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       },
       "post": {
@@ -71259,6 +71880,7 @@
           "support"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -71565,6 +72187,7 @@
           "support"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -71974,6 +72597,7 @@
           "support"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -72328,6 +72952,7 @@
           "support"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "none"
       },
       "patch": {
@@ -72707,6 +73332,7 @@
           "support"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -73085,6 +73711,7 @@
           "support"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -73405,6 +74032,7 @@
           "recipes"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -73800,6 +74428,7 @@
           "recipes"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -74182,6 +74811,7 @@
           "recipes"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       },
       "patch": {
@@ -74587,6 +75217,7 @@
           "recipes"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "recipe.edit"
       }
     },
@@ -74875,6 +75506,7 @@
           "trash"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -75166,6 +75798,7 @@
           "trash"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -75325,6 +75958,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -75332,7 +75975,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -75477,6 +76120,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "production",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -75611,6 +76255,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -75618,7 +76272,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -75864,6 +76518,7 @@
           "settings"
         ],
         "x-concurrency": "append",
+        "x-module": "production",
         "x-permission": "settings.equipment"
       }
     },
@@ -75962,6 +76617,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -75969,7 +76634,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -76190,6 +76855,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "production",
         "x-permission": "settings.equipment"
       },
       "get": {
@@ -76318,6 +76984,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -76325,7 +77001,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -76470,6 +77146,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "production",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -76608,6 +77285,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -76615,7 +77302,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -76836,6 +77523,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "production",
         "x-permission": "settings.equipment"
       }
     },
@@ -76966,6 +77654,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -76973,7 +77671,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -77118,6 +77816,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "production",
         "x-permission": "recipe.view"
       }
     },
@@ -77246,6 +77945,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
                   }
                 },
                 "schema": {
@@ -77253,7 +77962,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Module disabled"
           },
           "404": {
             "content": {
@@ -77474,6 +78183,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "production",
         "x-permission": "settings.equipment"
       }
     },
@@ -77790,6 +78500,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "post": {
@@ -78187,6 +78898,7 @@
           "settings"
         ],
         "x-concurrency": "append",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -78513,6 +79225,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       },
       "get": {
@@ -78798,6 +79511,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       },
       "patch": {
@@ -79169,6 +79883,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -79451,6 +80166,7 @@
           "settings"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "recipe.view"
       }
     },
@@ -79812,6 +80528,7 @@
           "settings"
         ],
         "x-concurrency": "field_lww",
+        "x-module": "core",
         "x-permission": "settings.equipment"
       }
     },
@@ -80059,6 +80776,7 @@
           "events"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     },
@@ -80149,6 +80867,16 @@
                       "type": "/errors/forbidden"
                     }
                   },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  },
                   "step_up_required": {
                     "summary": "Second factor required",
                     "value": {
@@ -80165,7 +80893,7 @@
                 }
               }
             },
-            "description": "Forbidden; Second factor required"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -80360,6 +81088,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "none"
       }
     },
@@ -80450,6 +81179,16 @@
                       "type": "/errors/forbidden"
                     }
                   },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  },
                   "step_up_required": {
                     "summary": "Second factor required",
                     "value": {
@@ -80466,7 +81205,7 @@
                 }
               }
             },
-            "description": "Forbidden; Second factor required"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -80661,6 +81400,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "devices.manage"
       }
     },
@@ -80761,6 +81501,16 @@
                       "type": "/errors/forbidden"
                     }
                   },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  },
                   "step_up_required": {
                     "summary": "Second factor required",
                     "value": {
@@ -80777,7 +81527,7 @@
                 }
               }
             },
-            "description": "Forbidden; Second factor required"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -80972,6 +81722,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "devices.manage"
       },
       "post": {
@@ -81075,6 +81826,16 @@
                       "type": "/errors/forbidden"
                     }
                   },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  },
                   "step_up_required": {
                     "summary": "Second factor required",
                     "value": {
@@ -81091,7 +81852,7 @@
                 }
               }
             },
-            "description": "Forbidden; Second factor required"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -81337,6 +82098,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "devices.manage"
       }
     },
@@ -81427,6 +82189,16 @@
                       "type": "/errors/forbidden"
                     }
                   },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  },
                   "step_up_required": {
                     "summary": "Second factor required",
                     "value": {
@@ -81443,7 +82215,7 @@
                 }
               }
             },
-            "description": "Forbidden; Second factor required"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -81638,6 +82410,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "devices.manage"
       }
     },
@@ -81738,6 +82511,16 @@
                       "type": "/errors/forbidden"
                     }
                   },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  },
                   "step_up_required": {
                     "summary": "Second factor required",
                     "value": {
@@ -81754,7 +82537,7 @@
                 }
               }
             },
-            "description": "Forbidden; Second factor required"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -81949,6 +82732,7 @@
           "shared-devices"
         ],
         "x-concurrency": "none",
+        "x-module": "team",
         "x-permission": "devices.manage"
       }
     },
@@ -82156,6 +82940,7 @@
           "subscription"
         ],
         "x-concurrency": "none",
+        "x-module": "core",
         "x-permission": "none"
       }
     }
