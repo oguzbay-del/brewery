@@ -21,7 +21,9 @@ use uuid::Uuid;
 
 use crate::{
     AppState,
+    auth::{shared_device::DEVICE_KEY_HEADER, tokens::token_hash},
     error::{ApiError, ApiResult, ErrorCode},
+    modules,
     ratelimit::Slot,
 };
 
@@ -202,6 +204,134 @@ async fn resolve(
     })
 }
 
+/// Reads the workspace mode and whether one active `PAID_FEATURE` entitlement exists.
+pub(crate) async fn workspace_mode_and_paid(
+    pool: &PgPool,
+    db_context: &DbContext,
+    workspace_id: Uuid,
+) -> ApiResult<(String, bool)> {
+    let mut tx = db::begin(pool, db_context).await?;
+    let mode: String = sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1")
+        .bind(workspace_id)
+        .fetch_one(&mut *tx)
+        .await?;
+    let access = billing::access::access(&mut tx, workspace_id).await?;
+    tx.commit().await?;
+    let has_paid_feature = matches!(
+        access.source,
+        billing::access::AccessSource::Trial
+            | billing::access::AccessSource::Subscription
+            | billing::access::AccessSource::Promo
+            | billing::access::AccessSource::Manual
+    );
+    Ok((mode, has_paid_feature))
+}
+
+async fn module_access(
+    pool: &PgPool,
+    db_context: &DbContext,
+    workspace_id: Uuid,
+    module_id: &str,
+) -> ApiResult<modules::ModuleAccess> {
+    let (mode, has_paid_feature) = workspace_mode_and_paid(pool, db_context, workspace_id).await?;
+    let access = modules::module_access(module_id, &mode, has_paid_feature);
+    Ok(access)
+}
+
+fn allows_method(access: modules::ModuleAccess, method: &Method, path: &str) -> bool {
+    match access {
+        // Requests that end access pass even when the module is off (Home has no Team
+        // module, but old shares and invitations must still be removable).
+        modules::ModuleAccess::Disabled => ends_access(method, path),
+        modules::ModuleAccess::ReadOnly => {
+            method == Method::GET || method == Method::HEAD || ends_access(method, path)
+        }
+        modules::ModuleAccess::Full => true,
+    }
+}
+
+/// Requests that only end access. A read-only module must still allow them, so that
+/// an expired subscription never keeps a shared terminal open.
+fn ends_access(method: &Method, path: &str) -> bool {
+    let segments: Vec<&str> = path.trim_start_matches('/').split('/').collect();
+    match segments.as_slice() {
+        ["v1", "shared-devices", _, "lock"] => method == Method::POST,
+        ["v1", "workspaces", _, "shared-devices" | "invitations", _] => method == Method::DELETE,
+        // Remove or disable a member; the handler keeps its admin and self-lockout checks.
+        ["v1", "workspaces", _, "members", _] => {
+            method == Method::DELETE || method == Method::PATCH
+        }
+        _ => false,
+    }
+}
+
+/// A device id never needs percent-encoding. The handler decodes the path segment, so an
+/// encoded id would skip [`device_module_layer`]; the layer refuses such a path.
+fn is_encoded_device_path(path: &str) -> bool {
+    path.starts_with("/v1/shared-devices/") && path.contains('%')
+}
+
+/// Parses the device id from a shared-device key route.
+fn shared_device_in_path(path: &str) -> Option<Uuid> {
+    let mut segments = path.trim_start_matches('/').split('/');
+    if segments.next() == Some("v1") && segments.next() == Some("shared-devices") {
+        return Uuid::parse_str(segments.next()?).ok();
+    }
+    None
+}
+
+/// Module gate for shared-device-key routes, which have no workspace id in their URL.
+pub async fn device_module_layer(
+    State(state): State<AppState>,
+    req: Request,
+    next: Next,
+) -> Response {
+    let path = req.uri().path().to_owned();
+    if is_encoded_device_path(&path) {
+        return ApiError::new(ErrorCode::NotFound).into_response();
+    }
+    let Some(device_id) = shared_device_in_path(&path) else {
+        return next.run(req).await;
+    };
+    let Some(module_id) = modules::module_for_path(&path) else {
+        return next.run(req).await;
+    };
+    let Some(services) = state.auth_services.as_ref() else {
+        return next.run(req).await;
+    };
+    let Some(key) = req
+        .headers()
+        .get(DEVICE_KEY_HEADER)
+        .and_then(|value| value.to_str().ok())
+    else {
+        return next.run(req).await;
+    };
+    let device = sqlx::query_as::<_, (Uuid, Uuid)>(
+        "SELECT id, workspace_id FROM find_shared_device_by_key_hash($1)",
+    )
+    .bind(token_hash(key))
+    .fetch_optional(&services.db)
+    .await;
+    let (found_id, workspace_id) = match device {
+        Ok(Some(row)) => row,
+        Ok(None) => return next.run(req).await,
+        Err(error) => return ApiError::from(error).into_response(),
+    };
+    if found_id != device_id {
+        return next.run(req).await;
+    }
+    let db_context = DbContext {
+        user_id: None,
+        workspace_id: Some(workspace_id),
+        actor_kind: ActorKind::Device,
+    };
+    match module_access(&services.db, &db_context, workspace_id, module_id).await {
+        Ok(access) if allows_method(access, req.method(), &path) => next.run(req).await,
+        Ok(_) => ApiError::new(ErrorCode::ModuleDisabled).into_response(),
+        Err(error) => error.into_response(),
+    }
+}
+
 /// Middleware for authenticated routes: stores the [`RequestContext`].
 pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) -> Response {
     let slot = req.extensions().get::<Slot>().cloned().unwrap_or_default();
@@ -209,6 +339,19 @@ pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) 
     let method = req.method().clone();
     match resolve(&state, &method, &path, &req.headers().clone(), &slot).await {
         Ok(ctx) => {
+            if let Some(workspace_id) = ctx.workspace_id
+                && !modules::is_export_path(&path)
+                && let Some(module_id) = modules::module_for_path(&path)
+                && !modules::is_free_module(module_id)
+            {
+                match module_access(&state.db, &ctx.db_context(), workspace_id, module_id).await {
+                    Ok(access) if allows_method(access, &method, &path) => {}
+                    Ok(_) => {
+                        return ApiError::new(ErrorCode::ModuleDisabled).into_response();
+                    }
+                    Err(error) => return error.into_response(),
+                }
+            }
             req.extensions_mut().insert(ctx);
             next.run(req).await
         }
@@ -219,6 +362,50 @@ pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_requests_that_end_access_pass_a_read_only_module() {
+        let device = Uuid::now_v7();
+        let ws = Uuid::now_v7();
+        let lock = format!("/v1/shared-devices/{device}/lock");
+        let remove = format!("/v1/workspaces/{ws}/shared-devices/{device}");
+        let switch = format!("/v1/shared-devices/{device}/switch");
+        assert!(ends_access(&Method::POST, &lock));
+        assert!(ends_access(&Method::DELETE, &remove));
+        assert!(!ends_access(&Method::POST, &switch));
+        assert!(!ends_access(&Method::PATCH, &remove));
+        let member = format!("/v1/workspaces/{ws}/members/{device}");
+        assert!(ends_access(&Method::DELETE, &member));
+        assert!(ends_access(&Method::PATCH, &member));
+        assert!(!ends_access(
+            &Method::POST,
+            &format!("/v1/workspaces/{ws}/members")
+        ));
+        let read_only = modules::ModuleAccess::ReadOnly;
+        assert!(allows_method(read_only, &Method::POST, &lock));
+        assert!(!allows_method(read_only, &Method::POST, &switch));
+        let disabled = modules::ModuleAccess::Disabled;
+        assert!(allows_method(disabled, &Method::POST, &lock));
+        assert!(!allows_method(disabled, &Method::POST, &switch));
+        let invitation = format!("/v1/workspaces/{ws}/invitations/{device}");
+        assert!(ends_access(&Method::DELETE, &invitation));
+        assert!(!ends_access(
+            &Method::POST,
+            &format!("/v1/workspaces/{ws}/invitations")
+        ));
+    }
+
+    #[test]
+    fn an_encoded_device_id_is_refused() {
+        let device = Uuid::now_v7().to_string();
+        let encoded = format!("%{:02X}{}", device.as_bytes()[0], &device[1..]);
+        let encoded_path = format!("/v1/shared-devices/{encoded}/switch");
+        assert!(shared_device_in_path(&encoded_path).is_none());
+        assert!(is_encoded_device_path(&encoded_path));
+        assert!(!is_encoded_device_path(&format!(
+            "/v1/shared-devices/{device}/switch"
+        )));
+    }
 
     #[test]
     fn workspace_is_read_from_the_path() {
