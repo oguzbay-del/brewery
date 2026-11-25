@@ -79,35 +79,32 @@ pub fn operation(operation_id: &str) -> Option<&'static OperationSpec> {
     operations().find(|spec| spec.operation_id == operation_id)
 }
 
-/// Product module ids exposed to clients. These ids are stable API identifiers.
-pub const PRODUCT_MODULES: &[&str] = &[
-    "core",
-    "devices",
-    "stock",
-    "production",
-    "quality",
-    "cost_reports",
-    "tax_compliance",
-    "team",
+/// Product module definition. This is separate from the API Module registry type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ProductModule {
+    /// Stable product module id.
+    pub id: &'static str,
+    /// Included in Home workspaces.
+    pub home: bool,
+    /// Included in Business workspaces.
+    pub business: bool,
+    /// Available without a paid entitlement.
+    pub free: bool,
+}
+
+/// The one source of truth for product modules, mode availability and free access.
+pub const PRODUCT_MODULES: &[ProductModule] = &[
+    ProductModule { id: "core", home: true, business: true, free: true },
+    ProductModule { id: "devices", home: true, business: true, free: true },
+    // Home has simplified stock and Business has full stock; keep the shared API module free
+    // until operation-level separation is implemented.
+    ProductModule { id: "stock", home: true, business: true, free: true },
+    ProductModule { id: "production", home: false, business: true, free: false },
+    ProductModule { id: "quality", home: false, business: true, free: false },
+    ProductModule { id: "cost_reports", home: false, business: true, free: false },
+    ProductModule { id: "tax_compliance", home: false, business: true, free: false },
+    ProductModule { id: "team", home: false, business: true, free: false },
 ];
-
-/// Modules included in the Home workspace mode.
-pub const HOME_MODULES: &[&str] = &["core", "devices", "stock"];
-
-/// Modules included in the Business workspace mode.
-pub const BUSINESS_MODULES: &[&str] = &[
-    "core",
-    "devices",
-    "stock",
-    "production",
-    "quality",
-    "cost_reports",
-    "tax_compliance",
-    "team",
-];
-
-/// Modules that do not need a paid entitlement.
-pub const FREE_MODULES: &[&str] = &["core", "devices", "stock"];
 
 /// Maps each API module name to the product module that owns its operations.
 /// Keep this table here; do not add a field to Module.
@@ -150,19 +147,23 @@ pub fn module_id_for_name(name: &str) -> Option<&'static str> {
 /// Returns whether a product module is free in every workspace mode.
 #[must_use]
 pub fn is_free_module(module_id: &str) -> bool {
-    FREE_MODULES.contains(&module_id)
+    PRODUCT_MODULES
+        .iter()
+        .any(|module| module.id == module_id && module.free)
 }
 
 /// Evaluates the mode + single PAID_FEATURE rule.
 #[must_use]
 pub fn is_module_enabled(module_id: &str, mode: &str, has_paid_feature: bool) -> bool {
-    let mode_modules = match mode {
-        "home" => HOME_MODULES,
-        "business" => BUSINESS_MODULES,
-        _ => return false,
+    let Some(module) = PRODUCT_MODULES.iter().find(|module| module.id == module_id) else {
+        return false;
     };
-    mode_modules.contains(&module_id)
-        && (is_free_module(module_id) || has_paid_feature)
+    let included = match mode {
+        "home" => module.home,
+        "business" => module.business,
+        _ => false,
+    };
+    included && (module.free || has_paid_feature)
 }
 
 /// Whether the path is an export operation. Exports remain available even when paid modules are off.
