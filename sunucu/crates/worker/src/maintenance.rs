@@ -21,6 +21,8 @@ pub const JOB_RETENTION: &str = "external-events-retention";
 pub const JOB_SOFT_DELETES: &str = "soft-delete-purge";
 /// Job name: close resolved support requests after 14 days (T2.43).
 pub const JOB_SUPPORT_CLOSE: &str = "support-close-resolved";
+/// Job name: delete object bytes of deleted and incomplete uploads (T2.44).
+pub const JOB_UPLOAD_CLEANUP: &str = "upload-cleanup";
 /// Job name: account deletion after its grace period (T2.31c).
 pub const JOB_ACCOUNT_DELETIONS: &str = "account-deletion-purge";
 
