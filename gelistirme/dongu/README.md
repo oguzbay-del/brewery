@@ -117,6 +117,26 @@ Claude completes all work inside its current permissions in the same run. Do not
 
 This section does not change section 7. The merge, production, security and budget limits stay the same.
 
+## 7b. Model choice and usage limits (owner instruction, 2026-11-25)
+
+Use the lowest model that can do the work correctly. The usage limit is shared by all runs. The `Model` column of `gelistirme/ISLER.md` comes first. The table in the root `CLAUDE.md` › Token politikası is the general rule. This section applies it to the loop.
+
+| Work in the loop | Model |
+|---|---|
+| Board reads, label changes, marker comments, CI state checks, lists and counts | Haiku |
+| Review of class A and class B PRs, local test runs, CI fixes, fixes on Claude PRs, issue text for a dispatch, the hourly watchdog | Sonnet |
+| Review of class C PRs that change security paths: authentication, step-up, account deletion, payment and webhook signatures, row level security and migrations, `internal.rs`, the engine; ADRs, architecture, product and scope decisions | Opus |
+| Other class C PRs (documentation, configuration with no security effect) | Sonnet |
+
+Rules:
+
+1. Do not start a subagent for a check of a few tool calls. Do the check in the session.
+2. Give a subagent only the file paths, the section names, the done criterion and the test commands. Its report has a maximum of 20 lines.
+3. Use a maximum of 2 parallel subagents.
+4. If a subagent fails, give only that task to the next higher model. Do not move all tasks to Opus.
+5. Run a full workspace test only once, at the end of a task. Filter the test output.
+6. If the remaining usage is low, do reviews and merges first. Then stop and write the open items in the run report.
+
 ## 8. Watchdog (hourly)
 
 The Claude loop session runs each hour at `:17` (UTC). The ChatGPT scheduled task runs each hour. Each watchdog run:

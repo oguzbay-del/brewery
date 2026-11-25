@@ -20,7 +20,7 @@ Do one loop pass now.
    - Skip it if it has `loop:pause`, `loop:needs-owner`, or a Claude `review` marker for the current head SHA (README › 5.3).
    - Skip it if CI is still running. If CI is red, do README › 6.4.
    - Review the diff: scope, permission class, security, tests, files named by the issue, ASD-STE100 in notes.
-   - For class C paths, use an Opus subagent for the review. Run the local test of the changed crate when the change is in `sunucu/` (`sunucu/CLAUDE.md`). Filter the output.
+   - Select the model by README › 7b. Use an Opus subagent only for class C security paths; use Sonnet for the other reviews. Run the local test of the changed crate when the change is in `sunucu/` (`sunucu/CLAUDE.md`). Filter the output.
    - Good: write a `review` marker comment, merge (squash) by README › 7 in the same run (README › 7a), close the issue, write a `merge` marker. Do not wait for owner approval.
    - Not good: do README › 6.3. Respect the round limit.
 4. **Own PRs.** For each open PR on a `claude/` branch: if CI is red, fix it. If Codex wrote P0 or P1 points, fix them (README › 6.3). If CI is green and the review rule is met, merge.
