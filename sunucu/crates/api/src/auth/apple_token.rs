@@ -72,8 +72,8 @@ impl AppleTokenClient {
     /// # Errors
     /// Returns an error when no unique configured audience can be selected.
     pub fn client_id_for_audiences<'a>(
-        &'a self,
-        audiences: &[String],
+        &self,
+        audiences: &'a [String],
     ) -> Result<&'a str, AppleTokenError> {
         if audiences.len() != 1 {
             return Err(AppleTokenError::InvalidClientId);
