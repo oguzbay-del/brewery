@@ -207,6 +207,26 @@ Rules:
 | G7 | Domains and configuration: DNS for gristora.com in Terraform (Cloud DNS); ingress hosts; redirect URIs for Apple and Google sign-in; cookie domain and CORS; SPF, DKIM, DMARC for email; the universal link file (`apple-app-site-association`) | `terraform validate` is clean; `make kind-test` passes with the new hosts | G1, O4, O7 | 5 | Claude | Sonnet | todo |
 | G8 | Brand consistency check: the app (web and iOS screenshots) and the marketing site use the same name, logo and icon; the site does not claim a feature that the app does not have | Report `gelistirme/raporlar/G8-marka-tutarliligi.md` | G5, G6 | 5 | Claude | Sonnet | todo |
 
+## Subscription and payment (stages 3–4)
+
+Decision (Oğuz, 2026-11-25): a Home workspace can subscribe in the App Store (in-app purchase) or on the web (Paddle). A Business workspace subscribes and manages its subscription only on the web (Paddle). The design is in plan › Abonelik ve ödeme.
+
+Rules:
+- A workspace has one active payment source at a time. Do not show a purchase in the other channel.
+- Do not show a Business price or a Business purchase button in the iOS app.
+- Keep the subscription state and the entitlement state on the server only. The client shows them.
+- Do not use an App Store introductory offer. The server trial (1 month) is the only trial.
+
+| Task | Description | Done criterion | Depends on | Stage | Owner | Model | Status |
+|---|---|---|---|---|---|---|---|
+| B1 | ADR for the payment sources: App Store for Home, Paddle for Home and Business, one active source for each workspace, App Store rules 3.1.1 and 3.1.3 (to be verified), plan key and seat count, change from Home to Business | `adr/0013-odeme-kaynaklari.md` | T2.41, P1 | 3 | Claude | Opus | todo |
+| B2 | Plan key and seats: the entitlement gets a plan (Home, Business and tier) and a seat count instead of one `PAID_FEATURE`; the module set comes from the plan; an audit row for each change; one migration | db and endpoint tests; P1 tests stay green | B1 | 3 | Claude | Sonnet (review Opus) | todo |
+| B3 | Billing endpoints: `GET /v1/billing`, `POST /v1/billing/checkout` (web only), `POST /v1/billing/portal`, `POST /v1/billing/apple/sync` (StoreKit 2 transaction JWS); 409 when the other source is active | Endpoint tests; the contract check is green | B2 | 3 | Claude | Sonnet | todo |
+| B4 | Ingest: map the App Store and Paddle events to one subscription row for each workspace; detect a second active source and open a support item | ingest tests for both sources and for a double source | B2 | 3 | Claude | Sonnet | todo |
+| B5 | Web screen Settings › Subscription: plan and state, Paddle checkout, plan change, Paddle customer portal, cancel; the content security policy allows the Paddle domains | Playwright and accessibility tests with a Paddle sandbox stub | B3, G5 | 3 | Claude | Sonnet | todo |
+| B6 | iOS Settings › Subscription: StoreKit 2 subscription view for Home, restore, manage (Apple sheet); status only for Business; `appAccountToken` is the workspace ID | macOS CI is green; sandbox purchase on a device (Oğuz) | B3, O3 | 4 | Claude | Sonnet | todo |
+| B7 | Notifications for billing: the trial ends in 7 days and in 1 day, a payment failed, the subscription ended | Worker tests for each notification | B2 | 3 | Claude | Sonnet | todo |
+
 ## Tasks for Oğuz (parallel)
 
 | Task | Description | Necessary for | Status |
@@ -220,3 +240,5 @@ Rules:
 | O9 | Select a tool for error and crash reports. Decision: Sentry (ADR-0010). Traces, metrics and logs stay in OpenTelemetry. | Stages 3–5 | done (2026-11-24) |
 | O8 | Approve the tier matrix and the prices (Claude writes the draft before the beta, task P2) | Stage 5 | todo |
 | O7 | Buy the gristora.com domain (after the trademark and domain review, Issue #146) | G7 | active (owner, 2026-11-25) |
+| O10 | Open the Paddle account and complete the seller verification; give the API key and the webhook secret as cluster secrets (not in the repository) | B3, B5 | todo |
+| O11 | App Store Connect: subscription group and product IDs for the Home plans | B6 | todo |
