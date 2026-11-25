@@ -1,0 +1,15 @@
+{
+  "name": "GRISTORA",
+  "short_name": "GRISTORA",
+  "display": "standalone",
+  "start_url": "/",
+  "theme_color": "#0B2F26",
+  "background_color": "#0B2F26",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
