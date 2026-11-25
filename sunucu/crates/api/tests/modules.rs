@@ -103,6 +103,10 @@ fn paths_resolve_to_product_modules_and_exports_are_exempt() {
         Some("team")
     );
     assert_eq!(
+        modules::module_for_path("/v1/invitations/accept"),
+        Some("core")
+    );
+    assert_eq!(
         modules::module_for_path("/v1/workspaces/{workspace_id}/vessels"),
         Some("production")
     );
