@@ -71,7 +71,10 @@ impl AppleTokenClient {
     ///
     /// # Errors
     /// Returns an error when no unique configured audience can be selected.
-    pub fn client_id_for_audiences<'a>(&'a self, audiences: &[String]) -> Result<&'a str, AppleTokenError> {
+    pub fn client_id_for_audiences<'a>(
+        &'a self,
+        audiences: &[String],
+    ) -> Result<&'a str, AppleTokenError> {
         if audiences.len() != 1 {
             return Err(AppleTokenError::InvalidClientId);
         }
@@ -144,14 +147,20 @@ impl AppleTokenClient {
         let response = self
             .http
             .post(&self.settings.token_url)
-            .header(reqwest::header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+            .header(
+                reqwest::header::CONTENT_TYPE,
+                "application/x-www-form-urlencoded",
+            )
             .body(body)
             .send()
             .await
             .map_err(|_| AppleTokenError::Request)?
             .error_for_status()
             .map_err(|_| AppleTokenError::Request)?;
-        let bytes = response.bytes().await.map_err(|_| AppleTokenError::Request)?;
+        let bytes = response
+            .bytes()
+            .await
+            .map_err(|_| AppleTokenError::Request)?;
         if bytes.len() > 65_536 {
             return Err(AppleTokenError::Request);
         }
@@ -185,11 +194,8 @@ mod tests {
     #[test]
     fn client_secret_is_es256_and_uses_the_verified_audience() {
         let rng = SystemRandom::new();
-        let pkcs8 = EcdsaKeyPair::generate_pkcs8(
-            &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
-            &rng,
-        )
-        .unwrap();
+        let pkcs8 = EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng)
+            .unwrap();
         let key = EcdsaKeyPair::from_pkcs8(
             &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
             pkcs8.as_ref(),
@@ -216,14 +222,14 @@ mod tests {
         assert_eq!(claims["iss"], "TEAM123");
         assert_eq!(claims["sub"], "com.example.ios");
         assert_eq!(claims["aud"], "https://appleid.apple.com");
-        assert_eq!(claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap(), 300);
+        assert_eq!(
+            claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap(),
+            300
+        );
         let signing_input = token.rsplit_once('.').unwrap().0;
-        UnparsedPublicKey::new(
-            &signature::ECDSA_P256_SHA256_FIXED,
-            public_key,
-        )
-        .verify(signing_input.as_bytes(), &signature)
-        .unwrap();
+        UnparsedPublicKey::new(&signature::ECDSA_P256_SHA256_FIXED, public_key)
+            .verify(signing_input.as_bytes(), &signature)
+            .unwrap();
     }
 
     #[test]
