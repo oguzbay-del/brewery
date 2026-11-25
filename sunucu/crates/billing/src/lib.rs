@@ -12,6 +12,7 @@
 pub mod access;
 pub mod apply;
 pub mod provider;
+pub mod paddle;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
