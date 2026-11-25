@@ -14,6 +14,13 @@ x-rust-service: &rust-service
     SMTP_PORT: "1025"
     GITHUB_API_URL: http://github-mock:8080
     APNS_URL: http://apns-mock:8080
+    APPLE_TOKEN_URL: ${APPLE_TOKEN_URL:-http://apple-mock:8080/auth/token}
+    APPLE_REVOKE_URL: ${APPLE_REVOKE_URL:-http://apple-mock:8080/auth/revoke}
+    APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+    APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+    APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+    # Local-only development key. Production must use a secret-manager value.
+    PROVIDER_TOKEN_KEY: ${PROVIDER_TOKEN_KEY:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
     S3_ENDPOINT: http://objectstore:8333
     S3_BUCKET: demleme-files
     S3_REGION: us-east-1
@@ -121,6 +128,21 @@ services:
       retries: 12
       start_period: 5s
 
+  apple-mock:
+    image: wiremock/wiremock:3.13.2
+    restart: unless-stopped
+    command: ["--disable-banner"]
+    volumes:
+      - ./mocks/apple/mappings:/home/wiremock/mappings:ro
+    ports:
+      - "127.0.0.1:${APPLE_MOCK_PORT:-8092}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/__admin/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
   # S3 uyumlu yerel nesne deposu (ADR-0008 kural 11.1, T2.18). MinIO topluluk sürümü bakım
   # modunda ve AGPL; SeaweedFS Apache 2.0. Üretimde S3, GCS (S3 birlikte çalışabilirliği) ya da
   # başka S3 uyumlu depo; kod yalnız `ObjectStore` arayüzüne bağlıdır. Kova API açılışında
@@ -215,6 +237,7 @@ services:
       <<: *rust-deps
       engine-service: { condition: service_healthy }
       fake-oidc: { condition: service_healthy }
+      apple-mock: { condition: service_healthy }
     ports:
       - "127.0.0.1:${API_PORT:-8080}:8080"
     healthcheck:
