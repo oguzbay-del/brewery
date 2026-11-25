@@ -11,13 +11,7 @@ use api::{
     modules::{self, MODULES},
     redis_client::Redis,
 };
-use axum::{
-    Router,
-    body::Body,
-    http::StatusCode,
-    middleware::from_fn_with_state,
-    routing::get,
-};
+use axum::{Router, body::Body, http::StatusCode, middleware::from_fn_with_state, routing::get};
 use serde_json::Value;
 use sqlx::PgPool;
 use support::{FakeAuth, insert_user, insert_workspace, send, state_with};
@@ -255,6 +249,8 @@ async fn meta_endpoint_returns_the_callers_workspace_module_state(pool: PgPool) 
             .and_then(|module| module["enabled"].as_bool())
             .unwrap()
     );
+}
+
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn export_routes_remain_available_without_a_paid_entitlement(pool: PgPool) {
     let user = Uuid::now_v7();
