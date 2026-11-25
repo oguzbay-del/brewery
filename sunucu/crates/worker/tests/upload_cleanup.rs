@@ -116,11 +116,7 @@ async fn create_workspace(pool: &PgPool, workspace_id: Uuid) {
     .unwrap();
 }
 
-async fn create_support_message(
-    pool: &PgPool,
-    workspace_id: Uuid,
-    base: u128,
-) -> Uuid {
+async fn create_support_message(pool: &PgPool, workspace_id: Uuid, base: u128) -> Uuid {
     let request_id = Uuid::from_u128(base + 1);
     let message_id = Uuid::from_u128(base + 2);
     sqlx::query(
@@ -219,12 +215,7 @@ async fn create_attachment_rows(
     .unwrap();
 }
 
-async fn create_document_rows(
-    pool: &PgPool,
-    workspace_id: Uuid,
-    base: u128,
-    now: DateTime<Utc>,
-) {
+async fn create_document_rows(pool: &PgPool, workspace_id: Uuid, base: u128, now: DateTime<Utc>) {
     // A soft-deleted scanned document.
     sqlx::query(
         "INSERT INTO scanned_documents (id, workspace_id, form_type, object_key,
