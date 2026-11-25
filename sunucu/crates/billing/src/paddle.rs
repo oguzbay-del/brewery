@@ -356,6 +356,7 @@ mod tests {
     #![allow(clippy::unwrap_used, clippy::expect_used)]
     use super::*;
     use ring::hmac::{self, Key};
+    use std::fmt::Write as _;
 
     const NOW: i64 = 1_800_000_000;
     const WORKSPACE: &str = "123e4567-e89b-12d3-a456-426614174000";
@@ -394,11 +395,10 @@ mod tests {
         signed.push(b':');
         signed.extend_from_slice(body);
         let tag = hmac::sign(&Key::new(hmac::HMAC_SHA256, secret), &signed);
-        let hex = tag
-            .as_ref()
-            .iter()
-            .map(|byte| format!("{byte:02x}"))
-            .collect::<String>();
+        let hex = tag.as_ref().iter().fold(String::new(), |mut output, byte| {
+            let _ = write!(&mut output, "{byte:02x}");
+            output
+        });
         format!("ts={timestamp};h1={hex}")
     }
 
@@ -465,7 +465,6 @@ mod tests {
                 .flatten()
                 .unwrap();
             let expected = match status {
-                "trialing" => UpdateKind::Active,
                 "past_due" => UpdateKind::Grace,
                 "paused" | "canceled" => UpdateKind::Expired,
                 _ => UpdateKind::Active,
