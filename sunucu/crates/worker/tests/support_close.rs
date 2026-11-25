@@ -12,12 +12,18 @@ fn id(n: u128) -> Uuid {
     Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0000 + n)
 }
 
-async fn worker_pool(base: &PgPool) -> PgPool {
+async fn pool_as(base: &PgPool, role: &'static str) -> PgPool {
     PgPoolOptions::new()
         .max_connections(4)
-        .after_connect(|conn, _| {
+        .after_connect(move |conn, _| {
             Box::pin(async move {
-                sqlx::query("SET ROLE app_worker").execute(conn).await?;
+                sqlx::query(if role == "app_api" {
+                    "SET ROLE app_api"
+                } else {
+                    "SET ROLE app_worker"
+                })
+                .execute(conn)
+                .await?;
                 Ok(())
             })
         })
@@ -98,7 +104,7 @@ async fn closes_only_old_resolved_requests_and_enqueues_sync_once_per_workspace(
     .await
     .unwrap();
 
-    let worker = worker_pool(&base).await;
+    let worker = pool_as(&base, "app_worker").await;
     let cutoff = now - Duration::days(CLOSE_AFTER_DAYS);
     let closed = db::maintenance::close_resolved_support_requests(&worker, cutoff)
         .await
@@ -156,4 +162,12 @@ async fn closes_only_old_resolved_requests_and_enqueues_sync_once_per_workspace(
     .await
     .unwrap();
     assert_eq!(event_count, 2);
+
+    let api = pool_as(&base, "app_api").await;
+    assert!(
+        db::maintenance::close_resolved_support_requests(&api, cutoff)
+            .await
+            .is_err(),
+        "app_api must not execute the worker-only maintenance function"
+    );
 }
