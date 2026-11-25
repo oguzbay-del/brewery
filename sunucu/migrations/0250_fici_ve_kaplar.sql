@@ -51,7 +51,7 @@ CREATE TABLE scan_code (
     UNIQUE (workspace_id, code_hash),
     CHECK (num_nonnulls(container_id, vessel_id, lot_id) = 1),
     FOREIGN KEY (workspace_id, container_id)
-        REFERENCES container (workspace_id, id) ON DELETE SET NULL (container_id),
+        REFERENCES container (workspace_id, id) ON DELETE CASCADE,
     FOREIGN KEY (workspace_id, vessel_id)
         REFERENCES vessels (workspace_id, id) ON DELETE CASCADE,
     FOREIGN KEY (workspace_id, lot_id)
