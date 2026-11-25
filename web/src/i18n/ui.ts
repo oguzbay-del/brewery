@@ -1,6 +1,6 @@
 import type { Locale } from './catalog';
 
-const uiTexts = {
+const uiTexts: Record<Locale, Record<string, string>> = {
   tr: {
     appName: 'Demleme',
     skipToContent: 'Ana içeriğe geç',
@@ -27,7 +27,7 @@ const uiTexts = {
     dark: 'Dark',
     highContrast: 'High contrast',
   },
-} satisfies Record<Locale, Record<string, string>>;
+};
 
 export function getUiTextKeys(locale: Locale): string[] {
   return Object.keys(uiTexts[locale]).sort();
