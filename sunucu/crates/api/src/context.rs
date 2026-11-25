@@ -256,9 +256,8 @@ fn ends_access(method: &Method, path: &str) -> bool {
     let segments: Vec<&str> = path.trim_start_matches('/').split('/').collect();
     match segments.as_slice() {
         ["v1", "shared-devices", _, "lock"] => method == Method::POST,
-        ["v1", "workspaces", _, "shared-devices", _] => method == Method::DELETE,
+        ["v1", "workspaces", _, "shared-devices" | "invitations", _] => method == Method::DELETE,
         // Remove or disable a member; the handler keeps its admin and self-lockout checks.
-        ["v1", "workspaces", _, "invitations", _] => method == Method::DELETE,
         ["v1", "workspaces", _, "members", _] => {
             method == Method::DELETE || method == Method::PATCH
         }
