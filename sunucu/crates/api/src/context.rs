@@ -204,7 +204,7 @@ async fn resolve(
     })
 }
 
-/// Reads the workspace mode and whether one active PAID_FEATURE entitlement exists.
+/// Reads the workspace mode and whether one active `PAID_FEATURE` entitlement exists.
 pub(crate) async fn workspace_mode_and_paid(
     pool: &PgPool,
     db_context: &DbContext,
@@ -215,7 +215,7 @@ pub(crate) async fn workspace_mode_and_paid(
         .bind(workspace_id)
         .fetch_one(&mut *tx)
         .await?;
-    let access = billing::access::access(&mut *tx, workspace_id).await?;
+    let access = billing::access::access(&mut tx, workspace_id).await?;
     tx.commit().await?;
     let has_paid_feature = matches!(
         access.source,
