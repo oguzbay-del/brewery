@@ -16,6 +16,19 @@ pub struct ProviderSettings {
     pub jwks_url: String,
 }
 
+impl std::fmt::Debug for AppleTokenSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AppleTokenSettings")
+            .field("team_id", &self.team_id)
+            .field("key_id", &self.key_id)
+            .field("private_key", &"<redacted>")
+            .field("client_ids", &self.client_ids)
+            .field("token_url", &self.token_url)
+            .field("revoke_url", &self.revoke_url)
+            .finish()
+    }
+}
+
 /// Apple token-endpoint settings (ADR-0009 rule 1.5).
 #[derive(Clone)]
 pub struct AppleTokenSettings {
@@ -190,6 +203,134 @@ fn origin_of(url: &str) -> String {
     url[..scheme_end + host_end].to_owned()
 }
 
+fn csrf_key<F>(lookup: &F) -> Result<Vec<u8>>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    match secret_from_lookup(lookup, "CSRF_HMAC_KEY", "CSRF_HMAC_KEY_FILE")? {
+        Some(key) if key.len() >= 16 => Ok(key.into_bytes()),
+        Some(_) => Err(Error::InvalidEnv {
+            name: "CSRF_HMAC_KEY",
+            reason: "must be at least 16 characters".to_owned(),
+        }),
+        None => {
+            tracing::warn!(
+                "CSRF_HMAC_KEY not set; using a random key (CSRF tokens do not survive restarts or work across replicas)"
+            );
+            Ok(crate::auth::tokens::random_bytes::<32>().to_vec())
+        }
+    }
+}
+
+fn smtp_settings<F>(lookup: &F) -> Result<Option<SmtpSettings>>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let Some(host) = lookup("SMTP_HOST").filter(|v| !v.trim().is_empty()) else {
+        return Ok(None);
+    };
+    let port = lookup("SMTP_PORT")
+        .filter(|v| !v.trim().is_empty())
+        .map_or(Ok(25), |p| p.trim().parse::<u16>())
+        .map_err(|e| Error::InvalidEnv {
+            name: "SMTP_PORT",
+            reason: e.to_string(),
+        })?;
+    Ok(Some(SmtpSettings {
+        host: host.trim().to_owned(),
+        port,
+    }))
+}
+
+fn jwks_min_refresh_secs<F>(lookup: &F) -> Result<u64>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    lookup("JWKS_MIN_REFRESH_SECS")
+        .filter(|v| !v.trim().is_empty())
+        .map_or(Ok(30), |v| v.trim().parse::<u64>())
+        .map_err(|e| Error::InvalidEnv {
+            name: "JWKS_MIN_REFRESH_SECS",
+            reason: e.to_string(),
+        })
+}
+
+fn apple_token_settings<F>(
+    lookup: &F,
+    apple: Option<&ProviderSettings>,
+) -> Result<Option<AppleTokenSettings>>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let team_id = lookup("APPLE_TEAM_ID").filter(|v| !v.trim().is_empty());
+    let key_id = lookup("APPLE_KEY_ID").filter(|v| !v.trim().is_empty());
+    let private_key = secret_from_lookup(lookup, "APPLE_PRIVATE_KEY", "APPLE_PRIVATE_KEY_FILE")?;
+    match (team_id, key_id, private_key) {
+        (None, None, None) => Ok(None),
+        (Some(team_id), Some(key_id), Some(private_key)) => {
+            let provider = apple.ok_or_else(|| Error::InvalidEnv {
+                name: "APPLE_CLIENT_IDS",
+                reason: "must be set when Apple token exchange is configured".to_owned(),
+            })?;
+            let private_key = decode_private_key(&private_key)?;
+            if private_key.is_empty() {
+                return Err(Error::InvalidEnv {
+                    name: "APPLE_PRIVATE_KEY",
+                    reason: "must contain a PKCS#8 key".to_owned(),
+                });
+            }
+            Ok(Some(AppleTokenSettings {
+                team_id: team_id.trim().to_owned(),
+                key_id: key_id.trim().to_owned(),
+                private_key,
+                client_ids: provider.audiences.clone(),
+                token_url: endpoint_url(
+                    lookup("APPLE_TOKEN_URL"),
+                    "APPLE_TOKEN_URL",
+                    "https://appleid.apple.com/auth/token",
+                )?,
+                revoke_url: endpoint_url(
+                    lookup("APPLE_REVOKE_URL"),
+                    "APPLE_REVOKE_URL",
+                    "https://appleid.apple.com/auth/revoke",
+                )?,
+            }))
+        }
+        _ => Err(Error::InvalidEnv {
+            name: "APPLE_TEAM_ID",
+            reason: "APPLE_TEAM_ID, APPLE_KEY_ID and APPLE_PRIVATE_KEY must be set together"
+                .to_owned(),
+        }),
+    }
+}
+
+fn provider_token_cipher<F>(
+    lookup: &F,
+    apple_token_configured: bool,
+) -> Result<Option<Aes256GcmTokenCipher>>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    match secret_from_lookup(lookup, "PROVIDER_TOKEN_KEY", "PROVIDER_TOKEN_KEY_FILE")? {
+        Some(raw) => {
+            let decoded = STANDARD.decode(raw.trim()).map_err(|e| Error::InvalidEnv {
+                name: "PROVIDER_TOKEN_KEY",
+                reason: format!("must be base64: {e}"),
+            })?;
+            let key: [u8; 32] = decoded.try_into().map_err(|_| Error::InvalidEnv {
+                name: "PROVIDER_TOKEN_KEY",
+                reason: "must decode to exactly 32 bytes".to_owned(),
+            })?;
+            Ok(Some(Aes256GcmTokenCipher::new(key)))
+        }
+        None if apple_token_configured => Err(Error::InvalidEnv {
+            name: "PROVIDER_TOKEN_KEY",
+            reason: "required when Apple token exchange is configured".to_owned(),
+        }),
+        None => Ok(None),
+    }
+}
+
 impl AuthConfig {
     /// Reads the settings from `lookup`.
     pub fn from_lookup<F>(lookup: &F) -> Result<Self>
@@ -206,44 +347,9 @@ impl AuthConfig {
         if web_origins.is_empty() {
             web_origins.push(origin_of(&web_base_url));
         }
-        let csrf_key = match secret_from_lookup(lookup, "CSRF_HMAC_KEY", "CSRF_HMAC_KEY_FILE")? {
-            Some(key) if key.len() >= 16 => key.into_bytes(),
-            Some(_) => {
-                return Err(Error::InvalidEnv {
-                    name: "CSRF_HMAC_KEY",
-                    reason: "must be at least 16 characters".to_owned(),
-                });
-            }
-            None => {
-                tracing::warn!(
-                    "CSRF_HMAC_KEY not set; using a random key (CSRF tokens do not survive restarts or work across replicas)"
-                );
-                crate::auth::tokens::random_bytes::<32>().to_vec()
-            }
-        };
-        let smtp = match lookup("SMTP_HOST").filter(|v| !v.trim().is_empty()) {
-            Some(host) => {
-                let port = lookup("SMTP_PORT")
-                    .filter(|v| !v.trim().is_empty())
-                    .map_or(Ok(25), |p| p.trim().parse::<u16>())
-                    .map_err(|e| Error::InvalidEnv {
-                        name: "SMTP_PORT",
-                        reason: e.to_string(),
-                    })?;
-                Some(SmtpSettings {
-                    host: host.trim().to_owned(),
-                    port,
-                })
-            }
-            None => None,
-        };
-        let jwks_min_refresh_secs = lookup("JWKS_MIN_REFRESH_SECS")
-            .filter(|v| !v.trim().is_empty())
-            .map_or(Ok(30), |v| v.trim().parse::<u64>())
-            .map_err(|e| Error::InvalidEnv {
-                name: "JWKS_MIN_REFRESH_SECS",
-                reason: e.to_string(),
-            })?;
+        let csrf_key = csrf_key(lookup)?;
+        let smtp = smtp_settings(lookup)?;
+        let jwks_min_refresh_secs = jwks_min_refresh_secs(lookup)?;
         let webauthn_rp_id = lookup("WEBAUTHN_RP_ID")
             .filter(|v| !v.trim().is_empty())
             .map_or_else(|| host_of(&web_base_url), |v| v.trim().to_lowercase());
@@ -261,79 +367,18 @@ impl AuthConfig {
             &["https://appleid.apple.com"],
             "https://appleid.apple.com/auth/keys",
         );
-        let apple_team_id = lookup("APPLE_TEAM_ID").filter(|v| !v.trim().is_empty());
-        let apple_key_id = lookup("APPLE_KEY_ID").filter(|v| !v.trim().is_empty());
-        let apple_private_key =
-            secret_from_lookup(lookup, "APPLE_PRIVATE_KEY", "APPLE_PRIVATE_KEY_FILE")?;
-        let apple_token = match (apple_team_id, apple_key_id, apple_private_key) {
-            (None, None, None) => None,
-            (Some(team_id), Some(key_id), Some(private_key)) => {
-                let provider = apple.as_ref().ok_or_else(|| Error::InvalidEnv {
-                    name: "APPLE_CLIENT_IDS",
-                    reason: "must be set when Apple token exchange is configured".to_owned(),
-                })?;
-                let private_key = decode_private_key(&private_key)?;
-                if private_key.is_empty() {
-                    return Err(Error::InvalidEnv {
-                        name: "APPLE_PRIVATE_KEY",
-                        reason: "must contain a PKCS#8 key".to_owned(),
-                    });
-                }
-                Some(AppleTokenSettings {
-                    team_id: team_id.trim().to_owned(),
-                    key_id: key_id.trim().to_owned(),
-                    private_key,
-                    client_ids: provider.audiences.clone(),
-                    token_url: endpoint_url(
-                        lookup("APPLE_TOKEN_URL"),
-                        "APPLE_TOKEN_URL",
-                        "https://appleid.apple.com/auth/token",
-                    )?,
-                    revoke_url: endpoint_url(
-                        lookup("APPLE_REVOKE_URL"),
-                        "APPLE_REVOKE_URL",
-                        "https://appleid.apple.com/auth/revoke",
-                    )?,
-                })
-            }
-            _ => {
-                return Err(Error::InvalidEnv {
-                    name: "APPLE_TEAM_ID",
-                    reason:
-                        "APPLE_TEAM_ID, APPLE_KEY_ID and APPLE_PRIVATE_KEY must be set together"
-                            .to_owned(),
-                });
-            }
-        };
-        let provider_token_cipher =
-            match secret_from_lookup(lookup, "PROVIDER_TOKEN_KEY", "PROVIDER_TOKEN_KEY_FILE")? {
-                Some(raw) => {
-                    let decoded = STANDARD.decode(raw.trim()).map_err(|e| Error::InvalidEnv {
-                        name: "PROVIDER_TOKEN_KEY",
-                        reason: format!("must be base64: {e}"),
-                    })?;
-                    let key: [u8; 32] = decoded.try_into().map_err(|_| Error::InvalidEnv {
-                        name: "PROVIDER_TOKEN_KEY",
-                        reason: "must decode to exactly 32 bytes".to_owned(),
-                    })?;
-                    Some(Aes256GcmTokenCipher::new(key))
-                }
-                None if apple_token.is_some() => {
-                    return Err(Error::InvalidEnv {
-                        name: "PROVIDER_TOKEN_KEY",
-                        reason: "required when Apple token exchange is configured".to_owned(),
-                    });
-                }
-                None => None,
-            };
+        let google = provider(
+            lookup,
+            "GOOGLE",
+            &["https://accounts.google.com", "accounts.google.com"],
+            "https://www.googleapis.com/oauth2/v3/certs",
+        );
+        let apple_token = apple_token_settings(lookup, apple.as_ref())?;
+        let provider_token_cipher = provider_token_cipher(lookup, apple_token.is_some())?;
+
         Ok(Self {
             apple,
-            google: provider(
-                lookup,
-                "GOOGLE",
-                &["https://accounts.google.com", "accounts.google.com"],
-                "https://www.googleapis.com/oauth2/v3/certs",
-            ),
+            google,
             apple_token,
             provider_token_cipher,
             web_base_url,
