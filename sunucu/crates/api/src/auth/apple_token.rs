@@ -157,12 +157,14 @@ impl AppleTokenClient {
             return Err(AppleTokenError::InvalidClientId);
         }
         let client_secret = self.client_secret(client_id)?;
-        let mut form = url::form_urlencoded::Serializer::new(String::new());
-        form.append_pair("grant_type", "authorization_code");
-        form.append_pair("code", code);
-        form.append_pair("client_id", client_id);
-        form.append_pair("client_secret", &client_secret);
-        let body = form.finish();
+        let body = {
+            let mut form = url::form_urlencoded::Serializer::new(String::new());
+            form.append_pair("grant_type", "authorization_code");
+            form.append_pair("code", code);
+            form.append_pair("client_id", client_id);
+            form.append_pair("client_secret", &client_secret);
+            form.finish()
+        };
         let response = self
             .http
             .post(&self.settings.token_url)
