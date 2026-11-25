@@ -33,10 +33,29 @@ async fn user_cannot_read_or_change_another_workspace() {
     let recipe: serde_json::Value = recipe_response.json().await.unwrap();
     let recipe_id = recipe["id"].as_str().unwrap();
 
+    let document_response = ctx
+        .post_json(
+            &format!("/v1/workspaces/{ws_b}/scanned-documents"),
+            Some(&user_b),
+            &json!({
+                "form_type": "brew_log",
+                "content_type": "application/pdf",
+                "size_bytes": 1,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }),
+        )
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap();
+    let document: serde_json::Value = document_response.json().await.unwrap();
+    let document_id = document["document"]["id"].as_str().unwrap();
+
     for endpoint in [
         format!("/v1/workspaces/{ws_b}/recipes"),
         format!("/v1/workspaces/{ws_b}/batches"),
         format!("/v1/workspaces/{ws_b}/notifications"),
+        format!("/v1/workspaces/{ws_b}/scanned-documents"),
         format!("/v1/workspaces/{ws_b}/support/requests"),
     ] {
         let response = ctx
@@ -46,6 +65,44 @@ async fn user_cannot_read_or_change_another_workspace() {
             .unwrap();
         assert_eq!(response.status(), StatusCode::NOT_FOUND, "{endpoint}");
     }
+
+
+    let recipe_get = ctx
+        .request(
+            Method::GET,
+            &format!("/v1/workspaces/{ws_b}/recipes/{recipe_id}"),
+            Some(&user_a),
+        )
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(recipe_get.status(), StatusCode::NOT_FOUND);
+
+    let document_get = ctx
+        .request(
+            Method::GET,
+            &format!("/v1/workspaces/{ws_b}/scanned-documents/{document_id}"),
+            Some(&user_a),
+        )
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(document_get.status(), StatusCode::NOT_FOUND);
+
+    let document_create = ctx
+        .post_json(
+            &format!("/v1/workspaces/{ws_b}/scanned-documents"),
+            Some(&user_a),
+            &json!({
+                "form_type": "brew_log",
+                "content_type": "application/pdf",
+                "size_bytes": 1,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }),
+        )
+        .await
+        .unwrap();
+    assert_eq!(document_create.status(), StatusCode::NOT_FOUND);
 
     let create = ctx
         .post_json(
