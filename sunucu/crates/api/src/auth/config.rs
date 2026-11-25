@@ -406,6 +406,21 @@ mod tests {
     use super::*;
 
     #[test]
+    fn apple_token_settings_debug_redacts_private_key() {
+        let settings = AppleTokenSettings {
+            team_id: "TEAM123".to_owned(),
+            key_id: "KEY456".to_owned(),
+            private_key: b"private-key-material".to_vec(),
+            client_ids: vec!["com.example.ios".to_owned()],
+            token_url: "https://appleid.apple.com/auth/token".to_owned(),
+            revoke_url: "https://appleid.apple.com/auth/revoke".to_owned(),
+        };
+        let debug = format!("{settings:?}");
+        assert!(debug.contains("<redacted>"));
+        assert!(!debug.contains("private-key-material"));
+    }
+
+    #[test]
     fn providers_need_client_ids_and_take_overrides() {
         let lookup = |n: &str| match n {
             "APPLE_CLIENT_IDS" => Some("com.example.app, web.example".to_owned()),
