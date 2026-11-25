@@ -94,16 +94,56 @@ pub struct ProductModule {
 
 /// The one source of truth for product modules, mode availability and free access.
 pub const PRODUCT_MODULES: &[ProductModule] = &[
-    ProductModule { id: "core", home: true, business: true, free: true },
-    ProductModule { id: "devices", home: true, business: true, free: true },
+    ProductModule {
+        id: "core",
+        home: true,
+        business: true,
+        free: true,
+    },
+    ProductModule {
+        id: "devices",
+        home: true,
+        business: true,
+        free: true,
+    },
     // Home has simplified stock and Business has full stock; keep the shared API module free
     // until operation-level separation is implemented.
-    ProductModule { id: "stock", home: true, business: true, free: true },
-    ProductModule { id: "production", home: false, business: true, free: false },
-    ProductModule { id: "quality", home: false, business: true, free: false },
-    ProductModule { id: "cost_reports", home: false, business: true, free: false },
-    ProductModule { id: "tax_compliance", home: false, business: true, free: false },
-    ProductModule { id: "team", home: false, business: true, free: false },
+    ProductModule {
+        id: "stock",
+        home: true,
+        business: true,
+        free: true,
+    },
+    ProductModule {
+        id: "production",
+        home: false,
+        business: true,
+        free: false,
+    },
+    ProductModule {
+        id: "quality",
+        home: false,
+        business: true,
+        free: false,
+    },
+    ProductModule {
+        id: "cost_reports",
+        home: false,
+        business: true,
+        free: false,
+    },
+    ProductModule {
+        id: "tax_compliance",
+        home: false,
+        business: true,
+        free: false,
+    },
+    ProductModule {
+        id: "team",
+        home: false,
+        business: true,
+        free: false,
+    },
 ];
 
 /// Maps each API module name to the product module that owns its operations.
@@ -169,7 +209,8 @@ pub fn is_module_enabled(module_id: &str, mode: &str, has_paid_feature: bool) ->
 /// Whether the path is an export operation. Exports remain available even when paid modules are off.
 #[must_use]
 pub fn is_export_path(path: &str) -> bool {
-    path.split('/').any(|segment| matches!(segment, "export" | "exports"))
+    path.split('/')
+        .any(|segment| matches!(segment, "export" | "exports"))
 }
 
 fn path_matches(template: &str, actual: &str) -> bool {
