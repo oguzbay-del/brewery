@@ -10,11 +10,14 @@ mod support;
 
 use std::{collections::HashMap, sync::Arc};
 
+use base64::{Engine as _, engine::general_purpose::STANDARD};
+
 use api::{
     ApiConfig, AppState, Authenticator, RequestContext,
     auth::{
         AuthServices,
         email::{Mail, MemoryMailer, SmtpMailer},
+        token_cipher::{Aes256GcmTokenCipher, TokenCipher},
         tokens::hex,
     },
     redis_client::Redis,
@@ -165,20 +168,77 @@ fn spec(sub: &str, aud: &str, nonce: Option<String>) -> MintSpec {
     }
 }
 
-/// Apple sign-in with a fresh nonce; `tweak` adjusts the minted token.
-async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
+/// Apple sign-in with an optional authorization code and a fresh nonce.
+async fn apple_with_code(
+    w: &World,
+    sub: &str,
+    client: &str,
+    authorization_code: Option<&str>,
+    tweak: impl FnOnce(&mut MintSpec),
+) -> Reply {
     let n = nonce(w).await;
     let mut s = spec(sub, APPLE_AUD, Some(apple_nonce_claim(&n)));
     tweak(&mut s);
     let token = w.oidc.oidc.mint(Provider::Apple, &s);
-    call(
-        w,
-        "POST",
-        "/v1/auth/apple",
-        &[],
-        Some(json!({"id_token": token, "nonce": n, "client": client})),
+    let mut body = json!({"id_token": token, "nonce": n, "client": client});
+    if let Some(code) = authorization_code {
+        body["authorization_code"] = json!(code);
+    }
+    call(w, "POST", "/v1/auth/apple", &[], Some(body)).await
+}
+
+/// Apple sign-in without a code, preserving legacy-client coverage.
+async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
+    apple_with_code(w, sub, client, None, tweak).await
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(pool: PgPool) {
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
+
+    let rng = SystemRandom::new();
+    let pkcs8 =
+        EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng).unwrap();
+    let private_key = format!(
+        "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
+        STANDARD.encode(pkcs8.as_ref())
+    );
+    let token_key = STANDARD.encode([42_u8; 32]);
+    let token_url = std::env::var("APPLE_TOKEN_URL")
+        .unwrap_or_else(|_| "http://127.0.0.1:8092/auth/token".to_owned());
+    let extra = [
+        ("APPLE_TEAM_ID", "TEAM123"),
+        ("APPLE_KEY_ID", "KEY456"),
+        ("APPLE_PRIVATE_KEY", private_key.as_str()),
+        ("PROVIDER_TOKEN_KEY", token_key.as_str()),
+        ("APPLE_TOKEN_URL", token_url.as_str()),
+    ];
+    let w = world_with(&pool, Redis::disabled(), &extra).await;
+    let response = apple_with_code(
+        &w,
+        "apple-refresh-user",
+        "ios",
+        Some("mock-auth-code"),
+        |_| {},
     )
+    .await;
+    assert_eq!(response.status, StatusCode::OK, "{:?}", response.body);
+
+    let encrypted: Vec<u8> = sqlx::query_scalar(
+        "SELECT provider_refresh_token_enc FROM user_identities
+         WHERE provider = 'apple' AND subject = 'apple-refresh-user'",
+    )
+    .fetch_one(&pool)
     .await
+    .unwrap();
+    let cipher = Aes256GcmTokenCipher::new([42_u8; 32]);
+    assert_eq!(
+        cipher.decrypt(&encrypted).unwrap().as_slice(),
+        b"local-apple-refresh-token"
+    );
 }
 
 async fn google(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
