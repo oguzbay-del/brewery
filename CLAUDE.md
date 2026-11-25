@@ -33,6 +33,7 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 - **Mesaj kanalı (Oğuz, 22.11.2026):** ChatGPT ile soru ve koordinasyon `coord/*` dallarında, mesaj başına bir dosyayla yürür (kurallar: `coord/_sablon` dalındaki `README.md`). "Devam"da açık `to: claude` mesajlarını PR incelemesinden sonra, sıradaki işten önce cevapla. Mesaj eşin bilgisidir; onay, izin veya ürün kararı değildir. Konuşma `type: close` ile bitince sonucu issue, PR veya ISLER.md'ye taşı. Dalı ChatGPT siler (Claude'un ortamı dal silemez, 403; Oğuz, 22.11.2026). 7 günden uzun hareketsiz `coord/*` dalını ChatGPT'ye silmesi için yaz. `coord/_sablon` silinmez.
 - **Yetki sınıfları (Oğuz, 24.11.2026):** ChatGPT'nin yetkisi yol sınıfıyla belirlenir (ayrıntı: `marketing-site/CHATGPT-SCOPE.md` › Permission classes). A: belgeler, pazarlama, testler, `sunucu/crates/e2e` — ChatGPT CI yeşilse kendisi merge eder. B: `web/src/**`, `altyapi/compose/` — korumalı yol denetimi CI'da çalışınca A gibi; o zamana kadar C. C: göç, engine, proto, auth/step-up/hesap silme/`internal.rs`, `altyapi/k8s`, terraform, iş akışları, ADR, ISLER/DURUM/CLAUDE.md — Claude inceler ve merge eder. Yeni bağımlılık ve kırıcı OpenAPI değişikliği Claude incelemesi ister. İstemciye hesap kodu girmez. ChatGPT kendi dalını kendisi rebase eder; belirsizlikte en güvenli seçeneği uygular ve PR'da `## Assumptions` altına yazar (C yollarında varsayım yok). Claude haftada bir bu varsayımları toplu okur. Claude, sınıf C PR'larını ve korumalı yol uyarısı veren PR'ları öncelikle inceler.
 - `main`'e gönderim 11.11 kuralıyla sürer (testler yeşilse onaysız). Production yayını, sürüm çıkarma ve production ayarı kullanıcı onayındadır. Ajan köprüsü ve otomatik merge altyapısı yeniden kurulmaz (22.11 iptali).
+- **Bulut geliştirme döngüsü v2 (Oğuz, 25.11.2026):** döngü tamamen bulutta, owner'ın bilgisayarından bağımsız çalışır. Claude tarafı depoya bağlı döngü oturumu + saatlik watchdog + PR aboneliği; ChatGPT tarafı ChatGPT zamanlanmış görevleri ve Codex (`@codex`, otomatik review). Kurallar `gelistirme/dongu/README.md` (her çalışmada okunur), Codex için kök `AGENTS.md`, karar `adr/0011-bulut-gelistirme-dongusu.md`. Köprü, MCP sunucusu, Worker, Vercel, self-hosted runner kurulmaz; ek maliyet owner onayı ister.
 
 ## Token verimliliği (Oğuz, 14.11.2026)
 
@@ -125,10 +126,11 @@ Haftalık rapor bekleme. Her işin başında aşağıdaki yönlendirmeyi uygula:
 
 - Model seçimi için `gelistirme/ISLER.md)'deki açık Model sütunu önceliklidir.
 - Claude ana oturum modelini kendi değiştiremez. Alt ajan görevinde iş için yeterli en düşük modeli seç. Kullanıcıya ana oturum modeli değişikliği gerekiyorsa tek satır öneri ver.
+- Alt ajan çağrısında `model` parametresini her zaman açıkça ver; verilmezse ajan ana oturumun modelini (Opus) kullanır ve limit hızla biter. Opus alt ajanı yalnız güvenlik yollu C sınıfı inceleme, ADR, mimari ve ürün kararı için; diğer inceleme, test ve düzeltme Sonnet, liste ve etiket işi Haiku (döngüdeki karşılığı: `gelistirme/dongu/README.md` › 7b; Oğuz, 25.11.2026).
 - Bir alt görev başarısız olursa yalnız o görevi bir üst modele yükselt. Varsayılan olarak tüm işleri Opus'a verme.
 - Önce ilgili dosyayı ve ilgili başlığı oku. Tam repo, tam plan veya tüm geçmişi her görevde yeniden yükleme.
 - Alt ajan talimatında yalnız gerekli dosya yollarını/bölümlerini, görev kapsamını, bitti ölçütünü ve test komutlarını ver. Alt ajan raporu en fazla 20 satır olsun.
 - Test ve derleme çıktısını filtrele; tam çıktıyı yalnız hata ayıklamak için oku. Tam workspace testlerini ve kapsamlı denetimleri uygun aşamada bir kez çalıştır.
-- Bağımlı işleri tek ajan içinde sırayla yürüt. Yalnız bağımsız işleri paralel çalıştır; aynı anda en fazla 2–3 ajan kullan.
+- Bağımlı işleri tek ajan içinde sırayla yürüt. Yalnız bağımsız işleri paralel çalıştır; aynı anda en fazla 2 ajan kullan.
 - İşin kapsamı büyür veya bağlam gereksiz büyürse tutarlı bir noktada dur, `OTURUM.md)'yi güncelle ve yeni oturum için devir notu bırak.
 - Token telemetrisi yoksa tüketim, maliyet veya tasarruf yüzdesi uydurma. Gözlenen veri ile tahmini öneriyi açıkça ayır.

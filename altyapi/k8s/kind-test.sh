@@ -44,24 +44,32 @@ else
   bad "gRPC sağlık: $out"
 fi
 
-echo "Ağ politikası (engine-service:50051'e TCP bağlantısı)"
+echo "Ağ politikası (engine-service:50051 ve Redis:6379)"
 # Gerçek pod'un içinden bash /dev/tcp ile denenir (imajda bash var, ek araç gerekmez).
 # Çıkış kodu 124 = zaman aşımı (paket düşürüldü); 0 = bağlandı; başka kod = deneme geçersiz.
-tcp() { $K exec "deploy/$1" -- timeout 4 bash -c 'exec 3<>/dev/tcp/engine-service/50051' >/dev/null 2>&1; }
-tcp api; rc=$?
+tcp_to() { $K exec "deploy/$1" -- timeout 4 bash -c "exec 3<>/dev/tcp/$2/$3" >/dev/null 2>&1; }
+tcp_to api engine-service 50051; rc=$?
 if [ $rc = 0 ]; then ok "api -> engine-service izinli"; else bad "api -> engine-service ENGELLENDİ (çıkış $rc; izin verilmeliydi)"; fi
+tcp_to api redis 6379; rc=$?
+if [ $rc = 0 ]; then ok "api -> redis izinli"; else bad "api -> redis ENGELLENDİ (çıkış $rc; izin verilmeliydi)"; fi
+
 if [ "${NETPOL:-1}" = 0 ] || ! kubectl -n kube-system get ds calico-node >/dev/null 2>&1; then
   echo "  UYARI: politikayı uygulayan CNI yok (calico-node bulunamadı) ya da NETPOL=0; engelleme denetimi atlandı"
 else
   for src in worker ingest; do
-    tcp $src; rc=$?
+    tcp_to "$src" engine-service 50051; rc=$?
     case $rc in
       124) ok "$src -> engine-service reddedildi (zaman aşımı)" ;;
       0)   bad "$src -> engine-service ERİŞTİ (reddedilmeliydi)" ;;
       *)   bad "$src -> engine-service denemesi geçersiz (çıkış $rc)" ;;
     esac
   done
+  tcp_to worker redis 6379; rc=$?
+  case $rc in
+    124) ok "worker -> redis reddedildi (zaman aşımı)" ;;
+    0)   bad "worker -> redis ERİŞTİ (reddedilmeliydi)" ;;
+    *)   bad "worker -> redis denemesi geçersiz (çıkış $rc)" ;;
+  esac
 fi
-
 [ "$fail" = 0 ] && echo "TAMAM" || echo "BAŞARISIZ"
 exit "$fail"

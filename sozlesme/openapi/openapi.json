@@ -7054,6 +7054,62 @@
         ],
         "type": "object"
       },
+      "Page_TrashItem": {
+        "description": "A page of a list endpoint: `{ \"items\": [...], \"next_cursor\": \"...\" | null }`.",
+        "properties": {
+          "items": {
+            "description": "The rows of this page.",
+            "items": {
+              "description": "A record in the trash.",
+              "properties": {
+                "deleted_at": {
+                  "description": "When the record was deleted.",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Record id.",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "kind": {
+                  "description": "`recipe`, `batch`, `ingredient` or `equipment`.",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Name of the record.",
+                  "type": "string"
+                },
+                "restorable_until": {
+                  "description": "Last instant a restore works.",
+                  "format": "date-time",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "kind",
+                "id",
+                "name",
+                "deleted_at",
+                "restorable_until"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "description": "Cursor of the next page; `null` on the last page.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "PasskeySummary": {
         "description": "A registered passkey.",
         "properties": {
@@ -9576,22 +9632,6 @@
           "name",
           "deleted_at",
           "restorable_until"
-        ],
-        "type": "object"
-      },
-      "TrashList": {
-        "description": "The trash, newest deletion first.",
-        "properties": {
-          "items": {
-            "description": "Deleted records of the last 30 days.",
-            "items": {
-              "$ref": "#/components/schemas/TrashItem"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "items"
         ],
         "type": "object"
       },
@@ -75198,7 +75238,7 @@
             }
           },
           {
-            "description": "Largest number of items (1..=200)",
+            "description": "Page size (1..=200, default 50)",
             "in": "query",
             "name": "limit",
             "required": false,
@@ -75206,6 +75246,15 @@
               "format": "int32",
               "minimum": 0,
               "type": "integer"
+            }
+          },
+          {
+            "description": "Opaque cursor from the previous page",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -75222,10 +75271,11 @@
                       "name": "House IPA",
                       "restorable_until": "2026-12-20T10:00:00Z"
                     }
-                  ]
+                  ],
+                  "next_cursor": null
                 },
                 "schema": {
-                  "$ref": "#/components/schemas/TrashList"
+                  "$ref": "#/components/schemas/Page_TrashItem"
                 }
               }
             },

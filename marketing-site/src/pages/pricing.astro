@@ -12,7 +12,7 @@ import { buildBreadcrumbList } from "../data/breadcrumbs";
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}pricing/`, import.meta.env.SITE).href;
-const description = "Explore GRISTORA plans for homebrewers and professional breweries, compare billing terms and configure your subscription.";
+const description = "Explore GRISTORA plans for homebrewers and professional breweries, compare proposed billing terms and preview a plan.";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
@@ -114,7 +114,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       </section>
 
       <section class="pricing-cta section-pad">
-        <div class="shell pricing-cta-inner"><p class="eyebrow"><span class="eyebrow-line"></span> YOUR NEXT STEP</p><h2>Build your plan, <em>one choice at a time.</em></h2><p>The guided planner helps you choose your audience, team size and billing term.</p><a class="button button-primary" href={`${base}get-started/`}>Start plan configuration <span aria-hidden="true">↗</span></a></div>
+        <div class="shell pricing-cta-inner"><p class="eyebrow"><span class="eyebrow-line"></span> YOUR NEXT STEP</p><h2>Build your plan, <em>one choice at a time.</em></h2><p>The guided planner helps you choose your audience, team size and billing term.</p><a class="button button-primary" href={`${base}get-started/`}>Build my plan <span aria-hidden="true">↗</span></a></div>
       </section>
     </main>
     <SiteFooter backText="Compare paths ↑" backHref={`${base}compare/`} />

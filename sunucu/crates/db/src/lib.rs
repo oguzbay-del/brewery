@@ -11,6 +11,7 @@
 
 mod account_deletion;
 mod audit;
+pub mod containers;
 mod context;
 mod error;
 pub mod maintenance;

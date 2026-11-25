@@ -1,0 +1,23 @@
+---
+interface Props {
+  lang: "en" | "tr";
+}
+const { lang } = Astro.props;
+const tr = lang === "tr";
+const root = import.meta.env.BASE_URL + (tr ? "tr/" : "");
+const tasks = [
+  { slug: "planning-scheduling", en: "Plan tank occupancy", tr: "Tank kullanımını planlamak" },
+  { slug: "quality-laboratory", en: "Review batch quality", tr: "Parti kalitesini incelemek" },
+  { slug: "inventory-costing", en: "Trace an ingredient lot", tr: "Hammadde lotunu izlemek" },
+  { slug: "recipe-design", en: "Develop a recipe", tr: "Reçete geliştirmek" },
+];
+---
+<nav class="tasks" aria-label={tr ? "Üretim iş akışları" : "Brewing workflows"}>
+  {tasks.map((task) => <a href={root + "features/" + task.slug + "/"}>{task[lang]}</a>)}
+</nav>
+
+<style>
+  .tasks { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.25rem 0; }
+  .tasks a { display: inline-flex; align-items: center; min-height: 44px; padding: .45rem 1rem; border: 1px solid var(--line); border-radius: 999px; color: var(--forest); background: var(--surface); font-weight: 650; text-decoration: underline; text-underline-offset: .2em; }
+  .tasks a:hover, .tasks a:focus-visible { background: var(--soft); }
+</style>
