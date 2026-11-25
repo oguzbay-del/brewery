@@ -5,11 +5,13 @@
 use std::{collections::HashSet, sync::Mutex, time::Duration};
 
 use chrono::{DateTime, Utc};
-use sqlx::{PgPool, postgres::PgPoolOptions, types::Uuid};
+use sqlx::{PgPool, types::Uuid};
 use storage::{
     BoxFuture, Digest, ObjectMeta, ObjectStore, PresignedRequest, StorageError, StorageResult,
     UploadLimits,
 };
+mod common;
+
 use worker::upload_cleanup::{self, UploadCleanupReport};
 
 #[derive(Default)]
@@ -90,62 +92,10 @@ impl ObjectStore for MemoryStore {
     }
 }
 
-async fn worker_pool(pool: &PgPool) -> PgPool {
-    PgPoolOptions::new()
-        .max_connections(4)
-        .after_connect(|conn, _| {
-            Box::pin(async move {
-                sqlx::query("SET ROLE app_worker").execute(conn).await?;
-                Ok(())
-            })
-        })
-        .connect_with((*pool.connect_options()).clone())
-        .await
-        .unwrap()
-}
-
-async fn create_workspace(pool: &PgPool, workspace_id: Uuid) {
-    sqlx::query(
-        "INSERT INTO workspaces (id, name, mode, region, country, time_zone, support_pseudonym)
-         VALUES ($1, 'Upload cleanup', 'business', 'us', 'US', 'America/New_York', $2)",
-    )
-    .bind(workspace_id)
-    .bind(format!("pseudonym-{workspace_id}"))
-    .execute(pool)
-    .await
-    .unwrap();
-}
-
-async fn create_support_message(pool: &PgPool, workspace_id: Uuid, base: u128) -> Uuid {
-    let request_id = Uuid::from_u128(base + 1);
-    let message_id = Uuid::from_u128(base + 2);
-    sqlx::query(
-        "INSERT INTO support_requests (id, workspace_id, topic, title)
-         VALUES ($1, $2, 'recipes', 'Upload cleanup test')",
-    )
-    .bind(request_id)
-    .bind(workspace_id)
-    .execute(pool)
-    .await
-    .unwrap();
-    sqlx::query(
-        "INSERT INTO support_messages (id, workspace_id, request_id, author_kind,
-            author_user_id, body, visibility)
-         VALUES ($1, $2, $3, 'system', NULL, 'test', 'internal')",
-    )
-    .bind(message_id)
-    .bind(workspace_id)
-    .bind(request_id)
-    .execute(pool)
-    .await
-    .unwrap();
-    message_id
-}
-
 async fn create_attachment_rows(
     pool: &PgPool,
     workspace_id: Uuid,
-    message_id: Uuid,
+    batch_id: Uuid,
     base: u128,
     now: DateTime<Utc>,
 ) -> Vec<String> {
@@ -160,12 +110,12 @@ async fn create_attachment_rows(
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, uploaded_at, created_at, deleted_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+         VALUES ($1, $2, 'file', 'batch', $3, $4,
             'text/plain', 4, decode(repeat('11', 32), 'hex'), $5, $6, $7)",
     )
     .bind(Uuid::from_u128(base + 3))
     .bind(workspace_id)
-    .bind(message_id)
+    .bind(batch_id)
     .bind(&keys[0])
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(3))
@@ -178,12 +128,12 @@ async fn create_attachment_rows(
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, created_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+         VALUES ($1, $2, 'file', 'batch', $3, $4,
             'text/plain', 4, decode(repeat('22', 32), 'hex'), $5)",
     )
     .bind(Uuid::from_u128(base + 4))
     .bind(workspace_id)
-    .bind(message_id)
+    .bind(batch_id)
     .bind(&keys[1])
     .bind(now - chrono::Duration::hours(25))
     .execute(pool)
@@ -194,12 +144,12 @@ async fn create_attachment_rows(
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, uploaded_at, created_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+         VALUES ($1, $2, 'file', 'batch', $3, $4,
             'text/plain', 4, decode(repeat('33', 32), 'hex'), $5, $6)",
     )
     .bind(Uuid::from_u128(base + 5))
     .bind(workspace_id)
-    .bind(message_id)
+    .bind(batch_id)
     .bind(&keys[2])
     .bind(now - chrono::Duration::days(2))
     .bind(now - chrono::Duration::days(2))
@@ -211,12 +161,12 @@ async fn create_attachment_rows(
     sqlx::query(
         "INSERT INTO attachments (id, workspace_id, kind, record_kind, record_id, object_key,
             content_type, size_bytes, sha256, uploaded_at, created_at, deleted_at)
-         VALUES ($1, $2, 'file', 'support_message', $3, $4,
+         VALUES ($1, $2, 'file', 'batch', $3, $4,
             'text/plain', 4, decode(repeat('44', 32), 'hex'), $5, $6, $7)",
     )
     .bind(Uuid::from_u128(base + 6))
     .bind(workspace_id)
-    .bind(message_id)
+    .bind(batch_id)
     .bind(&keys[3])
     .bind(now - chrono::Duration::days(3))
     .bind(now - chrono::Duration::days(3))
@@ -294,11 +244,11 @@ async fn create_document_rows(
 async fn create_upload_rows(
     pool: &PgPool,
     workspace_id: Uuid,
+    batch_id: Uuid,
     base: u128,
     now: DateTime<Utc>,
 ) -> Vec<String> {
-    let message_id = create_support_message(pool, workspace_id, base).await;
-    let mut keys = create_attachment_rows(pool, workspace_id, message_id, base, now).await;
+    let mut keys = create_attachment_rows(pool, workspace_id, batch_id, base, now).await;
     keys.extend(create_document_rows(pool, workspace_id, base, now).await);
     keys
 }
@@ -306,19 +256,22 @@ async fn create_upload_rows(
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool) {
     let now = Utc::now();
-    let workspaces = [
-        Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0101),
-        Uuid::from_u128(0x0192_f1c0_7a3b_7000_8000_0000_0000_0102),
-    ];
+    let seeds = [common::seed(&pool).await, common::seed(&pool).await];
     let mut keys = Vec::new();
-    for (index, workspace_id) in workspaces.iter().enumerate() {
-        create_workspace(&pool, *workspace_id).await;
+    for (index, seed) in seeds.iter().enumerate() {
         keys.extend(
-            create_upload_rows(&pool, *workspace_id, 10_000 + (index as u128 * 100), now).await,
+            create_upload_rows(
+                &pool,
+                seed.ws,
+                seed.batch,
+                10_000 + (index as u128 * 100),
+                now,
+            )
+            .await,
         );
     }
 
-    let worker = worker_pool(&pool).await;
+    let worker = common::worker_pool(&pool).await;
     let store = MemoryStore::default();
     for key in &keys {
         store.insert(key);
@@ -373,7 +326,7 @@ async fn cleanup_deletes_only_eligible_objects_and_retries_failures(pool: PgPool
     .unwrap();
     assert_eq!(purged_documents, 2);
 
-    for (index, _) in workspaces.iter().enumerate() {
+    for (index, _) in seeds.iter().enumerate() {
         let base = 10_000 + (index as u128 * 100);
         let (deleted_at_set, purged_at_set): (bool, bool) = sqlx::query_as(
             "SELECT deleted_at IS NOT NULL, object_purged_at IS NOT NULL
