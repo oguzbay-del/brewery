@@ -1,4 +1,4 @@
-//! P1 module map, entitlement gate, metadata endpoint and OpenAPI extension tests.
+//! P1 module map, entitlement gate, metadata endpoint and `OpenAPI` extension tests.
 
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
