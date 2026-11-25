@@ -214,9 +214,9 @@ Rules:
 | O1 | User interviews (`plan/gorusme.md`) | Stage 5 gate | todo |
 | O2 | Golden test numbers from the BeerSmith screen (`formuller/ALTIN-TEST.md`) | Stage 5 gate | todo |
 | O3 | Apple Developer account, macOS CI (GitHub Actions macOS or Xcode Cloud) | T0.9, stage 4 | active: macOS CI runs on GitHub macOS machines; the Apple Developer account and the device test are not done |
-| O4 | Google Cloud organization and billing | Stage 5 | todo |
+| O4 | Google Cloud organization and billing | Stage 5 | active (owner, 2026-11-25) |
 | O5 | Delete the 7 old branches on GitHub | – | todo |
 | O6 | Select a web payment provider (subscriptions outside the App Store). Decision: Paddle (merchant of record). Paddle collects and pays US sales tax and UK VAT. | T2.28 | done (2026-11-20) |
 | O9 | Select a tool for error and crash reports. Decision: Sentry (ADR-0010). Traces, metrics and logs stay in OpenTelemetry. | Stages 3–5 | done (2026-11-24) |
 | O8 | Approve the tier matrix and the prices (Claude writes the draft before the beta, task P2) | Stage 5 | todo |
-| O7 | Buy the gristora.com domain (after the trademark and domain review, Issue #146) | G7 | todo |
+| O7 | Buy the gristora.com domain (after the trademark and domain review, Issue #146) | G7 | active (owner, 2026-11-25) |
