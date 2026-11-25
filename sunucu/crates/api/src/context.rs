@@ -232,8 +232,7 @@ async fn module_enabled(
     workspace_id: Uuid,
     module_id: &str,
 ) -> ApiResult<bool> {
-    let (mode, has_paid_feature) =
-        workspace_mode_and_paid(pool, db_context, workspace_id).await?;
+    let (mode, has_paid_feature) = workspace_mode_and_paid(pool, db_context, workspace_id).await?;
     Ok(modules::is_module_enabled(
         module_id,
         &mode,
