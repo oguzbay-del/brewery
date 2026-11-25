@@ -16,7 +16,7 @@ use axum::{
     body::Body,
     http::StatusCode,
     middleware::from_fn_with_state,
-    routing::{get, post},
+    routing::get,
 };
 use serde_json::Value;
 use sqlx::PgPool;
@@ -255,4 +255,31 @@ async fn meta_endpoint_returns_the_callers_workspace_module_state(pool: PgPool) 
             .and_then(|module| module["enabled"].as_bool())
             .unwrap()
     );
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn export_routes_remain_available_without_a_paid_entitlement(pool: PgPool) {
+    let user = Uuid::now_v7();
+    let workspace = Uuid::now_v7();
+    insert_user(&pool, user).await;
+    insert_workspace(&pool, workspace).await;
+
+    let auth = Arc::new(FakeAuth::default());
+    auth.add(user, workspace, &[]);
+    let state = state_with(
+        &pool,
+        Redis::disabled(),
+        auth,
+        support::config("postgres://unused"),
+    )
+    .await;
+
+    let template = export_path_template();
+    let path = concrete_path(&template, workspace);
+    let app = module_gate_router(state, &template);
+    let request = support::req("GET", &path, Some(user))
+        .body(Body::empty())
+        .unwrap();
+    let response = send(&app, request).await;
+    assert_eq!(response.status, StatusCode::OK, "{:?}", response.body);
+}
+
 }
