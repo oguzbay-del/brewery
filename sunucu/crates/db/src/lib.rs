@@ -12,6 +12,7 @@
 mod account_deletion;
 mod audit;
 mod context;
+pub mod containers;
 mod error;
 pub mod maintenance;
 mod measurement;
@@ -31,6 +32,7 @@ pub use audit::{
     AuditEvent, AuditRecord, CanonicalFields, ChainBreak, ChainReport, GENESIS_HASH, NewAuditEntry,
     append_audit, canonical_row, chain_hash, changed_field, verify_all_chains, verify_chain,
 };
+pub use containers::{ContainerFillReferences, ContainerStatus};
 pub use context::{
     ActorKind, DbContext, IDEMPOTENCY_KEY, begin, set_actor_kind, set_context, set_user_id,
     set_workspace_id,
