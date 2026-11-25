@@ -958,7 +958,7 @@ mod tests {
     #[test]
     fn previous_key_secret_can_be_loaded_from_a_file() {
         let path = std::env::temp_dir().join(format!("brew-package-key-{}.txt", Uuid::now_v7()));
-        let write = std::fs::write(&path, "file-secret\\n");
+        let write = std::fs::write(&path, "file-secret\n");
         assert!(write.is_ok(), "temporary key file should be written");
         let file_name = path.to_string_lossy().into_owned();
         let keys = previous_keys_from_lookup(
