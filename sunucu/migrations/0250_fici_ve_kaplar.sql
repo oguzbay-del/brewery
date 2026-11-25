@@ -131,7 +131,7 @@ BEGIN
 END
 $$;
 CREATE TRIGGER container_event_no_change
-    BEFORE UPDATE OR DELETE ON container
+    BEFORE UPDATE OR DELETE ON container_event
     FOR EACH ROW EXECUTE FUNCTION container_event_reject_change();
 CREATE TRIGGER container_event_no_truncate
     BEFORE TRUNCATE ON container_event
