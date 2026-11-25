@@ -115,8 +115,15 @@ fn credential(headers: &HeaderMap) -> ApiResult<Option<Credential<'_>>> {
 
 impl AuthServices {
     /// Builds the services; the JWKS verifiers exist for the providers that have client ids.
-    #[must_use]
-    pub fn new(db: PgPool, redis: Redis, config: AuthConfig, mailer: Arc<dyn Mailer>) -> Self {
+    ///
+    /// # Errors
+    /// Returns an error if the Apple token client cannot be built.
+    pub fn new(
+        db: PgPool,
+        redis: Redis,
+        config: AuthConfig,
+        mailer: Arc<dyn Mailer>,
+    ) -> Result<Self, reqwest::Error> {
         let min_refresh = Duration::from_secs(config.jwks_min_refresh_secs);
         let verifier = |s: &Option<config::ProviderSettings>| {
             s.clone().map(|s| OidcVerifier::new(s, min_refresh))
@@ -124,8 +131,9 @@ impl AuthServices {
         let apple_token_client = config
             .apple_token
             .clone()
-            .map(apple_token::AppleTokenClient::new);
-        Self {
+            .map(apple_token::AppleTokenClient::new)
+            .transpose()?;
+        Ok(Self {
             apple: verifier(&config.apple),
             apple_token_client,
             google: verifier(&config.google),
@@ -135,7 +143,7 @@ impl AuthServices {
             db,
             config,
             mailer,
-        }
+        })
     }
 
     /// The token the request carries, if any.

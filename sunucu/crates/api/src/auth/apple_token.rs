@@ -74,14 +74,15 @@ impl std::fmt::Debug for AppleTokenClient {
 
 impl AppleTokenClient {
     /// Creates a client with redirects disabled and a bounded request timeout.
-    #[must_use]
-    pub fn new(settings: AppleTokenSettings) -> Self {
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP client cannot be built.
+    pub fn new(settings: AppleTokenSettings) -> Result<Self, reqwest::Error> {
         let http = reqwest::Client::builder()
             .timeout(Duration::from_secs(10))
             .redirect(reqwest::redirect::Policy::none())
-            .build()
-            .unwrap_or_else(|_| reqwest::Client::new());
-        Self { settings, http }
+            .build()?;
+        Ok(Self { settings, http })
     }
 
     /// Selects the one configured client ID present in the verified ID token audience.
@@ -244,7 +245,7 @@ mod tests {
         )
         .unwrap();
         let public_key = key.public_key().as_ref().to_vec();
-        let client = AppleTokenClient::new(settings(pkcs8.as_ref().to_vec()));
+        let client = AppleTokenClient::new(settings(pkcs8.as_ref().to_vec())).unwrap();
         let audiences = ["com.example.ios".to_owned()];
         let client_id = client.client_id_for_audiences(&audiences).unwrap();
         assert_eq!(client_id, "com.example.ios");
@@ -277,7 +278,7 @@ mod tests {
         let rng = SystemRandom::new();
         let pkcs8 = EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng)
             .unwrap();
-        let client = AppleTokenClient::new(settings(pkcs8.as_ref().to_vec()));
+        let client = AppleTokenClient::new(settings(pkcs8.as_ref().to_vec())).unwrap();
         assert_eq!(
             client.client_id_for_audiences(&["unknown".to_owned()]),
             Err(AppleTokenError::InvalidClientId)

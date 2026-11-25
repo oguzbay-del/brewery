@@ -52,12 +52,9 @@ async fn main() -> common::Result<()> {
         tracing::warn!("S3_ENDPOINT not set; file endpoints answer 503");
         None
     };
-    let auth = Arc::new(AuthServices::new(
-        db.clone(),
-        redis.clone(),
-        config.auth.clone(),
-        mailer,
-    ));
+    let auth = AuthServices::new(db.clone(), redis.clone(), config.auth.clone(), mailer)
+        .map_err(std::io::Error::other)?;
+    let auth = Arc::new(auth);
     let mut state = AppState::new(db, redis, auth.clone(), config).with_auth_services(auth);
     // SSE needs NATS; without NATS_URL the events endpoint answers 503.
     if let Ok(nats_url) = std::env::var("NATS_URL") {

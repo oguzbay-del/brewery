@@ -53,9 +53,9 @@ fn decode_private_key(raw: &str) -> Result<Vec<u8>> {
         .filter(|line| !line.trim_start().starts_with("-----"))
         .map(str::trim)
         .collect();
-    STANDARD.decode(encoded).map_err(|e| Error::InvalidEnv {
+    STANDARD.decode(encoded).map_err(|_| Error::InvalidEnv {
         name: "APPLE_PRIVATE_KEY",
-        reason: format!("invalid PKCS#8 base64: {e}"),
+        reason: "invalid PKCS#8 base64".to_owned(),
     })
 }
 
@@ -313,9 +313,9 @@ where
 {
     match secret_from_lookup(lookup, "PROVIDER_TOKEN_KEY", "PROVIDER_TOKEN_KEY_FILE")? {
         Some(raw) => {
-            let decoded = STANDARD.decode(raw.trim()).map_err(|e| Error::InvalidEnv {
+            let decoded = STANDARD.decode(raw.trim()).map_err(|_| Error::InvalidEnv {
                 name: "PROVIDER_TOKEN_KEY",
-                reason: format!("must be base64: {e}"),
+                reason: "must be base64".to_owned(),
             })?;
             let key: [u8; 32] = decoded.try_into().map_err(|_| Error::InvalidEnv {
                 name: "PROVIDER_TOKEN_KEY",
