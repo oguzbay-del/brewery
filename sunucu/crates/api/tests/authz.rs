@@ -423,7 +423,10 @@ async fn home_workspaces_cannot_list_team_roles(pool: PgPool) {
     let ws = workspace(&w, &owner, "home").await;
     let reply = get_as(&w, &format!("/v1/workspaces/{ws}/roles"), &owner).await;
     assert_eq!(
-        (reply.status, code(&reply)),
+        (
+            reply.status,
+            reply.body["code"].as_str().unwrap_or_default()
+        ),
         (StatusCode::FORBIDDEN, "module_disabled")
     );
 }
@@ -1253,7 +1256,10 @@ async fn home_owner_cannot_share_a_recipe_as_editor_or_viewer(pool: PgPool) {
         )
         .await;
         assert_eq!(
-            (reply.status, code(&reply)),
+            (
+                reply.status,
+                reply.body["code"].as_str().unwrap_or_default()
+            ),
             (StatusCode::FORBIDDEN, "module_disabled")
         );
     }
