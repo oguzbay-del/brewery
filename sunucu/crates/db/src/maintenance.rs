@@ -240,3 +240,48 @@ pub async fn purge_expired_soft_deletes(
     }
     Ok(totals)
 }
+
+
+/// Closes resolved support requests past their cutoff and queues their GitHub sync events.
+///
+/// The migration function returns only the workspace, request and new version. It updates the
+/// status under its SECURITY DEFINER owner; the event is committed with the same transaction.
+///
+/// # Errors
+/// Database errors.
+pub async fn close_resolved_support_requests(pool: &PgPool, cutoff: DateTime<Utc>) -> Result<u64> {
+    use crate::outbox::{Entity, NewOutboxEvent, enqueue};
+
+    let mut tx = pool.begin().await?;
+    let rows = sqlx::query(
+        "SELECT workspace_id, request_id, version
+         FROM close_resolved_support_requests($1)",
+    )
+    .bind(cutoff)
+    .fetch_all(&mut *tx)
+    .await?;
+
+    let mut closed = 0_u64;
+    for row in &rows {
+        let workspace_id: Uuid = row.try_get("workspace_id")?;
+        let request_id: Uuid = row.try_get("request_id")?;
+        let version: i64 = row.try_get("version")?;
+        enqueue(
+            &mut tx,
+            &NewOutboxEvent {
+                topic: "support.sync_requested".to_owned(),
+                workspace_id: Some(workspace_id),
+                entity: Some(Entity {
+                    kind: "support_request".to_owned(),
+                    id: request_id,
+                    version,
+                }),
+                data: None,
+            },
+        )
+        .await?;
+        closed += 1;
+    }
+    tx.commit().await?;
+    Ok(closed)
+}
