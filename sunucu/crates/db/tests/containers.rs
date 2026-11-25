@@ -61,44 +61,82 @@ async fn containers_are_isolated_by_workspace(pool: PgPool) -> sqlx::Result<()> 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn a_dirty_container_cannot_be_filled(pool: PgPool) -> sqlx::Result<()> {
     let (api, workspace_a, _workspace_b, container_id, _container_b) = setup(&pool).await;
-    run(&api, workspace_a, None,
-        &format!("UPDATE container SET status = 'dirty' WHERE id = '{container_id}'")).await?;
-    let error = run(&api, workspace_a, None,
-        &format!("UPDATE container SET status = 'filled' WHERE id = '{container_id}'"))
-        .await.unwrap_err();
+    run(
+        &api,
+        workspace_a,
+        None,
+        &format!("UPDATE container SET status = 'dirty' WHERE id = '{container_id}'"),
+    )
+    .await?;
+    let error = run(
+        &api,
+        workspace_a,
+        None,
+        &format!("UPDATE container SET status = 'filled' WHERE id = '{container_id}'"),
+    )
+    .await
+    .unwrap_err();
     assert_eq!(sqlstate(&error).as_deref(), Some("23000"));
     Ok(())
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
-async fn container_events_are_append_only_for_application_roles_and_owner(pool: PgPool) -> sqlx::Result<()> {
+async fn container_events_are_append_only_for_application_roles_and_owner(
+    pool: PgPool,
+) -> sqlx::Result<()> {
     let (api, workspace_a, _workspace_b, container_id, _container_b) = setup(&pool).await;
     let event_id = id(905);
-    run(&api, workspace_a, None, &format!(
-        "INSERT INTO container_event (id, workspace_id, container_id, event_type, note)
-         VALUES ('{event_id}', '{workspace_a}', '{container_id}', 'scan', 'test scan')"
-    )).await?;
+    run(
+        &api,
+        workspace_a,
+        None,
+        &format!(
+            "INSERT INTO container_event (id, workspace_id, container_id, container_serial_snapshot, event_type, note)
+             VALUES ('{event_id}', '{workspace_a}', '{container_id}', 'CAN-A', 'scan', 'test scan')"
+        ),
+    )
+    .await?;
 
     for role in [Role::Api, Role::Worker] {
         let app = pool_as(&pool, role).await;
-        let update = run(&app, workspace_a, None,
-            &format!("UPDATE container_event SET note = 'changed' WHERE id = '{event_id}'"))
-            .await.unwrap_err();
+        let update = run(
+            &app,
+            workspace_a,
+            None,
+            &format!("UPDATE container_event SET note = 'changed' WHERE id = '{event_id}'"),
+        )
+        .await
+        .unwrap_err();
         assert_eq!(sqlstate(&update).as_deref(), Some("42501"));
-        let delete = run(&app, workspace_a, None,
-            &format!("DELETE FROM container_event WHERE id = '{event_id}'"))
-            .await.unwrap_err();
+        let delete = run(
+            &app,
+            workspace_a,
+            None,
+            &format!("DELETE FROM container_event WHERE id = '{event_id}'"),
+        )
+        .await
+        .unwrap_err();
         assert_eq!(sqlstate(&delete).as_deref(), Some("42501"));
     }
 
     let owner = pool_as(&pool, Role::Owner).await;
-    let update = run(&owner, workspace_a, None,
-        &format!("UPDATE container_event SET note = 'changed' WHERE id = '{event_id}'"))
-        .await.unwrap_err();
+    let update = run(
+        &owner,
+        workspace_a,
+        None,
+        &format!("UPDATE container_event SET note = 'changed' WHERE id = '{event_id}'"),
+    )
+    .await
+    .unwrap_err();
     assert_eq!(sqlstate(&update).as_deref(), Some("23000"));
-    let delete = run(&owner, workspace_a, None,
-        &format!("DELETE FROM container_event WHERE id = '{event_id}'"))
-        .await.unwrap_err();
+    let delete = run(
+        &owner,
+        workspace_a,
+        None,
+        &format!("DELETE FROM container_event WHERE id = '{event_id}'"),
+    )
+    .await
+    .unwrap_err();
     assert_eq!(sqlstate(&delete).as_deref(), Some("23000"));
     Ok(())
 }
@@ -107,16 +145,30 @@ async fn container_events_are_append_only_for_application_roles_and_owner(pool: 
 async fn scan_codes_have_one_target_and_can_be_revoked(pool: PgPool) -> sqlx::Result<()> {
     let (api, workspace_a, _workspace_b, container_id, _container_b) = setup(&pool).await;
     let code_id = id(906);
-    run(&api, workspace_a, None, &format!(
-        "INSERT INTO scan_code (id, workspace_id, code_hash, container_id)
-         VALUES ('{code_id}', '{workspace_a}', decode(repeat('ab', 32), 'hex'), '{container_id}');
-         UPDATE scan_code SET revoked_at = now() WHERE id = '{code_id}'"
-    )).await?;
-    let error = run(&api, workspace_a, None, &format!(
-        "INSERT INTO scan_code (id, workspace_id, code_hash, container_id, vessel_id)
-         VALUES ('{}', '{workspace_a}', decode(repeat('cd', 32), 'hex'), '{container_id}', '{}')",
-        id(907), id(908)
-    )).await.unwrap_err();
+    run(
+        &api,
+        workspace_a,
+        None,
+        &format!(
+            "INSERT INTO scan_code (id, workspace_id, code_hash, container_id)
+             VALUES ('{code_id}', '{workspace_a}', decode(repeat('ab', 32), 'hex'), '{container_id}');
+             UPDATE scan_code SET revoked_at = now() WHERE id = '{code_id}'"
+        ),
+    )
+    .await?;
+    let error = run(
+        &api,
+        workspace_a,
+        None,
+        &format!(
+            "INSERT INTO scan_code (id, workspace_id, code_hash, container_id, vessel_id)
+             VALUES ('{}', '{workspace_a}', decode(repeat('cd', 32), 'hex'), '{container_id}', '{}')",
+            id(907),
+            id(908)
+        ),
+    )
+    .await
+    .unwrap_err();
     assert_eq!(sqlstate(&error).as_deref(), Some("23514"));
     Ok(())
 }
