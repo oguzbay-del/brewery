@@ -23,11 +23,11 @@ const structuredData = {
 };
 const principles = [
   { number: "01", title: "Explain the method", body: "A technical result should be accompanied by its method, inputs, units, assumptions, example and limitations. A number without context is difficult to review or reproduce." },
-  { number: "02", title: "Make units explicit", body: "GRISTORA uses consistent internal values and regional display. Every explanation distinguishes US customary, Imperial and metric units where relevant and shows conversions clearly." },
+  { number: "02", title: "Make units explicit", body: "The intended approach is to use consistent internal values and regional display. Technical guidance is intended to distinguish US customary, Imperial and metric units where relevant and explain conversions clearly." },
   { number: "03", title: "Separate target from actual", body: "A recipe target is not a measurement. Planned values and observed results should remain distinguishable so that a batch record reflects what happened rather than silently rewriting the recipe." },
-  { number: "04", title: "Keep measurement context", body: "Manual, paper and connected-device readings have different origins and limitations. The record model keeps source and context visible wherever those inputs are supported." },
+  { number: "04", title: "Keep measurement context", body: "Manual, paper and connected-device readings have different origins and limitations. The planned record model is intended to keep source and context visible wherever those inputs are supported." },
   { number: "05", title: "Validate before estimating", body: "Calculation methods require reference cases and real brewing data." },
-  { number: "06", title: "Keep people in control", body: "Estimates inform a brewer's review; they never silently change recipes, equipment profiles or process settings. A process change needs an explicit user decision." },
+  { number: "06", title: "Keep people in control", body: "The design principle is that estimates should support a brewer's review, not silently change recipes, equipment profiles or process settings. A process change should require an explicit user decision." },
 ];
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Technical principles", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
