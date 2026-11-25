@@ -147,7 +147,10 @@ fn apply_operation_specs(doc: &mut Value) {
     let Some(paths) = doc.get_mut("paths").and_then(Value::as_object_mut) else {
         return;
     };
-    for item in paths.values_mut().filter_map(Value::as_object_mut) {
+    for (path, item) in paths.iter_mut() {
+        let Some(item) = item.as_object_mut() else {
+            continue;
+        };
         for operation in item.values_mut().filter_map(Value::as_object_mut) {
             let Some(id) = operation.get("operationId").and_then(Value::as_str) else {
                 continue;
@@ -155,6 +158,9 @@ fn apply_operation_specs(doc: &mut Value) {
             let Some(spec) = modules::operation(id) else {
                 continue;
             };
+            if let Some(module_id) = modules::module_for_path(path) {
+                operation.insert("x-module".to_owned(), json!(module_id));
+            }
             operation.insert(
                 "x-permission".to_owned(),
                 json!(spec.permission.unwrap_or("none")),
