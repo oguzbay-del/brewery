@@ -83,7 +83,7 @@ CREATE TABLE container_event (
     created_at        timestamptz NOT NULL DEFAULT now(),
     UNIQUE (workspace_id, id),
     FOREIGN KEY (workspace_id, container_id)
-        REFERENCES container (workspace_id, id) ON DELETE CASCADE,
+        REFERENCES container (workspace_id, id) ON DELETE SET NULL (container_id),
     FOREIGN KEY (workspace_id, scan_code_id)
         REFERENCES scan_code (workspace_id, id) ON DELETE SET NULL (scan_code_id),
     FOREIGN KEY (workspace_id, last_fill_line_id)
