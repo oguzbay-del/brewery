@@ -19,7 +19,10 @@ describe('client import boundary', () => {
     ['server source tree', "import server from '../../sunucu/crates/api/src/lib';"],
     ['server package path', "import server from 'sunucu/crates/api';"],
     ['engine package', "import engine from 'engine';"],
-    ['scoped engine module re-export', "export { default } from '@gristora/engine-service/client';"],
+    [
+      'scoped engine module re-export',
+      "export { default } from '@gristora/engine-service/client';",
+    ],
   ])('rejects %s', async (_label, source) => {
     const messages = await restrictedImportMessages(source);
     expect(messages.length).toBeGreaterThan(0);
