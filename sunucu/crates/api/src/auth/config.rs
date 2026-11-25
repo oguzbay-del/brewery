@@ -46,11 +46,7 @@ fn decode_private_key(raw: &str) -> Result<Vec<u8>> {
     })
 }
 
-fn endpoint_url(
-    raw: Option<String>,
-    name: &'static str,
-    default: &'static str,
-) -> Result<String> {
+fn endpoint_url(raw: Option<String>, name: &'static str, default: &'static str) -> Result<String> {
     let value = raw
         .filter(|v| !v.trim().is_empty())
         .map_or_else(|| default.to_owned(), |v| v.trim().to_owned());
@@ -135,7 +131,10 @@ impl std::fmt::Debug for AuthConfig {
             .field("apple", &self.apple)
             .field("google", &self.google)
             .field("apple_token", &self.apple_token.is_some())
-            .field("provider_token_cipher", &self.provider_token_cipher.is_some())
+            .field(
+                "provider_token_cipher",
+                &self.provider_token_cipher.is_some(),
+            )
             .field("web_base_url", &self.web_base_url)
             .field("web_origins", &self.web_origins)
             .field("csrf_key", &"<redacted>")
@@ -300,15 +299,14 @@ impl AuthConfig {
             _ => {
                 return Err(Error::InvalidEnv {
                     name: "APPLE_TEAM_ID",
-                    reason: "APPLE_TEAM_ID, APPLE_KEY_ID and APPLE_PRIVATE_KEY must be set together".to_owned(),
+                    reason:
+                        "APPLE_TEAM_ID, APPLE_KEY_ID and APPLE_PRIVATE_KEY must be set together"
+                            .to_owned(),
                 });
             }
         };
-        let provider_token_cipher = match secret_from_lookup(
-            lookup,
-            "PROVIDER_TOKEN_KEY",
-            "PROVIDER_TOKEN_KEY_FILE",
-        )? {
+        let provider_token_cipher =
+            match secret_from_lookup(lookup, "PROVIDER_TOKEN_KEY", "PROVIDER_TOKEN_KEY_FILE")? {
             Some(raw) => {
                 let decoded = STANDARD.decode(raw.trim()).map_err(|e| Error::InvalidEnv {
                     name: "PROVIDER_TOKEN_KEY",
@@ -398,14 +396,14 @@ mod tests {
     }
     #[test]
     fn apple_token_settings_decode_private_key_and_require_cipher_key() {
-        use ring::{rand::SystemRandom, signature::{self, EcdsaKeyPair}};
+        use ring::{
+            rand::SystemRandom,
+            signature::{self, EcdsaKeyPair},
+        };
 
         let rng = SystemRandom::new();
-        let pkcs8 = EcdsaKeyPair::generate_pkcs8(
-            &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
-            &rng,
-        )
-        .unwrap();
+        let pkcs8 = EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng)
+            .unwrap();
         let pem = format!(
             "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
             STANDARD.encode(pkcs8.as_ref())
@@ -444,11 +442,12 @@ mod tests {
             "APPLE_CLIENT_IDS" => Some("com.example.ios".to_owned()),
             "APPLE_TEAM_ID" => Some("TEAM123".to_owned()),
             "APPLE_KEY_ID" => Some("KEY456".to_owned()),
-            "APPLE_PRIVATE_KEY" => Some("-----BEGIN PRIVATE KEY-----\nAA==\n-----END PRIVATE KEY-----".to_owned()),
+            "APPLE_PRIVATE_KEY" => {
+                Some("-----BEGIN PRIVATE KEY-----\nAA==\n-----END PRIVATE KEY-----".to_owned())
+            }
             "CSRF_HMAC_KEY" => Some("test-csrf-key-0123456789".to_owned()),
             _ => None,
         };
         assert!(AuthConfig::from_lookup(&no_cipher).is_err());
     }
-
 }
