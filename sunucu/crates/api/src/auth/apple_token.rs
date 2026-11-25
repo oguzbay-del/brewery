@@ -235,11 +235,8 @@ mod tests {
     #[test]
     fn audience_selection_rejects_missing_or_ambiguous_client_ids() {
         let rng = SystemRandom::new();
-        let pkcs8 = EcdsaKeyPair::generate_pkcs8(
-            &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
-            &rng,
-        )
-        .unwrap();
+        let pkcs8 = EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng)
+            .unwrap();
         let client = AppleTokenClient::new(settings(pkcs8.as_ref().to_vec()));
         assert_eq!(
             client.client_id_for_audiences(&["unknown".to_owned()]),
