@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import source from '../../../sozlesme/katalog/katalog.json?raw';
 
 export type Locale = 'tr' | 'en';
@@ -33,7 +32,9 @@ export function resolveLocale(
   browserLanguage?: string,
 ): Locale {
   try {
-    const saved = (storage ?? globalThis.localStorage)?.getItem(LOCALE_STORAGE_KEY);
+    const saved = (storage ?? globalThis.localStorage)?.getItem(
+      LOCALE_STORAGE_KEY,
+    );
     if (isLocale(saved)) return saved;
   } catch {
     // Storage can be disabled by browser privacy settings.
@@ -68,7 +69,9 @@ function lookup(locale: Locale, key: string): string | undefined {
     );
     if (field) {
       const property = rest.slice(field.length + 1);
-      if (property === 'label' || property === 'hint') return texts.fields[field]?.[property];
+      if (property === 'label' || property === 'hint') {
+        return texts.fields[field]?.[property];
+      }
     }
   }
   return undefined;
@@ -91,13 +94,17 @@ export function getTextKeys(locale: Locale): string[] {
 }
 
 function interpolate(value: string, params: TextParams): string {
-  return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, name: string) => {
+  return value.replace(/\\{([a-zA-Z0-9_]+)\\}/g, (match, name: string) => {
     const replacement = params[name];
     return replacement === undefined ? match : String(replacement);
   });
 }
 
-export function translate(key: string, locale: Locale, params: TextParams = {}): string {
+export function translate(
+  key: string,
+  locale: Locale,
+  params: TextParams = {},
+): string {
   const value = lookup(locale, key);
   if (value === undefined) {
     if (!warnedKeys.has(key)) {
@@ -107,16 +114,4 @@ export function translate(key: string, locale: Locale, params: TextParams = {}):
     return key;
   }
   return interpolate(value, params);
-}
-
-export function useText(key: TextKey | string, params: TextParams = {}): string {
-  const [locale, setLocale] = useState<Locale>(() => resolveLocale());
-
-  useEffect(() => {
-    const update = (): void => setLocale(resolveLocale());
-    window.addEventListener('storage', update);
-    return () => window.removeEventListener('storage', update);
-  }, []);
-
-  return translate(key, locale, params);
 }
