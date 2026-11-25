@@ -720,7 +720,10 @@ async fn provider_login(
                     | AppleTokenError::InvalidIdToken
                     | AppleTokenError::IdentityMismatch,
                 ) => {
-                    return Err(problem("apple_code_invalid", "/authorization_code"));
+                    return Err(ApiError::validation(vec![FieldIssue::new(
+                        "/authorization_code",
+                        "apple_code_invalid",
+                    )]));
                 }
                 Err(error) => {
                     tracing::error!(error = ?error, "Apple authorization-code exchange failed");

@@ -6206,6 +6206,8 @@ export interface components {
         };
         /** @description Body of `POST /v1/auth/apple` and `POST /v1/auth/google`. */
         ProviderLoginRequest: {
+            /** @description Apple authorization code; optional for backwards-compatible clients. */
+            authorization_code?: string | null;
             /** @description Client kind (default `web`). */
             client?: components["schemas"]["ClientParam"];
             /** @description Name shown in the session list (at most 100 characters). */
