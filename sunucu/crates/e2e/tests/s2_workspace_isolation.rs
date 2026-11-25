@@ -41,7 +41,7 @@ async fn user_cannot_read_or_change_another_workspace() {
                 "form_type": "brew_log",
                 "content_type": "application/pdf",
                 "size_bytes": 1,
-                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
             }),
         )
         .await
@@ -97,7 +97,7 @@ async fn user_cannot_read_or_change_another_workspace() {
                 "form_type": "brew_log",
                 "content_type": "application/pdf",
                 "size_bytes": 1,
-                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
             }),
         )
         .await
