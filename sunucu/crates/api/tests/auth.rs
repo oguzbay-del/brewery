@@ -265,10 +265,10 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
         ("APPLE_TOKEN_URL", token_url.as_str()),
     ];
     let w = world_with(&pool, Redis::disabled(), &extra).await;
-    let response_token = w
-        .oidc
-        .oidc
-        .mint(Provider::Apple, &spec("apple-refresh-user", APPLE_AUD, None));
+    let response_token = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("apple-refresh-user", APPLE_AUD, None),
+    );
     configure_apple_token_mock("mock-auth-code", &response_token).await;
     let response = apple_with_code(
         &w,
@@ -322,10 +322,10 @@ async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgP
     ];
     let w = world_with(&pool, Redis::disabled(), &extra).await;
 
-    let wrong_subject = w
-        .oidc
-        .oidc
-        .mint(Provider::Apple, &spec("different-apple-user", APPLE_AUD, None));
+    let wrong_subject = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("different-apple-user", APPLE_AUD, None),
+    );
     configure_apple_token_mock("mock-auth-code-subject", &wrong_subject).await;
     let subject_mismatch = apple_with_code(
         &w,
@@ -338,13 +338,10 @@ async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgP
     assert_eq!(subject_mismatch.status, StatusCode::UNPROCESSABLE_ENTITY);
     assert_eq!(first_error_code(&subject_mismatch), "apple_code_invalid");
 
-    let wrong_audience = w
-        .oidc
-        .oidc
-        .mint(
-            Provider::Apple,
-            &spec("apple-response-user", "other.apple.client", None),
-        );
+    let wrong_audience = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("apple-response-user", "other.apple.client", None),
+    );
     configure_apple_token_mock("mock-auth-code-audience", &wrong_audience).await;
     let audience_mismatch = apple_with_code(
         &w,
