@@ -27,6 +27,7 @@ env:
   DATABASE_URL: postgres://demleme:demleme-ci@localhost:5432/demleme
   REDIS_URL: redis://localhost:6379
   NATS_URL: nats://localhost:4222
+  APPLE_TOKEN_URL: http://localhost:8092/auth/token
 
 jobs:
   rust:
@@ -67,6 +68,19 @@ jobs:
         working-directory: sunucu
     steps:
       - uses: actions/checkout@v6
+      # Apple authorization-code exchange mock (WireMock mappings are shared with compose).
+      - name: Start Apple token mock
+        working-directory: .
+        run: |
+          docker run -d --name apple-mock -p 8092:8080 \
+            -v "$GITHUB_WORKSPACE/altyapi/compose/mocks/apple/mappings:/home/wiremock/mappings:ro" \
+            wiremock/wiremock:3.13.2 --disable-banner
+          for _ in $(seq 1 30); do
+            if curl -fsS http://localhost:8092/__admin/health >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          docker logs apple-mock
+          exit 1
       # JetStream için `-js` bayrağı gerekir; servis konteynerleri komut alamaz (T2.15).
       - name: NATS (JetStream)
         run: |

@@ -45,12 +45,14 @@ async fn world(pool: &PgPool) -> World {
     ]);
     let cfg = ApiConfig::from_lookup(|n| map.get(n).cloned()).unwrap();
     let app_db = app_pool(pool).await;
-    let svc = Arc::new(AuthServices::new(
+    let svc = AuthServices::new(
         app_db.clone(),
         Redis::disabled(),
         cfg.auth.clone(),
         Arc::new(MemoryMailer::default()),
-    ));
+    )
+    .unwrap();
+    let svc = Arc::new(svc);
     let state = AppState::new(app_db, Redis::disabled(), svc.clone(), cfg).with_auth_services(svc);
     World {
         app: api::router(state),

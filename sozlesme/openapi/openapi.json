@@ -7261,6 +7261,13 @@
       "ProviderLoginRequest": {
         "description": "Body of `POST /v1/auth/apple` and `POST /v1/auth/google`.",
         "properties": {
+          "authorization_code": {
+            "description": "Apple authorization code; optional for backwards-compatible clients.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "client": {
             "$ref": "#/components/schemas/ClientParam",
             "description": "Client kind (default `web`)."

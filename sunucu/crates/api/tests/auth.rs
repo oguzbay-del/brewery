@@ -10,11 +10,14 @@ mod support;
 
 use std::{collections::HashMap, sync::Arc};
 
+use base64::{Engine as _, engine::general_purpose::STANDARD};
+
 use api::{
     ApiConfig, AppState, Authenticator, RequestContext,
     auth::{
         AuthServices,
         email::{Mail, MemoryMailer, SmtpMailer},
+        token_cipher::{Aes256GcmTokenCipher, TokenCipher},
         tokens::hex,
     },
     redis_client::Redis,
@@ -72,12 +75,14 @@ async fn world_with(pool: &PgPool, redis: Redis, extra: &[(&str, &str)]) -> Worl
     let cfg = ApiConfig::from_lookup(|n| map.get(n).cloned()).unwrap();
     let app_db = app_pool(pool).await;
     let mail = Arc::new(MemoryMailer::default());
-    let svc = Arc::new(AuthServices::new(
+    let svc = AuthServices::new(
         app_db.clone(),
         redis.clone(),
         cfg.auth.clone(),
         mail.clone(),
-    ));
+    )
+    .unwrap();
+    let svc = Arc::new(svc);
     let state = AppState::new(app_db, redis, svc.clone(), cfg).with_auth_services(svc.clone());
     // A probe route shows the permissions the authenticator found for the path's workspace.
     let probe = api::authenticated(
@@ -113,7 +118,7 @@ fn request(
         .iter()
         .any(|(k, _)| k.eq_ignore_ascii_case("x-forwarded-for"))
     {
-        b = b.header("x-forwarded-for", Uuid::new_v4().to_string());
+        b = b.header("x-forwarded-for", Uuid::now_v7().to_string());
     }
     for (k, v) in headers {
         b = b.header(*k, *v);
@@ -165,20 +170,259 @@ fn spec(sub: &str, aud: &str, nonce: Option<String>) -> MintSpec {
     }
 }
 
-/// Apple sign-in with a fresh nonce; `tweak` adjusts the minted token.
-async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
+/// Apple sign-in with an optional authorization code and a fresh nonce.
+async fn apple_with_code(
+    w: &World,
+    sub: &str,
+    client: &str,
+    authorization_code: Option<&str>,
+    tweak: impl FnOnce(&mut MintSpec),
+) -> Reply {
     let n = nonce(w).await;
     let mut s = spec(sub, APPLE_AUD, Some(apple_nonce_claim(&n)));
     tweak(&mut s);
     let token = w.oidc.oidc.mint(Provider::Apple, &s);
-    call(
-        w,
-        "POST",
-        "/v1/auth/apple",
-        &[],
-        Some(json!({"id_token": token, "nonce": n, "client": client})),
+    let mut body = json!({"id_token": token, "nonce": n, "client": client});
+    if let Some(code) = authorization_code {
+        body["authorization_code"] = json!(code);
+    }
+    call(w, "POST", "/v1/auth/apple", &[], Some(body)).await
+}
+
+/// Apple sign-in without a code, preserving legacy-client coverage.
+async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
+    apple_with_code(w, sub, client, None, tweak).await
+}
+
+fn apple_token_url() -> String {
+    std::env::var("APPLE_TOKEN_URL")
+        .ok()
+        .filter(|url| !url.contains("apple-mock:8080"))
+        .unwrap_or_else(|| "http://127.0.0.1:8092/auth/token".to_owned())
+}
+
+fn apple_admin_url(path: &str) -> url::Url {
+    url::Url::parse(&apple_token_url())
+        .unwrap()
+        .join(path)
+        .unwrap()
+}
+
+async fn configure_apple_token_mock(code: &str, id_token: &str) -> Uuid {
+    let id = Uuid::new_v4();
+    let mapping = json!({
+        "id": id,
+        "priority": 1,
+        "request": {
+            "method": "POST",
+            "urlPath": "/auth/token",
+            "bodyPatterns": [
+                {"contains": "grant_type=authorization_code"},
+                {"contains": format!("&code={code}&")}
+            ]
+        },
+        "response": {
+            "status": 200,
+            "headers": {"Content-Type": "application/json"},
+            "jsonBody": {
+                "access_token": "local-apple-access-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "refresh_token": "local-apple-refresh-token",
+                "id_token": id_token
+            }
+        }
+    });
+    let response = reqwest::Client::new()
+        .post(apple_admin_url("/__admin/mappings"))
+        .header(reqwest::header::CONTENT_TYPE, "application/json")
+        .body(mapping.to_string())
+        .send()
+        .await
+        .unwrap();
+    assert!(response.status().is_success(), "WireMock mapping failed");
+    id
+}
+
+async fn assert_apple_mapping_hit(id: Uuid) {
+    let journal: Value = reqwest::get(apple_admin_url("/__admin/requests"))
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let id = id.to_string();
+    assert!(
+        journal["requests"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|event| event["stubMapping"]["id"].as_str() == Some(id.as_str())),
+        "WireMock did not serve the expected mapping {id}"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(pool: PgPool) {
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
+
+    let rng = SystemRandom::new();
+    let pkcs8 =
+        EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng).unwrap();
+    let private_key = format!(
+        "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
+        STANDARD.encode(pkcs8.as_ref())
+    );
+    let token_key = STANDARD.encode([42_u8; 32]);
+    let token_url = apple_token_url();
+    let extra = [
+        ("APPLE_TEAM_ID", "TEAM123"),
+        ("APPLE_KEY_ID", "KEY456"),
+        ("APPLE_PRIVATE_KEY", private_key.as_str()),
+        ("PROVIDER_TOKEN_KEY", token_key.as_str()),
+        ("APPLE_TOKEN_URL", token_url.as_str()),
+    ];
+    let w = world_with(&pool, Redis::disabled(), &extra).await;
+    let response_token = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("apple-refresh-user", APPLE_AUD, None),
+    );
+    let mapping = configure_apple_token_mock("mock-auth-code", &response_token).await;
+    let response = apple_with_code(
+        &w,
+        "apple-refresh-user",
+        "ios",
+        Some("mock-auth-code"),
+        |_| {},
     )
+    .await;
+    assert_eq!(response.status, StatusCode::OK, "{:?}", response.body);
+
+    assert_apple_mapping_hit(mapping).await;
+
+    let encrypted: Vec<u8> = sqlx::query_scalar(
+        "SELECT provider_refresh_token_enc FROM user_identities
+         WHERE provider = 'apple' AND subject = 'apple-refresh-user'",
+    )
+    .fetch_one(&pool)
     .await
+    .unwrap();
+    let cipher = Aes256GcmTokenCipher::new([42_u8; 32]);
+    assert_eq!(
+        cipher.decrypt(&encrypted).unwrap().as_slice(),
+        b"local-apple-refresh-token"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgPool) {
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
+
+    let rng = SystemRandom::new();
+    let pkcs8 =
+        EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng).unwrap();
+    let private_key = format!(
+        "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
+        STANDARD.encode(pkcs8.as_ref())
+    );
+    let token_key = STANDARD.encode([42_u8; 32]);
+    let token_url = apple_token_url();
+    let client_ids = format!("{APPLE_AUD},other.apple.client");
+    let extra = [
+        ("APPLE_CLIENT_IDS", client_ids.as_str()),
+        ("APPLE_TEAM_ID", "TEAM123"),
+        ("APPLE_KEY_ID", "KEY456"),
+        ("APPLE_PRIVATE_KEY", private_key.as_str()),
+        ("PROVIDER_TOKEN_KEY", token_key.as_str()),
+        ("APPLE_TOKEN_URL", token_url.as_str()),
+    ];
+    let w = world_with(&pool, Redis::disabled(), &extra).await;
+
+    let wrong_subject = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("different-apple-user", APPLE_AUD, None),
+    );
+    let mapping = configure_apple_token_mock("mock-auth-code-subject", &wrong_subject).await;
+    let subject_mismatch = apple_with_code(
+        &w,
+        "apple-response-user",
+        "ios",
+        Some("mock-auth-code-subject"),
+        |_| {},
+    )
+    .await;
+    assert_eq!(subject_mismatch.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&subject_mismatch), "apple_code_invalid");
+    assert_apple_mapping_hit(mapping).await;
+
+    let wrong_audience = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("apple-response-user", "other.apple.client", None),
+    );
+    let mapping = configure_apple_token_mock("mock-auth-code-audience", &wrong_audience).await;
+    let audience_mismatch = apple_with_code(
+        &w,
+        "apple-response-user",
+        "ios",
+        Some("mock-auth-code-audience"),
+        |_| {},
+    )
+    .await;
+    assert_eq!(audience_mismatch.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&audience_mismatch), "apple_code_invalid");
+    assert_apple_mapping_hit(mapping).await;
+
+    let identities: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_identities
+         WHERE provider = 'apple' AND subject = 'apple-response-user'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(identities, 0);
+    assert_existing_apple_token_preserved(&w, &pool, &wrong_subject).await;
+}
+
+async fn stored_apple_token(pool: &PgPool, subject: &str) -> Vec<u8> {
+    sqlx::query_scalar(
+        "SELECT provider_refresh_token_enc FROM user_identities
+         WHERE provider = 'apple' AND subject = $1",
+    )
+    .bind(subject)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+async fn assert_existing_apple_token_preserved(w: &World, pool: &PgPool, wrong_subject: &str) {
+    let subject = "existing-apple-user";
+    let valid_token = w
+        .oidc
+        .oidc
+        .mint(Provider::Apple, &spec(subject, APPLE_AUD, None));
+    let valid_code = "existing-valid";
+    let mapping = configure_apple_token_mock(valid_code, &valid_token).await;
+    let login = apple_with_code(w, subject, "ios", Some(valid_code), |_| {}).await;
+    assert_eq!(login.status, StatusCode::OK);
+    assert_apple_mapping_hit(mapping).await;
+    let before = stored_apple_token(pool, subject).await;
+    assert!(!before.is_empty());
+
+    let bad_code = "existing-mismatch";
+    let mapping = configure_apple_token_mock(bad_code, wrong_subject).await;
+    let rejected = apple_with_code(w, subject, "ios", Some(bad_code), |_| {}).await;
+    assert_eq!(rejected.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&rejected), "apple_code_invalid");
+    assert_apple_mapping_hit(mapping).await;
+    assert_eq!(stored_apple_token(pool, subject).await, before);
 }
 
 async fn google(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {

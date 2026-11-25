@@ -17,9 +17,11 @@ use uuid::Uuid;
 
 use super::{
     AuthServices,
+    apple_token::AppleTokenError,
     email::{normalize_email, sign_in_mail},
     oidc::{OidcError, OidcVerifier},
     session::{self, ClientKind, SessionRecord},
+    token_cipher::TokenCipher,
     tokens::{hex, new_token, token_hash},
 };
 use crate::{
@@ -77,6 +79,9 @@ pub struct NonceResponse {
 pub struct ProviderLoginRequest {
     /// The provider's ID token (JWT).
     pub id_token: String,
+    /// Apple authorization code; optional for backwards-compatible clients.
+    #[serde(default)]
+    pub authorization_code: Option<String>,
     /// The raw nonce issued by `POST /v1/auth/nonce`.
     pub nonce: String,
     /// Client kind (default `web`).
@@ -335,6 +340,7 @@ fn problem(code: &str, field: &str) -> ApiError {
 pub(crate) struct IdentityClaim {
     provider: &'static str,
     subject: String,
+    audiences: Vec<String>,
     email: Option<String>,
     email_verified: bool,
     display_name: String,
@@ -419,6 +425,7 @@ impl AuthServices {
         Ok(IdentityClaim {
             provider,
             subject: claims.sub,
+            audiences: claims.audiences,
             email_verified: claims.email_verified && email.is_some(),
             email,
             display_name: claims.name.unwrap_or_default(),
@@ -439,13 +446,19 @@ impl AuthServices {
         Ok(IdentityClaim {
             provider: "email",
             subject: email.clone(),
+            audiences: Vec::new(),
             email: Some(email),
             email_verified: true,
             display_name: String::new(),
         })
     }
 
-    async fn login(&self, claim: &IdentityClaim, device: &Device) -> ApiResult<LoginOutcome> {
+    async fn login(
+        &self,
+        claim: &IdentityClaim,
+        device: &Device,
+        refresh_token_enc: Option<&[u8]>,
+    ) -> ApiResult<LoginOutcome> {
         for _ in 0..2 {
             let existing: Option<(Uuid,)> =
                 sqlx::query_as("SELECT user_id FROM find_user_by_identity($1, $2)")
@@ -454,9 +467,11 @@ impl AuthServices {
                     .fetch_optional(&self.db)
                     .await?;
             if let Some((user_id,)) = existing {
-                return self.login_existing(user_id, device).await;
+                return self
+                    .login_existing(user_id, claim, device, refresh_token_enc)
+                    .await;
             }
-            if let Some(outcome) = self.create_user(claim, device).await? {
+            if let Some(outcome) = self.create_user(claim, device, refresh_token_enc).await? {
                 return Ok(outcome);
             }
             // Lost a race with a parallel first sign-in of the same identity: look it up again.
@@ -464,8 +479,29 @@ impl AuthServices {
         Err(ApiError::new(ErrorCode::Internal))
     }
 
-    async fn login_existing(&self, user_id: Uuid, device: &Device) -> ApiResult<LoginOutcome> {
+    async fn login_existing(
+        &self,
+        user_id: Uuid,
+        claim: &IdentityClaim,
+        device: &Device,
+        refresh_token_enc: Option<&[u8]>,
+    ) -> ApiResult<LoginOutcome> {
         let mut tx = db::begin(&self.db, &db::DbContext::user(user_id, None)).await?;
+        if let Some(encrypted) = refresh_token_enc {
+            let updated = sqlx::query(
+                "UPDATE user_identities SET provider_refresh_token_enc = $1
+                 WHERE user_id = $2 AND provider = $3 AND subject = $4",
+            )
+            .bind(encrypted)
+            .bind(user_id)
+            .bind(claim.provider)
+            .bind(&claim.subject)
+            .execute(&mut *tx)
+            .await?;
+            if updated.rows_affected() != 1 {
+                return Err(ApiError::new(ErrorCode::Internal));
+            }
+        }
         let user: Option<(Uuid, String, Option<String>)> = sqlx::query_as(
             "SELECT id, display_name, contact_email FROM users WHERE id = $1 AND deleted_at IS NULL",
         )
@@ -503,6 +539,7 @@ impl AuthServices {
         &self,
         claim: &IdentityClaim,
         device: &Device,
+        refresh_token_enc: Option<&[u8]>,
     ) -> ApiResult<Option<LoginOutcome>> {
         let hint: Vec<String> = match (&claim.email, claim.email_verified) {
             (Some(email), true) => {
@@ -531,12 +568,15 @@ impl AuthServices {
             .execute(&mut *tx)
             .await?;
             sqlx::query(
-                "INSERT INTO user_identities (id, user_id, provider, subject) VALUES ($1, $2, $3, $4)",
+                "INSERT INTO user_identities
+                 (id, user_id, provider, subject, provider_refresh_token_enc)
+                 VALUES ($1, $2, $3, $4, $5)",
             )
             .bind(Uuid::now_v7())
             .bind(user_id)
             .bind(claim.provider)
             .bind(&claim.subject)
+            .bind(refresh_token_enc)
             .execute(&mut *tx)
             .await?;
             session::insert(
@@ -647,13 +687,69 @@ async fn provider_login(
         req.device_name.as_deref(),
         headers,
     )?;
+    let authorization_code = req.authorization_code;
     let mut claim = svc
         .verify_provider(provider, &req.id_token, &req.nonce)
         .await?;
     if claim.display_name.is_empty() {
         claim.display_name = req.display_name.unwrap_or_default();
     }
-    Ok(svc.login_response(svc.login(&claim, &device).await?))
+    let refresh_token_enc = if provider == "apple" {
+        if let Some(code) = authorization_code {
+            let client = svc
+                .apple_token_client
+                .clone()
+                .ok_or_else(|| ApiError::unavailable(30))?;
+            let client_id = client
+                .client_id_for_audiences(&claim.audiences)
+                .map_err(|_| problem("apple_client_id_invalid", "/authorization_code"))?
+                .to_owned();
+            let verifier = svc
+                .apple
+                .as_ref()
+                .ok_or_else(|| ApiError::unavailable(30))?;
+            let refresh_token = match client
+                .exchange_code(&code, &client_id, verifier, &claim.subject)
+                .await
+            {
+                Ok(token) => token,
+                Err(
+                    AppleTokenError::InvalidCode
+                    | AppleTokenError::InvalidClientId
+                    | AppleTokenError::MissingIdToken
+                    | AppleTokenError::InvalidIdToken
+                    | AppleTokenError::IdentityMismatch,
+                ) => {
+                    return Err(ApiError::validation(vec![FieldIssue::new(
+                        "/authorization_code",
+                        "apple_code_invalid",
+                    )]));
+                }
+                Err(error) => {
+                    tracing::error!(error = ?error, "Apple authorization-code exchange failed");
+                    return Err(ApiError::unavailable(30));
+                }
+            };
+            let cipher = svc
+                .config
+                .provider_token_cipher
+                .as_ref()
+                .ok_or_else(|| ApiError::unavailable(30))?;
+            Some(
+                cipher
+                    .encrypt(refresh_token.as_bytes())
+                    .map_err(|_| ApiError::new(ErrorCode::Internal))?,
+            )
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+    Ok(svc.login_response(
+        svc.login(&claim, &device, refresh_token_enc.as_deref())
+            .await?,
+    ))
 }
 
 /// Signs in with an Apple ID token.
@@ -815,7 +911,7 @@ pub async fn email_verify(
         &headers,
     )?;
     let claim = svc.verify_email_token(&req.token).await?;
-    Ok(svc.login_response(svc.login(&claim, &device).await?))
+    Ok(svc.login_response(svc.login(&claim, &device, None).await?))
 }
 
 // --- session endpoints ---------------------------------------------------------------------

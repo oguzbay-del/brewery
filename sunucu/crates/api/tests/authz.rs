@@ -74,12 +74,8 @@ async fn world_with(pool: &PgPool, redis: Redis, smtp: Option<SmtpMailer>) -> Wo
         memory: mail.clone(),
         smtp,
     });
-    let svc = Arc::new(AuthServices::new(
-        app_db.clone(),
-        redis.clone(),
-        cfg.auth.clone(),
-        tee,
-    ));
+    let svc = AuthServices::new(app_db.clone(), redis.clone(), cfg.auth.clone(), tee).unwrap();
+    let svc = Arc::new(svc);
     let state = AppState::new(app_db, redis, svc.clone(), cfg).with_auth_services(svc.clone());
     // Probe routes stand in for resource endpoints: they show what the authenticator found and
     // how scopes and cost hiding behave.
