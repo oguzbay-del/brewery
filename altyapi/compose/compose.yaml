@@ -14,13 +14,6 @@ x-rust-service: &rust-service
     SMTP_PORT: "1025"
     GITHUB_API_URL: http://github-mock:8080
     APNS_URL: http://apns-mock:8080
-    APPLE_TOKEN_URL: ${APPLE_TOKEN_URL:-http://apple-mock:8080/auth/token}
-    APPLE_REVOKE_URL: ${APPLE_REVOKE_URL:-http://apple-mock:8080/auth/revoke}
-    APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
-    APPLE_KEY_ID: ${APPLE_KEY_ID:-}
-    APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
-    # Local-only development key. Production must use a secret-manager value.
-    PROVIDER_TOKEN_KEY: ${PROVIDER_TOKEN_KEY:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
     S3_ENDPOINT: http://objectstore:8333
     S3_BUCKET: demleme-files
     S3_REGION: us-east-1
@@ -226,6 +219,13 @@ services:
       APPLE_CLIENT_IDS: com.demleme.app.dev
       APPLE_ISSUER: http://fake-oidc:9000/apple
       APPLE_JWKS_URL: http://fake-oidc:9000/apple/jwks
+      APPLE_TOKEN_URL: ${APPLE_TOKEN_URL:-http://apple-mock:8080/auth/token}
+      APPLE_REVOKE_URL: ${APPLE_REVOKE_URL:-http://apple-mock:8080/auth/revoke}
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      APPLE_KEY_ID: ${APPLE_KEY_ID:-}
+      APPLE_PRIVATE_KEY: ${APPLE_PRIVATE_KEY:-}
+      # Local-only development key. Production must use a secret-manager value.
+      PROVIDER_TOKEN_KEY: ${PROVIDER_TOKEN_KEY:-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=}
       GOOGLE_CLIENT_IDS: demleme-dev.apps.googleusercontent.example
       GOOGLE_ISSUER: http://fake-oidc:9000/google
       GOOGLE_JWKS_URL: http://fake-oidc:9000/google/jwks
