@@ -7,10 +7,10 @@ const keys = placements[page] ?? [];
 const tr = lang === "tr";
 ---
 {keys.length > 0 && <section id="product-screens" class="shell gallery" aria-labelledby="screen-title">
-  <header>
+  <div class="intro">
     <p class="eyebrow">{tr ? "ÜRÜN TASARIMINDAN" : "FROM THE PRODUCT DESIGN"}</p>
     <h2 id="screen-title">{tr ? "Ekranlarda iş akışı" : "The workflow on screen"}</h2>
-  </header>
+  </div>
   <div class="frames">
     {keys.map(key => {
       const screen = screens[key];
@@ -28,7 +28,7 @@ const tr = lang === "tr";
 </section>}
 <style>
   .gallery { margin-block: clamp(2.5rem,6vw,5.5rem); }
-  header { margin-bottom: 1.4rem; }
+  .intro { margin-bottom: 1.4rem; }
   .frames { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:clamp(1rem,2vw,2rem); }
   figure { margin:0; min-width:0; }
   a { display:block; position:relative; overflow:hidden; border-radius:14px; background:#e7e8e1; padding:12px; }
