@@ -131,13 +131,12 @@ impl PaddleProvider {
         let mut signatures = Vec::new();
         for field in header.split(';').map(str::trim) {
             if let Some(value) = field.strip_prefix("ts=") {
-                if timestamp.is_some() {
-                    return false;
-                }
                 let Ok(parsed) = value.parse::<i64>() else {
                     return false;
                 };
-                timestamp = Some(parsed);
+                if timestamp.replace(parsed).is_some() {
+                    return false;
+                }
             } else if let Some(value) = field.strip_prefix("h1=") {
                 if let Some(bytes) = decode_hex(value) {
                     signatures.push(bytes);
@@ -300,7 +299,7 @@ fn malformed(reason: &str) -> ProviderError {
 }
 
 fn decode_hex(value: &str) -> Option<Vec<u8>> {
-    if value.is_empty() || value.len() % 2 != 0 || !value.is_ascii() {
+    if value.is_empty() || !value.len().is_multiple_of(2) || !value.is_ascii() {
         return None;
     }
     (0..value.len())
