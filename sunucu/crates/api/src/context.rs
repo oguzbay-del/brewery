@@ -21,7 +21,9 @@ use uuid::Uuid;
 
 use crate::{
     AppState,
+    auth::{shared_device::DEVICE_KEY_HEADER, tokens::token_hash},
     error::{ApiError, ApiResult, ErrorCode},
+    modules,
     ratelimit::Slot,
 };
 
@@ -202,6 +204,101 @@ async fn resolve(
     })
 }
 
+/// Reads the workspace mode and whether one active PAID_FEATURE entitlement exists.
+pub(crate) async fn workspace_mode_and_paid(
+    pool: &PgPool,
+    db_context: &DbContext,
+    workspace_id: Uuid,
+) -> ApiResult<(String, bool)> {
+    let mut tx = db::begin(pool, db_context).await?;
+    let mode: String = sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1")
+        .bind(workspace_id)
+        .fetch_one(&mut *tx)
+        .await?;
+    let access = billing::access::access(&mut *tx, workspace_id).await?;
+    tx.commit().await?;
+    let has_paid_feature = matches!(
+        access.source,
+        billing::access::AccessSource::Subscription
+            | billing::access::AccessSource::Promo
+            | billing::access::AccessSource::Manual
+    );
+    Ok((mode, has_paid_feature))
+}
+
+async fn module_enabled(
+    pool: &PgPool,
+    db_context: &DbContext,
+    workspace_id: Uuid,
+    module_id: &str,
+) -> ApiResult<bool> {
+    let (mode, has_paid_feature) =
+        workspace_mode_and_paid(pool, db_context, workspace_id).await?;
+    Ok(modules::is_module_enabled(
+        module_id,
+        &mode,
+        has_paid_feature,
+    ))
+}
+
+/// Parses the device id from a shared-device key route.
+fn shared_device_in_path(path: &str) -> Option<Uuid> {
+    let mut segments = path.trim_start_matches('/').split('/');
+    if segments.next() == Some("v1") && segments.next() == Some("shared-devices") {
+        return Uuid::parse_str(segments.next()?).ok();
+    }
+    None
+}
+
+/// Module gate for shared-device-key routes, which have no workspace id in their URL.
+pub async fn device_module_layer(
+    State(state): State<AppState>,
+    req: Request,
+    next: Next,
+) -> Response {
+    let path = req.uri().path().to_owned();
+    let Some(device_id) = shared_device_in_path(&path) else {
+        return next.run(req).await;
+    };
+    let Some(module_id) = modules::module_for_path(&path) else {
+        return next.run(req).await;
+    };
+    let Some(services) = state.auth_services.as_ref() else {
+        return next.run(req).await;
+    };
+    let Some(key) = req
+        .headers()
+        .get(DEVICE_KEY_HEADER)
+        .and_then(|value| value.to_str().ok())
+    else {
+        return next.run(req).await;
+    };
+    let device = sqlx::query_as::<_, (Uuid, Uuid)>(
+        "SELECT id, workspace_id FROM find_shared_device_by_key_hash($1)",
+    )
+    .bind(token_hash(key))
+    .fetch_optional(&services.db)
+    .await;
+    let (found_id, workspace_id) = match device {
+        Ok(Some(row)) => row,
+        Ok(None) => return next.run(req).await,
+        Err(error) => return ApiError::from(error).into_response(),
+    };
+    if found_id != device_id {
+        return next.run(req).await;
+    }
+    let db_context = DbContext {
+        user_id: None,
+        workspace_id: Some(workspace_id),
+        actor_kind: ActorKind::Device,
+    };
+    match module_enabled(&services.db, &db_context, workspace_id, module_id).await {
+        Ok(true) => next.run(req).await,
+        Ok(false) => ApiError::new(ErrorCode::ModuleDisabled).into_response(),
+        Err(error) => error.into_response(),
+    }
+}
+
 /// Middleware for authenticated routes: stores the [`RequestContext`].
 pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) -> Response {
     let slot = req.extensions().get::<Slot>().cloned().unwrap_or_default();
@@ -209,6 +306,18 @@ pub async fn layer(State(state): State<AppState>, mut req: Request, next: Next) 
     let method = req.method().clone();
     match resolve(&state, &method, &path, &req.headers().clone(), &slot).await {
         Ok(ctx) => {
+            if let Some(workspace_id) = ctx.workspace_id
+                && !modules::is_export_path(&path)
+                && let Some(module_id) = modules::module_for_path(&path)
+            {
+                match module_enabled(&state.db, &ctx.db_context(), workspace_id, module_id).await {
+                    Ok(true) => {}
+                    Ok(false) => {
+                        return ApiError::new(ErrorCode::ModuleDisabled).into_response();
+                    }
+                    Err(error) => return error.into_response(),
+                }
+            }
             req.extensions_mut().insert(ctx);
             next.run(req).await
         }
