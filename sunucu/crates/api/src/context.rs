@@ -255,6 +255,10 @@ fn ends_access(method: &Method, path: &str) -> bool {
     match segments.as_slice() {
         ["v1", "shared-devices", _, "lock"] => method == Method::POST,
         ["v1", "workspaces", _, "shared-devices", _] => method == Method::DELETE,
+        // Remove or disable a member; the handler keeps its admin and self-lockout checks.
+        ["v1", "workspaces", _, "members", _] => {
+            method == Method::DELETE || method == Method::PATCH
+        }
         _ => false,
     }
 }
@@ -368,6 +372,13 @@ mod tests {
         assert!(ends_access(&Method::DELETE, &remove));
         assert!(!ends_access(&Method::POST, &switch));
         assert!(!ends_access(&Method::PATCH, &remove));
+        let member = format!("/v1/workspaces/{ws}/members/{device}");
+        assert!(ends_access(&Method::DELETE, &member));
+        assert!(ends_access(&Method::PATCH, &member));
+        assert!(!ends_access(
+            &Method::POST,
+            &format!("/v1/workspaces/{ws}/members")
+        ));
         let read_only = modules::ModuleAccess::ReadOnly;
         assert!(allows_method(read_only, &Method::POST, &lock));
         assert!(!allows_method(read_only, &Method::POST, &switch));
