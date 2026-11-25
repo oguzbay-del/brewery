@@ -41,8 +41,10 @@ pub async fn run(
         let mut failed_rows: HashSet<(String, Uuid)> = HashSet::new();
 
         while attempted < MAX_ROWS_PER_RUN {
-            let limit = i32::try_from(BATCH_SIZE.min(MAX_ROWS_PER_RUN - attempted))
-                .map_err(|_| crate::Error::Format("upload cleanup batch size exceeds i32".into()))?;
+            let limit =
+                i32::try_from(BATCH_SIZE.min(MAX_ROWS_PER_RUN - attempted)).map_err(|_| {
+                    crate::Error::Format("upload cleanup batch size exceeds i32".into())
+                })?;
             let rows =
                 maintenance::list_purgeable_uploads(pool, workspace_id, incomplete_before, limit)
                     .await?;
