@@ -62,6 +62,10 @@ pub struct AuthConfig {
     pub apple: Option<ProviderSettings>,
     /// Google sign-in; `None` while `GOOGLE_CLIENT_IDS` is unset.
     pub google: Option<ProviderSettings>,
+    /// Apple authorization-code exchange settings; absent until all Apple secrets are set.
+    pub apple_token: Option<AppleTokenSettings>,
+    /// AES-256-GCM cipher for stored provider refresh tokens.
+    pub provider_token_cipher: Option<Aes256GcmTokenCipher>,
     /// Base address of the web app, used in the e-mail link.
     pub web_base_url: String,
     /// Origins allowed on cookie-authenticated writes (CSRF, ADR-0009 rule 3.5).
