@@ -39,9 +39,9 @@ const stageFor = (slug: string, audience: FeatureAudience) => {
   const feature = features.find((item) => item.slug === slug);
   if (!feature || !feature.audiences.includes(audience)) return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
   const availability = feature.modules.map((id) => modules.find((module) => module.id === id)).filter(Boolean).map((module) => audience === "Homebrewers" ? module!.home : module!.brewery);
-  if (availability.includes("Included")) return "Planned core scope";
-  if (availability.includes("Simplified")) return "Planned simplified scope";
-  if (availability.includes("Second release")) return "Planned for second release";
+  if (availability.includes("Included")) return "Included";
+  if (availability.includes("Simplified")) return "Simplified";
+  if (availability.includes("Second release")) return "Second release";
   return audience === "Homebrewers" ? "Not in Home path" : "Not in Brewery path";
 };
 const breadcrumbItems = [{ name: "Home", url: new URL(base, import.meta.env.SITE).href }, { name: "Function comparison", url: canonicalUrl }];
