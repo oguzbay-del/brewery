@@ -17,7 +17,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "How GRISTORA works",
-  description: "Professional brewery workflows are the primary commercial path, with a separate homebrewing journey.",
+  description: "The planned product direction prioritises professional brewery workflows, with a separate planned homebrewing journey.",
   url: canonicalUrl,
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
@@ -27,7 +27,7 @@ const homeSteps = [
   { title: "Ingredients and water", body: "Bring fermentables, hops, yeast, water and mash assumptions into one recipe context.", href: "features/water-mash-yeast/", label: "Water, mash & yeast" },
   { title: "Calculations", body: "Understand estimates through explicit methods, inputs, units and assumptions.", href: "features/brewing-calculations/", label: "Brewing calculations" },
   { title: "Brew day", body: "Keep planned targets distinct from actual quantities, times, temperatures and measurements.", href: "features/brew-day/", label: "Brew-day records" },
-  { title: "Fermentation", body: "Bring batch observations and manual or connected readings into the batch history.", href: "features/fermentation-monitoring/", label: "Fermentation" },
+  { title: "Fermentation", body: "Review batch observations; planned read-only device readings may add context after implementation and validation.", href: "features/fermentation-monitoring/", label: "Fermentation" },
   { title: "Batch review", body: "Review actual results and tasting notes to inform the next recipe iteration.", href: "features/analytics-reports/", label: "Batch insights" },
 ];
 const businessSteps = [
@@ -50,12 +50,12 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="See how GRISTORA is designed for professional brewery workflows, with a separate homebrewing journey." />
+    <meta name="description" content="Explore GRISTORA's planned professional brewery workflow and separate planned homebrewing journey." />
     <title>Professional Brewery Workflows & Homebrewing | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="Professional Brewery Workflows & Homebrewing | GRISTORA" />
-    <meta property="og:description" content="Professional brewery workflows first, with a separate homebrewing path." />
+    <meta property="og:description" content="Planned professional brewery workflows first, with a separate planned homebrewing path." />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Professional Brewery Workflows & Homebrewing | GRISTORA" />
@@ -116,7 +116,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
                 <tr><th scope="row">Primary user</th><td>Brewing teams that need shared production context across recipes, batches, vessels and quality records.</td><td>An individual brewer making, measuring and reviewing personal batches.</td></tr>
                 <tr><th scope="row">Core unit of work</th><td>A recipe version and the production batch that references it.</td><td>A recipe and the personal batch made from it.</td></tr>
                 <tr><th scope="row">Typical records</th><td>Recipe version, batch plan and actuals, ingredient lots, vessel events, quality and laboratory records.</td><td>Recipe and targets, ingredients and water, brew-day actuals, fermentation observations, tasting and review.</td></tr>
-                <tr><th scope="row">Measurement context</th><td>Production measurements, vessel observations and laboratory results, with method, unit, source and operator context.</td><td>Manual readings and any validated supported-device inputs, with source, unit and timestamp.</td></tr>
+                <tr><th scope="row">Measurement context</th><td>Production measurements, vessel observations and laboratory results, with method, unit, source and operator context.</td><td>Manual readings are the starting point. Read-only device inputs are planned and depend on implementation, testing and validation; supported readings are intended to retain source, unit and timestamp.</td></tr>
                 <tr><th scope="row">Main question</th><td>What happened across this batch, where did actuals differ, and which records explain the outcome?</td><td>What happened in this brew, and what might I change next time?</td></tr>
                 <tr><th scope="row">Scope boundary</th><td>Brewing-specific production records—not sales, orders, shipping, CRM, accounting or a general ERP.</td><td>Personal brewing and learning—not professional multi-batch production operations.</td></tr>
               </tbody>
