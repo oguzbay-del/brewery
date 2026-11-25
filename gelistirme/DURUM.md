@@ -16,6 +16,7 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - 2026-11-24: new ChatGPT tasks: #250 (T3.a API client), #251 (T3.b text catalog), #252 (T3.c app shell), #253 (local guide), #254 (API summary), #255 (branches), #256 (CI guards). #205 scope now includes `veri.yaml` (Redis: `api` only).
 - 2026-11-24: Claude merged #257 (guard step 1, with fixes), #227 (T2.31b, contract regenerated), #228 (T2.31c, migration 0221) and #230 (T2.33). Local tests: api `account_deletion`, db, worker (needs NATS and mailpit), e2e (skip without `E2E_BASE_URL`), fmt and clippy are clean. #215 and #216 can start now. Open follow-ups: in T2.31b, `revoke_all` runs after the commit, so a failure leaves the sessions active until the next call; a user with no workspace gets no audit row. T2.33 scenario 6 is ignored (no HTTP seam). The oasdiff check is not installed locally (#256 step 4).
 - 2026-11-24: the first Grok task is #266 (T2.41, Paddle adapter; `billing` and `ingest` only). Claude reviews, tests and merges the PR.
+- 2026-11-25 (Oğuz): #266 (T2.41) moved from Grok to ChatGPT. Grok made no branch and no PR. The task is class C: Claude reviews, tests and merges.
 - Next for Claude: review the #256 steps and the T3 PRs (#250–#252) when they open.
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
