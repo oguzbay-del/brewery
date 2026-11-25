@@ -96,14 +96,11 @@ pub struct TrashItem {
     pub restorable_until: DateTime<Utc>,
 }
 
-/// Query of the list.
+/// Filter of the trash list.
 #[derive(Debug, Default, Clone, Deserialize, ToSchema)]
-pub struct TrashQuery {
+pub struct TrashFilter {
     /// Only this kind: `recipe`, `batch`, `ingredient` or `equipment`.
     pub kind: Option<String>,
-    /// Shared list parameters: page size and opaque cursor.
-    #[serde(flatten)]
-    pub page: ListParams,
 }
 
 /// Routes of this module.
@@ -140,19 +137,20 @@ pub fn routes(state: &AppState) -> Router<AppState> {
 pub async fn trash_list(
     State(state): State<AppState>,
     ctx: RequestContext,
-    ApiQuery(query): ApiQuery<TrashQuery>,
+    ApiQuery(page): ApiQuery<ListParams>,
+    ApiQuery(filter): ApiQuery<TrashFilter>,
 ) -> ApiResult<Json<Page<TrashItem>>> {
     workspace(&ctx)?;
-    let only = match query.kind.as_deref() {
+    let only = match filter.kind.as_deref() {
         None => None,
         Some(s) => Some(Kind::parse(s).ok_or_else(|| issue("kind", "invalid_value"))?),
     };
-    let limit = query.page.limit()?;
+    let limit = page.limit()?;
     let sort = SortSpec {
         field: "deleted_at",
         descending: true,
     };
-    let cursor = query.page.cursor(&sort)?;
+    let cursor = page.cursor(&sort)?;
     let (cursor_time, cursor_id) = match cursor {
         Some(cursor) => {
             let value = cursor.key.as_str().ok_or_else(|| {
@@ -323,7 +321,7 @@ mod spec {
 #[derive(Debug, utoipa::OpenApi)]
 #[openapi(
     paths(trash_list, trash_restore),
-    components(schemas(TrashItem, Page<TrashItem>)),
+    components(schemas(TrashItem, TrashFilter, ListParams, Page<TrashItem>)),
     tags((name = "trash", description = "Recently deleted records (30 days) and their restore"))
 )]
 struct ModuleDoc;
