@@ -202,4 +202,21 @@ async fn meta_endpoint_returns_the_callers_workspace_module_state(pool: PgPool) 
     assert!(enabled("devices"));
     assert!(enabled("stock"));
     assert!(!enabled("team"));
+
+    insert_paid_feature(&pool, workspace).await;
+    let request = support::req(
+        "GET",
+        &format!("/v1/meta?workspace_id={workspace}"),
+        Some(user),
+    )
+    .body(Body::empty())
+    .unwrap();
+    let paid_reply = send(&app, request).await;
+    assert_eq!(paid_reply.status, StatusCode::OK);
+    let paid_modules = paid_reply.body["modules"].as_array().unwrap();
+    assert!(paid_modules
+        .iter()
+        .find(|module| module["id"] == "team")
+        .and_then(|module| module["enabled"].as_bool())
+        .unwrap());
 }
