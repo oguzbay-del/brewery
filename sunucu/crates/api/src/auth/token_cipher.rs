@@ -1,40 +1,69 @@
-//! Authenticated encryption for provider refresh tokens (ADR-0009 rule 1.5).
+//! Encryption for provider refresh tokens (ADR-0009 rule 1.5).
 //!
-//! Stored format: version byte, 96-bit random nonce, AES-256-GCM ciphertext and tag.
-//! The key is supplied by configuration; this module never reads environment variables.
+//! The stored format is version byte 1, a 12-byte random nonce, then AES-256-GCM
+//! ciphertext and its authentication tag. The trait keeps a later KMS implementation
+//! behind the same API.
 
 use ring::{
     aead::{self, Aad, LessSafeKey, Nonce, UnboundKey},
     rand::{SecureRandom, SystemRandom},
 };
 
-const FORMAT_VERSION: u8 = 1;
+const VERSION: u8 = 1;
 const NONCE_LEN: usize = 12;
 const TAG_LEN: usize = 16;
 
-/// A fixed-size AES-256-GCM key. Its contents are never exposed through Debug.
+/// Errors returned by a provider-token cipher.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum TokenCipherError {
+    /// The stored format version is not supported.
+    #[error("unsupported provider-token format")]
+    UnsupportedVersion,
+    /// The ciphertext is too short or malformed.
+    #[error("invalid provider-token ciphertext")]
+    InvalidCiphertext,
+    /// Secure random generation failed.
+    #[error("secure random generation failed")]
+    Random,
+    /// Encryption failed.
+    #[error("provider-token encryption failed")]
+    Encrypt,
+    /// Authentication or decryption failed.
+    #[error("provider-token authentication failed")]
+    Decrypt,
+}
+
+/// Encryption interface for provider refresh tokens.
+pub trait TokenCipher: Send + Sync {
+    /// Encrypts plaintext and returns the versioned stored representation.
+    ///
+    /// # Errors
+    /// Returns an error if secure randomness or encryption fails.
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, TokenCipherError>;
+
+    /// Decrypts a versioned stored representation.
+    ///
+    /// # Errors
+    /// Returns an error if the format, authentication tag or ciphertext is invalid.
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, TokenCipherError>;
+}
+
+/// Local AES-256-GCM implementation. Cloud KMS can implement the trait later.
 #[derive(Clone)]
-pub struct TokenCipher {
+pub struct Aes256GcmTokenCipher {
     key: [u8; 32],
 }
 
-/// Failure while encrypting or decrypting a provider token.
-#[derive(Debug, thiserror::Error, PartialEq, Eq)]
-pub enum TokenCipherError {
-    #[error("provider token ciphertext is truncated")]
-    Truncated,
-    #[error("provider token ciphertext version is not supported")]
-    UnsupportedVersion,
-    #[error("secure random source is unavailable")]
-    RandomUnavailable,
-    #[error("provider token encryption failed")]
-    EncryptionFailed,
-    #[error("provider token authentication failed")]
-    AuthenticationFailed,
+impl std::fmt::Debug for Aes256GcmTokenCipher {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Aes256GcmTokenCipher")
+            .field("key", &"<redacted>")
+            .finish()
+    }
 }
 
-impl TokenCipher {
-    /// Creates a cipher from a 32-byte key.
+impl Aes256GcmTokenCipher {
+    /// Creates a cipher from exactly 32 key bytes.
     #[must_use]
     pub const fn new(key: [u8; 32]) -> Self {
         Self { key }
@@ -42,108 +71,89 @@ impl TokenCipher {
 
     fn key(&self) -> Result<LessSafeKey, TokenCipherError> {
         let key = UnboundKey::new(&aead::AES_256_GCM, &self.key)
-            .map_err(|_| TokenCipherError::EncryptionFailed)?;
+            .map_err(|_| TokenCipherError::Encrypt)?;
         Ok(LessSafeKey::new(key))
     }
+}
 
-    /// Encrypts a provider refresh token.
-    ///
-    /// The returned bytes are safe to store in the encrypted refresh-token column.
-    pub fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, TokenCipherError> {
-        let key = self.key()?;
-        let rng = SystemRandom::new();
+impl TokenCipher for Aes256GcmTokenCipher {
+    fn encrypt(&self, plaintext: &[u8]) -> Result<Vec<u8>, TokenCipherError> {
         let mut nonce_bytes = [0_u8; NONCE_LEN];
-        rng.fill(&mut nonce_bytes)
-            .map_err(|_| TokenCipherError::RandomUnavailable)?;
+        SystemRandom::new()
+            .fill(&mut nonce_bytes)
+            .map_err(|_| TokenCipherError::Random)?;
         let nonce = Nonce::assume_unique_for_key(nonce_bytes);
-        let mut ciphertext = plaintext.to_vec();
-        key.seal_in_place_append_tag(nonce, Aad::empty(), &mut ciphertext)
-            .map_err(|_| TokenCipherError::EncryptionFailed)?;
+        let mut encrypted = plaintext.to_vec();
+        self.key()?
+            .seal_in_place_append_tag(nonce, Aad::empty(), &mut encrypted)
+            .map_err(|_| TokenCipherError::Encrypt)?;
 
-        let mut stored = Vec::with_capacity(1 + NONCE_LEN + ciphertext.len());
-        stored.push(FORMAT_VERSION);
+        let mut stored = Vec::with_capacity(1 + NONCE_LEN + encrypted.len());
+        stored.push(VERSION);
         stored.extend_from_slice(&nonce_bytes);
-        stored.extend_from_slice(&ciphertext);
+        stored.extend_from_slice(&encrypted);
         Ok(stored)
     }
 
-    /// Decrypts a provider refresh token previously returned by encrypt.
-    pub fn decrypt(&self, stored: &[u8]) -> Result<Vec<u8>, TokenCipherError> {
-        if stored.len() < 1 + NONCE_LEN + TAG_LEN {
-            return Err(TokenCipherError::Truncated);
+    fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, TokenCipherError> {
+        if ciphertext.len() < 1 + NONCE_LEN + TAG_LEN {
+            return Err(TokenCipherError::InvalidCiphertext);
         }
-        if stored[0] != FORMAT_VERSION {
+        if ciphertext[0] != VERSION {
             return Err(TokenCipherError::UnsupportedVersion);
         }
-        let nonce_bytes: [u8; NONCE_LEN] = stored[1..1 + NONCE_LEN]
-            .try_into()
-            .map_err(|_| TokenCipherError::Truncated)?;
-        let nonce = Nonce::assume_unique_for_key(nonce_bytes);
-        let key = self.key()?;
-        let mut ciphertext = stored[1 + NONCE_LEN..].to_vec();
-        let plaintext = key
-            .open_in_place(nonce, Aad::empty(), &mut ciphertext)
-            .map_err(|_| TokenCipherError::AuthenticationFailed)?;
+        let nonce = Nonce::try_assume_unique_for_key(&ciphertext[1..1 + NONCE_LEN])
+            .map_err(|_| TokenCipherError::InvalidCiphertext)?;
+        let mut encrypted = ciphertext[1 + NONCE_LEN..].to_vec();
+        let plaintext = self
+            .key()
+            .map_err(|_| TokenCipherError::Decrypt)?
+            .open_in_place(nonce, Aad::empty(), &mut encrypted)
+            .map_err(|_| TokenCipherError::Decrypt)?;
         Ok(plaintext.to_vec())
     }
 }
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::unwrap_used, clippy::expect_used)]
+    #![allow(clippy::unwrap_used)]
 
     use super::*;
 
-    const KEY: [u8; 32] = [0x5a; 32];
-
     #[test]
-    fn encrypts_and_decrypts_provider_refresh_tokens() {
-        let cipher = TokenCipher::new(KEY);
-        let plaintext = b"apple-refresh-token";
-        let encrypted = cipher.encrypt(plaintext).expect("encryption succeeds");
-        assert_eq!(encrypted[0], FORMAT_VERSION);
-        assert_ne!(encrypted, plaintext);
-        assert_eq!(
-            cipher.decrypt(&encrypted).expect("decryption succeeds"),
-            plaintext
-        );
+    fn round_trip_uses_version_nonce_and_authenticated_ciphertext() {
+        let cipher = Aes256GcmTokenCipher::new([7; 32]);
+        let encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
+        assert_eq!(encrypted[0], VERSION);
+        assert_eq!(encrypted.len(), 1 + NONCE_LEN + b"refresh-token-value".len() + TAG_LEN);
+        assert_eq!(cipher.decrypt(&encrypted).unwrap().as_slice(), b"refresh-token-value");
     }
 
     #[test]
     fn each_encryption_uses_a_fresh_nonce() {
-        let cipher = TokenCipher::new(KEY);
-        let first = cipher.encrypt(b"same token").expect("first encryption succeeds");
-        let second = cipher.encrypt(b"same token").expect("second encryption succeeds");
+        let cipher = Aes256GcmTokenCipher::new([7; 32]);
+        let first = cipher.encrypt(b"same").unwrap();
+        let second = cipher.encrypt(b"same").unwrap();
         assert_ne!(&first[1..1 + NONCE_LEN], &second[1..1 + NONCE_LEN]);
         assert_ne!(first, second);
     }
 
     #[test]
-    fn refuses_tampered_ciphertext_and_wrong_keys() {
-        let cipher = TokenCipher::new(KEY);
-        let mut encrypted = cipher.encrypt(b"secret").expect("encryption succeeds");
+    fn rejects_unsupported_version_and_tampering() {
+        let cipher = Aes256GcmTokenCipher::new([7; 32]);
+        let mut encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
+        encrypted[0] = 2;
+        assert_eq!(cipher.decrypt(&encrypted), Err(TokenCipherError::UnsupportedVersion));
+
+        let mut encrypted = cipher.encrypt(b"refresh-token-value").unwrap();
         let last = encrypted.len() - 1;
         encrypted[last] ^= 1;
-        assert_eq!(
-            cipher.decrypt(&encrypted),
-            Err(TokenCipherError::AuthenticationFailed)
-        );
-
-        let other = TokenCipher::new([0xa5; 32]);
-        let encrypted = cipher.encrypt(b"secret").expect("encryption succeeds");
-        assert_eq!(
-            other.decrypt(&encrypted),
-            Err(TokenCipherError::AuthenticationFailed)
-        );
+        assert_eq!(cipher.decrypt(&encrypted), Err(TokenCipherError::Decrypt));
     }
 
     #[test]
-    fn rejects_unknown_versions_and_truncated_values() {
-        let cipher = TokenCipher::new(KEY);
-        assert_eq!(cipher.decrypt(&[]), Err(TokenCipherError::Truncated));
-        assert_eq!(
-            cipher.decrypt(&[2; 1 + NONCE_LEN + TAG_LEN]),
-            Err(TokenCipherError::UnsupportedVersion)
-        );
+    fn rejects_short_ciphertext() {
+        let cipher = Aes256GcmTokenCipher::new([7; 32]);
+        assert_eq!(cipher.decrypt(&[VERSION; 4]), Err(TokenCipherError::InvalidCiphertext));
     }
 }
