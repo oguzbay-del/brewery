@@ -214,8 +214,8 @@ impl PaddleProvider {
                 )
             }
             "past_due" => {
-                let period = data
-                    .pointer("/current_billing_period/ends_at")
+                let period = envelope
+                    .pointer("/data/current_billing_period/ends_at")
                     .and_then(Value::as_str)
                     .ok_or_else(|| malformed("past-due subscription has no billing period end"))?;
                 let end = parse_datetime(period, "current_billing_period.ends_at")?
