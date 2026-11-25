@@ -705,9 +705,22 @@ async fn provider_login(
                 .client_id_for_audiences(&claim.audiences)
                 .map_err(|_| problem("apple_client_id_invalid", "/authorization_code"))?
                 .to_owned();
-            let refresh_token = match client.exchange_code(&code, &client_id).await {
+            let verifier = svc
+                .apple
+                .as_ref()
+                .ok_or_else(|| ApiError::unavailable(30))?;
+            let refresh_token = match client
+                .exchange_code(&code, &client_id, verifier, &claim.subject)
+                .await
+            {
                 Ok(token) => token,
-                Err(AppleTokenError::InvalidCode | AppleTokenError::InvalidClientId) => {
+                Err(
+                    AppleTokenError::InvalidCode
+                    | AppleTokenError::InvalidClientId
+                    | AppleTokenError::MissingIdToken
+                    | AppleTokenError::InvalidIdToken
+                    | AppleTokenError::IdentityMismatch,
+                ) => {
                     return Err(problem("apple_code_invalid", "/authorization_code"));
                 }
                 Err(error) => {
