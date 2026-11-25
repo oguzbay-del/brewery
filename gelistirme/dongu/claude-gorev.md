@@ -21,7 +21,7 @@ Do one loop pass now.
    - Skip it if CI is still running. If CI is red, do README › 6.4.
    - Review the diff: scope, permission class, security, tests, files named by the issue, ASD-STE100 in notes.
    - For class C paths, use an Opus subagent for the review. Run the local test of the changed crate when the change is in `sunucu/` (`sunucu/CLAUDE.md`). Filter the output.
-   - Good: write a `review` marker comment, merge (squash) by README › 7, close the issue, write a `merge` marker.
+   - Good: write a `review` marker comment, merge (squash) by README › 7 in the same run (README › 7a), close the issue, write a `merge` marker. Do not wait for owner approval.
    - Not good: do README › 6.3. Respect the round limit.
 4. **Own PRs.** For each open PR on a `claude/` branch: if CI is red, fix it. If Codex wrote P0 or P1 points, fix them (README › 6.3). If CI is green and the review rule is met, merge.
 5. **Subscriptions.** In the loop session, subscribe to the activity of each open PR that you reviewed or opened (`subscribe_pr_activity`). Unsubscribe when the PR is merged or closed.
@@ -29,7 +29,8 @@ Do one loop pass now.
 7. **Stale claims and blocked items.** Do README › 5.2. For each issue with `status:blocked`, check if its dependency is merged or closed. If yes, set `status:ready` and write one comment.
 8. **Dispatch.** Make sure that ChatGPT has at least 3 `status:ready` issues that touch different files. Make new issues from open rows of the current stage in `gelistirme/ISLER.md` (not owner tasks `O*`, no migration number that is already in use). For a new class A or class B issue, do README › 6.1 step 2.
 9. **Own task (max 1).** If time is left, take the first `assigned-claude` + `status:ready` issue. Work on a `claude/<issue>-<name>` branch. Open a PR with `Closes #N` and a marker. Write `@codex review` in a PR comment.
-10. **Record.** If the pass changed `gelistirme/` files, commit with the message `Loop: ...` and push to `main` only when the root `CLAUDE.md` rule allows it.
+10. **Blocked items.** If an item is blocked, go to the next ready item (README › 7a). Call the owner only for an owner decision, in one sentence.
+11. **Record.** If the pass changed `gelistirme/` files, commit with the message `Loop: ...` and push to `main` only when the root `CLAUDE.md` rule allows it.
 
 ## Do not
 
