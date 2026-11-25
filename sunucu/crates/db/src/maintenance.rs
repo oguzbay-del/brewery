@@ -274,3 +274,68 @@ pub async fn purge_expired_soft_deletes(
     }
     Ok(totals)
 }
+
+/// One upload whose object bytes can be removed by the worker.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PurgeableUpload {
+    /// `attachment` or `scanned_document`.
+    pub kind: String,
+    /// Upload record identifier.
+    pub id: Uuid,
+    /// Server-generated object-store key.
+    pub object_key: String,
+    /// True when the upload never reached its complete step.
+    pub incomplete: bool,
+}
+
+/// Lists at most `limit` purgeable uploads in one workspace.
+pub async fn list_purgeable_uploads(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    incomplete_before: DateTime<Utc>,
+    limit: i32,
+) -> Result<Vec<PurgeableUpload>> {
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let rows = sqlx::query(
+        "SELECT p.kind, p.id, p.object_key,
+                CASE WHEN p.kind = 'attachment' THEN a.uploaded_at IS NULL
+                     ELSE d.uploaded_at IS NULL END AS incomplete
+         FROM list_purgeable_uploads($1, $2) AS p
+         LEFT JOIN attachments AS a ON p.kind = 'attachment' AND a.id = p.id
+         LEFT JOIN scanned_documents AS d ON p.kind = 'scanned_document' AND d.id = p.id",
+    )
+    .bind(incomplete_before)
+    .bind(limit)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    rows.iter()
+        .map(|row| {
+            Ok(PurgeableUpload {
+                kind: row.try_get("kind")?,
+                id: row.try_get("id")?,
+                object_key: row.try_get("object_key")?,
+                incomplete: row.try_get("incomplete")?,
+            })
+        })
+        .collect()
+}
+
+/// Marks one upload after its object bytes have been deleted.
+pub async fn mark_upload_purged(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    kind: &str,
+    id: Uuid,
+) -> Result<bool> {
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let changed: bool = sqlx::query_scalar("SELECT mark_upload_purged($1, $2)")
+        .bind(kind)
+        .bind(id)
+        .fetch_one(&mut *tx)
+        .await?;
+    tx.commit().await?;
+    Ok(changed)
+}
