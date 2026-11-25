@@ -21,6 +21,7 @@ pub mod setup;
 pub mod shared_device;
 pub mod step_up;
 pub mod tokens;
+pub mod token_cipher;
 
 use std::{
     collections::{BTreeMap, BTreeSet},
