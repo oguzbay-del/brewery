@@ -46,6 +46,37 @@ fn decode_private_key(raw: &str) -> Result<Vec<u8>> {
     })
 }
 
+fn endpoint_url(
+    raw: Option<String>,
+    name: &'static str,
+    default: &'static str,
+) -> Result<String> {
+    let value = raw
+        .filter(|v| !v.trim().is_empty())
+        .map_or_else(|| default.to_owned(), |v| v.trim().to_owned());
+    let parsed = url::Url::parse(&value).map_err(|e| Error::InvalidEnv {
+        name,
+        reason: format!("invalid URL: {e}"),
+    })?;
+    let local_host = matches!(
+        parsed.host_str(),
+        Some("localhost" | "127.0.0.1" | "apple-mock" | "::1" | "[::1]")
+    );
+    if parsed.scheme() != "https" && !(parsed.scheme() == "http" && local_host) {
+        return Err(Error::InvalidEnv {
+            name,
+            reason: "must use HTTPS except for the local Apple mock".to_owned(),
+        });
+    }
+    if !parsed.username().is_empty() || parsed.password().is_some() || parsed.fragment().is_some() {
+        return Err(Error::InvalidEnv {
+            name,
+            reason: "must not contain user information or a fragment".to_owned(),
+        });
+    }
+    Ok(value)
+}
+
 /// SMTP relay for the e-mail link (mailpit locally).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SmtpSettings {
@@ -254,18 +285,16 @@ impl AuthConfig {
                     key_id: key_id.trim().to_owned(),
                     private_key,
                     client_ids: provider.audiences.clone(),
-                    token_url: lookup("APPLE_TOKEN_URL")
-                        .filter(|v| !v.trim().is_empty())
-                        .map_or_else(
-                            || "https://appleid.apple.com/auth/token".to_owned(),
-                            |v| v.trim().to_owned(),
-                        ),
-                    revoke_url: lookup("APPLE_REVOKE_URL")
-                        .filter(|v| !v.trim().is_empty())
-                        .map_or_else(
-                            || "https://appleid.apple.com/auth/revoke".to_owned(),
-                            |v| v.trim().to_owned(),
-                        ),
+                    token_url: endpoint_url(
+                        lookup("APPLE_TOKEN_URL"),
+                        "APPLE_TOKEN_URL",
+                        "https://appleid.apple.com/auth/token",
+                    )?,
+                    revoke_url: endpoint_url(
+                        lookup("APPLE_REVOKE_URL"),
+                        "APPLE_REVOKE_URL",
+                        "https://appleid.apple.com/auth/revoke",
+                    )?,
                 })
             }
             _ => {
