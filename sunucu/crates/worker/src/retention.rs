@@ -20,8 +20,11 @@ pub const CLOSE_AFTER_DAYS: i64 = 14;
 /// Closes resolved support requests older than `CLOSE_AFTER_DAYS` days and queues their
 /// GitHub synchronization events. Running it again changes no rows.
 pub async fn close_resolved_support_requests(pool: &PgPool, now: DateTime<Utc>) -> Result<u64> {
-    db::maintenance::close_resolved_support_requests(pool, now - Duration::days(CLOSE_AFTER_DAYS))
-        .await
+    Ok(db::maintenance::close_resolved_support_requests(
+        pool,
+        now - Duration::days(CLOSE_AFTER_DAYS),
+    )
+    .await?)
 }
 
 /// Days a soft-deleted recipe, batch, ingredient or equipment record can be restored (T2.37).
