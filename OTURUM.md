@@ -206,7 +206,7 @@
 ## Ayrı iş parçacığı: Ürün geliştirme
 
 - Aktif aşama: Stage 2 — core API and data.
-- Son bilinen sıradaki işler: `gelistirme/DURUM.md`'deki T2.19 → T2.21 → T2.22 zincirini tek ajana ver; T2.20 bağımsızsa paralel yürüyebilir.
+- Devir (25.11.2026, 23:00 UTC): döngü v2 çalışıyor. Açık Claude işleri: PR #356 (P1; Codex temiz, CI bitince merge, sonra #338'i kapat, #357'yi `status:ready` yap) ve PR #336 (T2.41; `5799511` Cargo.lock düzeltmesi, compose ve kind yeşilse merge). Kod işi ChatGPT'de (#215, #285, #287, #314, #351, #352, #355, #358). Claude'un sıradaki kendi işi: G3 (tasarım sistemi ve konsept; ADR-0012 renkleri, Ev'de rol ve paylaşım ekranları yok, abonelik ekranları), sonra B1 (ödeme kaynakları ADR'si). Plan kopyası yeniden dışa aktarılmalı (deneme süresi değişikliği). Owner kararları ve ayrıntı: `gelistirme/DURUM.md`.
 - Geliştirme işine devam etme talimatı gelirse önce `gelistirme/DURUM.md`'yi oku; `gelistirme/ISLER.md` içinden yalnız aktif aşama ve ilgili bağımlılıkları incele.
 - Ürün geliştirme sırasını bu dosyadan değiştirme. Asıl iş durumu `gelistirme/DURUM.md` ve `gelistirme/ISLER.md)'dir.
 
