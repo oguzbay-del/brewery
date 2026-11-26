@@ -112,3 +112,59 @@ spec:
       to:
         - operation:
             ports: ["4180"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: postgres-yalniz-uygulama
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: postgres }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/demleme/sa/api
+              - cluster.local/ns/demleme/sa/worker
+              - cluster.local/ns/demleme/sa/ingest
+              - cluster.local/ns/demleme/sa/migrate
+      to:
+        - operation:
+            ports: ["5432"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: redis-yalniz-api
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: redis }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/demleme/sa/api
+      to:
+        - operation:
+            ports: ["6379"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: nats-yalniz-uygulama
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: nats }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/demleme/sa/api
+              - cluster.local/ns/demleme/sa/worker
+              - cluster.local/ns/demleme/sa/ingest
+      to:
+        - operation:
+            ports: ["4222"]
