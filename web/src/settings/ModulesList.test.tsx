@@ -39,24 +39,21 @@ afterEach(() => {
 
 describe('module settings', () => {
   it('shows loading while the session is pending', () => {
-    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
+    const pending = new Promise<Response>(() => {});
+    vi.stubGlobal('fetch', vi.fn(() => pending));
     show();
     expect(screen.getByRole('status').textContent).toBe(text('ui.modules.loading'));
   });
 
   it('shows all three module states', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(json({ workspaces: [{ id: workspaceId }] }))
-      .mockResolvedValueOnce(
-        json({
-          modules: [
-            { id: 'core', enabled: true, read_only: false },
-            { id: 'devices', enabled: false, read_only: false },
-            { id: 'stock', enabled: true, read_only: true },
-          ],
-        }),
-      );
+    const fetchMock = vi.fn();
+    const modules = [
+      { id: 'core', enabled: true, read_only: false },
+      { id: 'devices', enabled: false, read_only: false },
+      { id: 'stock', enabled: true, read_only: true },
+    ];
+    fetchMock.mockResolvedValueOnce(json({ workspaces: [{ id: workspaceId }] }));
+    fetchMock.mockResolvedValueOnce(json({ modules }));
     vi.stubGlobal('fetch', fetchMock);
     show();
     const rows = await screen.findAllByRole('listitem');
