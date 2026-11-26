@@ -171,3 +171,18 @@ The mobile comparison table is intentionally horizontally scrollable within its 
 - The owner confirmed that Vercel is not used for GRISTORA. The previous Vercel automatic-deployment finding and the temporary main-branch stop instruction above are historical and resolved; they are not active guardrails.
 - Branch previews are provided by Cloudflare Pages. Review the Cloudflare Pages preview for the relevant PR; do not treat a branch preview as a production release.
 - This acceptance-record update does not authorize or perform a production deployment, public launch, production-domain attachment or DNS change. Those actions remain subject to explicit owner approval.
+
+## W27 responsive hero evidence (PR #340)
+
+[Marketing CI 45672569952](https://github.com/oguzbay-del/brewery/actions/runs/45672569952) passed on `9a14b89`. Measurements come from Home Lighthouse JSON artifacts 14673188743 (W12 baseline) and [15051125911](https://github.com/oguzbay-del/brewery/actions/runs/45672569952/artifacts/15051125911) (W27). Byte counts are network transfers.
+
+| Home mobile | W12 | W27 |
+| --- | ---: | ---: |
+| Performance | 85 | 86 |
+| Hero AVIF transfer | 41,898 B (960w) | 29,816 B (768w) |
+| All images | 42,723 B | 30,641 B |
+| Whole page | 139,341 B | 128,570 B |
+
+Desktop Performance scored 100 in both runs. Accessibility, Best Practices and SEO scored 100 on both devices in both runs. The mobile hero transferred 12,082 fewer bytes. Whole-page results include other intervening site changes.
+
+Chromium screenshots of the [branch preview](https://7cab6174.gristora.pages.dev/) were inspected at 320, 390 and 1440 CSS pixels at device scale 1. At 320 and 390 the 480w AVIF kept the right-hand tank visible behind the copy and both actions fully visible. The photograph looks soft in the tall mobile crop. At 1440 the 1408w AVIF shows tank fittings in detail and the row of tanks beside the copy. The mobile focal position was 62% 50%, desktop 50% 48%. This check covers these three sizes on Home.

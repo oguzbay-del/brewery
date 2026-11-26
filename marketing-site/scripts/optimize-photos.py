@@ -13,8 +13,8 @@ src = root.parent / "fotograflar-ham"
 out = root / "public" / "images" / "photos"
 out.mkdir(parents=True, exist_ok=True)
 
-WIDTHS = (640, 768, 960, 1408)
-FEATURE_WIDTHS = (640, 768, 960, 1152)
+WIDTHS = (480, 640, 768, 960, 1408)
+FEATURE_WIDTHS = (480, 640, 768, 960, 1152)
 CURATED_WIDTHS = (640, 896)
 
 # Vertical focal position (0 = top, 1 = bottom) for 3:2 feature crops.
