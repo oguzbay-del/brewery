@@ -9,6 +9,14 @@ use reqwest::{Client, Method, RequestBuilder, Response};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use uuid::Uuid;
+use webauthn_authenticator_rs::{
+    WebauthnAuthenticator,
+    prelude::{CreationChallengeResponse, Url},
+    softpasskey::SoftPasskey,
+};
+
+/// Origin that the Compose API accepts for `WebAuthn` (`WEB_BASE_URL` in `compose.yaml`).
+const WEBAUTHN_ORIGIN: &str = "http://localhost:3000";
 
 const HEX: &[u8; 16] = b"0123456789abcdef";
 
@@ -137,6 +145,49 @@ impl Context {
             token,
             email: email.to_owned(),
         })
+    }
+
+    /// Registers a software passkey for `user` through the public passkey endpoints.
+    ///
+    /// Holders of `users.manage` (workspace owners) must own a passkey before they can send
+    /// invitations (ADR-0009 rule 5.4). The call replaces the session token of `user` with the
+    /// one that carries the second step, so protected operations work for the next 15 minutes.
+    pub async fn enroll_passkey(&self, user: &mut User) -> TestResult<()> {
+        let start: Value = self
+            .request(
+                Method::POST,
+                "/v1/me/passkeys/registration/start",
+                Some(user),
+            )
+            .send()
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
+        let options: CreationChallengeResponse = serde_json::from_value(start["options"].clone())?;
+        let mut authenticator = SoftPasskey::new(true);
+        let credential = authenticator
+            .do_registration(Url::parse(WEBAUTHN_ORIGIN)?, options)
+            .map_err(|e| format!("software passkey registration failed: {e:?}"))?;
+        let finish: Value = self
+            .post_json(
+                "/v1/me/passkeys/registration/finish",
+                Some(user),
+                &json!({
+                    "challenge_id": start["challenge_id"],
+                    "credential": credential,
+                    "name": "E2E key"
+                }),
+            )
+            .await?
+            .error_for_status()?
+            .json()
+            .await?;
+        let token = finish["session"]["token"]
+            .as_str()
+            .ok_or("passkey registration response did not contain a session token")?;
+        token.clone_into(&mut user.token);
+        Ok(())
     }
 
     /// Builds an API request with optional bearer authentication.
