@@ -22,7 +22,7 @@ Doğrulama: `kubectl kustomize altyapi/k8s/overlays/<ad>` ve `kubectl apply --dr
 
 ## Kararlar
 
-- **Ağ:** ad alanında girişler varsayılan kapalı. engine-service'e yalnız api erişir; api ve ingest dışarıdan gelen trafiği alır; NATS, PostgreSQL ve Redis yalnız api, worker, ingest'e açık; nesne deposunun S3 portu yalnız api ve worker'a açık. Çıkış kısıtlanmaz.
+- **Ağ:** ad alanında girişler varsayılan kapalı. engine-service'e yalnız api erişir; api ve ingest dışarıdan gelen trafiği alır; NATS yalnız api, worker ve ingest'e açık; yerel PostgreSQL bu üç servise ve migrate Job'ına açık; yerel Redis yalnız api'ye açık; nesne deposunun S3 portu yalnız api ve worker'a açık. Çıkış kısıtlanmaz.
 - **CNI:** kind'ın varsayılan CNI'si (kindnet) NetworkPolicy için nftables ister; bazı çekirdeklerde çalışmaz. Bu yüzden kind-up Calico (iptables) kurar; manifest sürüme ve sağlama toplamına sabit, imajlar quay.io'dan.
 - **Güvenlik:** root olmayan kullanıcı, salt okunur kök dosya sistemi, bütün yetenekler kapalı, `seccomp: RuntimeDefault`, ad alanında Pod Security `restricted`.
 - **Göç:** `base/migrate.yaml` tek seferlik Job; `migrate` imajı `sunucu/migrations`'ı uygular, göç rolünün adresini (`MIGRATE_DATABASE_URL`) ve `app_api`/`app_worker` parolalarını `demleme-migrate` Secret'ından alır, göçten sonra bu iki role oturum açma hakkı ve parolayı verir. `make kind-up` Job'ın bitmesini bekler; servislerin göçten sonra başlaması henüz zorlanmıyor (servisler veritabanı kullanmıyor; T2.10'da eklenir). Job şablonu değişmez olduğundan imaj etiketi değişen canlı dağıtımda önce eski Job silinir (`ttlSecondsAfterFinished` 1 saat sonra kendisi siler).
@@ -36,6 +36,16 @@ Doğrulama: `kubectl kustomize altyapi/k8s/overlays/<ad>` ve `kubectl apply --dr
   - **kindnet:** Istio ambient (istio-cni + ztunnel) kind'ın varsayılan CNI'si kindnet ile çalışır; ayrı denemede (kindnet, `PeerAuthentication` STRICT) mesh içi istemci yanıt aldı, mesh dışı istemcinin düz metin isteği sıfırlandı (to be verified: tek ana makine ve çekirdek). Yine de kind-up Calico kurar: NetworkPolicy (ikinci katman) kindnet'te nftables ister ve bazı çekirdeklerde çalışmaz (CNI kararı). IPv6 çekirdek desteği olmayan ana makinelerde ztunnel IPv6 dinleyicisi açamaz ve istio-cni `::/0` rotası ekleyemez; kind-up bu yüzden `values.ztunnel.env.IPV6_ENABLED=false` ve `values.cni.ambient.ipv6=false` verir (kind yalnız IPv4). Ambient profili imajların `-distroless` türünü kullanır.
   - **Canlı (GKE, EKS, AKS; to be verified):** aynı `base/mesh.yaml` kullanılır. Istio'yu ortamdaki araçla kur (`istioctl install --set profile=ambient` ya da Helm: `base`, `istiod`, `cni`, `ztunnel`), sürümü 1.28.0'a sabitle ve `istio-system` ad alanında Pod Security `privileged` ver (istio-cni ve ztunnel ayrıcalıklıdır). GKE'de `istio-cni` için `global.platform=gke` ve `resourcequota` gerekir (kube-system kotası). Sertifika kökü `istiod`'dur; üretimde kendi CA'nı bağla (`cacerts` Secret'ı ya da cert-manager istio-csr) ve kök anahtarı depoya yazma. `overlays/canli/` bulut hesabı isteyen Istio değeri taşımaz. Gateway Servisi'ne düz metin istek gelir; TLS sonlandırması yük dengeleyicidedir (T2.32d notları).
 - **İmajlar:** test ve canlıda `KAYIT-DEFTERI` ve `SURUM` yer tutucudur; CI `kustomize edit set image` ile doldurur (kayıt defteri doğrulanacak).
+
+## Veri servislerine mesh erişimi (T2.32g)
+
+| AuthorizationPolicy | Hedef port | İzin verilen ServiceAccount |
+|---|---|---|
+| `postgres-yalniz-uygulama` | PostgreSQL TCP 5432 | `api`, `worker`, `ingest`, `migrate` |
+| `redis-yalniz-api` | Redis TCP 6379 | `api` |
+| `nats-yalniz-uygulama` | NATS TCP 4222 | `api`, `worker`, `ingest` |
+
+`make kind-test`, `api` kimliğinin üç veri servisine ulaşabildiğini ve `engine-service` kimliğinin üçünde de reddedildiğini denetler.
 
 ## Bilinen sınırlar
 
