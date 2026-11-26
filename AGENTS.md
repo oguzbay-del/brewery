@@ -8,6 +8,7 @@ This repository is GRISTORA (brewing software). Two agents work on it: Claude an
 
 Rules for each Codex task:
 
+- The task source is GitHub, queried live (`gelistirme/dongu/README.md` › 11). Do not use a chat history or `gelistirme/ISLER.md` as the list of tasks. Read all pages of the issues with `assigned-chatgpt`.
 - Work only on the issue or PR that started the task. Push to the branch of that PR, or open a new branch `codex/<issue>-<name>`.
 - Start each PR body and each comment with the loop marker (`gelistirme/dongu/README.md` › 4) with `actor=codex`.
 - Do not merge. Do not change `.github/workflows/`, `adr/`, `gelistirme/ISLER.md`, `gelistirme/DURUM.md` or any `CLAUDE.md` file.
