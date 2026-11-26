@@ -758,7 +758,6 @@ async fn key_rotation_needs_the_second_step_and_ends_the_old_key(pool: PgPool) {
     assert_eq!(r.status, StatusCode::OK);
 }
 
-
 #[sqlx::test(migrations = "../../migrations")]
 async fn role_creation_and_copy_require_real_passkey(pool: PgPool) {
     let w = world(&pool).await;
