@@ -6,7 +6,11 @@ use serde_json::Value;
 
 async fn modules(ctx: &Context, user: &e2e::User, ws: &str) -> Value {
     let response = ctx
-        .request(Method::GET, &format!("/v1/meta?workspace_id={ws}"), Some(user))
+        .request(
+            Method::GET,
+            &format!("/v1/meta?workspace_id={ws}"),
+            Some(user),
+        )
         .send()
         .await
         .unwrap();
@@ -30,7 +34,10 @@ async fn home_modules_are_subset_of_business_modules() {
         return;
     };
     let owner = ctx.login().await.unwrap();
-    let home = ctx.create_workspace(&owner, "home", "E2E Home Modules").await.unwrap();
+    let home = ctx
+        .create_workspace(&owner, "home", "E2E Home Modules")
+        .await
+        .unwrap();
     let business = ctx
         .create_workspace(&owner, "business", "E2E Business Modules")
         .await
@@ -55,7 +62,8 @@ async fn home_modules_are_subset_of_business_modules() {
     }
     assert!(
         business_list.iter().any(|item| {
-            item["enabled"] == true && module(&home_modules, item["id"].as_str().unwrap())["enabled"] == false
+            item["enabled"] == true
+                && module(&home_modules, item["id"].as_str().unwrap())["enabled"] == false
         }),
         "business must have a module that is disabled for home"
     );
@@ -119,12 +127,24 @@ async fn meta_requires_membership_and_authentication() {
         .unwrap();
     let path = format!("/v1/meta?workspace_id={}", ws["id"].as_str().unwrap());
 
-    let foreign = ctx.request(Method::GET, &path, Some(&stranger)).send().await.unwrap();
+    let foreign = ctx
+        .request(Method::GET, &path, Some(&stranger))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(foreign.status(), StatusCode::NOT_FOUND);
 
-    let missing = ctx.request(Method::GET, "/v1/meta", Some(&owner)).send().await.unwrap();
+    let missing = ctx
+        .request(Method::GET, "/v1/meta", Some(&owner))
+        .send()
+        .await
+        .unwrap();
     assert_eq!(missing.status(), StatusCode::BAD_REQUEST);
 
-    let anonymous = ctx.request(Method::GET, &path, None).send().await.unwrap();
+    let anonymous = ctx
+        .request(Method::GET, &path, None)
+        .send()
+        .await
+        .unwrap();
     assert_eq!(anonymous.status(), StatusCode::UNAUTHORIZED);
 }
