@@ -149,7 +149,7 @@ async fn edit_session_events_are_delivered_over_sse_and_isolated() {
         )
         .await
         .unwrap();
-    assert_eq!(started.status(), StatusCode::CREATED);
+    assert_eq!(started.status(), StatusCode::OK);
     assert_event(
         &mut stream_a,
         &mut buffer_a,
