@@ -1,4 +1,5 @@
 ---
+import ProductScreens from "../../../components/ProductScreens.astro";
 import PagePhoto from "../../../components/PagePhoto.astro";
 import { featurePhoto } from "../../../data/photos";
 import FontPreload from "../../../components/FontPreload.astro";
@@ -94,6 +95,7 @@ const audienceText = feature.audiences.map((audience) => audienceLabelTr[audienc
           </aside>
         </div>
       </section>
+      <ProductScreens page={`features/${feature.slug}`} lang="tr" />
       <section class="feature-evidence-section section-pad">
         <div class="shell feature-evidence-layout">
           <div>

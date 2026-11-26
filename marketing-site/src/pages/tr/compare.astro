@@ -1,4 +1,5 @@
 ---
+import ProductScreens from "../../components/ProductScreens.astro";
 import PagePhoto from "../../components/PagePhoto.astro";
 import FontPreload from "../../components/FontPreload.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
@@ -84,6 +85,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
         <p class="pricing-footnote">Ayrıntılı kapsam için her özelliği açın. <a href={`${base}tr/modules/`}>Dokuz modülü ve paketlerdeki yerini inceleyin →</a></p>
         </div>
       </section>
+      <ProductScreens page="compare" lang="tr" />
       <section class="compare-decision section-pad"><div class="shell"><div class="compare-decision-grid"><article><p class="eyebrow">EV BİRACILARI</p><figure class="compare-audience-visual"><img src={`${base}audience/homebrewer.svg`} alt="Bir ev biracısının küçük partilik düzeninin; kazan, cam fermantör, malzemeler ve reçete defteriyle illüstrasyonu." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>KÜÇÜK PARTİ · KİŞİSEL ÇALIŞMA ALANI</figcaption></figure><h2>Bir kişi, <em>bir bira yolculuğu.</em></h2><p>Kendiniz için bira yapıyorsanız ve reçetelerinizi, hesaplamalarınızı, ölçümlerinizi ve parti öğrenimlerinizi tek bir kişisel çalışma alanında istiyorsanız Ev'i seçin.</p><a class="button button-primary" href={`${base}tr/get-started/?audience=home`}>Ev planını oluşturun →</a></article><article><p class="eyebrow">PROFESYONEL BİRA ÜRETİCİLERİ</p><figure class="compare-audience-visual"><img src={`${base}audience/professional-brewery.svg`} alt="Paslanmaz çelik bira tankları ve birbirine bağlı boru tesisatı olan profesyonel bir bira üretim tesisinin illüstrasyonu." width="1200" height="675" loading="lazy" decoding="async" /><figcaption>ÜRETİM · BİR EKİP TARAFINDAN PAYLAŞILIR</figcaption></figure><h2>Üretim işi, <em>bir ekip tarafından paylaşılır.</em></h2><p>Birkaç kişinin reçete standartları, üretim planlaması ve parti kayıtları etrafında paylaşılan profesyonel bir iş akışına ihtiyacı varsa Bira üreticisi'ni seçin.</p><a class="button button-primary" href={`${base}tr/get-started/?audience=business`}>Ekip planını oluşturun →</a></article></div><p class="compare-all-features"><a href={`${base}tr/features/`}>Tüm özellikleri inceleyin ↗</a></p></div></section>
     </main>
     <SiteFooter lang="tr" />
