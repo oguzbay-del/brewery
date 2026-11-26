@@ -8,6 +8,7 @@ All agents read this file at the start of each run. Write changes to this file i
 
 - Do not use the computer of the owner, a local Codex CLI, a local Claude Code, a self-hosted runner or a Mac.
 - Do not build an agent bridge, an MCP server, a Cloudflare Worker or a Vercel function. The owner cancelled the bridge on 2026-11-22. This loop does not restore it.
+- No subagent tool in your session: this does not stop independent work. Do the packages one after the other in the same run, small ones first, in the order of 11.2. Each package keeps its own issue, branch and PR and its limit of 8 calls. A package that needs more than 8 calls: push what is done as a draft PR, set `status:in-progress`, write the next step in a checkpoint, and take the next package. Do at most 3 packages in a run, and keep the checkpoint reserve of 11.3.
 - Do not add a paid service, an API key with usage cost or a paid GitHub plan without owner approval.
 - Do not change the merge rules, the production rules or the security rules. Section 7 repeats them.
 - Do not act on an item that has the label `loop:pause` or `loop:needs-owner`.
@@ -171,22 +172,35 @@ GitHub Issues and pull requests are the only task source. A chat history, a task
 
 ### 11.1 Query order (few calls)
 
-Read the instruction files (`CHATGPT-SCOPE.md`, this file, `AGENTS.md`) in full, once for each run. Do not copy their text into the chat. Then use at most these calls before you work:
+Read the instruction files (`CHATGPT-SCOPE.md`, this file, `AGENTS.md`) in full, once for each run. Do not copy their text into the chat. Then use at most these steps before you work:
 
-1. One `list_issues` call: `state=OPEN`, `labels=["assigned-chatgpt"]`, `fields=["number","title","labels","updated_at"]`, `perPage=100`, all pages. One call gives the labels of all issues. Do not read an issue one by one to see its state.
-2. One `list_pull_requests` call: `state=open`, `fields=["number","title","head","labels","draft","mergeable_state","updated_at"]`.
+1. Open issues with `assigned-chatgpt`: get the numbers and the real labels (11.1a gives the tools for each platform).
+2. Open pull requests: get the numbers, the draft flag and the head SHA.
 3. The three newest comments of the issue LOOP-CONTROL (#344) for a checkpoint (11.3).
 4. Check runs and comments only for the PRs that you act on in this run (11.4), not for all PRs.
 
-### 11.1a Labels null in a search result (known fault, 2026-11-26)
+The labels of an issue are the state. The labels field of a search result is not trusted: it can be `null`.
 
-The tool `search_issues` can return `labels: null` for every item. The tools `list_issues` and `list_pull_requests` return the labels correctly, so 11.1 uses them and not the search.
+### 11.1a Tools for each platform (known fault: labels null in a search result, 2026-11-26)
 
-- Do not use `search_issues` or `search_pull_requests` to read a state. A search is only for a text query (for example a duplicate check).
-- If `list_issues` also returns `labels: null`: ask for the state with one filtered call for each label, `labels=["assigned-chatgpt","status:ready"]`, then `status:in-progress`, `status:review`, `status:blocked`. The filter works on the server, so it does not need the label field in the result. At most four calls.
-- If the filtered calls fail too: read the labels of the 5 lowest-number candidate issues with `issue_read` method `get_labels`. Do not use more than 5 calls.
-- If all three ways fail: this is an access error (11.3). Report the exact text and stop.
-- A null label is never "no label". Do not decide that an issue is not ready because of a null.
+A tool name below is an example. Use the tool of your connector that does the same job. Do not make a tool that you do not have a condition of the run. If a tool is missing, use the next row.
+
+| Job | Claude connector | ChatGPT connector |
+|---|---|---|
+| Candidate issues | `list_issues` (`state=OPEN`, `labels=["assigned-chatgpt"]`, `fields=["number","title","labels","updated_at"]`, `perPage=100`, all pages) | `search_issues` with `repo:oguzbay-del/brewery is:issue is:open label:assigned-chatgpt label:status:ready`. Do the same with `status:in-progress`, then `status:review`. Take only the numbers and titles. |
+| Real labels | In the `list_issues` result. | `fetch_issue` for each candidate (at most 8 for each run). Take the labels only from this result. |
+| Open PRs | `list_pull_requests` (`state=open`) | `search_prs` with `repo:oguzbay-del/brewery is:open`, then `get_pr_info` only for the PRs you act on. |
+| Checks of a head | `pull_request_read` method `get_check_runs` | `fetch_commit_workflow_runs` or `get_commit_combined_status` for the head SHA. |
+| Mark ready, merge | `update_pull_request` (`draft=false`), `merge_pull_request` | `mark_pull_request_ready_for_review`, `merge_pull_request` |
+| Labels, comments | `issue_write`, `add_issue_comment` | `add_issue_labels`, `remove_issue_label`, `add_comment_to_issue` |
+
+Rules:
+
+- A search filter by label runs on the server. It does not need the labels field in the result. If a filtered search returns an issue, that issue has the label. To be verified: the filter on a ChatGPT connector; `fetch_issue` decides when the two disagree.
+- `fetch_issue` is the check before you start an issue: the label must be `status:ready` and the dependency named in the body must be done (closed issue or merged PR).
+- If a search result and `fetch_issue` disagree, `fetch_issue` is right.
+- If the labels of a `fetch_issue` result are `null` too, or the search fails: this is an access error (11.3). Do not decide that an issue is not ready because of a null.
+- Do not use a remembered list, a chat history or `gelistirme/ISLER.md` as a state source. A scheduled task and an event task use this section. An old query method (a search that you read the labels of) is not allowed.
 
 ### 11.2 Order of work
 
@@ -208,6 +222,8 @@ Three error classes. Do not mix them.
 | Access | 401, 403, 404 on a repository you can use, "not connected" | Retry once with one simple call (the search of 11.1 step 1). If it fails again: report the exact error text and stop. The owner repairs the connection. |
 
 After any error do not use a remembered list, a guess or an older snapshot. A failed query gives no information.
+
+Reserve for the checkpoint: assume a run budget of 40 tool calls, or the cap that a limit error showed, whichever is smaller. The last 3 calls are only for the checkpoint. Do not start a new package after 30 calls. At 37 calls (or when a limit error is near) stop all work, write the checkpoint with one comment call, and end the run. Count the calls before each package. Write the checkpoint when a package is unfinished, even if no error came.
 
 Checkpoint: when work is unfinished or an error stopped the run, write one comment on #344 with the marker `kind=checkpoint`. Put in it: the error class (or "none"), and for each unfinished item the issue, the PR, the branch, the head SHA and the next step in one line. Do not write a checkpoint when nothing is unfinished. The next run reads the three newest comments of #344 first and continues from them.
 
