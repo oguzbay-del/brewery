@@ -5,8 +5,10 @@
 //! print issues a new code for each target. Old codes stay valid unless the request asks to revoke
 //! them. Every change of a container writes one row in the append-only table `container_event`.
 //!
-//! Permissions use the existing codes: `recipe.view` reads, `stock.move` writes. The product
-//! module is Production (`modules::MODULE_KEY_MAP`).
+//! Permissions: `field.view` reads, `container.status` changes status and fills,
+//! `container.manage` creates, retires and prints labels. The product module is Production
+//! (`modules::MODULE_KEY_MAP`). Each status change, retire, fill and label print writes one audit
+//! row and one outbox event.
 //!
 //! TODO: SSE events (outbox topic `container.changed`) come with the client work.
 //! TODO: label text is limited to ASCII (the base 14 PDF fonts have no embedded glyphs).
@@ -22,9 +24,8 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, post},
 };
-use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use chrono::{DateTime, NaiveDate, Utc};
-use db::containers::ContainerStatus;
+use db::{AuditEvent, NewAuditEntry, containers::ContainerStatus};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -42,14 +43,16 @@ use crate::{
 };
 
 /// Permission that reads containers, scan results and the recall list.
-pub const READ_PERMISSION: &str = "recipe.view";
-/// Permission that creates, changes, fills and labels containers.
-pub const WRITE_PERMISSION: &str = "stock.move";
+pub const READ_PERMISSION: &str = "field.view";
+/// Permission that changes the status of containers and fills them.
+pub const STATUS_PERMISSION: &str = "container.status";
+/// Permission that creates, retires and labels containers.
+pub const MANAGE_PERMISSION: &str = "container.manage";
 
 /// Largest number of targets in one label request.
 const LABEL_MAX_TARGETS: usize = 100;
 /// Prefix of the text inside a QR code. The scanner reads the token after the last `/`.
-const QR_PREFIX: &str = "gristora://scan/";
+const QR_PREFIX: &str = "GRISTORA://SCAN/";
 
 // --- representations ----------------------------------------------------------------------
 
@@ -369,13 +372,18 @@ pub struct LabelTarget {
     pub id: Uuid,
 }
 
+/// Query of the label request.
+#[derive(Debug, Default, Deserialize, ToSchema)]
+pub struct PaperQuery {
+    /// `a4` (default) or `letter`.
+    pub paper: Option<String>,
+}
+
 /// Label request. Each target gets a new scan code.
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct LabelBody {
     /// 1 to 100 targets. One label (one PDF page) for each.
     pub targets: Vec<LabelTarget>,
-    /// Revoke the older codes of each target (default `false`).
-    pub revoke_previous: Option<bool>,
 }
 
 // --- helpers ------------------------------------------------------------------------------
@@ -407,10 +415,25 @@ fn counts_example() -> Value {
     ])
 }
 
+/// A 128-bit random token as base32 (RFC 4648, upper case, no padding): 26 characters.
 fn scan_token() -> String {
-    let mut buf = [0u8; 24];
+    const ALPHABET: &[u8; 32] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let mut buf = [0u8; 16];
     getrandom::fill(&mut buf).unwrap_or_else(|e| panic!("operating system randomness failed: {e}"));
-    URL_SAFE_NO_PAD.encode(buf)
+    let (mut out, mut bits, mut acc) = (String::with_capacity(26), 0u32, 0u32);
+    for byte in buf {
+        acc = (acc << 8) | u32::from(byte);
+        bits += 8;
+        while bits >= 5 {
+            bits -= 5;
+            out.push(char::from(ALPHABET[((acc >> bits) & 31) as usize]));
+        }
+        acc &= (1 << bits) - 1;
+    }
+    if bits > 0 {
+        out.push(char::from(ALPHABET[((acc << (5 - bits)) & 31) as usize]));
+    }
+    out
 }
 
 /// The token inside the scanned text, and the digest the database stores.
@@ -423,7 +446,7 @@ fn code_hash(raw: &str, field: &str) -> ApiResult<Vec<u8>> {
         .rsplit(['/', ':'])
         .find(|part| !part.is_empty())
         .ok_or_else(|| issue(field, "invalid_value"))?;
-    Ok(Sha256::digest(token.as_bytes()).to_vec())
+    Ok(Sha256::digest(token.to_ascii_uppercase().as_bytes()).to_vec())
 }
 
 fn parse_status(value: &str, field: &str) -> ApiResult<ContainerStatus> {
@@ -566,13 +589,14 @@ impl Changed {
 /// safe. A retired container does not change. `filled` is not allowed here (use a fill).
 async fn apply_status(
     tx: &mut PgConnection,
+    ctx: &RequestContext,
     ws: Uuid,
-    user: Uuid,
     id: Uuid,
     new: ContainerStatus,
     note: Option<&str>,
     scan_code_id: Option<Uuid>,
 ) -> ApiResult<Changed> {
+    let user = ctx.identity.user_id;
     let before = fetch_container(tx, id, true).await?;
     let old =
         ContainerStatus::parse(&before.status).ok_or_else(|| ApiError::new(ErrorCode::Internal))?;
@@ -609,7 +633,87 @@ async fn apply_status(
         },
     )
     .await?;
-    Ok(Changed::Yes(fetch_container(tx, id, false).await?))
+    if new == ContainerStatus::Retired {
+        revoke_codes(tx, id, user).await?;
+    }
+    let after = fetch_container(tx, id, false).await?;
+    let (audit_event, topic) = if new == ContainerStatus::Retired {
+        (AuditEvent::ContainerRetire, "container.retired")
+    } else {
+        (
+            AuditEvent::ContainerStatusChange,
+            "container.status_changed",
+        )
+    };
+    record(
+        tx,
+        ctx,
+        ws,
+        &after,
+        audit_event,
+        topic,
+        json!({"status": old.as_str()}),
+        json!({"status": new.as_str()}),
+    )
+    .await?;
+    Ok(Changed::Yes(after))
+}
+
+/// Revokes every active scan code of a container.
+async fn revoke_codes(tx: &mut PgConnection, container: Uuid, user: Uuid) -> ApiResult<()> {
+    sqlx::query(
+        "UPDATE scan_code SET revoked_at = now(), updated_by = $2 \
+         WHERE container_id = $1 AND revoked_at IS NULL",
+    )
+    .bind(container)
+    .bind(user)
+    .execute(tx)
+    .await?;
+    Ok(())
+}
+
+/// Writes the audit row and the outbox event of one container change.
+#[allow(clippy::too_many_arguments)]
+async fn record(
+    tx: &mut PgConnection,
+    ctx: &RequestContext,
+    ws: Uuid,
+    container: &Container,
+    event: AuditEvent,
+    topic: &str,
+    previous: Value,
+    new: Value,
+) -> ApiResult<()> {
+    db::append_audit(
+        tx,
+        ws,
+        &NewAuditEntry {
+            actor_kind: ctx.identity.actor_kind,
+            actor_id: Some(ctx.identity.user_id),
+            event,
+            record_kind: "container".to_owned(),
+            record_id: Some(container.id),
+            previous_value: Some(previous),
+            new_value: Some(new.clone()),
+            reason: None,
+        },
+    )
+    .await?;
+    db::outbox::enqueue(
+        tx,
+        &db::outbox::NewOutboxEvent {
+            topic: topic.to_owned(),
+            workspace_id: Some(ws),
+            entity: Some(db::outbox::Entity {
+                kind: "container".to_owned(),
+                id: container.id,
+                version: container.version,
+            }),
+            data: Some(new),
+        },
+    )
+    .await?;
+    Ok(())
 }
 
 fn ensure_not_fill(status: ContainerStatus) -> ApiResult<()> {
@@ -676,22 +780,27 @@ async fn status_counts(
 }
 
 fn actions_of(ctx: &RequestContext, status: Option<ContainerStatus>, kind: &str) -> Vec<String> {
-    let mut actions = vec!["view".to_owned()];
-    let write = ctx.has_permission(WRITE_PERMISSION);
-    match kind {
-        "container" => {
-            if write && status != Some(ContainerStatus::Retired) {
-                actions.push("change_status".to_owned());
-                if status.is_some_and(|s| !s.blocks_fill() && s != ContainerStatus::Filled) {
-                    actions.push("fill".to_owned());
-                }
-                actions.push("retire".to_owned());
+    let mut actions = Vec::new();
+    if ctx.has_permission(READ_PERMISSION) {
+        actions.push("view".to_owned());
+        if kind == "lot" {
+            actions.push("recall".to_owned());
+        }
+    }
+    if kind == "container" && status != Some(ContainerStatus::Retired) {
+        if ctx.has_permission(STATUS_PERMISSION) {
+            actions.push("change_status".to_owned());
+            if status.is_some_and(|s| !s.blocks_fill() && s != ContainerStatus::Filled) {
+                actions.push("fill".to_owned());
             }
         }
-        "lot" => actions.push("recall".to_owned()),
-        _ => {}
+        if ctx.has_permission(MANAGE_PERMISSION) {
+            actions.push("retire".to_owned());
+        }
     }
-    if write {
+    if ctx.has_permission(MANAGE_PERMISSION)
+        && !(kind == "container" && status == Some(ContainerStatus::Retired))
+    {
         actions.push("print_label".to_owned());
     }
     actions
@@ -737,7 +846,7 @@ pub async fn scan_resolve(
     };
     if let Some(id) = target.container_id {
         let container = fetch_container(&mut tx, id, false).await?;
-        if ctx.has_permission(WRITE_PERMISSION) {
+        if ctx.has_permission(STATUS_PERMISSION) {
             insert_event(
                 &mut tx,
                 ws,
@@ -930,7 +1039,7 @@ pub async fn container_create(
     ctx: RequestContext,
     ApiJson(body): ApiJson<CreateContainers>,
 ) -> ApiResult<Response> {
-    ctx.require(WRITE_PERMISSION)?;
+    ctx.require(MANAGE_PERMISSION)?;
     let ws = workspace(&ctx)?;
     let user = ctx.identity.user_id;
     let serials = serials_of(&body)?;
@@ -998,14 +1107,14 @@ pub async fn container_retire(
     Path((_ws, id)): Path<(Uuid, Uuid)>,
     ApiJson(body): ApiJson<RetireBody>,
 ) -> ApiResult<Response> {
-    ctx.require(WRITE_PERMISSION)?;
+    ctx.require(MANAGE_PERMISSION)?;
     let ws = workspace(&ctx)?;
     check_note(body.note.as_deref())?;
     let mut tx = ctx.begin(&state.db).await?;
     let result = apply_status(
         &mut tx,
+        &ctx,
         ws,
-        ctx.identity.user_id,
         id,
         ContainerStatus::Retired,
         body.note.as_deref(),
@@ -1033,10 +1142,13 @@ pub async fn scan_status(
     ctx: RequestContext,
     ApiJson(body): ApiJson<ScanStatusBody>,
 ) -> ApiResult<Response> {
-    ctx.require(WRITE_PERMISSION)?;
+    ctx.require(STATUS_PERMISSION)?;
     let ws = workspace(&ctx)?;
     let status = parse_status(&body.status, "/status")?;
     ensure_not_fill(status)?;
+    if status == ContainerStatus::Retired {
+        ctx.require(MANAGE_PERMISSION)?;
+    }
     check_note(body.note.as_deref())?;
     let hash = code_hash(&body.code, "/code")?;
     let mut tx = ctx.begin(&state.db).await?;
@@ -1046,8 +1158,8 @@ pub async fn scan_status(
         .ok_or_else(|| issue("/code", "not_a_container"))?;
     let result = apply_status(
         &mut tx,
+        &ctx,
         ws,
-        ctx.identity.user_id,
         id,
         status,
         body.note.as_deref(),
@@ -1081,10 +1193,13 @@ pub async fn scan_status_batch(
     ctx: RequestContext,
     ApiJson(body): ApiJson<BatchStatusBody>,
 ) -> ApiResult<Json<BatchStatusResult>> {
-    ctx.require(WRITE_PERMISSION)?;
+    ctx.require(STATUS_PERMISSION)?;
     let ws = workspace(&ctx)?;
     let status = parse_status(&body.status, "/status")?;
     ensure_not_fill(status)?;
+    if status == ContainerStatus::Retired {
+        ctx.require(MANAGE_PERMISSION)?;
+    }
     check_note(body.note.as_deref())?;
     crate::ensure_bulk_len("/codes", body.codes.len())?;
     let hashes = body
@@ -1113,8 +1228,8 @@ pub async fn scan_status_batch(
         };
         match apply_status(
             &mut tx,
+            &ctx,
             ws,
-            ctx.identity.user_id,
             id,
             status,
             body.note.as_deref(),
@@ -1175,7 +1290,7 @@ pub async fn container_fill(
     ctx: RequestContext,
     ApiJson(body): ApiJson<FillBody>,
 ) -> ApiResult<Json<FillResult>> {
-    ctx.require(WRITE_PERMISSION)?;
+    ctx.require(STATUS_PERMISSION)?;
     let ws = workspace(&ctx)?;
     let user = ctx.identity.user_id;
     let mut ids: Vec<Uuid> = body.container_ids.clone().unwrap_or_default();
@@ -1277,6 +1392,19 @@ pub async fn container_fill(
             },
         )
         .await?;
+        let after = fetch_container(&mut tx, c.id, false).await?;
+        record(
+            &mut tx,
+            &ctx,
+            ws,
+            &after,
+            AuditEvent::ContainerFill,
+            "container.filled",
+            json!({"status": c.status}),
+            json!({"status": "filled", "packaging_run_line_id": body.packaging_run_line_id,
+                   "lot_id": body.lot_id}),
+        )
+        .await?;
     }
     let mut items = Vec::with_capacity(ids.len());
     for id in &ids {
@@ -1286,7 +1414,9 @@ pub async fn container_fill(
     Ok(Json(FillResult { items }))
 }
 
-/// Recall query: the containers filled from a stock lot.
+/// Recall query: the containers filled from a stock lot. A container matches when its last fill
+/// names the lot, or when its last fill line belongs to a batch that consumed the lot. Each
+/// container is listed once.
 #[utoipa::path(
     get,
     path = "/v1/workspaces/{workspace_id}/recall/lots/{lot_id}/containers",
@@ -1328,7 +1458,12 @@ pub async fn recall_containers(
              (SELECT max(e.occurred_at) FROM container_event e \
                WHERE e.container_id = c.id AND e.event_type = 'fill') AS filled_at \
          FROM container c JOIN package_types p ON p.id = c.package_type_id \
-         WHERE c.deleted_at IS NULL AND c.last_lot_id = $1 \
+         WHERE c.deleted_at IS NULL \
+           AND (c.last_lot_id = $1 OR c.last_fill_line_id IN ( \
+                SELECT l.id FROM packaging_run_lines l WHERE l.deleted_at IS NULL \
+                  AND l.batch_id IN (SELECT m.batch_id FROM stock_movements m \
+                                     WHERE m.lot_id = $1 AND m.kind = 'consume' \
+                                       AND m.batch_id IS NOT NULL))) \
            AND (CASE WHEN $2::text IS NULL THEN c.status IN ('filled', 'out') \
                      ELSE c.status = $2 END) \
            AND ($3::uuid IS NULL OR c.id {cmp} $3) \
@@ -1353,6 +1488,13 @@ pub async fn recall_containers(
 
 // --- labels -------------------------------------------------------------------------------
 
+/// Labels on one PDF page: 3 columns and 8 rows.
+const LABELS_PER_PAGE: usize = 24;
+const COLUMNS: usize = 3;
+const ROWS: usize = 8;
+/// Page margin in points.
+const MARGIN: f32 = 18.0;
+
 /// The text of one label.
 struct LabelText {
     caption: &'static str,
@@ -1369,6 +1511,9 @@ async fn label_text(tx: &mut PgConnection, kind: &str, id: Uuid) -> ApiResult<La
     match kind {
         "container" => {
             let c = fetch_container(tx, id, false).await?;
+            if c.status == ContainerStatus::Retired.as_str() {
+                return Err(conflict("/status", "container_retired"));
+            }
             Ok(LabelText {
                 caption: "CONTAINER",
                 title: c.serial_number,
@@ -1383,7 +1528,7 @@ async fn label_text(tx: &mut PgConnection, kind: &str, id: Uuid) -> ApiResult<La
             Ok(LabelText {
                 caption: "TANK",
                 title: v.code,
-                lines: vec![format!("{} L", trim_number(v.capacity_l)), v.name, v.kind],
+                lines: vec![format!("{} L", trim_number(v.capacity_l)), v.name],
             })
         }
         "lot" => {
@@ -1402,116 +1547,186 @@ async fn label_text(tx: &mut PgConnection, kind: &str, id: Uuid) -> ApiResult<La
     }
 }
 
-/// Folds text to ASCII for the base PDF fonts. Other characters become `?`.
-fn ascii(text: &str) -> Vec<u8> {
-    text.chars()
-        .map(|c| {
-            if c.is_ascii() && !c.is_ascii_control() {
-                c as u8
-            } else {
-                b'?'
+/// Folds text to ASCII for the built-in PDF fonts and escapes the PDF string characters.
+/// Other characters become `?`.
+fn pdf_string(text: &str) -> String {
+    let mut out = String::from("(");
+    for c in text.chars() {
+        match c {
+            '(' | ')' | '\\' => {
+                out.push('\\');
+                out.push(c);
             }
-        })
-        .collect()
+            c if c.is_ascii() && !c.is_ascii_control() => out.push(c),
+            _ => out.push('?'),
+        }
+    }
+    out.push(')');
+    out
 }
 
-/// Draws one page of 90 x 50 mm: the QR code on the left, the text on the right.
+/// Page size in points of a `paper` value.
+fn paper_size(paper: Option<&str>) -> ApiResult<(f32, f32)> {
+    match paper.unwrap_or("a4") {
+        "a4" => Ok((595.28, 841.89)),
+        "letter" => Ok((612.0, 792.0)),
+        _ => Err(issue("paper", "invalid_value")),
+    }
+}
+
+/// The content stream of one page: a grid of up to 24 labels.
 #[allow(clippy::cast_precision_loss)]
-fn label_page(qr: &qrcode::QrCode, text: &LabelText) -> pdf_writer::Content {
-    use pdf_writer::{Content, Name, Str};
-    const H: f32 = 141.7;
-    const QUIET: usize = 2;
-    let width = qr.width();
-    let side = 113.4; // 40 mm
-    let module = side / (width + 2 * QUIET) as f32;
-    let (x0, y0) = (14.0, (H - side) / 2.0);
-    let mut c = Content::new();
-    c.set_fill_rgb(0.0, 0.0, 0.0);
-    let colors = qr.to_colors();
-    for row in 0..width {
-        for col in 0..width {
-            if colors[row * width + col] == qrcode::Color::Dark {
-                let x = x0 + (col + QUIET) as f32 * module;
-                let y = y0 + side - (row + QUIET + 1) as f32 * module;
-                c.rect(x, y, module, module);
-            }
-        }
-    }
-    c.fill_nonzero();
-    let tx = x0 + side + 12.0;
-    let avail = 255.1 - tx - 10.0;
-    let title = ascii(&text.title);
-    let font_size = (avail / (title.len().max(1) as f32 * 0.6)).clamp(8.0, 20.0);
-    c.begin_text();
-    c.set_font(Name(b"F1"), 7.0).next_line(tx, H - 34.0);
-    c.show(Str(text.caption.as_bytes()));
-    c.set_font(Name(b"F2"), font_size)
-        .next_line(0.0, -(font_size + 4.0));
-    c.show(Str(&title));
-    c.set_font(Name(b"F1"), 10.0).next_line(0.0, -16.0);
-    for (i, line) in text.lines.iter().enumerate() {
-        if i > 0 {
-            c.next_line(0.0, -13.0);
-        }
-        c.show(Str(&ascii(line)));
-    }
-    c.end_text();
-    c
-}
-
-fn label_pdf(labels: &[(String, LabelText)]) -> ApiResult<Vec<u8>> {
-    use pdf_writer::{Finish, Name, Pdf, Rect, Ref};
-    let (catalog, tree, regular, bold) = (Ref::new(1), Ref::new(2), Ref::new(3), Ref::new(4));
-    let mut pdf = Pdf::new();
-    pdf.catalog(catalog).pages(tree);
-    let slot = |i: usize| i32::try_from(i * 2).unwrap_or(0);
-    let page_ids: Vec<Ref> = (0..labels.len()).map(|i| Ref::new(5 + slot(i))).collect();
-    pdf.pages(tree)
-        .kids(page_ids.iter().copied())
-        .count(i32::try_from(labels.len()).unwrap_or(0));
-    pdf.type1_font(regular).base_font(Name(b"Helvetica"));
-    pdf.type1_font(bold).base_font(Name(b"Helvetica-Bold"));
-    for (i, (payload, text)) in labels.iter().enumerate() {
+fn page_content(chunk: &[(String, LabelText)], (width, height): (f32, f32)) -> ApiResult<String> {
+    use std::fmt::Write;
+    let cell_w = (width - 2.0 * MARGIN) / COLUMNS as f32;
+    let cell_h = (height - 2.0 * MARGIN) / ROWS as f32;
+    let mut out = String::new();
+    for (k, (payload, text)) in chunk.iter().enumerate() {
+        let x = MARGIN + (k % COLUMNS) as f32 * cell_w;
+        let y = height - MARGIN - ((k / COLUMNS) + 1) as f32 * cell_h;
+        let _ = writeln!(
+            out,
+            "0.75 G 0.25 w {x:.2} {y:.2} {cell_w:.2} {cell_h:.2} re S"
+        );
         let qr = qrcode::QrCode::with_error_correction_level(payload, qrcode::EcLevel::M)
             .map_err(|_| ApiError::new(ErrorCode::Internal))?;
-        let content_id = Ref::new(6 + slot(i));
-        let mut page = pdf.page(page_ids[i]);
-        page.media_box(Rect::new(0.0, 0.0, 255.1, 141.7));
-        page.parent(tree);
-        page.contents(content_id);
-        let mut resources = page.resources();
-        let mut fonts = resources.fonts();
-        fonts.pair(Name(b"F1"), regular);
-        fonts.pair(Name(b"F2"), bold);
-        fonts.finish();
-        resources.finish();
-        page.finish();
-        let content = label_page(&qr, text);
-        pdf.stream(content_id, &content.finish());
+        let modules = qr.width();
+        let quiet = 2usize;
+        let side = cell_h - 12.0;
+        let module = side / (modules + 2 * quiet) as f32;
+        let (qx, qy) = (x + 6.0, y + 6.0);
+        out.push_str("0 g\n");
+        let colors = qr.to_colors();
+        for row in 0..modules {
+            for col in 0..modules {
+                if colors[row * modules + col] == qrcode::Color::Dark {
+                    let mx = qx + (col + quiet) as f32 * module;
+                    let my = qy + side - (row + quiet + 1) as f32 * module;
+                    let _ = writeln!(out, "{mx:.2} {my:.2} {module:.2} {module:.2} re");
+                }
+            }
+        }
+        out.push_str("f\n");
+        let tx = qx + side + 6.0;
+        let avail = cell_w - side - 18.0;
+        let font_size = (avail / (text.title.chars().count().max(1) as f32 * 0.6)).clamp(6.0, 13.0);
+        let top = y + cell_h - 16.0;
+        let _ = writeln!(
+            out,
+            "BT /F1 6 Tf {tx:.2} {top:.2} Td {} Tj ET",
+            pdf_string(text.caption)
+        );
+        let _ = writeln!(
+            out,
+            "BT /F2 {font_size:.1} Tf {tx:.2} {:.2} Td {} Tj ET",
+            top - font_size - 3.0,
+            pdf_string(&text.title)
+        );
+        for (i, line) in text.lines.iter().enumerate() {
+            let _ = writeln!(
+                out,
+                "BT /F1 8 Tf {tx:.2} {:.2} Td {} Tj ET",
+                top - font_size - 16.0 - i as f32 * 10.0,
+                pdf_string(line)
+            );
+        }
     }
-    Ok(pdf.finish())
+    Ok(out)
+}
+
+/// Writes the PDF by hand: a catalog, a page tree, two built-in fonts (Helvetica and
+/// Helvetica-Bold) and one page with one content stream for each 24 labels.
+fn label_pdf(labels: &[(String, LabelText)], size: (f32, f32)) -> ApiResult<Vec<u8>> {
+    let chunks: Vec<&[(String, LabelText)]> = labels.chunks(LABELS_PER_PAGE).collect();
+    let mut out: Vec<u8> = b"%PDF-1.4\n".to_vec();
+    let mut offsets: Vec<usize> = Vec::new();
+    let mut object = |out: &mut Vec<u8>, body: &str| {
+        offsets.push(out.len());
+        out.extend_from_slice(format!("{} 0 obj\n{body}\nendobj\n", offsets.len()).as_bytes());
+    };
+    let kids: Vec<String> = (0..chunks.len())
+        .map(|i| format!("{} 0 R", 5 + 2 * i))
+        .collect();
+    object(&mut out, "<< /Type /Catalog /Pages 2 0 R >>");
+    object(
+        &mut out,
+        &format!(
+            "<< /Type /Pages /Kids [{}] /Count {} >>",
+            kids.join(" "),
+            chunks.len()
+        ),
+    );
+    object(
+        &mut out,
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>",
+    );
+    object(
+        &mut out,
+        "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>",
+    );
+    for (i, chunk) in chunks.iter().enumerate() {
+        object(
+            &mut out,
+            &format!(
+                "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {:.2} {:.2}] \
+                 /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents {} 0 R >>",
+                size.0,
+                size.1,
+                6 + 2 * i
+            ),
+        );
+        let content = page_content(chunk, size)?;
+        object(
+            &mut out,
+            &format!(
+                "<< /Length {} >>\nstream\n{content}endstream",
+                content.len()
+            ),
+        );
+    }
+    let xref = out.len();
+    out.extend_from_slice(
+        format!("xref\n0 {}\n0000000000 65535 f \n", offsets.len() + 1).as_bytes(),
+    );
+    for offset in &offsets {
+        out.extend_from_slice(format!("{offset:010} 00000 n \n").as_bytes());
+    }
+    out.extend_from_slice(
+        format!(
+            "trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n",
+            offsets.len() + 1
+        )
+        .as_bytes(),
+    );
+    Ok(out)
 }
 
 /// Prints labels. Each target gets a new scan code whose token is in the QR code. The answer is
-/// one PDF with one page for each target. Every call issues new codes.
+/// one PDF with 24 labels on a page (A4 or US Letter by `paper`). Every call issues new codes. A
+/// reprint does not revoke earlier codes: retire a container to revoke its codes.
 #[utoipa::path(
     post,
     path = "/v1/workspaces/{workspace_id}/labels",
     tag = "containers",
     operation_id = "label_print",
-    params(("workspace_id" = Uuid, Path, description = "Workspace")),
+    params(
+        ("workspace_id" = Uuid, Path, description = "Workspace"),
+        ("paper" = Option<String>, Query, description = "`a4` (default) or `letter`")
+    ),
     request_body = LabelBody,
-    responses((status = 200, description = "A PDF file, one page for each target",
-        body = PdfFile, content_type = "application/pdf", example = json!("%PDF-1.7")))
+    responses((status = 200, description = "A PDF file, 24 labels on each page",
+        body = PdfFile, content_type = "application/pdf", example = json!("%PDF-1.4")))
 )]
 pub async fn label_print(
     State(state): State<AppState>,
     ctx: RequestContext,
+    ApiQuery(query): ApiQuery<PaperQuery>,
     ApiJson(body): ApiJson<LabelBody>,
 ) -> ApiResult<Response> {
-    ctx.require(WRITE_PERMISSION)?;
+    ctx.require(MANAGE_PERMISSION)?;
     let ws = workspace(&ctx)?;
     let user = ctx.identity.user_id;
+    let size = paper_size(query.paper.as_deref())?;
     if body.targets.is_empty() || body.targets.len() > LABEL_MAX_TARGETS {
         return Err(ApiError::validation(vec![
             FieldIssue::new("/targets", "too_many_items")
@@ -1528,22 +1743,40 @@ pub async fn label_print(
                 e
             }
         })?;
-        let (code_id, token) = insert_code(&mut tx, ws, user, &t.kind, t.id).await?;
-        if body.revoke_previous == Some(true) {
-            sqlx::query(sqlx::AssertSqlSafe(format!(
-                "UPDATE scan_code SET revoked_at = now(), updated_by = $3 \
-                 WHERE {} = $1 AND id <> $2 AND revoked_at IS NULL",
-                target_column(&t.kind)
-            )))
-            .bind(t.id)
-            .bind(code_id)
-            .bind(user)
-            .execute(&mut *tx)
-            .await?;
-        }
+        let (_, token) = insert_code(&mut tx, ws, user, &t.kind, t.id).await?;
         labels.push((format!("{QR_PREFIX}{token}"), text));
     }
-    let pdf = label_pdf(&labels)?;
+    let pdf = label_pdf(&labels, size)?;
+    let targets: Vec<Value> = body
+        .targets
+        .iter()
+        .map(|t| json!({"kind": t.kind, "id": t.id}))
+        .collect();
+    db::append_audit(
+        &mut tx,
+        ws,
+        &NewAuditEntry {
+            actor_kind: ctx.identity.actor_kind,
+            actor_id: Some(user),
+            event: AuditEvent::LabelIssue,
+            record_kind: "label".to_owned(),
+            record_id: None,
+            previous_value: None,
+            new_value: Some(json!({"targets": targets})),
+            reason: None,
+        },
+    )
+    .await?;
+    db::outbox::enqueue(
+        &mut tx,
+        &db::outbox::NewOutboxEvent {
+            topic: "label.issued".to_owned(),
+            workspace_id: Some(ws),
+            entity: None,
+            data: Some(json!({"count": targets.len()})),
+        },
+    )
+    .await?;
     tx.commit().await?;
     let mut response = (StatusCode::OK, pdf).into_response();
     let h = response.headers_mut();
@@ -1648,46 +1881,46 @@ mod spec {
     pub(super) const OPERATIONS: &[OperationSpec] = &[
         file_op(
             "scan_resolve",
-            Some("recipe.view"),
+            Some("field.view"),
             Some(Concurrency::Append),
             WRITE,
         ),
-        file_op("container_list", Some("recipe.view"), None, READ),
-        file_op("container_get", Some("recipe.view"), None, READ),
+        file_op("container_list", Some("field.view"), None, READ),
+        file_op("container_get", Some("field.view"), None, READ),
         file_op(
             "container_create",
-            Some("stock.move"),
+            Some("container.manage"),
             Some(Concurrency::Append),
             CREATE,
         ),
         file_op(
             "container_retire",
-            Some("stock.move"),
+            Some("container.manage"),
             Some(Concurrency::Append),
             WRITE,
         ),
         file_op(
             "scan_status",
-            Some("stock.move"),
+            Some("container.status"),
             Some(Concurrency::Append),
             WRITE,
         ),
         file_op(
             "scan_status_batch",
-            Some("stock.move"),
+            Some("container.status"),
             Some(Concurrency::Append),
             WRITE,
         ),
         file_op(
             "container_fill",
-            Some("stock.move"),
+            Some("container.status"),
             Some(Concurrency::Append),
             CREATE,
         ),
-        file_op("recall_containers", Some("recipe.view"), None, READ),
+        file_op("recall_containers", Some("field.view"), None, READ),
         file_op(
             "label_print",
-            Some("stock.move"),
+            Some("container.manage"),
             Some(Concurrency::Append),
             WRITE,
         ),
@@ -1734,7 +1967,8 @@ mod spec {
         RetireBody,
         FillBody,
         LabelTarget,
-        LabelBody
+        LabelBody,
+        PaperQuery
     )),
     tags((name = "containers", description = "Containers, scan codes, status changes, fills, recall and labels"))
 )]

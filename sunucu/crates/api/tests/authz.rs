@@ -365,8 +365,8 @@ async fn audit_actions(pool: &PgPool, ws: Uuid) -> Vec<String> {
 
 /// The plan's matrix (plan > Yetki matrisi), written out independently of the code: rows are
 /// permissions, the string says which roles have it. a admin, b brewmaster, o operator,
-/// q quality, d warehouse, v viewer.
-const MATRIX: [(&str, &str); 17] = [
+/// q quality, d warehouse, v viewer, s saha.
+const MATRIX: [(&str, &str); 20] = [
     ("recipe.view", "aboqdv"),
     ("recipe.edit", "ab"),
     ("recipe.approve", "ab"),
@@ -385,15 +385,19 @@ const MATRIX: [(&str, &str); 17] = [
     ("billing.manage", "a"),
     ("support.grant", "a"),
     ("devices.manage", "a"),
+    ("field.view", "abosqd"),
+    ("container.status", "abosd"),
+    ("container.manage", "abd"),
 ];
 
-const MATRIX_ROLES: [(char, &str); 6] = [
+const MATRIX_ROLES: [(char, &str); 7] = [
     ('a', "admin"),
     ('b', "brewmaster"),
     ('o', "operator"),
     ('q', "quality"),
     ('d', "warehouse"),
     ('v', "viewer"),
+    ('s', "saha"),
 ];
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -402,7 +406,7 @@ async fn every_cell_of_the_matrix_holds_for_every_preset_role(pool: PgPool) {
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "business").await;
     let all = roles(&w, ws, &owner).await;
-    assert_eq!(all.len(), 6);
+    assert_eq!(all.len(), 7);
 
     for (letter, key) in MATRIX_ROLES {
         let (member, _) = join(&w, ws, &owner, json!({"role_id": role_id(&all, key)})).await;
@@ -569,7 +573,7 @@ async fn missing_permission_is_403_and_foreign_workspace_records_are_404(pool: P
     .await;
     assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
     // And the other workspace is untouched.
-    assert_eq!(roles(&w, other_ws, &other_owner).await.len(), 6);
+    assert_eq!(roles(&w, other_ws, &other_owner).await.len(), 7);
 }
 
 // --- last administrator and self protection ------------------------------------------------
@@ -714,7 +718,13 @@ async fn roles_can_be_created_copied_edited_and_deleted_and_changes_apply_at_onc
     assert_eq!(r.body["template_key"], "operator");
     assert_eq!(
         r.body["permissions"],
-        json!(["batch.record", "quality.record", "recipe.view"])
+        json!([
+            "batch.record",
+            "container.status",
+            "field.view",
+            "quality.record",
+            "recipe.view"
+        ])
     );
     let copy = r.body["id"].as_str().unwrap().to_owned();
     // Names are unique ignoring case.
@@ -848,7 +858,7 @@ async fn roles_can_be_created_copied_edited_and_deleted_and_changes_apply_at_onc
             .body["items"],
         json!([])
     );
-    assert_eq!(roles(&w, ws, &owner).await.len(), 6);
+    assert_eq!(roles(&w, ws, &owner).await.len(), 7);
 
     // Role, assignment and invitation changes are in the audit chain.
     let actions = audit_actions(&pool, ws).await;
@@ -1100,7 +1110,7 @@ async fn an_invitation_works_once_for_seven_days_and_can_be_revoked(pool: PgPool
         StatusCode::NOT_FOUND
     );
     assert_eq!(probe(&w, ws, &second).await.status, StatusCode::NOT_FOUND);
-    assert_eq!(perms_of(&probe(&w, ws, &guest).await).len(), 3);
+    assert_eq!(perms_of(&probe(&w, ws, &guest).await).len(), 5);
     assert!(
         get_as(&w, &format!("{base}/invitations"), &owner)
             .await

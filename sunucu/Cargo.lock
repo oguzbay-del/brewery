@@ -119,7 +119,6 @@ dependencies = [
  "notifier",
  "opentelemetry",
  "opentelemetry_sdk",
- "pdf-writer",
  "prost",
  "qrcode",
  "redis",
@@ -2750,18 +2749,6 @@ checksum = "112d82ceb8c5bf524d9af484d4e4970c9fd5a0cc15ba14ad93dccd28873b0629"
 dependencies = [
  "digest 0.11.3",
  "hmac",
-]
-
-[[package]]
-name = "pdf-writer"
-version = "0.15.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5e456864a7a304047bff84977dc6fb162bd956475d40ba50b2dcecaada7f753"
-dependencies = [
- "bitflags 2.13.2",
- "itoa",
- "memchr",
- "ryu",
 ]
 
 [[package]]

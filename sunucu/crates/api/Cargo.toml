@@ -23,7 +23,6 @@ futures-util.workspace = true
 getrandom.workspace = true
 hmac.workspace = true
 opentelemetry = "0.33.1"
-pdf-writer.workspace = true
 prost.workspace = true
 qrcode.workspace = true
 redis.workspace = true
