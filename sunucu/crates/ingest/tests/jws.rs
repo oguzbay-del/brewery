@@ -23,6 +23,7 @@ fn note(kind: &'static str) -> Notification {
         subtype: None,
         workspace: "22222222-2222-2222-2222-222222222222".into(),
         original_transaction_id: "1000000000001".into(),
+        product_id: "pro.monthly",
         signed_ms: 1_800_000_000_000,
         expires_ms: 1_800_000_000_000 + 30 * 86_400_000,
     }
@@ -163,11 +164,12 @@ fn notification_types_map_to_updates() {
             now(),
             Some("app.demleme"),
             "Production",
+            &[],
         )
         .unwrap()
         {
             Parsed::Update(u) => Some(u.kind),
-            Parsed::Ignored { .. } => None,
+            Parsed::Ignored { .. } | Parsed::ProductNotAllowed { .. } => None,
         }
     };
     assert_eq!(kind("SUBSCRIBED", Some("INITIAL_BUY")), Some(Active));
@@ -187,7 +189,7 @@ fn bundle_mismatch_is_rejected() {
     let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
     let jws = pki.notification(&note("DID_RENEW"));
     assert_eq!(
-        parse_notification(&v, &jws, now(), Some("app.other"), "Production"),
+        parse_notification(&v, &jws, now(), Some("app.other"), "Production", &[]),
         Err(AppleError::Bundle)
     );
 }
@@ -198,7 +200,7 @@ fn missing_bundle_setting_fails_closed() {
     let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
     let jws = pki.notification(&note("DID_RENEW"));
     assert_eq!(
-        parse_notification(&v, &jws, now(), None, "Production"),
+        parse_notification(&v, &jws, now(), None, "Production", &[]),
         Err(AppleError::NotConfigured)
     );
 }
@@ -209,12 +211,12 @@ fn sandbox_notification_is_rejected_in_production() {
     let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
     let jws = pki.notification_for(&note("DID_RENEW"), "app.demleme", "Sandbox");
     assert_eq!(
-        parse_notification(&v, &jws, now(), Some("app.demleme"), "Production"),
+        parse_notification(&v, &jws, now(), Some("app.demleme"), "Production", &[]),
         Err(AppleError::Environment)
     );
     // The same notification is accepted when the service runs in Sandbox.
     assert!(matches!(
-        parse_notification(&v, &jws, now(), Some("app.demleme"), "Sandbox"),
+        parse_notification(&v, &jws, now(), Some("app.demleme"), "Sandbox", &[]),
         Ok(Parsed::Update(_))
     ));
 }
@@ -225,7 +227,7 @@ fn correct_notification_applies() {
     let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
     let jws = pki.notification(&note("DID_RENEW"));
     assert!(matches!(
-        parse_notification(&v, &jws, now(), Some("app.demleme"), "Production"),
+        parse_notification(&v, &jws, now(), Some("app.demleme"), "Production", &[]),
         Ok(Parsed::Update(_))
     ));
 }
@@ -239,6 +241,7 @@ async fn route_answers_503_without_bundle_setting() {
         apple: JwsVerifier::apple(),
         bundle_id: None,
         apple_environment: "Production".to_owned(),
+        apple_product_ids: Vec::new(),
         web_payment: None,
         github_secret: None,
     };

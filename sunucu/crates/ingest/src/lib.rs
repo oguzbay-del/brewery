@@ -12,7 +12,10 @@ pub mod apple;
 pub mod device;
 pub mod jws;
 
-use std::sync::Arc;
+use std::sync::{
+    Arc,
+    atomic::{AtomicU64, Ordering},
+};
 
 use axum::{
     Json, Router,
@@ -36,6 +39,8 @@ pub const SERVICE_NAME: &str = "ingest";
 /// Default listen port (override with `PORT`).
 pub const DEFAULT_PORT: u16 = 8082;
 
+static IGNORED_APPLE_PRODUCT_COUNT: AtomicU64 = AtomicU64::new(0);
+
 /// State of the webhook routes.
 #[derive(Clone)]
 pub struct IngestState {
@@ -47,6 +52,8 @@ pub struct IngestState {
     pub bundle_id: Option<String>,
     /// Accepted App Store environment (`APPLE_ENVIRONMENT`: `Production` or `Sandbox`).
     pub apple_environment: String,
+    /// Accepted App Store product IDs (`APPLE_PRODUCT_IDS`). Empty accepts all product IDs.
+    pub apple_product_ids: Vec<String>,
     /// Web payment provider; `None` until decision O6.
     pub web_payment: Option<Arc<dyn WebPaymentProvider>>,
     /// Secret of the webhook of the support repository (`GITHUB_WEBHOOK_SECRET`); `None`
@@ -89,8 +96,13 @@ pub fn router_with(state: IngestState) -> Router {
 
 /// Builds the state from the environment: `DATABASE_URL` (role `app_api`) and the optional
 /// `APPLE_BUNDLE_ID` (required for the App Store route) and `APPLE_ENVIRONMENT` (default
-/// `Production`). Returns `None` without a database.
+/// `Production`) and `APPLE_PRODUCT_IDS` (empty accepts all products). Returns `None` without a
+/// database.
 pub fn state_from_env() -> Result<Option<IngestState>, String> {
+    let apple_product_ids = parse_product_ids(std::env::var("APPLE_PRODUCT_IDS").ok().as_deref());
+    if apple_product_ids.is_empty() {
+        tracing::warn!("APPLE_PRODUCT_IDS is not set; all product IDs are accepted");
+    }
     let web_payment = PaddleProvider::from_env()
         .map_err(|error| error.to_string())?
         .map(|provider| Arc::new(provider) as Arc<dyn WebPaymentProvider>);
@@ -112,6 +124,7 @@ pub fn state_from_env() -> Result<Option<IngestState>, String> {
         apple: jws::JwsVerifier::apple(),
         bundle_id,
         apple_environment,
+        apple_product_ids,
         web_payment,
         github_secret: std::env::var("GITHUB_WEBHOOK_SECRET")
             .ok()
@@ -130,6 +143,16 @@ fn parse_environment(value: Option<&str>) -> Result<String, String> {
             "APPLE_ENVIRONMENT must be Production or Sandbox, got {other:?}"
         )),
     }
+}
+
+fn parse_product_ids(value: Option<&str>) -> Vec<String> {
+    value
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|id| !id.is_empty())
+        .map(str::to_owned)
+        .collect()
 }
 
 type Reply = (StatusCode, Json<Value>);
@@ -175,12 +198,18 @@ async fn app_store(State(state): State<IngestState>, body: Json<AppStoreBody>) -
         now_unix(),
         state.bundle_id.as_deref(),
         &state.apple_environment,
+        &state.apple_product_ids,
     ) {
         Err(AppleError::NotConfigured) => {
             tracing::error!("App Store notification refused: APPLE_BUNDLE_ID is not set");
             reply(StatusCode::SERVICE_UNAVAILABLE, "no_bundle_id")
         }
         Ok(apple::Parsed::Update(update)) => store(&state, &update).await,
+        Ok(apple::Parsed::ProductNotAllowed { notification_type }) => {
+            let count = IGNORED_APPLE_PRODUCT_COUNT.fetch_add(1, Ordering::Relaxed) + 1;
+            tracing::warn!(%notification_type, count, "App Store product is not allowed");
+            reply(StatusCode::OK, "ignored")
+        }
         Ok(apple::Parsed::Ignored { notification_type }) => {
             tracing::info!(%notification_type, "App Store notification ignored");
             reply(StatusCode::OK, "ignored")
@@ -270,6 +299,17 @@ mod tests {
         assert_eq!(parse_environment(Some("")).unwrap(), "Production");
         assert_eq!(parse_environment(Some("Sandbox")).unwrap(), "Sandbox");
         assert!(parse_environment(Some("sandbox")).is_err());
+    }
+
+    #[test]
+    fn apple_product_ids_setting() {
+        assert!(parse_product_ids(None).is_empty());
+        assert!(parse_product_ids(Some("")).is_empty());
+        assert!(parse_product_ids(Some(" , , ")).is_empty());
+        assert_eq!(
+            parse_product_ids(Some(" pro.monthly, ,pro.yearly ,")),
+            ["pro.monthly", "pro.yearly"]
+        );
     }
 
     #[tokio::test]

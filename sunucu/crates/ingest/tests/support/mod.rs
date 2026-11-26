@@ -105,7 +105,7 @@ impl Pki {
         let tx = self.sign(&json!({
             "originalTransactionId": n.original_transaction_id,
             "transactionId": format!("{}-tx", n.id),
-            "productId": "pro.monthly",
+            "productId": n.product_id,
             "appAccountToken": n.workspace,
             "expiresDate": n.expires_ms,
             "bundleId": bundle,
@@ -133,6 +133,7 @@ pub struct Notification {
     pub subtype: Option<&'static str>,
     pub workspace: String,
     pub original_transaction_id: String,
+    pub product_id: &'static str,
     pub signed_ms: i64,
     pub expires_ms: i64,
 }
