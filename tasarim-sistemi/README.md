@@ -68,4 +68,6 @@ GRISTORA; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve we
 ## İkonlar ve logo
 
 - Uygulamada Apple SF Symbols kullanılır; çizgi kalınlığı metin ağırlığını izler. Konsept ve buradaki önizlemeler SF Symbols'e benzeyen basit çizgi ikonlarla çizilmiştir; web uygulamasında SF Symbols lisansı web'e izin vermediği için ayrı bir ikon seti seçilmesi gerekir.
-- Logo henüz yok; ürün adı düz yazıyla yazılır. Logo hazır olunca `assets/Logos/` grubuna eklenecek.
+- Onaylı marka dosyaları: [açık zemin logosu](assets/brand/gristora-logo.svg), [koyu zemin logosu](assets/brand/gristora-logo-light.svg), [sembol](assets/brand/gristora-symbol.svg), [sloganlı logo](assets/brand/gristora-logo-proof.svg). Dosyaları değiştirme.
+- Plus Jakarta Sans yalnız marka başlıkları içindir. Uygulama sistem yazısını korur.
+- Marka renkleri `brand-forest`, `brand-amber`, `brand-amber-text`, `brand-stone`, `brand-slate` mevcut semantik renklerin yerine geçmez. Koyu tema marka değerleri ve iOS varlık kataloğu henüz kararlaştırılmadı.
