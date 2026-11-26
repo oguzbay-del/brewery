@@ -23,6 +23,7 @@ use uuid::Uuid;
 
 use crate::{
     AppState,
+    auth::step_up::ProtectedAction,
     context::RequestContext,
     error::{ApiJson, ApiResult},
     library::{created_response, issue, not_found, workspace},
@@ -137,6 +138,10 @@ pub async fn supportgrant_create(
     ApiJson(new): ApiJson<NewGrant>,
 ) -> ApiResult<Response> {
     ctx.require(PERMISSION)?;
+    if let Some(svc) = &state.auth_services {
+        svc.require_step_up(&ctx, ProtectedAction::SupportGrant)
+            .await?;
+    }
     let ws = workspace(&ctx)?;
     let hours = new.hours.unwrap_or(MAX_HOURS);
     if !(1..=MAX_HOURS).contains(&hours) {

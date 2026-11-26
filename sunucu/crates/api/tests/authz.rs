@@ -37,6 +37,8 @@ const ORIGIN: &str = "https://app.example.com";
 struct World {
     app: Router,
     mail: Arc<MemoryMailer>,
+    /// Owner pool, used to give test users a passkey and a fresh second step.
+    pool: PgPool,
 }
 
 /// Sends every mail to memory and, when set, to a real SMTP relay as well.
@@ -118,7 +120,11 @@ async fn world_with(pool: &PgPool, redis: Redis, smtp: Option<SmtpMailer>) -> Wo
             ),
     );
     let app = api::build(state.clone(), probes);
-    World { app, mail }
+    World {
+        app,
+        mail,
+        pool: pool.clone(),
+    }
 }
 
 async fn world(pool: &PgPool) -> World {
@@ -217,10 +223,43 @@ async fn login(w: &World) -> User {
     )
     .await;
     assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
-    User {
+    let user = User {
         token: r.body["session"]["token"].as_str().unwrap().to_owned(),
         id: r.body["user"]["id"].as_str().unwrap().parse().unwrap(),
-    }
+    };
+    // Role, member, assignment and invitation changes need a passkey and a fresh second step
+    // (ADR-0009 rule 5.3). Every test user holds both unless a test removes the second step.
+    sqlx::query(
+        "INSERT INTO passkeys (id, user_id, credential_id, public_key) VALUES ($1, $2, $3, $3)",
+    )
+    .bind(Uuid::now_v7())
+    .bind(user.id)
+    .bind(Uuid::now_v7().as_bytes().to_vec())
+    .execute(&w.pool)
+    .await
+    .unwrap();
+    fresh_step_up(w, &user).await;
+    user
+}
+
+/// Marks every session of `u` as having passed the second step just now.
+async fn fresh_step_up(w: &World, u: &User) {
+    sqlx::query("UPDATE sessions SET step_up_at = now() WHERE user_id = $1")
+        .bind(u.id)
+        .execute(&w.pool)
+        .await
+        .unwrap();
+}
+
+/// Removes the second step of every session of `u` (a stale second step).
+async fn stale_step_up(w: &World, u: &User) {
+    sqlx::query(
+        "UPDATE sessions SET step_up_at = now() - interval '16 minutes' WHERE user_id = $1",
+    )
+    .bind(u.id)
+    .execute(&w.pool)
+    .await
+    .unwrap();
 }
 
 async fn workspace(w: &World, owner: &User, mode: &str) -> Uuid {
@@ -1275,4 +1314,146 @@ async fn home_owner_cannot_share_a_recipe_as_editor_or_viewer(pool: PgPool) {
         (r.status, code(&r)),
         (StatusCode::CONFLICT, "home_mode_only")
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn access_changes_need_a_fresh_second_step(pool: PgPool) {
+    let w = world(&pool).await;
+    let owner = login(&w).await;
+    let ws = workspace(&w, &owner, "business").await;
+    let base = format!("/v1/workspaces/{ws}");
+    let all = roles(&w, ws, &owner).await;
+    let role = role_id(&all, "operator");
+    let (guest, member) = join(&w, ws, &owner, json!({"role_id": role})).await;
+    let copy = post_as(
+        &w,
+        &format!("{base}/roles/{role}/copy"),
+        &owner,
+        json!({"name": "Mine"}),
+    )
+    .await
+    .body;
+    let copy_id = copy["id"].as_str().unwrap().to_owned();
+    let member_version = |m: Value| m["version"].as_i64().unwrap();
+    let members = get_as(&w, &format!("{base}/members"), &owner).await.body;
+    let guest_row = members["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|m| m["user_id"] == json!(guest.id))
+        .unwrap()
+        .clone();
+    let version = member_version(guest_row);
+    let _ = member;
+
+    // A stale second step: each endpoint answers 403 step_up_required.
+    stale_step_up(&w, &owner).await;
+    let denied = |r: &Reply| {
+        (
+            r.status,
+            r.body["code"].as_str().unwrap_or_default().to_owned(),
+        )
+    };
+    let expected = (StatusCode::FORBIDDEN, "step_up_required".to_owned());
+    let r = post_as(
+        &w,
+        &format!("{base}/invitations"),
+        &owner,
+        json!({"email": unique_email(), "role_id": role}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "invitation");
+    let r = patch_as(
+        &w,
+        &format!("{base}/roles/{copy_id}"),
+        &owner,
+        Some(copy["version"].as_i64().unwrap()),
+        json!({"name": "Renamed"}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "role");
+    let r = patch_as(
+        &w,
+        &format!("{base}/members/{member}"),
+        &owner,
+        Some(version),
+        json!({"status": "disabled"}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "member");
+    let r = post_as(
+        &w,
+        &format!("{base}/members/{member}/assignments"),
+        &owner,
+        json!({"role_id": copy_id}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "assignment");
+
+    // A fresh second step: the same calls work.
+    fresh_step_up(&w, &owner).await;
+    let r = post_as(
+        &w,
+        &format!("{base}/invitations"),
+        &owner,
+        json!({"email": unique_email(), "role_id": role}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+    let r = patch_as(
+        &w,
+        &format!("{base}/roles/{copy_id}"),
+        &owner,
+        Some(copy["version"].as_i64().unwrap()),
+        json!({"name": "Renamed"}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    let r = patch_as(
+        &w,
+        &format!("{base}/members/{member}"),
+        &owner,
+        Some(version),
+        json!({"status": "disabled"}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    let r = post_as(
+        &w,
+        &format!("{base}/members/{member}/assignments"),
+        &owner,
+        json!({"role_id": copy_id}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn support_grant_and_full_export_need_a_fresh_second_step(pool: PgPool) {
+    let w = world(&pool).await;
+    let owner = login(&w).await;
+    let ws = workspace(&w, &owner, "business").await;
+    let base = format!("/v1/workspaces/{ws}");
+    let grants = format!("{base}/support/grants");
+    let exports = format!("{base}/exports");
+    let full = json!({"scope": "workspace", "format": "zip"});
+    let step_up_required = |r: &Reply| {
+        (
+            r.status,
+            r.body["code"].as_str().unwrap_or_default().to_owned(),
+        )
+    };
+    let expected = (StatusCode::FORBIDDEN, "step_up_required".to_owned());
+
+    stale_step_up(&w, &owner).await;
+    let r = post_as(&w, &grants, &owner, json!({"hours": 1})).await;
+    assert_eq!(step_up_required(&r), expected, "support grant");
+    let r = post_as(&w, &exports, &owner, full.clone()).await;
+    assert_eq!(step_up_required(&r), expected, "full export");
+
+    fresh_step_up(&w, &owner).await;
+    let r = post_as(&w, &grants, &owner, json!({"hours": 1})).await;
+    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+    let r = post_as(&w, &exports, &owner, full).await;
+    assert_eq!(r.status, StatusCode::ACCEPTED, "{:?}", r.body);
 }

@@ -28,6 +28,7 @@ use uuid::Uuid;
 use super::{
     AuthServices,
     email::{Mail, normalize_email},
+    step_up::ProtectedAction,
     tokens::{new_token, token_hash},
 };
 use crate::{
@@ -121,6 +122,21 @@ fn ws_of(ctx: &RequestContext) -> ApiResult<Uuid> {
 
 /// Opens the request transaction for a users.manage mutation: checks the permission, locks the
 /// workspace row (serializes guards) and finds the caller's member id.
+/// Checks `users.manage`, then asks for the second step (ADR-0009 rule 5.3). Call it before
+/// `begin_admin` so the step-up check does not run while a transaction holds the workspace lock.
+/// Without auth services (tests of other modules) the check is off, as in `devices.rs`.
+async fn admin_step_up(
+    state: &AppState,
+    ctx: &RequestContext,
+    action: ProtectedAction,
+) -> ApiResult<()> {
+    ctx.require_permission(Permission::UsersManage)?;
+    if let Some(svc) = &state.auth_services {
+        svc.require_step_up(ctx, action).await?;
+    }
+    Ok(())
+}
+
 async fn begin_admin(state: &AppState, ctx: &RequestContext) -> ApiResult<(Tx, Uuid, Uuid)> {
     ctx.require_permission(Permission::UsersManage)?;
     let ws = ws_of(ctx)?;
@@ -635,6 +651,7 @@ pub async fn roles_update(
     headers: HeaderMap,
     MergePatch(patch): MergePatch<Value>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, caller) = begin_admin(&state, &ctx).await?;
     let Value::Object(patch) = patch else {
         return Err(invalid("/", "invalid"));
@@ -975,6 +992,7 @@ pub async fn members_update(
     headers: HeaderMap,
     MergePatch(patch): MergePatch<Map<String, Value>>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, caller) = begin_admin(&state, &ctx).await?;
     let mut issues: Vec<_> = patch
         .keys()
@@ -1135,6 +1153,7 @@ pub async fn assignments_create(
     Path((_ws, member)): Path<(Uuid, Uuid)>,
     ApiJson(req): ApiJson<NewAssignment>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, _) = begin_admin(&state, &ctx).await?;
     let scope = parse_scope(req.scope_kind.as_deref(), req.scope_id)?;
     let exists: i64 = sqlx::query_scalar(
@@ -1331,6 +1350,9 @@ async fn create_invitation(
     must_be_mode: Option<&str>,
 ) -> ApiResult<Response> {
     let to = normalize_email(email).ok_or_else(|| invalid("/email", "invalid"))?;
+    ctx.require_permission(Permission::UsersManage)?;
+    svc.require_step_up(ctx, ProtectedAction::InviteSend)
+        .await?;
     let (mut tx, ws, _) = begin_admin(state, ctx).await?;
     let (mode, workspace_name): (String, String) =
         sqlx::query_as("SELECT mode, name FROM workspaces WHERE id = $1")

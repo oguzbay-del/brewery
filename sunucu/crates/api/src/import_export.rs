@@ -38,6 +38,7 @@ use uuid::Uuid;
 
 use crate::{
     AppState,
+    auth::step_up::ProtectedAction,
     context::RequestContext,
     engine::CalcTarget,
     error::{ApiError, ApiJson, ApiQuery, ApiResult, ErrorCode, FieldIssue},
@@ -854,6 +855,10 @@ pub async fn export_create(
     if new.scope == "workspace" {
         if new.scope_id.is_some() {
             return Err(issue("/scope_id", "not_allowed"));
+        }
+        if let Some(svc) = &state.auth_services {
+            svc.require_step_up(&ctx, ProtectedAction::FullExport)
+                .await?;
         }
     } else if new.scope_id.is_none() {
         return Err(issue("/scope_id", "required"));
