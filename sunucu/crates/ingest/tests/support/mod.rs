@@ -97,13 +97,19 @@ impl Pki {
 
     /// A `signedPayload` for a notification.
     pub fn notification(&self, n: &Notification) -> String {
+        self.notification_for(n, "app.demleme", "Production")
+    }
+
+    /// A `signedPayload` for another bundle id and environment.
+    pub fn notification_for(&self, n: &Notification, bundle: &str, environment: &str) -> String {
         let tx = self.sign(&json!({
             "originalTransactionId": n.original_transaction_id,
             "transactionId": format!("{}-tx", n.id),
             "productId": "pro.monthly",
             "appAccountToken": n.workspace,
             "expiresDate": n.expires_ms,
-            "bundleId": "app.demleme",
+            "bundleId": bundle,
+            "environment": environment,
         }));
         self.sign(&json!({
             "notificationType": n.kind,
@@ -112,8 +118,8 @@ impl Pki {
             "signedDate": n.signed_ms,
             "version": "2.0",
             "data": {
-                "environment": "Sandbox",
-                "bundleId": "app.demleme",
+                "environment": environment,
+                "bundleId": bundle,
                 "signedTransactionInfo": tx,
             },
         }))

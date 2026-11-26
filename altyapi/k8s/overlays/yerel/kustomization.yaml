@@ -40,6 +40,8 @@ configMapGenerator:
       - GITHUB_API_URL=http://github-mock:8080
       - APNS_URL=http://apns-mock:8080
       - APNS_TOPIC=com.demleme.app.dev
+      - APPLE_BUNDLE_ID=com.demleme.app.dev
+      - APPLE_ENVIRONMENT=Sandbox
 # Yalnız yerel örnek değer (compose ile aynı); gerçek ortamlara girmez.
 secretGenerator:
   - name: demleme-postgres

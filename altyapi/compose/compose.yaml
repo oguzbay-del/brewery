@@ -312,6 +312,8 @@ services:
       <<: *rust-env
       PORT: "8082"
       SERVICE_NAME: ingest
+      APPLE_BUNDLE_ID: com.demleme.app.dev
+      APPLE_ENVIRONMENT: Sandbox
     ports:
       - "127.0.0.1:${INGEST_PORT:-8082}:8082"
     healthcheck:
