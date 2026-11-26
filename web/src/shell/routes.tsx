@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import type { ShellLabels } from './AppShell';
+import { ModulesList } from '../settings/ModulesList';
 
 export const ROUTES = ['/', '/recipes', '/batches', '/settings'] as const;
 export type AppRoute = (typeof ROUTES)[number];
@@ -35,6 +36,7 @@ export function RouteContent({ labels }: { labels: ShellLabels }) {
   return (
     <section aria-labelledby="app-route-heading">
       <h1 id="app-route-heading">{title[route]}</h1>
+      {route === '/settings' && <ModulesList />}
     </section>
   );
 }
