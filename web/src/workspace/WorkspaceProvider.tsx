@@ -34,7 +34,10 @@ function saveWorkspaceId(value: string): void {
 }
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<WorkspaceState>({ status: 'loading', workspaceId: null });
+  const [state, setState] = useState<WorkspaceState>({
+    status: 'loading',
+    workspaceId: null,
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -43,7 +46,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         if (controller.signal.aborted) return;
         const workspaces = session.workspaces ?? [];
         const remembered = savedWorkspaceId();
-        const selected = workspaces.find((workspace) => workspace.id === remembered) ?? workspaces[0];
+        const selected =
+          workspaces.find((workspace) => workspace.id === remembered) ?? workspaces[0];
         if (!selected) {
           setState({ status: 'empty', workspaceId: null });
           return;
