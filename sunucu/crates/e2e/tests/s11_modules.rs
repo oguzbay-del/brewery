@@ -141,10 +141,6 @@ async fn meta_requires_membership_and_authentication() {
         .unwrap();
     assert_eq!(missing.status(), StatusCode::BAD_REQUEST);
 
-    let anonymous = ctx
-        .request(Method::GET, &path, None)
-        .send()
-        .await
-        .unwrap();
+    let anonymous = ctx.request(Method::GET, &path, None).send().await.unwrap();
     assert_eq!(anonymous.status(), StatusCode::UNAUTHORIZED);
 }
