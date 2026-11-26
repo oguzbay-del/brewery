@@ -23,9 +23,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <WorkspaceProvider>
-      <AppShell labels={labels}>
-        <RouteContent labels={labels} />
-      </AppShell>
+        <AppShell labels={labels}>
+          <RouteContent labels={labels} />
+        </AppShell>
       </WorkspaceProvider>
     </ThemeProvider>
   );
