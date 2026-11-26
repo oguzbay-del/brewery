@@ -10,7 +10,8 @@ function ErrorMessage({ error }: { error: unknown }) {
   const notMember = useText('ui.modules.not_member');
   const requestLabel = useText('ui.modules.error_request_id');
   const problem = error instanceof ApiError ? error : null;
-  const message = problem?.status === 401 ? signIn : problem?.status === 404 ? notMember : generic;
+  const message =
+    problem?.status === 401 ? signIn : problem?.status === 404 ? notMember : generic;
   return (
     <p role="alert">
       {message}
