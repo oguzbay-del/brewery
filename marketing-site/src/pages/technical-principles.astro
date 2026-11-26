@@ -1,4 +1,5 @@
 ---
+import ProductScreens from "../components/ProductScreens.astro";
 import PagePhoto from "../components/PagePhoto.astro";
 import FontPreload from "../components/FontPreload.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -16,7 +17,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "Brewing Calculations & Measurement Principles | GRISTORA",
-  description: "The technical principles guiding GRISTORA's brewing calculations, measurements and production records.",
+  description: "The design principles intended to guide GRISTORA's planned brewing calculations, measurements and production records.",
   url: canonicalUrl,
   inLanguage: "en",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(base, import.meta.env.SITE).href },
@@ -42,12 +43,12 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Explore the technical principles guiding GRISTORA's brewing calculations, units, measurements and production records." />
+    <meta name="description" content="Explore the design principles intended to guide GRISTORA's planned brewing calculations, units, measurements and production records." />
     <title>Brewing Calculations & Measurement Principles | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="Brewing Calculations & Measurement Principles | GRISTORA" />
-    <meta property="og:description" content="Methods, units, measurements and validation—explained with their limits." />
+    <meta property="og:description" content="Methods, units, measurements and validation, with their intended scope and limitations." />
     <meta property="og:url" content={canonicalUrl} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Brewing Calculations & Measurement Principles | GRISTORA" />
@@ -78,6 +79,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           </ol>
         </div>
       </section>
+      <ProductScreens page="technical-principles" lang="en" />
       <section class="validation-section section-pad">
         <div class="shell validation-layout">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> BEFORE A TECHNICAL CLAIM IS PUBLISHED</p><h2>Evidence before <em>confidence.</em></h2></div>
@@ -89,8 +91,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <figure class="visual-diagram"><img src={`${base}images/diagrams/fermentation-profile-example.svg`} width="960" height="520" alt="Specific-gravity fermentation curve over twelve days with example values." loading="lazy" /><figcaption>Example data for explanation</figcaption></figure>
           <figure class="visual-diagram"><img src={`${base}images/diagrams/target-vs-actual-example.svg`} width="960" height="520" alt="Chart separating a target line from actual brewing measurement points." loading="lazy" /><figcaption>Target and actual values shown separately · example data</figcaption></figure>
         </div>
-        <figure class="visual-diagram measurement-visual"><img src={`${base}images/diagrams/measurement-source-context.svg`} width="960" height="520" alt="Comparison of manual notes, instrument readings and device readings, with shared timestamp, unit, method, source and calibration context." loading="lazy" /><figcaption>Measurement-source principle · the context a record preserves</figcaption></figure>
-        <figure class="visual-diagram visual-diagram-scroll" role="region" aria-label="Scrollable equipment calibration record diagram" tabindex="0"><img src={`${base}images/diagrams/calibration-record-model.svg`} width="1100" height="520" alt="Equipment calibration record linking an instrument, reference standard, test reading, tolerance review and recorded status, with no automated recommendation." loading="lazy" /><figcaption>Swipe or scroll to inspect the record</figcaption></figure>
+        <figure class="visual-diagram measurement-visual"><img src={`${base}images/diagrams/measurement-source-context.svg`} width="960" height="520" alt="Illustrative comparison of manual notes, instrument readings and device readings, with timestamp, unit, method, source and calibration context." loading="lazy" /><figcaption>Measurement-source principle · context the planned record model is intended to preserve</figcaption></figure>
+        <figure class="visual-diagram visual-diagram-scroll" role="region" aria-label="Scrollable equipment calibration record diagram" tabindex="0"><img src={`${base}images/diagrams/calibration-record-model.svg`} width="1100" height="520" alt="Illustrative planned equipment calibration record model linking an instrument, reference standard, test reading, tolerance review and recorded status, with no automated recommendation." loading="lazy" /><figcaption>Swipe or scroll to inspect the example record model</figcaption></figure>
       </section>
       <section class="explain-disclaimer section-pad"><div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> CONTINUE EXPLORING</p><h2>See how the principles map to <em>real brewing work.</em></h2><p>Homebrewers and professional breweries have different workflows. Explore each path and the product areas.</p><div class="principles-actions"><a class="button button-primary" href={`${base}how-it-works/`}>How it works <span aria-hidden="true">↗</span></a><a class="text-link" href={`${base}features/`}>Explore product areas <span aria-hidden="true">→</span></a></div></div></section>
     </main>

@@ -1,4 +1,5 @@
 ---
+import WorkflowLinks from "../../components/WorkflowLinks.astro";
 import PagePhoto from "../../components/PagePhoto.astro";
 import FontPreload from "../../components/FontPreload.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
@@ -59,17 +60,17 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
       <Breadcrumbs items={breadcrumbItems} />
       <section class="feature-hero shell">
         <p class="eyebrow"><span class="eyebrow-line"></span> THE PRODUCT</p>
-        <h1>A connected workspace for <em>professional brewing.</em></h1>
-        <p class="feature-lead">GRISTORA’s planned scope starts with professional brewery workflows: recipe standards, production planning, batch records and quality context. A distinct Homebrewers path is planned separately.</p>
-        <div class="feature-hero-meta"><span>16 product areas</span><span>Business first · Homebrewers path separate</span></div>
+        <h1>Which brewing task <em>are you planning?</em></h1>
+        <p class="feature-lead">GRISTORA is in development. Choose a task to explore its planned workflow and the modules that cover it.</p>
+        <WorkflowLinks lang="en" />
       </section>
       <div class="page-photo-band"><PagePhoto name="features-hero" lang="en" eager /></div>
       <section class="feature-directory section-pad">
         <div class="shell">
           <div class="section-heading feature-section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> EXPLORE THE PRODUCT</p>
-            <h2>Every part of the brewing workflow has <em>a place.</em></h2>
-            <p>Each area has its own page describing intended workflows, roadmap stages and audience.</p>
+            <h2>All brewing <em>workflows</em></h2>
+            <p>Explore planned professional brewery workflows, then see which areas also serve the distinct Homebrewers path. Each page shows the relevant modules and roadmap stages.</p>
           </div>
           <div class="feature-card-grid">
             {features.map((feature, index) => (

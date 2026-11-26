@@ -1,0 +1,48 @@
+# Yalnız yerel kind kümesi (T2.32d): gerçek OIDC sağlayıcısı yok. oauth2-proxy `--skip-auth-route` ile
+# /internal/ yolunda kimlik doğrulamayı atlar ve sabit bir sahte e-posta ekler; jeton başlığı gerçek
+# ortamdaki gibi eklenir. Sağlayıcı ayarı yalnız başlangıç doğrulamasını geçmek için (ağ erişimi gerekmez).
+# Test/canlı overlay'lerine girmez.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-alpha
+data:
+  alpha.yaml: |
+    # The alpha config owns the listen address, the provider and the upstream; their legacy
+    # flags are not accepted. ${VAR} values come from the environment of the container.
+    server:
+      BindAddress: 0.0.0.0:4180
+    providers:
+      - id: github
+        provider: github
+        clientID: ${OAUTH2_PROXY_CLIENT_ID}
+        clientSecret: ${OAUTH2_PROXY_CLIENT_SECRET}
+    upstreamConfig:
+      upstreams:
+        - id: api-internal
+          path: /internal/v1/
+          uri: http://api:8080
+    injectRequestHeaders:
+      # oauth2-proxy replaces client values of these headers.
+      - name: X-Auth-Request-Email
+        values:
+          - value: eWVyZWwtZGVzdGVrQGRlbWxlbWUuaW52YWxpZA==
+      - name: X-Internal-Proxy-Token
+        values:
+          - fromEnv: INTERNAL_PROXY_TOKEN
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+spec:
+  template:
+    spec:
+      containers:
+        - name: oauth2-proxy
+          args:
+            - --alpha-config=/etc/oauth2-proxy/alpha.yaml
+            - --reverse-proxy=true
+            - --cookie-secure=false
+            - --skip-provider-button=true
+            - --skip-auth-route=^/internal/

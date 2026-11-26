@@ -1,8 +1,17 @@
 import { expect, test } from '@playwright/test';
 
+test('GRISTORA title and web manifest are present', async ({ page }) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle('GRISTORA');
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+    'href',
+    '/manifest.webmanifest',
+  );
+});
+
 test('heading is visible', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: 'Demleme' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 });
 
 for (const width of [400, 1280]) {

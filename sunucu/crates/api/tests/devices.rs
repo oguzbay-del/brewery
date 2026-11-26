@@ -71,6 +71,7 @@ async fn stack(w: &World) -> Stack {
         pool: ingest_pool.clone(),
         apple: ingest::jws::JwsVerifier::apple(),
         bundle_id: None,
+        apple_environment: "Production".to_owned(),
         web_payment: None,
         github_secret: None,
     });

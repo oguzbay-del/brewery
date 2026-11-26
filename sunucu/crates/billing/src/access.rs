@@ -1,12 +1,37 @@
 //! Read side: what a workspace may do. Run these on a connection with the workspace context set
 //! (`app.workspace_id`); RLS then limits the rows.
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Months, Utc};
 use serde::Serialize;
 use sqlx::PgConnection;
 use uuid::Uuid;
 
 use crate::PAID_FEATURE;
+
+/// Trial length in months for a Home workspace.
+pub const TRIAL_MONTHS_HOME: u32 = 3;
+/// Trial length in months for a Business workspace.
+pub const TRIAL_MONTHS_BUSINESS: u32 = 1;
+
+/// Trial length in months for a workspace mode (`home` or `business`).
+/// An unknown mode gets the shorter trial.
+#[must_use]
+pub fn trial_months(mode: &str) -> u32 {
+    if mode == "home" {
+        TRIAL_MONTHS_HOME
+    } else {
+        TRIAL_MONTHS_BUSINESS
+    }
+}
+
+/// End of the trial: `created_at` plus the trial length of the current mode.
+/// A mode change does not restart the trial.
+#[must_use]
+pub fn trial_end(created_at: DateTime<Utc>, mode: &str) -> DateTime<Utc> {
+    created_at
+        .checked_add_months(Months::new(trial_months(mode)))
+        .unwrap_or(DateTime::<Utc>::MAX_UTC)
+}
 
 /// Level of access to the paid features.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -22,7 +47,7 @@ pub enum AccessLevel {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum AccessSource {
-    /// The first month of the workspace.
+    /// The trial of the workspace (3 months for Home, 1 month for Business).
     Trial,
     /// A paid subscription.
     Subscription,
@@ -54,7 +79,7 @@ pub struct Access {
     pub level: AccessLevel,
     /// Reason.
     pub source: AccessSource,
-    /// End of the trial (always set: one month after the workspace was created).
+    /// End of the trial (always set: see `trial_end`).
     pub trial_ends_at: DateTime<Utc>,
     /// End of the entitlement that gives access now; `None` for the trial and for an open end.
     pub valid_until: Option<DateTime<Utc>>,
@@ -65,13 +90,13 @@ pub struct Access {
 /// # Errors
 /// Database errors. A workspace that the context cannot see gives `sqlx::Error::RowNotFound`.
 pub async fn access(conn: &mut PgConnection, workspace_id: Uuid) -> sqlx::Result<Access> {
-    let (trial_ends_at, trial_open): (DateTime<Utc>, bool) = sqlx::query_as(
-        "SELECT created_at + interval '1 month', created_at + interval '1 month' > now()
-         FROM workspaces WHERE id = $1",
-    )
-    .bind(workspace_id)
-    .fetch_one(&mut *conn)
-    .await?;
+    let (created_at, mode, now): (DateTime<Utc>, String, DateTime<Utc>) =
+        sqlx::query_as("SELECT created_at, mode, now() FROM workspaces WHERE id = $1")
+            .bind(workspace_id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let trial_ends_at = trial_end(created_at, &mode);
+    let trial_open = trial_ends_at > now;
     let paid: Option<(String, Option<DateTime<Utc>>)> = sqlx::query_as(
         "SELECT source, valid_until FROM entitlements
          WHERE workspace_id = $1 AND feature = $2 AND deleted_at IS NULL

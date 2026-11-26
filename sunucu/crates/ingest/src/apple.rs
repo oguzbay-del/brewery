@@ -26,6 +26,12 @@ pub enum AppleError {
     /// The notification is for another app.
     #[error("bundle id mismatch")]
     Bundle,
+    /// The notification is from another App Store environment (for example Sandbox).
+    #[error("environment mismatch")]
+    Environment,
+    /// `APPLE_BUNDLE_ID` is not set. The route fails closed.
+    #[error("bundle id is not configured")]
+    NotConfigured,
 }
 
 /// Result of parsing a notification.
@@ -55,16 +61,23 @@ fn text<'a>(v: &'a Value, key: &'static str) -> Result<&'a str, AppleError> {
 
 /// Verifies and parses a `signedPayload`.
 ///
-/// `bundle_id` limits the accepted app (`None` accepts any app: only for tests and sandbox).
+/// `bundle_id` is the accepted app. `None` rejects every notification (fail closed).
+/// `environment` is the accepted App Store environment (`Production` or `Sandbox`). The check
+/// applies to the outer notification and to `signedTransactionInfo`.
 ///
 /// # Errors
-/// [`AppleError`] for a bad signature or chain, a missing field or another bundle.
+/// [`AppleError`] for a bad signature or chain, a missing field, another bundle or another
+/// environment, or a missing `bundle_id`.
 pub fn parse_notification(
     verifier: &JwsVerifier,
     signed_payload: &str,
     now_unix: i64,
     bundle_id: Option<&str>,
+    environment: &str,
 ) -> Result<Parsed, AppleError> {
+    let Some(bundle_id) = bundle_id else {
+        return Err(AppleError::NotConfigured);
+    };
     let outer = verifier.verify(signed_payload, now_unix)?;
     let notification_type = text(&outer, "notificationType")?.to_owned();
     let subtype = outer.get("subtype").and_then(Value::as_str);
@@ -82,12 +95,19 @@ pub fn parse_notification(
     };
 
     let data = outer.get("data").ok_or(AppleError::Field("data"))?;
-    if let Some(expected) = bundle_id
-        && data.get("bundleId").and_then(Value::as_str) != Some(expected)
-    {
+    if data.get("bundleId").and_then(Value::as_str) != Some(bundle_id) {
         return Err(AppleError::Bundle);
     }
+    if data.get("environment").and_then(Value::as_str) != Some(environment) {
+        return Err(AppleError::Environment);
+    }
     let tx = verifier.verify(text(data, "signedTransactionInfo")?, now_unix)?;
+    if tx.get("bundleId").and_then(Value::as_str) != Some(bundle_id) {
+        return Err(AppleError::Bundle);
+    }
+    if tx.get("environment").and_then(Value::as_str) != Some(environment) {
+        return Err(AppleError::Environment);
+    }
     let renewal = match data.get("signedRenewalInfo").and_then(Value::as_str) {
         Some(jws) => Some(verifier.verify(jws, now_unix)?),
         None => None,

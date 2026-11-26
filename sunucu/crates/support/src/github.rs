@@ -319,6 +319,57 @@ impl GitHub {
         }
     }
 
+    /// Lists the comments of an Issue as `(id, body)`. A missing Issue has no comments.
+    ///
+    /// # Errors
+    /// See [`GitHubError`].
+    pub async fn list_comments(&self, issue: i64) -> Result<Vec<(i64, String)>, GitHubError> {
+        const PER_PAGE: usize = 100;
+        let mut all = Vec::new();
+        for page in 1..=100 {
+            let reply = match self
+                .call(
+                    Method::GET,
+                    &format!("/issues/{issue}/comments?per_page={PER_PAGE}&page={page}"),
+                    None,
+                )
+                .await
+            {
+                Err(GitHubError::Rejected(r)) if r.starts_with("404") => return Ok(all),
+                other => other?,
+            };
+            let items = reply.as_array().map_or(&[][..], Vec::as_slice);
+            all.extend(items.iter().filter_map(|c| {
+                Some((
+                    c["id"].as_i64()?,
+                    c["body"].as_str().unwrap_or("").to_owned(),
+                ))
+            }));
+            if items.len() < PER_PAGE {
+                break;
+            }
+        }
+        Ok(all)
+    }
+
+    /// Replaces the title and the body of an Issue and closes it. A missing Issue counts as done.
+    ///
+    /// # Errors
+    /// See [`GitHubError`].
+    pub async fn replace_body_and_close(&self, issue: i64, body: &str) -> Result<(), GitHubError> {
+        match self
+            .call(
+                Method::PATCH,
+                &format!("/issues/{issue}"),
+                Some(json!({"title": body, "body": body, "state": "closed"})),
+            )
+            .await
+        {
+            Err(GitHubError::Rejected(r)) if r.starts_with("404") => Ok(()),
+            other => other.map(|_| ()),
+        }
+    }
+
     /// Sets the state and the labels of an Issue.
     ///
     /// # Errors

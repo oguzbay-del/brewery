@@ -28,6 +28,7 @@ use uuid::Uuid;
 use super::{
     AuthServices,
     email::{Mail, normalize_email},
+    step_up::ProtectedAction,
     tokens::{new_token, token_hash},
 };
 use crate::{
@@ -121,6 +122,21 @@ fn ws_of(ctx: &RequestContext) -> ApiResult<Uuid> {
 
 /// Opens the request transaction for a users.manage mutation: checks the permission, locks the
 /// workspace row (serializes guards) and finds the caller's member id.
+/// Checks `users.manage`, then asks for the second step (ADR-0009 rule 5.3). Call it before
+/// `begin_admin` so the step-up check does not run while a transaction holds the workspace lock.
+/// Without auth services (tests of other modules) the check is off, as in `devices.rs`.
+async fn admin_step_up(
+    state: &AppState,
+    ctx: &RequestContext,
+    action: ProtectedAction,
+) -> ApiResult<()> {
+    ctx.require_permission(Permission::UsersManage)?;
+    if let Some(svc) = &state.auth_services {
+        svc.require_step_up(ctx, action).await?;
+    }
+    Ok(())
+}
+
 async fn begin_admin(state: &AppState, ctx: &RequestContext) -> ApiResult<(Tx, Uuid, Uuid)> {
     ctx.require_permission(Permission::UsersManage)?;
     let ws = ws_of(ctx)?;
@@ -635,6 +651,7 @@ pub async fn roles_update(
     headers: HeaderMap,
     MergePatch(patch): MergePatch<Value>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, caller) = begin_admin(&state, &ctx).await?;
     let Value::Object(patch) = patch else {
         return Err(invalid("/", "invalid"));
@@ -975,6 +992,7 @@ pub async fn members_update(
     headers: HeaderMap,
     MergePatch(patch): MergePatch<Map<String, Value>>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, caller) = begin_admin(&state, &ctx).await?;
     let mut issues: Vec<_> = patch
         .keys()
@@ -1135,6 +1153,7 @@ pub async fn assignments_create(
     Path((_ws, member)): Path<(Uuid, Uuid)>,
     ApiJson(req): ApiJson<NewAssignment>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, _) = begin_admin(&state, &ctx).await?;
     let scope = parse_scope(req.scope_kind.as_deref(), req.scope_id)?;
     let exists: i64 = sqlx::query_scalar(
@@ -1331,6 +1350,9 @@ async fn create_invitation(
     must_be_mode: Option<&str>,
 ) -> ApiResult<Response> {
     let to = normalize_email(email).ok_or_else(|| invalid("/email", "invalid"))?;
+    ctx.require_permission(Permission::UsersManage)?;
+    svc.require_step_up(ctx, ProtectedAction::InviteSend)
+        .await?;
     let (mut tx, ws, _) = begin_admin(state, ctx).await?;
     let (mode, workspace_name): (String, String) =
         sqlx::query_as("SELECT mode, name FROM workspaces WHERE id = $1")
@@ -1806,8 +1828,8 @@ mod spec {
     use crate::error::ErrorCode;
     use crate::error::ErrorCode::{
         Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, Internal,
-        MalformedRequest, NotFound, PreconditionRequired, RateLimited, Unauthenticated,
-        UnsupportedMediaType, UpgradeRequired, ValidationFailed, VersionMismatch,
+        MalformedRequest, NotFound, PreconditionRequired, RateLimited, StepUpRequired,
+        Unauthenticated, UnsupportedMediaType, UpgradeRequired, ValidationFailed, VersionMismatch,
     };
     use crate::openapi::OperationSpec;
 
@@ -1831,6 +1853,41 @@ mod spec {
         UnsupportedMediaType,
         ValidationFailed,
         IdempotencyMismatch,
+        PreconditionRequired,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    /// `ACCESS_CREATE` plus the second step (invitations and assignments).
+    const ACCESS_CREATE_STEP_UP: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        IdempotencyInProgress,
+        UnsupportedMediaType,
+        ValidationFailed,
+        IdempotencyMismatch,
+        PreconditionRequired,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    /// `ACCESS_UPDATE` plus the second step (roles and members).
+    const ACCESS_UPDATE_STEP_UP: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        VersionMismatch,
+        UnsupportedMediaType,
+        ValidationFailed,
         PreconditionRequired,
         RateLimited,
         UpgradeRequired,
@@ -1902,7 +1959,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Optimistic),
-            errors: ACCESS_UPDATE,
+            errors: ACCESS_UPDATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "roles_delete",
@@ -1923,7 +1980,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::FieldLww),
-            errors: ACCESS_UPDATE,
+            errors: ACCESS_UPDATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "members_remove",
@@ -1937,7 +1994,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Append),
-            errors: ACCESS_CREATE,
+            errors: ACCESS_CREATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "assignments_delete",
@@ -1951,7 +2008,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Append),
-            errors: ACCESS_CREATE,
+            errors: ACCESS_CREATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "invitations_list",
@@ -1979,7 +2036,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Append),
-            errors: ACCESS_CREATE,
+            errors: ACCESS_CREATE_STEP_UP,
         },
     ];
 }

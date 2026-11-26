@@ -1,7 +1,7 @@
 //! Scheduled maintenance jobs (T2.39). A tick runs every hour; `maintenance_runs` makes each
 //! job run once per interval, even with several worker replicas or restarts.
 
-use std::{sync::Arc, time::Duration};
+use std::{collections::BTreeSet, sync::Arc, time::Duration};
 
 use chrono::Utc;
 use db::maintenance::{RunStatus, claim_job, finish_job};
@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use storage::{ObjectLockMode, ObjectStore, S3Config, S3Store};
 use tokio::sync::watch;
 
-use crate::{Result, audit_anchor, retention};
+use crate::{Result, apple_revoke::AppleRevoker, audit_anchor, retention, upload_cleanup};
 
 /// Job name: daily audit digest.
 pub const JOB_DIGEST: &str = "audit-digest-daily";
@@ -19,6 +19,10 @@ pub const JOB_VERIFY: &str = "audit-digest-verify-weekly";
 pub const JOB_RETENTION: &str = "external-events-retention";
 /// Job name: permanent delete of records soft-deleted more than 30 days ago (T2.37).
 pub const JOB_SOFT_DELETES: &str = "soft-delete-purge";
+/// Job name: close resolved support requests after 14 days (T2.43).
+pub const JOB_SUPPORT_CLOSE: &str = "support-close-resolved";
+/// Job name: delete object bytes of deleted and incomplete uploads (T2.44).
+pub const JOB_UPLOAD_CLEANUP: &str = "upload-cleanup";
 /// Job name: account deletion after its grace period (T2.31c).
 pub const JOB_ACCOUNT_DELETIONS: &str = "account-deletion-purge";
 
@@ -77,6 +81,58 @@ async fn record(pool: &PgPool, job: &str, outcome: Result<(RunStatus, String)>) 
     }
 }
 
+/// Summarizes one completed verification, emitting at most one system event.
+pub async fn report_findings(
+    pool: &PgPool,
+    report: &audit_anchor::VerifyReport,
+) -> (RunStatus, String) {
+    let status = if report.is_ok() {
+        RunStatus::Ok
+    } else {
+        if let Err(error) = enqueue_findings(pool, report).await {
+            tracing::error!(%error, "could not enqueue the audit digest findings event");
+        }
+        RunStatus::Findings
+    };
+    let details: Vec<_> = report
+        .findings
+        .iter()
+        .map(|finding| finding.detail.as_str())
+        .collect();
+    let detail = format!(
+        "chains {}, digests {}, missing days {}, findings: {}",
+        report.chains_verified,
+        report.digests_checked,
+        report.digests_missing,
+        details.join("; ")
+    );
+    (status, detail)
+}
+
+async fn enqueue_findings(pool: &PgPool, report: &audit_anchor::VerifyReport) -> db::Result<()> {
+    let kinds: BTreeSet<_> = report
+        .findings
+        .iter()
+        .map(|finding| finding.kind.code())
+        .collect();
+    let event = db::outbox::NewOutboxEvent {
+        topic: "audit.digest_check_failed".into(),
+        workspace_id: None,
+        entity: None,
+        data: Some(serde_json::json!({
+            "chains_verified": report.chains_verified,
+            "digests_checked": report.digests_checked,
+            "digests_missing": report.digests_missing,
+            "findings": report.findings.len(),
+            "kinds": kinds,
+        })),
+    };
+    let mut tx = pool.begin().await?;
+    db::outbox::enqueue(&mut tx, &event).await?;
+    tx.commit().await?;
+    Ok(())
+}
+
 /// Runs every due job once.
 pub async fn tick(pool: &PgPool, store: Option<&dyn ObjectStore>) {
     tick_with_files(pool, store, None).await;
@@ -88,6 +144,28 @@ pub async fn tick_with_files(
     digest_store: Option<&dyn ObjectStore>,
     file_store: Option<&dyn ObjectStore>,
 ) {
+    tick_with_apple(pool, digest_store, file_store, None).await;
+}
+
+/// Like [`tick_with_files`], with the Apple revoker for the account purge job (T2.31d).
+pub async fn tick_with_apple(
+    pool: &PgPool,
+    digest_store: Option<&dyn ObjectStore>,
+    file_store: Option<&dyn ObjectStore>,
+    apple: Option<&AppleRevoker>,
+) {
+    tick_with_github(pool, digest_store, file_store, apple, None).await;
+}
+
+/// Like [`tick_with_apple`], with the GitHub client that anonymises the Issues of deleted
+/// accounts (T2.31e).
+pub async fn tick_with_github(
+    pool: &PgPool,
+    digest_store: Option<&dyn ObjectStore>,
+    file_store: Option<&dyn ObjectStore>,
+    apple: Option<&AppleRevoker>,
+    github: Option<&support::github::GitHub>,
+) {
     let now = Utc::now();
     if let Some(store) = digest_store {
         if claim(pool, JOB_DIGEST, DAY).await {
@@ -97,23 +175,10 @@ pub async fn tick_with_files(
             record(pool, JOB_DIGEST, outcome).await;
         }
         if claim(pool, JOB_VERIFY, WEEK).await {
-            let outcome = audit_anchor::verify_against_digests(pool, store, now)
-                .await
-                .map(|r| {
-                    let status = if r.is_ok() {
-                        RunStatus::Ok
-                    } else {
-                        RunStatus::Findings
-                    };
-                    let detail = format!(
-                        "chains {}, digests {}, missing days {}, findings: {}",
-                        r.chains_verified,
-                        r.digests_checked,
-                        r.digests_missing,
-                        r.findings.join("; ")
-                    );
-                    (status, detail)
-                });
+            let outcome = match audit_anchor::verify_against_digests(pool, store, now).await {
+                Ok(report) => Ok(report_findings(pool, &report).await),
+                Err(error) => Err(error),
+            };
             record(pool, JOB_VERIFY, outcome).await;
         }
     }
@@ -130,7 +195,8 @@ pub async fn tick_with_files(
         record(pool, JOB_RETENTION, outcome).await;
     }
     if claim(pool, JOB_ACCOUNT_DELETIONS, TICK).await {
-        let outcome = crate::account_deletion::purge_due(pool, file_store).await;
+        let outcome =
+            crate::account_deletion::purge_due_and_clean(pool, file_store, apple, github).await;
         record(pool, JOB_ACCOUNT_DELETIONS, outcome).await;
     }
     if claim(pool, JOB_SOFT_DELETES, DAY).await {
@@ -145,6 +211,30 @@ pub async fn tick_with_files(
                 (RunStatus::Ok, detail)
             });
         record(pool, JOB_SOFT_DELETES, outcome).await;
+    }
+    if claim(pool, JOB_SUPPORT_CLOSE, DAY).await {
+        let outcome = retention::close_resolved_support_requests(pool, now)
+            .await
+            .map(|closed| (RunStatus::Ok, format!("closed {closed}")));
+        record(pool, JOB_SUPPORT_CLOSE, outcome).await;
+    }
+    if let Some(store) = file_store
+        && claim(pool, JOB_UPLOAD_CLEANUP, TICK).await
+    {
+        let outcome = upload_cleanup::run(pool, store, now).await.map(|report| {
+            if report.failed > 0 {
+                (RunStatus::Error, format!("failed {}", report.failed))
+            } else {
+                (
+                    RunStatus::Ok,
+                    format!(
+                        "deleted {}, incomplete {}, failed 0",
+                        report.deleted, report.incomplete
+                    ),
+                )
+            }
+        });
+        record(pool, JOB_UPLOAD_CLEANUP, outcome).await;
     }
 }
 
@@ -168,8 +258,17 @@ pub async fn run(
     if digest_store.is_none() {
         tracing::warn!("no object store; audit digests and their check are off");
     }
+    let apple = AppleRevoker::from_env();
+    let github = support::github::GitHub::from_env();
     loop {
-        tick_with_files(&pool, digest_store.as_deref(), file_store.as_deref()).await;
+        tick_with_github(
+            &pool,
+            digest_store.as_deref(),
+            file_store.as_deref(),
+            apple.as_ref(),
+            github.as_ref(),
+        )
+        .await;
         tokio::select! {
             _ = stop.wait_for(|stopped| *stopped) => return,
             () = tokio::time::sleep(TICK) => {}

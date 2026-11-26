@@ -11,6 +11,9 @@ resources:
   - ingest.yaml
   - migrate.yaml
   - nats.yaml
+  - oauth2-proxy.yaml
+  - gateway.yaml
+  - mesh.yaml
   - networkpolicy.yaml
 configMapGenerator:
   - name: demleme-config
@@ -32,6 +35,9 @@ configMapGenerator:
       - GITHUB_APP_KEY_FILE=/var/run/secrets/github/app.pem
       - APNS_URL=
       - APNS_TOPIC=
+      # Boş APPLE_BUNDLE_ID: ingest App Store ucunu 503 ile kapatır (G1). Canlı overlay doldurur.
+      - APPLE_BUNDLE_ID=
+      - APPLE_ENVIRONMENT=Production
       - APNS_KEY_FILE=/var/run/secrets/apns/AuthKey.p8
       - INGEST_PUBLIC_URL=
       - BREW_PACKAGE_KEY_ID=k1

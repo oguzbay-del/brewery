@@ -10,15 +10,19 @@ mod support;
 
 use std::{collections::HashMap, sync::Arc};
 
+use base64::{Engine as _, engine::general_purpose::STANDARD};
+
 use api::{
     ApiConfig, AppState, Authenticator, RequestContext,
     auth::{
         AuthServices,
         email::{Mail, MemoryMailer, SmtpMailer},
+        token_cipher::{Aes256GcmTokenCipher, TokenCipher},
         tokens::hex,
     },
     redis_client::Redis,
 };
+use apple_auth::ApplePayload;
 use axum::{
     Json, Router,
     body::Body,
@@ -72,12 +76,14 @@ async fn world_with(pool: &PgPool, redis: Redis, extra: &[(&str, &str)]) -> Worl
     let cfg = ApiConfig::from_lookup(|n| map.get(n).cloned()).unwrap();
     let app_db = app_pool(pool).await;
     let mail = Arc::new(MemoryMailer::default());
-    let svc = Arc::new(AuthServices::new(
+    let svc = AuthServices::new(
         app_db.clone(),
         redis.clone(),
         cfg.auth.clone(),
         mail.clone(),
-    ));
+    )
+    .unwrap();
+    let svc = Arc::new(svc);
     let state = AppState::new(app_db, redis, svc.clone(), cfg).with_auth_services(svc.clone());
     // A probe route shows the permissions the authenticator found for the path's workspace.
     let probe = api::authenticated(
@@ -113,7 +119,7 @@ fn request(
         .iter()
         .any(|(k, _)| k.eq_ignore_ascii_case("x-forwarded-for"))
     {
-        b = b.header("x-forwarded-for", Uuid::new_v4().to_string());
+        b = b.header("x-forwarded-for", Uuid::now_v7().to_string());
     }
     for (k, v) in headers {
         b = b.header(*k, *v);
@@ -165,20 +171,258 @@ fn spec(sub: &str, aud: &str, nonce: Option<String>) -> MintSpec {
     }
 }
 
-/// Apple sign-in with a fresh nonce; `tweak` adjusts the minted token.
-async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
+/// Apple sign-in with an optional authorization code and a fresh nonce.
+async fn apple_with_code(
+    w: &World,
+    sub: &str,
+    client: &str,
+    authorization_code: Option<&str>,
+    tweak: impl FnOnce(&mut MintSpec),
+) -> Reply {
     let n = nonce(w).await;
     let mut s = spec(sub, APPLE_AUD, Some(apple_nonce_claim(&n)));
     tweak(&mut s);
     let token = w.oidc.oidc.mint(Provider::Apple, &s);
-    call(
-        w,
-        "POST",
-        "/v1/auth/apple",
-        &[],
-        Some(json!({"id_token": token, "nonce": n, "client": client})),
+    let mut body = json!({"id_token": token, "nonce": n, "client": client});
+    if let Some(code) = authorization_code {
+        body["authorization_code"] = json!(code);
+    }
+    call(w, "POST", "/v1/auth/apple", &[], Some(body)).await
+}
+
+/// Apple sign-in without a code, preserving legacy-client coverage.
+async fn apple(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
+    apple_with_code(w, sub, client, None, tweak).await
+}
+
+fn apple_token_url() -> String {
+    std::env::var("APPLE_TOKEN_URL")
+        .ok()
+        .filter(|url| !url.contains("apple-mock:8080"))
+        .unwrap_or_else(|| "http://127.0.0.1:8092/auth/token".to_owned())
+}
+
+fn apple_admin_url(path: &str) -> url::Url {
+    url::Url::parse(&apple_token_url())
+        .unwrap()
+        .join(path)
+        .unwrap()
+}
+
+async fn configure_apple_token_mock(code: &str, id_token: &str) -> Uuid {
+    let id = Uuid::new_v4();
+    let mapping = json!({
+        "id": id,
+        "priority": 1,
+        "request": {
+            "method": "POST",
+            "urlPath": "/auth/token",
+            "bodyPatterns": [
+                {"contains": "grant_type=authorization_code"},
+                {"contains": format!("&code={code}&")}
+            ]
+        },
+        "response": {
+            "status": 200,
+            "headers": {"Content-Type": "application/json"},
+            "jsonBody": {
+                "access_token": "local-apple-access-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+                "refresh_token": "local-apple-refresh-token",
+                "id_token": id_token
+            }
+        }
+    });
+    let response = reqwest::Client::new()
+        .post(apple_admin_url("/__admin/mappings"))
+        .header(reqwest::header::CONTENT_TYPE, "application/json")
+        .body(mapping.to_string())
+        .send()
+        .await
+        .unwrap();
+    assert!(response.status().is_success(), "WireMock mapping failed");
+    id
+}
+
+async fn assert_apple_mapping_hit(id: Uuid) {
+    let journal: Value = reqwest::get(apple_admin_url("/__admin/requests"))
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    let id = id.to_string();
+    assert!(
+        journal["requests"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|event| event["stubMapping"]["id"].as_str() == Some(id.as_str())),
+        "WireMock did not serve the expected mapping {id}"
+    );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(pool: PgPool) {
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
+
+    let rng = SystemRandom::new();
+    let pkcs8 =
+        EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng).unwrap();
+    let private_key = format!(
+        "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
+        STANDARD.encode(pkcs8.as_ref())
+    );
+    let token_key = STANDARD.encode([42_u8; 32]);
+    let token_url = apple_token_url();
+    let extra = [
+        ("APPLE_TEAM_ID", "TEAM123"),
+        ("APPLE_KEY_ID", "KEY456"),
+        ("APPLE_PRIVATE_KEY", private_key.as_str()),
+        ("PROVIDER_TOKEN_KEY", token_key.as_str()),
+        ("APPLE_TOKEN_URL", token_url.as_str()),
+    ];
+    let w = world_with(&pool, Redis::disabled(), &extra).await;
+    let response_token = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("apple-refresh-user", APPLE_AUD, None),
+    );
+    let mapping = configure_apple_token_mock("mock-auth-code", &response_token).await;
+    let response = apple_with_code(
+        &w,
+        "apple-refresh-user",
+        "ios",
+        Some("mock-auth-code"),
+        |_| {},
     )
+    .await;
+    assert_eq!(response.status, StatusCode::OK, "{:?}", response.body);
+
+    assert_apple_mapping_hit(mapping).await;
+
+    let encrypted: Vec<u8> = sqlx::query_scalar(
+        "SELECT provider_refresh_token_enc FROM user_identities
+         WHERE provider = 'apple' AND subject = 'apple-refresh-user'",
+    )
+    .fetch_one(&pool)
     .await
+    .unwrap();
+    let cipher = Aes256GcmTokenCipher::new([42_u8; 32]);
+    let payload = ApplePayload::decode(&cipher.decrypt(&encrypted).unwrap()).unwrap();
+    assert_eq!(payload.client_id.as_deref(), Some(APPLE_AUD));
+    assert_eq!(payload.refresh_token, "local-apple-refresh-token");
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn apple_authorization_code_rejects_mismatched_response_identity(pool: PgPool) {
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
+
+    let rng = SystemRandom::new();
+    let pkcs8 =
+        EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng).unwrap();
+    let private_key = format!(
+        "-----BEGIN PRIVATE KEY-----\n{}\n-----END PRIVATE KEY-----",
+        STANDARD.encode(pkcs8.as_ref())
+    );
+    let token_key = STANDARD.encode([42_u8; 32]);
+    let token_url = apple_token_url();
+    let client_ids = format!("{APPLE_AUD},other.apple.client");
+    let extra = [
+        ("APPLE_CLIENT_IDS", client_ids.as_str()),
+        ("APPLE_TEAM_ID", "TEAM123"),
+        ("APPLE_KEY_ID", "KEY456"),
+        ("APPLE_PRIVATE_KEY", private_key.as_str()),
+        ("PROVIDER_TOKEN_KEY", token_key.as_str()),
+        ("APPLE_TOKEN_URL", token_url.as_str()),
+    ];
+    let w = world_with(&pool, Redis::disabled(), &extra).await;
+
+    let wrong_subject = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("different-apple-user", APPLE_AUD, None),
+    );
+    let mapping = configure_apple_token_mock("mock-auth-code-subject", &wrong_subject).await;
+    let subject_mismatch = apple_with_code(
+        &w,
+        "apple-response-user",
+        "ios",
+        Some("mock-auth-code-subject"),
+        |_| {},
+    )
+    .await;
+    assert_eq!(subject_mismatch.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&subject_mismatch), "apple_code_invalid");
+    assert_apple_mapping_hit(mapping).await;
+
+    let wrong_audience = w.oidc.oidc.mint(
+        Provider::Apple,
+        &spec("apple-response-user", "other.apple.client", None),
+    );
+    let mapping = configure_apple_token_mock("mock-auth-code-audience", &wrong_audience).await;
+    let audience_mismatch = apple_with_code(
+        &w,
+        "apple-response-user",
+        "ios",
+        Some("mock-auth-code-audience"),
+        |_| {},
+    )
+    .await;
+    assert_eq!(audience_mismatch.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&audience_mismatch), "apple_code_invalid");
+    assert_apple_mapping_hit(mapping).await;
+
+    let identities: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_identities
+         WHERE provider = 'apple' AND subject = 'apple-response-user'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(identities, 0);
+    assert_existing_apple_token_preserved(&w, &pool, &wrong_subject).await;
+}
+
+async fn stored_apple_token(pool: &PgPool, subject: &str) -> Vec<u8> {
+    sqlx::query_scalar(
+        "SELECT provider_refresh_token_enc FROM user_identities
+         WHERE provider = 'apple' AND subject = $1",
+    )
+    .bind(subject)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+async fn assert_existing_apple_token_preserved(w: &World, pool: &PgPool, wrong_subject: &str) {
+    let subject = "existing-apple-user";
+    let valid_token = w
+        .oidc
+        .oidc
+        .mint(Provider::Apple, &spec(subject, APPLE_AUD, None));
+    let valid_code = "existing-valid";
+    let mapping = configure_apple_token_mock(valid_code, &valid_token).await;
+    let login = apple_with_code(w, subject, "ios", Some(valid_code), |_| {}).await;
+    assert_eq!(login.status, StatusCode::OK);
+    assert_apple_mapping_hit(mapping).await;
+    let before = stored_apple_token(pool, subject).await;
+    assert!(!before.is_empty());
+
+    let bad_code = "existing-mismatch";
+    let mapping = configure_apple_token_mock(bad_code, wrong_subject).await;
+    let rejected = apple_with_code(w, subject, "ios", Some(bad_code), |_| {}).await;
+    assert_eq!(rejected.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(first_error_code(&rejected), "apple_code_invalid");
+    assert_apple_mapping_hit(mapping).await;
+    assert_eq!(stored_apple_token(pool, subject).await, before);
 }
 
 async fn google(w: &World, sub: &str, client: &str, tweak: impl FnOnce(&mut MintSpec)) -> Reply {
@@ -1207,7 +1451,7 @@ async fn email_start_is_limited_per_address_and_per_ip(pool: PgPool) {
 #[tokio::test]
 async fn smtp_mailer_delivers_to_mailpit_and_refuses_header_injection() {
     let to = unique_email();
-    let mailer = SmtpMailer::new("127.0.0.1", 1025, "no-reply@demleme.local");
+    let mailer = SmtpMailer::new("127.0.0.1", 1025, "GRISTORA <no-reply@gristora.local>");
     let mail = api::auth::email::sign_in_mail(
         &to,
         "https://app.example.com/auth/email?token=t",
@@ -1391,6 +1635,103 @@ async fn linking_replaces_the_session_and_refuses_identities_of_others(pool: PgP
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn linking_needs_step_up_and_does_not_refresh_the_sign_in_time(pool: PgPool) {
+    let w = world(&pool).await;
+    let first = apple(&w, "apple-1", "ios", |_| {}).await;
+    let token = token_of(&first);
+    let link = |token: String| {
+        let w = &w;
+        async move {
+            let n = nonce(w).await;
+            let id_token = w.oidc.oidc.mint(
+                Provider::Google,
+                &spec("google-9", GOOGLE_AUD, Some(n.clone())),
+            );
+            let b = bearer(&token);
+            call(
+                w,
+                "POST",
+                "/v1/me/identities",
+                &[(b[0].0, b[0].1.as_str())],
+                Some(json!({"provider": "google", "id_token": id_token, "nonce": n})),
+            )
+            .await
+        }
+    };
+
+    // An old session without a second step cannot link a method.
+    sqlx::query(
+        "UPDATE sessions SET created_at = now() - interval '11 minutes' WHERE revoked_at IS NULL",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let r = link(token.clone()).await;
+    assert_eq!(
+        (r.status, r.body["code"].as_str()),
+        (StatusCode::FORBIDDEN, Some("step_up_required")),
+        "{:?}",
+        r.body
+    );
+    let linked: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM user_identities WHERE provider = 'google'")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(linked, 0);
+
+    // A recent sign-in is enough (no passkey). The new session keeps the old sign-in time.
+    sqlx::query(
+        "UPDATE sessions SET created_at = now() - interval '5 minutes' WHERE revoked_at IS NULL",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let (old_created, old_expires): (chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>) =
+        sqlx::query_as("SELECT created_at, expires_at FROM sessions WHERE revoked_at IS NULL")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    let r = link(token).await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    let (new_created, new_expires, step_up): (
+        chrono::DateTime<chrono::Utc>,
+        chrono::DateTime<chrono::Utc>,
+        Option<chrono::DateTime<chrono::Utc>>,
+    ) = sqlx::query_as(
+        "SELECT created_at, expires_at, step_up_at FROM sessions WHERE revoked_at IS NULL",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(new_created, old_created, "sign-in time is kept");
+    assert_eq!(new_expires, old_expires, "absolute lifetime is kept");
+    assert!(step_up.is_none(), "no second step is invented");
+
+    // The rotation did not open a new window: after the original 10 minutes, the next
+    // protected action asks again.
+    sqlx::query(
+        "UPDATE sessions SET created_at = now() - interval '11 minutes' WHERE revoked_at IS NULL",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let new_token = token_of(&r);
+    let r = link(new_token.clone()).await;
+    assert_eq!(
+        (r.status, r.body["code"].as_str()),
+        (StatusCode::FORBIDDEN, Some("step_up_required"))
+    );
+
+    // A fresh second step lets the user link again.
+    sqlx::query("UPDATE sessions SET step_up_at = now() WHERE revoked_at IS NULL")
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(link(new_token).await.status, StatusCode::OK);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn an_email_identity_can_be_linked_and_removal_has_guards(pool: PgPool) {
     let w = world(&pool).await;
     let token = token_of(&apple(&w, "apple-1", "ios", |_| {}).await);
@@ -1531,7 +1872,7 @@ async fn first_workspace_makes_the_user_its_administrator(pool: PgPool) {
     let probe = get_as(&w, &format!("/v1/workspaces/{ws}/probe"), &token).await;
     assert_eq!(probe.status, StatusCode::OK, "{:?}", probe.body);
     let perms = probe.body["permissions"].as_array().unwrap();
-    assert_eq!(perms.len(), 17);
+    assert_eq!(perms.len(), 20);
     assert!(perms.iter().any(|p| p == "users.manage"));
     let direct = w
         .svc
@@ -1545,7 +1886,7 @@ async fn first_workspace_makes_the_user_its_administrator(pool: PgPool) {
         )
         .await
         .unwrap();
-    assert_eq!(direct.unwrap().permissions.len(), 17);
+    assert_eq!(direct.unwrap().permissions.len(), 20);
 
     // A user who is not a member sees `404`, as if the workspace did not exist.
     let stranger = token_of(&apple(&w, "apple-2", "ios", |_| {}).await);

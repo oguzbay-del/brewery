@@ -1,0 +1,13 @@
+{
+  "name": "GitHub: update issue comment",
+  "request": { "method": "PATCH", "urlPathPattern": "/repos/[^/]+/[^/]+/issues/comments/[0-9]+" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "id": 1,
+      "body": "Content removed: account deleted",
+      "html_url": "http://localhost:8090/mock/issues/1#issuecomment-1"
+    }
+  }
+}

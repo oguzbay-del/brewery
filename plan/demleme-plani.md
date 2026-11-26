@@ -990,6 +990,77 @@ Güvenlik her katmanda ayrı ele alınır. Öncelik sırası: (1) yetkinin sunuc
 
 Ayarlar'a "Güvenlik" kategorisi eklenir: iki adımlı doğrulama, oturum açık cihazlar, uygulama kilidi, cihaz (iSpindel) anahtarlarını yenileme, destek erişimi izni ve geçmişi.
 
+## Abonelik ve ödeme
+
+Ev aboneliği iki yoldan alınır: App Store (uygulama içi satın alma, StoreKit) veya web (Paddle). İşletme aboneliği yalnız web'den (Paddle) alınır ve yönetilir (Oğuz, 25 Kasım 2026). Abonelik ve yetki durumu yalnız sunucuda tutulur; istemci yalnız gösterir. Ürün içindeki "hafif satın alma" (tedarikçiye sipariş taslağı) ayrı bir özelliktir ve İşletme 2. sürümdedir; bu bölümün konusu değildir.
+
+### Durum (25 Kasım 2026)
+
+| Parça | Durum |
+| --- | --- |
+| Subscription ve Entitlement, 1 aylık deneme, deneme sonrası salt okunur | Sunucuda hazır (T2.28) |
+| App Store sunucu bildirimleri v2 (JWS doğrulama) | Hazır (ingest, T2.28) |
+| Paddle webhook adaptörü (imza, durum eşleme) | İncelemede (T2.41, PR #336) |
+| Modül açma kapama; deneme sonrası salt okunur | İncelemede (P1, PR #338) |
+| Kademe matrisi ve fiyatlar | Taslak; owner kararı bekliyor (O8) |
+| Ödeme başlatma, plan değiştirme, müşteri portalı uçları | Yok |
+| Web Abonelik ekranı (Paddle ödeme penceresi) | Yok (Aşama 3) |
+| iOS Abonelik ekranı (StoreKit 2) | Yok (Aşama 4) |
+| Paddle hesabı; App Store Connect abonelik grubu ve ürün kimlikleri | Yok (owner) |
+
+Bugün production'da web ödeme yolu 503 döner; satın alma hiçbir kanaldan açık değildir.
+
+### Kim nereden abone olur
+
+| Mod | App Store (iOS) | Web (Paddle) | Not |
+| --- | --- | --- | --- |
+| Ev | Evet: uygulama içi satın alma; faturayı Apple keser | Evet | Bir çalışma alanında aynı anda tek ödeme kaynağı |
+| İşletme | Hayır: uygulamada satın alma düğmesi ve fiyat yok; yalnız durum ve "web'den yönetilir" bilgisi | Evet: kullanıcı sayısı kadar adet | Apple kurumsal hizmet istisnası, kural 3.1.3(c) \[doğrulanacak\] |
+
+### Kurallar
+
+- **Tek ödeme kaynağı:** çalışma alanının aktif aboneliği ya App Store ya Paddle kaynaklıdır. Öbür kanal satın alma göstermez; mevcut kaynağı ve nereden yönetildiğini gösterir. Çift ödeme olursa destek paneli birini iade ettirir.
+- **Hesaba bağlama:** iOS satın almada `appAccountToken` çalışma alanı kimliğidir; Paddle ödemede çalışma alanı kimliği `custom_data` içinde gider. Webhook bu kimlikle eşlenir.
+- **Deneme:** 1 ay, ödeme bilgisi istenmez, sunucuda tutulur. App Store tanıtım teklifi (ücretsiz deneme) kullanılmaz; yoksa iki deneme olur.
+- **Ev'den İşletme'ye geçiş:** Ev aboneliği App Store'daysa kullanıcı Apple'dan iptal eder (biz iptal edemeyiz). İşletme aboneliği web'den başlar; kalan Apple dönemindeki iade veya mahsup kuralı \[doğrulanacak\].
+- **Vergi ve fatura:** web'de satıcı Paddle'dır (Merchant of Record): KDV, ABD satış vergisi, fatura ve kart bilgisi Paddle'da; App Store'da Apple'da. Bize kart bilgisi gelmez. Para birimi USD ve GBP.
+- **İşletme kullanıcı sayısı:** Paddle aboneliğinde adet koltuk sayısıdır; kullanıcı ekleme sınırı yetkiden gelir. Koltuk değişince oransal faturayı Paddle keser.
+- **İade ve ters ibraz:** webhook gelince yetki kapanır; veriler silinmez, ücretli özellikler salt okunur olur.
+- **iOS'tan web'e bağlantı:** İşletme için uygulamadan web ödeme sayfasına bağlantı yalnız Apple'ın izin verdiği ülkelerde (ABD) gösterilir; diğer ülkelerde yalnız metin \[doğrulanacak: App Store kuralları 3.1.1, 3.1.3\].
+- **Destek paneli:** App Store ve Paddle kaydını yeniden doğrulama, gerekçeli düzeltme (mevcut tasarım).
+
+### Etkilenen mimari kararlar
+
+| Konu | Değişiklik | İş |
+| --- | --- | --- |
+| Yetki modeli (P1) | Tek ücretli yetki (`PAID_FEATURE`) yerine plan anahtarı (Ev, İşletme ve kademe) ve koltuk sayısı; modül kümesi plandan gelir | P1'den sonra yeni iş |
+| Alım servisi (T2.28, T2.41) | İki kaynak tek abonelik kaydına eşlenir; çift kaynak tespit edilir ve destek kuyruğuna düşer | Yeni iş |
+| API | `GET /v1/billing` (plan, kaynak, durum, yenileme, koltuk); `POST /v1/billing/checkout` (yalnız web; Paddle işlem kimliği); `POST /v1/billing/portal` (Paddle müşteri portalı bağlantısı); `POST /v1/billing/apple/sync` (StoreKit 2 işlem JWS'si; yetki yenileme bildirimini beklemeden açılır) | Yeni iş |
+| Web güvenliği | Paddle ödeme penceresi için içerik güvenlik politikasına Paddle alan adları; ödeme sonrası dönüş adresi | Aşama 3 |
+| Yapılandırma | Paddle fiyat kimliği ve App Store ürün kimliği ↔ plan haritası tek yerde | T2.41 ile başlar |
+| Bildirim | Deneme bitiyor (7 ve 1 gün kala), ödeme başarısız, abonelik bitti | T2.24 kurallarına ek |
+| Denetim kaydı | Plan, kaynak ve koltuk değişiklikleri yazılır | Yeni işe dahil |
+| Karar kaydı | Ödeme kaynakları, App Store kuralları ve çift kaynak (yeni ADR) | Claude, Opus |
+
+### Arayüzler
+
+| Yer | Ekran | Ne yapılır | Aşama |
+| --- | --- | --- | --- |
+| Web | Ayarlar › Abonelik | Plan ve durum, denemede kalan gün; Abone ol (Paddle ödeme penceresi); Planı değiştir; Ödeme ve faturalar (Paddle portalı); İptal | 3 |
+| Web | Yükseltme mesajı | Kapalı veya salt okunur modülde "planı yükselt" | 3 (P3) |
+| iPhone ve iPad | Ayarlar › Abonelik (sheet) | Ev: StoreKit 2 abonelik ekranı, Satın alımları geri yükle, Aboneliği yönet (Apple sayfası). İşletme: yalnız durum ve yönetim yeri | 4 |
+| iPhone ve iPad | Deneme ve bitiş şeridi | Kalan gün; bitince salt okunur bilgisi | 4 |
+| E-posta ve bildirim | Deneme bitiyor, ödeme başarısız, abonelik bitti | Abonelik ekranına bağlantı | 3 |
+| Destek paneli | Abonelik durumu | Yeniden doğrula, gerekçeli düzelt | Mevcut |
+| Pazarlama sitesi | Fiyat sayfası | Owner yayını onaylayana kadar önizleme; ödeme uygulamada başlar | Ayrı iş |
+
+### Owner kararları
+
+- [ ] Fiyatlar ve kademeler (O8)
+- [ ] Paddle hesabı ve satıcı doğrulaması
+- [ ] App Store Connect abonelik grubu ve ürün kimlikleri (Aşama 4)
+- [ ] Kullanım şartları ve iade politikası metni
+
 ## Ayarlar
 
 Ayarlar Apple'ın Ayarlar uygulaması düzenini izler: iPad ve web'de solda renkli ikonlu kategoriler, sağda gruplu ayrıntı; iPhone'da gruplu liste. Ev modunda işletmeye özgü kategoriler gizlenir. Taslak: [Demleme Arayüz Konsepti](https://claude.ai/artifact/BCEHj3wb6xj7eShvjTxKn6), Ayarlar sekmesi.

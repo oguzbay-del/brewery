@@ -296,7 +296,7 @@ pub async fn passkeys_list(
         description = "Ceremony to run on the client",
         body = CeremonyStart,
         example = json!({"challenge_id": "0192f1c0-7a3b-7000-8000-00000000001b",
-                         "options": {"publicKey": {"rp": {"id": "app.example.com", "name": "Demleme"}}},
+                         "options": {"publicKey": {"rp": {"id": "app.example.com", "name": "GRISTORA"}}},
                          "expires_at": "2026-11-14T10:05:00Z"})
     ))
 )]

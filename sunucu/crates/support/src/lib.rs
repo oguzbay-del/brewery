@@ -40,6 +40,17 @@ pub const JOB_KIND: &str = "support.github_sync";
 /// Start of the hidden marker in each comment the application writes. The webhook ignores a
 /// comment with the marker.
 pub const MARKER: &str = "<!-- demleme:msg:";
+/// The text that replaces customer content in GitHub when the account is deleted (T2.31e).
+pub const REMOVED_TEXT: &str = "Content removed: account deleted";
+/// The header line that `sync::comment_text` writes above a customer message.
+pub const CUSTOMER_HEADER: &str = "**Müşteri**";
+
+/// True when the comment body is a customer message written by the application.
+#[must_use]
+pub fn is_customer_comment(body: &str) -> bool {
+    body.starts_with(MARKER) && body.lines().nth(1) == Some(CUSTOMER_HEADER)
+}
+
 /// The label of a request that waits for the customer.
 pub const WAITING_LABEL: &str = "bekliyor:musteri";
 

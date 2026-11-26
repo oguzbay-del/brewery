@@ -1,0 +1,25 @@
+{
+  "name": "Apple token revoke",
+  "request": {
+    "method": "POST",
+    "urlPath": "/auth/revoke",
+    "bodyPatterns": [
+      {
+        "contains": "token="
+      },
+      {
+        "contains": "client_id="
+      },
+      {
+        "contains": "client_secret="
+      }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {}
+  }
+}

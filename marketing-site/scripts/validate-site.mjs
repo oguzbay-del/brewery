@@ -294,7 +294,8 @@ for (const file of htmlFiles) {
     const primaryCtaPath = primaryCta ? new URL(primaryCta, pageUrl).pathname : "";
     assert(primaryCtaPath.endsWith("/breweries/"), "homepage primary CTA leads to Professional Breweries");
 
-    const featuredSlugs = [...html.matchAll(/href=["'][^"']*\/features\/([^/"']+)\/["']/g)].map((match) => match[1]);
+    const featureOverview = html.match(/<section[^>]*id=["']product-depth["'][^>]*>([\s\S]*?)<\/section>/)?.[1] || "";
+    const featuredSlugs = [...featureOverview.matchAll(/href=["'][^"']*\/features\/([^/"']+)\/["']/g)].map((match) => match[1]);
     const expectedFeaturedSlugs = [
       "production-management",
       "quality-laboratory",

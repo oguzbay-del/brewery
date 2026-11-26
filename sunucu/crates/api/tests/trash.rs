@@ -139,3 +139,81 @@ async fn a_record_of_another_workspace_gives_404(pool: PgPool) {
     // The owner workspace can still restore it.
     assert_eq!(restore(&b, "recipe", &recipe).await.status, StatusCode::OK);
 }
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn trash_cursor_returns_each_record_once_in_order(pool: PgPool) {
+    let w = world(&pool).await;
+    let mut expected = Vec::new();
+    for n in 0..5 {
+        let mut input = ipa();
+        input["name"] = json!(format!("Cursor IPA {n}"));
+        let created = post(&w, "/recipes", input).await;
+        assert_eq!(created.status, StatusCode::CREATED, "{}", created.body);
+        let id = created.body["id"].as_str().unwrap().to_owned();
+        delete_with_etag(&w, &format!("/recipes/{id}")).await;
+        expected.push(id);
+    }
+
+    let first = get(&w, "/trash?kind=recipe&limit=2").await;
+    assert_eq!(first.status, StatusCode::OK, "{}", first.body);
+    assert_eq!(first.body["items"].as_array().unwrap().len(), 2);
+    let cursor1 = first.body["next_cursor"].as_str().unwrap();
+    let second = get(&w, &format!("/trash?kind=recipe&limit=2&cursor={cursor1}")).await;
+    assert_eq!(second.status, StatusCode::OK, "{}", second.body);
+    assert_eq!(second.body["items"].as_array().unwrap().len(), 2);
+    let cursor2 = second.body["next_cursor"].as_str().unwrap();
+    let third = get(&w, &format!("/trash?kind=recipe&limit=2&cursor={cursor2}")).await;
+    assert_eq!(third.status, StatusCode::OK, "{}", third.body);
+    assert_eq!(third.body["items"].as_array().unwrap().len(), 1);
+    assert!(third.body["next_cursor"].is_null());
+
+    let mut seen = Vec::new();
+    for page in [&first, &second, &third] {
+        for item in page.body["items"].as_array().unwrap() {
+            seen.push(item["id"].as_str().unwrap().to_owned());
+        }
+    }
+    seen.sort();
+    expected.sort();
+    assert_eq!(seen, expected);
+
+    let times: Vec<&str> = [&first, &second, &third]
+        .into_iter()
+        .flat_map(|page| page.body["items"].as_array().unwrap())
+        .map(|item| item["deleted_at"].as_str().unwrap())
+        .collect();
+    for pair in times.windows(2) {
+        assert!(
+            pair[0] >= pair[1],
+            "deletions are not newest first: {times:?}"
+        );
+    }
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn trash_cursor_validates_limits_and_exact_last_page(pool: PgPool) {
+    let w = world(&pool).await;
+    let mut input = ipa();
+    input["name"] = json!("Single deleted IPA");
+    let created = post(&w, "/recipes", input).await;
+    assert_eq!(created.status, StatusCode::CREATED, "{}", created.body);
+    let id = created.body["id"].as_str().unwrap().to_owned();
+    delete_with_etag(&w, &format!("/recipes/{id}")).await;
+
+    let exact = get(&w, "/trash?kind=recipe&limit=1").await;
+    assert_eq!(exact.status, StatusCode::OK, "{}", exact.body);
+    assert_eq!(exact.body["items"].as_array().unwrap().len(), 1);
+    assert!(exact.body["next_cursor"].is_null());
+
+    let corrupt = get(&w, "/trash?cursor=not-a-valid-cursor").await;
+    assert_eq!(corrupt.status, StatusCode::BAD_REQUEST, "{}", corrupt.body);
+    assert_eq!(corrupt.body["errors"][0]["code"], "invalid_cursor");
+    assert_eq!(
+        get(&w, "/trash?limit=0").await.status,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+    assert_eq!(
+        get(&w, "/trash?limit=201").await.status,
+        StatusCode::UNPROCESSABLE_ENTITY
+    );
+}

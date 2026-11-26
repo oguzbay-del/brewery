@@ -97,6 +97,25 @@ def main():
         if k["texts"]["tr"]["fields"][ad]["label"] == "" or k["texts"]["en"]["fields"][ad]["label"] == "":
             hatalar.append(f"{ad}: boş etiket")
 
+    # ui grubu: tr ve en anahtar kümeleri eşit olmalı, anahtar deseni geçerli olmalı
+    if not k["texts"]["tr"]["ui"]:
+        hatalar.append("ui: boş")
+    eksik = json.loads(json.dumps(k))
+    eksik["texts"]["en"]["ui"].pop(next(iter(eksik["texts"]["en"]["ui"])))
+    if not any("/ui:" in m for m in uret.anlamsal(eksik)):
+        hatalar.append("ui: eksik anahtar hata vermedi")
+    fazla = json.loads(json.dumps(k))
+    fazla["texts"]["en"]["ui"]["nav.extra"] = "x"
+    if not any("/ui:" in m for m in uret.anlamsal(fazla)):
+        hatalar.append("ui: fazla anahtar hata vermedi")
+    sema = json.loads(uret.SEMA.read_text(encoding="utf-8"))
+    gecersiz = json.loads(json.dumps(k))
+    gecersiz["texts"]["tr"]["ui"]["Nav-Home"] = "x"
+    sema_hata = []
+    uret.dogrula(gecersiz, sema, sema, "", sema_hata)
+    if not sema_hata:
+        hatalar.append("ui: geçersiz anahtar deseni şemada hata vermedi")
+
     # TypeScript davranışı
     node = shutil.which("node")
     tsc = TS_DIR / "node_modules/.bin/tsc"
