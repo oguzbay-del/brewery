@@ -37,6 +37,7 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 
 ## İkinci Claude hesabı: Claude-2 (Oğuz, 26.11.2026)
 
+- **Şu an etkin değil** (limiti yetmedi; işleri Claude-1 alt ajanlarla yapıyor, Oğuz, 26.11.2026). Yeniden açılırsa aşağıdaki kurallar geçerlidir.
 - Oğuz'un ikinci hesabındaki Claude Code oturumu katkıcıdır. Oturum "Claude-2" yazan bir mesajla başlatılır; o oturumda `gelistirme/CLAUDE2-SCOPE.md` "Devam" kurallarının yerine geçer.
 - Claude-2 yalnız `assigned-claude-2` etiketli issue'larda çalışır, `claude2/...` dalında PR açar; `main`'e göndermez, merge etmez; ISLER, DURUM, OTURUM, ADR ve `CLAUDE.md` dosyalarını düzenlemez.
 - Ana oturum (Claude-1) Claude-2 PR'larını ChatGPT PR'ları gibi inceler, test eder, merge eder; inceleme sıradaki işten önce gelir.
