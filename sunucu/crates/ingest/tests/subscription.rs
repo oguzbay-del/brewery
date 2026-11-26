@@ -71,6 +71,14 @@ struct World {
 impl World {
     /// A workspace whose trial ended (created two months ago) and a running consumer.
     async fn new(base: PgPool, trial_over: bool) -> Self {
+        Self::with_product_ids(base, trial_over, Vec::new()).await
+    }
+
+    async fn with_product_ids(
+        base: PgPool,
+        trial_over: bool,
+        apple_product_ids: Vec<String>,
+    ) -> Self {
         let ws = Uuid::now_v7();
         sqlx::query(
             "INSERT INTO workspaces (id, name, mode, region, country, time_zone, support_pseudonym,
@@ -93,6 +101,7 @@ impl World {
             apple: JwsVerifier::with_roots(vec![pki.root_der.clone()], true),
             bundle_id: Some("app.demleme".to_owned()),
             apple_environment: "Production".to_owned(),
+            apple_product_ids,
             web_payment: Some(fake.clone()),
             github_secret: None,
         });
@@ -139,6 +148,7 @@ impl World {
             subtype: None,
             workspace: self.ws.to_string(),
             original_transaction_id: format!("otx-{}", self.ws.simple()),
+            product_id: "pro.monthly",
             signed_ms,
             expires_ms,
         }
@@ -264,6 +274,33 @@ async fn purchase_renewal_and_refund(base: PgPool) {
             .await,
         3
     );
+    w.finish().await;
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn only_allowed_apple_products_are_stored(base: PgPool) {
+    let w = World::with_product_ids(base, true, vec!["pro.monthly".to_owned()]).await;
+    let t = now_ms() - 60_000;
+    let mut unknown = w.note("n-unknown", "SUBSCRIBED", t, t + 30 * DAY_MS);
+    unknown.product_id = "other.monthly";
+    let (status, body) = w.post(&w.pki.notification(&unknown)).await;
+    assert_eq!(
+        (status, body["status"].as_str()),
+        (StatusCode::OK, Some("ignored"))
+    );
+    assert_eq!(w.count("SELECT count(*) FROM external_events").await, 0);
+    assert_eq!(w.count("SELECT count(*) FROM outbox").await, 0);
+    assert_eq!(w.count("SELECT count(*) FROM subscriptions").await, 0);
+
+    let allowed = w.note("n-allowed", "SUBSCRIBED", t, t + 30 * DAY_MS);
+    let (status, body) = w.post(&w.pki.notification(&allowed)).await;
+    assert_eq!(
+        (status, body["status"].as_str()),
+        (StatusCode::OK, Some("accepted"))
+    );
+    w.settle(1).await;
+    assert_eq!(w.count("SELECT count(*) FROM subscriptions").await, 1);
+    assert_eq!(w.access().await.source, AccessSource::Subscription);
     w.finish().await;
 }
 

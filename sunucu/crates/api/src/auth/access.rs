@@ -453,6 +453,7 @@ pub async fn roles_create(
     ctx: RequestContext,
     ApiJson(req): ApiJson<NewRole>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, _) = begin_admin(&state, &ctx).await?;
     let mut issues = Vec::new();
     if !valid_name(&req.name) {
@@ -573,6 +574,7 @@ pub async fn roles_copy(
     Path((_ws, source)): Path<(Uuid, Uuid)>,
     ApiJson(req): ApiJson<CopyRole>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, _) = begin_admin(&state, &ctx).await?;
     if !valid_name(&req.name) {
         return Err(invalid("/name", "invalid"));
@@ -782,6 +784,7 @@ pub async fn roles_delete(
     Path((_ws, id)): Path<(Uuid, Uuid)>,
     headers: HeaderMap,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, _) = begin_admin(&state, &ctx).await?;
     let before = load_role(&mut tx, ws, id).await?;
     check_if_match(Concurrency::Optimistic, &headers, before.version, || {
@@ -1070,6 +1073,7 @@ pub async fn members_remove(
     ctx: RequestContext,
     Path((_ws, id)): Path<(Uuid, Uuid)>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, caller) = begin_admin(&state, &ctx).await?;
     let current = load_members(&mut tx, ws, Some(id))
         .await?
@@ -1237,6 +1241,7 @@ pub async fn assignments_delete(
     ctx: RequestContext,
     Path((_ws, member, aid)): Path<(Uuid, Uuid, Uuid)>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, caller) = begin_admin(&state, &ctx).await?;
     let before: AssignmentResponse = sqlx::query_as(sql!(
         "SELECT {ASSIGNMENT_COLS} FROM role_assignments \
@@ -1518,6 +1523,7 @@ pub async fn invitations_revoke(
     ctx: RequestContext,
     Path((_ws, id)): Path<(Uuid, Uuid)>,
 ) -> ApiResult<Response> {
+    admin_step_up(&state, &ctx, ProtectedAction::UserChange).await?;
     let (mut tx, ws, _) = begin_admin(&state, &ctx).await?;
     let n = sqlx::query(
         "UPDATE invitations SET revoked_at = now(), updated_by = $3 \

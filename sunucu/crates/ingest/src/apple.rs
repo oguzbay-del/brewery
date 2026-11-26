@@ -44,6 +44,11 @@ pub enum Parsed {
         /// The `notificationType`.
         notification_type: String,
     },
+    /// A verified notification for a product outside the allowlist.
+    ProductNotAllowed {
+        /// The `notificationType`.
+        notification_type: String,
+    },
 }
 
 fn millis(v: &Value, key: &'static str) -> Option<DateTime<Utc>> {
@@ -64,6 +69,7 @@ fn text<'a>(v: &'a Value, key: &'static str) -> Result<&'a str, AppleError> {
 /// `bundle_id` is the accepted app. `None` rejects every notification (fail closed).
 /// `environment` is the accepted App Store environment (`Production` or `Sandbox`). The check
 /// applies to the outer notification and to `signedTransactionInfo`.
+/// An empty `product_ids` list accepts all product IDs.
 ///
 /// # Errors
 /// [`AppleError`] for a bad signature or chain, a missing field, another bundle or another
@@ -74,6 +80,7 @@ pub fn parse_notification(
     now_unix: i64,
     bundle_id: Option<&str>,
     environment: &str,
+    product_ids: &[String],
 ) -> Result<Parsed, AppleError> {
     let Some(bundle_id) = bundle_id else {
         return Err(AppleError::NotConfigured);
@@ -126,14 +133,20 @@ pub fn parse_notification(
         .get("appAccountToken")
         .and_then(Value::as_str)
         .and_then(|s| Uuid::parse_str(s).ok());
+    let external_id = text(&tx, "originalTransactionId")?;
+    let product_id = text(&tx, "productId")?;
+    if !product_ids.is_empty() && !product_ids.iter().any(|allowed| allowed == product_id) {
+        return Ok(Parsed::ProductNotAllowed { notification_type });
+    }
+
     Ok(Parsed::Update(Box::new(SubscriptionUpdate {
         schema_version: UPDATE_SCHEMA_VERSION,
         source: Source::AppStore,
         notification_id,
         kind,
         workspace_id,
-        external_id: text(&tx, "originalTransactionId")?.to_owned(),
-        product_key: text(&tx, "productId")?.to_owned(),
+        external_id: external_id.to_owned(),
+        product_key: product_id.to_owned(),
         period_ends_at,
         occurred_at,
     })))

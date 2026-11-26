@@ -34,6 +34,7 @@ async fn app(base: &PgPool, secret: Option<&[u8]>) -> axum::Router {
         apple: JwsVerifier::apple(),
         bundle_id: None,
         apple_environment: "Production".to_owned(),
+        apple_product_ids: Vec::new(),
         web_payment: None,
         github_secret: secret.map(|s| Arc::new(s.to_vec())),
     })

@@ -92,7 +92,41 @@ want_refuse() { # kaynak hedef port katman
   esac
 }
 want_reach api engine-service 50051
-want_reach api redis 6379
+
+# Veri servisinde connect() tek başına erişimi doğrulamaz. Protokol yanıtını bekle.
+# Uzak betik sonuç yazar. kubectl ya da timeout hatası bir ret sonucu sayılmaz.
+DATA_PROBE='
+  trap "" PIPE
+  if { exec 3<>"/dev/tcp/$1/$2"; } 2>/dev/null; then
+    case "$1" in
+      postgres) printf "\x00\x00\x00\x08\x04\xd2\x16\x2f" >&3 ;;
+      redis)    printf "*1\r\n\$4\r\nPING\r\n" >&3 ;;
+      nats)     : ;; # NATS bağlantı açıldığında INFO gönderir.
+      *) exit 2 ;;
+    esac
+    if IFS= read -r -n1 -t 4 -u 3 _; then
+      printf "yanit"
+      exit 0
+    fi
+  fi
+  printf "red"
+'
+check_data_access() { # kaynak hedef port beklenen-sonuç
+  local result
+  if ! result=$($K exec "deploy/$1" -- timeout 10 bash -c "$DATA_PROBE" probe "$2" "$3" 2>/dev/null); then
+    bad "$1 -> $2:$3 denemesi çalışmadı"
+  elif [ "$result" = "$4" ]; then
+    ok "$1 -> $2:$3 ($result)"
+  else
+    bad "$1 -> $2:$3 ($result; beklenen $4)"
+  fi
+}
+check_data_access api postgres 5432 yanit
+check_data_access api redis 6379 yanit
+check_data_access api nats 4222 yanit
+check_data_access engine-service postgres 5432 red
+check_data_access engine-service redis 6379 red
+check_data_access engine-service nats 4222 red
 
 # Mesh: kimlik politikaları (L4). api'nin portu ağ politikasıyla herkese açıktır; bu yüzden yalnız
 # AuthorizationPolicy reddedebilir (kimlik: ServiceAccount). Hesap motoruna yalnız api erişir.

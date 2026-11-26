@@ -16,6 +16,7 @@ use axum::{
     routing::{get, post},
 };
 use chrono::{DateTime, Duration, Utc};
+use db::{AuditEvent, NewAuditEntry};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sqlx::FromRow;
@@ -230,7 +231,7 @@ pub async fn trash_restore(
     ctx: RequestContext,
     Path((_ws, kind, id)): Path<(Uuid, String, Uuid)>,
 ) -> ApiResult<Json<TrashItem>> {
-    workspace(&ctx)?;
+    let ws = workspace(&ctx)?;
     let kind = Kind::parse(&kind).ok_or_else(not_found)?;
     ctx.require(kind.permission())?;
     let mut tx = ctx.begin(&state.db).await?;
@@ -249,13 +250,13 @@ pub async fn trash_restore(
         return Err(ApiError::new(ErrorCode::Conflict)
             .with_errors(vec![FieldIssue::new("/id", "restore_window_expired")]));
     }
-    sqlx::query(sqlx::AssertSqlSafe(format!(
-        "UPDATE {} SET deleted_at = NULL, updated_by = $2 WHERE id = $1",
+    let version: i64 = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+        "UPDATE {} SET deleted_at = NULL, updated_by = $2 WHERE id = $1 RETURNING version",
         kind.table()
     )))
     .bind(id)
     .bind(ctx.identity.user_id)
-    .execute(&mut *tx)
+    .fetch_one(&mut *tx)
     .await
     .map_err(|e| match sqlstate(&e).as_deref() {
         Some("23505") => {
@@ -263,6 +264,35 @@ pub async fn trash_restore(
         }
         _ => e.into(),
     })?;
+    db::append_audit(
+        &mut tx,
+        ws,
+        &NewAuditEntry {
+            actor_kind: ctx.identity.actor_kind,
+            actor_id: Some(ctx.identity.user_id),
+            event: AuditEvent::TrashRestore,
+            record_kind: kind.name().to_owned(),
+            record_id: Some(id),
+            previous_value: None,
+            new_value: None,
+            reason: None,
+        },
+    )
+    .await?;
+    db::outbox::enqueue(
+        &mut tx,
+        &db::outbox::NewOutboxEvent {
+            topic: format!("{}.restored", kind.name()),
+            workspace_id: Some(ws),
+            entity: Some(db::outbox::Entity {
+                kind: kind.name().to_owned(),
+                id,
+                version,
+            }),
+            data: None,
+        },
+    )
+    .await?;
     tx.commit().await?;
     Ok(Json(TrashItem {
         kind: kind.name().to_owned(),

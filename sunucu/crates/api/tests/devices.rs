@@ -72,6 +72,7 @@ async fn stack(w: &World) -> Stack {
         apple: ingest::jws::JwsVerifier::apple(),
         bundle_id: None,
         apple_environment: "Production".to_owned(),
+        apple_product_ids: Vec::new(),
         web_payment: None,
         github_secret: None,
     });
