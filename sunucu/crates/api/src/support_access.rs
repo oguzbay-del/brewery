@@ -289,23 +289,7 @@ mod spec {
         Internal,
         Unavailable,
     ];
-    const CREATE: &[ErrorCode] = &[
-        MalformedRequest,
-        Unauthenticated,
-        Forbidden,
-        NotFound,
-        Conflict,
-        IdempotencyInProgress,
-        PayloadTooLarge,
-        UnsupportedMediaType,
-        ValidationFailed,
-        IdempotencyMismatch,
-        RateLimited,
-        UpgradeRequired,
-        Internal,
-        Unavailable,
-    ];
-    /// `CREATE` plus the second step (grant).
+    /// Errors of the grant endpoint, which asks for the second step.
     const CREATE_STEP_UP: &[ErrorCode] = &[
         MalformedRequest,
         Unauthenticated,
