@@ -1,5 +1,5 @@
 ---
-// Shared header, Stitch nav set B. `current` marks the matching link with aria-current="page".
+// Shared header, Stitch nav set B. `current` identifies the active navigation item.
 // `home` makes the wordmark an in-page link to #top (home page only).
 interface Props {
   current?: "product" | "modules" | "breweries" | "homebrewers" | "pricing" | "how-it-works" | "principles" | "faq";
@@ -26,6 +26,8 @@ const links = [
   { id: "principles", path: "technical-principles", label: tr ? "İlkeler" : "Principles", mobile: tr ? "Teknik ilkeler" : "Technical principles", group: "plans" },
   { id: "faq", path: "faq", label: tr ? "SSS" : "FAQ", group: "plans" },
 ];
+const activeLink = links.find((link) => link.id === current);
+const activeState = activeLink && Astro.url.pathname === `${root}${activeLink.path}/` ? "page" : "location";
 const mobileGroups = [
   { id: "product", label: tr ? "Ürünü keşfet" : "Explore the product" },
   { id: "audience", label: tr ? "Kimler için?" : "Who it’s for" },
@@ -35,7 +37,7 @@ const mobileGroups = [
 <header class="site-header" id={home ? "top" : undefined}>
   <a class="wordmark" href={home ? "#top" : root} aria-label={tr ? "GRISTORA ana sayfa" : "GRISTORA home"}><img class="brand-symbol" src={`${base}brand/gristora-symbol.svg`} alt="" aria-hidden="true" width="130" height="160" /><span class="wordmark-text">GRISTORA</span></a>
   <nav class="desktop-nav" aria-label={tr ? "Ana gezinme" : "Main navigation"}>
-    {links.map((link) => <a href={`${root}${link.path}/`} aria-current={current === link.id ? "page" : undefined}>{link.label}</a>)}
+    {links.map((link) => <a href={`${root}${link.path}/`} aria-current={current === link.id ? activeState : undefined}>{link.label}</a>)}
   </nav>
   <a class="lang-switch" href={languageHref} hreflang={tr ? "en" : "tr"} lang={tr ? "en" : "tr"}>{tr ? "EN" : "TR"}</a>
   <a class="header-cta" href={`${root}breweries/`}>{tr ? "Bira üreticileri için" : "Explore breweries"} <span aria-hidden="true">↗</span></a>
@@ -46,7 +48,7 @@ const mobileGroups = [
         <div role="group" aria-labelledby={`nav-${group.id}`}>
           <p class="mobile-group-label" id={`nav-${group.id}`}>{group.label}</p>
           {links.filter((link) => link.group === group.id).map((link) => (
-            <a href={`${root}${link.path}/`} aria-current={current === link.id ? "page" : undefined}>{link.mobile ?? link.label}</a>
+            <a href={`${root}${link.path}/`} aria-current={current === link.id ? activeState : undefined}>{link.mobile ?? link.label}</a>
           ))}
         </div>
       ))}
@@ -67,5 +69,5 @@ const mobileGroups = [
     font-weight: 600;
   }
   :global(.sx-home-hero) .mobile-group-label { color: var(--amber-fill); }
-  .mobile-menu nav a[aria-current="page"] { text-decoration: underline; text-underline-offset: .25em; }
+  .mobile-menu nav a[aria-current] { text-decoration: underline; text-underline-offset: .25em; }
 </style>

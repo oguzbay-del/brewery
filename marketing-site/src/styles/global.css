@@ -37,7 +37,7 @@ a:focus-visible, summary:focus-visible { outline: 3px solid #0066cc; outline-off
 .desktop-nav a, .header-cta { font-size: 13px; font-weight: 600; }
 .desktop-nav a { color: #4e524b; transition: color .2s ease; }
 .desktop-nav a:hover, .text-link:hover { color: var(--amber); }
-.desktop-nav a[aria-current="page"], .mobile-menu nav a[aria-current="page"] { color: var(--amber); }
+.desktop-nav a[aria-current], .mobile-menu nav a[aria-current] { color: var(--amber); }
 .header-cta { padding: 12px 17px; border: 1px solid var(--ink); border-radius: 2px; }
 .header-cta span { margin-left: 12px; color: var(--amber); }
 .mobile-menu { display: none; }
