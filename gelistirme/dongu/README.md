@@ -63,7 +63,7 @@ The branch name also shows the actor: `claude/...`, `chatgpt/...`, `codex/...`.
 3. **One action for each head SHA.** Before you review or request a fix, read the markers on the PR. If a marker with your actor, the same `kind` and the same `ref` exists, do nothing. An event run and the watchdog can see the same PR; this rule stops the second action.
 4. **Round limit.** A PR gets a maximum of 3 `fix-request` rounds. After round 3, do not request a new fix. Set `loop:needs-owner` and `status:blocked`, write an `escalate` marker with the open points, and stop.
 5. **No reply to a reply.** Do not answer a comment only because it exists. Answer only a comment that asks for a change, has a question, or reports a red CI. Do not write "thanks", "done" or acknowledgment comments.
-6. **One `@codex` request for each head SHA.** Write `@codex` only in a `fix-request` or `ci-fix` comment, or in an issue dispatch. Count the request as a round. Exception: if the connector rejects the request (for example, "create an environment"), the request did not run. Write the request one more time in the same round, after the cause is removed. Do not write `@codex` in other text, because each mention starts the connector.
+6. **One `@codex` request for each head SHA.** Write `@codex` only in `@codex review` on a Claude PR (the task path is off, section 6.3). Count a fix request as a round. Do not write `@codex` in other text, because each mention starts the connector.
 7. **Quiet time.** If the other actor wrote a marker on the item in the last 15 minutes, skip the item in this run. The other actor is probably still working.
 8. **Hourly budget.** One Claude run does a maximum of 3 reviews and 1 own task. Write the rest in the run report; the next run takes them.
 9. **No self-trigger.** Do not react to an event that your own run caused (your marker, your push, your label change).
@@ -73,7 +73,7 @@ The branch name also shows the actor: `claude/...`, `chatgpt/...`, `codex/...`.
 ### 6.1 Claude → ChatGPT (task dispatch)
 
 1. Claude creates or updates an issue: `assigned-chatgpt`, `area:*`, `status:ready`, with files, rules and a done criterion in ASD-STE100.
-2. Event path: Claude writes an issue comment with a `dispatch` marker and the line `@codex start this issue. Read AGENTS.md first.` Do this only for class A and class B tasks that need no question.
+2. Event path (off, section 6.3): do not write `@codex start this issue`. The hourly ChatGPT scheduled task reads the label `status:ready` (section 11).
 3. Fallback path: the hourly ChatGPT scheduled task takes the oldest `status:ready` issue of ChatGPT.
 
 ### 6.2 ChatGPT → Claude (review and requests)
@@ -85,7 +85,7 @@ The branch name also shows the actor: `claude/...`, `chatgpt/...`, `codex/...`.
 
 ### 6.3 Review comments
 
-- Claude reviews a ChatGPT PR. If changes are necessary, Claude writes one review with all points, then one `fix-request` comment: `@codex fix the review points in the latest Claude review on this PR. Push to this branch.` Claude sets `loop:fix-requested`.
+- Claude reviews a ChatGPT PR. If changes are necessary, Claude writes one review with all points, then one `fix-request` comment (no `@codex`): "Fix the review points in the latest Claude review on this PR. Push to this branch." Claude sets `loop:fix-requested`.
 - When the head SHA changes, Claude reviews again (new `ref`, round + 1). When the PR is good, Claude removes `loop:fix-requested` and merges by section 7.
 - Codex reviews Claude PRs automatically (Codex setting). Codex reports only P0 and P1 points. Claude fixes each valid point on its branch and writes one `fix-done` marker with the list. Claude does not answer a point that it rejects more than once; it writes the reason in the `fix-done` comment.
 
@@ -93,7 +93,7 @@ The branch name also shows the actor: `claude/...`, `chatgpt/...`, `codex/...`.
 
 ### 6.4 CI failures
 
-- Red CI on a ChatGPT or Codex PR: Claude writes one `ci-fix` comment with the job name and the first error lines, and `@codex fix the CI failures on this PR. Push to this branch.` The round limit applies.
+- Red CI on a ChatGPT or Codex PR: Claude writes one `ci-fix` comment with the job name and the first error lines, and the line "Fix the CI failures on this PR. Push to this branch." (no `@codex`). The round limit applies.
 - Red CI on a Claude PR: the Claude loop session gets the CI event and fixes it on its branch in the same run.
 - Red CI on `main`: Claude opens one issue with the label `assigned-claude`, `status:ready` and the title `CI red on main: <workflow>`, if no such issue is open.
 
@@ -164,3 +164,19 @@ Owner steps (cannot be done by an agent):
 ## 10. Costs
 
 All components use the current subscriptions and the free GitHub Actions minutes of a public repository. Runs use subscription usage. If an option needs extra cost (API key, paid runner, usage credits), ask the owner first.
+
+## 11. Live task source (owner instruction, 2026-11-26)
+
+GitHub Issues and pull requests are the only task source. A chat history, a task list in an older conversation, `gelistirme/ISLER.md` and `gelistirme/DURUM.md` are not task sources: they can be old. The issue body can also be old: the labels of the issue decide its state, and a status line in the body does not.
+
+Each ChatGPT run queries GitHub live, on the default branch `main`, before it does any work:
+
+1. List open issues with `assigned-chatgpt`, all pages, newest and oldest. Do not stop at the first page. Use the search `repo:oguzbay-del/brewery is:issue is:open label:assigned-chatgpt` with 100 results for each page.
+2. List open pull requests with `is:pr is:open`. For each PR of `chatgpt/` and `codex/` branches, read the check runs of the current head SHA and the latest Claude marker.
+3. Sort the work in this order: (a) a PR of yours with `loop:fix-requested` or a red check; (b) an issue with `status:in-progress` that has a claim of yours and no PR; (c) issues with `status:ready`, in this order: class C security tasks, then product tasks, then marketing tasks; inside a group, the lowest issue number first.
+4. Do not skip an issue because it is new. Do not report only the oldest issue. An issue is blocked only when it has the label `status:blocked`, or when its dependency in the issue is still open.
+5. Do not start more than 3 issues in one run. Start only issues that change different files and have no common migration number. If two ready issues share a file or a migration number, do the lower issue number first.
+6. A run does not end after one issue. Go back to step 1 until no ready issue is left or the run has no capacity (CHATGPT-SCOPE.md › Work loop). Write the open items and the reason in the run report.
+7. Write the issue numbers that you started, the PR numbers that you opened and the blocked items in the run report. If a query fails, write the error and stop. Do not use a remembered list in place of a failed query.
+
+The Claude watchdog makes sure that this source stays true: it removes a stale status line from the issue body, sets `status:ready` when a dependency is done, and sets the label `status:review` when a PR is open.
