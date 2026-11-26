@@ -548,7 +548,8 @@ async fn complete_upload<T: FileRow>(
     if row.uploaded_at.is_none() {
         verify_object(store.as_ref(), &row).await?;
         sqlx::query(dyn_sql!(
-            "UPDATE {} SET uploaded_at = now(), updated_by = $2 WHERE id = $1 AND uploaded_at IS NULL",
+            "UPDATE {} SET uploaded_at = now(), updated_by = $2 \
+             WHERE id = $1 AND uploaded_at IS NULL AND deleted_at IS NULL",
             spec.table
         ))
         .bind(id)
