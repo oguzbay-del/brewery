@@ -54,6 +54,24 @@ async fn unknown_scan_code_is_not_found() {
     assert_eq!(response.status(), StatusCode::NOT_FOUND);
     let problem: Value = response.json().await.unwrap();
     assert_eq!(problem["code"], "not_found");
+
+    let other = ctx
+        .create_workspace(&owner, "business", "E2E Other Scan")
+        .await
+        .unwrap();
+    let other_ws = other["id"].as_str().unwrap();
+    let formatted_code = format!("{other_ws}/AAAAAAAAAAAAAAAAAAAAAAAAAA");
+    let response = ctx
+        .post_json(
+            &format!("/v1/workspaces/{ws}/scan/resolve"),
+            Some(&owner),
+            &json!({"code": formatted_code}),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    let other_problem: Value = response.json().await.unwrap();
+    assert_eq!(other_problem["code"], problem["code"]);
 }
 
 #[tokio::test]
