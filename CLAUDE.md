@@ -35,6 +35,12 @@ Bu depo bira demleme uygulamasının (Ev ve İşletme modu) planı, tasarımı v
 - `main`'e gönderim 11.11 kuralıyla sürer (testler yeşilse onaysız). Production yayını, sürüm çıkarma ve production ayarı kullanıcı onayındadır. Ajan köprüsü ve otomatik merge altyapısı yeniden kurulmaz (22.11 iptali).
 - **Bulut geliştirme döngüsü v2 (Oğuz, 25.11.2026):** döngü tamamen bulutta, owner'ın bilgisayarından bağımsız çalışır. Claude tarafı depoya bağlı döngü oturumu + saatlik watchdog + PR aboneliği; ChatGPT tarafı ChatGPT zamanlanmış görevleri ve Codex (`@codex`, otomatik review). Kurallar `gelistirme/dongu/README.md` (her çalışmada okunur), Codex için kök `AGENTS.md`, karar `adr/0011-bulut-gelistirme-dongusu.md`. Köprü, MCP sunucusu, Worker, Vercel, self-hosted runner kurulmaz; ek maliyet owner onayı ister.
 
+## İkinci Claude hesabı: Claude-2 (Oğuz, 26.11.2026)
+
+- Oğuz'un ikinci hesabındaki Claude Code oturumu katkıcıdır. Oturum "Claude-2" yazan bir mesajla başlatılır; o oturumda `gelistirme/CLAUDE2-SCOPE.md` "Devam" kurallarının yerine geçer.
+- Claude-2 yalnız `assigned-claude-2` etiketli issue'larda çalışır, `claude2/...` dalında PR açar; `main`'e göndermez, merge etmez; ISLER, DURUM, OTURUM, ADR ve `CLAUDE.md` dosyalarını düzenlemez.
+- Ana oturum (Claude-1) Claude-2 PR'larını ChatGPT PR'ları gibi inceler, test eder, merge eder; inceleme sıradaki işten önce gelir.
+
 ## Token verimliliği (Oğuz, 14.11.2026)
 
 - **Oturum kısa tutulur:** her aşamada ve ana oturumun bağlamı büyüyünce (yaklaşık 5–6 iş birleştirildikten sonra) iş tutarlı bir noktada kesilir, DURUM.md güncellenir ve kullanıcıya yeni oturum önerilir. Kayıt DURUM.md'dedir, sohbet geçmişine güvenilmez.
