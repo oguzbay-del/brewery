@@ -994,7 +994,8 @@ mod spec {
     use crate::concurrency::Concurrency;
     use crate::error::ErrorCode::{
         Conflict, Forbidden, Internal, MalformedRequest, NotFound, PayloadTooLarge, RateLimited,
-        Unauthenticated, Unavailable, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+        StepUpRequired, Unauthenticated, Unavailable, UnsupportedMediaType, UpgradeRequired,
+        ValidationFailed,
     };
     use crate::openapi::{OperationSpec, file_op};
 
@@ -1003,6 +1004,22 @@ mod spec {
         Unauthenticated,
         Forbidden,
         NotFound,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+    /// `WRITE` plus the second step (full export).
+    const EXPORT: &[crate::error::ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        PayloadTooLarge,
+        UnsupportedMediaType,
+        ValidationFailed,
         RateLimited,
         UpgradeRequired,
         Internal,
@@ -1041,7 +1058,7 @@ mod spec {
             "export_create",
             Some("reports.export"),
             Some(Concurrency::Append),
-            WRITE,
+            EXPORT,
         ),
         file_op("export_get", Some("reports.export"), None, READ),
     ];

@@ -1828,8 +1828,8 @@ mod spec {
     use crate::error::ErrorCode;
     use crate::error::ErrorCode::{
         Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, Internal,
-        MalformedRequest, NotFound, PreconditionRequired, RateLimited, Unauthenticated,
-        UnsupportedMediaType, UpgradeRequired, ValidationFailed, VersionMismatch,
+        MalformedRequest, NotFound, PreconditionRequired, RateLimited, StepUpRequired,
+        Unauthenticated, UnsupportedMediaType, UpgradeRequired, ValidationFailed, VersionMismatch,
     };
     use crate::openapi::OperationSpec;
 
@@ -1853,6 +1853,41 @@ mod spec {
         UnsupportedMediaType,
         ValidationFailed,
         IdempotencyMismatch,
+        PreconditionRequired,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    /// `ACCESS_CREATE` plus the second step (invitations and assignments).
+    const ACCESS_CREATE_STEP_UP: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        IdempotencyInProgress,
+        UnsupportedMediaType,
+        ValidationFailed,
+        IdempotencyMismatch,
+        PreconditionRequired,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+    ];
+
+    /// `ACCESS_UPDATE` plus the second step (roles and members).
+    const ACCESS_UPDATE_STEP_UP: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
+        NotFound,
+        Conflict,
+        VersionMismatch,
+        UnsupportedMediaType,
+        ValidationFailed,
         PreconditionRequired,
         RateLimited,
         UpgradeRequired,
@@ -1924,7 +1959,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Optimistic),
-            errors: ACCESS_UPDATE,
+            errors: ACCESS_UPDATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "roles_delete",
@@ -1945,7 +1980,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::FieldLww),
-            errors: ACCESS_UPDATE,
+            errors: ACCESS_UPDATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "members_remove",
@@ -1959,7 +1994,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Append),
-            errors: ACCESS_CREATE,
+            errors: ACCESS_CREATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "assignments_delete",
@@ -1973,7 +2008,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Append),
-            errors: ACCESS_CREATE,
+            errors: ACCESS_CREATE_STEP_UP,
         },
         OperationSpec {
             operation_id: "invitations_list",
@@ -2001,7 +2036,7 @@ mod spec {
             public: false,
             permission: Some("users.manage"),
             concurrency: Some(Concurrency::Append),
-            errors: ACCESS_CREATE,
+            errors: ACCESS_CREATE_STEP_UP,
         },
     ];
 }

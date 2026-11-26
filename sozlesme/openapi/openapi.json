@@ -13327,6 +13327,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -13334,7 +13344,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Second factor required"
           },
           "404": {
             "content": {
@@ -36811,6 +36821,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -36818,7 +36838,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Second factor required"
           },
           "404": {
             "content": {
@@ -44311,6 +44331,16 @@
                       "title": "Module disabled",
                       "type": "/errors/module_disabled"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -44318,7 +44348,7 @@
                 }
               }
             },
-            "description": "Forbidden; Module disabled"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -49655,6 +49685,16 @@
                       "title": "Module disabled",
                       "type": "/errors/module_disabled"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -49662,7 +49702,7 @@
                 }
               }
             },
-            "description": "Forbidden; Module disabled"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -50039,6 +50079,16 @@
                       "title": "Module disabled",
                       "type": "/errors/module_disabled"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -50046,7 +50096,7 @@
                 }
               }
             },
-            "description": "Forbidden; Module disabled"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -59836,6 +59886,16 @@
                       "title": "Module disabled",
                       "type": "/errors/module_disabled"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -59843,7 +59903,7 @@
                 }
               }
             },
-            "description": "Forbidden; Module disabled"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -63944,6 +64004,16 @@
                       "title": "Module disabled",
                       "type": "/errors/module_disabled"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -63951,7 +64021,7 @@
                 }
               }
             },
-            "description": "Forbidden; Module disabled"
+            "description": "Forbidden; Second factor required; Module disabled"
           },
           "404": {
             "content": {
@@ -70519,6 +70589,16 @@
                       "title": "Forbidden",
                       "type": "/errors/forbidden"
                     }
+                  },
+                  "step_up_required": {
+                    "summary": "Second factor required",
+                    "value": {
+                      "code": "step_up_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Second factor required",
+                      "type": "/errors/step_up_required"
+                    }
                   }
                 },
                 "schema": {
@@ -70526,7 +70606,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden; Second factor required"
           },
           "404": {
             "content": {

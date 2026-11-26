@@ -273,8 +273,8 @@ mod spec {
     use crate::error::ErrorCode;
     use crate::error::ErrorCode::{
         Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, Internal,
-        MalformedRequest, NotFound, PayloadTooLarge, RateLimited, Unauthenticated, Unavailable,
-        UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+        MalformedRequest, NotFound, PayloadTooLarge, RateLimited, StepUpRequired, Unauthenticated,
+        Unavailable, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
     };
     use crate::openapi::{OperationSpec, file_op};
 
@@ -293,6 +293,24 @@ mod spec {
         MalformedRequest,
         Unauthenticated,
         Forbidden,
+        NotFound,
+        Conflict,
+        IdempotencyInProgress,
+        PayloadTooLarge,
+        UnsupportedMediaType,
+        ValidationFailed,
+        IdempotencyMismatch,
+        RateLimited,
+        UpgradeRequired,
+        Internal,
+        Unavailable,
+    ];
+    /// `CREATE` plus the second step (grant).
+    const CREATE_STEP_UP: &[ErrorCode] = &[
+        MalformedRequest,
+        Unauthenticated,
+        Forbidden,
+        StepUpRequired,
         NotFound,
         Conflict,
         IdempotencyInProgress,
@@ -325,7 +343,7 @@ mod spec {
             "supportgrant_create",
             Some("support.grant"),
             Some(Concurrency::Append),
-            CREATE,
+            CREATE_STEP_UP,
         ),
         file_op(
             "supportgrant_revoke",

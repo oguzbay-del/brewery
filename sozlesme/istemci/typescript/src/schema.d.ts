@@ -9144,7 +9144,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Second factor required */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -19219,7 +19219,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Second factor required */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -22395,7 +22395,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Module disabled */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24650,7 +24650,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Module disabled */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -24802,7 +24802,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Module disabled */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -28800,7 +28800,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Module disabled */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -30514,7 +30514,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden; Module disabled */
+            /** @description Forbidden; Second factor required; Module disabled */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -33290,7 +33290,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden; Second factor required */
             403: {
                 headers: {
                     [name: string]: unknown;
