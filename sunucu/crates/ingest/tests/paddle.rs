@@ -43,6 +43,7 @@ async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgP
         apple: JwsVerifier::apple(),
         bundle_id: None,
         apple_environment: "Production".to_owned(),
+        apple_product_ids: Vec::new(),
         web_payment: Some(Arc::new(provider)),
         github_secret: None,
     });
