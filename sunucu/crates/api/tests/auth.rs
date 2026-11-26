@@ -1872,7 +1872,7 @@ async fn first_workspace_makes_the_user_its_administrator(pool: PgPool) {
     let probe = get_as(&w, &format!("/v1/workspaces/{ws}/probe"), &token).await;
     assert_eq!(probe.status, StatusCode::OK, "{:?}", probe.body);
     let perms = probe.body["permissions"].as_array().unwrap();
-    assert_eq!(perms.len(), 17);
+    assert_eq!(perms.len(), 20);
     assert!(perms.iter().any(|p| p == "users.manage"));
     let direct = w
         .svc
@@ -1886,7 +1886,7 @@ async fn first_workspace_makes_the_user_its_administrator(pool: PgPool) {
         )
         .await
         .unwrap();
-    assert_eq!(direct.unwrap().permissions.len(), 17);
+    assert_eq!(direct.unwrap().permissions.len(), 20);
 
     // A user who is not a member sees `404`, as if the workspace did not exist.
     let stranger = token_of(&apple(&w, "apple-2", "ios", |_| {}).await);

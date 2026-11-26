@@ -1464,7 +1464,8 @@ export interface paths {
         put?: never;
         /**
          * Prints labels. Each target gets a new scan code whose token is in the QR code. The answer is
-         *     one PDF with one page for each target. Every call issues new codes.
+         *     one PDF with 24 labels on a page (A4 or US Letter by `paper`). Every call issues new codes. A
+         *     reprint does not revoke earlier codes: retire a container to revoke its codes.
          */
         post: operations["label_print"];
         delete?: never;
@@ -1724,7 +1725,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Recall query: the containers filled from a stock lot. */
+        /**
+         * Recall query: the containers filled from a stock lot. A container matches when its last fill
+         *     names the lot, or when its last fill line belongs to a batch that consumed the lot. Each
+         *     container is listed once.
+         */
         get: operations["recall_containers"];
         put?: never;
         post?: never;
@@ -4814,8 +4819,6 @@ export interface components {
         };
         /** @description Label request. Each target gets a new scan code. */
         LabelBody: {
-            /** @description Revoke the older codes of each target (default `false`). */
-            revoke_previous?: boolean | null;
             /** @description 1 to 100 targets. One label (one PDF page) for each. */
             targets: components["schemas"]["LabelTarget"][];
         };
@@ -6644,6 +6647,11 @@ export interface components {
             }[];
             /** @description Cursor of the next page; `null` on the last page. */
             next_cursor?: string | null;
+        };
+        /** @description Query of the label request. */
+        PaperQuery: {
+            /** @description `a4` (default) or `letter`. */
+            paper?: string | null;
         };
         /** @description A registered passkey. */
         PasskeySummary: {
@@ -23962,7 +23970,10 @@ export interface operations {
     };
     label_print: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description `a4` (default) or `letter` */
+                paper?: string;
+            };
             header?: never;
             path: {
                 /** @description Workspace */
@@ -23976,13 +23987,13 @@ export interface operations {
             };
         };
         responses: {
-            /** @description A PDF file, one page for each target */
+            /** @description A PDF file, 24 labels on each page */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    /** @example %PDF-1.7 */
+                    /** @example %PDF-1.4 */
                     "application/pdf": components["schemas"]["PdfFile"];
                 };
             };

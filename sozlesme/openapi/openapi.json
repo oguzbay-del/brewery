@@ -4034,13 +4034,6 @@
       "LabelBody": {
         "description": "Label request. Each target gets a new scan code.",
         "properties": {
-          "revoke_previous": {
-            "description": "Revoke the older codes of each target (default `false`).",
-            "type": [
-              "boolean",
-              "null"
-            ]
-          },
           "targets": {
             "description": "1 to 100 targets. One label (one PDF page) for each.",
             "items": {
@@ -7763,6 +7756,19 @@
         "required": [
           "items"
         ],
+        "type": "object"
+      },
+      "PaperQuery": {
+        "description": "Query of the label request.",
+        "properties": {
+          "paper": {
+            "description": "`a4` (default) or `letter`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
         "type": "object"
       },
       "PasskeySummary": {
@@ -32619,7 +32625,7 @@
         ],
         "x-concurrency": "none",
         "x-module": "production",
-        "x-permission": "recipe.view"
+        "x-permission": "field.view"
       },
       "post": {
         "operationId": "container_create",
@@ -33039,7 +33045,7 @@
         ],
         "x-concurrency": "append",
         "x-module": "production",
-        "x-permission": "stock.move"
+        "x-permission": "container.manage"
       }
     },
     "/v1/workspaces/{workspace_id}/containers/fill": {
@@ -33458,7 +33464,7 @@
         ],
         "x-concurrency": "append",
         "x-module": "production",
-        "x-permission": "stock.move"
+        "x-permission": "container.status"
       }
     },
     "/v1/workspaces/{workspace_id}/containers/{id}": {
@@ -33781,7 +33787,7 @@
         ],
         "x-concurrency": "none",
         "x-module": "production",
-        "x-permission": "recipe.view"
+        "x-permission": "field.view"
       }
     },
     "/v1/workspaces/{workspace_id}/containers/{id}/retire": {
@@ -34168,7 +34174,7 @@
         ],
         "x-concurrency": "append",
         "x-module": "production",
-        "x-permission": "stock.move"
+        "x-permission": "container.manage"
       }
     },
     "/v1/workspaces/{workspace_id}/devices": {
@@ -47703,6 +47709,15 @@
               "format": "uuid",
               "type": "string"
             }
+          },
+          {
+            "description": "`a4` (default) or `letter`",
+            "in": "query",
+            "name": "paper",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -47719,13 +47734,13 @@
           "200": {
             "content": {
               "application/pdf": {
-                "example": "%PDF-1.7",
+                "example": "%PDF-1.4",
                 "schema": {
                   "$ref": "#/components/schemas/PdfFile"
                 }
               }
             },
-            "description": "A PDF file, one page for each target"
+            "description": "A PDF file, 24 labels on each page"
           },
           "400": {
             "content": {
@@ -48044,13 +48059,13 @@
             "bearer": []
           }
         ],
-        "summary": "Prints labels. Each target gets a new scan code whose token is in the QR code. The answer is\none PDF with one page for each target. Every call issues new codes.",
+        "summary": "Prints labels. Each target gets a new scan code whose token is in the QR code. The answer is\none PDF with 24 labels on a page (A4 or US Letter by `paper`). Every call issues new codes. A\nreprint does not revoke earlier codes: retire a container to revoke its codes.",
         "tags": [
           "containers"
         ],
         "x-concurrency": "append",
         "x-module": "production",
-        "x-permission": "stock.move"
+        "x-permission": "container.manage"
       }
     },
     "/v1/workspaces/{workspace_id}/mash-profiles": {
@@ -54845,13 +54860,13 @@
             "bearer": []
           }
         ],
-        "summary": "Recall query: the containers filled from a stock lot.",
+        "summary": "Recall query: the containers filled from a stock lot. A container matches when its last fill\nnames the lot, or when its last fill line belongs to a batch that consumed the lot. Each\ncontainer is listed once.",
         "tags": [
           "containers"
         ],
         "x-concurrency": "none",
         "x-module": "production",
-        "x-permission": "recipe.view"
+        "x-permission": "field.view"
       }
     },
     "/v1/workspaces/{workspace_id}/recipe-versions/{id}": {
@@ -64482,7 +64497,7 @@
         ],
         "x-concurrency": "append",
         "x-module": "production",
-        "x-permission": "recipe.view"
+        "x-permission": "field.view"
       }
     },
     "/v1/workspaces/{workspace_id}/scan/status": {
@@ -64859,7 +64874,7 @@
         ],
         "x-concurrency": "append",
         "x-module": "production",
-        "x-permission": "stock.move"
+        "x-permission": "container.status"
       }
     },
     "/v1/workspaces/{workspace_id}/scan/status-batch": {
@@ -65255,7 +65270,7 @@
         ],
         "x-concurrency": "append",
         "x-module": "production",
-        "x-permission": "stock.move"
+        "x-permission": "container.status"
       }
     },
     "/v1/workspaces/{workspace_id}/scanned-documents": {
