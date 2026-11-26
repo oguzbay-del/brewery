@@ -40,7 +40,10 @@ afterEach(() => {
 describe('module settings', () => {
   it('shows loading while the session is pending', () => {
     const pending = new Promise<Response>(() => {});
-    vi.stubGlobal('fetch', vi.fn(() => pending));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => pending),
+    );
     show();
     expect(screen.getByRole('status').textContent).toBe(text('ui.modules.loading'));
   });
