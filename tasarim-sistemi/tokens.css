@@ -1,5 +1,10 @@
-/* Demleme Tasarım Sistemi — generated from tokens.json */
+/* GRISTORA Tasarım Sistemi — generated from tokens.json */
 :root, [data-theme="light"] {
+  --brand-forest: #0B2F26;
+  --brand-amber: #F4A261;
+  --brand-amber-text: #8B4A1F;
+  --brand-stone: #F7F6F3;
+  --brand-slate: #475569;
   --bg: #f2f2f7;
   --card: #ffffff;
   --fill: #e5e5ea;
