@@ -33,7 +33,10 @@ jobs:
         run: |
           set -euo pipefail
           # swift-openapi-generator and swift-openapi-runtime need Swift tools 6.2 (Xcode 26).
-          xcode=$(ls -d /Applications/Xcode_2[6-9]*.app 2>/dev/null | sort -V | tail -n 1)
+          xcode=""
+          for d in /Applications/Xcode_2[6-9]*.app; do
+            if [ -d "$d" ]; then xcode="$d"; fi
+          done
           test -n "$xcode" || { echo "::error::no Xcode 26 or later on this runner"; exit 1; }
           sudo xcode-select -s "$xcode"
           xcodebuild -version
