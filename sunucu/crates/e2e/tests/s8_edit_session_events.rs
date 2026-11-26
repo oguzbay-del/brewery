@@ -14,9 +14,13 @@ async fn next_sse_event(
     buffer: &mut String,
 ) -> Option<(String, String)> {
     loop {
-        while let Some(end) = buffer.find("\n\n") {
+        while let Some((end, delimiter_len)) = buffer
+            .find("\r\n\r\n")
+            .map(|end| (end, 4))
+            .or_else(|| buffer.find("\n\n").map(|end| (end, 2)))
+        {
             let block = buffer[..end].to_owned();
-            buffer.drain(..end + 2);
+            buffer.drain(..end + delimiter_len);
 
             let mut event = None;
             let mut data = String::new();
