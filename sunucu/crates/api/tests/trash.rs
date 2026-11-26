@@ -244,16 +244,15 @@ async fn trash_restore_writes_one_audit_and_event_and_keeps_the_chain(pool: PgPo
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     assert_eq!(effect_counts(&w).await, (before.0 + 1, before.1 + 1));
 
-    let entry: (String, Option<uuid::Uuid>, String, Option<uuid::Uuid>, bool) =
-        sqlx::query_as(
-            "SELECT actor_kind, actor_id, record_kind, record_id,
+    let entry: (String, Option<uuid::Uuid>, String, Option<uuid::Uuid>, bool) = sqlx::query_as(
+        "SELECT actor_kind, actor_id, record_kind, record_id,
                     previous_value IS NULL AND new_value IS NULL AND reason IS NULL
              FROM audit_log WHERE workspace_id = $1 AND action = 'trash.restore'",
-        )
-        .bind(w.ws)
-        .fetch_one(&pool)
-        .await
-        .unwrap();
+    )
+    .bind(w.ws)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
     assert_eq!(entry.0, "user");
     assert_eq!(entry.1, Some(w.admin));
     assert_eq!(entry.2, "recipe");
@@ -279,7 +278,10 @@ async fn trash_restore_writes_one_audit_and_event_and_keeps_the_chain(pool: PgPo
     assert_eq!(report.rows, before.0 + 1);
 
     let before = effect_counts(&w).await;
-    assert_eq!(restore(&w, "recipe", id).await.status, StatusCode::NOT_FOUND);
+    assert_eq!(
+        restore(&w, "recipe", id).await.status,
+        StatusCode::NOT_FOUND
+    );
     assert_eq!(effect_counts(&w).await, before);
 }
 
