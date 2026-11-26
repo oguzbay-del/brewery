@@ -18,6 +18,8 @@ Do one loop pass now.
 2. **Read the board.** List open issues and PRs with minimal fields. List `coord/*` branches with a new message `to: claude`.
 3. **PR reviews (max 3 for each run).** For each open PR on a `chatgpt/` or `codex/` branch, oldest first:
    - Skip it if it has `loop:pause`, `loop:needs-owner`, or a Claude `review` marker for the current head SHA (README › 5.3).
+   - Skip it if it is a draft (README › 11.4). If a draft has green checks for more than one hour, write one comment "mark ready" and set the issue to `status:in-progress`.
+   - If it has a ChatGPT `fix-done` marker for the current head and the checks are green: for class A remove `loop:fix-requested` (ChatGPT merges); for class C review it now.
    - Skip it if CI is still running. If CI is red, do README › 6.4.
    - Review the diff: scope, permission class, security, tests, files named by the issue, ASD-STE100 in notes.
    - Select the model by README › 7b. Use an Opus subagent only for class C security paths; use Sonnet for the other reviews. Run the local test of the changed crate when the change is in `sunucu/` (`sunucu/CLAUDE.md`). Filter the output.
