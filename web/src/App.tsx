@@ -6,17 +6,17 @@ import './shell/shell.css';
 
 export default function App() {
   const labels: ShellLabels = {
-    appName: useText('ui.appName'),
-    skipToContent: useText('ui.skipToContent'),
-    navigation: useText('ui.navigation'),
-    home: useText('ui.home'),
-    recipes: useText('ui.recipes'),
-    batches: useText('ui.batches'),
-    settings: useText('ui.settings'),
-    theme: useText('ui.theme'),
-    light: useText('ui.light'),
-    dark: useText('ui.dark'),
-    highContrast: useText('ui.highContrast'),
+    appName: useText('ui.shell.app_name'),
+    skipToContent: useText('ui.shell.skip_to_content'),
+    navigation: useText('ui.shell.navigation'),
+    home: useText('ui.nav.home'),
+    recipes: useText('ui.nav.recipes'),
+    batches: useText('ui.nav.batches'),
+    settings: useText('ui.nav.settings'),
+    theme: useText('ui.theme.label'),
+    light: useText('ui.theme.light'),
+    dark: useText('ui.theme.dark'),
+    highContrast: useText('ui.theme.high_contrast'),
   };
 
   return (

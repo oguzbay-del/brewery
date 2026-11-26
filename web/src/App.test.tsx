@@ -15,6 +15,7 @@ describe('App', () => {
     window.localStorage.setItem('demleme.locale', 'tr');
     render(<App />);
 
+    expect(screen.getByRole('link', { name: 'GRISTORA' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Ana sayfa' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Ana gezinme' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Tarifler' })).toBeInTheDocument();
@@ -26,6 +27,7 @@ describe('App', () => {
     window.localStorage.setItem('demleme.locale', 'en');
     render(<App />);
 
+    expect(screen.getByRole('link', { name: 'GRISTORA' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Home' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Recipes' })).toBeInTheDocument();

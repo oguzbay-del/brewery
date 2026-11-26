@@ -135,6 +135,8 @@ def anlamsal(k):
             h.append(f"texts/{yerel}/fields: alan kümesi uyuşmuyor")
         if set(t["errors"]) != set(k["texts"]["tr"]["errors"]):
             h.append(f"texts/{yerel}/errors: kod kümesi uyuşmuyor")
+        if set(t["ui"]) != set(k["texts"]["tr"]["ui"]):
+            h.append(f"texts/{yerel}/ui: anahtar kümesi uyuşmuyor")
     return h
 
 
@@ -185,6 +187,7 @@ def typescript(k):
     w("export type QuantityId = " + " | ".join(js(x) for x in buy) + ";")
     w("export type UnitId = " + " | ".join(js(x) for x in birimler) + ";")
     w("export type FieldKey = " + " | ".join(js(x) for x in alanlar) + ";")
+    w("export type UiKey = " + " | ".join(js(x) for x in k["texts"]["tr"]["ui"]) + ";")
     w('export type FieldErrorCode = "invalid_number" | "out_of_range";')
     w("")
     w("export interface UnitDef {")
@@ -216,6 +219,7 @@ def typescript(k):
     w("  units: Record<UnitId, { name: string; symbol: string }>;")
     w("  fields: Record<FieldKey, { label: string; hint?: string }>;")
     w("  errors: Record<FieldErrorCode | \"required\" | \"unknown_field\", string>;")
+    w("  ui: Record<UiKey, string>;")
     w("}")
     w("")
     w("export const SI_UNIT: Record<QuantityId, UnitId> = {")
@@ -437,6 +441,7 @@ def swift(k):
         w(f"    public static let {yerel}UnitSymbols: [String: String] = " + swift_sozluk({a: v["symbol"] for a, v in t["units"].items()}, 4))
         w(f"    public static let {yerel}FieldLabels: [String: String] = " + swift_sozluk({a: v["label"] for a, v in t["fields"].items()}, 4))
         w(f"    public static let {yerel}Errors: [String: String] = " + swift_sozluk(t["errors"], 4))
+        w(f"    public static let {yerel}Ui: [String: String] = " + swift_sozluk(t["ui"], 4))
         w("")
     w(SWIFT_GOVDE)
     w("}")
