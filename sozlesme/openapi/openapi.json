@@ -808,6 +808,48 @@
         ],
         "type": "object"
       },
+      "BatchItemResult": {
+        "description": "The result of one code in a batch scan.",
+        "properties": {
+          "container": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Container",
+                "description": "The container after the change."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "description": "`not_found`, `not_a_container`, `container_retired`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "index": {
+            "description": "Position of the code in the request.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "ok": {
+            "description": "The change applied (or the container already had the status).",
+            "type": "boolean"
+          },
+          "unchanged": {
+            "description": "`true` when the container already had the status; no event is written.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "index",
+          "ok",
+          "unchanged"
+        ],
+        "type": "object"
+      },
       "BatchPatch": {
         "additionalProperties": false,
         "description": "Merge patch of a batch.",
@@ -859,6 +901,62 @@
             ]
           }
         },
+        "type": "object"
+      },
+      "BatchStatusBody": {
+        "description": "A status change from many scans.",
+        "properties": {
+          "codes": {
+            "description": "The scanned texts (1 to 500).",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "note": {
+            "description": "Note for every container.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "New status. Same values as a single scan.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "codes",
+          "status"
+        ],
+        "type": "object"
+      },
+      "BatchStatusResult": {
+        "description": "The answer of a batch scan.",
+        "properties": {
+          "changed": {
+            "description": "Number of codes that changed a container.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "failed": {
+            "description": "Number of codes with an error.",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "results": {
+            "description": "One row for each code, in the order of the request.",
+            "items": {
+              "$ref": "#/components/schemas/BatchItemResult"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "changed",
+          "failed"
+        ],
         "type": "object"
       },
       "BatchStep": {
@@ -1502,6 +1600,243 @@
         },
         "type": "object"
       },
+      "Container": {
+        "description": "A reusable container (keg, cask, bottle crate and so on) with its current state.",
+        "properties": {
+          "created_at": {
+            "description": "Created at.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_fill_line_id": {
+            "description": "The packaging run line of the last fill.",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_lot_id": {
+            "description": "The stock lot of the last fill (for recall).",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "out_note": {
+            "description": "Note of the last `out` status.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "package_kind": {
+            "description": "`bottle`, `can`, `keg`, `cask`.",
+            "type": "string"
+          },
+          "package_type_id": {
+            "description": "The package type (size).",
+            "format": "uuid",
+            "type": "string"
+          },
+          "package_type_name": {
+            "description": "Name of the package type.",
+            "type": "string"
+          },
+          "serial_number": {
+            "description": "Serial number; unique in the workspace.",
+            "type": "string"
+          },
+          "status": {
+            "description": "`clean`, `filled`, `out`, `dirty`, `maintenance`, `retired`.",
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "Updated at.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "description": "Record version (`ETag`).",
+            "format": "int64",
+            "type": "integer"
+          },
+          "volume_l": {
+            "description": "Volume of the package type in litres.",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "serial_number",
+          "package_type_id",
+          "package_type_name",
+          "package_kind",
+          "volume_l",
+          "status",
+          "created_at",
+          "updated_at",
+          "version"
+        ],
+        "type": "object"
+      },
+      "ContainerDetail": {
+        "description": "A container with its latest history rows.",
+        "properties": {
+          "container": {
+            "$ref": "#/components/schemas/Container",
+            "description": "The container."
+          },
+          "events": {
+            "description": "The last 50 history rows, newest first.",
+            "items": {
+              "$ref": "#/components/schemas/ContainerEvent"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "container",
+          "events"
+        ],
+        "type": "object"
+      },
+      "ContainerEvent": {
+        "description": "One row of the history of a container.",
+        "properties": {
+          "event_type": {
+            "description": "`scan`, `status_changed`, `fill`, `note`.",
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_fill_line_id": {
+            "description": "Packaging run line (a fill).",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_lot_id": {
+            "description": "Stock lot (a fill).",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "new_status": {
+            "description": "Status after.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "description": "Note.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "occurred_at": {
+            "description": "When it happened.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "old_status": {
+            "description": "Status before.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "user_id": {
+            "description": "The user.",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "event_type",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "ContainerFilter": {
+        "description": "Filter of the container list.",
+        "properties": {
+          "package_type_id": {
+            "description": "Only this package type.",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "q": {
+            "description": "Text in the serial number (case blind).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Only this status.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "ContainerList": {
+        "description": "A page of containers with the count of each status.",
+        "properties": {
+          "items": {
+            "description": "The rows of this page.",
+            "items": {
+              "$ref": "#/components/schemas/Container"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "description": "Cursor of the next page; `null` on the last page.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status_counts": {
+            "description": "All six statuses. The filter `status` does not change the counts.",
+            "items": {
+              "$ref": "#/components/schemas/StatusCount"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "status_counts"
+        ],
+        "type": "object"
+      },
       "CopyRole": {
         "description": "Body of `POST /roles/{id}/copy`.",
         "properties": {
@@ -1548,6 +1883,98 @@
           "required",
           "on_hand",
           "unit"
+        ],
+        "type": "object"
+      },
+      "CreateContainers": {
+        "description": "Bulk create. Give `serial_numbers`, or `prefix` and `count`.",
+        "properties": {
+          "count": {
+            "description": "Number of serial numbers to generate (1 to 500).",
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "digits": {
+            "description": "Zero padding of the number (default 4, 1 to 9).",
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "package_type_id": {
+            "description": "The package type of every new container.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "Prefix of generated serial numbers (`KEG-`).",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "serial_numbers": {
+            "description": "Explicit serial numbers (1 to 500, 1 to 100 characters each).",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "start_at": {
+            "description": "First number of the generated range (default 1).",
+            "format": "int32",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "package_type_id"
+        ],
+        "type": "object"
+      },
+      "CreatedContainer": {
+        "description": "A created container with its scan token. The token is shown only once.",
+        "properties": {
+          "container": {
+            "$ref": "#/components/schemas/Container",
+            "description": "The container."
+          },
+          "scan_token": {
+            "description": "Opaque scan token. The server keeps only a digest of it.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "container",
+          "scan_token"
+        ],
+        "type": "object"
+      },
+      "CreatedContainers": {
+        "description": "The answer of a bulk create.",
+        "properties": {
+          "items": {
+            "description": "The new containers in the order of the request.",
+            "items": {
+              "$ref": "#/components/schemas/CreatedContainer"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
         ],
         "type": "object"
       },
@@ -2830,6 +3257,65 @@
         ],
         "type": "object"
       },
+      "FillBody": {
+        "description": "Fill containers from a packaging run line.",
+        "properties": {
+          "codes": {
+            "description": "Containers by scanned text.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "container_ids": {
+            "description": "Containers by identifier.",
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "lot_id": {
+            "description": "The stock lot for recall.",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "packaging_run_line_id": {
+            "description": "The packaging run line.",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "packaging_run_line_id"
+        ],
+        "type": "object"
+      },
+      "FillResult": {
+        "description": "The answer of a fill.",
+        "properties": {
+          "items": {
+            "description": "The filled containers.",
+            "items": {
+              "$ref": "#/components/schemas/Container"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "Folder": {
         "description": "A recipe folder.",
         "properties": {
@@ -3545,6 +4031,48 @@
         ],
         "type": "object"
       },
+      "LabelBody": {
+        "description": "Label request. Each target gets a new scan code.",
+        "properties": {
+          "revoke_previous": {
+            "description": "Revoke the older codes of each target (default `false`).",
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "targets": {
+            "description": "1 to 100 targets. One label (one PDF page) for each.",
+            "items": {
+              "$ref": "#/components/schemas/LabelTarget"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "targets"
+        ],
+        "type": "object"
+      },
+      "LabelTarget": {
+        "description": "One target of a label request.",
+        "properties": {
+          "id": {
+            "description": "The identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "description": "`container`, `vessel` or `lot`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "id"
+        ],
+        "type": "object"
+      },
       "LinkIdentityRequest": {
         "description": "Body of `POST /v1/me/identities`.",
         "properties": {
@@ -3673,6 +4201,55 @@
             ]
           }
         },
+        "type": "object"
+      },
+      "LotSummary": {
+        "description": "A stock lot found by a scan.",
+        "properties": {
+          "expires_on": {
+            "description": "Best-before day.",
+            "format": "date",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "ingredient_id": {
+            "description": "The ingredient.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "ingredient_name": {
+            "description": "Name of the ingredient.",
+            "type": "string"
+          },
+          "lot_code": {
+            "description": "Lot code.",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Amount now in stock.",
+            "format": "double",
+            "type": "number"
+          },
+          "unit": {
+            "description": "`kg`, `l`, `count`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "lot_code",
+          "ingredient_id",
+          "ingredient_name",
+          "unit",
+          "quantity"
+        ],
         "type": "object"
       },
       "MashProfile": {
@@ -5897,6 +6474,84 @@
         ],
         "type": "object"
       },
+      "Page_RecallContainer": {
+        "description": "A page of a list endpoint: `{ \"items\": [...], \"next_cursor\": \"...\" | null }`.",
+        "properties": {
+          "items": {
+            "description": "The rows of this page.",
+            "items": {
+              "description": "A container in a recall list.",
+              "properties": {
+                "filled_at": {
+                  "description": "When the container was filled (the latest `fill` event).",
+                  "format": "date-time",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "description": "Identifier.",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "last_fill_line_id": {
+                  "description": "The packaging run line of the fill.",
+                  "format": "uuid",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "out_note": {
+                  "description": "Note of the last `out` status.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "package_type_name": {
+                  "description": "Name of the package type.",
+                  "type": "string"
+                },
+                "serial_number": {
+                  "description": "Serial number.",
+                  "type": "string"
+                },
+                "status": {
+                  "description": "Current status.",
+                  "type": "string"
+                },
+                "volume_l": {
+                  "description": "Volume in litres.",
+                  "format": "double",
+                  "type": "number"
+                }
+              },
+              "required": [
+                "id",
+                "serial_number",
+                "package_type_name",
+                "volume_l",
+                "status"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next_cursor": {
+            "description": "Cursor of the next page; `null` on the last page.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "Page_Recipe": {
         "description": "A page of a list endpoint: `{ \"items\": [...], \"next_cursor\": \"...\" | null }`.",
         "properties": {
@@ -7143,6 +7798,11 @@
         ],
         "type": "object"
       },
+      "PdfFile": {
+        "description": "A PDF file.",
+        "format": "binary",
+        "type": "string"
+      },
       "PinSet": {
         "description": "Body of `PUT /v1/workspaces/{ws}/me/pin`.",
         "properties": {
@@ -7394,6 +8054,77 @@
           "database",
           "redis"
         ],
+        "type": "object"
+      },
+      "RecallContainer": {
+        "description": "A container in a recall list.",
+        "properties": {
+          "filled_at": {
+            "description": "When the container was filled (the latest `fill` event).",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_fill_line_id": {
+            "description": "The packaging run line of the fill.",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "out_note": {
+            "description": "Note of the last `out` status.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "package_type_name": {
+            "description": "Name of the package type.",
+            "type": "string"
+          },
+          "serial_number": {
+            "description": "Serial number.",
+            "type": "string"
+          },
+          "status": {
+            "description": "Current status.",
+            "type": "string"
+          },
+          "volume_l": {
+            "description": "Volume in litres.",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "serial_number",
+          "package_type_name",
+          "volume_l",
+          "status"
+        ],
+        "type": "object"
+      },
+      "RecallFilter": {
+        "description": "Filter of the recall list.",
+        "properties": {
+          "status": {
+            "description": "Only this status. Default: `filled` and `out` (the containers that can still hold product).",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
         "type": "object"
       },
       "Receipt": {
@@ -7687,6 +8418,19 @@
         ],
         "type": "object"
       },
+      "RetireBody": {
+        "description": "Retire request.",
+        "properties": {
+          "note": {
+            "description": "Reason (up to 2000 characters).",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
       "RoleList": {
         "description": "List of roles.",
         "properties": {
@@ -7820,6 +8564,115 @@
             ]
           }
         },
+        "type": "object"
+      },
+      "ScanBody": {
+        "description": "A scan code in the body.",
+        "properties": {
+          "code": {
+            "description": "The scanned text: the bare token or the text of the QR code.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "ScanResolution": {
+        "description": "The target of a scan code and what the caller may do with it.",
+        "properties": {
+          "actions": {
+            "description": "Actions the caller may do now: `view`, `change_status`, `fill`, `retire`, `recall`,\n`print_label`.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "container": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Container",
+                "description": "Set when `kind` is `container`."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "description": "The target identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "description": "`container`, `vessel` or `lot`.",
+            "type": "string"
+          },
+          "label": {
+            "description": "Text for the screen: the serial number, the tank code or the lot code.",
+            "type": "string"
+          },
+          "lot": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/LotSummary",
+                "description": "Set when `kind` is `lot`."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scan_code_id": {
+            "description": "The scan code row.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "vessel": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/VesselSummary",
+                "description": "Set when `kind` is `vessel`."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "id",
+          "scan_code_id",
+          "label",
+          "actions"
+        ],
+        "type": "object"
+      },
+      "ScanStatusBody": {
+        "description": "A status change from a scan.",
+        "properties": {
+          "code": {
+            "description": "The scanned text.",
+            "type": "string"
+          },
+          "note": {
+            "description": "Note (up to 2000 characters). It is kept as `out_note` for `out`.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "New status: `clean`, `out`, `dirty`, `maintenance` or `retired`. Use fill for `filled`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "status"
+        ],
         "type": "object"
       },
       "ScannedDocument": {
@@ -8571,6 +9424,25 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "StatusCount": {
+        "description": "The number of containers in one status.",
+        "properties": {
+          "count": {
+            "description": "Number of containers.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "status": {
+            "description": "`clean`, `filled`, `out`, `dirty`, `maintenance`, `retired`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ],
         "type": "object"
       },
       "StepPatch": {
@@ -10179,6 +11051,46 @@
             ]
           }
         },
+        "type": "object"
+      },
+      "VesselSummary": {
+        "description": "A tank (vessel) found by a scan.",
+        "properties": {
+          "capacity_l": {
+            "description": "Capacity in litres.",
+            "format": "double",
+            "type": "number"
+          },
+          "cleaning_status": {
+            "description": "`dirty`, `cleaning`, `clean`, `sanitized`.",
+            "type": "string"
+          },
+          "code": {
+            "description": "Short code (FV-1).",
+            "type": "string"
+          },
+          "id": {
+            "description": "Identifier.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Kind of vessel.",
+            "type": "string"
+          },
+          "name": {
+            "description": "Name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "kind",
+          "capacity_l",
+          "cleaning_status"
+        ],
         "type": "object"
       },
       "WaterAdditionLine": {
@@ -31327,6 +32239,1938 @@
         "x-permission": "settings.equipment"
       }
     },
+    "/v1/workspaces/{workspace_id}/containers": {
+      "get": {
+        "operationId": "container_list",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only this status",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only this package type",
+            "in": "query",
+            "name": "package_type_id",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Text in the serial number (case blind)",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page size, 1..=200 (default 50)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "`id` (creation order) or `-id` (default)",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "items": [
+                    {
+                      "created_at": "2026-11-26T10:00:00Z",
+                      "id": "0192f1c07a3b7000800000000000001a",
+                      "last_fill_line_id": null,
+                      "last_lot_id": null,
+                      "out_note": null,
+                      "package_kind": "keg",
+                      "package_type_id": "0192f1c07a3b70008000000000000010",
+                      "package_type_name": "Keg 30 L",
+                      "serial_number": "KEG-0001",
+                      "status": "clean",
+                      "updated_at": "2026-11-26T10:00:00Z",
+                      "version": 1,
+                      "volume_l": 30.0
+                    }
+                  ],
+                  "next_cursor": null,
+                  "status_counts": [
+                    {
+                      "count": 12,
+                      "status": "clean"
+                    },
+                    {
+                      "count": 5,
+                      "status": "filled"
+                    },
+                    {
+                      "count": 0,
+                      "status": "out"
+                    },
+                    {
+                      "count": 3,
+                      "status": "dirty"
+                    },
+                    {
+                      "count": 0,
+                      "status": "maintenance"
+                    },
+                    {
+                      "count": 1,
+                      "status": "retired"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ContainerList"
+                }
+              }
+            },
+            "description": "A page of containers"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lists containers with the count of each status.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "none",
+        "x-module": "production",
+        "x-permission": "recipe.view"
+      },
+      "post": {
+        "operationId": "container_create",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Client generated key (ADR-0008 rule 6)",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContainers"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "items": [
+                    {
+                      "container": {
+                        "created_at": "2026-11-26T10:00:00Z",
+                        "id": "0192f1c07a3b7000800000000000001a",
+                        "last_fill_line_id": null,
+                        "last_lot_id": null,
+                        "out_note": null,
+                        "package_kind": "keg",
+                        "package_type_id": "0192f1c07a3b70008000000000000010",
+                        "package_type_name": "Keg 30 L",
+                        "serial_number": "KEG-0001",
+                        "status": "clean",
+                        "updated_at": "2026-11-26T10:00:00Z",
+                        "version": 1,
+                        "volume_l": 30.0
+                      },
+                      "scan_token": "Zk3b0Qm1x7pYtq2D8aVnLw5H9cRjUeSf"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedContainers"
+                }
+              }
+            },
+            "description": "The new containers and their scan tokens"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  },
+                  "idempotency_in_progress": {
+                    "summary": "Request with this idempotency key is in progress",
+                    "value": {
+                      "code": "idempotency_in_progress",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Request with this idempotency key is in progress",
+                      "type": "/errors/idempotency_in_progress"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict; Request with this idempotency key is in progress",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency_mismatch": {
+                    "summary": "Idempotency key reused with a different request",
+                    "value": {
+                      "code": "idempotency_mismatch",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Idempotency key reused with a different request",
+                      "type": "/errors/idempotency_mismatch"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Idempotency key reused with a different request"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Creates many containers with serial numbers. Each container gets a scan code. The tokens are\nin the answer only.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "append",
+        "x-module": "production",
+        "x-permission": "stock.move"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/containers/fill": {
+      "post": {
+        "operationId": "container_fill",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Client generated key (ADR-0008 rule 6)",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FillBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "items": [
+                    {
+                      "created_at": "2026-11-26T10:00:00Z",
+                      "id": "0192f1c07a3b7000800000000000001a",
+                      "last_fill_line_id": null,
+                      "last_lot_id": null,
+                      "out_note": null,
+                      "package_kind": "keg",
+                      "package_type_id": "0192f1c07a3b70008000000000000010",
+                      "package_type_name": "Keg 30 L",
+                      "serial_number": "KEG-0001",
+                      "status": "clean",
+                      "updated_at": "2026-11-26T10:00:00Z",
+                      "version": 1,
+                      "volume_l": 30.0
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FillResult"
+                }
+              }
+            },
+            "description": "The filled containers"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  },
+                  "idempotency_in_progress": {
+                    "summary": "Request with this idempotency key is in progress",
+                    "value": {
+                      "code": "idempotency_in_progress",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Request with this idempotency key is in progress",
+                      "type": "/errors/idempotency_in_progress"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict; Request with this idempotency key is in progress",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency_mismatch": {
+                    "summary": "Idempotency key reused with a different request",
+                    "value": {
+                      "code": "idempotency_mismatch",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Idempotency key reused with a different request",
+                      "type": "/errors/idempotency_mismatch"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Idempotency key reused with a different request"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fills containers from a packaging run line. The whole request fails with `409` when one\ncontainer is dirty, in maintenance, retired, already filled or of another package type.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "append",
+        "x-module": "production",
+        "x-permission": "stock.move"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/containers/{id}": {
+      "get": {
+        "operationId": "container_get",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Container",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "container": {
+                    "created_at": "2026-11-26T10:00:00Z",
+                    "id": "0192f1c07a3b7000800000000000001a",
+                    "last_fill_line_id": null,
+                    "last_lot_id": null,
+                    "out_note": null,
+                    "package_kind": "keg",
+                    "package_type_id": "0192f1c07a3b70008000000000000010",
+                    "package_type_name": "Keg 30 L",
+                    "serial_number": "KEG-0001",
+                    "status": "clean",
+                    "updated_at": "2026-11-26T10:00:00Z",
+                    "version": 1,
+                    "volume_l": 30.0
+                  },
+                  "events": [
+                    {
+                      "event_type": "status_changed",
+                      "id": "0192f1c07a3b7000800000000000001b",
+                      "last_fill_line_id": null,
+                      "last_lot_id": null,
+                      "new_status": "dirty",
+                      "note": null,
+                      "occurred_at": "2026-11-26T10:05:00Z",
+                      "old_status": "clean",
+                      "user_id": "0192f1c07a3b70008000000000000002"
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ContainerDetail"
+                }
+              }
+            },
+            "description": "The container"
+          },
+          "304": {
+            "description": "Not modified (`If-None-Match` matched)"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reads one container with its latest history.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "none",
+        "x-module": "production",
+        "x-permission": "recipe.view"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/containers/{id}/retire": {
+      "post": {
+        "operationId": "container_retire",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Container",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetireBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2026-11-26T10:00:00Z",
+                  "id": "0192f1c07a3b7000800000000000001a",
+                  "last_fill_line_id": null,
+                  "last_lot_id": null,
+                  "out_note": null,
+                  "package_kind": "keg",
+                  "package_type_id": "0192f1c07a3b70008000000000000010",
+                  "package_type_name": "Keg 30 L",
+                  "serial_number": "KEG-0001",
+                  "status": "clean",
+                  "updated_at": "2026-11-26T10:00:00Z",
+                  "version": 1,
+                  "volume_l": 30.0
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Container"
+                }
+              }
+            },
+            "description": "The retired container"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Retires a container for good. A retired container cannot be filled or changed. Repeat is safe.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "append",
+        "x-module": "production",
+        "x-permission": "stock.move"
+      }
+    },
     "/v1/workspaces/{workspace_id}/devices": {
       "get": {
         "operationId": "device_list",
@@ -44846,6 +47690,369 @@
         "x-permission": "users.manage"
       }
     },
+    "/v1/workspaces/{workspace_id}/labels": {
+      "post": {
+        "operationId": "label_print",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LabelBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {
+                "example": "%PDF-1.7",
+                "schema": {
+                  "$ref": "#/components/schemas/PdfFile"
+                }
+              }
+            },
+            "description": "A PDF file, one page for each target"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Prints labels. Each target gets a new scan code whose token is in the QR code. The answer is\none PDF with one page for each target. Every call issues new codes.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "append",
+        "x-module": "production",
+        "x-permission": "stock.move"
+      }
+    },
     "/v1/workspaces/{workspace_id}/mash-profiles": {
       "get": {
         "operationId": "mash_profiles_list",
@@ -51302,6 +54509,349 @@
         "x-concurrency": "field_lww",
         "x-module": "core",
         "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/recall/lots/{lot_id}/containers": {
+      "get": {
+        "operationId": "recall_containers",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Stock lot",
+            "in": "path",
+            "name": "lot_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only this status (default: `filled` and `out`)",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page size, 1..=200 (default 50)",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "description": "`next_cursor` of the previous page",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "`id` (creation order, default) or `-id`",
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "items": [
+                    {
+                      "filled_at": "2026-11-26T11:00:00Z",
+                      "id": "0192f1c07a3b7000800000000000001a",
+                      "last_fill_line_id": "0192f1c07a3b7000800000000000001d",
+                      "out_note": null,
+                      "package_type_name": "Keg 30 L",
+                      "serial_number": "KEG-0001",
+                      "status": "filled",
+                      "volume_l": 30.0
+                    }
+                  ],
+                  "next_cursor": null
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Page_RecallContainer"
+                }
+              }
+            },
+            "description": "A page of containers"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Recall query: the containers filled from a stock lot.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "none",
+        "x-module": "production",
+        "x-permission": "recipe.view"
       }
     },
     "/v1/workspaces/{workspace_id}/recipe-versions/{id}": {
@@ -60541,6 +64091,1171 @@
         "x-concurrency": "append",
         "x-module": "team",
         "x-permission": "users.manage"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/scan/resolve": {
+      "post": {
+        "operationId": "scan_resolve",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "actions": [
+                    "view",
+                    "change_status",
+                    "fill",
+                    "retire",
+                    "print_label"
+                  ],
+                  "container": {
+                    "created_at": "2026-11-26T10:00:00Z",
+                    "id": "0192f1c07a3b7000800000000000001a",
+                    "last_fill_line_id": null,
+                    "last_lot_id": null,
+                    "out_note": null,
+                    "package_kind": "keg",
+                    "package_type_id": "0192f1c07a3b70008000000000000010",
+                    "package_type_name": "Keg 30 L",
+                    "serial_number": "KEG-0001",
+                    "status": "clean",
+                    "updated_at": "2026-11-26T10:00:00Z",
+                    "version": 1,
+                    "volume_l": 30.0
+                  },
+                  "id": "0192f1c07a3b7000800000000000001a",
+                  "kind": "container",
+                  "label": "KEG-0001",
+                  "lot": null,
+                  "scan_code_id": "0192f1c07a3b7000800000000000001c",
+                  "vessel": null
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ScanResolution"
+                }
+              }
+            },
+            "description": "The target of the code"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Resolves a scanned code to its target and the actions the caller may do.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "append",
+        "x-module": "production",
+        "x-permission": "recipe.view"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/scan/status": {
+      "post": {
+        "operationId": "scan_status",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanStatusBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "created_at": "2026-11-26T10:00:00Z",
+                  "id": "0192f1c07a3b7000800000000000001a",
+                  "last_fill_line_id": null,
+                  "last_lot_id": null,
+                  "out_note": null,
+                  "package_kind": "keg",
+                  "package_type_id": "0192f1c07a3b70008000000000000010",
+                  "package_type_name": "Keg 30 L",
+                  "serial_number": "KEG-0001",
+                  "status": "clean",
+                  "updated_at": "2026-11-26T10:00:00Z",
+                  "version": 1,
+                  "volume_l": 30.0
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Container"
+                }
+              }
+            },
+            "description": "The container after the change"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Changes the status of the container that a scanned code points to.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "append",
+        "x-module": "production",
+        "x-permission": "stock.move"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/scan/status-batch": {
+      "post": {
+        "operationId": "scan_status_batch",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchStatusBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "changed": 1,
+                  "failed": 1,
+                  "results": [
+                    {
+                      "container": {
+                        "created_at": "2026-11-26T10:00:00Z",
+                        "id": "0192f1c07a3b7000800000000000001a",
+                        "last_fill_line_id": null,
+                        "last_lot_id": null,
+                        "out_note": null,
+                        "package_kind": "keg",
+                        "package_type_id": "0192f1c07a3b70008000000000000010",
+                        "package_type_name": "Keg 30 L",
+                        "serial_number": "KEG-0001",
+                        "status": "clean",
+                        "updated_at": "2026-11-26T10:00:00Z",
+                        "version": 1,
+                        "volume_l": 30.0
+                      },
+                      "error": null,
+                      "index": 0,
+                      "ok": true,
+                      "unchanged": false
+                    },
+                    {
+                      "container": null,
+                      "error": "not_found",
+                      "index": 1,
+                      "ok": false,
+                      "unchanged": false
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatusResult"
+                }
+              }
+            },
+            "description": "One result for each code"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  },
+                  "module_disabled": {
+                    "summary": "Module disabled",
+                    "value": {
+                      "code": "module_disabled",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Module disabled",
+                      "type": "/errors/module_disabled"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden; Module disabled"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "conflict": {
+                    "summary": "Conflict",
+                    "value": {
+                      "code": "conflict",
+                      "errors": [
+                        {
+                          "code": "last_admin",
+                          "field": "/role_id"
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 409,
+                      "title": "Conflict",
+                      "type": "/errors/conflict"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Changes the status of many containers from many scans. Each code has its own result. A bad\ncode does not stop the others.",
+        "tags": [
+          "containers"
+        ],
+        "x-concurrency": "append",
+        "x-module": "production",
+        "x-permission": "stock.move"
       }
     },
     "/v1/workspaces/{workspace_id}/scanned-documents": {
@@ -83085,6 +87800,10 @@
     {
       "description": "Stock lots, the movement ledger, goods receipt, count, deduction for a batch and the shopping list",
       "name": "stock"
+    },
+    {
+      "description": "Containers, scan codes, status changes, fills, recall and labels",
+      "name": "containers"
     },
     {
       "description": "Global search over recipes, batches, ingredients and stock",
