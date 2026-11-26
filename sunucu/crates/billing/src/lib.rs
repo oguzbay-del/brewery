@@ -4,7 +4,7 @@
 //!   or payment notification. It carries no secrets and no customer content.
 //! - [`apply::NotificationHandler`] is the `worker` consumer. Only `app_worker` writes
 //!   `subscriptions` and `entitlements`.
-//! - [`access`] reads the state. A workspace has full access during the trial (one month from
+//! - [`access`] reads the state. A workspace has full access during the trial (3 months for Home, 1 month for Business, from
 //!   the creation of the workspace) and while a paid entitlement is valid. After that the paid
 //!   features are read-only. Export is never blocked.
 //! - [`provider::WebPaymentProvider`] is the interface for a web payment provider (decision O6).

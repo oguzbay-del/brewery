@@ -7263,7 +7263,7 @@ export interface components {
             subscriptions: components["schemas"]["SubscriptionView"][];
             /**
              * Format: date-time
-             * @description End of the one month trial.
+             * @description End of the trial (3 months for Home, 1 month for Business).
              */
             trial_ends_at: string;
             /**
