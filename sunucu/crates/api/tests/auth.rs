@@ -22,6 +22,7 @@ use api::{
     },
     redis_client::Redis,
 };
+use apple_auth::ApplePayload;
 use axum::{
     Json, Router,
     body::Body,
@@ -313,10 +314,9 @@ async fn apple_authorization_code_is_exchanged_and_refresh_token_is_encrypted(po
     .await
     .unwrap();
     let cipher = Aes256GcmTokenCipher::new([42_u8; 32]);
-    assert_eq!(
-        cipher.decrypt(&encrypted).unwrap().as_slice(),
-        b"local-apple-refresh-token"
-    );
+    let payload = ApplePayload::decode(&cipher.decrypt(&encrypted).unwrap()).unwrap();
+    assert_eq!(payload.client_id.as_deref(), Some(APPLE_AUD));
+    assert_eq!(payload.refresh_token, "local-apple-refresh-token");
 }
 
 #[sqlx::test(migrations = "../../migrations")]
