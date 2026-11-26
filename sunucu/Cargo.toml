@@ -77,6 +77,8 @@ webauthn-rs = { version = "=0.6.2", features = ["danger-allow-state-serialisatio
 argon2 = { version = "=0.6.0", features = ["alloc", "password-hash"] }
 url = "2"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
+sentry = { version = "=0.49.5", default-features = false, features = ["rustls", "reqwest", "tracing", "panic", "backtrace"] }
+sentry-tracing = "=0.49.5"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

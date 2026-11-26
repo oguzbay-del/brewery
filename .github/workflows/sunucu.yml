@@ -111,6 +111,8 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      - run: cargo clippy -p common --all-targets --features sentry -- -D warnings
+      - run: cargo test -p common --features sentry
       # sqlx sorgu önbelleği (sunucu/.sqlx) güncel mi? Göçler önce veritabanına uygulanır.
       - name: Install sqlx-cli
         run: cargo install sqlx-cli --locked --version "$SQLX_CLI_VERSION" --no-default-features --features rustls,postgres
