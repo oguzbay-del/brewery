@@ -81,13 +81,10 @@ describe('module settings', () => {
   });
 
   it('shows the membership error for a 404 module response', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(json({ workspaces: [{ id: workspaceId }] }))
-        .mockResolvedValueOnce(json({}, 404)),
-    );
+    const fetchMock = vi.fn();
+    fetchMock.mockResolvedValueOnce(json({ workspaces: [{ id: workspaceId }] }));
+    fetchMock.mockResolvedValueOnce(json({}, 404));
+    vi.stubGlobal('fetch', fetchMock);
     show();
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toContain(text('ui.modules.not_member'));
