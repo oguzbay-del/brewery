@@ -86,6 +86,8 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
     let package: Value = package.json().await.unwrap();
     let package_id = package["id"].as_str().unwrap();
 
+    // Role creation and invitation need a fresh second step.
+    ctx.enroll_passkey(&mut owner).await.unwrap();
     let role = ctx
         .post_json(
             &format!("/v1/workspaces/{ws}/roles"),
@@ -99,8 +101,6 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
     let role: Value = role.json().await.unwrap();
     let role_id = role["id"].as_str().unwrap();
 
-    // Owners hold `users.manage`; sending an invitation needs a passkey and a fresh second step.
-    ctx.enroll_passkey(&mut owner).await.unwrap();
     let invitation = ctx
         .post_json(
             &format!("/v1/workspaces/{ws}/invitations"),
@@ -198,6 +198,8 @@ async fn member_without_support_permission_cannot_create_support_request() {
         .unwrap();
     let ws = workspace["id"].as_str().unwrap();
 
+    // Role creation and invitation need a fresh second step.
+    ctx.enroll_passkey(&mut owner).await.unwrap();
     let role = ctx
         .post_json(
             &format!("/v1/workspaces/{ws}/roles"),
@@ -211,8 +213,6 @@ async fn member_without_support_permission_cannot_create_support_request() {
     let role: Value = role.json().await.unwrap();
     let role_id = role["id"].as_str().unwrap();
 
-    // Owners hold `users.manage`; sending an invitation needs a passkey and a fresh second step.
-    ctx.enroll_passkey(&mut owner).await.unwrap();
     let invitation = ctx
         .post_json(
             &format!("/v1/workspaces/{ws}/invitations"),
