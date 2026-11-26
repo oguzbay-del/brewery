@@ -26,6 +26,12 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - Owner decision (Oğuz, 2026-11-25, #338): in Home mode, the preset roles (admin, editor, viewer) and recipe sharing are off. The Team module stays Business only. Follow-up for Claude: update plan › Yetki matrisi and plan › Mod ayrımı, the concept and the design system (Home has no role or share screens).
 - 2026-11-25 (Oğuz, decisions): (1) the Codex task path is off; fix requests go without `@codex` (README › 6.4 note). (2) O5: the owner turns on "Automatically delete head branches". (3) Trial: Home 3 months, Business 1 month (issue #357, after #356). (4) Prices: ChatGPT does competitor research (#358), then Claude brings 2–3 options to the owner. (5) O10: the owner opens the Paddle account now. Contract check: a new enum value in a response is info, not error (ADR-0008 rule 8.2, `breaking.sh`, in #356).
 - Next for Claude: review the #256 steps and the T3 PRs (#250–#252) when they open.
+- 2026-11-26 (Oğuz): ChatGPT has no limit now. Claude does the open ChatGPT product issues with Sonnet subagents. Marketing issues stay with ChatGPT.
+- 2026-11-26: merged to `main`: #362 (T2.44 follow-up, #355), #359 (T2.46), G5a (#352), T3.d (#314, catalog group `ui`), #357 (trial: Home 3 months, Business 1 month; `billing::access::trial_end`), G4 (#351; also the BeerJSON author and the notifier sender), T2.47 (#285; `sentry` 0.49.5 pinned, CI runs `--features sentry`), T2.31d (#215; migration 0222, new crate `apple-auth`), T2.32d (#206).
+- T2.32d: the edge uses the Gateway API, with Istio 1.28.0 in kind. Do not use ingress-nginx; the project was retired in March 2026. The oauth2-proxy alpha config owns the provider and the listen address. The local kind test passed (all edge checks). Open: the `test` and `canli` overlays need the real host, the Secret `demleme-oauth2-proxy` and the production `gatewayClassName`. #207 (mTLS, Istio ambient) can start now.
+- T2.31d open items: the AAD for the ciphertext (`TODO` in `apple-auth`); the Apple answer `invalid_grant` counts as a failure (to be verified with the real Apple service). Three attempts run on three hourly maintenance ticks.
+- Local kind in this environment: the kind node cannot pull images through the TLS proxy. Pull on the host, then use `docker save | kind load image-archive /dev/stdin`.
+- Next for Claude: #207 (mTLS), then #216 (after #215). Blocked: #255 (Oğuz), #316 and #326 (P3).
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment
