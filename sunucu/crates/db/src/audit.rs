@@ -57,6 +57,8 @@ pub enum AuditEvent {
     RecordDelete,
     /// A soft-deleted record was restored.
     RecordRestore,
+    /// A record was restored from the trash.
+    TrashRestore,
     /// A subscription was corrected by hand (reason required).
     SubscriptionManualAdjust,
     /// An entitlement was corrected by hand (reason required).
@@ -91,7 +93,7 @@ pub enum AuditEvent {
 
 impl AuditEvent {
     /// Every event kind.
-    pub const ALL: [Self; 30] = [
+    pub const ALL: [Self; 31] = [
         Self::RoleCreate,
         Self::RoleUpdate,
         Self::RoleDelete,
@@ -107,6 +109,7 @@ impl AuditEvent {
         Self::RecipeArchive,
         Self::RecordDelete,
         Self::RecordRestore,
+        Self::TrashRestore,
         Self::SubscriptionManualAdjust,
         Self::EntitlementManualAdjust,
         Self::SupportGrantChange,
@@ -143,6 +146,7 @@ impl AuditEvent {
             Self::RecipeArchive => "recipe.archive",
             Self::RecordDelete => "record.delete",
             Self::RecordRestore => "record.restore",
+            Self::TrashRestore => "trash.restore",
             Self::SubscriptionManualAdjust => "subscription.manual_adjust",
             Self::EntitlementManualAdjust => "entitlement.manual_adjust",
             Self::SupportGrantChange => "support.grant_change",
@@ -569,4 +573,16 @@ pub async fn verify_all_chains(conn: &mut PgConnection) -> Result<Vec<ChainRepor
         reports.push(verify_chain(conn, ws).await?);
     }
     Ok(reports)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::AuditEvent;
+
+    #[test]
+    fn trash_restore_has_its_stored_name() {
+        assert_eq!(AuditEvent::TrashRestore.as_str(), "trash.restore");
+        assert!(AuditEvent::ALL.contains(&AuditEvent::TrashRestore));
+        assert!(!AuditEvent::TrashRestore.requires_reason());
+    }
 }
