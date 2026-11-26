@@ -10,8 +10,9 @@ function ErrorMessage({ error }: { error: unknown }) {
   const notMember = useText('ui.modules.not_member');
   const requestLabel = useText('ui.modules.error_request_id');
   const problem = error instanceof ApiError ? error : null;
-  const message =
-    problem?.status === 401 ? signIn : problem?.status === 404 ? notMember : generic;
+  let message = generic;
+  if (problem?.status === 401) message = signIn;
+  if (problem?.status === 404) message = notMember;
   return (
     <p role="alert">
       {message}
@@ -27,7 +28,9 @@ function ModulesForWorkspace({ workspaceId }: { workspaceId: string }) {
   const off = useText('ui.modules.off');
   const readOnly = useText('ui.modules.read_only');
 
-  if (result.status === 'idle' || result.status === 'loading') return <p role="status">{loading}</p>;
+  if (result.status === 'idle' || result.status === 'loading') {
+    return <p role="status">{loading}</p>;
+  }
   if (result.status === 'error') return <ErrorMessage error={result.error} />;
 
   return (
