@@ -2,7 +2,7 @@
 
 Bu dosya sozlesme/openapi/openapi.json kaynağından belgeler/uret-api-ozet.py ile üretilir. Kaynak sözleşmeyi değiştirin; bu dosyayı elle düzenlemeyin.
 
-Toplam **222** operasyon. Yetki ve adım bilgisi yalnız OpenAPI operasyon alanlarından alınır. Boş hücre, sözleşmede ilgili bilgi bulunmadığını gösterir.
+Toplam **233** operasyon. Yetki ve adım bilgisi yalnız OpenAPI operasyon alanlarından alınır. Boş hücre, sözleşmede ilgili bilgi bulunmadığını gösterir.
 
 ## access
 
@@ -74,6 +74,23 @@ Batches, steps, actual amounts, measurements, the brew day package and the calen
 | POST | `/v1/workspaces/{workspace_id}/brew-day-packages/{id}/revoke` | Revokes a package. The server then rejects measurements that name it. The call is safe to repeat. | batch.plan |  |  |
 | GET | `/v1/workspaces/{workspace_id}/calendar` | The calendar: batches with a planned brew day in a date range, and their steps. | recipe.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/calendar/backward-plan` | Plans backward from the day the beer is ready: brew day, end of the fermentation and of the conditioning. The durations come from the fermentation profile of the recipe version. | recipe.view |  |  |
+
+## containers
+
+Containers, scan codes, status changes, fills, recall and labels
+
+| Yöntem | Yol | Açıklama | Yetki / ek adım | Idempotency-Key | If-Match |
+|---|---|---|---|---|---|
+| GET | `/v1/workspaces/{workspace_id}/containers` | Lists containers with the count of each status. | field.view |  |  |
+| POST | `/v1/workspaces/{workspace_id}/containers` | Creates many containers with serial numbers. Each container gets a scan code. The tokens are in the answer only. | container.manage | required |  |
+| POST | `/v1/workspaces/{workspace_id}/containers/fill` | Fills containers from a packaging run line. The whole request fails with `409` when one container is dirty, in maintenance, retired, already filled or of another package type. | container.status | required |  |
+| GET | `/v1/workspaces/{workspace_id}/containers/{id}` | Reads one container with its latest history. | field.view |  |  |
+| POST | `/v1/workspaces/{workspace_id}/containers/{id}/retire` | Retires a container for good. A retired container cannot be filled or changed. Repeat is safe. | container.manage |  |  |
+| POST | `/v1/workspaces/{workspace_id}/labels` | Prints labels. Each target gets a new scan code whose token is in the QR code. The answer is one PDF with 24 labels on a page (A4 or US Letter by `paper`). Every call issues new codes. A reprint does not revoke earlier codes: retire a container to revoke its codes. | container.manage |  |  |
+| GET | `/v1/workspaces/{workspace_id}/recall/lots/{lot_id}/containers` | Recall query: the containers filled from a stock lot. A container matches when its last fill names the lot, or when its last fill line belongs to a batch that consumed the lot. Each container is listed once. | field.view |  |  |
+| POST | `/v1/workspaces/{workspace_id}/scan/resolve` | Resolves a scanned code to its target and the actions the caller may do. | field.view |  |  |
+| POST | `/v1/workspaces/{workspace_id}/scan/status` | Changes the status of the container that a scanned code points to. | container.status |  |  |
+| POST | `/v1/workspaces/{workspace_id}/scan/status-batch` | Changes the status of many containers from many scans. Each code has its own result. A bad code does not stop the others. | container.status |  |  |
 
 ## devices
 
@@ -172,6 +189,7 @@ Definitions and client requirements
 
 | Yöntem | Yol | Açıklama | Yetki / ek adım | Idempotency-Key | If-Match |
 |---|---|---|---|---|---|
+| GET | `/v1/meta` | Product modules for one workspace. The caller must be an active workspace member. |  |  |  |
 | GET | `/v1/meta/client-requirements` | Lowest supported client versions; readable before sign-in (ADR-0008 rule 8.3). |  |  |  |
 | GET | `/v1/meta/fields` | Field definitions: limits, units, steps, modes and texts, from `common::catalog` (the one source the server validation also reads; ADR-0008 rule 7). |  |  |  |
 
@@ -389,6 +407,7 @@ OpenAPI ErrorCode enum:
 - `forbidden`
 - `step_up_required`
 - `entitlement_required`
+- `module_disabled`
 - `not_found`
 - `conflict`
 - `idempotency_in_progress`

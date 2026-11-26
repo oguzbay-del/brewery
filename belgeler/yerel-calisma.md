@@ -27,6 +27,7 @@ Depo kökünde:
 - make smoke servis sağlıklarını kontrol eder. Önce make up çalıştırılmalıdır.
 - make logs günlükleri izler; tek servis için make logs S=api kullanılabilir. Göç servisi için make logs S=migrate kullanılabilir.
 - make down servisleri kaldırır, kalıcı veri hacimlerini korur. make down ARGS=-v veri hacimlerini de siler ve yerel veriyi kaybettirir.
+- make seed örnek kütüphane verisini (malzeme ve stiller; her satır "SAMPLE DATA" işaretlidir) yazar. Yalnız geliştirme içindir, önce make up çalıştırılmalıdır. İki kez çalıştırmak güvenlidir. make up bunu çalıştırmaz (compose profili seed).
 - TLS'i proxy arkasında derlemek için make up BUILD_CA_FILE=/yol/ca.crt kullanılabilir.
 
 ### Yerel servis adresleri
