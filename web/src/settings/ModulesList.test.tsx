@@ -76,9 +76,8 @@ describe('module settings', () => {
   it('shows the sign-in error for a 401 session response', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(json({}, 401)));
     show();
-    expect((await screen.findByRole('alert')).textContent).toContain(
-      text('ui.modules.sign_in_required'),
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain(text('ui.modules.sign_in_required'));
   });
 
   it('shows the membership error for a 404 module response', async () => {
@@ -90,8 +89,7 @@ describe('module settings', () => {
         .mockResolvedValueOnce(json({}, 404)),
     );
     show();
-    expect((await screen.findByRole('alert')).textContent).toContain(
-      text('ui.modules.not_member'),
-    );
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain(text('ui.modules.not_member'));
   });
 });
