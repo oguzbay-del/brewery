@@ -50,8 +50,10 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
     --mount=type=cache,target=/usr/local/cargo/git,sharing=locked \
     --mount=type=secret,id=build_ca \
     ca=/run/secrets/build_ca; if [ -s "$ca" ]; then export CARGO_HTTP_CAINFO="$ca"; fi; \
-    cargo build --release --locked --bin "${BIN}" \
-    && install -D "target/release/${BIN}" /out/service
+    extra=""; if [ "${BIN}" = "migrate" ]; then extra="--bin seed-sample"; fi; \
+    cargo build --release --locked --bin "${BIN}" ${extra} \
+    && install -D "target/release/${BIN}" /out/service \
+    && if [ -n "${extra}" ]; then install -D target/release/seed-sample /out/seed-sample; fi
 
 # ---- grpc_health_probe (used only in the engine-service image) --------------
 FROM ${RUNTIME_IMAGE} AS probe
@@ -78,6 +80,8 @@ FROM runtime-base AS final-fake-oidc
 FROM runtime-base AS final-worker
 FROM runtime-base AS final-ingest
 FROM runtime-base AS final-migrate
+# The migrate image also carries the sample seed (development only; compose profile "seed").
+COPY --from=builder /out/seed-sample /usr/local/bin/seed-sample
 FROM runtime-base AS final-engine-service
 COPY --from=probe /grpc_health_probe /usr/local/bin/grpc_health_probe
 

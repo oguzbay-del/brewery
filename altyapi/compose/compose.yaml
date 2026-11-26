@@ -181,6 +181,19 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
 
+  # Tek seferlik örnek veri (yalnız geliştirme). Profil "seed": make up çalıştırmaz, make seed çalıştırır.
+  # migrate ile aynı imaj ve ortam; seed-sample betiği tekrar çalıştırılabilir.
+  seed:
+    image: demleme/migrate:dev
+    profiles: ["seed"]
+    restart: "no"
+    entrypoint: ["/usr/local/bin/seed-sample"]
+    environment:
+      RUST_LOG: info
+      MIGRATE_DATABASE_URL: postgres://${POSTGRES_USER:-demleme}:${POSTGRES_PASSWORD:-demleme-yerel}@postgres:5432/${POSTGRES_DB:-demleme}
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
   engine-service:
     <<: *rust-service
     build:

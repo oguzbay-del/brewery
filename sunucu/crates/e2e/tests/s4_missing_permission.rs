@@ -12,7 +12,7 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
         eprintln!("skipping E2E: E2E_BASE_URL is not set");
         return;
     };
-    let owner = ctx.login().await.unwrap();
+    let mut owner = ctx.login().await.unwrap();
     let invited_email = format!("e2e-invite-{}@example.test", Uuid::new_v4());
     let workspace = ctx
         .create_workspace(&owner, "business", "E2E Permissions")
@@ -99,6 +99,8 @@ async fn member_without_permissions_cannot_perform_protected_actions() {
     let role: Value = role.json().await.unwrap();
     let role_id = role["id"].as_str().unwrap();
 
+    // Owners hold `users.manage`; sending an invitation needs a passkey and a fresh second step.
+    ctx.enroll_passkey(&mut owner).await.unwrap();
     let invitation = ctx
         .post_json(
             &format!("/v1/workspaces/{ws}/invitations"),
@@ -188,7 +190,7 @@ async fn member_without_support_permission_cannot_create_support_request() {
         eprintln!("skipping E2E: E2E_BASE_URL is not set");
         return;
     };
-    let owner = ctx.login().await.unwrap();
+    let mut owner = ctx.login().await.unwrap();
     let invited_email = format!("e2e-support-permission-{}@example.test", Uuid::new_v4());
     let workspace = ctx
         .create_workspace(&owner, "business", "E2E Support Permissions")
@@ -209,6 +211,8 @@ async fn member_without_support_permission_cannot_create_support_request() {
     let role: Value = role.json().await.unwrap();
     let role_id = role["id"].as_str().unwrap();
 
+    // Owners hold `users.manage`; sending an invitation needs a passkey and a fresh second step.
+    ctx.enroll_passkey(&mut owner).await.unwrap();
     let invitation = ctx
         .post_json(
             &format!("/v1/workspaces/{ws}/invitations"),

@@ -12,7 +12,7 @@ DATABASE_URL ?= postgres://$(or $(POSTGRES_USER),demleme):$(or $(POSTGRES_PASSWO
 export DATABASE_URL
 
 .DEFAULT_GOAL := help
-.PHONY: help up down logs ps smoke test e2e lint migrate sqlx-prepare kind-up kind-test kind-down vektor
+.PHONY: help up down logs ps smoke test e2e lint migrate seed sqlx-prepare kind-up kind-test kind-down vektor
 
 help: ## Hedefleri listeler
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-12s %s\\n", $$1, $$2}'
@@ -72,6 +72,9 @@ lint: ## Sunucu biçim ve clippy denetimi
 
 migrate: ## Yerel compose veritabanına göçleri uygular (önce make up ya da yalnız postgres)
 	cd sunucu && cargo run -q -p db --bin migrate
+
+seed: ## Örnek kütüphane verisini yazar (yalnız geliştirme; önce make up; tekrar çalıştırılabilir)
+	docker compose -f altyapi/compose/compose.yaml --profile seed run --rm seed
 
 sqlx-prepare: ## Sorgu önbelleğini üretir: sunucu/.sqlx (commit edilir; PostgreSQL ve göç gerekir)
 	cd sunucu && cargo sqlx prepare --workspace -- --all-targets
