@@ -11,6 +11,8 @@ resources:
   - ingest.yaml
   - migrate.yaml
   - nats.yaml
+  - oauth2-proxy.yaml
+  - gateway.yaml
   - networkpolicy.yaml
 configMapGenerator:
   - name: demleme-config

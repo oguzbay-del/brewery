@@ -12,6 +12,11 @@ DEPS=(nats:2-alpine postgres:17-alpine redis:7-alpine)
 CALICO_VERSION=v3.30.3
 CALICO_SHA256=9382d2b27a76f40c170454b408653e6d71e2205ef0aef069e942bb690e7381d0
 CALICO_IMAGES=(cni node kube-controllers)
+GATEWAY_API_VERSION=v1.4.0
+GATEWAY_API_SHA256=6a4029e661446d64add866a00ecdc40c14219b68777ab614c5cdaac0adb481f1
+ISTIO_VERSION=1.28.0
+ISTIOCTL_SHA256_AMD64=60bd2f5afb7f175d3851315bc75f3c1335d9e051941743b034a7ed7edccf308f
+ISTIOCTL_SHA256_ARM64=7b2c873cd9d6f2ce1585affd962c5eb05b594d27e236e9ce95b6fe6e34c3dbfb
 case "$(uname -m)" in x86_64) ARCH=amd64 ;; aarch64|arm64) ARCH=arm64 ;; *) ARCH=$(uname -m) ;; esac
 
 load_image() {
@@ -74,6 +79,31 @@ kubectl -n kube-system rollout status daemonset/calico-node --timeout=240s
 kubectl -n kube-system rollout status deployment/calico-kube-controllers --timeout=240s
 kubectl wait --for=condition=Ready node --all --timeout=120s
 
+echo "==> Gateway API $GATEWAY_API_VERSION CRD'leri ve Istio $ISTIO_VERSION (yalnız kenar için; ambient #207'de)"
+# Gateway API standart CRD'leri ve istioctl sürüme sabitlenir, sağlama toplamıyla doğrulanır.
+GWAPI="$CACHE/gateway-api-$GATEWAY_API_VERSION.yaml"
+if [ ! -f "$GWAPI" ]; then
+  curl -fsSL -o "$GWAPI" "https://github.com/kubernetes-sigs/gateway-api/releases/download/$GATEWAY_API_VERSION/standard-install.yaml"
+fi
+echo "$GATEWAY_API_SHA256  $GWAPI" | sha256sum -c - >/dev/null \
+  || { echo "HATA: Gateway API manifest sağlama toplamı uyuşmuyor" >&2; rm -f "$GWAPI"; exit 1; }
+kubectl apply --server-side -f "$GWAPI" >/dev/null
+ISTIOCTL_TGZ="$CACHE/istioctl-$ISTIO_VERSION-linux-$ARCH.tar.gz"
+case "$ARCH" in amd64) ISTIOCTL_SHA256=$ISTIOCTL_SHA256_AMD64 ;; arm64) ISTIOCTL_SHA256=$ISTIOCTL_SHA256_ARM64 ;; *) echo "HATA: istioctl için desteklenmeyen mimari $ARCH" >&2; exit 1 ;; esac
+if [ ! -f "$ISTIOCTL_TGZ" ]; then
+  curl -fsSL -o "$ISTIOCTL_TGZ" "https://github.com/istio/istio/releases/download/$ISTIO_VERSION/istioctl-$ISTIO_VERSION-linux-$ARCH.tar.gz"
+fi
+echo "$ISTIOCTL_SHA256  $ISTIOCTL_TGZ" | sha256sum -c - >/dev/null \
+  || { echo "HATA: istioctl sağlama toplamı uyuşmuyor" >&2; rm -f "$ISTIOCTL_TGZ"; exit 1; }
+ISTIOCTL_DIR="$CACHE/istioctl-$ISTIO_VERSION-$ARCH"; mkdir -p "$ISTIOCTL_DIR"
+tar -xzf "$ISTIOCTL_TGZ" -C "$ISTIOCTL_DIR"
+for i in pilot proxyv2; do
+  docker image inspect "docker.io/istio/$i:$ISTIO_VERSION" >/dev/null 2>&1 || docker pull -q "docker.io/istio/$i:$ISTIO_VERSION" >/dev/null
+  load_image "docker.io/istio/$i:$ISTIO_VERSION"
+done
+"$ISTIOCTL_DIR/istioctl" install --set profile=minimal --set hub=docker.io/istio --set tag="$ISTIO_VERSION" -y
+kubectl -n istio-system rollout status deployment/istiod --timeout=240s
+
 echo "==> İmajlar kümeye yükleniyor"
 for i in "${IMAGES[@]}" "${DEPS[@]}"; do load_image "$i"; done
 
@@ -82,8 +112,12 @@ kubectl apply -k altyapi/k8s/overlays/yerel
 
 echo "==> Hazır olması bekleniyor"
 for r in statefulset/nats statefulset/postgres statefulset/redis \
-         deployment/engine-service deployment/api deployment/worker deployment/ingest; do
+         deployment/engine-service deployment/api deployment/worker deployment/ingest \
+         deployment/oauth2-proxy; do
   kubectl -n "$NS" rollout status "$r" --timeout=240s
 done
+# Istio, Gateway için `kenar-istio` Deployment'ını ve Servisini kendisi üretir.
+for n in $(seq 1 60); do kubectl -n "$NS" get deployment/kenar-istio >/dev/null 2>&1 && break; sleep 2; done
+kubectl -n "$NS" rollout status deployment/kenar-istio --timeout=240s
 kubectl -n "$NS" wait --for=condition=complete job/migrate --timeout=240s
 kubectl -n "$NS" get pods

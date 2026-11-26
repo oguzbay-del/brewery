@@ -37,6 +37,30 @@ check_http api 8080 18080
 check_http worker 8081 18081
 check_http ingest 8082 18082
 
+echo "Kenar girişi: /internal herkese açık girişten sunulmaz (Gateway API / Istio, port-forward)"
+# Herkese açık konak adında /internal/... 404 verir. Destek paneli yalnız dahili konak adından,
+# oauth2-proxy üzerinden gelir; yerelde oauth2-proxy sabit sahte e-posta ve gerçek jeton ekler:
+# jeton kabul edilir, e-posta personel olmadığından API 403 verir (401 = başlıklar ulaşmadı).
+$K port-forward svc/kenar-istio 18088:80 >/dev/null 2>&1 &
+pf=$!
+edge_code() { # konak-adı yol
+  curl -s -o /dev/null -m 5 -H "Host: $1" -w '%{http_code}' "http://127.0.0.1:18088$2"
+}
+for n in 1 2 3 4 5 6 7 8 9 10; do
+  [ "$(edge_code demleme.local /v1/me/session)" != 000 ] && break; sleep 1
+done
+code=$(edge_code demleme.local /v1/me/session)
+if [ "$code" = 401 ]; then ok "kontrol: herkese açık giriş /v1/me/session api'ye ulaşır (401)"; else bad "kontrol: herkese açık giriş /v1/me/session ($code; 401 olmalıydı)"; fi
+code=$(edge_code demleme.local /internal/v1/workspaces)
+if [ "$code" = 404 ]; then ok "herkese açık giriş /internal/v1/... 404"; else bad "herkese açık giriş /internal/v1/... ($code; 404 olmalıydı)"; fi
+code=$(edge_code demleme.local /internal/v1/workspaces/00000000-0000-0000-0000-000000000000/summary)
+if [ "$code" = 404 ]; then ok "herkese açık giriş /internal/v1/workspaces/{ws}/summary 404"; else bad "herkese açık giriş /internal/v1/workspaces/{ws}/summary ($code; 404 olmalıydı)"; fi
+code=$(edge_code internal.demleme.local /internal/v1/workspaces)
+if [ "$code" = 403 ]; then ok "dahili konak -> oauth2-proxy -> api /internal/v1 403 (jeton ve e-posta başlığı ulaştı)"; else bad "dahili konak /internal/v1/workspaces ($code; 403 olmalıydı)"; fi
+code=$(edge_code internal.demleme.local /v1/workspaces)
+if [ "$code" = 404 ]; then ok "dahili konak /internal dışındaki yolu sunmaz (404)"; else bad "dahili konak /v1/workspaces ($code; 404 olmalıydı)"; fi
+kill "$pf" 2>/dev/null; wait "$pf" 2>/dev/null
+
 echo "engine-service (gRPC)"
 if out=$($K exec deploy/engine-service -- grpc_health_probe -addr=127.0.0.1:50051 2>&1); then
   ok "gRPC sağlık: $out"

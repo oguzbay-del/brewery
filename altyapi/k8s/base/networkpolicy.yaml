@@ -72,3 +72,35 @@ spec:
               - { key: app.kubernetes.io/name, operator: In, values: [api, worker] }
       ports:
         - { protocol: TCP, port: 8333 }
+---
+# oauth2-proxy yalnız Gateway podlarından istek alır (Istio, gateway dağıtımına bu etiketi koyar).
+# /internal trafiği API'ye yalnız bu vekilden gider: api-ingest-giris portu herkese açar,
+# NetworkPolicy yol ayıramaz; yol ayrımını HTTPRoute kuralları (herkese açık dinleyicide /internal
+# yok) ve INTERNAL_PROXY_TOKEN yapar.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: oauth2-proxy-giris
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/name: oauth2-proxy }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { gateway.networking.k8s.io/gateway-name: kenar }
+      ports:
+        - { protocol: TCP, port: 4180 }
+---
+# Gateway podları dışarıdan (yük dengeleyici) HTTP alır; varsayılan red bu podlar için de geçerlidir.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kenar-giris
+spec:
+  podSelector:
+    matchLabels: { gateway.networking.k8s.io/gateway-name: kenar }
+  policyTypes: [Ingress]
+  ingress:
+    - ports:
+        - { protocol: TCP, port: 80 }

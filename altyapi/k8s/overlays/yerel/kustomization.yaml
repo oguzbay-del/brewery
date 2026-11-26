@@ -6,6 +6,22 @@ resources:
   - ../../base
   - veri.yaml
   - servisler.yaml
+patches:
+  - path: oauth2-proxy-yerel.yaml
+  # Gateway Servisi ClusterIP olur (kind'da yük dengeleyici yok); konak adları yerel değer olur.
+  - target: { kind: Gateway, name: kenar }
+    patch: |-
+      - { op: replace, path: /spec/listeners/1/hostname, value: internal.demleme.local }
+  - target: { kind: ConfigMap, name: kenar-ayar }
+    patch: |-
+      - op: add
+        path: /data/service
+        value: |
+          spec:
+            type: ClusterIP
+  - target: { kind: HTTPRoute, name: dahili }
+    patch: |-
+      - { op: replace, path: /spec/hostnames/0, value: internal.demleme.local }
 images:
   - { name: demleme/api, newTag: dev }
   - { name: demleme/engine-service, newTag: dev }
@@ -34,6 +50,14 @@ secretGenerator:
       - MIGRATE_DATABASE_URL=postgres://demleme:demleme-yerel@postgres:5432/demleme
       - APP_API_PASSWORD=demleme-api-yerel
       - APP_WORKER_PASSWORD=demleme-worker-yerel
+  # Sahte oauth2-proxy ayarları (gerçek OIDC istemcisi yok; bkz. oauth2-proxy-yerel.yaml).
+  - name: demleme-oauth2-proxy
+    literals:
+      - OAUTH2_PROXY_CLIENT_ID=yerel-sahte
+      - OAUTH2_PROXY_CLIENT_SECRET=yerel-sahte-gizli
+      - OAUTH2_PROXY_COOKIE_SECRET=0123456789abcdef0123456789abcdef
+      - OAUTH2_PROXY_EMAIL_DOMAINS=*
+      - OAUTH2_PROXY_REDIRECT_URL=http://internal.demleme.local/oauth2/callback
   - name: demleme-dis-servisler
     files:
       - s3.json=./s3.json
