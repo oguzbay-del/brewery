@@ -90,10 +90,10 @@ async fn draft_patch_advances_the_etag_and_rejects_a_stale_etag() {
         .await
         .unwrap();
     let version_id = recipe["draft_version_id"].as_str().unwrap();
-    let path = format!("/v1/workspaces/{ws}/recipe-versions/{version_id}");
-    let get = || ctx.request(Method::GET, &path, Some(&user));
+    let version_path = format!("/v1/workspaces/{ws}/recipe-versions/{version_id}");
+    let get = || ctx.request(Method::GET, &version_path, Some(&user));
     let patch = |etag: &reqwest::header::HeaderValue, note| {
-        ctx.request(Method::PATCH, &path, Some(&user))
+        ctx.request(Method::PATCH, &version_path, Some(&user))
             .header(CONTENT_TYPE, "application/merge-patch+json")
             .header(IF_MATCH, etag)
             .json(&json!({ "change_note": note }))
