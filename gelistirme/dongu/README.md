@@ -173,10 +173,20 @@ GitHub Issues and pull requests are the only task source. A chat history, a task
 
 Read the instruction files (`CHATGPT-SCOPE.md`, this file, `AGENTS.md`) in full, once for each run. Do not copy their text into the chat. Then use at most these calls before you work:
 
-1. One search for open issues with `assigned-chatgpt` (`repo:oguzbay-del/brewery is:issue is:open label:assigned-chatgpt`, 100 results for each page, all pages). One call gives the labels of all issues. Do not read an issue one by one to see its state.
-2. One search for open pull requests (`is:pull-request is:open`).
+1. One `list_issues` call: `state=OPEN`, `labels=["assigned-chatgpt"]`, `fields=["number","title","labels","updated_at"]`, `perPage=100`, all pages. One call gives the labels of all issues. Do not read an issue one by one to see its state.
+2. One `list_pull_requests` call: `state=open`, `fields=["number","title","head","labels","draft","mergeable_state","updated_at"]`.
 3. The three newest comments of the issue LOOP-CONTROL (#344) for a checkpoint (11.3).
 4. Check runs and comments only for the PRs that you act on in this run (11.4), not for all PRs.
+
+### 11.1a Labels null in a search result (known fault, 2026-11-26)
+
+The tool `search_issues` can return `labels: null` for every item. The tools `list_issues` and `list_pull_requests` return the labels correctly, so 11.1 uses them and not the search.
+
+- Do not use `search_issues` or `search_pull_requests` to read a state. A search is only for a text query (for example a duplicate check).
+- If `list_issues` also returns `labels: null`: ask for the state with one filtered call for each label, `labels=["assigned-chatgpt","status:ready"]`, then `status:in-progress`, `status:review`, `status:blocked`. The filter works on the server, so it does not need the label field in the result. At most four calls.
+- If the filtered calls fail too: read the labels of the 5 lowest-number candidate issues with `issue_read` method `get_labels`. Do not use more than 5 calls.
+- If all three ways fail: this is an access error (11.3). Report the exact text and stop.
+- A null label is never "no label". Do not decide that an issue is not ready because of a null.
 
 ### 11.2 Order of work
 
@@ -184,6 +194,8 @@ Read the instruction files (`CHATGPT-SCOPE.md`, this file, `AGENTS.md`) in full,
 2. Your draft PRs and `status:in-progress` issues (finish before you start new work).
 3. Your class A and class B PRs that are ready, with green checks: merge them now (11.4).
 4. `status:ready` issues: class C security first, then other product, then marketing; lowest number first. Start at most 3 issues. Take only issues that change different files and have no common migration number.
+5. A `status:in-progress` issue with no open PR and no branch update for more than 2 hours (for example #326 and #370 on 2026-11-26): open a draft PR from its branch this run, or write a checkpoint with the reason. These issues block #392, #365 and #391, so they come before new work.
+6. Migration order: a task that adds a migration takes the lowest free number after it reads the open PRs. Do the migration tasks one after the other (for example #396 before #390 step B2). Do not run them in parallel.
 
 ### 11.3 Errors and checkpoint
 
