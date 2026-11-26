@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test('settings displays three module states from the API', async ({ page }) => {
@@ -24,4 +25,6 @@ test('settings displays three module states from the API', async ({ page }) => {
   await expect(section.getByRole('listitem').nth(0)).toContainText(/on/i);
   await expect(section.getByRole('listitem').nth(1)).toContainText(/off/i);
   await expect(section.getByRole('listitem').nth(2)).toContainText(/read.only/i);
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toEqual([]);
 });
