@@ -1,5 +1,7 @@
 # GRISTORA — Public marketing site strategy
 
+[Web sitesindeki ürün ekranları ve kullanım yerleri](53-site-ekran-yerlesimleri.md)
+
 Bu klasör, GRISTORA public markası altında yürütülecek pazarlama ve self-service edinim web sitesini tanımlar. Web sitesi yazılım uygulamasının kendisi değildir. GRISTORA marka dokümanları bu klasördeki 33–44 numaralı dosyalarda kanonik kayıttır. **Birincil ticari hedef Professional Breweries (Business)**; **Homebrewers (Home)** ikincil audience ve ayrı ürün yoludur.
 
 ## Kararlar
@@ -67,3 +69,7 @@ Discovery → sitemap → wireframe → görsel tasarım → içerik → gelişt
 29. [SEO ve sosyal paylaşım önizleme hazırlık denetimi](29-seo-social-preview-readiness-audit.md)
 30. [WP-10 fermentation sample handling evidence](30-wp10-fermentation-sample-handling-evidence.md)
 31. [Measurement record provenance — conceptual data contract](31-measurement-record-provenance-concept.md)
+
+## Ürün hikâyesi ve ekranlar
+
+[Site hikâyesi ve uygulama sırası](51-site-hikayesi.md) · [iPad ve web ekran kullanım tablosu](52-ekran-kullanim-tablosu.md)

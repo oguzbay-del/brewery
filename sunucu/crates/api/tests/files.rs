@@ -301,6 +301,44 @@ async fn upload_and_download_end_to_end(pool: PgPool) {
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
+async fn complete_rejects_a_soft_deleted_upload(pool: PgPool) {
+    let w = world(&pool, 600, true).await;
+    let bytes = b"pending upload";
+    let created = create_attachment(&w, w.writer, &new_attachment(&w, bytes)).await;
+    assert_eq!(created.status, StatusCode::CREATED, "{}", created.body);
+    let id = Uuid::parse_str(&id_of(&created, "attachment")).unwrap();
+    assert!(
+        put_to_store(&created.body["upload"], bytes.to_vec())
+            .await
+            .is_success()
+    );
+
+    assert_eq!(
+        delete(&w, w.writer, &format!("attachments/{id}"))
+            .await
+            .status,
+        StatusCode::NO_CONTENT
+    );
+    let deleted = post_empty(&w, w.writer, &format!("attachments/{id}/complete")).await;
+    let unknown_path = format!("attachments/{}/complete", Uuid::now_v7());
+    let unknown = post_empty(&w, w.writer, &unknown_path).await;
+    assert_eq!(deleted.status, StatusCode::NOT_FOUND);
+    assert_eq!(deleted.status, unknown.status);
+    assert_eq!(deleted.body["code"], "not_found");
+    assert_eq!(deleted.body["code"], unknown.body["code"]);
+
+    let (is_deleted, is_pending): (bool, bool) = sqlx::query_as(
+        "SELECT deleted_at IS NOT NULL, uploaded_at IS NULL FROM attachments WHERE id = $1",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(is_deleted);
+    assert!(is_pending);
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
 async fn expired_links_are_refused(pool: PgPool) {
     let w = world(&pool, 1, true).await;
     let bytes = b"short lived".to_vec();

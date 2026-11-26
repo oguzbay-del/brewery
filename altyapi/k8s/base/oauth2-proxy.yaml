@@ -1,0 +1,108 @@
+# /internal/v1/* (destek paneli) yalnız bu OIDC ters vekil üzerinden erişilir (T2.32d).
+# Vekil kimliği doğrular, API'ye `X-Auth-Request-Email` (oturumdaki e-posta) ve
+# `X-Internal-Proxy-Token` (INTERNAL_PROXY_TOKEN) başlıklarını ekler; istemcinin gönderdiği aynı adlı
+# başlıklar önce silinir. Başlık adları `sunucu/crates/api/src/internal.rs` ile aynıdır.
+# Sağlayıcı ayarları `demleme-oauth2-proxy` Secret'ından gelir (depoda değer yok); anahtarlar README'de.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oauth2-proxy-alpha
+data:
+  alpha.yaml: |
+    # The alpha config owns the listen address, the provider and the upstream; their legacy
+    # flags are not accepted. ${VAR} values come from the environment of the container.
+    server:
+      BindAddress: 0.0.0.0:4180
+    providers:
+      - id: oidc
+        provider: oidc
+        clientID: ${OAUTH2_PROXY_CLIENT_ID}
+        clientSecret: ${OAUTH2_PROXY_CLIENT_SECRET}
+        code_challenge_method: S256
+        oidcConfig:
+          issuerURL: https://accounts.google.com
+          emailClaim: email
+          audienceClaims: [aud]
+    upstreamConfig:
+      upstreams:
+        - id: api-internal
+          path: /internal/v1/
+          uri: http://api:8080
+    injectRequestHeaders:
+      # oauth2-proxy replaces client values of these headers.
+      - name: X-Auth-Request-Email
+        values:
+          - claim: email
+      - name: X-Internal-Proxy-Token
+        values:
+          - fromEnv: INTERNAL_PROXY_TOKEN
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app.kubernetes.io/name: oauth2-proxy }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: oauth2-proxy }
+    spec:
+      serviceAccountName: oauth2-proxy
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.12.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - --alpha-config=/etc/oauth2-proxy/alpha.yaml
+            - --reverse-proxy=true
+            - --cookie-secure=true
+            - --skip-provider-button=true
+          ports:
+            - { name: http, containerPort: 4180 }
+          env:
+            - name: INTERNAL_PROXY_TOKEN
+              valueFrom:
+                secretKeyRef: { name: demleme-dis-servisler, key: INTERNAL_PROXY_TOKEN }
+          envFrom:
+            # OAUTH2_PROXY_CLIENT_ID, _CLIENT_SECRET, _COOKIE_SECRET, _EMAIL_DOMAINS, _REDIRECT_URL
+            - secretRef: { name: demleme-oauth2-proxy }
+          readinessProbe:
+            httpGet: { path: /ping, port: http }
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet: { path: /ping, port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests: { cpu: 25m, memory: 32Mi }
+            limits: { memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: alpha, mountPath: /etc/oauth2-proxy, readOnly: true }
+      volumes:
+        - name: alpha
+          configMap: { name: oauth2-proxy-alpha }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+spec:
+  selector: { app.kubernetes.io/name: oauth2-proxy }
+  ports:
+    - { name: http, port: 4180, targetPort: http }

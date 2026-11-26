@@ -1,0 +1,24 @@
+# Yerel iş yüklerinin kimlikleri (mesh: base/mesh.yaml). Her iş yükünün kendi ServiceAccount'u vardır.
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: postgres }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: redis }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: objectstore }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: mailpit }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: github-mock }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: apns-mock }

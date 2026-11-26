@@ -33,7 +33,7 @@ pub enum AccessLevelDto {
 #[derive(Debug, Clone, Copy, Serialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum AccessSourceDto {
-    /// The first month of the workspace.
+    /// The trial of the workspace.
     Trial,
     /// A paid subscription.
     Subscription,
@@ -65,7 +65,7 @@ pub struct SubscriptionState {
     pub access: AccessLevelDto,
     /// Reason for the access level.
     pub access_source: AccessSourceDto,
-    /// End of the one month trial.
+    /// End of the trial (3 months for Home, 1 month for Business).
     pub trial_ends_at: DateTime<Utc>,
     /// End of the entitlement that gives access now; absent for the trial.
     pub valid_until: Option<DateTime<Utc>>,

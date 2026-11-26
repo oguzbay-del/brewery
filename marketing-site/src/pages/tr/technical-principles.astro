@@ -1,4 +1,5 @@
 ---
+import ProductScreens from "../../components/ProductScreens.astro";
 import PagePhoto from "../../components/PagePhoto.astro";
 import FontPreload from "../../components/FontPreload.astro";
 import SiteHeader from "../../components/SiteHeader.astro";
@@ -16,18 +17,18 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "Bira Hesaplamaları ve Ölçüm İlkeleri | GRISTORA",
-  description: "GRISTORA'nın bira hesaplamalarına, ölçümlerine ve üretim kayıtlarına yön veren teknik ilkeler.",
+  description: "GRISTORA'nın planlanan bira hesaplamaları, ölçümleri ve üretim kayıtlarına yön vermesi amaçlanan tasarım ilkeleri.",
   url: canonicalUrl,
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
 };
 const principles = [
   { number: "01", title: "Yöntemi açıklayın", body: "Teknik bir sonuca yöntemi, girdileri, birimleri, varsayımları, örneği ve sınırlamaları eşlik etmelidir. Bağlamı olmayan bir sayıyı incelemek ya da yeniden üretmek zordur." },
-  { number: "02", title: "Birimleri açık yazın", body: "GRISTORA tutarlı iç değerler ve bölgesel gösterim kullanır. Her açıklama, ilgili olduğunda ABD, İngiliz (Imperial) ve metrik birimleri ayırır ve dönüşümleri net biçimde gösterir." },
+  { number: "02", title: "Birimleri açık yazın", body: "Amaçlanan yaklaşım, tutarlı iç değerler ve bölgesel gösterim kullanmaktır. Teknik rehberlerde, ilgili olduğunda ABD, İngiliz (Imperial) ve metrik birimlerin ayrılması ve dönüşümlerin açıkça anlatılması hedeflenir." },
   { number: "03", title: "Hedefi fiili değerden ayırın", body: "Reçete hedefi bir ölçüm değildir. Planlanan değerler ile gözlenen sonuçlar birbirinden ayırt edilebilir kalmalıdır; böylece parti kaydı, reçeteyi sessizce yeniden yazmak yerine olanı yansıtır." },
-  { number: "04", title: "Ölçüm bağlamını koruyun", body: "Elle girilen, kağıda yazılan ve bağlı cihazdan gelen okumaların kaynakları ve sınırlamaları farklıdır. Kayıt modeli, bu girdilerin desteklendiği her yerde kaynağı ve bağlamı görünür tutar." },
+  { number: "04", title: "Ölçüm bağlamını koruyun", body: "Elle girilen, kağıda yazılan ve bağlı cihazdan gelen okumaların kaynakları ve sınırlamaları farklıdır. Planlanan kayıt modelinin, bu girdiler desteklendiğinde kaynağı ve bağlamı görünür tutması amaçlanır." },
   { number: "05", title: "Tahminden önce doğrulayın", body: "Hesaplama yöntemleri referans vakalar ve gerçek üretim verisi gerektirir." },
-  { number: "06", title: "Kontrol insanda kalsın", body: "Tahminler biracının incelemesine bilgi sağlar; reçeteleri, ekipman profillerini veya süreç ayarlarını sessizce değiştirmez. Bir süreç değişikliği kullanıcının açık kararını gerektirir." },
+  { number: "06", title: "Kontrol insanda kalsın", body: "Tasarım ilkesi, tahminlerin biracının incelemesini desteklemesi; reçeteleri, ekipman profillerini veya süreç ayarlarını sessizce değiştirmemesi gerektiğidir. Süreç değişikliği, kullanıcının açık kararını gerektirmelidir." },
 ];
 const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Teknik ilkeler", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
@@ -42,12 +43,12 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="GRISTORA'nın bira hesaplamalarına, birimlerine, ölçümlerine ve üretim kayıtlarına yön veren teknik ilkeleri keşfedin." />
+    <meta name="description" content="GRISTORA'nın planlanan bira hesaplamaları, birimleri, ölçümleri ve üretim kayıtlarına yön vermesi amaçlanan tasarım ilkelerini keşfedin." />
     <title>Bira Hesaplamaları ve Ölçüm İlkeleri | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="Bira Hesaplamaları ve Ölçüm İlkeleri | GRISTORA" />
-    <meta property="og:description" content="Yöntemler, birimler, ölçümler ve doğrulama; sınırlarıyla birlikte açıklanır." />
+    <meta property="og:description" content="Yöntemler, birimler, ölçümler ve doğrulama; amaçlanan kapsam ve sınırlamalarıyla birlikte." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -79,6 +80,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           </ol>
         </div>
       </section>
+      <ProductScreens page="technical-principles" lang="tr" />
       <section class="validation-section section-pad">
         <div class="shell validation-layout">
           <div><p class="eyebrow"><span class="eyebrow-line"></span> TEKNİK BİR İDDİA YAYIMLANMADAN ÖNCE</p><h2>Özgüvenden önce <em>kanıt.</em></h2></div>
@@ -90,8 +92,8 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <figure class="visual-diagram"><img src={`${base}images/diagrams/fermentation-profile-example.svg`} width="960" height="520" alt="On iki gün boyunca özgül yoğunluk fermantasyon eğrisi, örnek değerlerle." loading="lazy" /><figcaption>Açıklama için örnek veri</figcaption></figure>
           <figure class="visual-diagram"><img src={`${base}images/diagrams/target-vs-actual-example.svg`} width="960" height="520" alt="Bir hedef çizgisini fiili üretim ölçüm noktalarından ayıran grafik." loading="lazy" /><figcaption>Hedef ve fiili değerler ayrı gösterilir · örnek veri</figcaption></figure>
         </div>
-        <figure class="visual-diagram measurement-visual"><img src={`${base}images/diagrams/measurement-source-context.svg`} width="960" height="520" alt="Elle yazılan notların, enstrüman okumalarının ve cihaz okumalarının, ortak zaman damgası, birim, yöntem, kaynak ve kalibrasyon bağlamıyla karşılaştırması." loading="lazy" /><figcaption>Ölçüm kaynağı ilkesi · bir kaydın koruduğu bağlam</figcaption></figure>
-        <figure class="visual-diagram visual-diagram-scroll" role="region" aria-label="Kaydırılabilir ekipman kalibrasyon kaydı diyagramı" tabindex="0"><img src={`${base}images/diagrams/calibration-record-model.svg`} width="1100" height="520" alt="Bir enstrümanı, referans standardı, test okumasını, tolerans incelemesini ve kaydedilen durumu birbirine bağlayan, otomatik öneri içermeyen ekipman kalibrasyon kaydı." loading="lazy" /><figcaption>Kaydı incelemek için kaydırın</figcaption></figure>
+        <figure class="visual-diagram measurement-visual"><img src={`${base}images/diagrams/measurement-source-context.svg`} width="960" height="520" alt="Ölçüm kaynaklarını; zaman damgası, birim, yöntem, kaynak ve kalibrasyon bağlamıyla karşılaştıran örnek gösterim." loading="lazy" /><figcaption>Ölçüm kaynağı ilkesi · planlanan kayıt modelinin koruması amaçlanan bağlam</figcaption></figure>
+        <figure class="visual-diagram visual-diagram-scroll" role="region" aria-label="Kaydırılabilir ekipman kalibrasyon kaydı diyagramı" tabindex="0"><img src={`${base}images/diagrams/calibration-record-model.svg`} width="1100" height="520" alt="Bir enstrümanı, referans standardı, test okumasını, tolerans incelemesini ve kaydedilen durumu ilişkilendiren örnek planlanan ekipman kalibrasyon kaydı modeli; otomatik öneri içermez." loading="lazy" /><figcaption>Örnek kayıt modelini incelemek için kaydırın</figcaption></figure>
       </section>
       <section class="explain-disclaimer section-pad"><div class="shell"><p class="eyebrow"><span class="eyebrow-line"></span> KEŞFETMEYE DEVAM EDİN</p><h2>İlkelerin <em>gerçek bira üretimine</em> nasıl karşılık geldiğini görün.</h2><p>Ev biracılarının ve profesyonel bira üreticilerinin iş akışları farklıdır. Her yolu ve ürün alanlarını keşfedin.</p><div class="principles-actions"><a class="button button-primary" href={`${base}tr/how-it-works/`}>Nasıl çalışır <span aria-hidden="true">↗</span></a><a class="text-link" href={`${base}tr/features/`}>Ürün alanlarını keşfedin <span aria-hidden="true">→</span></a></div></div></section>
     </main>

@@ -27,6 +27,7 @@ use crate::{
     context::RequestContext,
     error::{ApiError, ApiQuery, ApiResult, ErrorCode, FieldIssue},
     library::{issue, not_found, sqlstate, workspace},
+    pagination::{Cursor, ListParams, Page, SortSpec},
 };
 
 /// Days a deleted record can be restored.
@@ -95,20 +96,11 @@ pub struct TrashItem {
     pub restorable_until: DateTime<Utc>,
 }
 
-/// The trash, newest deletion first.
-#[derive(Debug, Clone, Serialize, ToSchema)]
-pub struct TrashList {
-    /// Deleted records of the last 30 days.
-    pub items: Vec<TrashItem>,
-}
-
-/// Query of the list.
+/// Filter of the trash list.
 #[derive(Debug, Default, Clone, Deserialize, ToSchema)]
-pub struct TrashQuery {
+pub struct TrashFilter {
     /// Only this kind: `recipe`, `batch`, `ingredient` or `equipment`.
     pub kind: Option<String>,
-    /// Largest number of items (1..=200, default 50).
-    pub limit: Option<u32>,
 }
 
 /// Routes of this module.
@@ -132,30 +124,49 @@ pub fn routes(state: &AppState) -> Router<AppState> {
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace"),
         ("kind" = Option<String>, Query, description = "Only this kind"),
-        ("limit" = Option<u32>, Query, description = "Largest number of items (1..=200)")
+        ("limit" = Option<u32>, Query, description = "Page size (1..=200, default 50)"),
+        ("cursor" = Option<String>, Query, description = "Opaque cursor from the previous page")
     ),
-    responses((status = 200, description = "Deleted records", body = TrashList,
+    responses((status = 200, description = "Deleted records", body = Page<TrashItem>,
         example = json!({"items": [{"kind": "recipe",
             "id": "0192f1c07a3b7000800000000000000a", "name": "House IPA",
-            "deleted_at": "2026-11-20T10:00:00Z", "restorable_until": "2026-12-20T10:00:00Z"}]}))
+            "deleted_at": "2026-11-20T10:00:00Z", "restorable_until": "2026-12-20T10:00:00Z"}],
+            "next_cursor": null}))
     )
 )]
 pub async fn trash_list(
     State(state): State<AppState>,
     ctx: RequestContext,
-    ApiQuery(query): ApiQuery<TrashQuery>,
-) -> ApiResult<Json<TrashList>> {
+    ApiQuery(page): ApiQuery<ListParams>,
+    ApiQuery(filter): ApiQuery<TrashFilter>,
+) -> ApiResult<Json<Page<TrashItem>>> {
     workspace(&ctx)?;
-    let only = match query.kind.as_deref() {
+    let only = match filter.kind.as_deref() {
         None => None,
         Some(s) => Some(Kind::parse(s).ok_or_else(|| issue("kind", "invalid_value"))?),
     };
-    let limit = query.limit.unwrap_or(50);
-    if !(1..=200).contains(&limit) {
-        return Err(ApiError::validation(vec![
-            FieldIssue::new("limit", "out_of_range").with_params(json!({"min": 1, "max": 200})),
-        ]));
-    }
+    let limit = page.limit()?;
+    let sort = SortSpec {
+        field: "deleted_at",
+        descending: true,
+    };
+    let cursor = page.cursor(&sort)?;
+    let (cursor_time, cursor_id) = match cursor {
+        Some(cursor) => {
+            let value = cursor.key.as_str().ok_or_else(|| {
+                ApiError::new(ErrorCode::MalformedRequest)
+                    .with_errors(vec![FieldIssue::new("cursor", "invalid_cursor")])
+            })?;
+            let time = DateTime::parse_from_rfc3339(value)
+                .map_err(|_| {
+                    ApiError::new(ErrorCode::MalformedRequest)
+                        .with_errors(vec![FieldIssue::new("cursor", "invalid_cursor")])
+                })?
+                .with_timezone(&Utc);
+            (Some(time), Some(cursor.id))
+        }
+        None => (None, None),
+    };
     let parts: Vec<String> = KINDS
         .into_iter()
         .filter(|k| only.is_none_or(|o| o == *k) && ctx.has_permission(k.permission()))
@@ -171,18 +182,30 @@ pub async fn trash_list(
         })
         .collect();
     if parts.is_empty() {
-        return Ok(Json(TrashList { items: Vec::new() }));
+        return Ok(Json(Page {
+            items: Vec::new(),
+            next_cursor: None,
+        }));
     }
     let sql = sqlx::AssertSqlSafe(format!(
-        "SELECT * FROM ({}) t ORDER BY deleted_at DESC, id LIMIT $1",
+        "SELECT * FROM ({}) t \
+         WHERE ($2::timestamptz IS NULL OR deleted_at < $2::timestamptz \
+                OR (deleted_at = $2::timestamptz AND id > $3::uuid)) \
+         ORDER BY deleted_at DESC, id ASC LIMIT $1",
         parts.join(" UNION ALL ")
     ));
     let mut tx = ctx.begin(&state.db).await?;
-    let items: Vec<TrashItem> = sqlx::query_as(sql)
-        .bind(i64::from(limit))
+    let rows: Vec<TrashItem> = sqlx::query_as(sql)
+        .bind(i64::from(limit + 1))
+        .bind(cursor_time)
+        .bind(cursor_id)
         .fetch_all(&mut *tx)
         .await?;
-    Ok(Json(TrashList { items }))
+    let page = Page::from_rows(rows, limit, &sort, |item| Cursor {
+        key: json!(item.deleted_at.to_rfc3339()),
+        id: item.id,
+    });
+    Ok(Json(page))
 }
 
 /// Restores a deleted record within 30 days of its deletion.
@@ -298,7 +321,7 @@ mod spec {
 #[derive(Debug, utoipa::OpenApi)]
 #[openapi(
     paths(trash_list, trash_restore),
-    components(schemas(TrashItem, TrashList)),
+    components(schemas(TrashItem, Page<TrashItem>)),
     tags((name = "trash", description = "Recently deleted records (30 days) and their restore"))
 )]
 struct ModuleDoc;

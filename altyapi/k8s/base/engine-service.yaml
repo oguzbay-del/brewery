@@ -10,6 +10,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: engine-service }
     spec:
+      serviceAccountName: engine-service
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

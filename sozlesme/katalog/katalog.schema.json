@@ -85,7 +85,7 @@
     },
     "locale": {
       "type": "object",
-      "required": ["quantities", "units", "fields", "errors"],
+      "required": ["quantities", "units", "fields", "errors", "ui"],
       "additionalProperties": false,
       "properties": {
         "quantities": { "type": "object", "additionalProperties": { "type": "string" } },
@@ -111,6 +111,11 @@
           "type": "object",
           "required": ["required", "invalid_number", "out_of_range", "unknown_field"],
           "additionalProperties": { "type": "string" }
+        },
+        "ui": {
+          "type": "object",
+          "patternProperties": { "^[a-z][a-z0-9_]*\\.[a-z][a-z0-9_]*$": { "type": "string" } },
+          "additionalProperties": false
         }
       }
     }

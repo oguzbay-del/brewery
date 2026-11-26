@@ -8,6 +8,8 @@ pub mod http;
 #[cfg(feature = "otel")]
 pub mod otel;
 pub mod retention;
+#[cfg(feature = "sentry")]
+pub mod sentry;
 pub mod shutdown;
 pub mod telemetry;
 

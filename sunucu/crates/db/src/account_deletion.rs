@@ -239,3 +239,63 @@ pub async fn anonymize_user(conn: &mut PgConnection, user_id: Uuid) -> Result<()
         .await?;
     Ok(())
 }
+
+/// A stored Apple refresh-token ciphertext of a deleted account (T2.31d).
+#[derive(Clone, PartialEq, Eq)]
+pub struct AppleRevokeCandidate {
+    /// Identity row identifier.
+    pub identity_id: Uuid,
+    /// Encrypted token payload. Never log it.
+    pub ciphertext: Vec<u8>,
+    /// Failed revoke attempts so far.
+    pub attempts: i16,
+}
+
+impl std::fmt::Debug for AppleRevokeCandidate {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AppleRevokeCandidate")
+            .field("identity_id", &self.identity_id)
+            .field("ciphertext", &"<redacted>")
+            .field("attempts", &self.attempts)
+            .finish()
+    }
+}
+
+/// Lists Apple ciphertexts of deleted accounts that still need a revoke.
+pub async fn apple_revoke_pending(
+    conn: &mut PgConnection,
+    limit: i32,
+) -> Result<Vec<AppleRevokeCandidate>> {
+    let rows = sqlx::query("SELECT * FROM apple_revoke_pending($1)")
+        .bind(limit)
+        .fetch_all(&mut *conn)
+        .await?;
+    rows.iter()
+        .map(|row| {
+            Ok(AppleRevokeCandidate {
+                identity_id: row.try_get("identity_id")?,
+                ciphertext: row.try_get("ciphertext")?,
+                attempts: row.try_get("attempts")?,
+            })
+        })
+        .collect()
+}
+
+/// Clears the ciphertext after a successful revoke.
+pub async fn apple_revoke_clear(conn: &mut PgConnection, identity_id: Uuid) -> Result<bool> {
+    Ok(sqlx::query_scalar("SELECT apple_revoke_clear($1)")
+        .bind(identity_id)
+        .fetch_one(&mut *conn)
+        .await?)
+}
+
+/// Counts one failed revoke. The third failure clears the ciphertext. Returns the new count.
+pub async fn apple_revoke_failed(
+    conn: &mut PgConnection,
+    identity_id: Uuid,
+) -> Result<Option<i16>> {
+    Ok(sqlx::query_scalar("SELECT apple_revoke_failed($1)")
+        .bind(identity_id)
+        .fetch_one(&mut *conn)
+        .await?)
+}

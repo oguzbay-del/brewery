@@ -1,8 +1,72 @@
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::too_many_lines)]
 
-use e2e::Context;
+use e2e::{Context, User};
 use reqwest::{Method, StatusCode};
 use serde_json::json;
+
+async fn create_scanned_document(ctx: &Context, workspace_id: &str, user: &User) -> String {
+    let response = ctx
+        .post_json(
+            &format!("/v1/workspaces/{workspace_id}/scanned-documents"),
+            Some(user),
+            &json!({
+                "form_type": "brew_log",
+                "content_type": "application/pdf",
+                "size_bytes": 1,
+                "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+            }),
+        )
+        .await
+        .unwrap()
+        .error_for_status()
+        .unwrap();
+    let document: serde_json::Value = response.json().await.unwrap();
+    document["document"]["id"].as_str().unwrap().to_owned()
+}
+
+async fn assert_scanned_document_isolation(
+    ctx: &Context,
+    workspace_id: &str,
+    user: &User,
+    document_id: &str,
+) {
+    let list = ctx
+        .request(
+            Method::GET,
+            &format!("/v1/workspaces/{workspace_id}/scanned-documents"),
+            Some(user),
+        )
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(list.status(), StatusCode::NOT_FOUND);
+
+    let get = ctx
+        .request(
+            Method::GET,
+            &format!("/v1/workspaces/{workspace_id}/scanned-documents/{document_id}"),
+            Some(user),
+        )
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(get.status(), StatusCode::NOT_FOUND);
+
+    let create = ctx
+        .post_json(
+            &format!("/v1/workspaces/{workspace_id}/scanned-documents"),
+            Some(user),
+            &json!({
+                "form_type": "brew_log",
+                "content_type": "application/pdf",
+                "size_bytes": 1,
+                "sha256": "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d"
+            }),
+        )
+        .await
+        .unwrap();
+    assert_eq!(create.status(), StatusCode::NOT_FOUND);
+}
 
 #[tokio::test]
 async fn user_cannot_read_or_change_another_workspace() {
@@ -33,6 +97,8 @@ async fn user_cannot_read_or_change_another_workspace() {
     let recipe: serde_json::Value = recipe_response.json().await.unwrap();
     let recipe_id = recipe["id"].as_str().unwrap();
 
+    let document_id = create_scanned_document(&ctx, ws_b, &user_b).await;
+
     for endpoint in [
         format!("/v1/workspaces/{ws_b}/recipes"),
         format!("/v1/workspaces/{ws_b}/batches"),
@@ -46,6 +112,18 @@ async fn user_cannot_read_or_change_another_workspace() {
             .unwrap();
         assert_eq!(response.status(), StatusCode::NOT_FOUND, "{endpoint}");
     }
+    let recipe_get = ctx
+        .request(
+            Method::GET,
+            &format!("/v1/workspaces/{ws_b}/recipes/{recipe_id}"),
+            Some(&user_a),
+        )
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(recipe_get.status(), StatusCode::NOT_FOUND);
+
+    assert_scanned_document_isolation(&ctx, ws_b, &user_a, &document_id).await;
 
     let create = ctx
         .post_json(

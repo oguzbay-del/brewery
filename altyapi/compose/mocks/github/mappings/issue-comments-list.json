@@ -1,0 +1,9 @@
+{
+  "name": "GitHub: list issue comments",
+  "request": { "method": "GET", "urlPathPattern": "/repos/[^/]+/[^/]+/issues/[0-9]+/comments" },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": []
+  }
+}

@@ -11,6 +11,7 @@
 
 mod account_deletion;
 mod audit;
+pub mod containers;
 mod context;
 mod error;
 pub mod maintenance;
@@ -19,12 +20,19 @@ pub mod outbox;
 mod pool;
 mod roles;
 pub mod seed;
+mod support_issues;
+
+pub use support_issues::{
+    SupportIssuePending, account_deletion_support_issues, support_issue_anonymize_done,
+    support_issue_anonymize_failed, support_issue_anonymize_pending,
+};
 
 pub use account_deletion::{
-    AccountDeletionMembership, AccountDeletionRequest, DEFAULT_ACCOUNT_DELETION_GRACE_DAYS,
-    DueAccountDeletion, account_deletion_from_support, account_deletion_grace_days,
-    account_deletion_leave_business, account_deletion_memberships, account_deletion_object_keys,
-    account_deletion_soft_delete_home, anonymize_user, cancel_account_deletion,
+    AccountDeletionMembership, AccountDeletionRequest, AppleRevokeCandidate,
+    DEFAULT_ACCOUNT_DELETION_GRACE_DAYS, DueAccountDeletion, account_deletion_from_support,
+    account_deletion_grace_days, account_deletion_leave_business, account_deletion_memberships,
+    account_deletion_object_keys, account_deletion_soft_delete_home, anonymize_user,
+    apple_revoke_clear, apple_revoke_failed, apple_revoke_pending, cancel_account_deletion,
     due_account_deletions, request_account_deletion,
 };
 pub use audit::{

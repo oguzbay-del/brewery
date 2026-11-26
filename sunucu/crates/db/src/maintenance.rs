@@ -7,7 +7,11 @@
 use chrono::{DateTime, Utc};
 use sqlx::{PgPool, Row, types::Uuid};
 
-use crate::{Error, Result, set_workspace_id};
+use crate::{
+    Error, Result,
+    outbox::{Entity, NewOutboxEvent, enqueue},
+    set_workspace_id,
+};
 
 /// Head of one workspace's audit chain.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -198,6 +202,36 @@ pub async fn delete_old_external_events(pool: &PgPool, cutoff: DateTime<Utc>) ->
     Ok(done.rows_affected())
 }
 
+/// Closes resolved support requests older than `cutoff` in every workspace and enqueues the
+/// normal support sync event in the same transaction. Returns the number of requests closed.
+/// The SECURITY DEFINER function exposes only changed row identities and versions to the worker.
+pub async fn close_resolved_support_requests(pool: &PgPool, cutoff: DateTime<Utc>) -> Result<u64> {
+    let mut tx = pool.begin().await?;
+    let rows: Vec<(Uuid, Uuid, i64)> =
+        sqlx::query_as("SELECT workspace_id, id, version FROM close_resolved_support_requests($1)")
+            .bind(cutoff)
+            .fetch_all(&mut *tx)
+            .await?;
+    for (workspace_id, request_id, version) in &rows {
+        enqueue(
+            &mut tx,
+            &NewOutboxEvent {
+                topic: "support.sync_requested".to_owned(),
+                workspace_id: Some(*workspace_id),
+                entity: Some(Entity {
+                    kind: "support_request".to_owned(),
+                    id: *request_id,
+                    version: *version,
+                }),
+                data: None,
+            },
+        )
+        .await?;
+    }
+    tx.commit().await?;
+    Ok(rows.iter().fold(0_u64, |count, _| count.saturating_add(1)))
+}
+
 /// Result of [`purge_expired_soft_deletes`] for one kind of record.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PurgeCount {
@@ -239,4 +273,100 @@ pub async fn purge_expired_soft_deletes(
         }
     }
     Ok(totals)
+}
+
+/// One upload whose object bytes can be removed by the worker.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PurgeableUpload {
+    /// `attachment` or `scanned_document`.
+    pub kind: String,
+    /// Upload record identifier.
+    pub id: Uuid,
+    /// Server-generated object-store key.
+    pub object_key: String,
+    /// True when the upload never reached its complete step.
+    pub incomplete: bool,
+    /// True when the row already has a deletion timestamp.
+    pub deleted: bool,
+}
+
+/// Lists at most `limit` purgeable uploads in one workspace.
+pub async fn list_purgeable_uploads(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    incomplete_before: DateTime<Utc>,
+    limit: i32,
+) -> Result<Vec<PurgeableUpload>> {
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let rows = sqlx::query(
+        "SELECT p.kind, p.id, p.object_key,
+                CASE WHEN p.kind = 'attachment' THEN a.uploaded_at IS NULL
+                     ELSE d.uploaded_at IS NULL END AS incomplete,
+                CASE WHEN p.kind = 'attachment' THEN a.deleted_at IS NOT NULL
+                     ELSE d.deleted_at IS NOT NULL END AS deleted
+         FROM list_purgeable_uploads($1, $2) AS p
+         LEFT JOIN attachments AS a ON p.kind = 'attachment' AND a.id = p.id
+         LEFT JOIN scanned_documents AS d ON p.kind = 'scanned_document' AND d.id = p.id",
+    )
+    .bind(incomplete_before)
+    .bind(limit)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    rows.iter()
+        .map(|row| {
+            Ok(PurgeableUpload {
+                kind: row.try_get("kind")?,
+                id: row.try_get("id")?,
+                object_key: row.try_get("object_key")?,
+                incomplete: row.try_get("incomplete")?,
+                deleted: row.try_get("deleted")?,
+            })
+        })
+        .collect()
+}
+
+/// Closes a stale upload before deletion. A concurrent completion wins if it commits first.
+pub async fn close_incomplete_upload(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    kind: &str,
+    id: Uuid,
+) -> Result<bool> {
+    let statement = match kind {
+        "attachment" => {
+            "UPDATE attachments SET deleted_at = now()
+             WHERE id = $1 AND uploaded_at IS NULL AND deleted_at IS NULL AND object_purged_at IS NULL"
+        }
+        "scanned_document" => {
+            "UPDATE scanned_documents SET deleted_at = now()
+             WHERE id = $1 AND uploaded_at IS NULL AND deleted_at IS NULL AND object_purged_at IS NULL
+               AND (NOT legal_hold OR (retention_until IS NOT NULL AND retention_until <= now()))"
+        }
+        _ => return Ok(false),
+    };
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let result = sqlx::query(statement).bind(id).execute(&mut *tx).await?;
+    tx.commit().await?;
+    Ok(result.rows_affected() == 1)
+}
+
+/// Marks one upload after its object bytes have been deleted.
+pub async fn mark_upload_purged(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    kind: &str,
+    id: Uuid,
+) -> Result<bool> {
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let changed: bool = sqlx::query_scalar("SELECT mark_upload_purged($1, $2)")
+        .bind(kind)
+        .bind(id)
+        .fetch_one(&mut *tx)
+        .await?;
+    tx.commit().await?;
+    Ok(changed)
 }

@@ -26,10 +26,10 @@ export function useHashRoute(): AppRoute {
 export function RouteContent({ labels }: { labels: ShellLabels }) {
   const route = useHashRoute();
   const title: Record<AppRoute, string> = {
-    '/': labels.home || labels.appName,
-    '/recipes': labels.recipes || labels.appName,
-    '/batches': labels.batches || labels.appName,
-    '/settings': labels.settings || labels.appName,
+    '/': labels.home,
+    '/recipes': labels.recipes,
+    '/batches': labels.batches,
+    '/settings': labels.settings,
   };
 
   return (

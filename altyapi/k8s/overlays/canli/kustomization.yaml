@@ -16,5 +16,12 @@ images:
   - { name: demleme/worker, newName: KAYIT-DEFTERI/demleme/worker, newTag: SURUM }
   - { name: demleme/ingest, newName: KAYIT-DEFTERI/demleme/ingest, newTag: SURUM }
   - { name: demleme/migrate, newName: KAYIT-DEFTERI/demleme/migrate, newTag: SURUM }
+# Canlı App Store ayarları (G1). Gerçek bundle kimliği CI'da yazılır; boş kalırsa ingest 503 verir.
+configMapGenerator:
+  - name: demleme-config
+    behavior: merge
+    literals:
+      - APPLE_BUNDLE_ID=BUNDLE-KIMLIGI
+      - APPLE_ENVIRONMENT=Production
 patches:
   - path: kopyalar.yaml
