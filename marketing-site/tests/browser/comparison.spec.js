@@ -18,3 +18,20 @@ test("comparison table remains horizontally scrollable without page overflow on 
   expect(sizes.page).toBeLessThanOrEqual(sizes.viewport);
   expect(sizes.table).toBeGreaterThan(sizes.region);
 });
+
+for (const route of ["/compare/", "/tr/compare/"]) {
+  test(`each feature group has a row-group header on ${route}`, async ({ page }) => {
+    await page.goto(route);
+    const table = page.getByRole("table");
+    await expect(table.locator('thead th[scope="col"]')).toHaveCount(3);
+    const groups = table.locator("tbody");
+    expect(await groups.count()).toBeGreaterThan(1);
+    for (const group of await groups.all()) {
+      const rows = group.locator("tr");
+      await expect(rows.first().locator('th[scope="rowgroup"]')).toHaveAttribute("colspan", "3");
+      const featureCount = await rows.count() - 1;
+      expect(featureCount).toBeGreaterThan(0);
+      await expect(group.locator('th[scope="row"]')).toHaveCount(featureCount);
+    }
+  });
+}

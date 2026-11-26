@@ -75,9 +75,23 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
         <div class="comparison-table-wrap" role="region" aria-label="Scrollable Homebrewer and Professional Brewery function comparison" tabindex="0">
           <table class="comparison-table" aria-label="Comparison of GRISTORA product areas for Homebrewers and Professional Breweries">
             <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
-            <tbody>
-              {rows.map((group) => <><tr class="comparison-group"><th colspan="3" scope="colgroup">{group.group}</th></tr>{group.items.map(([label, slug]) => { const feature = features.find((item) => item.slug === slug); const homeStage = stageFor(slug, "Homebrewers"); const businessStage = stageFor(slug, "Breweries"); return <tr><th scope="row"><a href={`${base}features/${slug}/`}>{label} ↗</a><small class="comparison-module-label">{feature?.modules.map((id) => moduleLabels[id]).join(" · ")}</small></th><td><span class={homeStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{homeStage}</span></td><td><span class={businessStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{businessStage}</span></td></tr>; })}</>)}
-            </tbody>
+            {rows.map((group) => (
+              <tbody>
+                <tr class="comparison-group"><th colspan="3" scope="rowgroup">{group.group}</th></tr>
+                {group.items.map(([label, slug]) => {
+                  const feature = features.find((item) => item.slug === slug);
+                  const homeStage = stageFor(slug, "Homebrewers");
+                  const businessStage = stageFor(slug, "Breweries");
+                  return (
+                    <tr>
+                      <th scope="row"><a href={`${base}features/${slug}/`}>{label} ↗</a><small class="comparison-module-label">{feature?.modules.map((id) => moduleLabels[id]).join(" · ")}</small></th>
+                      <td><span class={homeStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{homeStage}</span></td>
+                      <td><span class={businessStage.startsWith("Not in") ? "stage-muted" : "stage-pill"}>{businessStage}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            ))}
           </table>
         </div>
         <p class="pricing-footnote">Open each feature for detailed scope. <a href={`${base}modules/`}>Explore the nine-module plan and scope →</a></p>
