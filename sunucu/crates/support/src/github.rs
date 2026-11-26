@@ -352,7 +352,7 @@ impl GitHub {
         Ok(all)
     }
 
-    /// Replaces the body of an Issue and closes it. A missing Issue counts as done.
+    /// Replaces the title and the body of an Issue and closes it. A missing Issue counts as done.
     ///
     /// # Errors
     /// See [`GitHubError`].
@@ -361,7 +361,7 @@ impl GitHub {
             .call(
                 Method::PATCH,
                 &format!("/issues/{issue}"),
-                Some(json!({"body": body, "state": "closed"})),
+                Some(json!({"title": body, "body": body, "state": "closed"})),
             )
             .await
         {

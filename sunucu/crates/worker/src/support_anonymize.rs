@@ -1,7 +1,7 @@
 //! Anonymises the GitHub Issues of deleted accounts (T2.31e).
 //!
 //! The purge job saves the Issue numbers on the deletion request (migration 0251). [`run`] edits
-//! the Issue body and each customer comment to a fixed text and closes the Issue. It does not
+//! the Issue title, the Issue body and each customer comment to a fixed text and closes the Issue. It does not
 //! delete the Issue (owner decision, 2026-11-24). A failed Issue stays saved and the next hourly
 //! tick tries again. A failure does not stop the purge of other data or of other Issues.
 

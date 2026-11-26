@@ -1,5 +1,5 @@
 {
-  "name": "GitHub: update issue (body, state)",
+  "name": "GitHub: update issue (title, body, state)",
   "request": { "method": "PATCH", "urlPathPattern": "/repos/[^/]+/[^/]+/issues/[0-9]+" },
   "response": {
     "status": 200,

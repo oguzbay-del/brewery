@@ -139,6 +139,7 @@ async fn purge_anonymizes_and_closes_the_issues_of_the_user(base: PgPool) {
     for patch in &issue_patches {
         assert_eq!(patch.body["body"], REMOVED_TEXT);
         assert_eq!(patch.body["state"], "closed");
+        assert_eq!(patch.body["title"], REMOVED_TEXT);
     }
     // Only the customer comment is edited, once for each Issue.
     let comment_patches: Vec<_> = patches
