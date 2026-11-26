@@ -1635,6 +1635,103 @@ async fn linking_replaces_the_session_and_refuses_identities_of_others(pool: PgP
 }
 
 #[sqlx::test(migrations = "../../migrations")]
+async fn linking_needs_step_up_and_does_not_refresh_the_sign_in_time(pool: PgPool) {
+    let w = world(&pool).await;
+    let first = apple(&w, "apple-1", "ios", |_| {}).await;
+    let token = token_of(&first);
+    let link = |token: String| {
+        let w = &w;
+        async move {
+            let n = nonce(w).await;
+            let id_token = w.oidc.oidc.mint(
+                Provider::Google,
+                &spec("google-9", GOOGLE_AUD, Some(n.clone())),
+            );
+            let b = bearer(&token);
+            call(
+                w,
+                "POST",
+                "/v1/me/identities",
+                &[(b[0].0, b[0].1.as_str())],
+                Some(json!({"provider": "google", "id_token": id_token, "nonce": n})),
+            )
+            .await
+        }
+    };
+
+    // An old session without a second step cannot link a method.
+    sqlx::query(
+        "UPDATE sessions SET created_at = now() - interval '11 minutes' WHERE revoked_at IS NULL",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let r = link(token.clone()).await;
+    assert_eq!(
+        (r.status, r.body["code"].as_str()),
+        (StatusCode::FORBIDDEN, Some("step_up_required")),
+        "{:?}",
+        r.body
+    );
+    let linked: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM user_identities WHERE provider = 'google'")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(linked, 0);
+
+    // A recent sign-in is enough (no passkey). The new session keeps the old sign-in time.
+    sqlx::query(
+        "UPDATE sessions SET created_at = now() - interval '5 minutes' WHERE revoked_at IS NULL",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let (old_created, old_expires): (chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>) =
+        sqlx::query_as("SELECT created_at, expires_at FROM sessions WHERE revoked_at IS NULL")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    let r = link(token).await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    let (new_created, new_expires, step_up): (
+        chrono::DateTime<chrono::Utc>,
+        chrono::DateTime<chrono::Utc>,
+        Option<chrono::DateTime<chrono::Utc>>,
+    ) = sqlx::query_as(
+        "SELECT created_at, expires_at, step_up_at FROM sessions WHERE revoked_at IS NULL",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(new_created, old_created, "sign-in time is kept");
+    assert_eq!(new_expires, old_expires, "absolute lifetime is kept");
+    assert!(step_up.is_none(), "no second step is invented");
+
+    // The rotation did not open a new window: after the original 10 minutes, the next
+    // protected action asks again.
+    sqlx::query(
+        "UPDATE sessions SET created_at = now() - interval '11 minutes' WHERE revoked_at IS NULL",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let new_token = token_of(&r);
+    let r = link(new_token.clone()).await;
+    assert_eq!(
+        (r.status, r.body["code"].as_str()),
+        (StatusCode::FORBIDDEN, Some("step_up_required"))
+    );
+
+    // A fresh second step lets the user link again.
+    sqlx::query("UPDATE sessions SET step_up_at = now() WHERE revoked_at IS NULL")
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(link(new_token).await.status, StatusCode::OK);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
 async fn an_email_identity_can_be_linked_and_removal_has_guards(pool: PgPool) {
     let w = world(&pool).await;
     let token = token_of(&apple(&w, "apple-1", "ios", |_| {}).await);

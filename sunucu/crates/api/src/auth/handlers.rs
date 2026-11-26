@@ -21,6 +21,7 @@ use super::{
     email::{normalize_email, sign_in_mail},
     oidc::{OidcError, OidcVerifier},
     session::{self, ClientKind, SessionRecord},
+    step_up::ProtectedAction,
     token_cipher::TokenCipher,
     tokens::{hex, new_token, token_hash},
 };
@@ -1199,6 +1200,9 @@ pub async fn identity_link(
     ctx: RequestContext,
     ApiJson(req): ApiJson<LinkIdentityRequest>,
 ) -> ApiResult<Response> {
+    // A hijacked session must not add its own sign-in method (ADR-0009 rule 5.3).
+    svc.require_step_up(&ctx, ProtectedAction::IdentityLink)
+        .await?;
     let claim = match req.provider.as_str() {
         p @ ("apple" | "google") => {
             let provider = if p == "apple" { "apple" } else { "google" };
@@ -1461,6 +1465,7 @@ mod spec {
                 MalformedRequest,
                 Unauthenticated,
                 Forbidden,
+                StepUpRequired,
                 NotFound,
                 Conflict,
                 UnsupportedMediaType,

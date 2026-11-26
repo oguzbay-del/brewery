@@ -49,6 +49,8 @@ pub enum ProtectedAction {
     SupportGrant,
     /// Removing a sign-in method.
     IdentityRemove,
+    /// Linking a new sign-in method.
+    IdentityLink,
     /// Adding or removing a passkey.
     PasskeyChange,
     /// Full export.
@@ -69,6 +71,7 @@ impl ProtectedAction {
             Self::DeviceKeyRotate => "device_key_rotate",
             Self::SupportGrant => "support_grant",
             Self::IdentityRemove => "identity_remove",
+            Self::IdentityLink => "identity_link",
             Self::PasskeyChange => "passkey_change",
             Self::FullExport => "full_export",
         }
