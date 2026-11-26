@@ -9,10 +9,7 @@ use serde_json::{Value, json};
 const EVENT_TIMEOUT: Duration = Duration::from_secs(15);
 
 /// Reads the next named SSE event. Comments and non-event blocks are ignored.
-async fn next_sse_event(
-    response: &mut Response,
-    buffer: &mut String,
-) -> Option<(String, String)> {
+async fn next_sse_event(response: &mut Response, buffer: &mut String) -> Option<(String, String)> {
     loop {
         while let Some((end, delimiter_len)) = buffer
             .find("\r\n\r\n")
@@ -87,7 +84,10 @@ async fn assert_no_recipe_event(response: &mut Response, buffer: &mut String, re
         }
     })
     .await;
-    assert!(result.is_err(), "user B received an event during the isolation window");
+    assert!(
+        result.is_err(),
+        "user B received an event during the isolation window"
+    );
 }
 
 #[tokio::test]
