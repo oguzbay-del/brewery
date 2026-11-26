@@ -370,9 +370,11 @@ impl SessionStore {
     }
 
     /// Replaces `old` by a new session of the same client, device name and location, and closes
-    /// `old` (after linking an identity; ADR-0009 rule 3.4).
+    /// `old` (after linking an identity; ADR-0009 rule 3.4). The new session keeps `created_at`,
+    /// `expires_at` and `step_up_at` of `old`: a rotation is not a fresh sign-in and must not
+    /// open the step-up window again.
     pub async fn rotate(&self, old: &SessionRecord) -> ApiResult<(String, SessionRecord)> {
-        self.rotate_with(old, None).await
+        self.rotate_inner(old, None, true).await
     }
 
     /// Like [`Self::rotate`]; `step_up` stamps the new session with a second factor time
@@ -381,6 +383,15 @@ impl SessionStore {
         &self,
         old: &SessionRecord,
         step_up: Option<DateTime<Utc>>,
+    ) -> ApiResult<(String, SessionRecord)> {
+        self.rotate_inner(old, step_up, false).await
+    }
+
+    async fn rotate_inner(
+        &self,
+        old: &SessionRecord,
+        step_up: Option<DateTime<Utc>>,
+        inherit_age: bool,
     ) -> ApiResult<(String, SessionRecord)> {
         let mut tx = db::begin(&self.db, &db::DbContext::user(old.user_id, None)).await?;
         let (device_name, location): (String, Option<String>) =
@@ -397,7 +408,20 @@ impl SessionStore {
             location.as_deref(),
         )
         .await?;
-        if step_up.is_some() {
+        if inherit_age {
+            sqlx::query(
+                "UPDATE sessions SET created_at = $2, expires_at = $3, step_up_at = $4 WHERE id = $1",
+            )
+            .bind(record.id)
+            .bind(old.created_at)
+            .bind(old.expires_at)
+            .bind(old.step_up_at)
+            .execute(&mut *tx)
+            .await?;
+            record.created_at = old.created_at;
+            record.expires_at = old.expires_at;
+            record.step_up_at = old.step_up_at;
+        } else if step_up.is_some() {
             sqlx::query("UPDATE sessions SET step_up_at = $2 WHERE id = $1")
                 .bind(record.id)
                 .bind(step_up)

@@ -73,6 +73,8 @@ impl OidcError {
 pub struct Claims {
     /// `sub`: the provider's permanent user id.
     pub sub: String,
+    /// Verified audiences from the provider's ID token.
+    pub audiences: Vec<String>,
     /// `email`, if present.
     pub email: Option<String>,
     /// `email_verified` (Apple sends a string; both forms are read).
@@ -351,6 +353,7 @@ impl OidcVerifier {
             .ok_or(OidcError::MissingClaim)?;
         Ok(Claims {
             sub,
+            audiences,
             email: c.email.filter(|e| !e.is_empty()),
             email_verified: truthy(c.email_verified.as_ref()),
             nonce: c.nonce,

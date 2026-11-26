@@ -37,6 +37,8 @@ const ORIGIN: &str = "https://app.example.com";
 struct World {
     app: Router,
     mail: Arc<MemoryMailer>,
+    /// Owner pool, used to give test users a passkey and a fresh second step.
+    pool: PgPool,
 }
 
 /// Sends every mail to memory and, when set, to a real SMTP relay as well.
@@ -74,12 +76,8 @@ async fn world_with(pool: &PgPool, redis: Redis, smtp: Option<SmtpMailer>) -> Wo
         memory: mail.clone(),
         smtp,
     });
-    let svc = Arc::new(AuthServices::new(
-        app_db.clone(),
-        redis.clone(),
-        cfg.auth.clone(),
-        tee,
-    ));
+    let svc = AuthServices::new(app_db.clone(), redis.clone(), cfg.auth.clone(), tee).unwrap();
+    let svc = Arc::new(svc);
     let state = AppState::new(app_db, redis, svc.clone(), cfg).with_auth_services(svc.clone());
     // Probe routes stand in for resource endpoints: they show what the authenticator found and
     // how scopes and cost hiding behave.
@@ -122,7 +120,11 @@ async fn world_with(pool: &PgPool, redis: Redis, smtp: Option<SmtpMailer>) -> Wo
             ),
     );
     let app = api::build(state.clone(), probes);
-    World { app, mail }
+    World {
+        app,
+        mail,
+        pool: pool.clone(),
+    }
 }
 
 async fn world(pool: &PgPool) -> World {
@@ -221,10 +223,43 @@ async fn login(w: &World) -> User {
     )
     .await;
     assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
-    User {
+    let user = User {
         token: r.body["session"]["token"].as_str().unwrap().to_owned(),
         id: r.body["user"]["id"].as_str().unwrap().parse().unwrap(),
-    }
+    };
+    // Role, member, assignment and invitation changes need a passkey and a fresh second step
+    // (ADR-0009 rule 5.3). Every test user holds both unless a test removes the second step.
+    sqlx::query(
+        "INSERT INTO passkeys (id, user_id, credential_id, public_key) VALUES ($1, $2, $3, $3)",
+    )
+    .bind(Uuid::now_v7())
+    .bind(user.id)
+    .bind(Uuid::now_v7().as_bytes().to_vec())
+    .execute(&w.pool)
+    .await
+    .unwrap();
+    fresh_step_up(w, &user).await;
+    user
+}
+
+/// Marks every session of `u` as having passed the second step just now.
+async fn fresh_step_up(w: &World, u: &User) {
+    sqlx::query("UPDATE sessions SET step_up_at = now() WHERE user_id = $1")
+        .bind(u.id)
+        .execute(&w.pool)
+        .await
+        .unwrap();
+}
+
+/// Removes the second step of every session of `u` (a stale second step).
+async fn stale_step_up(w: &World, u: &User) {
+    sqlx::query(
+        "UPDATE sessions SET step_up_at = now() - interval '16 minutes' WHERE user_id = $1",
+    )
+    .bind(u.id)
+    .execute(&w.pool)
+    .await
+    .unwrap();
 }
 
 async fn workspace(w: &World, owner: &User, mode: &str) -> Uuid {
@@ -330,8 +365,8 @@ async fn audit_actions(pool: &PgPool, ws: Uuid) -> Vec<String> {
 
 /// The plan's matrix (plan > Yetki matrisi), written out independently of the code: rows are
 /// permissions, the string says which roles have it. a admin, b brewmaster, o operator,
-/// q quality, d warehouse, v viewer.
-const MATRIX: [(&str, &str); 17] = [
+/// q quality, d warehouse, v viewer, s saha.
+const MATRIX: [(&str, &str); 20] = [
     ("recipe.view", "aboqdv"),
     ("recipe.edit", "ab"),
     ("recipe.approve", "ab"),
@@ -350,15 +385,19 @@ const MATRIX: [(&str, &str); 17] = [
     ("billing.manage", "a"),
     ("support.grant", "a"),
     ("devices.manage", "a"),
+    ("field.view", "abosqd"),
+    ("container.status", "abosd"),
+    ("container.manage", "abd"),
 ];
 
-const MATRIX_ROLES: [(char, &str); 6] = [
+const MATRIX_ROLES: [(char, &str); 7] = [
     ('a', "admin"),
     ('b', "brewmaster"),
     ('o', "operator"),
     ('q', "quality"),
     ('d', "warehouse"),
     ('v', "viewer"),
+    ('s', "saha"),
 ];
 
 #[sqlx::test(migrations = "../../migrations")]
@@ -367,7 +406,7 @@ async fn every_cell_of_the_matrix_holds_for_every_preset_role(pool: PgPool) {
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "business").await;
     let all = roles(&w, ws, &owner).await;
-    assert_eq!(all.len(), 6);
+    assert_eq!(all.len(), 7);
 
     for (letter, key) in MATRIX_ROLES {
         let (member, _) = join(&w, ws, &owner, json!({"role_id": role_id(&all, key)})).await;
@@ -417,46 +456,17 @@ async fn every_cell_of_the_matrix_holds_for_every_preset_role(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn home_workspaces_get_admin_editor_and_viewer_only(pool: PgPool) {
+async fn home_workspaces_cannot_list_team_roles(pool: PgPool) {
     let w = world(&pool).await;
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "home").await;
-    let all = roles(&w, ws, &owner).await;
-    let keys: BTreeSet<_> = all
-        .iter()
-        .map(|r| r["template_key"].as_str().unwrap().to_owned())
-        .collect();
+    let reply = get_as(&w, &format!("/v1/workspaces/{ws}/roles"), &owner).await;
     assert_eq!(
-        keys,
-        ["admin", "share_editor", "share_viewer"]
-            .iter()
-            .map(|s| (*s).to_owned())
-            .collect()
-    );
-    let (editor, _) = join(
-        &w,
-        ws,
-        &owner,
-        json!({"role_id": role_id(&all, "share_editor")}),
-    )
-    .await;
-    assert_eq!(
-        perms_of(&probe(&w, ws, &editor).await),
-        ["batch.record", "recipe.edit", "recipe.view"]
-            .iter()
-            .map(|s| (*s).to_owned())
-            .collect()
-    );
-    let (viewer, _) = join(
-        &w,
-        ws,
-        &owner,
-        json!({"role_id": role_id(&all, "share_viewer")}),
-    )
-    .await;
-    assert_eq!(
-        perms_of(&probe(&w, ws, &viewer).await),
-        ["recipe.view".to_owned()].into_iter().collect()
+        (
+            reply.status,
+            reply.body["code"].as_str().unwrap_or_default()
+        ),
+        (StatusCode::FORBIDDEN, "module_disabled")
     );
 }
 
@@ -563,7 +573,7 @@ async fn missing_permission_is_403_and_foreign_workspace_records_are_404(pool: P
     .await;
     assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
     // And the other workspace is untouched.
-    assert_eq!(roles(&w, other_ws, &other_owner).await.len(), 6);
+    assert_eq!(roles(&w, other_ws, &other_owner).await.len(), 7);
 }
 
 // --- last administrator and self protection ------------------------------------------------
@@ -708,7 +718,13 @@ async fn roles_can_be_created_copied_edited_and_deleted_and_changes_apply_at_onc
     assert_eq!(r.body["template_key"], "operator");
     assert_eq!(
         r.body["permissions"],
-        json!(["batch.record", "quality.record", "recipe.view"])
+        json!([
+            "batch.record",
+            "container.status",
+            "field.view",
+            "quality.record",
+            "recipe.view"
+        ])
     );
     let copy = r.body["id"].as_str().unwrap().to_owned();
     // Names are unique ignoring case.
@@ -842,7 +858,7 @@ async fn roles_can_be_created_copied_edited_and_deleted_and_changes_apply_at_onc
             .body["items"],
         json!([])
     );
-    assert_eq!(roles(&w, ws, &owner).await.len(), 6);
+    assert_eq!(roles(&w, ws, &owner).await.len(), 7);
 
     // Role, assignment and invitation changes are in the audit chain.
     let actions = audit_actions(&pool, ws).await;
@@ -1094,7 +1110,7 @@ async fn an_invitation_works_once_for_seven_days_and_can_be_revoked(pool: PgPool
         StatusCode::NOT_FOUND
     );
     assert_eq!(probe(&w, ws, &second).await.status, StatusCode::NOT_FOUND);
-    assert_eq!(perms_of(&probe(&w, ws, &guest).await).len(), 3);
+    assert_eq!(perms_of(&probe(&w, ws, &guest).await).len(), 5);
     assert!(
         get_as(&w, &format!("{base}/invitations"), &owner)
             .await
@@ -1229,7 +1245,7 @@ async fn an_invitation_works_once_for_seven_days_and_can_be_revoked(pool: PgPool
 
 #[sqlx::test(migrations = "../../migrations")]
 async fn invitation_mail_reaches_mailpit(pool: PgPool) {
-    let smtp = SmtpMailer::new("127.0.0.1", 1025, "no-reply@demleme.local");
+    let smtp = SmtpMailer::new("127.0.0.1", 1025, "GRISTORA <no-reply@gristora.local>");
     let w = world_with(&pool, Redis::disabled(), Some(smtp)).await;
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "business").await;
@@ -1271,144 +1287,27 @@ async fn invitation_mail_reaches_mailpit(pool: PgPool) {
 // --- Home sharing ---------------------------------------------------------------------------
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn home_owner_shares_a_recipe_as_editor_or_viewer(pool: PgPool) {
+async fn home_owner_cannot_share_a_recipe_as_editor_or_viewer(pool: PgPool) {
     let w = world(&pool).await;
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "home").await;
-    let base = format!("/v1/workspaces/{ws}");
-    let (mine, other) = (
-        insert_recipe(&pool, ws, "IPA").await,
-        insert_recipe(&pool, ws, "Stout").await,
-    );
-
-    let (wr, ow, bs) = (&w, &owner, &base);
-    let share = |access: &'static str, email: String| async move {
-        let body = json!({"kind": "recipe", "id": mine, "access": access, "email": email});
-        post_as(wr, &format!("{bs}/shares"), ow, body).await
-    };
-    // Viewer: sees the shared recipe, cannot edit it, does not know the other one.
-    let email = unique_email();
-    let r = share("viewer", email.clone()).await;
-    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
-    assert_eq!(r.body["scope_kind"], "recipe");
-    let friend = login(&w).await;
-    assert_eq!(
-        accept(&w, &friend, &token_for(&w, &email)).await.status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/view"), &friend)
-            .await
-            .status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/edit"), &friend)
-            .await
-            .status,
-        StatusCode::FORBIDDEN
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{other}/view"), &friend)
-            .await
-            .status,
-        StatusCode::NOT_FOUND
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/roles"), &friend).await.status,
-        StatusCode::FORBIDDEN
-    );
-
-    // Editor: can edit the shared recipe only.
-    let email = unique_email();
-    assert_eq!(
-        share("editor", email.clone()).await.status,
-        StatusCode::CREATED
-    );
-    let friend2 = login(&w).await;
-    assert_eq!(
-        accept(&w, &friend2, &token_for(&w, &email)).await.status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/edit"), &friend2)
-            .await
-            .status,
-        StatusCode::OK
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{other}/edit"), &friend2)
-            .await
-            .status,
-        StatusCode::NOT_FOUND
-    );
-
-    // Removing the assignment ends the share at once.
-    let members = get_as(&w, &format!("{base}/members"), &owner).await.body["items"].clone();
-    let m = members
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|m| m["user_id"] == friend2.id.to_string())
-        .unwrap()
-        .clone();
-    let (mid, aid) = (
-        m["id"].as_str().unwrap(),
-        m["assignments"][0]["id"].as_str().unwrap(),
-    );
-    assert_eq!(
-        delete_as(
+    let recipe = insert_recipe(&pool, ws, "IPA").await;
+    for access in ["editor", "viewer"] {
+        let reply = post_as(
             &w,
-            &format!("{base}/members/{mid}/assignments/{aid}"),
-            &owner
+            &format!("/v1/workspaces/{ws}/shares"),
+            &owner,
+            json!({"kind": "recipe", "id": recipe, "access": access, "email": unique_email()}),
         )
-        .await
-        .status,
-        StatusCode::NO_CONTENT
-    );
-    assert_eq!(
-        get_as(&w, &format!("{base}/recipes/{mine}/edit"), &friend2)
-            .await
-            .status,
-        StatusCode::NOT_FOUND
-    );
-
-    // Bad input: unknown kind or access, a target that is not there, a friend (no users.manage).
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &owner,
-        json!({"kind": "tank", "id": mine, "access": "viewer", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &owner,
-        json!({"kind": "recipe", "id": mine, "access": "owner", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &owner,
-        json!({"kind": "batch", "id": Uuid::now_v7(), "access": "viewer", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(
-        (r.status, code(&r)),
-        (StatusCode::UNPROCESSABLE_ENTITY, "scope_target_not_found")
-    );
-    let r = post_as(
-        &w,
-        &format!("{base}/shares"),
-        &friend,
-        json!({"kind": "recipe", "id": mine, "access": "viewer", "email": unique_email()}),
-    )
-    .await;
-    assert_eq!(r.status, StatusCode::FORBIDDEN);
+        .await;
+        assert_eq!(
+            (
+                reply.status,
+                reply.body["code"].as_str().unwrap_or_default()
+            ),
+            (StatusCode::FORBIDDEN, "module_disabled")
+        );
+    }
 
     // Business workspaces have no sharing endpoint effect.
     let biz_owner = login(&w).await;
@@ -1425,4 +1324,146 @@ async fn home_owner_shares_a_recipe_as_editor_or_viewer(pool: PgPool) {
         (r.status, code(&r)),
         (StatusCode::CONFLICT, "home_mode_only")
     );
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn access_changes_need_a_fresh_second_step(pool: PgPool) {
+    let w = world(&pool).await;
+    let owner = login(&w).await;
+    let ws = workspace(&w, &owner, "business").await;
+    let base = format!("/v1/workspaces/{ws}");
+    let all = roles(&w, ws, &owner).await;
+    let role = role_id(&all, "operator");
+    let (guest, member) = join(&w, ws, &owner, json!({"role_id": role})).await;
+    let copy = post_as(
+        &w,
+        &format!("{base}/roles/{role}/copy"),
+        &owner,
+        json!({"name": "Mine"}),
+    )
+    .await
+    .body;
+    let copy_id = copy["id"].as_str().unwrap().to_owned();
+    let member_version = |m: Value| m["version"].as_i64().unwrap();
+    let members = get_as(&w, &format!("{base}/members"), &owner).await.body;
+    let guest_row = members["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|m| m["user_id"] == json!(guest.id))
+        .unwrap()
+        .clone();
+    let version = member_version(guest_row);
+    let _ = member;
+
+    // A stale second step: each endpoint answers 403 step_up_required.
+    stale_step_up(&w, &owner).await;
+    let denied = |r: &Reply| {
+        (
+            r.status,
+            r.body["code"].as_str().unwrap_or_default().to_owned(),
+        )
+    };
+    let expected = (StatusCode::FORBIDDEN, "step_up_required".to_owned());
+    let r = post_as(
+        &w,
+        &format!("{base}/invitations"),
+        &owner,
+        json!({"email": unique_email(), "role_id": role}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "invitation");
+    let r = patch_as(
+        &w,
+        &format!("{base}/roles/{copy_id}"),
+        &owner,
+        Some(copy["version"].as_i64().unwrap()),
+        json!({"name": "Renamed"}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "role");
+    let r = patch_as(
+        &w,
+        &format!("{base}/members/{member}"),
+        &owner,
+        Some(version),
+        json!({"status": "disabled"}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "member");
+    let r = post_as(
+        &w,
+        &format!("{base}/members/{member}/assignments"),
+        &owner,
+        json!({"role_id": copy_id}),
+    )
+    .await;
+    assert_eq!(denied(&r), expected, "assignment");
+
+    // A fresh second step: the same calls work.
+    fresh_step_up(&w, &owner).await;
+    let r = post_as(
+        &w,
+        &format!("{base}/invitations"),
+        &owner,
+        json!({"email": unique_email(), "role_id": role}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+    let r = patch_as(
+        &w,
+        &format!("{base}/roles/{copy_id}"),
+        &owner,
+        Some(copy["version"].as_i64().unwrap()),
+        json!({"name": "Renamed"}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    let r = patch_as(
+        &w,
+        &format!("{base}/members/{member}"),
+        &owner,
+        Some(version),
+        json!({"status": "disabled"}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    let r = post_as(
+        &w,
+        &format!("{base}/members/{member}/assignments"),
+        &owner,
+        json!({"role_id": copy_id}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn support_grant_and_full_export_need_a_fresh_second_step(pool: PgPool) {
+    let w = world(&pool).await;
+    let owner = login(&w).await;
+    let ws = workspace(&w, &owner, "business").await;
+    let base = format!("/v1/workspaces/{ws}");
+    let grants = format!("{base}/support/grants");
+    let exports = format!("{base}/exports");
+    let full = json!({"scope": "workspace", "format": "zip"});
+    let step_up_required = |r: &Reply| {
+        (
+            r.status,
+            r.body["code"].as_str().unwrap_or_default().to_owned(),
+        )
+    };
+    let expected = (StatusCode::FORBIDDEN, "step_up_required".to_owned());
+
+    stale_step_up(&w, &owner).await;
+    let r = post_as(&w, &grants, &owner, json!({"hours": 1})).await;
+    assert_eq!(step_up_required(&r), expected, "support grant");
+    let r = post_as(&w, &exports, &owner, full.clone()).await;
+    assert_eq!(step_up_required(&r), expected, "full export");
+
+    fresh_step_up(&w, &owner).await;
+    let r = post_as(&w, &grants, &owner, json!({"hours": 1})).await;
+    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+    let r = post_as(&w, &exports, &owner, full).await;
+    assert_eq!(r.status, StatusCode::ACCEPTED, "{:?}", r.body);
 }

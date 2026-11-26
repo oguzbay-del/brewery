@@ -148,6 +148,41 @@ pub async fn write_daily_digest(
     })
 }
 
+/// Stable categories used in content-free audit notifications.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FindingKind {
+    /// The in-database hash chain failed verification.
+    ChainBroken,
+    /// Anchored data differs from the database.
+    DigestMismatch,
+    /// An anchored record is absent without an explaining deletion.
+    DigestMissing,
+    /// The anchored data cannot be interpreted.
+    Other,
+}
+
+impl FindingKind {
+    /// Public event code for this category.
+    #[must_use]
+    pub const fn code(self) -> &'static str {
+        match self {
+            Self::ChainBroken => "chain_broken",
+            Self::DigestMismatch => "digest_mismatch",
+            Self::DigestMissing => "digest_missing",
+            Self::Other => "other",
+        }
+    }
+}
+
+/// A weekly finding. Its detail is for the maintenance run only.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Finding {
+    /// Content-free event category.
+    pub kind: FindingKind,
+    /// Diagnostic text for the run record.
+    pub detail: String,
+}
+
 /// Result of the weekly check.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct VerifyReport {
@@ -158,10 +193,14 @@ pub struct VerifyReport {
     /// Days in the window without a digest object.
     pub digests_missing: usize,
     /// What is wrong. Empty means the check passed.
-    pub findings: Vec<String>,
+    pub findings: Vec<Finding>,
 }
 
 impl VerifyReport {
+    fn add(&mut self, kind: FindingKind, detail: String) {
+        self.findings.push(Finding { kind, detail });
+    }
+
     /// Whether the check found nothing wrong.
     #[must_use]
     pub fn is_ok(&self) -> bool {
@@ -201,9 +240,10 @@ pub async fn verify_against_digests(
         let chain = db::verify_chain(&mut conn, *workspace_id).await?;
         report.chains_verified += 1;
         if let Some(broken) = chain.broken {
-            report.findings.push(format!(
-                "chain of workspace {workspace_id} is broken: {broken}"
-            ));
+            report.add(
+                FindingKind::ChainBroken,
+                format!("chain of workspace {workspace_id} is broken: {broken}"),
+            );
         }
     }
 
@@ -218,9 +258,10 @@ pub async fn verify_against_digests(
         let digest: Digest = match serde_json::from_slice(&bytes) {
             Ok(d) => d,
             Err(e) => {
-                report
-                    .findings
-                    .push(format!("digest {key} cannot be read: {e}"));
+                report.add(
+                    FindingKind::Other,
+                    format!("digest {key} cannot be read: {e}"),
+                );
                 continue;
             }
         };
@@ -244,10 +285,10 @@ async fn check_heads(
 ) -> Result<()> {
     for head in &digest.heads {
         let Some(expected) = parse_hash(&head.last_hash) else {
-            report.findings.push(format!(
-                "digest {key}: bad hash for workspace {}",
-                head.workspace_id
-            ));
+            report.add(
+                FindingKind::Other,
+                format!("digest {key}: bad hash for workspace {}", head.workspace_id),
+            );
             continue;
         };
         if head.last_seq == 0 {
@@ -255,10 +296,13 @@ async fn check_heads(
         }
         match db::maintenance::audit_hash_at(pool, head.workspace_id, head.last_seq).await? {
             Some(found) if found == expected => {}
-            Some(_) => report.findings.push(format!(
-                "digest {key}: row {} of workspace {} changed",
-                head.last_seq, head.workspace_id
-            )),
+            Some(_) => report.add(
+                FindingKind::DigestMismatch,
+                format!(
+                    "digest {key}: row {} of workspace {} changed",
+                    head.last_seq, head.workspace_id
+                ),
+            ),
             None => {
                 let record = tombstones
                     .iter()
@@ -268,7 +312,7 @@ async fn check_heads(
                         || (t.audit_last_seq == head.last_seq && t.audit_last_hash == expected)
                 });
                 if !agrees {
-                    report.findings.push(format!(
+                    report.add(FindingKind::DigestMissing, format!(
                         "digest {key}: row {} of workspace {} is missing and no deletion record explains it",
                         head.last_seq, head.workspace_id
                     ));
@@ -286,16 +330,25 @@ fn check_deletions(
     report: &mut VerifyReport,
 ) {
     for entry in &digest.deletions {
-        let same = tombstones.iter().any(|t| {
-            t.former_workspace_id == entry.former_workspace_id
-                && t.audit_last_seq == entry.audit_last_seq
-                && hex(&t.audit_last_hash) == entry.audit_last_hash
-        });
-        if !same {
-            report.findings.push(format!(
+        let record = tombstones
+            .iter()
+            .find(|t| t.former_workspace_id == entry.former_workspace_id);
+        let kind = match record {
+            Some(t)
+                if t.audit_last_seq == entry.audit_last_seq
+                    && hex(&t.audit_last_hash) == entry.audit_last_hash =>
+            {
+                continue;
+            }
+            Some(_) => FindingKind::DigestMismatch,
+            None => FindingKind::DigestMissing,
+        };
+        report.add(
+            kind,
+            format!(
                 "digest {key}: deletion record of workspace {} is missing or changed",
                 entry.former_workspace_id
-            ));
-        }
+            ),
+        );
     }
 }

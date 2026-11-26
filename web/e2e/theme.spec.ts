@@ -4,7 +4,7 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem('demleme.theme', 'light');
     const labels = {
-      appName: 'Demleme',
+      appName: 'GRISTORA',
       skipToContent: 'Skip to content',
       navigation: 'Primary navigation',
       home: 'Home',

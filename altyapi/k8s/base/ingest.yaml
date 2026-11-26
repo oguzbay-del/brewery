@@ -10,6 +10,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: ingest }
     spec:
+      serviceAccountName: ingest
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

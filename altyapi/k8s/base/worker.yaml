@@ -10,6 +10,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: worker }
     spec:
+      serviceAccountName: worker
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

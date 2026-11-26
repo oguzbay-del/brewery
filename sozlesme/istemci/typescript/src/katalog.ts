@@ -6,6 +6,7 @@ export type Mode = "home" | "brewery";
 export type QuantityId = "volume" | "mass" | "temperature" | "gravity" | "color" | "pressure" | "time" | "length" | "percent" | "concentration" | "hardness" | "co2" | "dose" | "ratio" | "bitterness" | "ph";
 export type UnitId = "l" | "ml" | "hl" | "gal_us" | "qt_us" | "fl_oz_us" | "gal_uk" | "qt_uk" | "fl_oz_uk" | "bbl_us" | "bbl_uk" | "kg" | "g" | "lb" | "oz" | "c" | "f" | "sg" | "sg_x1000" | "plato" | "brix" | "srm" | "ebc" | "lovibond" | "bar" | "kpa" | "psi" | "min" | "h" | "d" | "m" | "ft" | "pct" | "ppm" | "mg_l" | "caco3_mg_l" | "dh" | "fh" | "meq_l" | "vol" | "g_l_co2" | "g_l" | "oz_gal_us" | "oz_gal_uk" | "lb_bbl_us" | "l_kg" | "qt_lb" | "ibu" | "ph";
 export type FieldKey = "recipe.batch_volume_l" | "recipe.boil_volume_l" | "recipe.boil_time_min" | "recipe.efficiency_pct" | "equipment.trub_loss_l" | "equipment.pre_trub_loss_l" | "equipment.altitude_m" | "equipment.hop_util_pct" | "equipment.whirlpool_time_min" | "fermentable.amount_kg" | "fermentable.yield_pct" | "fermentable.color_srm" | "fermentable.late_extract_min" | "hop.amount_kg" | "hop.alpha_pct" | "hop.time_min" | "hop.whirlpool_temp_c" | "yeast.min_attenuation_pct" | "yeast.max_attenuation_pct" | "yeast.tolerance_abv_pct" | "yeast.viability_pct" | "mash.grain_weight_kg" | "mash.step_temp_c" | "mash.step_time_min" | "mash.thickness_l_per_kg" | "measurement.sg" | "measurement.og_sg" | "measurement.fg_sg" | "measurement.temp_c" | "measurement.ph" | "target.ibu" | "target.color_srm" | "target.mash_ph" | "target.co2_vol" | "process.keg_pressure_bar" | "process.priming_g_per_l" | "water.calcium_ppm" | "water.magnesium_ppm" | "water.sodium_ppm" | "water.chloride_ppm" | "water.sulfate_ppm" | "water.bicarbonate_ppm" | "water.ph" | "tool.volume_l" | "tool.mass_kg";
+export type UiKey = "shell.app_name" | "shell.skip_to_content" | "shell.navigation" | "nav.home" | "nav.recipes" | "nav.batches" | "nav.settings" | "theme.label" | "theme.light" | "theme.dark" | "theme.high_contrast";
 export type FieldErrorCode = "invalid_number" | "out_of_range";
 
 export interface UnitDef {
@@ -37,6 +38,7 @@ export interface LocaleTexts {
   units: Record<UnitId, { name: string; symbol: string }>;
   fields: Record<FieldKey, { label: string; hint?: string }>;
   errors: Record<FieldErrorCode | "required" | "unknown_field", string>;
+  ui: Record<UiKey, string>;
 }
 
 export const SI_UNIT: Record<QuantityId, UnitId> = {
@@ -518,6 +520,19 @@ export const TEXTS: Record<Locale, LocaleTexts> = {
       "invalid_number": "{label} geçerli bir sayı olmalı.",
       "out_of_range": "{label} {min} ile {max} {unit} arasında olmalı.",
       "unknown_field": "Bilinmeyen alan: {field}."
+    },
+    "ui": {
+      "shell.app_name": "GRISTORA",
+      "shell.skip_to_content": "Ana içeriğe geç",
+      "shell.navigation": "Ana gezinme",
+      "nav.home": "Ana sayfa",
+      "nav.recipes": "Tarifler",
+      "nav.batches": "Partiler",
+      "nav.settings": "Ayarlar",
+      "theme.label": "Tema",
+      "theme.light": "Açık",
+      "theme.dark": "Koyu",
+      "theme.high_contrast": "Yüksek kontrast"
     }
   },
   "en": {
@@ -879,6 +894,19 @@ export const TEXTS: Record<Locale, LocaleTexts> = {
       "invalid_number": "{label} must be a valid number.",
       "out_of_range": "{label} must be between {min} and {max} {unit}.",
       "unknown_field": "Unknown field: {field}."
+    },
+    "ui": {
+      "shell.app_name": "GRISTORA",
+      "shell.skip_to_content": "Skip to content",
+      "shell.navigation": "Main navigation",
+      "nav.home": "Home",
+      "nav.recipes": "Recipes",
+      "nav.batches": "Batches",
+      "nav.settings": "Settings",
+      "theme.label": "Theme",
+      "theme.light": "Light",
+      "theme.dark": "Dark",
+      "theme.high_contrast": "High contrast"
     }
   }
 };

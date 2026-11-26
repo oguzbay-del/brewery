@@ -109,19 +109,35 @@ impl Mailer for MemoryMailer {
 pub struct SmtpMailer {
     host: String,
     port: u16,
+    /// Address for `MAIL FROM`.
     from: String,
+    /// Display name for the `From` header (optional).
+    from_name: Option<String>,
 }
 
 const SMTP_TIMEOUT: Duration = Duration::from_secs(10);
 
 impl SmtpMailer {
-    /// A client for the relay at `host:port` sending as `from`.
+    /// A client for the relay at `host:port` sending as `from`: a plain address or
+    /// `Display Name <address>`.
     #[must_use]
     pub fn new(host: &str, port: u16, from: &str) -> Self {
+        let from = from.trim();
+        let (from_name, from) = match (from.find('<'), from.strip_suffix('>')) {
+            (Some(open), Some(inner)) => {
+                let name = from[..open].trim();
+                (
+                    (!name.is_empty()).then(|| name.to_owned()),
+                    inner[open + 1..].trim().to_owned(),
+                )
+            }
+            _ => (None, from.to_owned()),
+        };
         Self {
             host: host.to_owned(),
             port,
-            from: from.to_owned(),
+            from,
+            from_name,
         }
     }
 
@@ -147,10 +163,14 @@ impl SmtpMailer {
         .await?;
         command(&mut write, &mut read, "DATA", 354).await?;
         let sent_at = chrono::Utc::now().format("%a, %d %b %Y %H:%M:%S +0000");
+        let from_header = match &self.from_name {
+            Some(name) => format!("{name} <{}>", self.from),
+            None => format!("<{}>", self.from),
+        };
         let mut data = format!(
-            "From: <{}>\r\nTo: <{}>\r\nSubject: {}\r\nDate: {sent_at}\r\nMIME-Version: 1.0\r\n\
+            "From: {from_header}\r\nTo: <{}>\r\nSubject: {}\r\nDate: {sent_at}\r\nMIME-Version: 1.0\r\n\
              Content-Type: text/plain; charset=us-ascii\r\n\r\n",
-            self.from, mail.to, mail.subject
+            mail.to, mail.subject
         );
         for line in mail.text.lines() {
             if line.starts_with('.') {
@@ -209,6 +229,10 @@ impl Mailer for SmtpMailer {
             // Addresses reach the SMTP dialogue verbatim; refuse anything that could add commands.
             if normalize_email(&mail.to).as_deref() != Some(mail.to.as_str())
                 || self.from.contains(['\r', '\n', '<', '>'])
+                || self
+                    .from_name
+                    .as_ref()
+                    .is_some_and(|n| n.contains(['\r', '\n', '<', '>']) || !n.is_ascii())
                 || mail.subject.contains(['\r', '\n'])
             {
                 return Err(MailError::Smtp("refused unsafe header value".to_owned()));
@@ -255,6 +279,16 @@ mod tests {
             normalize_email(&format!("{}@example.com", "a".repeat(65))),
             None
         );
+    }
+
+    #[test]
+    fn sender_may_have_a_display_name() {
+        let m = SmtpMailer::new("h", 1, "GRISTORA <no-reply@gristora.local>");
+        assert_eq!(m.from, "no-reply@gristora.local");
+        assert_eq!(m.from_name.as_deref(), Some("GRISTORA"));
+        let m = SmtpMailer::new("h", 1, "no-reply@gristora.local");
+        assert_eq!(m.from, "no-reply@gristora.local");
+        assert_eq!(m.from_name, None);
     }
 
     #[test]

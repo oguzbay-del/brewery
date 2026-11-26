@@ -10,9 +10,16 @@ use crate::{Error, Result};
 pub const ENV_OTLP_ENDPOINT: &str = "OTEL_EXPORTER_OTLP_ENDPOINT";
 
 /// Keeps the tracer provider alive; flushes pending spans when dropped.
-#[derive(Debug)]
 pub struct TelemetryGuard {
     provider: SdkTracerProvider,
+    #[cfg(feature = "sentry")]
+    _sentry: Option<::sentry::ClientInitGuard>,
+}
+
+impl std::fmt::Debug for TelemetryGuard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("TelemetryGuard").finish_non_exhaustive()
+    }
 }
 
 impl Drop for TelemetryGuard {
@@ -47,10 +54,15 @@ pub fn init_tracing_otel(service_name: &str) -> Result<TelemetryGuard> {
     let tracer = provider.tracer(service_name.to_owned());
 
     let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info"));
-    tracing_subscriber::registry()
+    let registry = tracing_subscriber::registry()
         .with(filter)
         .with(fmt::layer().json().flatten_event(true))
-        .with(tracing_opentelemetry::layer().with_tracer(tracer))
+        .with(tracing_opentelemetry::layer().with_tracer(tracer));
+    #[cfg(feature = "sentry")]
+    let sentry_guard = crate::sentry::init(service_name, env!("CARGO_PKG_VERSION"));
+    #[cfg(feature = "sentry")]
+    let registry = registry.with(sentry_guard.as_ref().map(|_| crate::sentry::layer()));
+    registry
         .try_init()
         .map_err(|e| Error::Telemetry(e.to_string()))?;
     tracing::info!(
@@ -58,5 +70,9 @@ pub fn init_tracing_otel(service_name: &str) -> Result<TelemetryGuard> {
         otlp_export = export,
         "tracing initialised"
     );
-    Ok(TelemetryGuard { provider })
+    Ok(TelemetryGuard {
+        provider,
+        #[cfg(feature = "sentry")]
+        _sentry: sentry_guard,
+    })
 }

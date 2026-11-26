@@ -58,17 +58,24 @@ pub enum Permission {
     SupportGrant,
     /// Device pairing and keys.
     DevicesManage,
+    /// Field view: scan results, containers, recall list.
+    FieldView,
+    /// Change the status of a container and fill it.
+    ContainerStatus,
+    /// Create, retire and label containers.
+    ContainerManage,
 }
 
 use Permission::{
-    BatchCorrectClosed, BatchPlan, BatchRecord, BillingManage, CostView, DevicesManage,
-    QualityRecord, RecipeApprove, RecipeEdit, RecipeView, ReleaseApprove, ReportsExport,
-    SettingsEquipment, StockMove, SupportGrant, UsersManage, WorkspaceManage,
+    BatchCorrectClosed, BatchPlan, BatchRecord, BillingManage, ContainerManage, ContainerStatus,
+    CostView, DevicesManage, FieldView, QualityRecord, RecipeApprove, RecipeEdit, RecipeView,
+    ReleaseApprove, ReportsExport, SettingsEquipment, StockMove, SupportGrant, UsersManage,
+    WorkspaceManage,
 };
 
 impl Permission {
     /// Every permission, in the order of ADR-0009 rule 8.1.
-    pub const ALL: [Self; 17] = [
+    pub const ALL: [Self; 20] = [
         RecipeView,
         RecipeEdit,
         RecipeApprove,
@@ -86,6 +93,9 @@ impl Permission {
         BillingManage,
         SupportGrant,
         DevicesManage,
+        FieldView,
+        ContainerStatus,
+        ContainerManage,
     ];
 
     /// The code stored in `role_permissions.permission` and sent to clients.
@@ -109,6 +119,9 @@ impl Permission {
             BillingManage => "billing.manage",
             SupportGrant => "support.grant",
             DevicesManage => "devices.manage",
+            FieldView => "field.view",
+            ContainerStatus => "container.status",
+            ContainerManage => "container.manage",
         }
     }
 
@@ -126,7 +139,7 @@ impl Permission {
             RecipeView | RecipeEdit | RecipeApprove => "recipe",
             BatchPlan | BatchRecord | BatchCorrectClosed => "batch",
             QualityRecord | ReleaseApprove => "quality",
-            StockMove => "stock",
+            StockMove | FieldView | ContainerStatus | ContainerManage => "stock",
             CostView => "cost",
             ReportsExport | SettingsEquipment | UsersManage | WorkspaceManage | BillingManage
             | SupportGrant | DevicesManage => "settings",
@@ -163,7 +176,7 @@ pub struct PresetRole {
 }
 
 /// Preset roles (plan > Yetki matrisi). The administrator holds everything.
-pub const PRESETS: [PresetRole; 8] = [
+pub const PRESETS: [PresetRole; 9] = [
     PresetRole {
         key: "admin",
         name: "Administrator",
@@ -190,6 +203,9 @@ pub const PRESETS: [PresetRole; 8] = [
             CostView,
             ReportsExport,
             SettingsEquipment,
+            FieldView,
+            ContainerStatus,
+            ContainerManage,
         ],
     },
     PresetRole {
@@ -198,7 +214,13 @@ pub const PRESETS: [PresetRole; 8] = [
         landing_screen: "today",
         business: true,
         home: false,
-        permissions: &[RecipeView, BatchRecord, QualityRecord],
+        permissions: &[
+            RecipeView,
+            BatchRecord,
+            QualityRecord,
+            FieldView,
+            ContainerStatus,
+        ],
     },
     PresetRole {
         key: "quality",
@@ -212,6 +234,7 @@ pub const PRESETS: [PresetRole; 8] = [
             QualityRecord,
             ReleaseApprove,
             ReportsExport,
+            FieldView,
         ],
     },
     PresetRole {
@@ -220,7 +243,15 @@ pub const PRESETS: [PresetRole; 8] = [
         landing_screen: "stock",
         business: true,
         home: false,
-        permissions: &[RecipeView, StockMove, CostView, ReportsExport],
+        permissions: &[
+            RecipeView,
+            StockMove,
+            CostView,
+            ReportsExport,
+            FieldView,
+            ContainerStatus,
+            ContainerManage,
+        ],
     },
     PresetRole {
         key: "viewer",
@@ -229,6 +260,14 @@ pub const PRESETS: [PresetRole; 8] = [
         business: true,
         home: false,
         permissions: &[RecipeView, ReportsExport],
+    },
+    PresetRole {
+        key: "saha",
+        name: "Field",
+        landing_screen: "field",
+        business: true,
+        home: false,
+        permissions: &[FieldView, ContainerStatus],
     },
     PresetRole {
         key: "share_editor",
@@ -598,7 +637,7 @@ mod tests {
     #[test]
     fn permission_codes_round_trip_and_match_the_database_check() {
         let unique: BTreeSet<_> = Permission::ALL.iter().map(|p| p.as_str()).collect();
-        assert_eq!(unique.len(), 17);
+        assert_eq!(unique.len(), 20);
         for p in Permission::ALL {
             assert_eq!(Permission::parse(p.as_str()), Some(p));
         }
@@ -607,7 +646,7 @@ mod tests {
 
     #[test]
     fn preset_roles_follow_the_plan_matrix() {
-        assert_eq!(preset("admin").unwrap().permissions.len(), 17);
+        assert_eq!(preset("admin").unwrap().permissions.len(), 20);
         // The matrix rows 1-13 for the six business roles (plan > Yetki matrisi).
         let matrix: [(Permission, &str); 13] = [
             (RecipeView, "abokdw"),

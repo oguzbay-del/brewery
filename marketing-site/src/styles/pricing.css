@@ -96,6 +96,7 @@
 .wizard-controls { display: flex; justify-content: space-between; gap: 16px; margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--line); }
 .wizard-back { padding: 12px 18px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 12px; font-weight: 700; cursor: pointer; }
 .wizard-back:disabled { opacity: .35; cursor: not-allowed; }
+.wizard-page [hidden] { display: none; }
 .wizard-next:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 .wizard-feedback { min-height: 20px; margin: 10px 0 0; color: var(--muted); font-size: 11px; }
 .wizard-summary { position: sticky; top: 20px; padding: 24px; background: var(--forest); color: #f7f6f3; }

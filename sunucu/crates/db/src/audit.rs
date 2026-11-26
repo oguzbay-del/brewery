@@ -75,6 +75,14 @@ pub enum AuditEvent {
     SessionRevoke,
     /// A device key was renewed.
     DeviceKeyRenew,
+    /// The status of a container changed.
+    ContainerStatusChange,
+    /// A container was retired.
+    ContainerRetire,
+    /// A container was filled.
+    ContainerFill,
+    /// Labels with new scan codes were issued.
+    LabelIssue,
     /// Data export was requested.
     DataExport,
     /// Account deletion was requested or carried out.
@@ -83,7 +91,7 @@ pub enum AuditEvent {
 
 impl AuditEvent {
     /// Every event kind.
-    pub const ALL: [Self; 26] = [
+    pub const ALL: [Self; 30] = [
         Self::RoleCreate,
         Self::RoleUpdate,
         Self::RoleDelete,
@@ -108,6 +116,10 @@ impl AuditEvent {
         Self::PasskeyChange,
         Self::SessionRevoke,
         Self::DeviceKeyRenew,
+        Self::ContainerStatusChange,
+        Self::ContainerRetire,
+        Self::ContainerFill,
+        Self::LabelIssue,
         Self::DataExport,
         Self::AccountDelete,
     ];
@@ -140,6 +152,10 @@ impl AuditEvent {
             Self::PasskeyChange => "passkey.change",
             Self::SessionRevoke => "session.revoke",
             Self::DeviceKeyRenew => "device_key.renew",
+            Self::ContainerStatusChange => "container.status_change",
+            Self::ContainerRetire => "container.retire",
+            Self::ContainerFill => "container.fill",
+            Self::LabelIssue => "label.issue",
             Self::DataExport => "data.export",
             Self::AccountDelete => "account.delete",
         }

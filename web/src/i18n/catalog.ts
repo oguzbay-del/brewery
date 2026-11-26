@@ -1,11 +1,13 @@
 import source from '../../../sozlesme/katalog/katalog.json?raw';
+import type { UiKey } from '../../../sozlesme/istemci/typescript/src/katalog';
 
 export type Locale = 'tr' | 'en';
 export type TextKey =
   | `quantities.${string}`
   | `units.${string}.${'name' | 'symbol'}`
   | `fields.${string}.${'label' | 'hint'}`
-  | `errors.${string}`;
+  | `errors.${string}`
+  | `ui.${UiKey}`;
 export type TextParams = Record<string, string | number>;
 
 interface LocaleCatalog {
@@ -13,6 +15,7 @@ interface LocaleCatalog {
   units: Record<string, { name: string; symbol: string }>;
   fields: Record<string, { label: string; hint?: string }>;
   errors: Record<string, string>;
+  ui: Record<string, string>;
 }
 
 interface CatalogFile {
@@ -54,6 +57,7 @@ function lookup(locale: Locale, key: string): string | undefined {
 
   if (key.startsWith('quantities.')) return texts.quantities[key.slice(11)];
   if (key.startsWith('errors.')) return texts.errors[key.slice(7)];
+  if (key.startsWith('ui.')) return texts.ui[key.slice(3)];
   if (key.startsWith('units.')) {
     const [, unit, property] = key.split('.');
     if (unit && (property === 'name' || property === 'symbol')) {

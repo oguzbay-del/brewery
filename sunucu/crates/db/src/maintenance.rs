@@ -274,3 +274,99 @@ pub async fn purge_expired_soft_deletes(
     }
     Ok(totals)
 }
+
+/// One upload whose object bytes can be removed by the worker.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PurgeableUpload {
+    /// `attachment` or `scanned_document`.
+    pub kind: String,
+    /// Upload record identifier.
+    pub id: Uuid,
+    /// Server-generated object-store key.
+    pub object_key: String,
+    /// True when the upload never reached its complete step.
+    pub incomplete: bool,
+    /// True when the row already has a deletion timestamp.
+    pub deleted: bool,
+}
+
+/// Lists at most `limit` purgeable uploads in one workspace.
+pub async fn list_purgeable_uploads(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    incomplete_before: DateTime<Utc>,
+    limit: i32,
+) -> Result<Vec<PurgeableUpload>> {
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let rows = sqlx::query(
+        "SELECT p.kind, p.id, p.object_key,
+                CASE WHEN p.kind = 'attachment' THEN a.uploaded_at IS NULL
+                     ELSE d.uploaded_at IS NULL END AS incomplete,
+                CASE WHEN p.kind = 'attachment' THEN a.deleted_at IS NOT NULL
+                     ELSE d.deleted_at IS NOT NULL END AS deleted
+         FROM list_purgeable_uploads($1, $2) AS p
+         LEFT JOIN attachments AS a ON p.kind = 'attachment' AND a.id = p.id
+         LEFT JOIN scanned_documents AS d ON p.kind = 'scanned_document' AND d.id = p.id",
+    )
+    .bind(incomplete_before)
+    .bind(limit)
+    .fetch_all(&mut *tx)
+    .await?;
+    tx.commit().await?;
+    rows.iter()
+        .map(|row| {
+            Ok(PurgeableUpload {
+                kind: row.try_get("kind")?,
+                id: row.try_get("id")?,
+                object_key: row.try_get("object_key")?,
+                incomplete: row.try_get("incomplete")?,
+                deleted: row.try_get("deleted")?,
+            })
+        })
+        .collect()
+}
+
+/// Closes a stale upload before deletion. A concurrent completion wins if it commits first.
+pub async fn close_incomplete_upload(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    kind: &str,
+    id: Uuid,
+) -> Result<bool> {
+    let statement = match kind {
+        "attachment" => {
+            "UPDATE attachments SET deleted_at = now()
+             WHERE id = $1 AND uploaded_at IS NULL AND deleted_at IS NULL AND object_purged_at IS NULL"
+        }
+        "scanned_document" => {
+            "UPDATE scanned_documents SET deleted_at = now()
+             WHERE id = $1 AND uploaded_at IS NULL AND deleted_at IS NULL AND object_purged_at IS NULL
+               AND (NOT legal_hold OR (retention_until IS NOT NULL AND retention_until <= now()))"
+        }
+        _ => return Ok(false),
+    };
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let result = sqlx::query(statement).bind(id).execute(&mut *tx).await?;
+    tx.commit().await?;
+    Ok(result.rows_affected() == 1)
+}
+
+/// Marks one upload after its object bytes have been deleted.
+pub async fn mark_upload_purged(
+    pool: &PgPool,
+    workspace_id: Uuid,
+    kind: &str,
+    id: Uuid,
+) -> Result<bool> {
+    let mut tx = pool.begin().await?;
+    set_workspace_id(&mut tx, workspace_id).await?;
+    let changed: bool = sqlx::query_scalar("SELECT mark_upload_purged($1, $2)")
+        .bind(kind)
+        .bind(id)
+        .fetch_one(&mut *tx)
+        .await?;
+    tx.commit().await?;
+    Ok(changed)
+}

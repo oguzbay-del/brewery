@@ -14,6 +14,9 @@ cd "$ROOT"
 BASE_REF="${1:-origin/main}"
 SPEC="sozlesme/openapi/openapi.json"
 IGNORE="sozlesme/openapi/oasdiff-ignore.txt"
+# ADR-0008 rule 8.2: a new enum value in a response is compatible (clients accept unknown
+# codes and states). oasdiff 1.37 reports it as ERR by default (owner decision, 2026-11-25).
+SEVERITY="sozlesme/openapi/oasdiff-severity.txt"
 OASDIFF="${OASDIFF:-oasdiff}"
 
 if ! command -v "$OASDIFF" >/dev/null 2>&1; then
@@ -33,6 +36,9 @@ if ! git show "$BASE_REF:$SPEC" >"$BASE_FILE" 2>/dev/null; then
 fi
 
 ARGS=(breaking "$BASE_FILE" "$SPEC" --fail-on ERR)
+if [ -f "$SEVERITY" ]; then
+  ARGS+=(--severity-levels "$SEVERITY")
+fi
 if [ -f "$IGNORE" ]; then
   ARGS+=(--err-ignore "$IGNORE")
 fi

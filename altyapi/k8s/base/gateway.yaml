@@ -1,0 +1,72 @@
+# Kenar girişi: Gateway API (açık standart; T2.32d). Uygulama ortama göre seçilir (gatewayClassName);
+# yerelde ve ADR-0009'a göre Istio. Gateway CRD'leri kümede önceden kurulu olmalıdır.
+# Herkese açık dinleyici (`genel`) YALNIZ `/v1` yollarını sunar. `/internal` için kural yoktur,
+# bu yüzden 404 döner. Yeni bir herkese açık ön ek eklenirse genel HTTPRoute'a açıkça yazılır.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: kenar
+spec:
+  gatewayClassName: istio
+  # Istio'nun ürettiği Deployment/Servis için ayar (kenar-ayar ConfigMap'i).
+  infrastructure:
+    parametersRef: { group: "", kind: ConfigMap, name: kenar-ayar }
+  listeners:
+    - name: genel
+      protocol: HTTP
+      port: 80
+      allowedRoutes: { namespaces: { from: Same } }
+    # Destek paneli: ayrı konak adı. Konak adı overlay'de gerçek değerle değişir.
+    - name: dahili
+      protocol: HTTP
+      port: 80
+      hostname: internal.demleme.invalid
+      allowedRoutes: { namespaces: { from: Same } }
+---
+# Ad alanında Pod Security `restricted` var: Istio'nun gateway podu seccomp profilini kendisi koymaz.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kenar-ayar
+data:
+  deployment: |
+    spec:
+      template:
+        spec:
+          securityContext:
+            seccompProfile: { type: RuntimeDefault }
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: genel
+spec:
+  parentRefs:
+    - { name: kenar, sectionName: genel }
+  rules:
+    - matches:
+        - path: { type: PathPrefix, value: /v1/webhooks }
+        - path: { type: PathPrefix, value: /v1/ingest }
+      backendRefs:
+        - { name: ingest, port: 8082 }
+    - matches:
+        - path: { type: PathPrefix, value: /v1 }
+      backendRefs:
+        - { name: api, port: 8080 }
+---
+# Dahili konak adı yalnız oauth2-proxy'ye gider; başka yol sunulmaz.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: dahili
+spec:
+  parentRefs:
+    - { name: kenar, sectionName: dahili }
+  hostnames:
+    - internal.demleme.invalid
+  rules:
+    - matches:
+        - path: { type: PathPrefix, value: /internal/v1 }
+        - path: { type: PathPrefix, value: /oauth2 }
+      backendRefs:
+        - { name: oauth2-proxy, port: 4180 }

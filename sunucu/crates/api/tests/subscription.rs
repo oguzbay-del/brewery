@@ -136,3 +136,83 @@ async fn guard_blocks_paid_writes_after_the_trial(pool: PgPool) {
     let err = require_paid_write(&mut tx, ws).await.unwrap_err();
     assert_eq!(err.code(), ErrorCode::EntitlementRequired);
 }
+
+/// Creates a workspace with the given mode and age, then runs the paid write guard.
+async fn guard_after(
+    pool: &PgPool,
+    mode: &str,
+    age_months: i32,
+) -> Result<(), api::error::ApiError> {
+    let (ws, user) = (Uuid::now_v7(), Uuid::now_v7());
+    insert_workspace(pool, ws).await;
+    insert_user(pool, user).await;
+    sqlx::query(
+        "UPDATE workspaces SET mode = $2, created_at = now() - make_interval(months => $3)
+         WHERE id = $1",
+    )
+    .bind(ws)
+    .bind(mode)
+    .bind(age_months)
+    .execute(pool)
+    .await
+    .unwrap();
+    let api = support::app_pool(pool).await;
+    let ctx = DbContext {
+        user_id: Some(user),
+        workspace_id: Some(ws),
+        actor_kind: ActorKind::User,
+    };
+    let mut tx = db::begin(&api, &ctx).await.unwrap();
+    require_paid_write(&mut tx, ws).await
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn home_trial_is_three_months(pool: PgPool) {
+    guard_after(&pool, "home", 2)
+        .await
+        .expect("home workspace of 2 months has full access");
+    let err = guard_after(&pool, "home", 4).await.unwrap_err();
+    assert_eq!(err.code(), ErrorCode::EntitlementRequired);
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn business_trial_is_one_month(pool: PgPool) {
+    let err = guard_after(&pool, "business", 2).await.unwrap_err();
+    assert_eq!(err.code(), ErrorCode::EntitlementRequired);
+    guard_after(&pool, "business", 0)
+        .await
+        .expect("new business workspace has full access");
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn mode_change_does_not_restart_the_trial(pool: PgPool) {
+    let (ws, user) = (Uuid::now_v7(), Uuid::now_v7());
+    insert_workspace(&pool, ws).await;
+    insert_user(&pool, user).await;
+    sqlx::query(
+        "UPDATE workspaces SET mode = 'home', created_at = now() - interval '2 months'
+         WHERE id = $1",
+    )
+    .bind(ws)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let api = support::app_pool(&pool).await;
+    let ctx = DbContext {
+        user_id: Some(user),
+        workspace_id: Some(ws),
+        actor_kind: ActorKind::User,
+    };
+    let mut tx = db::begin(&api, &ctx).await.unwrap();
+    require_paid_write(&mut tx, ws)
+        .await
+        .expect("home trial is open");
+    drop(tx);
+    sqlx::query("UPDATE workspaces SET mode = 'business' WHERE id = $1")
+        .bind(ws)
+        .execute(&pool)
+        .await
+        .unwrap();
+    let mut tx = db::begin(&api, &ctx).await.unwrap();
+    assert!(require_paid_write(&mut tx, ws).await.is_err());
+}

@@ -59,6 +59,8 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
+- **Development loop v2 (25 Nov 2026, Oğuz decision, Claude):** the Claude ↔ ChatGPT/Codex loop runs only in the cloud. Rules: `gelistirme/dongu/README.md`, Codex: `AGENTS.md`, decision: ADR-0011. Claude side: loop session `session_01DL3udGsAD478rdQFh8h2an` + hourly task (`:17` UTC). Verified: Codex answers an `@codex` comment that Claude writes (needs a Codex cloud environment). Stop switch: `loop:pause` on #344. Owner steps: README › 9. Pilot: #345, #346. Next step: owner creates the Codex environment and the two ChatGPT tasks.
+
 - **Open for the next session (20 Nov 2026, Oğuz):** decide a small colour change in the app design system. Proposal: move the app accent fill (`tint-fill`, now `#e8901f`) towards the site amber `#F4A261`. Keep the text amber (`tint` `#985600`) for the 4.5:1 contrast. Do not use the site forest green `#0B2F26` in the app interface; green means "OK" there. If Oğuz approves: update the tokens in light, dark and high contrast, run the contrast check, run `ios/scripts/gen_colors.py`, then update and publish the concept and the design system.
 
 - **iPhone scope and field view (20 Nov 2026, Oğuz decision, Claude):** the iPhone shows data and does short field tasks; design, planning and management are on the iPad and the web (plan › iPhone kapsamı). New: the field view "Saha" (tank, lot and container scan, batch scan), the role "Saha" and three permissions. Concept: 64 screens, a device split block in the mode pane, six iPhone frames replaced with notes, the recipe editor on the iPhone is read only. Checks: `araclar/tutarlilik.py` clean, no overflow at 1280 and 400 px. Next step: none.
@@ -204,7 +206,7 @@
 ## Ayrı iş parçacığı: Ürün geliştirme
 
 - Aktif aşama: Stage 2 — core API and data.
-- Son bilinen sıradaki işler: `gelistirme/DURUM.md`'deki T2.19 → T2.21 → T2.22 zincirini tek ajana ver; T2.20 bağımsızsa paralel yürüyebilir.
+- Devir (25.11.2026, 23:00 UTC): döngü v2 çalışıyor. Açık Claude işleri: PR #356 (P1; Codex temiz, CI bitince merge, sonra #338'i kapat, #357'yi `status:ready` yap) ve PR #336 (T2.41; `5799511` Cargo.lock düzeltmesi, compose ve kind yeşilse merge). Kod işi ChatGPT'de (#215, #285, #287, #314, #351, #352, #355, #358). Claude'un sıradaki kendi işi: G3 (tasarım sistemi ve konsept; ADR-0012 renkleri, Ev'de rol ve paylaşım ekranları yok, abonelik ekranları), sonra B1 (ödeme kaynakları ADR'si). Plan kopyası yeniden dışa aktarılmalı (deneme süresi değişikliği). Owner kararları ve ayrıntı: `gelistirme/DURUM.md`.
 - Geliştirme işine devam etme talimatı gelirse önce `gelistirme/DURUM.md`'yi oku; `gelistirme/ISLER.md` içinden yalnız aktif aşama ve ilgili bağımlılıkları incele.
 - Ürün geliştirme sırasını bu dosyadan değiştirme. Asıl iş durumu `gelistirme/DURUM.md` ve `gelistirme/ISLER.md)'dir.
 
