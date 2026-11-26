@@ -165,18 +165,57 @@ Owner steps (cannot be done by an agent):
 
 All components use the current subscriptions and the free GitHub Actions minutes of a public repository. Runs use subscription usage. If an option needs extra cost (API key, paid runner, usage credits), ask the owner first.
 
-## 11. Live task source (owner instruction, 2026-11-26)
+## 11. Live task source and run discipline (owner instruction, 2026-11-26)
 
-GitHub Issues and pull requests are the only task source. A chat history, a task list in an older conversation, `gelistirme/ISLER.md` and `gelistirme/DURUM.md` are not task sources: they can be old. The issue body can also be old: the labels of the issue decide its state, and a status line in the body does not.
+GitHub Issues and pull requests are the only task source. A chat history, a task list in an older conversation, `gelistirme/ISLER.md` and `gelistirme/DURUM.md` are not task sources: they can be old. The labels of an item decide its state; a status line in an issue body does not.
 
-Each ChatGPT run queries GitHub live, on the default branch `main`, before it does any work:
+### 11.1 Query order (few calls)
 
-1. List open issues with `assigned-chatgpt`, all pages, newest and oldest. Do not stop at the first page. Use the search `repo:oguzbay-del/brewery is:issue is:open label:assigned-chatgpt` with 100 results for each page.
-2. List open pull requests with `is:pr is:open`. For each PR of `chatgpt/` and `codex/` branches, read the check runs of the current head SHA and the latest Claude marker.
-3. Sort the work in this order: (a) a PR of yours with `loop:fix-requested` or a red check; (b) an issue with `status:in-progress` that has a claim of yours and no PR; (c) issues with `status:ready`, in this order: class C security tasks, then product tasks, then marketing tasks; inside a group, the lowest issue number first.
-4. Do not skip an issue because it is new. Do not report only the oldest issue. An issue is blocked only when it has the label `status:blocked`, or when its dependency in the issue is still open.
-5. Do not start more than 3 issues in one run. Start only issues that change different files and have no common migration number. If two ready issues share a file or a migration number, do the lower issue number first.
-6. A run does not end after one issue. Go back to step 1 until no ready issue is left or the run has no capacity (CHATGPT-SCOPE.md › Work loop). Write the open items and the reason in the run report.
-7. Write the issue numbers that you started, the PR numbers that you opened and the blocked items in the run report. If a query fails, write the error and stop. Do not use a remembered list in place of a failed query.
+Read the instruction files (`CHATGPT-SCOPE.md`, this file, `AGENTS.md`) in full, once for each run. Do not copy their text into the chat. Then use at most these calls before you work:
 
-The Claude watchdog makes sure that this source stays true: it removes a stale status line from the issue body, sets `status:ready` when a dependency is done, and sets the label `status:review` when a PR is open.
+1. One search for open issues with `assigned-chatgpt` (`repo:oguzbay-del/brewery is:issue is:open label:assigned-chatgpt`, 100 results for each page, all pages). One call gives the labels of all issues. Do not read an issue one by one to see its state.
+2. One search for open pull requests (`is:pull-request is:open`).
+3. The three newest comments of the issue LOOP-CONTROL (#344) for a checkpoint (11.3).
+4. Check runs and comments only for the PRs that you act on in this run (11.4), not for all PRs.
+
+### 11.2 Order of work
+
+1. Your PRs with `loop:fix-requested`, a Claude `fix-request` or `ci-fix` marker for the current head SHA, or a red check.
+2. Your draft PRs and `status:in-progress` issues (finish before you start new work).
+3. Your class A and class B PRs that are ready, with green checks: merge them now (11.4).
+4. `status:ready` issues: class C security first, then other product, then marketing; lowest number first. Start at most 3 issues. Take only issues that change different files and have no common migration number.
+
+### 11.3 Errors and checkpoint
+
+Three error classes. Do not mix them.
+
+| Class | Sign | Action |
+|---|---|---|
+| Limit | "Code Mode exceeded the maximum number of tool calls" | Not an access problem. Do not retry in this run. Stop new work, write a checkpoint, end the run. Next run uses smaller packages (11.5). |
+| Transient | 5xx, timeout, 429 | Retry the same call once. If it fails again: write a checkpoint and stop. |
+| Access | 401, 403, 404 on a repository you can use, "not connected" | Retry once with one simple call (the search of 11.1 step 1). If it fails again: report the exact error text and stop. The owner repairs the connection. |
+
+After any error do not use a remembered list, a guess or an older snapshot. A failed query gives no information.
+
+Checkpoint: when work is unfinished or an error stopped the run, write one comment on #344 with the marker `kind=checkpoint`. Put in it: the error class (or "none"), and for each unfinished item the issue, the PR, the branch, the head SHA and the next step in one line. Do not write a checkpoint when nothing is unfinished. The next run reads the three newest comments of #344 first and continues from them.
+
+### 11.4 Finish rule
+
+1. A run changes something: a commit, a PR, a merge, a label or a marker. A run that only reports the state while ready work exists is a failed run. Report only after the work packages of the run are done or stopped by an error.
+2. Finish before you start. Do the items of 11.2 steps 1 to 3 first.
+3. A PR is a draft only while code or checks are open. When the checks of the current head are green, the same run marks it ready and sets `status:review` on the issue. If the session ends before the checks finish, write a checkpoint with the head SHA; the next run reads the checks first and marks the PR ready.
+4. A draft PR carries `status:in-progress` on its issue, never `status:review`.
+5. Class A and class B: merge in the same run when the checks of the current head are green, the branch has no conflict and no `loop:fix-requested` is open. Do not wait for Claude. Class C: never merge; mark ready and wait for the Claude review.
+6. Claude removes `loop:fix-requested` from a class A PR when your `fix-done` marker for the current head answers the points and the checks are green. If you see this label and a `fix-done` marker for the current head, ask in one comment on the PR and take the next item.
+7. If a rule stops an item, set `status:blocked`, write one comment with the question, and take the next item. Do not ask for a "Devam".
+
+### 11.5 Work packages and model
+
+- One work package is one issue, one branch and one PR. A package uses at most 8 tool calls in a run. A chain issue (for example #390) does one step in a run.
+- Start the packages in parallel only when their files and migration numbers differ.
+- Use the smallest model that does the work correctly: marketing text, tests and documents with a small model; class C security paths, migrations and ADR drafts with a larger model.
+- Do not add a paid service, an API key with usage cost, an agent bridge, Vercel or a local computer.
+
+### 11.6 Claude side
+
+The Claude watchdog keeps the source true: it edits out a stale status line from an issue body, sets `status:ready` when a dependency is done, sets `status:in-progress` on an issue with a draft PR, removes a stale `loop:fix-requested` (11.4 step 6), reviews ready class C PRs within one run, and writes one "mark ready" comment on a draft PR whose checks are green for more than one hour.
