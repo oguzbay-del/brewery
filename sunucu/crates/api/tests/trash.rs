@@ -217,3 +217,106 @@ async fn trash_cursor_validates_limits_and_exact_last_page(pool: PgPool) {
         StatusCode::UNPROCESSABLE_ENTITY
     );
 }
+
+async fn effect_counts(w: &World) -> (i64, i64) {
+    let audit = sqlx::query_scalar("SELECT count(*) FROM audit_log WHERE workspace_id = $1")
+        .bind(w.ws)
+        .fetch_one(&w.pool)
+        .await
+        .unwrap();
+    let outbox = sqlx::query_scalar("SELECT count(*) FROM outbox WHERE workspace_id = $1")
+        .bind(w.ws)
+        .fetch_one(&w.pool)
+        .await
+        .unwrap();
+    (audit, outbox)
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn trash_restore_writes_one_audit_and_event_and_keeps_the_chain(pool: PgPool) {
+    let w = world(&pool).await;
+    let created = post(&w, "/recipes", ipa()).await;
+    assert_eq!(created.status, StatusCode::CREATED, "{}", created.body);
+    let id = created.body["id"].as_str().unwrap();
+    delete_with_etag(&w, &format!("/recipes/{id}")).await;
+    let before = effect_counts(&w).await;
+    let reply = restore(&w, "recipe", id).await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert_eq!(effect_counts(&w).await, (before.0 + 1, before.1 + 1));
+
+    let entry: (String, Option<uuid::Uuid>, String, Option<uuid::Uuid>, bool) =
+        sqlx::query_as(
+            "SELECT actor_kind, actor_id, record_kind, record_id,
+                    previous_value IS NULL AND new_value IS NULL AND reason IS NULL
+             FROM audit_log WHERE workspace_id = $1 AND action = 'trash.restore'",
+        )
+        .bind(w.ws)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(entry.0, "user");
+    assert_eq!(entry.1, Some(w.admin));
+    assert_eq!(entry.2, "recipe");
+    assert_eq!(entry.3, Some(id.parse().unwrap()));
+    assert!(entry.4);
+
+    let payload: serde_json::Value = sqlx::query_scalar(
+        "SELECT payload FROM outbox WHERE workspace_id = $1 AND topic = 'recipe.restored'",
+    )
+    .bind(w.ws)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    let record = get(&w, &format!("/recipes/{id}")).await;
+    assert_eq!(payload["entity"]["kind"], "recipe");
+    assert_eq!(payload["entity"]["id"], id);
+    assert_eq!(payload["entity"]["version"], record.body["version"]);
+    assert!(payload.get("data").is_none());
+    let report = db::audit::verify_chain(&mut *pool.acquire().await.unwrap(), w.ws)
+        .await
+        .unwrap();
+    assert!(report.is_ok(), "{report:?}");
+    assert_eq!(report.rows, before.0 + 1);
+
+    let before = effect_counts(&w).await;
+    assert_eq!(restore(&w, "recipe", id).await.status, StatusCode::NOT_FOUND);
+    assert_eq!(effect_counts(&w).await, before);
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn trash_restore_failures_write_no_audit_or_event(pool: PgPool) {
+    let w = world(&pool).await;
+    let other = world(&pool).await;
+    let created = post(&w, "/recipes", ipa()).await;
+    let id = created.body["id"].as_str().unwrap();
+    delete_with_etag(&w, &format!("/recipes/{id}")).await;
+    let before = effect_counts(&w).await;
+    let other_before = effect_counts(&other).await;
+    assert_eq!(
+        restore(&other, "recipe", id).await.status,
+        StatusCode::NOT_FOUND
+    );
+    assert_eq!(effect_counts(&other).await, other_before);
+    assert_eq!(effect_counts(&w).await, before);
+
+    w.auth.add(w.other, w.ws, &["recipe.view"]);
+    let denied = call_as(
+        &w,
+        w.other,
+        "POST",
+        &format!("/trash/recipe/{id}/restore"),
+        Some(json!({})),
+        &[],
+    )
+    .await;
+    assert_eq!(denied.status, StatusCode::FORBIDDEN, "{}", denied.body);
+    assert_eq!(effect_counts(&w).await, before);
+
+    sqlx::query("UPDATE recipes SET deleted_at = now() - interval '31 days' WHERE id = $1::uuid")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(restore(&w, "recipe", id).await.status, StatusCode::CONFLICT);
+    assert_eq!(effect_counts(&w).await, before);
+}
