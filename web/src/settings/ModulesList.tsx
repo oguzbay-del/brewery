@@ -1,6 +1,6 @@
 import { ApiError } from '../api/errors';
+import { resolveLocale, translate } from '../i18n/catalog';
 import { useText } from '../i18n/useText';
-import { translate, resolveLocale } from '../i18n/catalog';
 import { useModules } from '../modules/useModules';
 import { useWorkspace } from '../workspace/useWorkspace';
 
@@ -11,7 +11,12 @@ function ErrorMessage({ error }: { error: unknown }) {
   const requestLabel = useText('ui.modules.error_request_id');
   const problem = error instanceof ApiError ? error : null;
   const message = problem?.status === 401 ? signIn : problem?.status === 404 ? notMember : generic;
-  return <p role="alert">{message}{problem?.requestId ? ` — ${requestLabel}: ${problem.requestId}` : ''}</p>;
+  return (
+    <p role="alert">
+      {message}
+      {problem?.requestId ? ` — ${requestLabel}: ${problem.requestId}` : ''}
+    </p>
+  );
 }
 
 function ModulesForWorkspace({ workspaceId }: { workspaceId: string }) {
