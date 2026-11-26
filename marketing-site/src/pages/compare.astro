@@ -16,7 +16,7 @@ import { modules, moduleLabels } from "../data/modules";
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}compare/`, import.meta.env.SITE).href;
-const description = "Compare the GRISTORA Homebrewer and Professional Brewery feature paths.";
+const description = "Compare the planned GRISTORA Homebrewer and Professional Brewery product scope and release sequence.";
 const rows: { group: string; items: [string, string][] }[] = [
   { group: "Recipes & formulation", items: [
     ["Recipe design & management", "recipe-design"],
@@ -71,6 +71,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
       <div class="page-photo-band"><PagePhoto name="compare-hero" lang="en" eager /></div>
       <section class="compare-table-section section-pad">
         <div class="shell">
+        <p class="pricing-footnote">The labels below describe intended product scope and planned release sequence; they do not indicate that a feature is currently available.</p>
         <div class="comparison-table-wrap" role="region" aria-label="Scrollable Homebrewer and Professional Brewery function comparison" tabindex="0">
           <table class="comparison-table" aria-label="Comparison of GRISTORA product areas for Homebrewers and Professional Breweries">
             <thead><tr><th scope="col">Product area</th><th scope="col">Homebrewer · 1 user</th><th scope="col">Professional Brewery · 5+ users</th></tr></thead>
@@ -79,7 +80,7 @@ const structuredData = { "@context": "https://schema.org", "@type": "WebPage", n
             </tbody>
           </table>
         </div>
-        <p class="pricing-footnote">Open each feature for detailed scope. <a href={`${base}modules/`}>Explore the nine-module plan and availability →</a></p>
+        <p class="pricing-footnote">Open each feature for detailed scope. <a href={`${base}modules/`}>Explore the nine-module plan and scope →</a></p>
         </div>
       </section>
       <ProductScreens page="compare" lang="en" />
