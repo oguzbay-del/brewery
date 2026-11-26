@@ -1196,7 +1196,7 @@ async fn an_invitation_works_once_for_seven_days_and_can_be_revoked(pool: PgPool
 
 #[sqlx::test(migrations = "../../migrations")]
 async fn invitation_mail_reaches_mailpit(pool: PgPool) {
-    let smtp = SmtpMailer::new("127.0.0.1", 1025, "no-reply@demleme.local");
+    let smtp = SmtpMailer::new("127.0.0.1", 1025, "GRISTORA <no-reply@gristora.local>");
     let w = world_with(&pool, Redis::disabled(), Some(smtp)).await;
     let owner = login(&w).await;
     let ws = workspace(&w, &owner, "business").await;

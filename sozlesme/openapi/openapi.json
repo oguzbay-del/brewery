@@ -10871,7 +10871,7 @@
     "license": {
       "name": ""
     },
-    "title": "api",
+    "title": "GRISTORA API",
     "version": "0.1.0"
   },
   "openapi": "3.1.0",
@@ -14488,7 +14488,7 @@
                     "publicKey": {
                       "rp": {
                         "id": "app.example.com",
-                        "name": "Demleme"
+                        "name": "GRISTORA"
                       }
                     }
                   }

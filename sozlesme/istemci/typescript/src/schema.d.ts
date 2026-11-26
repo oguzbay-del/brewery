@@ -9626,7 +9626,7 @@ export interface operations {
                      *         "publicKey": {
                      *           "rp": {
                      *             "id": "app.example.com",
-                     *             "name": "Demleme"
+                     *             "name": "GRISTORA"
                      *           }
                      *         }
                      *       }

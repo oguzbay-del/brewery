@@ -1451,7 +1451,7 @@ async fn email_start_is_limited_per_address_and_per_ip(pool: PgPool) {
 #[tokio::test]
 async fn smtp_mailer_delivers_to_mailpit_and_refuses_header_injection() {
     let to = unique_email();
-    let mailer = SmtpMailer::new("127.0.0.1", 1025, "no-reply@demleme.local");
+    let mailer = SmtpMailer::new("127.0.0.1", 1025, "GRISTORA <no-reply@gristora.local>");
     let mail = api::auth::email::sign_in_mail(
         &to,
         "https://app.example.com/auth/email?token=t",

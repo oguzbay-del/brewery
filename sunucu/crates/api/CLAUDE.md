@@ -43,5 +43,5 @@
 - Start the commit message with the task number: `T2.x: ...`.
 
 ## Passkey settings (T2.12)
-- `WEBAUTHN_RP_ID` (default: the domain of `WEB_BASE_URL`), `WEBAUTHN_RP_NAME` (`Demleme`), `WEBAUTHN_ORIGINS` (default: the web origins and `https://<rp id>`; the iOS origin). If the RP id and the origin do not match, the passkey endpoints return `503`.
+- `WEBAUTHN_RP_ID` (default: the domain of `WEB_BASE_URL`), `WEBAUTHN_RP_NAME` (`GRISTORA`), `WEBAUTHN_ORIGINS` (default: the web origins and `https://<rp id>`; the iOS origin). If the RP id and the origin do not match, the passkey endpoints return `503`.
 - A protected action calls `AuthServices::require_step_up(&ctx, ProtectedAction::...)` (`auth/step_up.rs`). This is separate from the allow list.

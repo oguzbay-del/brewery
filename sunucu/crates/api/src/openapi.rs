@@ -69,7 +69,10 @@ pub(crate) const fn file_op(
 /// The shared part of the `OpenAPI` document: the error schemas. Paths, schemas and tags come
 /// from the modules (`crate::modules`).
 #[derive(Debug, OpenApi)]
-#[openapi(components(schemas(ProblemDetails, FieldIssue, ErrorCode)))]
+#[openapi(
+    info(title = "GRISTORA API"),
+    components(schemas(ProblemDetails, FieldIssue, ErrorCode))
+)]
 pub struct ApiDoc;
 
 fn example_problem(code: ErrorCode) -> Value {

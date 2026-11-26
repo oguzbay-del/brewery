@@ -388,14 +388,14 @@ impl AuthConfig {
             mail_from: lookup("MAIL_FROM")
                 .filter(|v| !v.trim().is_empty())
                 .map_or_else(
-                    || "no-reply@demleme.local".to_owned(),
+                    || "GRISTORA <no-reply@gristora.local>".to_owned(),
                     |v| v.trim().to_owned(),
                 ),
             jwks_min_refresh_secs,
             webauthn_rp_id,
             webauthn_rp_name: lookup("WEBAUTHN_RP_NAME")
                 .filter(|v| !v.trim().is_empty())
-                .map_or_else(|| "Demleme".to_owned(), |v| v.trim().to_owned()),
+                .map_or_else(|| "GRISTORA".to_owned(), |v| v.trim().to_owned()),
             webauthn_origins,
         })
     }
