@@ -271,7 +271,7 @@ async fn trash_restore_writes_one_audit_and_event_and_keeps_the_chain(pool: PgPo
     assert_eq!(payload["entity"]["id"], id);
     assert_eq!(payload["entity"]["version"], record.body["version"]);
     assert!(payload.get("data").is_none());
-    let report = db::verify_chain(&mut *pool.acquire().await.unwrap(), w.ws)
+    let report = db::verify_chain(&mut pool.acquire().await.unwrap(), w.ws)
         .await
         .unwrap();
     assert!(report.is_ok(), "{report:?}");
