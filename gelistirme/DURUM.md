@@ -31,7 +31,8 @@ Each session reads this file first. Keep it to one page. Update it after each ta
 - T2.32d: the edge uses the Gateway API, with Istio 1.28.0 in kind. Do not use ingress-nginx; the project was retired in March 2026. The oauth2-proxy alpha config owns the provider and the listen address. The local kind test passed (all edge checks). Open: the `test` and `canli` overlays need the real host, the Secret `demleme-oauth2-proxy` and the production `gatewayClassName`. #207 (mTLS, Istio ambient) can start now.
 - T2.31d open items: the AAD for the ciphertext (`TODO` in `apple-auth`); the Apple answer `invalid_grant` counts as a failure (to be verified with the real Apple service). Three attempts run on three hourly maintenance ticks.
 - Local kind in this environment: the kind node cannot pull images through the TLS proxy. Pull on the host, then use `docker save | kind load image-archive /dev/stdin`.
-- Next for Claude: #207 (mTLS), then #216 (after #215). Blocked: #255 (Oğuz), #316 and #326 (P3).
+- 2026-11-26: T2.31e (#216) is merged; T2.31 (#198) is done. Migration 0251. The purge saves the Issue numbers, then the worker replaces the Issue title, the body and the customer comments with a fixed text and closes the Issue. A GitHub failure is retried on each hourly tick (no limit). A Sonnet subagent wrote the code; Claude reviewed it and ran the worker, support and db tests.
+- Next for Claude: #207 (mTLS, a Sonnet subagent is on it). Blocked: #255 (Oğuz), #316 and #326 (P3).
 **Method:** ADR-0003 (Python → JSON vectors → Rust parity test; `make vektor`).
 
 ## Environment
