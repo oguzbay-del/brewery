@@ -96,6 +96,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 name = "api"
 version = "0.1.0"
 dependencies = [
+ "apple-auth",
  "argon2 0.6.0",
  "async-nats",
  "axum",
@@ -145,6 +146,23 @@ dependencies = [
  "uuid",
  "webauthn-authenticator-rs",
  "webauthn-rs",
+]
+
+[[package]]
+name = "apple-auth"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "common",
+ "reqwest",
+ "ring",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "url",
 ]
 
 [[package]]
@@ -5550,8 +5568,10 @@ dependencies = [
 name = "worker"
 version = "0.1.0"
 dependencies = [
+ "apple-auth",
  "async-nats",
  "axum",
+ "base64 0.22.1",
  "billing",
  "chrono",
  "common",
@@ -5572,6 +5592,7 @@ dependencies = [
  "tokio",
  "tower",
  "tracing",
+ "url",
  "uuid",
 ]
 

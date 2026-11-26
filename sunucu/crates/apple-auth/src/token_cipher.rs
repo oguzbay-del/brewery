@@ -3,7 +3,11 @@
 //! The stored format is version byte 1, a 12-byte random nonce, then AES-256-GCM
 //! ciphertext and its authentication tag. The trait keeps a later KMS implementation
 //! behind the same API.
+//!
+//! TODO: Bind the ciphertext to `user_identities.id` with AAD.
 
+use base64::{Engine as _, engine::general_purpose::STANDARD};
+use common::{Error, Result as ConfigResult, config::secret_from_lookup};
 use ring::{
     aead::{self, Aad, LessSafeKey, Nonce, UnboundKey},
     rand::{SecureRandom, SystemRandom},
@@ -67,6 +71,36 @@ impl Aes256GcmTokenCipher {
     #[must_use]
     pub const fn new(key: [u8; 32]) -> Self {
         Self { key }
+    }
+
+    /// Reads `PROVIDER_TOKEN_KEY` (or `PROVIDER_TOKEN_KEY_FILE`) from `lookup`.
+    ///
+    /// Returns `None` when no key is set and `required` is false.
+    ///
+    /// # Errors
+    /// Returns an error when the key is invalid, or missing while `required` is true.
+    pub fn from_lookup<F>(lookup: &F, required: bool) -> ConfigResult<Option<Self>>
+    where
+        F: Fn(&str) -> Option<String>,
+    {
+        match secret_from_lookup(lookup, "PROVIDER_TOKEN_KEY", "PROVIDER_TOKEN_KEY_FILE")? {
+            Some(raw) => {
+                let decoded = STANDARD.decode(raw.trim()).map_err(|_| Error::InvalidEnv {
+                    name: "PROVIDER_TOKEN_KEY",
+                    reason: "must be base64".to_owned(),
+                })?;
+                let key: [u8; 32] = decoded.try_into().map_err(|_| Error::InvalidEnv {
+                    name: "PROVIDER_TOKEN_KEY",
+                    reason: "must decode to exactly 32 bytes".to_owned(),
+                })?;
+                Ok(Some(Self::new(key)))
+            }
+            None if required => Err(Error::InvalidEnv {
+                name: "PROVIDER_TOKEN_KEY",
+                reason: "required when Apple token exchange is configured".to_owned(),
+            }),
+            None => Ok(None),
+        }
     }
 
     fn key(&self) -> Result<LessSafeKey, TokenCipherError> {

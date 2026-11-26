@@ -14,6 +14,37 @@ use uuid::Uuid;
 use crate::Result;
 
 const BATCH_LIMIT: i32 = 100;
+
+/// Runs [`purge_due`], then revokes the Apple tokens of deleted accounts (T2.31d).
+///
+/// The revoke summary goes into the detail JSON under `apple_revoke`. A token that failed the
+/// third time is a finding.
+pub async fn purge_due_and_revoke(
+    pool: &PgPool,
+    store: Option<&dyn ObjectStore>,
+    apple: Option<&crate::apple_revoke::AppleRevoker>,
+) -> Result<(RunStatus, String)> {
+    let purged = purge_due(pool, store).await;
+    let revoked = crate::apple_revoke::run(pool, apple).await;
+    let (mut status, detail) = purged?;
+    let mut value: Value = serde_json::from_str(&detail).unwrap_or(Value::Null);
+    let summary = match revoked {
+        Ok(report) => {
+            if report.given_up > 0 {
+                status = RunStatus::Findings;
+            }
+            report.to_json()
+        }
+        Err(error) => {
+            status = RunStatus::Findings;
+            json!({"error": error.to_string()})
+        }
+    };
+    if let Some(object) = value.as_object_mut() {
+        object.insert("apple_revoke".to_owned(), summary);
+    }
+    Ok((status, value.to_string()))
+}
 /// Processes due users independently and retries object keys left by an earlier run.
 pub async fn purge_due(
     pool: &PgPool,

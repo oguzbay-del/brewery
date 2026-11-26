@@ -21,7 +21,7 @@ pub mod session;
 pub mod setup;
 pub mod shared_device;
 pub mod step_up;
-pub mod token_cipher;
+pub use apple_auth::token_cipher;
 pub mod tokens;
 
 use std::{

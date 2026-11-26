@@ -6,6 +6,7 @@ members = [
     "crates/engine",
     "crates/engine-client",
     "crates/engine-service",
+    "crates/apple-auth",
     "crates/api",
     "crates/worker",
     "crates/events",
@@ -29,6 +30,7 @@ publish = false
 [workspace.dependencies]
 # Internal crates
 common = { path = "crates/common" }
+apple-auth = { path = "crates/apple-auth" }
 billing = { path = "crates/billing" }
 devices = { path = "crates/devices" }
 notifier = { path = "crates/notifier" }

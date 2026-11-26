@@ -1,6 +1,7 @@
 //! `worker` service: HTTP router.
 
 pub mod account_deletion;
+pub mod apple_revoke;
 pub mod audit_anchor;
 pub mod background;
 pub mod export;

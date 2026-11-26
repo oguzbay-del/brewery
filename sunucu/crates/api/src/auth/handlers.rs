@@ -737,7 +737,10 @@ async fn provider_login(
                 .ok_or_else(|| ApiError::unavailable(30))?;
             Some(
                 cipher
-                    .encrypt(refresh_token.as_bytes())
+                    .encrypt(
+                        &apple_auth::ApplePayload::encode_v1(&client_id, &refresh_token)
+                            .map_err(|_| ApiError::new(ErrorCode::Internal))?,
+                    )
                     .map_err(|_| ApiError::new(ErrorCode::Internal))?,
             )
         } else {

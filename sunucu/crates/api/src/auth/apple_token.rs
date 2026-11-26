@@ -1,19 +1,9 @@
 //! Apple authorization-code exchange (ADR-0009 rule 1.5).
 
-use std::time::Duration;
-
-use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
-use chrono::Utc;
-use ring::{
-    rand::SystemRandom,
-    signature::{self, EcdsaKeyPair},
-};
+use apple_auth::{AppleClient, AppleTokenSettings};
 use serde::Deserialize;
 
-use super::{
-    config::AppleTokenSettings,
-    oidc::{OidcError, OidcVerifier},
-};
+use super::oidc::{OidcError, OidcVerifier};
 
 /// Errors from the Apple authorization-code exchange.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
@@ -54,22 +44,9 @@ struct TokenResponse {
 }
 
 /// Exchanges Apple authorization codes and returns refresh tokens.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AppleTokenClient {
-    settings: AppleTokenSettings,
-    http: reqwest::Client,
-}
-
-impl std::fmt::Debug for AppleTokenClient {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("AppleTokenClient")
-            .field("team_id", &self.settings.team_id)
-            .field("key_id", &self.settings.key_id)
-            .field("private_key", &"<redacted>")
-            .field("client_ids", &self.settings.client_ids)
-            .field("token_url", &self.settings.token_url)
-            .finish_non_exhaustive()
-    }
+    inner: AppleClient,
 }
 
 impl AppleTokenClient {
@@ -78,11 +55,9 @@ impl AppleTokenClient {
     /// # Errors
     /// Returns an error if the HTTP client cannot be built.
     pub fn new(settings: AppleTokenSettings) -> Result<Self, reqwest::Error> {
-        let http = reqwest::Client::builder()
-            .timeout(Duration::from_secs(10))
-            .redirect(reqwest::redirect::Policy::none())
-            .build()?;
-        Ok(Self { settings, http })
+        Ok(Self {
+            inner: AppleClient::new(settings)?,
+        })
     }
 
     /// Selects the one configured client ID present in the verified ID token audience.
@@ -97,47 +72,16 @@ impl AppleTokenClient {
             return Err(AppleTokenError::InvalidClientId);
         }
         let client_id = audiences.first().ok_or(AppleTokenError::InvalidClientId)?;
-        if !self.settings.client_ids.iter().any(|id| id == client_id) {
+        if !self
+            .inner
+            .settings()
+            .client_ids
+            .iter()
+            .any(|id| id == client_id)
+        {
             return Err(AppleTokenError::InvalidClientId);
         }
         Ok(client_id)
-    }
-
-    fn client_secret(&self, client_id: &str) -> Result<String, AppleTokenError> {
-        let rng = SystemRandom::new();
-        let key = EcdsaKeyPair::from_pkcs8(
-            &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
-            &self.settings.private_key,
-            &rng,
-        )
-        .map_err(|_| AppleTokenError::ClientSecret)?;
-        let header = URL_SAFE_NO_PAD.encode(
-            serde_json::to_vec(&serde_json::json!({
-                "alg": "ES256",
-                "kid": self.settings.key_id,
-                "typ": "JWT"
-            }))
-            .map_err(|_| AppleTokenError::ClientSecret)?,
-        );
-        let now = Utc::now().timestamp();
-        let claims = URL_SAFE_NO_PAD.encode(
-            serde_json::to_vec(&serde_json::json!({
-                "iss": self.settings.team_id,
-                "iat": now,
-                "exp": now + 300,
-                "aud": "https://appleid.apple.com",
-                "sub": client_id
-            }))
-            .map_err(|_| AppleTokenError::ClientSecret)?,
-        );
-        let signing_input = format!("{header}.{claims}");
-        let signature = key
-            .sign(&rng, signing_input.as_bytes())
-            .map_err(|_| AppleTokenError::ClientSecret)?;
-        Ok(format!(
-            "{signing_input}.{}",
-            URL_SAFE_NO_PAD.encode(signature.as_ref())
-        ))
     }
 
     /// Exchanges a single-use authorization code for its refresh token.
@@ -154,10 +98,19 @@ impl AppleTokenClient {
         if code.is_empty() || code.len() > 4096 {
             return Err(AppleTokenError::InvalidCode);
         }
-        if !self.settings.client_ids.iter().any(|id| id == client_id) {
+        if !self
+            .inner
+            .settings()
+            .client_ids
+            .iter()
+            .any(|id| id == client_id)
+        {
             return Err(AppleTokenError::InvalidClientId);
         }
-        let client_secret = self.client_secret(client_id)?;
+        let client_secret = self
+            .inner
+            .client_secret(client_id)
+            .map_err(|_| AppleTokenError::ClientSecret)?;
         let body = {
             let mut form = url::form_urlencoded::Serializer::new(String::new());
             form.append_pair("grant_type", "authorization_code");
@@ -167,8 +120,9 @@ impl AppleTokenClient {
             form.finish()
         };
         let response = self
-            .http
-            .post(&self.settings.token_url)
+            .inner
+            .http()
+            .post(&self.inner.settings().token_url)
             .header(
                 reqwest::header::CONTENT_TYPE,
                 "application/x-www-form-urlencoded",
@@ -220,7 +174,10 @@ mod tests {
     #![allow(clippy::unwrap_used)]
 
     use super::*;
-    use ring::signature::{KeyPair, UnparsedPublicKey};
+    use ring::{
+        rand::SystemRandom,
+        signature::{self, EcdsaKeyPair},
+    };
 
     fn settings(private_key: Vec<u8>) -> AppleTokenSettings {
         AppleTokenSettings {
@@ -231,46 +188,6 @@ mod tests {
             token_url: "http://127.0.0.1:8080/auth/token".to_owned(),
             revoke_url: "http://127.0.0.1:8080/auth/revoke".to_owned(),
         }
-    }
-
-    #[test]
-    fn client_secret_is_es256_and_uses_the_verified_audience() {
-        let rng = SystemRandom::new();
-        let pkcs8 = EcdsaKeyPair::generate_pkcs8(&signature::ECDSA_P256_SHA256_FIXED_SIGNING, &rng)
-            .unwrap();
-        let key = EcdsaKeyPair::from_pkcs8(
-            &signature::ECDSA_P256_SHA256_FIXED_SIGNING,
-            pkcs8.as_ref(),
-            &rng,
-        )
-        .unwrap();
-        let public_key = key.public_key().as_ref().to_vec();
-        let client = AppleTokenClient::new(settings(pkcs8.as_ref().to_vec())).unwrap();
-        let audiences = ["com.example.ios".to_owned()];
-        let client_id = client.client_id_for_audiences(&audiences).unwrap();
-        assert_eq!(client_id, "com.example.ios");
-
-        let token = client.client_secret(client_id).unwrap();
-        let mut parts = token.split('.');
-        let header = URL_SAFE_NO_PAD.decode(parts.next().unwrap()).unwrap();
-        let claims = URL_SAFE_NO_PAD.decode(parts.next().unwrap()).unwrap();
-        let signature = URL_SAFE_NO_PAD.decode(parts.next().unwrap()).unwrap();
-        assert!(parts.next().is_none());
-        let header: serde_json::Value = serde_json::from_slice(&header).unwrap();
-        let claims: serde_json::Value = serde_json::from_slice(&claims).unwrap();
-        assert_eq!(header["alg"], "ES256");
-        assert_eq!(header["kid"], "KEY456");
-        assert_eq!(claims["iss"], "TEAM123");
-        assert_eq!(claims["sub"], "com.example.ios");
-        assert_eq!(claims["aud"], "https://appleid.apple.com");
-        assert_eq!(
-            claims["exp"].as_i64().unwrap() - claims["iat"].as_i64().unwrap(),
-            300
-        );
-        let signing_input = token.rsplit_once('.').unwrap().0;
-        UnparsedPublicKey::new(&signature::ECDSA_P256_SHA256_FIXED, public_key)
-            .verify(signing_input.as_bytes(), &signature)
-            .unwrap();
     }
 
     #[test]

@@ -9,7 +9,7 @@ use sqlx::PgPool;
 use storage::{ObjectLockMode, ObjectStore, S3Config, S3Store};
 use tokio::sync::watch;
 
-use crate::{Result, audit_anchor, retention, upload_cleanup};
+use crate::{Result, apple_revoke::AppleRevoker, audit_anchor, retention, upload_cleanup};
 
 /// Job name: daily audit digest.
 pub const JOB_DIGEST: &str = "audit-digest-daily";
@@ -144,6 +144,16 @@ pub async fn tick_with_files(
     digest_store: Option<&dyn ObjectStore>,
     file_store: Option<&dyn ObjectStore>,
 ) {
+    tick_with_apple(pool, digest_store, file_store, None).await;
+}
+
+/// Like [`tick_with_files`], with the Apple revoker for the account purge job (T2.31d).
+pub async fn tick_with_apple(
+    pool: &PgPool,
+    digest_store: Option<&dyn ObjectStore>,
+    file_store: Option<&dyn ObjectStore>,
+    apple: Option<&AppleRevoker>,
+) {
     let now = Utc::now();
     if let Some(store) = digest_store {
         if claim(pool, JOB_DIGEST, DAY).await {
@@ -173,7 +183,7 @@ pub async fn tick_with_files(
         record(pool, JOB_RETENTION, outcome).await;
     }
     if claim(pool, JOB_ACCOUNT_DELETIONS, TICK).await {
-        let outcome = crate::account_deletion::purge_due(pool, file_store).await;
+        let outcome = crate::account_deletion::purge_due_and_revoke(pool, file_store, apple).await;
         record(pool, JOB_ACCOUNT_DELETIONS, outcome).await;
     }
     if claim(pool, JOB_SOFT_DELETES, DAY).await {
@@ -235,8 +245,15 @@ pub async fn run(
     if digest_store.is_none() {
         tracing::warn!("no object store; audit digests and their check are off");
     }
+    let apple = AppleRevoker::from_env();
     loop {
-        tick_with_files(&pool, digest_store.as_deref(), file_store.as_deref()).await;
+        tick_with_apple(
+            &pool,
+            digest_store.as_deref(),
+            file_store.as_deref(),
+            apple.as_ref(),
+        )
+        .await;
         tokio::select! {
             _ = stop.wait_for(|stopped| *stopped) => return,
             () = tokio::time::sleep(TICK) => {}
