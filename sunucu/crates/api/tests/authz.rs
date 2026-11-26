@@ -1468,6 +1468,23 @@ async fn support_grant_and_full_export_need_a_fresh_second_step(pool: PgPool) {
     assert_eq!(r.status, StatusCode::ACCEPTED, "{:?}", r.body);
 }
 
+async fn access_snapshot(pool: &PgPool, ws: Uuid) -> Value {
+    sqlx::query_scalar(
+        "SELECT jsonb_build_array(
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM roles t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM role_permissions t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM workspace_members t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM role_assignments t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM invitations t WHERE workspace_id = $1),
+            (SELECT authz_version FROM workspaces WHERE id = $1)
+        )",
+    )
+    .bind(ws)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
 #[sqlx::test(migrations = "../../migrations")]
 async fn remaining_access_actions_need_step_up(pool: PgPool) {
     let w = world(&pool).await;
@@ -1544,6 +1561,7 @@ async fn remaining_access_actions_need_step_up(pool: PgPool) {
     for (method, path, body, success) in cases {
         stale_step_up(&w, &owner).await;
         let before = audit_actions(&pool, ws).await;
+        let data_before = access_snapshot(&pool, ws).await;
         let mut headers = vec![("idempotency-key", Uuid::new_v4().to_string())];
         if method == "DELETE" && path == format!("{base}/roles/{unused_id}") {
             headers.push(("if-match", "\"1\"".to_owned()));
@@ -1553,6 +1571,7 @@ async fn remaining_access_actions_need_step_up(pool: PgPool) {
         assert_eq!(r.body["code"], "step_up_required");
         assert_eq!(code(&r), "passkey_required");
         assert_eq!(audit_actions(&pool, ws).await, before);
+        assert_eq!(access_snapshot(&pool, ws).await, data_before, "{path}");
         fresh_step_up(&w, &owner).await;
         headers[0].1 = Uuid::new_v4().to_string();
         let r = call(&w, method, &path, Some(&owner.token), body, &headers).await;
