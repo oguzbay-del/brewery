@@ -17,4 +17,34 @@ export default tseslint.config(
     files: ['scripts/**/*.mjs', 'vite.config.ts', 'playwright.config.ts', 'e2e/**/*.ts'],
     languageOptions: { globals: globals.node },
   },
+
+  {
+    files: ['**/*.{js,jsx,ts,tsx,mjs,cjs}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['sunucu', 'sunucu/**', '**/sunucu', '**/sunucu/**'],
+              message: 'The web client must not import server modules.',
+            },
+            {
+              group: [
+                'engine',
+                'engine/**',
+                '**/engine',
+                '**/engine/**',
+                'engine-*',
+                'engine-*/**',
+                '**/engine-*',
+                '**/engine-*/**',
+              ],
+              message: 'The web client must not import calculation engine modules.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

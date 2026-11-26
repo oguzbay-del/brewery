@@ -1,0 +1,114 @@
+# Servisler arası mTLS: Istio ambient (ADR-0009 madde 10; T2.32e). Ad alanı `istio.io/dataplane-mode:
+# ambient` etiketini taşır (namespace.yaml); ztunnel her podun trafiğini HBONE (mTLS, port 15008)
+# ile sarar. Kimlik SPIFFE biçimindedir: spiffe://cluster.local/ns/demleme/sa/<ServiceAccount>.
+# Her iş yükünün kendi ServiceAccount'u vardır; kimlik politikaları bu adlara bağlıdır.
+# Katman 1 (burada): PeerAuthentication ve AuthorizationPolicy. Katman 2: networkpolicy.yaml.
+# Not: ztunnel yalnız L4 kuralları uygular (kimlik, port). Yol kuralı (örn. /internal) için
+# waypoint gerekir; yol ayrımı HTTPRoute ve INTERNAL_PROXY_TOKEN ile sürer (README).
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: api }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: engine-service }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: worker }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: ingest }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: migrate }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: nats }
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: { name: oauth2-proxy }
+---
+# Ad alanındaki bütün iş yükleri yalnız mTLS (HBONE) kabul eder; düz metin istek ztunnel'de düşer.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: varsayilan
+spec:
+  mtls:
+    mode: STRICT
+---
+# engine-service'e yalnız api kimliği erişir.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: engine-service-yalniz-api
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: engine-service }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: [cluster.local/ns/demleme/sa/api]
+      to:
+        - operation:
+            ports: ["50051"]
+---
+# api portuna (genel /v1 ve /internal/v1 aynı port) yalnız Gateway (herkese açık /v1) ve oauth2-proxy
+# (/internal/v1) kimlikleri erişir. Gateway'in `/internal` kuralı yoktur (gateway.yaml); yol ayrımı
+# L7'dir ve burada yapılmaz.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: api-kenar-ve-vekil
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: api }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/demleme/sa/kenar-istio
+              - cluster.local/ns/demleme/sa/oauth2-proxy
+      to:
+        - operation:
+            ports: ["8080"]
+---
+# ingest ve oauth2-proxy yalnız Gateway kimliğinden istek alır.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: ingest-yalniz-kenar
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: ingest }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: [cluster.local/ns/demleme/sa/kenar-istio]
+      to:
+        - operation:
+            ports: ["8082"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: oauth2-proxy-yalniz-kenar
+spec:
+  selector:
+    matchLabels: { app.kubernetes.io/name: oauth2-proxy }
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: [cluster.local/ns/demleme/sa/kenar-istio]
+      to:
+        - operation:
+            ports: ["4180"]

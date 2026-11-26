@@ -10,6 +10,7 @@
 //! CSRF, workspace membership and permissions) and builds the routes.
 
 pub mod access;
+pub mod apple_token;
 pub mod config;
 pub mod email;
 pub mod handlers;
@@ -20,6 +21,7 @@ pub mod session;
 pub mod setup;
 pub mod shared_device;
 pub mod step_up;
+pub use apple_auth::token_cipher;
 pub mod tokens;
 
 use std::{
@@ -56,6 +58,7 @@ pub struct AuthServices {
     pub(crate) db: PgPool,
     pub(crate) config: AuthConfig,
     pub(crate) apple: Option<OidcVerifier>,
+    pub(crate) apple_token_client: Option<apple_token::AppleTokenClient>,
     pub(crate) google: Option<OidcVerifier>,
     pub(crate) mailer: Arc<dyn Mailer>,
     pub(crate) sessions: SessionStore,
@@ -112,14 +115,27 @@ fn credential(headers: &HeaderMap) -> ApiResult<Option<Credential<'_>>> {
 
 impl AuthServices {
     /// Builds the services; the JWKS verifiers exist for the providers that have client ids.
-    #[must_use]
-    pub fn new(db: PgPool, redis: Redis, config: AuthConfig, mailer: Arc<dyn Mailer>) -> Self {
+    ///
+    /// # Errors
+    /// Returns an error if the Apple token client cannot be built.
+    pub fn new(
+        db: PgPool,
+        redis: Redis,
+        config: AuthConfig,
+        mailer: Arc<dyn Mailer>,
+    ) -> Result<Self, reqwest::Error> {
         let min_refresh = Duration::from_secs(config.jwks_min_refresh_secs);
         let verifier = |s: &Option<config::ProviderSettings>| {
             s.clone().map(|s| OidcVerifier::new(s, min_refresh))
         };
-        Self {
+        let apple_token_client = config
+            .apple_token
+            .clone()
+            .map(apple_token::AppleTokenClient::new)
+            .transpose()?;
+        Ok(Self {
             apple: verifier(&config.apple),
+            apple_token_client,
             google: verifier(&config.google),
             sessions: SessionStore::new(db.clone(), redis.clone()),
             redis,
@@ -127,7 +143,7 @@ impl AuthServices {
             db,
             config,
             mailer,
-        }
+        })
     }
 
     /// The token the request carries, if any.

@@ -26,4 +26,4 @@
 - TODO: the correction kind `subscription_reverify` only queues the outbox event `subscription.reverify_requested`. The store client does not exist yet.
 - The device key rotation of the panel uses the key helpers of the `devices` crate. The old key stops working and staff do not see a new key.
 - TODO: the grant note in the Issue ("izin var, bitiş: ...") is not written.
-- TODO: deleting Issues when an account is deleted is not written (to be verified: Issue delete permission of the App).
+- Account deletion (T2.31e): the worker job `support_anonymize` replaces the Issue title, the Issue body and each customer comment with `REMOVED_TEXT`, then closes the Issue. It does not delete the Issue (owner decision, 2026-11-24). The bot login does the edits, so the webhook ignores them.

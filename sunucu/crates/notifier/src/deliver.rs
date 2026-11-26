@@ -92,7 +92,7 @@ impl Deliverer {
             port: var("SMTP_PORT")
                 .and_then(|p| p.parse().ok())
                 .unwrap_or(1025),
-            from: var("SMTP_FROM").unwrap_or_else(|| "noreply@demleme.local".to_owned()),
+            from: var("SMTP_FROM").unwrap_or_else(|| "no-reply@gristora.local".to_owned()),
         });
         if apns.is_none() {
             tracing::warn!("no APNs settings; push is off");

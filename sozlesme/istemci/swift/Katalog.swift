@@ -460,6 +460,19 @@ public enum Katalog {
         "out_of_range": "{label} {min} ile {max} {unit} arasında olmalı.",
         "unknown_field": "Bilinmeyen alan: {field}.",
     ]
+    public static let trUi: [String: String] = [
+        "shell.app_name": "GRISTORA",
+        "shell.skip_to_content": "Ana içeriğe geç",
+        "shell.navigation": "Ana gezinme",
+        "nav.home": "Ana sayfa",
+        "nav.recipes": "Tarifler",
+        "nav.batches": "Partiler",
+        "nav.settings": "Ayarlar",
+        "theme.label": "Tema",
+        "theme.light": "Açık",
+        "theme.dark": "Koyu",
+        "theme.high_contrast": "Yüksek kontrast",
+    ]
 
     public static let enQuantities: [String: String] = [
         "volume": "Volume",
@@ -633,6 +646,19 @@ public enum Katalog {
         "invalid_number": "{label} must be a valid number.",
         "out_of_range": "{label} must be between {min} and {max} {unit}.",
         "unknown_field": "Unknown field: {field}.",
+    ]
+    public static let enUi: [String: String] = [
+        "shell.app_name": "GRISTORA",
+        "shell.skip_to_content": "Skip to content",
+        "shell.navigation": "Main navigation",
+        "nav.home": "Home",
+        "nav.recipes": "Recipes",
+        "nav.batches": "Batches",
+        "nav.settings": "Settings",
+        "theme.label": "Theme",
+        "theme.light": "Light",
+        "theme.dark": "Dark",
+        "theme.high_contrast": "High contrast",
     ]
 
     // MARK: Gravite formülleri (formuller/01 §1.1-§1.3)

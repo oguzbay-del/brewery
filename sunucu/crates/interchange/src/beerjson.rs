@@ -353,7 +353,7 @@ fn write_recipe(r: &Recipe) -> Value {
             _ => "all grain",
         }),
     );
-    m.insert("author".into(), json!("Demleme"));
+    m.insert("author".into(), json!("GRISTORA"));
     if let Some(n) = &r.notes {
         m.insert("notes".into(), json!(n));
     }

@@ -92,6 +92,7 @@ impl World {
             pool: api.clone(),
             apple: JwsVerifier::with_roots(vec![pki.root_der.clone()], true),
             bundle_id: Some("app.demleme".to_owned()),
+            apple_environment: "Production".to_owned(),
             web_payment: Some(fake.clone()),
             github_secret: None,
         });

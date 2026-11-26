@@ -63,6 +63,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: objectstore }
     spec:
+      serviceAccountName: objectstore
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -141,6 +142,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: mailpit }
     spec:
+      serviceAccountName: mailpit
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -201,6 +203,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: github-mock }
     spec:
+      serviceAccountName: github-mock
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -262,6 +265,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: apns-mock }
     spec:
+      serviceAccountName: apns-mock
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

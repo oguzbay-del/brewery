@@ -4,3 +4,4 @@ metadata:
   name: demleme
   labels:
     pod-security.kubernetes.io/enforce: restricted
+    istio.io/dataplane-mode: ambient

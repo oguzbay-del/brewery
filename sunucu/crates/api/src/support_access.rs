@@ -23,6 +23,7 @@ use uuid::Uuid;
 
 use crate::{
     AppState,
+    auth::step_up::ProtectedAction,
     context::RequestContext,
     error::{ApiJson, ApiResult},
     library::{created_response, issue, not_found, workspace},
@@ -137,6 +138,10 @@ pub async fn supportgrant_create(
     ApiJson(new): ApiJson<NewGrant>,
 ) -> ApiResult<Response> {
     ctx.require(PERMISSION)?;
+    if let Some(svc) = &state.auth_services {
+        svc.require_step_up(&ctx, ProtectedAction::SupportGrant)
+            .await?;
+    }
     let ws = workspace(&ctx)?;
     let hours = new.hours.unwrap_or(MAX_HOURS);
     if !(1..=MAX_HOURS).contains(&hours) {
@@ -268,8 +273,8 @@ mod spec {
     use crate::error::ErrorCode;
     use crate::error::ErrorCode::{
         Conflict, Forbidden, IdempotencyInProgress, IdempotencyMismatch, Internal,
-        MalformedRequest, NotFound, PayloadTooLarge, RateLimited, Unauthenticated, Unavailable,
-        UnsupportedMediaType, UpgradeRequired, ValidationFailed,
+        MalformedRequest, NotFound, PayloadTooLarge, RateLimited, StepUpRequired, Unauthenticated,
+        Unavailable, UnsupportedMediaType, UpgradeRequired, ValidationFailed,
     };
     use crate::openapi::{OperationSpec, file_op};
 
@@ -284,10 +289,12 @@ mod spec {
         Internal,
         Unavailable,
     ];
-    const CREATE: &[ErrorCode] = &[
+    /// Errors of the grant endpoint, which asks for the second step.
+    const CREATE_STEP_UP: &[ErrorCode] = &[
         MalformedRequest,
         Unauthenticated,
         Forbidden,
+        StepUpRequired,
         NotFound,
         Conflict,
         IdempotencyInProgress,
@@ -320,7 +327,7 @@ mod spec {
             "supportgrant_create",
             Some("support.grant"),
             Some(Concurrency::Append),
-            CREATE,
+            CREATE_STEP_UP,
         ),
         file_op(
             "supportgrant_revoke",

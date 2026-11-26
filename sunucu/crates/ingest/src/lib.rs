@@ -22,6 +22,7 @@ use axum::{
 };
 use billing::{
     SubscriptionUpdate, apply,
+    paddle::PaddleProvider,
     provider::{ProviderError, WebPaymentProvider},
 };
 use serde::Deserialize;
@@ -42,8 +43,10 @@ pub struct IngestState {
     pub pool: PgPool,
     /// JWS verifier for App Store notifications.
     pub apple: jws::JwsVerifier,
-    /// Accepted bundle id (`APPLE_BUNDLE_ID`); `None` accepts any app.
+    /// Accepted bundle id (`APPLE_BUNDLE_ID`); `None` makes the App Store route answer 503.
     pub bundle_id: Option<String>,
+    /// Accepted App Store environment (`APPLE_ENVIRONMENT`: `Production` or `Sandbox`).
+    pub apple_environment: String,
     /// Web payment provider; `None` until decision O6.
     pub web_payment: Option<Arc<dyn WebPaymentProvider>>,
     /// Secret of the webhook of the support repository (`GITHUB_WEBHOOK_SECRET`); `None`
@@ -55,6 +58,7 @@ impl std::fmt::Debug for IngestState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("IngestState")
             .field("bundle_id", &self.bundle_id)
+            .field("apple_environment", &self.apple_environment)
             .field("web_payment", &self.web_payment.is_some())
             .field("github", &self.github_secret.is_some())
             .finish_non_exhaustive()
@@ -84,23 +88,48 @@ pub fn router_with(state: IngestState) -> Router {
 }
 
 /// Builds the state from the environment: `DATABASE_URL` (role `app_api`) and the optional
-/// `APPLE_BUNDLE_ID`. Returns `None` without a database.
-#[must_use]
-pub fn state_from_env() -> Option<IngestState> {
-    let url = db::database_url().ok()?;
-    let pool = db::connect_lazy(&url, 4).ok()?;
-    Some(IngestState {
+/// `APPLE_BUNDLE_ID` (required for the App Store route) and `APPLE_ENVIRONMENT` (default
+/// `Production`). Returns `None` without a database.
+pub fn state_from_env() -> Result<Option<IngestState>, String> {
+    let web_payment = PaddleProvider::from_env()
+        .map_err(|error| error.to_string())?
+        .map(|provider| Arc::new(provider) as Arc<dyn WebPaymentProvider>);
+    let Ok(url) = db::database_url() else {
+        return Ok(None);
+    };
+    let Ok(pool) = db::connect_lazy(&url, 4) else {
+        return Ok(None);
+    };
+    let bundle_id = std::env::var("APPLE_BUNDLE_ID")
+        .ok()
+        .filter(|s| !s.is_empty());
+    if bundle_id.is_none() {
+        tracing::error!("APPLE_BUNDLE_ID is not set; the App Store route answers 503");
+    }
+    let apple_environment = parse_environment(std::env::var("APPLE_ENVIRONMENT").ok().as_deref())?;
+    Ok(Some(IngestState {
         pool,
         apple: jws::JwsVerifier::apple(),
-        bundle_id: std::env::var("APPLE_BUNDLE_ID")
-            .ok()
-            .filter(|s| !s.is_empty()),
-        web_payment: None,
+        bundle_id,
+        apple_environment,
+        web_payment,
         github_secret: std::env::var("GITHUB_WEBHOOK_SECRET")
             .ok()
             .filter(|s| !s.is_empty())
             .map(|s| Arc::new(s.into_bytes())),
-    })
+    }))
+}
+
+/// Maps the value of `APPLE_ENVIRONMENT` to `Production` or `Sandbox`. Empty or missing gives
+/// `Production`; any other value is an error.
+fn parse_environment(value: Option<&str>) -> Result<String, String> {
+    match value.map(str::trim) {
+        None | Some("" | "Production") => Ok("Production".to_owned()),
+        Some("Sandbox") => Ok("Sandbox".to_owned()),
+        Some(other) => Err(format!(
+            "APPLE_ENVIRONMENT must be Production or Sandbox, got {other:?}"
+        )),
+    }
 }
 
 type Reply = (StatusCode, Json<Value>);
@@ -145,7 +174,12 @@ async fn app_store(State(state): State<IngestState>, body: Json<AppStoreBody>) -
         &body.signed_payload,
         now_unix(),
         state.bundle_id.as_deref(),
+        &state.apple_environment,
     ) {
+        Err(AppleError::NotConfigured) => {
+            tracing::error!("App Store notification refused: APPLE_BUNDLE_ID is not set");
+            reply(StatusCode::SERVICE_UNAVAILABLE, "no_bundle_id")
+        }
         Ok(apple::Parsed::Update(update)) => store(&state, &update).await,
         Ok(apple::Parsed::Ignored { notification_type }) => {
             tracing::info!(%notification_type, "App Store notification ignored");
@@ -229,6 +263,14 @@ mod tests {
     };
     use http_body_util::BodyExt;
     use tower::ServiceExt;
+
+    #[test]
+    fn apple_environment_setting() {
+        assert_eq!(parse_environment(None).unwrap(), "Production");
+        assert_eq!(parse_environment(Some("")).unwrap(), "Production");
+        assert_eq!(parse_environment(Some("Sandbox")).unwrap(), "Sandbox");
+        assert!(parse_environment(Some("sandbox")).is_err());
+    }
 
     #[tokio::test]
     async fn healthz_returns_ok() {

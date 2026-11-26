@@ -157,7 +157,15 @@ fn notification_types_map_to_updates() {
     let kind = |t: &'static str, sub: Option<&'static str>| {
         let mut n = note(t);
         n.subtype = sub;
-        match parse_notification(&v, &pki.notification(&n), now(), Some("app.demleme")).unwrap() {
+        match parse_notification(
+            &v,
+            &pki.notification(&n),
+            now(),
+            Some("app.demleme"),
+            "Production",
+        )
+        .unwrap()
+        {
             Parsed::Update(u) => Some(u.kind),
             Parsed::Ignored { .. } => None,
         }
@@ -179,7 +187,69 @@ fn bundle_mismatch_is_rejected() {
     let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
     let jws = pki.notification(&note("DID_RENEW"));
     assert_eq!(
-        parse_notification(&v, &jws, now(), Some("app.other")),
+        parse_notification(&v, &jws, now(), Some("app.other"), "Production"),
         Err(AppleError::Bundle)
     );
+}
+
+#[test]
+fn missing_bundle_setting_fails_closed() {
+    let pki = Pki::new(true);
+    let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
+    let jws = pki.notification(&note("DID_RENEW"));
+    assert_eq!(
+        parse_notification(&v, &jws, now(), None, "Production"),
+        Err(AppleError::NotConfigured)
+    );
+}
+
+#[test]
+fn sandbox_notification_is_rejected_in_production() {
+    let pki = Pki::new(true);
+    let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
+    let jws = pki.notification_for(&note("DID_RENEW"), "app.demleme", "Sandbox");
+    assert_eq!(
+        parse_notification(&v, &jws, now(), Some("app.demleme"), "Production"),
+        Err(AppleError::Environment)
+    );
+    // The same notification is accepted when the service runs in Sandbox.
+    assert!(matches!(
+        parse_notification(&v, &jws, now(), Some("app.demleme"), "Sandbox"),
+        Ok(Parsed::Update(_))
+    ));
+}
+
+#[test]
+fn correct_notification_applies() {
+    let pki = Pki::new(true);
+    let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
+    let jws = pki.notification(&note("DID_RENEW"));
+    assert!(matches!(
+        parse_notification(&v, &jws, now(), Some("app.demleme"), "Production"),
+        Ok(Parsed::Update(_))
+    ));
+}
+
+#[tokio::test]
+async fn route_answers_503_without_bundle_setting() {
+    use axum::{body::Body, http::Request};
+    use tower::ServiceExt;
+    let state = ingest::IngestState {
+        pool: sqlx::PgPool::connect_lazy("postgres://unused@127.0.0.1:1/none").unwrap(),
+        apple: JwsVerifier::apple(),
+        bundle_id: None,
+        apple_environment: "Production".to_owned(),
+        web_payment: None,
+        github_secret: None,
+    };
+    let response = ingest::router_with(state)
+        .oneshot(
+            Request::post("/v1/webhooks/app-store")
+                .header("content-type", "application/json")
+                .body(Body::from(r#"{"signedPayload":"a.b.c"}"#))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.status(), 503);
 }

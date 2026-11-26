@@ -10,6 +10,7 @@ pub mod batches;
 pub mod brew_day;
 pub mod concurrency;
 pub mod config;
+pub mod containers;
 pub mod context;
 pub mod devices;
 pub mod engine;

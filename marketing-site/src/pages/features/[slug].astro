@@ -1,4 +1,5 @@
 ---
+import ProductScreens from "../../components/ProductScreens.astro";
 import PagePhoto from "../../components/PagePhoto.astro";
 import { featurePhoto } from "../../data/photos";
 import FontPreload from "../../components/FontPreload.astro";
@@ -73,7 +74,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         <p class="feature-lead">Planned scope: {feature.summary}</p>
         <div class="feature-tags">
           {feature.audiences.map((audience) => <span class="feature-tag">{audience}</span>)}
-          {feature.modules.map((moduleId) => <a class="feature-tag feature-module-tag" href={`${base}modules/#${moduleId}`}>{moduleLabels[moduleId]}</a>)}
+          {feature.modules.map((moduleId) => <a class="feature-tag feature-module-tag" href={`${base}modules/#${moduleId}`}>Module · {moduleLabels[moduleId]}</a>)}
           <span class="feature-tag">Roadmap stages: {feature.stages.join(" · ")}</span>
         </div>
       </section>
@@ -94,6 +95,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           </aside>
         </div>
       </section>
+      <ProductScreens page={`features/${feature.slug}`} lang="en" />
       <section class="feature-evidence-section section-pad">
         <div class="shell feature-evidence-layout">
           <div>
