@@ -23,6 +23,7 @@ spec:
             matchLabels: { app.kubernetes.io/name: api }
       ports:
         - { protocol: TCP, port: 50051 }
+        - { protocol: TCP, port: 15008 }
 ---
 # api ve ingest dışarıdan (kenar katmanı / yük dengeleyici) gelen trafiği alır.
 apiVersion: networking.k8s.io/v1
@@ -38,6 +39,7 @@ spec:
     - ports:
         - { protocol: TCP, port: 8080 }
         - { protocol: TCP, port: 8082 }
+        - { protocol: TCP, port: 15008 }
 ---
 # NATS istemci portu yalnız uygulama servislerine açık.
 apiVersion: networking.k8s.io/v1
@@ -55,6 +57,7 @@ spec:
               - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest] }
       ports:
         - { protocol: TCP, port: 4222 }
+        - { protocol: TCP, port: 15008 }
 ---
 # S3 nesne deposuna yalnız dosya uçlarını kullanan API ve dışa aktarma işçisi erişir.
 apiVersion: networking.k8s.io/v1
@@ -72,6 +75,7 @@ spec:
               - { key: app.kubernetes.io/name, operator: In, values: [api, worker] }
       ports:
         - { protocol: TCP, port: 8333 }
+        - { protocol: TCP, port: 15008 }
 ---
 # oauth2-proxy yalnız Gateway podlarından istek alır (Istio, gateway dağıtımına bu etiketi koyar).
 # /internal trafiği API'ye yalnız bu vekilden gider: api-ingest-giris portu herkese açar,
@@ -91,6 +95,7 @@ spec:
             matchLabels: { gateway.networking.k8s.io/gateway-name: kenar }
       ports:
         - { protocol: TCP, port: 4180 }
+        - { protocol: TCP, port: 15008 }
 ---
 # Gateway podları dışarıdan (yük dengeleyici) HTTP alır; varsayılan red bu podlar için de geçerlidir.
 apiVersion: networking.k8s.io/v1

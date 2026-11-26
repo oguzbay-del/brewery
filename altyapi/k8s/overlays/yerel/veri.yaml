@@ -22,6 +22,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: postgres }
     spec:
+      serviceAccountName: postgres
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -94,6 +95,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: redis }
     spec:
+      serviceAccountName: redis
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
@@ -147,6 +149,7 @@ spec:
               - { key: app.kubernetes.io/name, operator: In, values: [api, worker, ingest, migrate] }
       ports:
         - { protocol: TCP, port: 5432 }
+        - { protocol: TCP, port: 15008 }
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -162,3 +165,4 @@ spec:
             matchLabels: { app.kubernetes.io/name: api }
       ports:
         - { protocol: TCP, port: 6379 }
+        - { protocol: TCP, port: 15008 }

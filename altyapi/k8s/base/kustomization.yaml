@@ -13,6 +13,7 @@ resources:
   - nats.yaml
   - oauth2-proxy.yaml
   - gateway.yaml
+  - mesh.yaml
   - networkpolicy.yaml
 configMapGenerator:
   - name: demleme-config

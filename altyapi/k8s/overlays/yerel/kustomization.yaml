@@ -6,6 +6,7 @@ resources:
   - ../../base
   - veri.yaml
   - servisler.yaml
+  - mesh.yaml
 patches:
   - path: oauth2-proxy-yerel.yaml
   # Gateway Servisi ClusterIP olur (kind'da yük dengeleyici yok); konak adları yerel değer olur.

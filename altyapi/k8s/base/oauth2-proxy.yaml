@@ -49,6 +49,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: oauth2-proxy }
     spec:
+      serviceAccountName: oauth2-proxy
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true

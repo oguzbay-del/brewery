@@ -79,7 +79,7 @@ kubectl -n kube-system rollout status daemonset/calico-node --timeout=240s
 kubectl -n kube-system rollout status deployment/calico-kube-controllers --timeout=240s
 kubectl wait --for=condition=Ready node --all --timeout=120s
 
-echo "==> Gateway API $GATEWAY_API_VERSION CRD'leri ve Istio $ISTIO_VERSION (yalnız kenar için; ambient #207'de)"
+echo "==> Gateway API $GATEWAY_API_VERSION CRD'leri ve Istio $ISTIO_VERSION (ambient: istiod, istio-cni, ztunnel; kenar ve mTLS)"
 # Gateway API standart CRD'leri ve istioctl sürüme sabitlenir, sağlama toplamıyla doğrulanır.
 GWAPI="$CACHE/gateway-api-$GATEWAY_API_VERSION.yaml"
 if [ ! -f "$GWAPI" ]; then
@@ -97,12 +97,17 @@ echo "$ISTIOCTL_SHA256  $ISTIOCTL_TGZ" | sha256sum -c - >/dev/null \
   || { echo "HATA: istioctl sağlama toplamı uyuşmuyor" >&2; rm -f "$ISTIOCTL_TGZ"; exit 1; }
 ISTIOCTL_DIR="$CACHE/istioctl-$ISTIO_VERSION-$ARCH"; mkdir -p "$ISTIOCTL_DIR"
 tar -xzf "$ISTIOCTL_TGZ" -C "$ISTIOCTL_DIR"
-for i in pilot proxyv2; do
-  docker image inspect "docker.io/istio/$i:$ISTIO_VERSION" >/dev/null 2>&1 || docker pull -q "docker.io/istio/$i:$ISTIO_VERSION" >/dev/null
-  load_image "docker.io/istio/$i:$ISTIO_VERSION"
+# Ambient profili imajların `-distroless` türünü kullanır; kind imaj çekemediğinden önceden yüklenir.
+for i in pilot proxyv2 install-cni ztunnel; do
+  docker image inspect "docker.io/istio/$i:$ISTIO_VERSION-distroless" >/dev/null 2>&1 || docker pull -q "docker.io/istio/$i:$ISTIO_VERSION-distroless" >/dev/null
+  load_image "docker.io/istio/$i:$ISTIO_VERSION-distroless"
 done
-"$ISTIOCTL_DIR/istioctl" install --set profile=minimal --set hub=docker.io/istio --set tag="$ISTIO_VERSION" -y
+# kind kümesi yalnız IPv4. IPv6 çekirdek desteği olmayan ana makinelerde ztunnel IPv6 dinleyicisi açamaz
+# ve istio-cni `::/0` rotası ekleyemez (pod sandbox oluşmaz); ikisi de kapatılır.
+"$ISTIOCTL_DIR/istioctl" install --set profile=ambient --set values.ztunnel.env.IPV6_ENABLED=false --set values.cni.ambient.ipv6=false --set hub=docker.io/istio --set tag="$ISTIO_VERSION" -y
 kubectl -n istio-system rollout status deployment/istiod --timeout=240s
+kubectl -n istio-system rollout status daemonset/istio-cni-node --timeout=240s
+kubectl -n istio-system rollout status daemonset/ztunnel --timeout=240s
 
 echo "==> İmajlar kümeye yükleniyor"
 for i in "${IMAGES[@]}" "${DEPS[@]}"; do load_image "$i"; done

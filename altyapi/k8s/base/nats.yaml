@@ -23,6 +23,7 @@ spec:
     metadata:
       labels: { app.kubernetes.io/name: nats }
     spec:
+      serviceAccountName: nats
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
