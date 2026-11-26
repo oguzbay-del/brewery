@@ -69,7 +69,7 @@ Rules for all classes:
 6. If a detail is not clear, apply the safest option and write it under `## Assumptions` in the PR body. Do not use assumptions in class C paths; ask in the issue there.
 7. A chain of dependent tasks can be one issue with steps. Do the steps in order, one PR for each step.
 
-Until the guard check exists (issue "CI guard for protected paths"), class B is the same as class C.
+The guard check exists (#256 is closed, 2026-11-26). Class B is active.
 
 ## Recent owner decisions (keep this list short)
 
