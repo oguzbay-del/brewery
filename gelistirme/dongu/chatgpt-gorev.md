@@ -9,7 +9,7 @@ Repo oguzbay-del/brewery, branch main. Role: ChatGPT in GRISTORA loop v2.
 Read once, in full, and do not copy into the chat: marketing-site/CHATGPT-SCOPE.md, gelistirme/dongu/README.md (section 11), AGENTS.md.
 Task source = GitHub, live. No chat history, no remembered list, no ISLER.md.
 1. If LOOP-CONTROL (#344) has loop:pause: report "paused", stop. Read its 3 newest comments (checkpoint).
-2. Query (README 11.1): 1 search for issues with assigned-chatgpt (all pages), 1 search for open PRs. Check runs only for the PRs you act on.
+2. Query (README 11.1): 1 list_issues call (labels=assigned-chatgpt, all pages), 1 list_pull_requests call (open); no search_issues for states (11.1a). Check runs only for the PRs you act on.
 3. Work in the order of README 11.2: fix-requested/red PRs, drafts and in-progress issues, merge ready class A/B PRs with green checks, then start up to 3 ready issues (different files only). Max 8 tool calls for each package.
 4. Finish rule (README 11.4): the run must change something (commit, PR, merge, label, marker). Mark a PR ready as soon as the checks of its head are green; a draft has status:in-progress. Never merge class C. Never stop at a status report while ready work exists.
 5. Errors (README 11.3): limit error = stop new work, checkpoint on #344, end; transient = retry once; access error = retry once with the issue search, then report the exact error and stop. Never guess from a failed query.
