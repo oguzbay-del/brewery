@@ -1467,3 +1467,122 @@ async fn support_grant_and_full_export_need_a_fresh_second_step(pool: PgPool) {
     let r = post_as(&w, &exports, &owner, full).await;
     assert_eq!(r.status, StatusCode::ACCEPTED, "{:?}", r.body);
 }
+
+async fn access_snapshot(pool: &PgPool, ws: Uuid) -> Value {
+    sqlx::query_scalar(
+        "SELECT jsonb_build_array(
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM roles t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM role_permissions t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM workspace_members t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM role_assignments t WHERE workspace_id = $1),
+            (SELECT jsonb_agg(to_jsonb(t) ORDER BY to_jsonb(t)) FROM invitations t WHERE workspace_id = $1),
+            (SELECT authz_version FROM workspaces WHERE id = $1)
+        )",
+    )
+    .bind(ws)
+    .fetch_one(pool)
+    .await
+    .unwrap()
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn remaining_access_actions_need_step_up(pool: PgPool) {
+    let w = world(&pool).await;
+    let owner = login(&w).await;
+    let ws = workspace(&w, &owner, "business").await;
+    let base = format!("/v1/workspaces/{ws}");
+    let role = role_id(&roles(&w, ws, &owner).await, "operator");
+    let (_, member) = join(&w, ws, &owner, json!({"role_id": role})).await;
+    let members = get_as(&w, &format!("{base}/members"), &owner).await.body;
+    let assignment = members["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|m| m["id"] == json!(member))
+        .unwrap()["assignments"][0]["id"]
+        .as_str()
+        .unwrap();
+    let unused = post_as(
+        &w,
+        &format!("{base}/roles"),
+        &owner,
+        json!({"name": "Unused", "permissions": []}),
+    )
+    .await;
+    assert_eq!(unused.status, StatusCode::CREATED);
+    let unused_id = unused.body["id"].as_str().unwrap();
+    let invitation = post_as(
+        &w,
+        &format!("{base}/invitations"),
+        &owner,
+        json!({"email": unique_email(), "role_id": role}),
+    )
+    .await;
+    assert_eq!(invitation.status, StatusCode::CREATED);
+    let invitation_id = invitation.body["id"].as_str().unwrap();
+    let cases = [
+        (
+            "POST",
+            format!("{base}/roles"),
+            Some(json!({"name": "New role", "permissions": []})),
+            StatusCode::CREATED,
+        ),
+        (
+            "POST",
+            format!("{base}/roles/{role}/copy"),
+            Some(json!({"name": "New copy"})),
+            StatusCode::CREATED,
+        ),
+        (
+            "DELETE",
+            format!("{base}/roles/{unused_id}"),
+            None,
+            StatusCode::NO_CONTENT,
+        ),
+        (
+            "DELETE",
+            format!("{base}/members/{member}/assignments/{assignment}"),
+            None,
+            StatusCode::NO_CONTENT,
+        ),
+        (
+            "DELETE",
+            format!("{base}/members/{member}"),
+            None,
+            StatusCode::NO_CONTENT,
+        ),
+        (
+            "DELETE",
+            format!("{base}/invitations/{invitation_id}"),
+            None,
+            StatusCode::NO_CONTENT,
+        ),
+    ];
+    for (method, path, body, success) in cases {
+        stale_step_up(&w, &owner).await;
+        let before = audit_actions(&pool, ws).await;
+        let data_before = access_snapshot(&pool, ws).await;
+        let mut headers = vec![("idempotency-key", Uuid::new_v4().to_string())];
+        if method == "DELETE" && path == format!("{base}/roles/{unused_id}") {
+            headers.push(("if-match", "\"1\"".to_owned()));
+        }
+        let r = call(
+            &w,
+            method,
+            &path,
+            Some(&owner.token),
+            body.clone(),
+            &headers,
+        )
+        .await;
+        assert_eq!(r.status, StatusCode::FORBIDDEN, "{path}: {:?}", r.body);
+        assert_eq!(r.body["code"], "step_up_required");
+        assert_eq!(code(&r), "passkey_required");
+        assert_eq!(audit_actions(&pool, ws).await, before);
+        assert_eq!(access_snapshot(&pool, ws).await, data_before, "{path}");
+        fresh_step_up(&w, &owner).await;
+        headers[0].1 = Uuid::new_v4().to_string();
+        let r = call(&w, method, &path, Some(&owner.token), body, &headers).await;
+        assert_eq!(r.status, success, "{path}: {:?}", r.body);
+    }
+}

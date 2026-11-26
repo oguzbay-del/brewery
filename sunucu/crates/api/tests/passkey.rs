@@ -757,3 +757,42 @@ async fn key_rotation_needs_the_second_step_and_ends_the_old_key(pool: PgPool) {
     .await;
     assert_eq!(r.status, StatusCode::OK);
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn role_creation_and_copy_require_real_passkey(pool: PgPool) {
+    let w = world(&pool).await;
+    let mut key = soft();
+    let token = sign_in(&w, "access-admin").await;
+    let ws = new_workspace(&w, &token).await;
+    let base = format!("/v1/workspaces/{ws}/roles");
+    let role: Uuid = sqlx::query_scalar(
+        "SELECT id FROM roles WHERE workspace_id = $1 AND template_key = 'operator'",
+    )
+    .bind(ws)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    let cases = [
+        (base.clone(), json!({"name": "New role", "permissions": []})),
+        (format!("{base}/{role}/copy"), json!({"name": "New copy"})),
+    ];
+    for (path, body) in &cases {
+        let r = as_user(&w, &token, "POST", path, Some(body.clone())).await;
+        assert_eq!(r.status, StatusCode::FORBIDDEN, "{:?}", r.body);
+        assert_eq!(r.body["code"], "step_up_required");
+        assert_eq!(code(&r), "passkey_enrollment_required");
+    }
+    let mut token = register(&w, &token, &mut key).await;
+    for (path, body) in cases {
+        sqlx::query("UPDATE sessions SET step_up_at = now() - interval '16 minutes'")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let r = as_user(&w, &token, "POST", &path, Some(body.clone())).await;
+        assert_eq!(r.status, StatusCode::FORBIDDEN, "{:?}", r.body);
+        assert_eq!(code(&r), "passkey_required");
+        token = step_up(&w, &token, &mut key).await;
+        let r = as_user(&w, &token, "POST", &path, Some(body)).await;
+        assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+    }
+}
