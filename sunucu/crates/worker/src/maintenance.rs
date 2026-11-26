@@ -154,6 +154,18 @@ pub async fn tick_with_apple(
     file_store: Option<&dyn ObjectStore>,
     apple: Option<&AppleRevoker>,
 ) {
+    tick_with_github(pool, digest_store, file_store, apple, None).await;
+}
+
+/// Like [`tick_with_apple`], with the GitHub client that anonymises the Issues of deleted
+/// accounts (T2.31e).
+pub async fn tick_with_github(
+    pool: &PgPool,
+    digest_store: Option<&dyn ObjectStore>,
+    file_store: Option<&dyn ObjectStore>,
+    apple: Option<&AppleRevoker>,
+    github: Option<&support::github::GitHub>,
+) {
     let now = Utc::now();
     if let Some(store) = digest_store {
         if claim(pool, JOB_DIGEST, DAY).await {
@@ -183,7 +195,8 @@ pub async fn tick_with_apple(
         record(pool, JOB_RETENTION, outcome).await;
     }
     if claim(pool, JOB_ACCOUNT_DELETIONS, TICK).await {
-        let outcome = crate::account_deletion::purge_due_and_revoke(pool, file_store, apple).await;
+        let outcome =
+            crate::account_deletion::purge_due_and_clean(pool, file_store, apple, github).await;
         record(pool, JOB_ACCOUNT_DELETIONS, outcome).await;
     }
     if claim(pool, JOB_SOFT_DELETES, DAY).await {
@@ -246,12 +259,14 @@ pub async fn run(
         tracing::warn!("no object store; audit digests and their check are off");
     }
     let apple = AppleRevoker::from_env();
+    let github = support::github::GitHub::from_env();
     loop {
-        tick_with_apple(
+        tick_with_github(
             &pool,
             digest_store.as_deref(),
             file_store.as_deref(),
             apple.as_ref(),
+            github.as_ref(),
         )
         .await;
         tokio::select! {

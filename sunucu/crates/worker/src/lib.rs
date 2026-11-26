@@ -7,6 +7,7 @@ pub mod background;
 pub mod export;
 pub mod maintenance;
 pub mod retention;
+pub mod support_anonymize;
 pub mod upload_cleanup;
 
 use axum::Router;

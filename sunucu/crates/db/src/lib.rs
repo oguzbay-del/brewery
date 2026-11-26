@@ -20,6 +20,12 @@ pub mod outbox;
 mod pool;
 mod roles;
 pub mod seed;
+mod support_issues;
+
+pub use support_issues::{
+    SupportIssuePending, account_deletion_support_issues, support_issue_anonymize_done,
+    support_issue_anonymize_failed, support_issue_anonymize_pending,
+};
 
 pub use account_deletion::{
     AccountDeletionMembership, AccountDeletionRequest, AppleRevokeCandidate,
