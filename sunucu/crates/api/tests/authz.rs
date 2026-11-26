@@ -1566,7 +1566,15 @@ async fn remaining_access_actions_need_step_up(pool: PgPool) {
         if method == "DELETE" && path == format!("{base}/roles/{unused_id}") {
             headers.push(("if-match", "\"1\"".to_owned()));
         }
-        let r = call(&w, method, &path, Some(&owner.token), body.clone(), &headers).await;
+        let r = call(
+            &w,
+            method,
+            &path,
+            Some(&owner.token),
+            body.clone(),
+            &headers,
+        )
+        .await;
         assert_eq!(r.status, StatusCode::FORBIDDEN, "{path}: {:?}", r.body);
         assert_eq!(r.body["code"], "step_up_required");
         assert_eq!(code(&r), "passkey_required");
