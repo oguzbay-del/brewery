@@ -119,7 +119,7 @@ const activeNavigation = [
   { route: "/faq/", href: "/faq/" },
   { route: "/pricing/", href: "/pricing/" },
   { route: "/features/", href: "/features/" },
-  { route: "/features/recipe-design/", href: "/features/" },
+  { route: "/tr/features/", href: "/tr/features/" },
 ];
 
 for (const item of activeNavigation) {
@@ -134,6 +134,20 @@ for (const item of activeNavigation) {
     const mobileCurrent = page.locator('.mobile-menu nav a[aria-current="page"]');
     await expect(mobileCurrent).toHaveCount(1);
     await expect(mobileCurrent).toHaveAttribute("href", item.href);
+  });
+}
+
+for (const root of ["/", "/tr/"]) {
+  test(`feature detail navigation identifies the parent section on ${root}`, async ({ page }) => {
+    const catalog = `${root}features/`;
+    await page.goto(`${catalog}recipe-design/`);
+    for (const nav of [".desktop-nav", ".mobile-menu nav"]) {
+      const activeLink = page.locator(`${nav} a[aria-current]`);
+      await expect(activeLink).toHaveCount(1);
+      await expect(activeLink).toHaveAttribute("href", catalog);
+      await expect(activeLink).toHaveAttribute("aria-current", "location");
+    }
+    await expect(page.locator('.breadcrumbs [aria-current="page"]')).toBeVisible();
   });
 }
 
