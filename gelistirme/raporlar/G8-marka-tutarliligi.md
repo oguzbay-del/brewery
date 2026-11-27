@@ -701,3 +701,164 @@ Sıra §3.3 ile aynıdır. Kaynaklar: [API envanteri](../../sunucu/crates/api/CL
 | 18. Su raporu içe aktarımı | Belirsiz | I reçete biçimleri; laboratuvar su raporu ayrıştırıcısı doğrulanmadı. |
 
 **Öncelikli öneriler:** cihaz sayfası için gerçek donanım testlerini aday listesinden ayır; tank eşlemesini mevcut özellik sayma. İçe aktarma farklarının apply sonrasında döndüğü kaynak kodla uyumlu ifadeler kullan. Vardiya, Apple widget ve otomatik önerileri kanıt olmadan mevcut kapsamda sunma. Toplam 117/256 katalog maddesi madde bazında sınıflandırıldı; kalan 139 açık.
+
+
+### 3.7 Madde bazında kanıt — hesaplar, su, ekipman ve planlama
+
+Sıra §3.3 ile aynıdır. Kaynak: [ISLER](../ISLER.md) (Y), [sunucu çalışma alanı](../../sunucu/CLAUDE.md), [engine.rs](../../sunucu/crates/api/src/engine.rs) (E), [API envanteri](../../sunucu/crates/api/CLAUDE.md) (A). Y, uygulama kodunu bulmaya yarayan tarihsel teknik kayıt; canlı görev durumu veya üretim yayını kanıtı değildir. Y'nin bitmiş motor satırı yalnız motor kapsamını destekler; istemci akışı için ayrı kod/test gereklidir.
+
+#### brewing-calculations (19)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. OG/FG, attenuasyon, ABV | Kısmi | Y T1.11 tarif özeti ve T1.16 ortak tarif modeli; E motor bağlantısı. Bütün çıktı alanları ve ekran doğrulanmadı. |
+| 2. Tinseth, geç ekleme, whirlpool, hop-stand | Kısmi | Y T1.14 §02 tarif IBU ve acılık; varsayılan yöntem ve tüm ekleme davranışları doğrulanmadı. |
+| 3. Seçilebilir renk modeli | Belirsiz | Y T1.11/T2.20 hesap ayarları; renk yöntemi seçimi ve UI kanıtı açık. |
+| 4. Mayşe sıcaklığı ve maya toleransı | Belirsiz | Y T1.4 maya ve T1.11 mash; düzeltmenin birleşik tahminde kullanımı doğrulanmadı. |
+| 5. Parti/kazan/tortu/hacim zinciri | Kısmi | Y T1.11 mash hacimleri, T1.14 §05 hacim/su; tüm kayıp zinciri UI doğrulanmadı. |
+| 6. Şerbetçiotu yaşlanması ve alfa asit | Belirsiz | Y T1.14 §02 acılık ayarı; yaşlanma yöntemi ayrı kanıt gerektirir. |
+| 7. Starter ve aşılama | Kısmi | Y T1.4 maya ve T1.11 maya servisi; starter seçeneklerinin istemci desteği açık. |
+| 8. Karbonasyon, priming, üst boşluk/basınç | Kısmi | Y T1.4/T1.11 karbonasyon ve T1.8 spunding; üst boşluk ve sınır UI doğrulanmadı. |
+| 9. Mead/şarap YAN | Kısmi | Y T1.4 mead/maya; YAN düzeltmesinin şarap kapsamı doğrulanmadı. |
+| 10. Ekstrakt/kısmi kaynatma/seyreltme/no-chill | Belirsiz | Y T1.14 §02, §05 ve T2.21 reçete türleri; özel araçlar tek tek doğrulanmadı. |
+| 11. Nasıl hesaplandı görünümü | Kısmi | Y T2.16 ara değerler; E Calculated.output; görünümün kendisi doğrulanmadı. |
+| 12. Motor sürüm damgası | Var (API) | E Calculated.engine_version, CalcResult; Y T2.16. |
+| 13. SI değerleri, birim ve bölgesel gösterim | Kısmi | Y T1.16, T2.17 ve T2.38 ortak birim kataloğu; tüm UI gösterimleri doğrulanmadı. |
+| 14. Referans vektörleri ve altın reçete | Kısmi | Y T1.14/T1.17 parite ve uç testleri; her sürüm için altın reçete CI sonucu ayrıca gerekli. |
+| 15. No-chill, yağ oranları, BU:GU, alternatif yöntemler | Kısmi | Y T1.14 §02 hop oranı ve IBU; diğer yöntemlerin tek tek kanıtı açık. |
+| 16. Meyve, pH sıcaklık, toplam asitlik | Belirsiz | Y T1.17 su pH eksikleri ve T2.21 cider; üç araç doğrulanmadı. |
+| 17. Ekşi/karma fermentasyon ve fıçı olgunlaştırma | Belirsiz | Y T1.11 maya ve T2.20 fermentasyon profili; özel modeller doğrulanmadı. |
+| 18. Keg hat dengesi | Belirsiz | Y T1.4 karbonasyon; hat dengesi ayrı hesap. |
+| 19. Yöntem seçimi ve gelişmiş varsayılanlar | Kısmi | Y T2.20 workspace/user calculation options; tüm seçenekler ve ekran açık. |
+
+#### water-mash-yeast (15)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Kaynak ve hedef su profili | Kısmi | Y T2.20 su profili; kaynak/hedef ayrımı ve ekran doğrulanmadı. |
+| 2. Su analizi ve iyonlar | Kısmi | Y T2.20 water analysis report, T1.14 §03 SO₄/Cl; tüm iyon alanları doğrulanmadı. |
+| 3. Tuz ve asit hesabı | Kısmi | Y T1.11 su servisi, T1.17 çok asitli pH; tuz önerisi ve UI ayrıca gerekli. |
+| 4. İyon dengesi, sertlik ve birimler | Kısmi | Y T1.14 §03, T2.17 birim kataloğu; sertlik yöntemleri doğrulanmadı. |
+| 5. Profil karşılaştırma ve reçete raporu | Belirsiz | Y T2.20 profil/rapor ve T2.21 reçete; karşılaştırma ve snapshot akışı açık. |
+| 6. Dinlenme/süre/sıcaklık/infüzyon | Kısmi | Y T2.20 mash profile, T1.11 mash; alan ve UI kapsamı açık. |
+| 7. Seçilen modelle mash pH | Kısmi | Y T1.17 çok asitli pH, T1.14 §03; model seçimi doğrulanmadı. |
+| 8. Dekoksiyon | Belirsiz | Y T1.11 mash hacimleri; dekoksiyon hesabı ayrıca doğrulanmalı. |
+| 9. Mayşe/yıkama suyu/hacim | Kısmi | Y T1.14 §05 toplam su ve hacim, T1.11 mash; istemci akışı açık. |
+| 10. BIAB ekipman/emilim | Kısmi | Y T1.14 §05 BIAB/emilim, T2.20 equipment; özel UI doğrulanmadı. |
+| 11. Maya seçimi/yaşı | Kısmi | Y T2.19 malzeme, T1.4 maya; yaş girişinin etkisi doğrulanmadı. |
+| 12. İki aşamalı starter | Belirsiz | Y T1.4/T1.11 maya; iki aşamalı davranış kanıtı açık. |
+| 13. İşletme kuru maya hl rehberliği | Belirsiz | Y T1.4 maya; işletme doz rehberi doğrulanmadı. |
+| 14. Fermantasyon profili/hedef | Kısmi | Y T2.20 fermentation profile, T2.22 timers/targets; ekran doğrulanmadı. |
+| 15. Hasat/nesil ve Ev modülü | Sonra / Belirsiz | Y T2.7 YeastGeneration tablosu, uçlar Aşama 6; Ev modülü ve akış kanıtı yok. |
+
+#### equipment-calibration (9)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Rehberli ilk ekipman | Kısmi | Y T2.20 Equipment wizard; istemci ekranı doğrulanmadı. |
+| 2. Mayşe tankı/kazan/fermantör/paket kabı | Kısmi | Y T2.20 equipment/vessels, K2 ve T2.59 package types; tüm profil alanları açık. |
+| 3. Kayıp/emilim/buharlaşma/ölü hacim/büzülme | Kısmi | Y T1.14 §05 kayıplar ve hacim, T2.20 equipment; her alanın UI desteği açık. |
+| 4. Çoklu demhane/kap profilleri | Kısmi | Y T2.20 equipment/vessels; İşletme sınırları ve çoklu akış açık. |
+| 5. Ekipmana göre ölçek ve verim | Kısmi | Y T2.40 verim alanları, T2.21 scaling; tüm ölçekleme davranışı doğrulanmadı. |
+| 6. Tank kapasite/basınç/doluluk | Kısmi / Sonra | Y T2.20 vessels ve T2.7 VesselOccupancy (Aşama 6); basınç/doluluk akışı açık. |
+| 7. Tank temizliği ve son kayıt | Sonra | Y T2.7 CleaningRecord, Aşama 6 uçları; K2 kap statüsü tank temizliği değildir. |
+| 8. Takvimde kap kullanılabilirliği | Belirsiz | Y T2.22 calendar, T2.7 occupancy; birleşik görünüm doğrulanmadı. |
+| 9. Kalibrasyon kayıtları | Kısmi | Y T2.20 calibration proposal ve ayar geçmişi; özel kayıt ve ekran doğrulanmadı. |
+
+#### planning-scheduling (14)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Demleme/fermantasyon/dry-hop/soğutma/paket tarihleri | Kısmi | Y T2.22 calendar/backward planning; tüm olay türleri doğrulanmadı. |
+| 2. Profilden hatırlatıcı | Kısmi | Y T2.20 fermentation profile, T2.24 Reminder; otomatik bağ doğrulanmadı. |
+| 3. Güç/hacim/ekipmandan ısıtma/soğutma süresi | Belirsiz | Y T1.14 §05 soğuma ve T2.20 equipment; süre tahmini kanıtı açık. |
+| 4. Geçmiş ekipman performansından tahmin | Belirsiz | Y T2.20 ayar geçmişi ve T2.22 gerçek değer; öğrenme algoritması doğrulanmadı. |
+| 5. Tank kapasite/çakışma uyarısı | Sonra / Belirsiz | Y T2.7 VesselOccupancy ve T2.22 calendar; Aşama 6 uçları, uyarı kanıtı yok. |
+| 6. Aşama ve yaklaşan göreve göre parti | Kısmi | Y T2.22 stage/steps/calendar; filtreli ekran doğrulanmadı. |
+| 7. Tüm etkin parti Bugün listesi | Belirsiz | Y T2.22 steps/calendar; birleştirilmiş görev UI açık. |
+| 8. Haftalık tank takvimi/günlük tur çıktısı | Belirsiz | Y T2.22 calendar, T2.7 occupancy; çıktı kanıtı yok. |
+| 9. Atama öncesi tank çakışması | Sonra / Belirsiz | Y T2.7 occupancy Aşama 6; kontrol kanıtlanmadı. |
+| 10. Tank boşaltma önerisi/optimizasyon | Belirsiz | Y T2.7 occupancy; optimizasyon algoritması kanıtı yok. |
+| 11. Düzenlenebilir pano kartları | Belirsiz | Y T2.20 user settings; pano düzeni doğrulanmadı. |
+| 12. Role özgü varsayılan görünüm | Belirsiz | Y T2.13 roles; varsayılan UI ayrı kanıt. |
+| 13. Kayıtlı görünümler | Belirsiz | Y T2.20 settings ve T2.22 batches; kayıtlı filtre doğrulanmadı. |
+| 14. Operatör Bugün/duvar ekranı | Belirsiz | Y T2.12 paylaşılan cihaz, T2.22 steps; ekran kanıtı yok. |
+
+### 3.8 Madde bazında kanıt — production, quality, packaging ve analytics
+
+Kaynak: Y, A ve [containers.rs](../../sunucu/crates/api/src/containers.rs) (C, modül başlığı ve veri tipleri okundu). T2.7 veri modeli tamamlanmış olsa da satır açıkça İşletme uçlarını Aşama 6'ya bırakır; tablo varlığı kullanılabilir ürün özelliği değildir. K2 kap uçları bunun belirli bir alt kümesidir.
+
+#### production-management (17)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Aşama/tank üretim panosu | Kısmi | Y T2.22 stage; T2.7 occupancy Aşama 6; pano doğrulanmadı. |
+| 2. Operatör Bugün listesi | Belirsiz | Y T2.22 steps; birleşik ekran açık. |
+| 3. Role dayalı pano/kayıtlı görünüm | Belirsiz | Y T2.13 roles, T2.20 settings; UI kanıtı yok. |
+| 4. Üretim iPad operatör ekranı | Belirsiz | Y T2.12 shared device; operatör ekranı doğrulanmadı. |
+| 5. Tank turu/haftalık çıktı | Belirsiz | Y T2.22 calendar; çıktı ve tur iş akışı açık. |
+| 6. Tank doluluk/durum/basınç/temizlik | Sonra / Kısmi | Y T2.7 occupancy/cleaning, T2.20 vessels; tamamı için Aşama 6 iş akışı gerekli. |
+| 7. Kap transferi/hacim/kayıp | Sonra | Y T2.7 Transfer, uçlar Aşama 6. |
+| 8. Partiyi tanklara bölme | Sonra / Belirsiz | Y T2.7 Transfer/Occupancy; bölme uçları doğrulanmadı. |
+| 9. Partileri harman hesabıyla birleştirme | Sonra / Belirsiz | Y T2.7 Transfer; harman uygulama akışı doğrulanmadı. |
+| 10. Kapasite çakışma ve tank çizelgesi | Sonra / Belirsiz | Y T2.7 Occupancy ve T2.22 calendar; birleşik kontrol açık. |
+| 11. Operatör, adım, ölçüm | Kısmi | Y T2.22 steps/measurement; operatör alanı ve ekran ayrıca doğrulanmalı. |
+| 12. Sapma ve düzeltici karar | Kısmi | Y T2.22 Deviation; karar akışı doğrulanmadı. |
+| 13. Malzemeden pakete izlenebilirlik/recall | Kısmi | C last_lot_id ve last_fill_line_id, Y K2 recall, T2.23 lot; bütün zincir doğrulanmadı. |
+| 14. Çoklu operatör ve aktif parti | Kısmi | Y T2.13 roles, T2.22 batches; eş zamanlı operasyon ekranı açık. |
+| 15. Kapalı kayıt değişikliklerinde audit | Kısmi | Y T2.5 AuditLog; C ContainerEvent append-only ve audit; kapalı üretim kaydının tamamı doğrulanmadı. |
+| 16. Temizlik kaydı olmayan tank uyarısı | Sonra | Y T2.7 CleaningRecord Aşama 6; uyarı akışı açık. |
+| 17. Vardiya devri | Belirsiz | Y T2.24 notifications; vardiya devri kanıtı yok. |
+
+#### quality-laboratory (11)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. ABV/OG/FG/IBU/renk/pH spesifikasyonu | Sonra | Y T2.7 QualitySpec, Aşama 6 uçları; tüm alanlar ve UI açık. |
+| 2. DO/bulanıklık/diasetil/mikrobiyoloji | Sonra / Belirsiz | Y T2.7 QualitySpec/LabResult; parametre seti doğrulanmadı. |
+| 3. Aralık dışı uyarı/sapma | Kısmi / Sonra | Y T2.24 AlertRule ve T2.22 Deviation; kalite modülüne bağ Aşama 6. |
+| 4. Parti/reçete sürümü kalite inceleme | Sonra | Y T2.7 QualitySpec/Release; inceleme uçları açık. |
+| 5. pH/DO/CO₂/ABV/mikrobiyoloji sonuçları | Sonra | Y T2.7 LabResult; tam ölçüm seti ve UI açık. |
+| 6. Tadım/duyusal puan | Belirsiz | Y T2.7 LabResult; tadım kayıt işlevi doğrulanmadı. |
+| 7. Geçmiş sonucu düzeltme kaydı | Belirsiz | Y T2.5 AuditLog ve T2.7 LabResult; değişmez düzeltme akışı açık. |
+| 8. Duyusal panel/üçgen testi | Belirsiz | Y T2.7 kalite veri modeli; özel panel/üçgen akışı doğrulanmadı. |
+| 9. Bekletme/ret/serbest bırakma ve gerekçe | Sonra | Y T2.7 Release, Aşama 6; karar uçları açık. |
+| 10. Paketlemeden önce release | Sonra | Y T2.7 PackagingRun/Release; zorunlu iş akışı doğrulanmadı. |
+| 11. HACCP/çift imza | Belirsiz | Y T2.7 kalite/temizlik modeli; HACCP/çift imza kanıtı yok. |
+
+#### packaging-compliance (15)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Şişe/kutu/keg/cask, özel boyut | Var (API) | C Container.package_kind/volume_l; Y T2.59 paket tipi GET/POST. |
+| 2. Miktar/litre/kayıp/verim/lot | Kısmi / Sonra | C volume_l, last_lot_id, last_fill_line_id; Y T2.7 PackagingRun Aşama 6; tam verim/kayıp akışı açık. |
+| 3. Partide birden fazla kap türü | Kısmi | C kap türleri ve fill line; tek partide birleşik paketleme ekranı doğrulanmadı. |
+| 4. Priming/keg/BBT/cask rehberi | Kısmi | Y T1.4 karbonasyon, T1.8 spunding; BBT/cask rehber akışı açık. |
+| 5. Ambalaj malzemesi/dara ağırlığı | Belirsiz | C package type ve volume; rapor alanları doğrulanmadı. |
+| 6. CIP kimyasalı/konsantrasyon/sıcaklık/süre/doğrulama | Sonra | Y T2.7 CleaningRecord Aşama 6; alan ve akış açık. |
+| 7. Tank temizlik durumu ve son kayıt | Sonra | Y T2.7 CleaningRecord; C kap status clean/dirty ayrı kapsam. |
+| 8. Temiz olmayan tank atama uyarısı | Sonra | Y T2.7 CleaningRecord/Occupancy; uyarı doğrulanmadı. |
+| 9. Spunding/zorlamalı karbonasyon planı | Kısmi | Y T1.8/T1.17 spunding, T1.4 karbonasyon; planlama ekranı açık. |
+| 10. UK cask/finings hesabı | Belirsiz | C cask kap türü; Y T1.4 karbonasyon; finings ve UK özel yöntem doğrulanmadı. |
+| 11. Ülkeye özgü vergi/rapor şablonu | Kısmi | Y T1.8/T2.8 vergi yöntemi, T2.7 veri tabloları; ülke şablonları doğrulanmadı. |
+| 12. TTB/HMRC/ATO/Zoll/TR rapor kapsamı | Belirsiz | Y T2.8 genel yöntem; beş yargı alanı için güncel veri ve rapor onayı gerekli. |
+| 13. ABV/Plato vergi | Kısmi | Y T2.8 yöntem zinciri ve T1.17 LPA; her ülke için Plato/ABV girdisi ve oran doğrulanmadı. |
+| 14. ABV/lot/alerjen/besin etiketi | Kısmi | C QR/seri/ölçü etiketi, ASCII sınırı; Y T1.8 etiket enerjisi; zorunlu mevzuat alanları doğrulanmadı. |
+| 15. Depozito/EPR | Belirsiz | Y T2.7 PackagingRun/vergi tabloları; EPR/depozito raporu kanıtı yok. |
+
+#### analytics-reports (8)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Plan/gerçek ve tadım notu | Kısmi | Y T2.22 summary; tadım notu açık. |
+| 2. Aynı reçeteden partileri karşılaştırma | Belirsiz | Y T2.21 recipe/version compare, T2.22 summary; batch compare ayrı. |
+| 3. Yoğunluk/verim/tadım eğilimi | Belirsiz | Y T2.22 measurement ve T2.40 efficiency; trend ekranı açık. |
+| 4. Demhane/dönüşüm/süzme verimi | Kısmi | Y T2.38/T2.40 verim ayrımı ve T1.17 süzme hesabı; rapor ekranı açık. |
+| 5. Demlemeden paketlemeye hacim kaybı | Belirsiz | Y T2.22 actual, T2.7 PackagingRun Aşama 6; zincir raporu açık. |
+| 6. FIFO maliyet/litre | Belirsiz | Y T2.23 lot/movement; FIFO tüketim maliyet raporu değildir. |
+| 7. Tank kullanım/çıktı/pano KPI | Sonra / Belirsiz | Y T2.7 Occupancy/PackagingRun, Aşama 6; KPI raporu açık. |
+| 8. Malzeme lotu–paketleme/recall | Kısmi | C last_lot_id/last_fill_line_id; Y K2 recall, T2.23 stock; bütün malzeme zinciri açık. |
+
+**Öneri:** İşletme kalite, tank, CIP ve paketleme raporlaması için veri modelini işleyen API ve ekran kanıtı ile ayır. Vergi hesap motorunun bulunması, hiçbir ülke için mevzuat uyumluluğunun onayı değildir. Pazarlamada mevzuat raporu veya HACCP uyumluluğu vaat etme.
+
+Bu iki bölüm 108 yeni maddeyi sınıflandırır. Toplam 225/256 katalog maddesi incelendi. Kalan 31 madde platform-security-data; ayrıca özellik dışı sayfalar, doğrudan motor/istemci kanıtı ve raporun sonuç bölümü açık.
