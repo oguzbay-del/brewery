@@ -75,7 +75,7 @@ final class BatchScanStore {
     }
 
     /// Catalog key for the result of one code.
-    static func resultKey(_ item: BatchItem) -> String {
+    nonisolated static func resultKey(_ item: BatchItem) -> String {
         if item.ok { return item.unchanged ? "scan.batch_result_unchanged" : "scan.batch_result_ok" }
         switch item.error {
         case "not_found", "not_a_container", "container_retired": return "scan.batch_error_" + (item.error ?? "")
