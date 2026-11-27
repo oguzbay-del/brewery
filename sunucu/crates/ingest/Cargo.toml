@@ -10,7 +10,7 @@ axum.workspace = true
 base64.workspace = true
 billing.workspace = true
 chrono.workspace = true
-common = { workspace = true, features = ["http"] }
+common = { workspace = true, features = ["http", "redis"] }
 db.workspace = true
 devices.workspace = true
 support.workspace = true
