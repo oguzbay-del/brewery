@@ -30,7 +30,7 @@ Before you start a task:
 
 - Work in `marketing-site/` and `web-stratejisi/`. You can also change the marketing section of `OTURUM.md`.
 - Take marketing tasks without an assignment. Open an issue for each task with `assigned-chatgpt` and `area:marketing`.
-- Merge your own marketing pull request when the marketing CI is green. Do not use auto-merge.
+- **Owner decision (2026-11-27):** ChatGPT can make all marketing-site commits and merge all eligible marketing-only class A pull requests, including those from other contributors after coordination. No separate owner or Claude approval is necessary for each eligible merge. Check the complete diff, current head CI, required reviews, conflicts and stop labels. Use a manual squash merge with the expected head SHA. Do not use auto-merge. Protected class C paths, required reviews, product permissions, the prohibition on direct pushes to main and production approval rules stay unchanged.
 - Keep public claims aligned with document 41 (`web-stratejisi/41-*`). Do not invent availability, features, integrations, customers, metrics, prices or certifications.
 
 ## Product (only assigned issues)
@@ -75,6 +75,8 @@ The guard check exists (#256 is closed, 2026-11-26). Class B is active.
 
 ## Recent owner decisions (keep this list short)
 
+- 2026-11-27: ChatGPT owns marketing website commits and eligible class A merges; keep CI, protected paths and production approval rules.
+
 - 2026-11-24: Vercel is not used. The W12 deployment guard is cleared. Previews run on Cloudflare Pages.
 - 2026-11-24: mTLS uses Istio ambient (ADR-0009). #207 step 2 starts after #206; Claude writes its scope.
 - 2026-11-24: GitHub Issues of a deleted account: edit the content and close the issue. Do not delete it.
@@ -91,7 +93,7 @@ The guard check exists (#256 is closed, 2026-11-26). Class B is active.
 
 ## Approvals
 
-- `main`: Claude merges product pull requests when the tests are green (owner rule of 11 November 2026). ChatGPT merges its own marketing pull requests when the marketing CI is green.
+- `main`: Claude merges product pull requests when the tests are green (owner rule of 11 November 2026). ChatGPT merges eligible marketing-only class A pull requests when the required CI is green, under the 27 November 2026 owner decision in the Marketing website section.
 - Production: do not deploy to production, change production configuration or publish a release without the approval of the owner.
 
 ## Work loop (each run, without a request from the owner)
