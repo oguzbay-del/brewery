@@ -19,12 +19,15 @@ const curatedFeaturePhotos = [
   "feature-analytics-reports",
 ] as const;
 const curated = (curatedFeaturePhotos as readonly PhotoKey[]).includes(name);
-const widths = curated ? [640, 896] : feature ? [640, 768, 960, 1152] : [640, 768, 960, 1408];
+const widths = curated ? [640, 896] : feature ? [480, 640, 768, 960, 1152] : [480, 640, 768, 960, 1408];
 const [w, h] = curated ? [896, 597] : feature ? [1152, 768] : [1408, 768];
 const set = (ext: string) => widths.map((x) => `${base}images/photos/${name}-${x}.${ext} ${x}w`).join(", ");
-const sizes = curated
-  ? "(min-width: 928px) 896px, calc(100vw - 32px)"
-  : "(min-width: 1240px) 1180px, calc(100vw - 32px)";
+const isHomeHero = cls.split(/\s+/).includes("sx-home-hero-photo");
+const sizes = isHomeHero
+  ? "(min-width: 1472px) 1440px, (min-width: 761px) calc(100vw - 32px), calc(100vw - 20px)"
+  : curated
+    ? "(min-width: 928px) 896px, calc(100vw - 32px)"
+    : "(min-width: 1240px) 1180px, calc(100vw - 32px)";
 const fallbackWidth = curated ? 896 : 960;
 const fallbackExt = curated ? "jpg" : "webp";
 ---

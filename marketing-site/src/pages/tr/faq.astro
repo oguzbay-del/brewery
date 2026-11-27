@@ -17,6 +17,7 @@ const groups = [
   {
     title: "İlk sorular",
     items: [
+      { q: "GRISTORA nedir?", a: "GRISTORA, profesyonel bira üreticilerini birincil ticari kitlesi olarak ele alan ve ev biracıları için ayrı bir yol tasarlayan bira üretim yazılımı olarak geliştirilmektedir." },
       { q: "GRISTORA hangi aşamada?", a: "GRISTORA geliştirme aşamasında. Bu sitede planlanan özellikleri ve örnek üretim akışlarını inceleyebilirsiniz." },
       { q: "Bira üreticileri ile ev biracıları için ne değişiyor?", a: "Profesyonel üreticiler için planlanan çalışma alanı, ekibin üretim planlarını, kalite kontrollerini ve parti kayıtlarını bir araya getiriyor. Ev biracıları için odak, bir kişinin reçetesini hazırlaması, demleme gününü kaydetmesi ve sonuçlarını incelemesi." },
       { q: "Plan önizlemesinde ne yapabilirim?", a: "Üretim türünüzü, kullanıcı sayısını ve ödeme dönemini seçip planınızın özetini görebilirsiniz. Bu seçimler hesap açmaz, deneme başlatmaz ve ödeme gerektirmez." },
@@ -47,7 +48,7 @@ const structuredData = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   name: "Sıkça Sorulan Sorular — GRISTORA",
-  description: "Profesyonel bira üreticisi ekipleri için GRISTORA'nın bira üretim yazılımı kapsamı ve ayrı Ev biracıları yoluna dair yanıtlar.",
+  description: "Profesyonel bira üreticisi ekipleri için planlanan GRISTORA ürün kapsamı ve ayrı Ev biracıları yoluna dair yanıtlar.",
   url: canonicalUrl,
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
@@ -75,7 +76,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="Profesyonel bira üreticisi ekipleri için GRISTORA'nın bira üretim yazılımı kapsamına ve ayrı Ev biracıları yoluna dair yanıtlar." />
+    <meta name="description" content="Profesyonel bira üreticisi ekipleri için planlanan GRISTORA ürün kapsamına ve ayrı Ev biracıları yoluna dair yanıtlar." />
     <title>Bira Üreticileri için GRISTORA Bira Üretim Yazılımı SSS | Ürün Kapsamı</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />

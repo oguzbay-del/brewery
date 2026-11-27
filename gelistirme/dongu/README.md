@@ -235,7 +235,8 @@ Checkpoint: when work is unfinished or an error stopped the run, write one comme
 4. A draft PR carries `status:in-progress` on its issue, never `status:review`.
 5. Class A and class B: merge in the same run when the checks of the current head are green, the branch has no conflict and no `loop:fix-requested` is open. Do not wait for Claude. Class C: never merge; mark ready and wait for the Claude review.
 6. Claude removes `loop:fix-requested` from a class A PR when your `fix-done` marker for the current head answers the points and the checks are green. If you see this label and a `fix-done` marker for the current head, ask in one comment on the PR and take the next item.
-7. If a rule stops an item, set `status:blocked`, write one comment with the question, and take the next item. Do not ask for a "Devam".
+7. Format failure you cannot run a formatter for (Prettier, rustfmt, SwiftFormat): read the file name and the diff lines in the job log once, and fix them in one push. If the same check fails again on the next head, do not push a third format edit. Write one `escalate` comment on the PR: the job name, the file, the command that fixes it (for example `npx prettier --write <file>` in `web/`), the head SHA, and the line "Format fix needed, please run the formatter." Then take the next item. Do not weaken a check. The Claude watchdog runs the formatter, pushes one commit to your branch, and writes a `ci-fix` marker with the new head SHA (11.6). Pull that head before you edit the file again.
+8. If a rule stops an item, set `status:blocked`, write one comment with the question, and take the next item. Do not ask for a "Devam".
 
 ### 11.5 Work packages and model
 
@@ -246,4 +247,4 @@ Checkpoint: when work is unfinished or an error stopped the run, write one comme
 
 ### 11.6 Claude side
 
-The Claude watchdog keeps the source true: it edits out a stale status line from an issue body, sets `status:ready` when a dependency is done, sets `status:in-progress` on an issue with a draft PR, removes a stale `loop:fix-requested` (11.4 step 6), reviews ready class C PRs within one run, and writes one "mark ready" comment on a draft PR whose checks are green for more than one hour.
+The Claude watchdog keeps the source true: it edits out a stale status line from an issue body, sets `status:ready` when a dependency is done, sets `status:in-progress` on an issue with a draft PR, removes a stale `loop:fix-requested` (11.4 step 6), reviews ready class C PRs within one run, runs the formatter on a PR with a format `escalate` comment (one commit to the branch, then a `ci-fix` marker; the round limit of section 5 applies), and writes one "mark ready" comment on a draft PR whose checks are green for more than one hour.

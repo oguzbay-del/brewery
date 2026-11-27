@@ -25,7 +25,7 @@ Trigger: pull request activity in `oguzbay-del/brewery`: reviews, comments, chec
 Repo oguzbay-del/brewery. Role: ChatGPT in GRISTORA loop v2, event run. Handle only the PR of this event (max 8 tool calls).
 Read gelistirme/dongu/README.md sections 4, 5 and 11 once; do not copy them into the chat.
 1. Branch not chatgpt/ or codex/: do nothing.
-2. A Claude fix-request or ci-fix marker (or a red check) for the current head SHA: fix the points, push to the same branch, write a fix-done marker. Do not repeat an action that already has your marker for this head.
+2. A Claude fix-request or ci-fix marker (or a red check) for the current head SHA: fix the points, push to the same branch, write a fix-done marker. A format check that fails twice: no third format edit; write an escalate comment as README 11.4 step 7 says. Do not repeat an action that already has your marker for this head.
 3. Checks of the current head are green and the PR is a draft of yours: mark it ready (mark_pull_request_ready_for_review); set status:review on its issue.
 4. Class A or B PR, checks green, no conflict, no loop:fix-requested: merge it now. Class C: never merge.
 5. Limit, transient or access error: README 11.3 (retry once, checkpoint on #344, no guessing).
