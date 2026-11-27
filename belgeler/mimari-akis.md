@@ -10,7 +10,8 @@ flowchart TB
   end
 
   subgraph edge["2 · Kenar"]
-    EDGE["Edge\nTLS · WAF · hız sınırı · CDN"]
+    EDGE["Gateway\nTLS · WAF · hız sınırı · CDN"]
+    PROXY["oauth2-proxy\n/internal (destek paneli)"]
   end
 
   subgraph app["3 · Uygulama servisleri"]
@@ -51,6 +52,8 @@ flowchart TB
   EDGE -->|Web delivery| WEB
   EDGE -->|Application requests| API
   EDGE -->|Inbound webhooks| INGEST
+  EDGE -->|/internal| PROXY
+  PROXY -->|OIDC-verified staff requests| API
 
   API -->|gRPC calculations| ENGINE
   API -->|SQL| PG
@@ -65,6 +68,7 @@ flowchart TB
   INGEST -->|Events| NATS
 
   API <-->|Identity verification| APPLE
+  WORKER -->|Token revocation| APPLE
   API <-->|Identity verification| GOOGLE
   STORE -->|Subscription notifications| INGEST
   WORKER -->|Push notifications| APNS
@@ -72,7 +76,8 @@ flowchart TB
   GITHUB -->|Webhooks| INGEST
   WORKER <-->|Support issue sync| GITHUB
   DEVICES -->|Measurements and webhooks| INGEST
-  API <-->|Checkout and payment events| PADDLE
+  API -->|Checkout and portal| PADDLE
+  PADDLE -->|Payment webhooks| INGEST
 
   API -->|Traces and metrics| OTEL
   WORKER -->|Traces and metrics| OTEL
@@ -81,7 +86,7 @@ flowchart TB
   platform -->|Runs on| CLOUD
 
   classDef pending stroke-dasharray: 5 4,stroke-width:1.5px;
-  class EDGE,API,WORKER,INGEST,ENGINE,PG,REDIS,NATS,OBJECTS,OTEL,CLOUD,IOS,WEB fill:#f6f8fa,stroke:#57606a,color:#24292f;
+  class EDGE,PROXY,API,WORKER,INGEST,ENGINE,PG,REDIS,NATS,OBJECTS,OTEL,CLOUD,IOS,WEB fill:#f6f8fa,stroke:#57606a,color:#24292f;
   class APPLE,GOOGLE,STORE,APNS,EMAIL,GITHUB,DEVICES,PADDLE fill:#fff8e1,stroke:#9a6700,color:#24292f;
 ```
 
@@ -94,12 +99,15 @@ flowchart TB
 - **Veri:** PostgreSQL kalıcı kayıtları, Redis önbelleği, NATS olay ve iş kuyruğunu, S3 uyumlu nesne deposu dosyaları tutar.
 - **Platform:** Kubernetes üzerinde çalıştırma, bulut altyapısı ve OpenTelemetry gözlemlenebilirlik katmanını kapsar.
 
-## Açık kalan altyapı işleri
+## Güvenlik sınırları (T2.32, kind'de doğrulandı)
 
-Bu, mevcut ana dalın taslağıdır; tamamlanmamış altyapı işlerini tamamlanmış gibi göstermez:
+- **mTLS:** servisler arası trafik Istio ambient ile şifrelenir (PeerAuthentication STRICT).
+- **Yetki politikaları:** hesap motoruna yalnız API bağlanır; API'ye yalnız Gateway ve oauth2-proxy; ingest ve oauth2-proxy'ye yalnız Gateway. PostgreSQL, Redis ve NATS'a yalnız ilgili servisler (T2.32g).
+- **`/internal`:** yalnız oauth2-proxy üzerinden; Gateway'den doğrudan erişim 404 verir.
 
-- **Ağ politikaları:** #205 — PR #278 incelemede.
-- **İç destek erişimi (oauth2-proxy):** #206 — açık.
-- **mTLS:** #207 — açık.
+## Henüz yazılmamış bağlantılar
 
-T2.32'nin bu işleri tamamlandığında Claude son mimari kontrolü yapacak ve görsel Artifact sayfasını yayımlayacaktır.
+- **Paddle:** sağlayıcı arayüzü ve webhook imza denetimi var; ödeme adaptörü yazılmadı (B3/B4, #390). Production'da web ödeme yolu 503 verir.
+- **Ingest → Redis:** cihaz uç noktası için hız sınırı #395 ile gelir.
+
+Son mimari kontrol: Claude, 2026-11-27 (T2.32 kapandıktan sonra). Görsel sayfa: https://claude.ai/artifact/HSF9nve4dGAKoGxYQ9Kaq3
