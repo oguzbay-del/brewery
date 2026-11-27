@@ -21,16 +21,16 @@ const structuredData = {
   "@type": "WebPage",
   name: "Bira Üretim Yazılımı | GRISTORA",
   url: canonicalUrl,
-  description: "Reçete kararları ve üretim kayıtlarıyla çalışan profesyonel ekipler için bira üretim yazılımı.",
+  description: "Profesyonel bira üretim ekipleri için planlanan reçete, parti ve üretim kayıtları yaklaşımı.",
   inLanguage: "tr",
   isPartOf: { "@type": "WebSite", name: "GRISTORA", url: new URL(`${base}tr/`, import.meta.env.SITE).href },
 };
 const workflow = [
   { number: "01", title: "Reçeteyi gözden geçirin", question: "Partiye hangi reçete tanımı ve hedefler yön veriyor?", body: "Üretim başlamadan önce reçete amacını, hedef değerleri ve sürüm bağlamını görünür tutun.", feature: "Reçete tasarımı ve yönetimi", href: "recipe-design" },
-  { number: "02", title: "İşi planlayın", question: "Ne yapılması gerekiyor ve ne zaman?", body: "İşletme modu üretim planlamasını, görev görünümlerini ve tank çizelgelemesini içerir.", feature: "Planlama ve çizelgeleme", href: "planning-scheduling" },
+  { number: "02", title: "İşi planlayın", question: "Ne yapılması gerekiyor ve ne zaman?", body: "İşletme modu için planlanan yaklaşım; üretim planlamasını, görev görünümlerini ve tank çizelgelemesini bir araya getirmeyi hedefler.", feature: "Planlama ve çizelgeleme", href: "planning-scheduling" },
   { number: "03", title: "Partiyi kaydedin", question: "Ne planlanmıştı ve gerçekte ne oldu?", body: "Reçete referansını fiili miktarlar, süreler, sıcaklıklar, ölçümler ve üretim notlarıyla bağlayın.", feature: "Demleme günü ve üretim kayıtları", href: "brew-day" },
-  { number: "04", title: "Fermantasyonu ve tankları gözden geçirin", question: "Hangi gözlemler bu partiye ve bu tanka ait?", body: "İşletme modu parti zaman çizelgelerini, tank bağlamını ve kaydedilen gözlemleri içerir.", feature: "Fermantasyon ve parti takibi", href: "fermentation-monitoring" },
-  { number: "05", title: "Kalite ile izlenebilirliği bağlayın", question: "Bir sonuç, kendi parti ve malzeme bağlamında anlaşılabilir mi?", body: "İşletme modu kalite kayıtlarını, malzeme lotu ilişkilerini ve onay iş akışlarını içerir.", feature: "Kalite, laboratuvar ve onay", href: "quality-laboratory" },
+  { number: "04", title: "Fermantasyonu ve tankları gözden geçirin", question: "Hangi gözlemler bu partiye ve bu tanka ait?", body: "Planlanan İşletme modu yaklaşımı, parti zaman çizelgelerini, tank bağlamını ve kaydedilen gözlemleri ilişkilendirmeyi hedefler.", feature: "Fermantasyon ve parti takibi", href: "fermentation-monitoring" },
+  { number: "05", title: "Kalite ile izlenebilirliği bağlayın", question: "Bir sonuç, kendi parti ve malzeme bağlamında anlaşılabilir mi?", body: "Planlanan İşletme modu yaklaşımı; kalite kayıtlarını, malzeme lotu ilişkilerini ve onay iş akışlarını birbirine bağlamayı hedefler.", feature: "Kalite, laboratuvar ve onay", href: "quality-laboratory" },
 ];
 const roles = [
   { role: "Baş biracı", need: "Reçete amacı, hedef değerler ve parti incelemesi", focus: "Reçete kararları ve tutarlılık" },
@@ -40,8 +40,8 @@ const roles = [
 const faqs = [
   { q: "GRISTORA bir bira üreticisi ERP'sinin yerini alır mı?", a: "Hayır. GRISTORA, bira üretimiyle ilgili reçete, parti ve üretim bilgisine odaklanır. Genel amaçlı bir ERP olarak konumlandırılmamıştır." },
   { q: "Satış, sipariş, dağıtım veya fıçı takibini yönetir mi?", a: "Hayır. Satış, müşteri siparişleri, dağıtım ve sevkiyat, müşterideki fıçının takibi ve depozitosu, CRM ve muhasebe belirtilen ürün kapsamının dışındadır." },
-  { q: "GRISTORA API ve webhook sunar mı?", a: "İşletme modu açık bir API ve üretim verisi webhook'ları içerir. Ev modu cihaz webhook kapsamı ayrıdır." },
-  { q: "Roller, izinler ve onaylar nasıl ele alınır?", a: "İşletme modu rol tabanlı iş akışlarını ve onay kuyruklarını içerir." },
+  { q: "GRISTORA API ve webhook sunar mı?", a: "Açık API ve üretim verisi webhook'ları İşletme modu yol haritasında planlanan entegrasyonlardır; şu anda kullanılabilir bir API veya webhook uç noktası sunulmamaktadır. Ev biracılığı cihaz bağlantıları ayrı bir planlama alanıdır ve cihaz uyumluluğu henüz doğrulanmış değildir." },
+  { q: "Roller, izinler ve onaylar nasıl ele alınır?", a: "Rol tabanlı iş akışları ve onay kuyrukları İşletme modu için planlanan tasarımın parçalarıdır; henüz kullanıma sunulmuş iş akışları değildir." },
 ];
 const breadcrumbItems = [{ name: "Ana sayfa", url: new URL(`${base}tr/`, import.meta.env.SITE).href }, { name: "Bira üreticileri", url: canonicalUrl }];
 const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
@@ -56,17 +56,17 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <meta name="robots" content={allowIndexing ? "index, follow" : "noindex, nofollow"} />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
-    <meta name="description" content="GRISTORA'nın profesyonel bira üreticisi iş akışlarını keşfedin: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
+    <meta name="description" content="Profesyonel bira üreticileri için planlanan GRISTORA yaklaşımı: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
     <title>Bira Üretim Yazılımı | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
     <meta property="og:title" content="Bira Üretim Yazılımı | GRISTORA" />
-    <meta property="og:description" content="Profesyonel bira üreticileri için bira üretim yazılımı iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
+    <meta property="og:description" content="Profesyonel bira üreticileri için planlanan bira üretim iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="tr_TR" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Bira Üretim Yazılımı | GRISTORA" />
-    <meta name="twitter:description" content="Profesyonel bira üreticileri için bira üretim yazılımı iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
+    <meta name="twitter:description" content="Profesyonel bira üreticileri için planlanan bira üretim iş akışları: reçete incelemesi, üretim planlaması, parti kayıtları, kalite ve izlenebilirlik." />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
@@ -95,7 +95,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> PROFESYONEL BİRA ÜRETİM İŞ AKIŞI</p>
             <h2>Kararları kayıtlarla <em>birbirine bağlayın.</em></h2>
-            <p>İşletme modu, bira üretimine özgü işler etrafında kurulmuştur.</p>
+            <p>İşletme modu için planlanan tasarım, bira üretimine özgü işler etrafında şekillenir.</p>
           </div>
           <ol class="workflow-grid business-workflow-grid">
             {workflow.map((step) => (
@@ -127,7 +127,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> KAYIT MODELİ</p>
             <h2>Her partinin arkasındaki <em>bağlamı izleyin.</em></h2>
-            <p>Kayıt modeli, bir üretim kararını bitmiş partiyi açıklayan işlere, malzemelere ve gözlemlere bağlar.</p>
+            <p>Planlanan kayıt modeli, bir üretim kararını bitmiş partiyi açıklayan işlere, malzemelere ve gözlemlere bağlamayı hedefler.</p>
           </div>
           <ol class="record-model-flow business-record-flow">
             <li>
@@ -156,7 +156,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <p>Ölçümler, laboratuvar sonuçları, sapmalar ve belgelenmiş bir inceleme ya da onay kararı.</p>
             </li>
           </ol>
-          <p class="record-model-note">İzlenebilirlik, yakalanan kayıtlara ve desteklenen lot ilişkilerine bağlıdır.</p>
+          <p class="record-model-note">Planlanan izlenebilirlik kapsamı, üründe kaydedilecek bilgilere ve desteklenecek lot ilişkilerine bağlı olacaktır.</p>
           <figure class="visual-diagram"><img src={`${base}images/diagrams/business-batch-timeline.svg`} width="960" height="500" alt="Reçete sürümünü, parti planını, üretim kaydını, tank olaylarını ve kalite incelemesini birbirine bağlayan profesyonel bira üreticisi parti zaman çizelgesi." loading="lazy" /><figcaption>İşletme modu parti bağlamı</figcaption></figure>
         </div>
       </section>
@@ -165,7 +165,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
           <div class="section-heading">
             <p class="eyebrow"><span class="eyebrow-line"></span> İŞLETME MODU ÜRÜN ALANLARI</p>
             <h2>Bira üretim operasyonları, <em>net sınırlarla.</em></h2>
-            <p>İşletme modu yeteneklerini keşfedin.</p>
+            <p>İşletme modu için planlanan ürün alanlarını keşfedin.</p>
           </div>
           <div class="audience-feature-grid">
             {breweryAreas.map((feature) => (

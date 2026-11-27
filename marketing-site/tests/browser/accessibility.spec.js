@@ -123,3 +123,34 @@ test("reduced-motion preference disables smooth scrolling", async ({ page }) => 
   const scrollBehavior = await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior);
   expect(scrollBehavior).toBe("auto");
 });
+
+for (const { route, regionName, caption } of [
+  {
+    route: "/technical-principles/",
+    regionName: "Scrollable equipment calibration record diagram",
+    caption: "Swipe or scroll to inspect the example record model",
+  },
+  {
+    route: "/tr/technical-principles/",
+    regionName: "Kaydırılabilir ekipman kalibrasyon kaydı diyagramı",
+    caption: "Örnek kayıt modelini incelemek için kaydırın",
+  },
+]) {
+  test(`calibration diagram keeps its figure and scrolls with the keyboard on ${route}`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+
+    const region = page.getByRole("region", { name: regionName });
+    const figure = page.getByRole("figure").filter({ has: region });
+    await expect(figure.locator(":scope > figcaption")).toHaveText(caption);
+    await expect(region.getByRole("img")).toBeVisible();
+    await expect(region).toHaveAttribute("tabindex", "0");
+
+    await region.focus();
+    await expect(region).toBeFocused();
+    await expect(region).toHaveCSS("outline-style", "solid");
+
+    await page.keyboard.press("ArrowRight");
+    await expect.poll(() => region.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  });
+}

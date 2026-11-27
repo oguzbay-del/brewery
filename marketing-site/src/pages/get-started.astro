@@ -12,11 +12,11 @@ import { buildBreadcrumbList } from "../data/breadcrumbs";
 const base = import.meta.env.BASE_URL;
 const allowIndexing = new URL(import.meta.env.SITE).hostname === "gristora.com";
 const canonicalUrl = new URL(`${base}get-started/`, import.meta.env.SITE).href;
-const description = "Configure a GRISTORA Homebrewer or Professional Brewery plan step by step.";
+const description = "Preview a proposed GRISTORA Homebrewer or Professional Brewery plan configuration. No account, trial, payment or request is created.";
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Configure your GRISTORA plan",
+  name: "Preview your GRISTORA plan",
   description,
   url: canonicalUrl,
   inLanguage: "en",
@@ -36,16 +36,16 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
     <meta name="description" content={description} />
-    <title>Configure Your Plan | GRISTORA</title>
+    <title>Preview Your Plan | GRISTORA</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="GRISTORA" />
-    <meta property="og:title" content="Configure Your Plan | GRISTORA" />
+    <meta property="og:title" content="Preview Your Plan | GRISTORA" />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta property="og:image:alt" content="GRISTORA — Brewing Intelligence" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Configure Your Plan | GRISTORA" />
+    <meta name="twitter:title" content="Preview Your Plan | GRISTORA" />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(`${base}social-card.png`, import.meta.env.SITE).href} />
     <meta name="twitter:image:alt" content="GRISTORA — Brewing Intelligence" />
