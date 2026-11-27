@@ -8,6 +8,8 @@ This is the implementation source of truth for the marketing website's visual la
 
 ## 1. Design intent
 
+**Owner decision — 27 November 2026: Editorial Light is the single marketing design direction.** Linear contributes precision, content hierarchy and readable product evidence; Aesop contributes warm paper surfaces, authentic photography and editorial whitespace. No separate Technical Dark theme, dark-mode switch or recurring dark technical sections. Keep Forest Green brand anchors (the existing hero, header/footer where appropriate, restrained closing CTA). Product screenshots retain their original colours. High-contrast accessibility is not a second brand theme. This decision applies only to marketing-site.
+
 The website should feel **premium, confident, editorial, technical and human**. It speaks first to professional breweries, while keeping the Homebrewers audience distinct and secondary.
 
 The approved visual reference combines:
@@ -30,6 +32,28 @@ Use these approved core colours consistently. Existing CSS custom properties sho
 | Amber Gold | `#F4A261` | Primary action, highlights, small brand accents and active states |
 | Stone Beige | `#F7F6F3` | Main light canvas, quiet surfaces and whitespace |
 | Slate Gray | `#475569` | Secondary text, supporting labels and subdued UI |
+
+### Editorial Light surface and semantic tokens
+
+Reuse the existing marketing CSS variables in `src/styles/global.css` and `src/styles/stitch-layout.css`. The names below describe semantic roles; MQ-03 maps them to the existing variables or introduces aliases only where needed. Do not create a second token system or edit the product token file.
+
+| Role | Value | Existing interface / use |
+|---|---|---|
+| surface-0 | `#F7F6F3` | --page; default stone-paper canvas |
+| surface-1 | `#F0EFEB` | --sx-band; quiet editorial bands |
+| surface-2 | `#FFFFFF` | --surface / --sx-card; cards and screenshot frames |
+| text-primary | `#0B2F26` | --ink / --forest; headlines and primary text |
+| text-secondary | `#475569` | --muted; readable supporting copy |
+| border-subtle | existing --line | Decoration only; not a meaningful control boundary |
+| border-strong | `#777C73` | Candidate meaningful control and focus boundary; verify actual states |
+| accent-text | `#8B4A1F` | --amber; accessible text tone on paper |
+| accent-fill | `#F4A261` | --amber-fill; single amber primary action |
+| accent-ink | `#0B2F26` | --amber-ink; text on amber |
+| success / warning / error / info | `#24643B` / `#875000` / `#A12727` / `#225EAA` | Candidate semantic text colours on paper, only for real feedback; icon and meaningful text required |
+
+Computed WCAG contrast on the three opaque light surfaces, minimum ratio: primary 12.60:1, secondary 6.59:1, accent text 5.89:1, strong border 3.71:1, success 6.16:1, warning 5.74:1, error 6.44:1, info 5.62:1. Forest text on amber 7.03:1; amber fill against stone paper 1.91:1, so use a distinguishable boundary when required. These are sRGB colour-pair calculations, not a page accessibility certification. Check computed states, opacity, images and focus separately.
+
+Retain existing on-dark brand-anchor colours only for the permitted brand sections; no dark technical design mode. Respect prefers-contrast: more and forced-colors: active with visible boundaries, readable system colours and focus; avoid blanket forced-color-adjust:none. Do not add an ordinary theme selector.
 
 ### Colour rules
 - Forest Green is the anchor; Amber Gold is an accent, not a second dominant background.
@@ -63,6 +87,7 @@ Use the brand-board typography direction:
 | Editorial accent | Existing approved serif treatment | Use sparingly for short emphasis or supporting editorial lines, not for UI controls or long body copy |
 
 ### Type hierarchy
+- Editorial Light candidate scale: fluid hero 40–72px, section 30–48px, body 16–18px, longer reading measure about 55–70 characters. MQ-03/06 validate existing values and long TR text before implementation; never force line counts or fixed heights.
 - One clear H1 per page, followed by logically nested H2/H3 sections.
 - Headlines should be concise and confident; avoid oversized all-caps blocks.
 - Body copy should be comfortable to scan, with adequate line height and sensible line length.
@@ -89,6 +114,8 @@ Recommended shared tokens:
 - Avoid nested rounded boxes without a meaningful content hierarchy.
 
 ## 6. Layout, spacing and responsive behaviour
+
+Use the existing 1240px maximum content shell as the starting point. Candidate shared spacing scale 4/8/16/24/32/48/64/96px, conceptual grid 12/8/4 desktop/tablet/mobile, fluid clamp values where appropriate. Prefer CSS Grid/Flexbox and logical properties; set min-inline-size:0 for flexible content. Avoid hiding overflow to conceal errors. Technical sections use paper/white surfaces, legible original product screenshots and precise captions rather than dark panels.
 
 - Use a consistent centred content container and shared spacing scale.
 - Prefer generous section spacing and whitespace over decorative separators.
@@ -141,7 +168,7 @@ Every marketing-site change must preserve:
 - Reduced-motion support.
 - Meaningful image alt text and no fabricated UI affordances.
 
-Run the marketing-site checks and browser/accessibility tests documented in `README.md`. Automated checks do not replace visual review on desktop and mobile.
+Run the marketing-site checks and browser/accessibility tests documented in `README.md`. Follow the mandatory [Marketing VQG visual test flow](DESIGN-EXCELLENCE.md#61-repeatable-visual-test-flow-owner-decision-27-november-2026) on each applicable visual change: exact-head evidence, EN/TR responsive screenshots, geometry, contrast/focus/axe, reviewed before/after and defect triage. Automated checks do not replace visual review on desktop and mobile. No open P0/P1 visual defects at visual acceptance. Keep existing hard checks; new geometry checks start in report mode, then become gates after validation. Protected screenshot baselines and workflow rules remain unchanged.
 
 ## 11. Implementation rules
 
