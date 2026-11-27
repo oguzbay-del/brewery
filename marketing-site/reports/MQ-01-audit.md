@@ -89,3 +89,19 @@ No verified critical visual defect is claimed in this initial source audit.
 - Keep manual review findings distinct from automated results. If artifact retrieval is not possible, record the exact limitation and request a cloud preview review through the existing workflow. Do not invent measurements.
 
 No product files, runtime marketing code, dependencies, production configuration or baseline images were changed by this report.
+
+## 7. Follow-up CI and comparison evidence (27 November)
+
+The audit branch at `b747c7c127d38088fcbff66a139ac9440e133fd3` changes only this report. Its [Marketing CI run 46062452542](https://github.com/oguzbay-del/brewery/actions/runs/46062452542) and protected-path-guard run 46062452417 passed. Cloudflare reported a successful branch preview at https://e5dc8415.gristora.pages.dev. The preview has not been visually inspected in this session.
+
+Artifacts for that exact run (not current-main measurements):
+
+| Evidence | Artifact |
+|---|---|
+| Responsive screenshots | [15229316834](https://github.com/oguzbay-del/brewery/actions/runs/46062452542/artifacts/15229316834), 31,203,924 bytes |
+| Lighthouse reports | [15230140125](https://github.com/oguzbay-del/brewery/actions/runs/46062452542/artifacts/15230140125), 5,057,842 bytes |
+| Social card | [15229775994](https://github.com/oguzbay-del/brewery/actions/runs/46062452542/artifacts/15229775994), 59,560 bytes |
+
+The artifact listing confirms existence and provenance, not visual or numerical results. Review the contents before closing MQ-01.
+
+Additional browser source checks: `tests/browser/compare-table-accessibility.spec.js` tests the EN comparison scroll region at 320 and 390px with visible keyboard focus, ArrowRight scrolling and no page overflow. `comparison.spec.js` tests EN plan entry links at 390px and intentional table scrolling at 320px; it also tests row-group headings on both EN and TR comparison pages. Preserve these intentional scroll regions in VQG, and extend TR keyboard and responsive coverage rather than replacing the existing tests. No additional rendering defect is inferred from this coverage inventory.
