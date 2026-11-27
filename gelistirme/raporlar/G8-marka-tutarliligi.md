@@ -607,3 +607,97 @@ Sıra §3.3 ile aynıdır. Kaynaklar: [API envanteri](../../sunucu/crates/api/CL
 | 14. FIFO fiyatı ve miktarından tahmin | Belirsiz | A T2.23 en eski lottan düşüm; fiyat bazlı tahmin ayrıca kanıtlanmalı. |
 
 **Öneri:** üretim adımları, gerçek ölçümler, stok hareketleri ve alışveriş listesi için kanıtlı API kapsamını ayır. Otomatik hesap, Apple entegrasyonu, basılı/optik form ve FIFO maliyetleme iddialarını bağımsız kanıt olmadan mevcut özellik diye sunma. Toplam 50/256 katalog maddesi madde bazında sınıflandırıldı; kalan 206 açık.
+
+
+### 3.6 Madde bazında kanıt — fermentation-monitoring, team-notifications, connected-devices, imports-exports-tools
+
+Sıra §3.3 ile aynıdır. Kaynaklar: [API envanteri](../../sunucu/crates/api/CLAUDE.md) (A), [notifications.rs](../../sunucu/crates/api/src/notifications.rs) (N), [devices.rs](../../sunucu/crates/api/src/devices.rs) (D), [import_export.rs](../../sunucu/crates/api/src/import_export.rs) (I). N, D ve I ilk tip tanımları ve modül açıklamaları doğrudan okundu. API kanıtı cihaz testi veya yayımlanmış hizmet kanıtı değildir.
+
+#### fermentation-monitoring (19 madde)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Yedi aşamalı zaman çizelgesi | Kısmi | A T2.22, §3.2 STAGES: gerçek yedi değer pazarlama listesinden farklı; cancelled var, ayrı paketlemeye hazır aşaması yok. |
+| 2. Eş zamanlı parti ve fermantör | Kısmi | A T2.22 parti API; fermantör eş zamanlı atama kanıtlanmadı. D tank eşlemesi TODO. |
+| 3. Ölçüm, not, fotoğraf, olay | Kısmi | A T2.22 ölçüm, T2.18 ek dosya ve T2.15 SSE; birleşik zaman çizelgesi doğrulanmadı. |
+| 4. Plan ve gerçek özet | Var (API) | A T2.22 summary, adım ve sapma; ekran ayrıca doğrulanmalı. |
+| 5. Tadım notu ve reçeteye geri besleme | Belirsiz | A T2.21 reçete ve T2.22 parti modülleri; tadım ve geri besleme kanıtı yok. |
+| 6. Elle ve cihazla SG/sıcaklık/pH | Kısmi | D modül başlığı cihaz okumalarını parti ölçümüne dönüştürür; A T2.22 elle ölçüm; üç ölçümün tüm adaptörlerde desteği doğrulanmadı. |
+| 7. Kaynak etiketli grafik | Belirsiz | D cihaz eşleme ve A T2.22 ölçüm; grafik, kâğıt kaynağı ve etiket doğrulanmadı. |
+| 8. Fermantasyon ilerleme vurguları | Belirsiz | A T2.22 aşama/özet; otomatik ilerleme vurgusu kanıtı yok. |
+| 9. Kuru şerbetçiotu/soğuk çöktürme/paketleme önerisi | Belirsiz | A T2.22 takvim ve geriye planlama; öneri algoritması doğrulanmadı. |
+| 10. Sensörsüz elle ölçüm hatırlatıcıları | Kısmi | N Notification.kind reminder, D eşleme; sensörsüz durum tetikleyicisi doğrulanmadı. |
+| 11. Sabit SG ve hedef dışı sıcaklık kuralı | Kısmi | N AlertRule.condition ölçüm, op, value, cooldown; birkaç günlük sabitlik hesabı kanıtlanmadı. |
+| 12. Üç öncelik, sessiz saat, gruplama, günlük özet | Kısmi | N Notification.priority 1..3, Preferences quiet_start/end, daily_summary; gruplama doğrulanmadı. |
+| 13. Onay, ertele, yok say, geçmiş | Var (API) | N ActionBody approve/postpone/ignore; InboxFilter ve durumlar; UI doğrulanmadı. |
+| 14. Vardiya yönlendirme/yükseltme | Belirsiz | N caller inbox; vardiya devri ve sonraki sorumlu algoritması kanıtlanmadı. |
+| 15. Hatırlatıcıdan hızlı SG/sıcaklık girişi | Kısmi | N reminder ve A T2.22 ölçüm; doğrudan giriş ekranı doğrulanmadı. |
+| 16. Ev ve tank widget | Belirsiz | D last_data_at; Apple widget kanıtı yok. |
+| 17. Aynı reçeteden parti karşılaştırması | Belirsiz | A T2.21 sürüm karşılaştırması ve T2.22 parti özeti; parti karşılaştırma ve tadım puanı kanıtı yok. |
+| 18. Şişe/keg olgunlaşma ve karbonasyon | Belirsiz | §3.2 containers.rs kap türü; karbonasyon ilerlemesi kanıtlanmadı. |
+| 19. Tadım sonucundan taslak | Belirsiz | A T2.21 taslak; tadım verisinden taslak oluşturma kanıtlanmadı. |
+
+#### team-notifications (14 madde)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Kurulumda mod ve sonradan değiştirme | Belirsiz | A T2.11 workspace create; mod değiştirme ve kurulum ekranı doğrulanmadı. |
+| 2. Ev modunda İşletme alanlarının gizlenmesi | Belirsiz | A T2.13 izin; mod bazlı görünüm kanıtı değil. |
+| 3. Ev reçete/parti iş birliği | Kısmi | A T2.13 Home sharing/davet; her iki kayıt türünün ekranı doğrulanmadı. |
+| 4. Mod değişiminde kayıtları koruma | Belirsiz | A T2.11/T2.13; mod geçişinde veri koruma testi gerekli. |
+| 5. Süreli davet ve çoklu rol | Kısmi | A T2.13 invitations, roles, assignments; davet süresi ve çoklu rol UI doğrulanmadı. |
+| 6. Altı hazır rol | Kısmi | A T2.13 role endpoints; altı rolün seed ve izinleri doğrulanmadı. |
+| 7. Özel/kopyalanan rol, izin grubu, kap kapsamı | Kısmi | A T2.13 roles ve assignments; kopyalama, gruplama ve kap/alan kapsamı doğrulanmadı. |
+| 8. Kişi bazında izin özeti ve açılış ekranı | Kısmi | A T2.13 izin API; birleşik izin özeti ve role özgü ekran doğrulanmadı. |
+| 9. Paylaşılan iPad PIN/geçiş/kilit | Kısmi | A T2.12 auth/shared_device.rs, auth/pin.rs, members/switch/lock; otomatik kilit ve iPad akışı doğrulanmadı. |
+| 10. Gelen kutusu, push ve e-posta özeti | Var (API) | N Notification, Preferences push_enabled/email_enabled/daily_summary; teslim testi ve UI açık. |
+| 11. Öncelik, sessiz saat, gruplama, geçmiş | Kısmi | N priority, Preferences, InboxFilter; gruplama kanıtı yok. |
+| 12. Onayla, ertele, yok say, çöz ve olay kaydı | Kısmi | N ActionBody üç işlem; resolved durum alanı var, kullanıcı çözme işlemi ve olay kaydı ayrıca doğrulanmalı. |
+| 13. Vardiya yönlendirme ve devir | Belirsiz | N caller inbox; vardiya akışı kanıtlanmadı. |
+| 14. Reçete ve kalite onay kuyruğu | Kısmi / Sonra | A T2.21 publish; §3.4 reçete inceleme TODO Aşama 6; kalite onay kuyruğu doğrulanmadı. |
+
+#### connected-devices (16 madde)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Tilt/iSpindel/RAPT adaptör adayları | Kısmi | D KINDS ispindel, rapt, tilt, other; gerçek donanım uyumluluk testi açık. Metin koşullu. |
+| 2. TiltBridge/Pitch webhook | Kısmi | D ingest/{key} ve Tilt bridge modül açıklaması; Pitch ve gerçek bağlantı doğrulanmadı. |
+| 3. Yenilenebilir cihaz anahtarı | Var (API) | D DeviceWithKey, rotate; yalnız SHA-256 özeti saklanır. |
+| 4. Cihaz-parti eşleme ve kalibrasyon | Var (API) | D Device.batch_id/calibration, NewDevice; istemci doğrulanmadı. |
+| 5. Bağlantı ve okuma durumu | Kısmi | D last_data_at; bağlantı göstergesi UI doğrulanmadı. |
+| 6. Yoğunluk/pH/DO/basınç | Belirsiz | D cihaz okumalarını parti ölçümüne dönüştürür; tüm dört veri türü kanıtlanmadı. |
+| 7. Tank ataması ve bağlantı durumu | Sonra / Kısmi | D başlık TODO vessel_id; last_data_at mevcut. |
+| 8. Profesyonel API/CSV alımı | Belirsiz | D ingest veri yolu; profesyonel CSV bağlayıcı kanıtı yok. |
+| 9. Modbus TCP/OPC UA/MQTT | Belirsiz | D HTTP ingest; üç protokol ve endüstriyel ağ geçidi kanıtlanmadı. |
+| 10. Kontrol komutları kapsam dışı | Kapsam dışı | §3.3 ürün sınırı, D kayıt/eşleme/okuma yolu; kontrol işlevi iddiası değildir. |
+| 11. Cihaz tamponlama ve yeniden gönderme | Belirsiz | D son okuma zamanı ve A T2.22 tekrar güvenli istemci UUID; cihaz tamponu kanıtlanmadı. |
+| 12. Kaynak etiketi ve kalibrasyon bağlamı | Kısmi | D calibration ve batch_id; ölçüm ekranındaki kaynak etiketi doğrulanmadı. |
+| 13. Üreticiden bağımsız adaptör | Kısmi | D KINDS içinde other ve ortak ingest adresi; her adaptörün tasarımı doğrulanmadı. |
+| 14. Eğilim ve eşik uyarıları | Kısmi | D okumaları parti ölçümü, N AlertRule condition; trend ekranı doğrulanmadı. |
+| 15. İşletme API ve webhook yol haritası | Belirsiz | D özel cihaz ingest; genel üretim webhook'u, yayın ve güvenlik onayı kanıtlanmadı. |
+| 16. Salt okunur ağ geçidi ve kontrol dışı | Kapsam dışı / Belirsiz | §3.3 kontrol ürün kapsamı dışında; D salt veri toplama yolu; endüstriyel ağ geçidi henüz kanıtlanmadı. |
+
+#### imports-exports-tools (18 madde)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. BeerXML ve BeerJSON içe/dışa aktarım | Kısmi | I modül başlığı iki içe aktarım biçimi; dışa aktarımın bu biçimleri doğrulanmadı. |
+| 2. BeerSmith .bsmx | Sonra | I TODO T2.26 örnek dosya gerekli. |
+| 3. Brewfather/Brewer's Friend | Kısmi | I Brewfather JSON backup içe aktarımı; Brewer's Friend ve diğer dışa aktarım biçimleri doğrulanmadı. |
+| 4. Malzeme/ekipman/stil/birim eşleme | Kısmi | I apply ekipman oluşturur/eşler, malzemeyi adla eşler, mapping_decisions saklar; stil/birim kapsamı ayrıca doğrulanmalı. |
+| 5. Kaydetmeden önce hesap farkı inceleme | Kısmi | I preview kaynak değerlerini verir, apply taslak yaratır ve kaynak/motor değerlerini yan yana döndürür; farkların kayıttan önce sunulması doğrulanmadı. |
+| 6. Refraktometre ve yoğunluk araçları | Belirsiz | A T2.16 motor bağlantısı; özel araç uçları ve UI doğrulanmadı. |
+| 7. Şişe/keg/cask karbonasyon ve priming | Belirsiz | A T2.16 ve §3.2 kap türleri; hesaplayıcı kanıtı açık. |
+| 8. Seyreltme, hacim, birim dönüşümü | Belirsiz | A T2.16 motor bağlantısı; özel yöntem ve ekran doğrulanmadı. |
+| 9. Ekstrakt, kısmi kaynatma ve dönüşüm | Belirsiz | A T2.21 reçete ve T2.16 motor; özel araç kanıtı açık. |
+| 10. Dekoksiyon/parti-gyle ve Ev modu | Belirsiz | A T2.16 motor; özel araç ve hak kapsamı doğrulanmadı. |
+| 11. Ev no-chill ve karbonasyon takibi | Belirsiz | A T2.16 ve §3.2 kap türleri; hesap ve takip ekranı açık. |
+| 12. Kontrol cihazına reçete aktarımı | Belirsiz | D ingest veri toplama içindir; kontrol cihazı reçete aktarımı doğrulanmadı. |
+| 13. Üretim/tank/fermantasyon/paketleme formu | Belirsiz | A T2.22 imzalı paket ve takvim; dört basılı form kanıtlanmadı. |
+| 14. Ev özel form alanı ve yerleşim | Belirsiz | A T2.22; özel form yapılandırması doğrulanmadı. |
+| 15. Reçete/parti/ekipman/su/malzeme/cihaz/destek export | Kısmi | I recipe, batch, workspace export job; tüm veri türlerinin worker çıktısı doğrulanmadı. |
+| 16. CSV/JSON ve dosyaları arşivde indirme | Kısmi | I export job ve presigned link; A T2.18 dosya uçları; arşiv içeriği ve biçimleri doğrulanmadı. |
+| 17. Yarışma formu ve özel alanlar | Belirsiz | A T2.21 reçete ve T2.22 parti; form/özel alanlar kanıtlanmadı. |
+| 18. Su raporu içe aktarımı | Belirsiz | I reçete biçimleri; laboratuvar su raporu ayrıştırıcısı doğrulanmadı. |
+
+**Öncelikli öneriler:** cihaz sayfası için gerçek donanım testlerini aday listesinden ayır; tank eşlemesini mevcut özellik sayma. İçe aktarma farklarının apply sonrasında döndüğü kaynak kodla uyumlu ifadeler kullan. Vardiya, Apple widget ve otomatik önerileri kanıt olmadan mevcut kapsamda sunma. Toplam 117/256 katalog maddesi madde bazında sınıflandırıldı; kalan 139 açık.
