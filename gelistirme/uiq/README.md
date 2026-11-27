@@ -180,10 +180,10 @@ The order is in the dependency column. Tasks that change the same files are in a
 |---|---|---|---|---|---|---|---|
 | UIQ-01 | Visual audit of the current web and iPad screens | `gelistirme/raporlar/UIQ-01-gorsel-denetim.md` | – | A | Claude | Sonnet (scan), Opus (review) | done (2026-11-27) |
 | UIQ-02 | Apple patterns mapped to the design system | Section 2 of this file | – | A | Claude | Opus | done (2026-11-27) |
-| UIQ-03a | Structural tokens (`size`, `layout`, `z`, `motion`) for CSS and Swift | Generators `--check` pass; token sum tests pass | – | C | Claude | Sonnet | see ISLER.md |
+| UIQ-03a | Structural tokens (`size`, `layout`, `z`, `motion`) for CSS and Swift | Generators `--check` pass; token sum tests pass | – | C | Claude | Sonnet | done (2026-11-27) |
 | UIQ-03b | Chart palette in four themes; design system README and Artifact updated | 3:1 against `card` in each theme; `araclar/tutarlilik.py` clean | UIQ-03a | C | Claude | Opus | todo |
 | UIQ-04 | React UI Kit skeleton: `web/src/kit/`, gallery entry `kit.html`, `Callout`, `StateView`, `SummaryCard`, `StatusBadge`, `AlarmMark` (no React Aria) | vitest and RTL for each part; gallery builds; axe clean | UIQ-03a | B | ChatGPT | – | todo |
-| UIQ-05 | SwiftUI Kit skeleton: `ios/Demleme/Kit/`, button styles, `SummaryCard`, `StatusBadge`, `AlarmMark`, `Callout`; previews | macOS CI green; previews in four themes | UIQ-03a | C | Claude | Sonnet | todo |
+| UIQ-05 | SwiftUI Kit skeleton: `ios/Demleme/Kit/`, button styles, `SummaryCard`, `StatusBadge`, `AlarmMark`, `Callout`; previews | macOS CI green; previews in four themes | UIQ-03a | C | Claude | Sonnet | done (2026-11-27) |
 | UIQ-06 | Web adaptive `AppShell` (Sidebar + Content + Inspector), `check-css.mjs` | Geometry test at 7 viewports; no horizontal scroll | UIQ-04 | B | ChatGPT | – | todo |
 | UIQ-07 | iPad adaptive root: `.sidebarAdaptable`, split view, inspector, state kept through rotation | UI test rotates and keeps the selection; iPhone UI test passes | UIQ-05 | C | Claude | Sonnet | todo |
 | UIQ-08 | React Aria pilot: dependency, `Button`, `Toggle`, `SelectField`, `Dialog`; ESLint import rule | Pilot criteria in ADR-0016 › 2 | UIQ-04 | B + dependency (Claude review) | ChatGPT | – | todo |

@@ -61,6 +61,8 @@
 
 > This section supersedes older dated snapshots below. Older entries are historical records.
 
+- **UI quality program (27 Nov 2026, Oğuz request, Claude):** ADR-0016 and `gelistirme/uiq/README.md` define the GRISTORA React UI Kit, the SwiftUI Kit, adaptive layout and the Visual Quality Gate. Done: UIQ-01, 02, 03a, 05; the contrast-dark web theme fix. ChatGPT issues #444–#447. Product status: `gelistirme/DURUM.md`. Next step: ChatGPT starts #444; Claude does UIQ-07.
+
 - **Development loop v2 (25 Nov 2026, Oğuz decision, Claude):** the Claude ↔ ChatGPT/Codex loop runs only in the cloud. Rules: `gelistirme/dongu/README.md`, Codex: `AGENTS.md`, decision: ADR-0011. Claude side: loop session `session_01DL3udGsAD478rdQFh8h2an` + hourly task (`:17` UTC). Verified: Codex answers an `@codex` comment that Claude writes (needs a Codex cloud environment). Stop switch: `loop:pause` on #344. Owner steps: README › 9. Pilot: #345, #346. Next step: owner creates the Codex environment and the two ChatGPT tasks.
 
 - **Open for the next session (20 Nov 2026, Oğuz):** decide a small colour change in the app design system. Proposal: move the app accent fill (`tint-fill`, now `#e8901f`) towards the site amber `#F4A261`. Keep the text amber (`tint` `#985600`) for the 4.5:1 contrast. Do not use the site forest green `#0B2F26` in the app interface; green means "OK" there. If Oğuz approves: update the tokens in light, dark and high contrast, run the contrast check, run `ios/scripts/gen_colors.py`, then update and publish the concept and the design system.

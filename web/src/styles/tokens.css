@@ -237,8 +237,36 @@
   }
 }
 
+/* Explicit dark + high contrast: the dark base, then the contrast-dark overrides. */
 :root[data-theme="contrast-dark"] {
   color-scheme: dark;
+  --bg: #000000;
+  --card: #1c1c1e;
+  --fill: #2c2c2e;
+  --fill2: #1c1c1e;
+  --sep: rgba(84,84,88,.6);
+  --label: #ffffff;
+  --label2: rgba(235,235,245,.62);
+  --label3: rgba(235,235,245,.32);
+  --tint: #F4A261;
+  --tint-fill: #F4A261;
+  --tint-ink: #1a1206;
+  --tint-soft: rgba(244,162,97,.18);
+  --green: #30d158;
+  --yellow: #ffd60a;
+  --red: #ff453a;
+  --blue: #0a84ff;
+  --frame: #3a3a3c;
+  --hp-bg: #2b2c2e;
+  --hp-tile: #3a3b3e;
+  --hp-ink: #e6e6e8;
+  --hp-ink2: #a9a9ad;
+  --hp-track: #55565a;
+  --hp-band: #8e8f93;
+  --hp-a1: #ff5a5f;
+  --hp-a2: #ffb340;
+  --hp-a2-ink: #111111;
+  --hp-a3: #52c7e0;
   --sep: rgba(235,235,245,.45);
   --label2: rgba(235,235,245,.85);
   --tint: #ffc266;

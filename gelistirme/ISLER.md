@@ -171,7 +171,7 @@ Rules:
 | UIQ-03a structural tokens | Claude | Sonnet | – | done (2026-11-27) |
 | UIQ-03b chart palette, design system README and Artifact | Claude | Opus | – | todo |
 | UIQ-04 React Kit skeleton and gallery | ChatGPT | – | #444 | todo |
-| UIQ-05 SwiftUI Kit skeleton | Claude | Sonnet | – | active |
+| UIQ-05 SwiftUI Kit skeleton | Claude | Sonnet | – | done (2026-11-27) |
 | UIQ-06 web adaptive AppShell, `check-css.mjs` | ChatGPT | – | #447 | blocked (UIQ-04, UIQ-08) |
 | UIQ-07 iPad adaptive root | Claude | Sonnet | – | todo |
 | UIQ-08 React Aria pilot | ChatGPT | – | #445 | blocked (UIQ-04) |
