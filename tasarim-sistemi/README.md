@@ -1,4 +1,4 @@
-Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışan (Apple Watch ileride opsiyonel) bir tarif ve üretim uygulaması. Görsel dil Apple'ın kendi uygulamalarını izler: sistem yazısı, sistem renkleri, standart bileşenler ve tek bir vurgu rengi, mayşe amberi.
+GRISTORA; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web'de çalışan (Apple Watch ileride opsiyonel) bir tarif ve üretim uygulaması. Görsel dil Apple'ın kendi uygulamalarını izler: sistem yazısı, sistem renkleri, standart bileşenler ve tek bir vurgu rengi, mayşe amberi.
 
 ## İçerik ve dil
 
@@ -68,4 +68,6 @@ Demleme; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve web
 ## İkonlar ve logo
 
 - Uygulamada Apple SF Symbols kullanılır; çizgi kalınlığı metin ağırlığını izler. Konsept ve buradaki önizlemeler SF Symbols'e benzeyen basit çizgi ikonlarla çizilmiştir; web uygulamasında SF Symbols lisansı web'e izin vermediği için ayrı bir ikon seti seçilmesi gerekir.
-- Logo henüz yok; ürün adı düz yazıyla yazılır. Logo hazır olunca `assets/Logos/` grubuna eklenecek.
+- Onaylı marka dosyaları: [koyu zemin logosu](assets/brand/gristora-logo.svg) (açık yazı), [açık zemin logosu](assets/brand/gristora-logo-light.svg) (Forest Green yazı), [sembol](assets/brand/gristora-symbol.svg) (uygulama başlığında sembol ve yanında metin olarak "GRISTORA", ADR-0012 › 3), [sloganlı logo](assets/brand/gristora-logo-proof.svg). Dosyaları değiştirme.
+- Plus Jakarta Sans yalnız marka başlıkları içindir. Uygulama sistem yazısını korur.
+- Marka rengi uygulamaya yalnız vurgu olarak girer (ADR-0012 › 3): `tint-fill` açık ve koyu temada Amber Gold `#F4A261`, koyu temada `tint` de `#F4A261`. Açık temada Amber Gold yazı rengi olmaz (beyaz üzerinde 2.06:1). Yüksek karşıtlık temaları marka rengini kullanmaz. Forest Green, Stone Beige ve Slate Gray uygulamada renk token'ı olmaz; Forest Green yalnız uygulama ikonu zemininde ve yazdırılan formların sembolünde görünür.
