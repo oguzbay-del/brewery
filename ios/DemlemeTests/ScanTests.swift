@@ -105,8 +105,12 @@ struct ScanCardTests {
     @Test func notFoundProblemBecomesApiError() async {
         let body = #"{"type":"/errors/not_found","title":"Not found","status":404,"code":"not_found"}"#
         let transport = ScanTransport(resolution: body, status: .notFound)
-        await #expect(throws: APIError.self) {
+        do {
             _ = try await makeService(transport).resolve(code: "X")
+            Issue.record("expected an error")
+        } catch {
+            #expect(APIError.unwrap(error)?.status == 404)
+            #expect(APIError.unwrap(error)?.code == "not_found")
         }
     }
 

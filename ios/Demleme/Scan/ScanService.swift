@@ -9,6 +9,7 @@ protocol ScanService: Sendable {
 enum ScanServiceError: Error, Sendable, Equatable {
     case noWorkspace
     case unreadableResponse
+    case debug(String)
 }
 
 /// `POST /v1/workspaces/{workspace_id}/scan/resolve`.
@@ -30,7 +31,13 @@ struct LiveScanService: ScanService {
         encoder.dateEncodingStrategy = .iso8601
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        guard let dto = try? decoder.decode(ScanResolutionDTO.self, from: encoder.encode(resolution)),
+        let data = try encoder.encode(resolution)
+        if let dto = try? decoder.decode(ScanResolutionDTO.self, from: data),
+           dto.container == nil, dto.vessel == nil, dto.lot == nil
+        {
+            throw ScanServiceError.debug(String(data: data, encoding: .utf8) ?? "")
+        }
+        guard let dto = try? decoder.decode(ScanResolutionDTO.self, from: data),
               let card = ScanCard(dto)
         else {
             throw ScanServiceError.unreadableResponse
