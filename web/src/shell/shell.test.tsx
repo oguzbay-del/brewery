@@ -11,6 +11,7 @@ const labels: ShellLabels = {
   home: 'Home',
   recipes: 'Recipes',
   batches: 'Batches',
+  containers: 'Kegs',
   settings: 'Settings',
   readOnly: 'Read only',
   theme: 'Theme',
@@ -95,6 +96,7 @@ describe('app shell', () => {
   it('accepts only supported hash routes', () => {
     expect(readHashRoute('#/recipes')).toBe('/recipes');
     expect(readHashRoute('#/batches')).toBe('/batches');
+    expect(readHashRoute('#/containers')).toBe('/containers');
     expect(readHashRoute('#/settings')).toBe('/settings');
     expect(readHashRoute('#/unknown')).toBe('/');
   });

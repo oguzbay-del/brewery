@@ -1,4 +1,4 @@
-export const ROUTES = ['/', '/recipes', '/batches', '/settings'] as const;
+export const ROUTES = ['/', '/recipes', '/batches', '/containers', '/settings'] as const;
 export type AppRoute = (typeof ROUTES)[number];
 
 /**
@@ -9,5 +9,6 @@ export const ROUTE_MODULES: Record<AppRoute, string | null> = {
   '/': null,
   '/recipes': 'core',
   '/batches': 'core',
+  '/containers': 'production',
   '/settings': null,
 };
