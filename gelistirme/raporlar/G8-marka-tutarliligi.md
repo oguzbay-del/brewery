@@ -983,3 +983,25 @@ Kaynaklar: [EN karşılaştırma](../../marketing-site/src/pages/compare.astro),
 
 **Dil tutarsızlığı:** EN compare sayfası planlanan sürüm sırasını ve mevcut olmayan kapsamı açıklar; TR sayfası bu uyarıyı göstermez. EN how-it-works başlıklarında ve girişinde planlanan iş akışı belirtilir; TR giriş ve bölüm başlıkları doğrudan ürün akışını anlatır (cihaz istisnası iki dilde de koşulludur). Her iki dilde aynı doğrulanmış kapsamı kullan; yol haritası etiketlerini kaldırırken mevcut olmayan işlevi kesin iddiaya dönüştürme. Modül verisinin tek tek doğrulanması ayrı bölüme bırakılmıştır.
 
+
+
+### 4.5 Teknik ilkeler ve SSS (EN/TR)
+
+Kaynaklar: [EN teknik ilkeler](../../marketing-site/src/pages/technical-principles.astro), [TR teknik ilkeler](../../marketing-site/src/pages/tr/technical-principles.astro), [EN SSS](../../marketing-site/src/pages/faq.astro), [TR SSS](../../marketing-site/src/pages/tr/faq.astro).
+
+| İddia veya ilke | Durum ve kanıt | Öneri |
+|---|---|---|
+| Yöntem, girdi, birim, varsayım, örnek ve sınırlama görünür olmalı | Tasarım ilkesi; T2.16 engine.rs motor sürümü ve sonuç kaydını belgeler. §3.5. Her hesap için açıklama UI kanıtı açık. | İlkeyi mevcut ekran özelliği olarak sunma; yöntem bazında kanıt göster. |
+| Metrik, US customary, Imperial ve bölgesel gösterim | Tasarım ilkesi; §3.5 birim ve dönüşüm maddeleri. İki istemcinin tüm birim dönüşümleri henüz doğrulanmadı. | Doğrulanmış birimler ile desteklenmeyen birimleri ayır. |
+| Hedef ve fiili ölçüm ayrımı | T2.21 recipes.rs ve T2.22 batches.rs, brew_day.rs; §3.2. | Kaynak kayıtları belirt; UI doğrulaması ayrı. |
+| Elle, kağıttan ve cihazdan ölçüm, kaynak ve bağlam | T2.18 files.rs, T2.22 ölçüm ve T2.25 devices.rs. OCR ve bağlı cihaz UI akışları açık. | Desteklenen giriş ve kaynak alanlarını tek tek doğrula. |
+| Referans vaka, gerçek veri, tolerans, yöntem sürümü ve inceleyen kişi | Teknik sayfanın yayın öncesi kontrol listesi, test veya sertifikasyon sonucu değildir. T2.16 motor sürümü; formül test vektörleri ve gerçek veri kapsamı ayrıca incelenmeli. | Doğrulama kaydı olmayan hesaplama için doğrulanmış sonuç iddiası kullanma. |
+| Tahminler reçete, ekipman veya süreç ayarını sessizce değiştirmez | Tasarım ilkesi; T2.21 reçete sürümü ve ölçek önizlemesi, §3.4; cihaz kontrolü ürün kapsamı dışında. Tüm yazma yolları bu incelemede test edilmedi. | Mimari niyet ile doğrulanmış davranışı ayır. |
+| SSS: mevcut gelişim aşaması ve ev/işletme ayrımı | İki dilde SSS yanıtları planlanan kapsamı açıklar. TR'de ek GRISTORA nedir sorusu var. §4.1–4.4 kanıtları geçerli. | Kullanıcı kararı doğrultusunda yalnız doğrulanmış özellikleri yayımla; gerçek olmayan kullanılabilirlik iddiası oluşturma. |
+| SSS: plan önizlemesi hesap, deneme, ödeme oluşturmaz | §4.1–4.2: get-started kaynak kodu ve metni. | Plan seçiciyi aktif satış/abonelik akışından ayır. |
+| SSS: ERP, satış, sipariş, sevkiyat, müşterideki fıçı ve depozito, CRM, muhasebe | Açık kapsam dışı; iki dil eşleşiyor. §4.4. | Kapsam sınırını koru. |
+| SSS: Business açık API/webhook; Tilt, iSpindel, RAPT ve köprüler | İki dilde henüz kamuya açık olmadıkları belirtilir. T2.25 cihaz API'si; §3.6. Kamu API ve marka entegrasyonu kanıtı yok. | İç API ile müşteriye açık API'yi ayır; doğrulanmamış cihaz/marka iddialarını çıkar. |
+| SSS: Ev tek kullanıcı, Business beşerli gruplar 20'ye kadar, 3/1 ay deneme ve indirim | §4.1–4.2; T2.28 abonelik API'si, #427 açık. Fiyat, ticari onay ve aktif deneme/ödeme ayrı konular. | Kesin fiyat, aktif ücretsiz plan veya deneme iddiası kullanma. |
+
+Teknik ilkelerin altı maddesi iki dilde eşleşiyor; bunlar uygulama sertifikası değil, tasarım ve yayın standardıdır. EN SSS sekiz, TR dokuz soru içerir; ek TR sorusu ürün tanımıdır. SSS yanıtları FAQPage yapılandırılmış verisine de taşınır. Dolayısıyla metin güncellemesi yapılırsa meta açıklamalar ve yapılandırılmış veri de aynı doğrulanmış kapsamı yansıtmalıdır. Uygulama ve pazarlama koduna bu rapor kapsamında müdahale edilmedi.
+
