@@ -4,6 +4,8 @@ An isolated Astro + TypeScript + static-site project for the GRISTORA public mar
 
 ## Brand and design source of truth
 
+Read [`DESIGN-EXCELLENCE.md`](./DESIGN-EXCELLENCE.md) for the marketing-only UI Kit, Linear and Aesop art direction, visual quality gates and phased implementation plan. Live work status remains in GitHub Issues.
+
 **Read [`DESIGN.md`](./DESIGN.md) before making any visual or UI change to the public marketing website.** It is the implementation source of truth for the owner-approved GRISTORA brand-board direction and applies only to `marketing-site/`.
 
 Read [`BRAND-ASSETS.md`](./BRAND-ASSETS.md) for approved logo asset filenames, the recorded palette and asset usage rules. Read [`PHOTO-ASSETS.md`](./PHOTO-ASSETS.md) for the source archive, photo replacement map, responsive formats and build-time optimization. Track final release-readiness evidence in [`ACCEPTANCE.md`](./ACCEPTANCE.md); W12 must pass against the current `main` baseline, not an outdated preview branch.
