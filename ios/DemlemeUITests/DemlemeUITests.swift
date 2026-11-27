@@ -77,7 +77,7 @@ final class DemlemeUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["scan.card"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.descendants(matching: .any)["scan.action.change_status"].exists)
         XCTAssertFalse(app.descendants(matching: .any)["scan.action.fill"].exists)
-        XCTAssertFalse(app.descendants(matching: .any)["scan.action.retire"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["scan.action.recall"].exists)
     }
 
     @MainActor
@@ -108,7 +108,7 @@ final class DemlemeUITests: XCTestCase {
         let action = app.buttons["scan.action.change_status"]
         XCTAssertTrue(action.waitForExistence(timeout: 5))
         action.tap()
-        let dirty = app.buttons["Dirty"]
+        let dirty = app.buttons["Dirty"].firstMatch
         XCTAssertTrue(dirty.waitForExistence(timeout: 5))
         dirty.tap()
         XCTAssertTrue(app.staticTexts["scan.action_done"].waitForExistence(timeout: 5))
