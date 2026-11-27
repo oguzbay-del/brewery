@@ -1,6 +1,6 @@
 # ADR-0015: MCP sunucusu ve OAuth 2.1
 
-**Durum:** Önerildi · **Tarih:** 27 Kasım 2026 · **İş:** M1 ([#389](https://github.com/oguzbay-del/brewery/issues/389))
+**Durum:** Kabul edildi (Oğuz, 2026-11-27) · **Tarih:** 27 Kasım 2026 · **İş:** M1 ([#389](https://github.com/oguzbay-del/brewery/issues/389))
 
 ## Bağlam
 
@@ -38,17 +38,17 @@ Kaynak: [MCP Authorization](https://modelcontextprotocol.io/specification/2026-0
 ### 1. Yerleşim: Rust, API sürecinde, iki kaynak
 
 1. **Yetkilendirme sunucusu (AS)** API sürecinde yeni bir modüldür (`api::oauth`). Ayrı kimlik servisi kurulmaz (ADR-0009 › Bağlam: kimlik kodu kendimizde). Yayın adı `https://auth.gristora.com` (ADR-0012 madde 2); bu adres `issuer`'dır.
-2. **MCP sunucusu** da API sürecinde, ayrı yönlendiricide çalışır (`api::mcp`; M3). Yayın adı ve kanonik kaynak adresi önerisi `https://mcp.gristora.com/mcp`. Bu alt alan ADR-0012 tablosunda yoktur (Açık kararlar).
+2. **MCP sunucusu** da API sürecinde, ayrı yönlendiricide çalışır (`api::mcp`; M3). Kanonik kaynak adresi `https://api.gristora.com/mcp`; ayrı alt alan açılmaz (Oğuz, 2026-11-27). ADR-0012 alan adı tablosu değişmez.
 3. **Araçlar `/v1` servislerini süreç içinde çağırır.** Her araç, ilgili `/v1` işleminin işleyici mantığını aynı `RequestContext`, aynı `api::authz` denetimi ve aynı RLS bağlamıyla çalıştırır. MCP iç HTTP isteğiyle API'ye gitmez. Neden: iç HTTP çağrısı ya gelen belirteci API'ye iletmeyi (belirtimde yasak) ya da ikinci bir belirteç türünü gerektirirdi.
 4. **Sunucu kodu tamamen Rust'tır.** İstemciye hesap kodu gitmez. Araçlar hesap motorunun sonucunu döndürür; formül, katsayı tablosu veya motor kodu hiçbir araç çıktısında yoktur. Ajan türetilmiş sayı (OG, IBU, renk, ABV, maliyet) yazamaz; taslak ve ölçümde yalnız kullanıcının girdisi (malzeme miktarı, ölçülen değer) kabul edilir, türetilmiş değerleri motor üretir.
-5. **İki kaynak (audience):** `https://mcp.gristora.com/mcp` (MCP) ve `https://api.gristora.com/v1` (İşletme açık API'si, madde 9). Belirteç tek kaynağa bağlıdır. MCP belirteci `/v1`'de, açık API belirteci MCP'de `401` alır.
+5. **İki kaynak (audience):** `https://api.gristora.com/mcp` (MCP) ve `https://api.gristora.com/v1` (İşletme açık API'si, madde 9). Belirteç tek kaynağa bağlıdır. MCP belirteci `/v1`'de, açık API belirteci MCP'de `401` alır.
 
 ### 2. Yetkilendirme sunucusu
 
 1. **Akış:** yalnız yetkilendirme kodu ve PKCE `S256`. `plain` ve örtük akış (implicit) yoktur; parola akışı yoktur. `state` zorunludur. Yanıt `iss` parametresini taşır ve üst veri `authorization_response_iss_parameter_supported: true` yazar.
 2. **Üst veri:**
    - AS: `https://auth.gristora.com/.well-known/oauth-authorization-server` (RFC 8414). İçerik: `issuer`, `authorization_endpoint`, `token_endpoint`, `revocation_endpoint` (RFC 7009), `registration_endpoint`, `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true`, `scopes_supported`, `grant_types_supported: ["authorization_code", "refresh_token"]`, `token_endpoint_auth_methods_supported: ["none", "private_key_jwt"]`.
-   - MCP: `https://mcp.gristora.com/.well-known/oauth-protected-resource` (RFC 9728): `resource`, `authorization_servers: ["https://auth.gristora.com"]`, `scopes_supported` (madde 3'teki okuma kapsamları; yazma kapsamları istendikçe alınır), `bearer_methods_supported: ["header"]`.
+   - MCP: `https://api.gristora.com/.well-known/oauth-protected-resource/mcp` (RFC 9728, yol eklemeli adres): `resource: "https://api.gristora.com/mcp"`, `authorization_servers: ["https://auth.gristora.com"]`, `scopes_supported` (madde 3'teki okuma kapsamları; yazma kapsamları istendikçe alınır), `bearer_methods_supported: ["header"]`.
    - OIDC Discovery sunulmaz; RFC 8414 yeterlidir. OIDC kimlik belirteci (`id_token`) verilmez.
 3. **İstemci kaydı:**
    - **CIMD birincil yoldur.** AS `client_id` adresinden belgeyi çeker. Kurallar: yalnız HTTPS, yalnız 443, özel ve yerel IP aralıkları ile yönlendirme zinciri reddedilir (SSRF), yanıt en çok 5 KiB, 5 sn zaman aşımı, HTTP önbellek başlıklarına göre en çok 24 saat önbellek. Belgedeki `client_id` adresle birebir aynı olmalıdır. Yönlendirme adresi belgedekiyle birebir eşleşir.
@@ -56,7 +56,7 @@ Kaynak: [MCP Authorization](https://modelcontextprotocol.io/specification/2026-0
    - **Ön kayıt** yalnız bizim tanıdığımız istemciler içindir (ör. ileride resmî entegrasyonlar). İlk sürümde ön kayıtlı istemci yoktur.
    - Kayıt kendi başına hiçbir erişim vermez; erişim yalnız kullanıcı onayıyla doğar.
 4. **Belirteç biçimi:** erişim ve yenileme belirteçleri opaktır; 32 rastgele bayt, önekli (`gso_at_`, `gso_rt_`). JWT kullanılmaz. Neden: oturumda olduğu gibi (ADR-0009 madde 3.1) iptal anında geçerli olmalıdır. Veritabanında yalnız SHA-256 özeti tutulur. Önek, iOS oturum belirteciyle (ADR-0009 madde 3.6, aynı `Authorization: Bearer` başlığı) karışmayı önler: API önekten belirteç türünü seçer, türü tutmayan belirteci `401` ile reddeder.
-5. **Süreler** (öneri, `to be verified`):
+5. **Süreler** (Oğuz kabul etti, 2026-11-27):
 
    | Belirteç | Süre |
    |---|---|
@@ -78,10 +78,11 @@ Kaynak: [MCP Authorization](https://modelcontextprotocol.io/specification/2026-0
 1. **Kimlik:** onay ekranına giriş ADR-0009'daki oturumla yapılır (Apple, Google, e-posta bağlantısı). OAuth belirteci yeni oturum açmaz, çerez taşımaz, `sessions` tablosuna yazılmaz. CSRF denetimi Bearer'la gelen istekte olduğu gibi yoktur.
 2. **Tek çalışma alanı:** onay tek bir çalışma alanı için verilir. Belirteç `(kullanıcı, çalışma alanı, istemci, kapsamlar, kaynak)` beşlisine bağlıdır. Araçlar çalışma alanı kimliğini parametre olarak almaz; kimlik belirteçten gelir. `/v1` açık API'sinde yoldaki çalışma alanı belirteçtekiyle tutmazsa `404` döner (M2 bitti ölçütü).
 3. **Etkin izin = kapsam ∩ rol:** her istekte kullanıcının o çalışma alanındaki etkin izinleri ADR-0009 madde 8.4'teki gibi hesaplanır (`authz_version` önbelleği). Kapsam bu kümeyi daraltır, hiçbir zaman genişletmez. Rol değişirse, üye devre dışı kalırsa veya çıkarılırsa belirteç bir sonraki istekte buna uyar. Kapsamlı atamalar (`recipe`, `batch`, `vessel`, `area`) aynen uygulanır; kapsam dışı kayıt `404` döner.
-4. **Alan gizleme:** `cost.view` izni olmayana maliyet alanları araç çıktısında da yoktur (ADR-0009 madde 8.5, `RequestContext::redact`). İlk sürümde maliyet alanları MCP çıktısına hiç girmez; açılıp açılmayacağı Açık kararlardadır.
+4. **Alan gizleme:** `cost.view` izni olmayana maliyet alanları araç çıktısında da yoktur (ADR-0009 madde 8.5, `RequestContext::redact`). Maliyet alanları yalnız ayrı `costs:read` kapsamı verilmişse ve kullanıcının `cost.view` izni varsa MCP çıktısına girer; kapsam yoksa alanlar çıktıda bulunmaz (Oğuz, 2026-11-27). `costs:read` onay ekranında ayrı ve açık gösterilir (madde 8).
 5. **İkinci adım:** OAuth belirteci ikinci adım koşulunu hiçbir zaman sağlamaz. `ProtectedAction` listesindeki işlemler (ADR-0009 madde 5.3) ve izinlerden `users.manage`, `workspace.manage`, `billing.manage`, `support.grant`, `devices.manage` hiçbir kapsamla OAuth'a açılmaz. Böyle bir uç OAuth belirteciyle çağrılırsa `403 forbidden` döner, `step_up_required` dönmez.
-6. **Onay için ikinci adım:** Ev'de onay geçerli bir oturum ister. İşletme'de yazma kapsamı içeren onay ikinci adım ister (passkey, 15 dakika; ADR-0009 madde 5.3). Bu kural İşletme yöneticisinin passkey zorunluluğuna (madde 5.4) dokunmaz. Kuralın kesinleşmesi Açık kararlardadır.
+6. **Onay ve bağlantı yönetimi (Oğuz, 2026-11-27):** Onay, Ev'de de İşletme'de de geçerli bir oturum ister. İşletme'de yazma kapsamı için passkey ikinci adımı yoktur. Bu kural İşletme yöneticisinin passkey zorunluluğuna (ADR-0009 madde 5.4) dokunmaz. Üyeler kendi bağlantılarını kendileri yönetir (onay verme, kapsam daraltma, kaldırma). İlk sürümde yönetici üyelerin bağlantılarını görmez ve kaldıramaz.
 7. **Abonelik ve modül:** ürün modülü kapalı ya da salt okunursa (`module_access`) araç `/v1` ile aynı sonucu verir: yazma `403 entitlement_required`, okuma açık. `tools/list` yalnız o çalışma alanında modülü açık olan araçları gösterir.
+8. **Plan (Oğuz, 2026-11-27):** Ev'de MCP ücretli Ev planı ister (`PAID_FEATURE`); deneme süresinde de açıktır. Ücretsiz Ev'de onay verilmez ve mevcut belirteç `403 entitlement_required` döner.
 
 ### 4. Kapsamlar ve araçlar
 
@@ -96,6 +97,7 @@ Kaynak: [MCP Authorization](https://modelcontextprotocol.io/specification/2026-0
 | `recipes:draft` | yazma | Taslak tarif ve taslak sürüm oluşturma ve düzenleme |
 | `measurements:write` | yazma | Partiye ölçüm ekleme |
 | `shopping:write` | yazma | Alışveriş listesine ekleme ve düzenleme |
+| `costs:read` | okuma | Maliyet alanlarını görme (ayrı kapsam; `cost.view` izni de gerekir) |
 | `offline_access` | – | Yenileme belirteci (yalnız AS üst verisinde) |
 
 **Sınır işlem listesiyle çizilir.** MCP'nin çağırabileceği `/v1` işlemleri koddaki tek bir izin listesindedir (`operation_id` → kapsam). Listede olmayan işlem MCP'den çağrılamaz. Bir test, listedeki her işlemin `x-permission` değerini ve modülünü okur; yayımlama, onaylama, silme, durum geçişi, stok hareketi ve korumalı işlem listeye girerse test düşer (M3 bitti ölçütü). `recipe_version_publish` aynı izni (`recipe.edit`) taşısa da listede yoktur.
@@ -122,6 +124,7 @@ Kaynak: [MCP Authorization](https://modelcontextprotocol.io/specification/2026-0
 | `add_to_shopping_list` | `shopping:write` | Y | `POST {ws}/shopping-list/from-recipe`, `PATCH {ws}/shopping-list/{id}` | `stock.move` | `stock` |
 
 Notlar:
+- `costs:read` tek başına araç eklemez; okuma araçlarının çıktısına maliyet alanlarını ekler (madde 3.4). Onay ekranında kendi satırıyla ve vurgulu gösterilir.
 - Okuma işlemlerinin hepsi bugün `recipe.view` ister (ör. `stock_lot_list`, `measurement_list`). Kapsam ayrımı bu yüzden işlem düzeyindedir; izin matrisine yeni izin eklenmez.
 - `search` birden çok kayıt türü döndürür ([`search.rs`](../sunucu/crates/api/src/search.rs)). Araç, belirteçte kapsamı olmayan türün sonuçlarını çıkarır.
 - `update_draft_version` yayımlanmış sürüme yazamaz; `/v1` zaten değişmez sürümü reddeder (ADR-0007, değişmez sürüm tetikleyicisi). Araç bunu ayrıca denetler.
@@ -136,7 +139,7 @@ Notlar:
 2. **Yeni sütunlar (M2 göçü):** `audit_log.via` (`app`, `mcp`, `api`; varsayılan `app`), `audit_log.oauth_client_id`, `audit_log.oauth_grant_id`, `audit_log.oauth_scope`. `actor_kind` `user` kalır; işlemi yapan kullanıcıdır, istemci aracıdır. Neden yeni sütun: değer `new_value` JSON'una gömülürse sorgu ve müşteriye görünen geçmiş zorlaşır.
 3. Yeni sütunlar özet zincirine girer (RFC 8785 kanonik biçim). `audit-verify` aracı ve zincir sürümü buna göre güncellenir; eski satırlar eski biçimle doğrulanır (M2).
 4. **AS olayları da denetime yazılır:** onay verme, kapsam genişletme, onay kaldırma, yenileme belirtecinin tekrar kullanımı ve zincir iptali. Bunlar onayın çalışma alanına yazılır.
-5. **Okumalar** denetim zincirine yazılmaz (bugün `/v1` okumaları da yazılmaz). Okuma için istemci başına son kullanım zamanı ve günlük sayaç tutulur; Bağlı uygulamalar ekranı bunları gösterir. ISLER M3 bitti ölçütü "each call writes an audit row" der; okuma çağrılarının da zincire yazılıp yazılmayacağı Açık kararlardadır.
+5. **Okumalar** denetim zincirine satır yazmaz (bugün `/v1` okumaları da yazılmaz); yalnız uygulama günlüğüne yazılır (Oğuz, 2026-11-27). Yalnız MCP üzerinden yapılan yazma çağrıları denetim zincirine girer. M3 bitti ölçütü buna göre okunur: "her yazma çağrısı bir denetim satırı yazar; okuma çağrısı yazmaz" (ISLER M3'teki "each call writes an audit row" ifadesi bu karara göre düzeltilir). Bağlı uygulamalar ekranı için `oauth_grants` kaydında yalnız son kullanım zamanı güncellenir.
 6. Kullanıcıya ve yöneticiye görünen geçmiş, satırda "MCP üzerinden · <istemci adı>" etiketini gösterir (M4).
 
 ### 6. İstem enjeksiyonu ve veri sızması
@@ -166,7 +169,7 @@ Notlar:
 
 ### 7. Hız sınırları
 
-Mevcut Redis sabit pencere düzeni (`ratelimit.rs`) yeni anahtarlarla kullanılır. Değerler öneridir, `to be verified`:
+Mevcut Redis sabit pencere düzeni (`ratelimit.rs`) yeni anahtarlarla kullanılır. Değerler taslaktaki gibi kabul edildi (Oğuz, 2026-11-27):
 
 | Anahtar | Sınır |
 |---|---|
@@ -188,7 +191,7 @@ Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlı
    - istemci adı ve logosu (CIMD veya DCR belgesinden), yanında "doğrulanmamış" işareti (ilk sürümde her istemci doğrulanmamıştır);
    - `client_id` ana bilgisayarı ve yönlendirme adresinin ana bilgisayarı (belirtimde zorunlu); yalnız `localhost` adresi varsa ayrı uyarı;
    - çalışma alanı seçimi (tek seçim);
-   - kapsamlar, okuma ve yazma diye iki grupta, düz dille (madde 4 tablosu); kullanıcının rolünün vermediği kapsam gri ve "rolünüz izin vermiyor" notuyla;
+   - kapsamlar, okuma ve yazma diye iki grupta, düz dille (madde 4 tablosu); `costs:read` kendi satırında, "maliyet bilgilerinizi görür" uyarısıyla ayrıca ve belirgin gösterilir; kullanıcının rolünün vermediği kapsam gri ve "rolünüz izin vermiyor" notuyla;
    - "Ajan yayımlayamaz, onaylayamaz, silemez" sabit metni; Bağlı uygulamalar'dan kaldırma bilgisi.
 3. Kullanıcı yazma kapsamlarını tek tek kaldırabilir. Onay verilen kapsamlar istenenden dar olabilir; belirteç yanıtı verilen `scope` değerini yazar.
 4. Aynı istemci aynı çalışma alanı için yeni kapsam isterse (`insufficient_scope` sonrası) ekran yalnız yeni kapsamları gösterir; onay mevcut grant'ı genişletir.
@@ -198,9 +201,9 @@ Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlı
 
 1. Aynı AS, aynı tablolar, aynı onay ekranı ve aynı Bağlı uygulamalar ekranı. Kaynak `https://api.gristora.com/v1`; belirteç bu kaynağa bağlıdır.
 2. `/v1` uçları OAuth belirteci kabul ettiğinde ADR-0008'in bütün kuralları geçerlidir. OpenAPI'ye üçüncü güvenlik şeması (`oauth2`, yetkilendirme kodu akışı) eklenir; ADR-0008 madde 12.4 buna göre güncellenir. Her uç kendi kapsamını `x-oauth-scope` ekiyle bildirir; kapsam bildirmeyen uç OAuth'a kapalıdır.
-3. Açık API, MCP'deki kapsamları yeniden kullanır ve yeni kapsamlar ekleyebilir (ör. parti planlama). Açık API'nin kapsam kataloğu, sürüm politikası ve makineden makineye erişim (`client_credentials`, servis hesabı) ayrı bir ADR'dir; bu kayıt yalnız temeli kurar.
+3. Açık API, MCP'deki kapsamları yeniden kullanır ve yeni kapsamlar ekleyebilir (ör. parti planlama). İlk sürümde yalnız bir kullanıcı adına erişim vardır (yetkilendirme kodu akışı). Makineden makineye erişim (`client_credentials`, servis hesabı) sonraya bırakıldı (Oğuz, 2026-11-27). Açık API'nin kapsam kataloğu, sürüm politikası ve makineden makineye erişim ayrı bir ADR'dir; bu kayıt yalnız temeli kurar.
 4. Madde 3.5 açık API'de de geçerlidir: korumalı işlemler ve yönetim izinleri OAuth'a açılmaz.
-5. Açık API yalnız İşletme planında açılır; Ev'de `/v1` OAuth belirteci kabul etmez (plan › özellik tablosu: "MCP ile kendi ajanını bağla, açık API").
+5. Açık API yalnız İşletme planında açılır (Oğuz, 2026-11-27); Ev'de `/v1` OAuth belirteci kabul etmez (plan › özellik tablosu: "MCP ile kendi ajanını bağla, açık API").
 
 ### 10. Tehdit listesi (kısa, ADR-0009 madde 12'ye ek)
 
@@ -221,7 +224,7 @@ Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlı
 - MCP ve açık API yeni bir kimlik sistemi getirmez; ADR-0009 yetkisinin üstünde kapsamla daralan bir katmandır. İzin matrisi değişmez.
 - ADR-0007'ye ek: `oauth_*` tabloları ve `audit_log` sütunları (`via`, `oauth_client_id`, `oauth_grant_id`, `oauth_scope`); denetim zinciri biçimi bir sürüm ilerler.
 - ADR-0008'e ek: OAuth güvenlik şeması, `x-oauth-scope` eki, OAuth belirteci için `WWW-Authenticate` yanıtları (`401` ve `403 insufficient_scope`).
-- ADR-0012 alan adı tablosuna `mcp.gristora.com` eklenir (owner onayıyla).
+- ADR-0012 alan adı tablosu değişmez: MCP `api.gristora.com/mcp` adresindedir, yeni alt alan yoktur.
 - Her yeni `/v1` işlemi MCP'ye ancak izin listesine bilinçli olarak eklenirse açılır.
 - DCR belirtimde kaldırılınca bizde de kapatılır; CIMD kalıcı yoldur.
 
@@ -235,6 +238,7 @@ Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlı
 - Belirtecin birden çok çalışma alanına erişmesi: bir enjeksiyon bütün çalışma alanlarına yayılır.
 - Kapsamı izinle bire bir eşlemek: yayımlama ve taslak düzenleme aynı izni (`recipe.edit`) taşır.
 - MCP'de silme ve yayımlama araçları: plan kararıyla kapalı.
+- Ayrı `mcp.gristora.com` alt alanı: owner kararıyla `api.gristora.com/mcp` kullanılır; ADR-0012 tablosuna yeni satır gerekmez.
 - MCP sunucusunu TypeScript veya Python SDK ile yazmak: sunucu kodunun tamamı Rust'tır.
 
 ## İzleyen işler
@@ -248,12 +252,10 @@ Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlı
 
 ## Açık kararlar (owner)
 
-1. **MCP alan adı:** `mcp.gristora.com` mi, yoksa `api.gristora.com/mcp` mi? İlki ADR-0012 tablosuna yeni satır ister.
-2. **Okuma çağrılarının denetimi:** ISLER M3 "each call writes an audit row" der. Okumalar da denetim zincirine mi yazılsın (hacim ve gizlilik), yoksa yalnız son kullanım ve günlük sayaç mı tutulsun (öneri)?
-3. **Maliyet alanları:** `cost.view` izni olan kullanıcı için MCP çıktısında maliyet görünsün mü? Öneri: ilk sürümde hayır, ayrı `cost:read` kapsamıyla sonra.
-4. **İşletme'de onay kuralı:** yazma kapsamı veren onay ikinci adım (passkey) istesin mi (öneri: evet)? İşletme yöneticisi üyelerin onaylarını görüp kaldırabilsin mi, ve çalışma alanı ayarıyla MCP'yi tümden kapatabilsin mi?
-5. **Süreler:** erişim 1 saat, yenileme 30/90 gün, 90 günde yeniden onay uygun mu?
-6. **Hız sınırları:** madde 7'deki değerler; yazma araçlarında Redis yokken kapalı kalma (fail closed) istenir mi?
-7. **DCR:** geriye uyumluluk için açılsın mı (öneri: evet, belirtimdeki kaldırma tarihine kadar)? Bilinen istemciler (Claude, ChatGPT) için alan adına dayalı güven listesi ve "doğrulanmış" işareti istenir mi?
-8. **Plan ve ücret:** MCP Ev'de ücretsiz modüllere mi bağlı, ücretli hak (`PAID_FEATURE`) mı ister? Açık API yalnız İşletme mi?
-9. **Açık API kapsamı:** makineden makineye erişim (`client_credentials`, servis hesabı) ilk açık API sürümünde gerekli mi?
+Oğuz 2026-11-27'de şu soruları karara bağladı; kararlar yukarıdaki maddelere işlendi: MCP alan adı (madde 1.2), okuma denetimi (madde 5.5), maliyet alanları (madde 3.4, 4), İşletme onay kuralı ve üye bağlantıları (madde 3.6), süreler (madde 2.5), hız sınırı değerleri (madde 7), DCR ve CIMD (madde 2.3), plan (madde 3.8, 9.5), açık API kapsamı (madde 9.3).
+
+Cevap bekleyen kalanlar:
+
+1. **Çalışma alanı kapatma anahtarı:** İşletme yöneticisi, çalışma alanı ayarıyla MCP'yi tümden kapatabilsin mi?
+2. **Hız sınırı, Redis kaybı:** yazma araçlarında Redis yokken kapalı kalma (fail closed) istenir mi? (Madde 7'deki değerler kabul edildi.)
+3. **Bilinen istemciler:** Claude ve ChatGPT için alan adına dayalı güven listesi ve "doğrulanmış" işareti istenir mi? İlk sürümde her istemci doğrulanmamıştır (madde 8.2).
