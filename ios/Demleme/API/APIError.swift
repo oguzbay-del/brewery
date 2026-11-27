@@ -26,21 +26,21 @@ public enum APIError: Error, Sendable, Equatable {
     }
 }
 
-extension APIError {
-    /// Fields of `ProblemDetails` the client needs. The body is decoded here so the mapping
-    /// does not depend on generated type names.
-    private struct ProblemBody: Decodable {
-        let code: String
-        let status: Int?
-        let title: String?
-        let requestId: String?
+/// Fields of `ProblemDetails` the client needs. The body is decoded here so the mapping
+/// does not depend on generated type names.
+private struct ProblemBody: Decodable {
+    let code: String
+    let status: Int?
+    let title: String?
+    let requestId: String?
 
-        enum CodingKeys: String, CodingKey {
-            case code, status, title
-            case requestId = "request_id"
-        }
+    enum CodingKeys: String, CodingKey {
+        case code, status, title
+        case requestId = "request_id"
     }
+}
 
+extension APIError {
     /// Maps an error response to an `APIError`.
     /// - Parameters:
     ///   - status: HTTP status code of the response.
