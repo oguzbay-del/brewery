@@ -44,6 +44,27 @@ def check_project_yml():
                 err(f"project.yml missing {needle!r} (simple check; PyYAML not installed)")
 
 
+def check_api_client():
+    api = IOS / "Demleme/API"
+    for name in ("openapi-generator-config.yaml", "APIClient.swift", "APIError.swift"):
+        if not (api / name).is_file():
+            err(f"Demleme/API/{name} missing")
+    spec = api / "openapi.json"
+    if not spec.is_file():
+        err("Demleme/API/openapi.json missing or a broken symlink")
+    else:
+        try:
+            json.loads(spec.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            err(f"Demleme/API/openapi.json: invalid JSON: {e}")
+    text = (IOS / "project.yml").read_text(encoding="utf-8")
+    for pkg in ("swift-openapi-generator", "swift-openapi-runtime", "swift-openapi-urlsession"):
+        if pkg not in text:
+            err(f"project.yml missing package {pkg}")
+    if "exactVersion" not in text:
+        err("project.yml packages must use exactVersion")
+
+
 def check_colorsets():
     sets = sorted((IOS / "Demleme/Resources/Assets.xcassets/Colors").glob("*.colorset/Contents.json"))
     if not sets:
@@ -86,6 +107,7 @@ def check_generator():
 
 def main():
     check_project_yml()
+    check_api_client()
     check_colorsets()
     check_generator()
     if errors:
