@@ -93,11 +93,19 @@ pub enum AuditEvent {
     DataExport,
     /// Account deletion was requested or carried out.
     AccountDelete,
+    /// A user gave or widened an OAuth grant (consent).
+    OauthGrant,
+    /// An OAuth grant was revoked (user, client, workspace switch, or token reuse).
+    OauthGrantRevoke,
+    /// A closed refresh token came back; the grant chain was revoked.
+    OauthRefreshReuse,
+    /// An administrator turned MCP on or off for the workspace.
+    McpSwitch,
 }
 
 impl AuditEvent {
     /// Every event kind.
-    pub const ALL: [Self; 33] = [
+    pub const ALL: [Self; 37] = [
         Self::RoleCreate,
         Self::RoleUpdate,
         Self::RoleDelete,
@@ -131,6 +139,10 @@ impl AuditEvent {
         Self::PackageTypeCreate,
         Self::DataExport,
         Self::AccountDelete,
+        Self::OauthGrant,
+        Self::OauthGrantRevoke,
+        Self::OauthRefreshReuse,
+        Self::McpSwitch,
     ];
 
     /// The value stored in `audit_log.action`.
@@ -170,6 +182,10 @@ impl AuditEvent {
             Self::PackageTypeCreate => "package_type.create",
             Self::DataExport => "data.export",
             Self::AccountDelete => "account.delete",
+            Self::OauthGrant => "oauth.grant",
+            Self::OauthGrantRevoke => "oauth.grant_revoke",
+            Self::OauthRefreshReuse => "oauth.refresh_reuse",
+            Self::McpSwitch => "mcp.switch",
         }
     }
 

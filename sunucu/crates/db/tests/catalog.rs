@@ -51,6 +51,11 @@ const OWNER_LOOKUP: &[&str] = &[
     "notification_preferences",
     "support_requests",
     "export_jobs",
+    "oauth_clients",
+    "oauth_grants",
+    "oauth_requests",
+    "oauth_codes",
+    "oauth_tokens",
 ];
 
 /// Shared-library tables (`workspace_id` NULL = shared row): `app_owner` seeds them through the
