@@ -139,6 +139,7 @@ Rules:
 4. If a subagent fails, give only that task to the next higher model. Do not move all tasks to Opus.
 5. Run a full workspace test only once, at the end of a task. Filter the test output.
 6. If the remaining usage is low, do reviews and merges first. Then stop and write the open items in the run report.
+7. ChatGPT Work (owner decision, 2026-11-25, #344): ChatGPT may use parallel subagents for independent tasks when this saves time or usage. Apply rules 1 to 4 of this section: a maximum of 2 parallel subagents, small checks in the main session, the lowest model that does the task correctly. ChatGPT selects the model and the reasoning level for each task. It does not ask the owner again. Scope, review, budget and production rules do not change.
 
 ## 8. Watchdog (hourly)
 
@@ -210,6 +211,8 @@ Rules:
 4. `status:ready` issues: class C security first, then other product, then marketing; lowest number first. Start at most 3 issues. Take only issues that change different files and have no common migration number.
 5. A `status:in-progress` issue with no open PR and no branch update for more than 2 hours (for example #326 and #370 on 2026-11-26): open a draft PR from its branch this run, or write a checkpoint with the reason. These issues block #392, #365 and #391, so they come before new work.
 6. Migration order: a task that adds a migration takes the lowest free number after it reads the open PRs. Do the migration tasks one after the other (for example #396 before #390 step B2). Do not run them in parallel.
+7. **Waiting for Claude (owner instruction, 2026-11-27).** When an item waits for an answer, a review or a dependency change from Claude, set `status:blocked` on its issue and write the question once. Then take the next ready item in the same run. Do not check a blocked item again in later runs. Claude sets `status:ready` or `status:in-progress` again when the answer is on GitHub. Steps 1 and 2 do not apply to a blocked item.
+8. **Partial start.** When one detail of a ready issue is open, write the question and start the parts that do not depend on it. Do not stop the full issue for one question.
 
 ### 11.3 Errors and checkpoint
 
@@ -237,6 +240,8 @@ Checkpoint: when work is unfinished or an error stopped the run, write one comme
 6. Claude removes `loop:fix-requested` from a class A PR when your `fix-done` marker for the current head answers the points and the checks are green. If you see this label and a `fix-done` marker for the current head, ask in one comment on the PR and take the next item.
 7. Format failure you cannot run a formatter for (Prettier, rustfmt, SwiftFormat): read the file name and the diff lines in the job log once, and fix them in one push. If the same check fails again on the next head, do not push a third format edit. Write one `escalate` comment on the PR: the job name, the file, the command that fixes it (for example `npx prettier --write <file>` in `web/`), the head SHA, and the line "Format fix needed, please run the formatter." Then take the next item. Do not weaken a check. The Claude watchdog runs the formatter, pushes one commit to your branch, and writes a `ci-fix` marker with the new head SHA (11.6). Pull that head before you edit the file again.
 8. If a rule stops an item, set `status:blocked`, write one comment with the question, and take the next item. Do not ask for a "Devam".
+9. **Commit early (owner instruction, 2026-11-27).** In each package, push the first commit before the fourth tool call of the package: a new branch, a draft PR and a small real change (a test, a type, a stub with `TODO`). A read-only package is not a package. If ready issues exist, each run pushes at least one commit to a ready or in-progress issue. A run that only writes checkpoints for items that wait for Claude is a failed run.
+10. **Read less.** Read only the files that the issue names. Do not read `sozlesme/openapi/openapi.json` in full; read one path with a search for the path name. If a file read comes back truncated or empty, read a smaller file or a line range. Do not retry the same full read.
 
 ### 11.5 Work packages and model
 
