@@ -258,12 +258,26 @@ fn error_redirect(
         (status = 400, description = "Error about the client or redirect address", body = Object, example = json!({"error": "invalid_request", "error_description": "redirect_uri is not registered"})),
     )
 )]
-pub async fn authorize(State(state): State<AppState>, Query(p): Query<Params>) -> Response {
+pub async fn authorize(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+    connect: Option<Extension<ConnectInfo<SocketAddr>>>,
+    Query(p): Query<Params>,
+) -> Response {
+    let ip = caller_ip(&state, &headers, connect);
+    if limited(&state, format!("oauth:authz:{ip}"), 60, 60).await {
+        return OAuthError::new(
+            StatusCode::TOO_MANY_REQUESTS,
+            "temporarily_unavailable",
+            "too many authorization requests",
+        )
+        .into_response();
+    }
     // Errors about the client or the redirect address never redirect (RFC 6749 rule 4.1.2.1).
     let Some(client_id) = param(&p, "client_id") else {
         return OAuthError::bad("invalid_request", "client_id is required").into_response();
     };
-    let client = match client::resolve(&state, client_id).await {
+    let client = match client::resolve(&state, client_id, &ip).await {
         Ok(c) => c,
         Err(ClientError::Invalid(m)) => {
             return OAuthError::bad("invalid_client", m).into_response();
@@ -373,6 +387,18 @@ fn pkce_matches(verifier: &str, challenge: &str) -> bool {
     a.len() == b.len() && a.iter().zip(b).fold(0_u8, |acc, (x, y)| acc | (x ^ y)) == 0
 }
 
+fn caller_ip(
+    state: &AppState,
+    headers: &HeaderMap,
+    connect: Option<Extension<ConnectInfo<SocketAddr>>>,
+) -> String {
+    crate::ratelimit::client_ip_of(
+        headers,
+        connect.map(|c| c.0.0),
+        state.config.rate.trust_forwarded_for,
+    )
+}
+
 async fn limited(state: &AppState, key: String, limit: i64, ttl_secs: u64) -> bool {
     state
         .redis
@@ -450,11 +476,14 @@ async fn audit(
 )]
 pub async fn token(
     State(state): State<AppState>,
+    headers: HeaderMap,
+    connect: Option<Extension<ConnectInfo<SocketAddr>>>,
     Form(p): Form<Params>,
 ) -> Result<Response, OAuthError> {
+    let ip = caller_ip(&state, &headers, connect);
     let client_id = param(&p, "client_id")
         .ok_or_else(|| OAuthError::bad("invalid_request", "client_id is required"))?;
-    let client = client::resolve(&state, client_id).await?;
+    let client = client::resolve(&state, client_id, &ip).await?;
     if limited(&state, format!("oauth:token:{}", client.id), 30, 60).await {
         return Err(OAuthError::new(
             StatusCode::TOO_MANY_REQUESTS,
@@ -618,11 +647,14 @@ async fn refresh(state: &AppState, client: &Client, p: &Params) -> Result<Respon
 )]
 pub async fn revoke(
     State(state): State<AppState>,
+    headers: HeaderMap,
+    connect: Option<Extension<ConnectInfo<SocketAddr>>>,
     Form(p): Form<Params>,
 ) -> Result<Response, OAuthError> {
+    let ip = caller_ip(&state, &headers, connect);
     let client_id = param(&p, "client_id")
         .ok_or_else(|| OAuthError::bad("invalid_request", "client_id is required"))?;
-    let client = client::resolve(&state, client_id).await?;
+    let client = client::resolve(&state, client_id, &ip).await?;
     let token = param(&p, "token").ok_or_else(|| OAuthError::bad("invalid_request", "token"))?;
     let rows: Vec<(Uuid, Uuid, Uuid, bool)> =
         sqlx::query_as("SELECT * FROM oauth_token_revoke($1, $2)")
@@ -671,11 +703,7 @@ pub async fn register(
     connect: Option<Extension<ConnectInfo<SocketAddr>>>,
     body: Result<Json<Value>, axum::extract::rejection::JsonRejection>,
 ) -> Result<Response, OAuthError> {
-    let ip = crate::ratelimit::client_ip_of(
-        &headers,
-        connect.map(|c| c.0.0),
-        state.config.rate.trust_forwarded_for,
-    );
+    let ip = caller_ip(&state, &headers, connect);
     if limited(&state, format!("oauth:dcr:{ip}"), 10, 3600).await {
         return Err(OAuthError::new(
             StatusCode::TOO_MANY_REQUESTS,

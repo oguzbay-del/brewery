@@ -1333,3 +1333,36 @@ async fn client_documents_follow_the_fetch_rules(pool: PgPool) {
     .await;
     assert_eq!(r.status, StatusCode::BAD_REQUEST, "{:?}", r.body);
 }
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn search_with_a_token_leaves_out_types_without_scope(pool: PgPool) {
+    let w = world(&pool).await;
+    let session = sign_in(&w, "lena").await;
+    let ws = new_workspace(&w, &session, "business").await;
+    // A batch and a stock lot match the word, but the token has only the recipe scope.
+    sqlx::query(
+        "INSERT INTO ingredients (id, workspace_id, kind, name, source) VALUES ($1, $2, 'misc', 'Zymurgy salt', 'user')",
+    )
+    .bind(Uuid::now_v7())
+    .bind(ws)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let t = connect(&w, &session, ws, "recipes:read", API_RESOURCE).await;
+    let path = format!("/v1/workspaces/{ws}/search?q=zymurgy");
+    let r = call(&w, "GET", &path, Some(&t.access), None).await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    assert_eq!(r.body["items"][0]["type"], "ingredient");
+    for ty in ["batch", "stock"] {
+        let r = call(
+            &w,
+            "GET",
+            &format!("{path}&types={ty}"),
+            Some(&t.access),
+            None,
+        )
+        .await;
+        assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+        assert_eq!(r.body["items"], json!([]));
+    }
+}

@@ -89,7 +89,7 @@ pub async fn by_pk(pool: &PgPool, id: Uuid) -> sqlx::Result<Option<Client>> {
 ///
 /// # Errors
 /// [`ClientError`].
-pub async fn resolve(state: &AppState, client_id: &str) -> Result<Client, ClientError> {
+pub async fn resolve(state: &AppState, client_id: &str, ip: &str) -> Result<Client, ClientError> {
     if client_id.is_empty() || client_id.len() > 2048 {
         return Err(ClientError::Invalid("client_id".into()));
     }
@@ -111,7 +111,7 @@ pub async fn resolve(state: &AppState, client_id: &str) -> Result<Client, Client
     if !client_id.starts_with("http") {
         return stored.ok_or_else(|| ClientError::Invalid("unknown client".into()));
     }
-    fetch_cimd(state, client_id).await
+    fetch_cimd(state, client_id, ip).await
 }
 
 fn private(ip: IpAddr) -> bool {
@@ -125,16 +125,23 @@ fn private(ip: IpAddr) -> bool {
                 || v4.is_broadcast()
                 || v4.is_multicast()
                 || v4.is_documentation()
-                // 100.64.0.0/10 (carrier-grade NAT) and 192.0.0.0/24
+                // 0.0.0.0/8, 100.64.0.0/10 (carrier-grade NAT), 192.0.0.0/24,
+                // 198.18.0.0/15 (benchmarking) and 240.0.0.0/4 (reserved)
+                || o[0] == 0
                 || (o[0] == 100 && (o[1] & 0xc0) == 64)
                 || (o[0] == 192 && o[1] == 0 && o[2] == 0)
+                || (o[0] == 198 && (o[1] & 0xfe) == 18)
+                || o[0] >= 240
         }
         IpAddr::V6(v6) => {
             let s = v6.segments();
             v6.is_loopback()
                 || v6.is_unspecified()
                 || v6.is_multicast()
-                // fc00::/7 unique local, fe80::/10 link local
+                // fc00::/7 unique local, fe80::/10 link local, 2002::/16 (6to4) and
+                // 64:ff9b::/96 (NAT64) can carry any IPv4 address
+                || s[0] == 0x2002
+                || (s[0] == 0x64 && s[1] == 0xff9b && s[2..6].iter().all(|x| *x == 0))
                 || (s[0] & 0xfe00) == 0xfc00
                 || (s[0] & 0xffc0) == 0xfe80
                 || v6.to_ipv4_mapped().is_some_and(|v4| private(IpAddr::V4(v4)))
@@ -167,7 +174,7 @@ fn max_age(cache_control: Option<&str>) -> i64 {
     ttl.clamp(60, MAX_CACHE_SECS)
 }
 
-async fn fetch_cimd(state: &AppState, client_id: &str) -> Result<Client, ClientError> {
+async fn fetch_cimd(state: &AppState, client_id: &str, ip: &str) -> Result<Client, ClientError> {
     let insecure = state.config.oauth.allow_insecure_cimd;
     let url = Url::parse(client_id).map_err(|_| ClientError::Invalid("client_id".into()))?;
     let https_ok = url.scheme() == "https" && url.port().is_none_or(|p| p == 443);
@@ -197,6 +204,15 @@ async fn fetch_cimd(state: &AppState, client_id: &str) -> Result<Client, ClientE
             "client_id address is not allowed".into(),
         ));
     }
+    // At most 30 fetches an hour for each caller address (outside the cache).
+    if state
+        .redis
+        .incr_expire(format!("oauth:cimd-ip:{ip}"), 3600)
+        .await
+        .is_some_and(|n| n > 30)
+    {
+        return Err(ClientError::Unavailable("rate limited".into()));
+    }
     // One fetch per client address and 5 minutes (outside the cache).
     let key = format!("oauth:cimd:{}", hex(&token_hash(client_id)));
     if state
@@ -208,6 +224,7 @@ async fn fetch_cimd(state: &AppState, client_id: &str) -> Result<Client, ClientE
         return Err(ClientError::Unavailable("rate limited".into()));
     }
     let http = reqwest::Client::builder()
+        .no_proxy()
         .redirect(reqwest::redirect::Policy::none())
         .timeout(FETCH_TIMEOUT)
         .resolve(&host, addrs[0])
@@ -404,10 +421,23 @@ mod tests {
             "fd00::1",
             "fe80::1",
             "::ffff:10.0.0.1",
+            "0.1.2.3",
+            "198.18.0.1",
+            "198.19.255.255",
+            "240.0.0.1",
+            "255.255.255.255",
+            "64:ff9b::7f00:1",
+            "2002:7f00:1::1",
         ] {
             assert!(private(ip.parse().unwrap()), "{ip}");
         }
-        for ip in ["8.8.8.8", "2606:4700::1111"] {
+        for ip in [
+            "8.8.8.8",
+            "198.17.255.255",
+            "198.20.0.1",
+            "223.0.0.1",
+            "2606:4700::1111",
+        ] {
             assert!(!private(ip.parse().unwrap()), "{ip}");
         }
     }
