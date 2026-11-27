@@ -32,9 +32,8 @@ struct LiveScanService: ScanService {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         let data = try encoder.encode(resolution)
-        if let dto = try? decoder.decode(ScanResolutionDTO.self, from: data),
-           dto.container == nil, dto.vessel == nil, dto.lot == nil
-        {
+        let probe = try? decoder.decode(ScanResolutionDTO.self, from: data)
+        if let probe, probe.container == nil, probe.vessel == nil, probe.lot == nil {
             throw ScanServiceError.debug(String(data: data, encoding: .utf8) ?? "")
         }
         guard let dto = try? decoder.decode(ScanResolutionDTO.self, from: data),
