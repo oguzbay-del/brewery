@@ -17,14 +17,36 @@ settings:
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: ""
     CODE_SIGN_IDENTITY: ""
+packages:
+  # Apple packages approved in issue #370. Exact versions, no ranges.
+  swift-openapi-generator:
+    url: https://github.com/apple/swift-openapi-generator
+    exactVersion: 1.14.4
+  swift-openapi-runtime:
+    url: https://github.com/apple/swift-openapi-runtime
+    exactVersion: 1.13.4
+  swift-openapi-urlsession:
+    url: https://github.com/apple/swift-openapi-urlsession
+    exactVersion: 1.4.0
 targets:
   Demleme:
     type: application
     platform: iOS
     sources:
       - path: Demleme
+    dependencies:
+      - package: swift-openapi-runtime
+        product: OpenAPIRuntime
+      - package: swift-openapi-urlsession
+        product: OpenAPIURLSession
+    buildToolPlugins:
+      - plugin: OpenAPIGenerator
+        package: swift-openapi-generator
     settings:
       base:
+        INFOPLIST_FILE: Demleme/Info.plist
+        # Server base URL read by APIConfiguration. Override per build configuration.
+        GRISTORA_API_BASE_URL: "http://localhost:8080"
         PRODUCT_BUNDLE_IDENTIFIER: app.demleme.Demleme
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: tint
         GENERATE_INFOPLIST_FILE: YES
