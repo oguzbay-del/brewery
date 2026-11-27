@@ -191,6 +191,10 @@ pub struct WorkspaceSummary {
     pub region: String,
     /// Membership status (`active` or `disabled`).
     pub status: String,
+    /// Effective workspace-wide permission codes of the caller, sorted. Empty when the
+    /// membership is not active. Permissions limited to one recipe, batch, vessel or area are
+    /// not listed.
+    pub permissions: Vec<String>,
 }
 
 /// Response of `GET /v1/me/session`.
@@ -952,7 +956,8 @@ pub(super) async fn current_record(
                         "step_up_at": null, "csrf_token": "n0m7k4V0s2k6e1x9Q8d3b5aA7cC0uUu1wWw2yYy3zZz"},
             "user": {"id": "0192f1c0-7a3b-7000-8000-00000000000a", "display_name": "Sam Brewer", "contact_email": "sam@example.com"},
             "workspaces": [{"id": "0192f1c0-7a3b-7000-8000-00000000000c", "name": "Home brewery",
-                            "mode": "home", "region": "us", "status": "active"}]
+                            "mode": "home", "region": "us", "status": "active",
+                            "permissions": ["cost.view", "recipe.edit"]}]
         })
     ))
 )]
@@ -988,12 +993,18 @@ pub async fn session_get(Extension(svc): Svc, ctx: RequestContext) -> ApiResult<
         .await?;
         tx.commit().await?;
         if let Some((name, mode, region)) = row {
+            // Same source as the request context: the cached role permissions of the member.
+            let permissions = crate::Authenticator::membership(&*svc, &ctx.identity, workspace_id)
+                .await?
+                .map(|m| m.permissions.into_iter().collect())
+                .unwrap_or_default();
             workspaces.push(WorkspaceSummary {
                 id: workspace_id,
                 name,
                 mode,
                 region,
                 status,
+                permissions,
             });
         }
     }

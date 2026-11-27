@@ -1586,3 +1586,69 @@ async fn remaining_access_actions_need_step_up(pool: PgPool) {
         assert_eq!(r.status, success, "{path}: {:?}", r.body);
     }
 }
+
+/// Session workspace summary of `ws`, as the permission list.
+fn session_permissions(r: &Reply, ws: Uuid) -> Vec<String> {
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    r.body["workspaces"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|w| w["id"] == json!(ws))
+        .unwrap_or_else(|| panic!("workspace {ws} in session"))["permissions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|p| p.as_str().unwrap().to_owned())
+        .collect()
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn session_lists_sorted_permissions_for_each_workspace(pool: PgPool) {
+    let w = world(&pool).await;
+    let owner_a = login(&w).await;
+    let ws_a = workspace(&w, &owner_a, "business").await;
+    let owner_b = login(&w).await;
+    let ws_b = workspace(&w, &owner_b, "business").await;
+    let roles_a = roles(&w, ws_a, &owner_a).await;
+    let roles_b = roles(&w, ws_b, &owner_b).await;
+
+    // One member with a role: the list equals what the request context holds.
+    let (viewer, _) = join(
+        &w,
+        ws_a,
+        &owner_a,
+        json!({"role_id": role_id(&roles_a, "viewer")}),
+    )
+    .await;
+    let held = perms_of(&probe(&w, ws_a, &viewer).await);
+    let listed = session_permissions(&get_as(&w, "/v1/me/session", &viewer).await, ws_a);
+    assert!(!listed.is_empty());
+    assert_eq!(listed.iter().cloned().collect::<BTreeSet<_>>(), held);
+    let mut sorted = listed.clone();
+    sorted.sort();
+    assert_eq!(listed, sorted);
+
+    // The same user joins a second workspace with another role: two separate lists.
+    let email = unique_email();
+    let r = post_as(
+        &w,
+        &format!("/v1/workspaces/{ws_b}/invitations"),
+        &owner_b,
+        json!({"email": email, "role_id": role_id(&roles_b, "brewmaster")}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{:?}", r.body);
+    let r = accept(&w, &viewer, &token_for(&w, &email)).await;
+    assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
+    let session = get_as(&w, "/v1/me/session", &viewer).await;
+    assert_eq!(session.body["workspaces"].as_array().unwrap().len(), 2);
+    let in_a = session_permissions(&session, ws_a);
+    let in_b = session_permissions(&session, ws_b);
+    assert_eq!(in_a, listed);
+    assert_eq!(
+        in_b.iter().cloned().collect::<BTreeSet<_>>(),
+        perms_of(&probe(&w, ws_b, &viewer).await)
+    );
+    assert_ne!(in_a, in_b);
+}
