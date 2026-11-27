@@ -12,7 +12,7 @@ use serde_json::Value;
 use uuid::Uuid;
 
 use crate::{
-    Source, SubscriptionUpdate, UPDATE_SCHEMA_VERSION, UpdateKind,
+    PlanKey, Source, SubscriptionUpdate, UPDATE_SCHEMA_VERSION, UpdateKind,
     provider::{ProviderError, WebPaymentProvider},
 };
 
@@ -33,6 +33,7 @@ const SUBSCRIPTION_EVENTS: &[&str] = &[
 pub struct PaddleProvider {
     secret: Arc<[u8]>,
     prices: Arc<HashMap<String, String>>,
+    plans: Arc<HashMap<String, PlanKey>>,
     grace_days: i64,
     tolerance_secs: i64,
     clock: Arc<dyn Fn() -> i64 + Send + Sync>,
@@ -77,10 +78,19 @@ impl PaddleProvider {
         Self {
             secret: Arc::from(secret.as_bytes()),
             prices: Arc::new(prices),
+            plans: Arc::new(HashMap::new()),
             grace_days,
             tolerance_secs,
             clock: Arc::new(clock),
         }
+    }
+
+    /// Sets the plan of each price id (`PADDLE_PRICE_HOME`, `PADDLE_PRICE_BUSINESS`). A price
+    /// in this map needs no entry in the product map: its product key is the plan key.
+    #[must_use]
+    pub fn with_plans(mut self, plans: HashMap<String, PlanKey>) -> Self {
+        self.plans = Arc::new(plans);
+        self
     }
 
     /// Reads Paddle configuration. Invalid configuration is a startup error; no secret means
@@ -100,10 +110,19 @@ impl PaddleProvider {
             Err(error) => return Err(env_error("PADDLE_PRICE_MAP", &error.to_string())),
         };
         let prices = parse_price_map(&price_map)?;
-        if secret.is_some() && prices.is_empty() {
+        let mut plans = HashMap::new();
+        for (name, plan) in [
+            ("PADDLE_PRICE_HOME", PlanKey::Home),
+            ("PADDLE_PRICE_BUSINESS", PlanKey::Business),
+        ] {
+            if let Some(price) = std::env::var(name).ok().filter(|v| !v.trim().is_empty()) {
+                plans.insert(price.trim().to_owned(), plan);
+            }
+        }
+        if secret.is_some() && prices.is_empty() && plans.is_empty() {
             return Err(env_error(
                 "PADDLE_PRICE_MAP",
-                "set at least one price_id=product_key pair",
+                "set at least one price_id=product_key pair or PADDLE_PRICE_HOME",
             ));
         }
         let grace_days = parse_env_i64("PADDLE_GRACE_DAYS", DEFAULT_GRACE_DAYS)?;
@@ -120,7 +139,8 @@ impl PaddleProvider {
                 "must not be negative",
             ));
         }
-        Ok(secret.map(|value| Self::new(&value, prices, grace_days, tolerance_secs)))
+        Ok(secret
+            .map(|value| Self::new(&value, prices, grace_days, tolerance_secs).with_plans(plans)))
     }
 
     fn verify_signature(&self, header: Option<&str>, body: &[u8]) -> bool {
@@ -200,11 +220,14 @@ impl PaddleProvider {
             .and_then(|item| item.pointer("/price/id"))
             .and_then(Value::as_str)
             .ok_or_else(|| malformed("missing subscription price id"))?;
+        let plan_key = self.plans.get(price_id).copied();
         let product_key = self
             .prices
             .get(price_id)
             .cloned()
+            .or_else(|| plan_key.map(|plan| plan.as_str().to_owned()))
             .ok_or_else(|| malformed("unknown Paddle price id"))?;
+        let seats = item_seats(data);
 
         let workspace_id = envelope
             .pointer("/data/custom_data/workspace_id")
@@ -254,6 +277,9 @@ impl PaddleProvider {
             external_id: external_id.to_owned(),
             product_key,
             period_ends_at,
+            plan_key,
+            seats,
+            customer_id: customer_id(data),
             occurred_at,
         }))
     }
@@ -272,6 +298,24 @@ impl WebPaymentProvider for PaddleProvider {
             serde_json::from_slice(body).map_err(|_| malformed("body is not valid JSON"))?;
         self.map_event(&envelope)
     }
+}
+
+/// Seat count: the quantity of the first item (at least 1).
+fn item_seats(data: &serde_json::Map<String, Value>) -> Option<u32> {
+    data.get("items")
+        .and_then(Value::as_array)
+        .and_then(|items| items.first())
+        .and_then(|item| item.get("quantity"))
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok())
+        .filter(|n| *n >= 1)
+}
+
+fn customer_id(data: &serde_json::Map<String, Value>) -> Option<String> {
+    data.get("customer_id")
+        .and_then(Value::as_str)
+        .filter(|id| !id.is_empty())
+        .map(str::to_owned)
 }
 
 fn required_str<'a>(value: &'a Value, key: &str) -> Result<&'a str, ProviderError> {
@@ -389,6 +433,7 @@ mod tests {
             "occurred_at": "2026-12-15T12:00:00Z",
             "data": {
                 "id": "sub_test",
+                "customer_id": "ctm_1",
                 "status": status,
                 "custom_data": {"workspace_id": WORKSPACE},
                 "items": [{"price": {"id": "pri_home"}}],
@@ -584,5 +629,25 @@ mod tests {
         assert!(parse_price_map("pri_a=home,broken").is_err());
         assert!(parse_price_map("pri_a=home,pri_a=business").is_err());
         assert!(parse_price_map("pri_a=home,pri_b=business").is_ok_and(|map| map.len() == 2));
+    }
+
+    #[test]
+    fn maps_plan_from_price_and_seats_from_quantity() {
+        let provider = PaddleProvider::with_clock("test-secret", HashMap::new(), 16, 300, || NOW)
+            .with_plans(HashMap::from([("pri_home".to_owned(), PlanKey::Business)]));
+        let mut value: serde_json::Value =
+            serde_json::from_slice(&payload("subscription.updated", "active")).unwrap();
+        value["data"]["items"][0]["quantity"] = serde_json::json!(7);
+        let body = serde_json::to_vec(&value).unwrap();
+        let header = sign(&body, NOW, b"test-secret");
+        let update = provider
+            .parse_webhook(Some(&header), &body)
+            .ok()
+            .flatten()
+            .unwrap();
+        assert_eq!(update.plan_key, Some(PlanKey::Business));
+        assert_eq!(update.seats, Some(7));
+        assert_eq!(update.customer_id.as_deref(), Some("ctm_1"));
+        assert_eq!(update.product_key, "business");
     }
 }

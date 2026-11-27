@@ -204,12 +204,13 @@ async fn resolve(
     })
 }
 
-/// Reads the workspace mode and whether one active `PAID_FEATURE` entitlement exists.
+/// Reads the workspace mode, whether one active `PAID_FEATURE` entitlement exists, and the plan
+/// of that entitlement.
 pub(crate) async fn workspace_mode_and_paid(
     pool: &PgPool,
     db_context: &DbContext,
     workspace_id: Uuid,
-) -> ApiResult<(String, bool)> {
+) -> ApiResult<(String, bool, Option<String>)> {
     let mut tx = db::begin(pool, db_context).await?;
     let mode: String = sqlx::query_scalar("SELECT mode FROM workspaces WHERE id = $1")
         .bind(workspace_id)
@@ -224,7 +225,7 @@ pub(crate) async fn workspace_mode_and_paid(
             | billing::access::AccessSource::Promo
             | billing::access::AccessSource::Manual
     );
-    Ok((mode, has_paid_feature))
+    Ok((mode, has_paid_feature, access.plan_key))
 }
 
 async fn module_access(
@@ -233,8 +234,10 @@ async fn module_access(
     workspace_id: Uuid,
     module_id: &str,
 ) -> ApiResult<modules::ModuleAccess> {
-    let (mode, has_paid_feature) = workspace_mode_and_paid(pool, db_context, workspace_id).await?;
-    let access = modules::module_access(module_id, &mode, has_paid_feature);
+    let (mode, has_paid_feature, plan_key) =
+        workspace_mode_and_paid(pool, db_context, workspace_id).await?;
+    let access =
+        modules::module_access_for_plan(module_id, &mode, has_paid_feature, plan_key.as_deref());
     Ok(access)
 }
 

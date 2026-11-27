@@ -102,6 +102,7 @@ impl World {
             bundle_id: Some("app.demleme".to_owned()),
             apple_environment: "Production".to_owned(),
             apple_product_ids,
+            apple_product_plans: std::collections::HashMap::new(),
             web_payment: Some(fake.clone()),
             github_secret: None,
         });
@@ -522,6 +523,9 @@ async fn web_payment_provider_flows_through_the_same_path(base: PgPool) {
         external_id: "sub_web_1".to_owned(),
         product_key: "pro.monthly".to_owned(),
         period_ends_at: Some(t + chrono::Duration::days(30)),
+        plan_key: None,
+        seats: None,
+        customer_id: None,
         occurred_at: t,
     };
     let post = |signature: Option<&'static str>, body: String| {
@@ -562,6 +566,112 @@ async fn web_payment_provider_flows_through_the_same_path(base: PgPool) {
         .unwrap();
     assert_eq!(source, "web");
     assert_eq!(w.fake.accepted(), 3);
+    w.finish().await;
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn plan_and_seats_reach_the_entitlement_and_each_change_is_audited(base: PgPool) {
+    let w = World::new(base, true).await;
+    let t = Utc::now();
+    let mut update = billing::SubscriptionUpdate {
+        schema_version: 1,
+        source: billing::Source::Web,
+        notification_id: "web-plan-1".to_owned(),
+        kind: billing::UpdateKind::Active,
+        workspace_id: Some(w.ws),
+        external_id: "sub_plan_1".to_owned(),
+        product_key: "pro.monthly".to_owned(),
+        period_ends_at: Some(t + chrono::Duration::days(30)),
+        plan_key: Some(billing::PlanKey::Business),
+        seats: Some(5),
+        customer_id: None,
+        occurred_at: t - chrono::Duration::seconds(60),
+    };
+    let send = |u: &billing::SubscriptionUpdate| {
+        let request = Request::post("/v1/webhooks/web-payment")
+            .header("x-signature", "s3cret")
+            .body(Body::from(serde_json::to_string(u).unwrap()))
+            .unwrap();
+        w.send(request)
+    };
+    assert_eq!(send(&update).await.1["status"], "accepted");
+    w.settle(1).await;
+    let a = w.access().await;
+    assert_eq!(a.plan_key.as_deref(), Some("business"));
+    assert_eq!(a.seats, Some(5));
+
+    // A later change without a plan keeps the stored plan; the seat count changes.
+    update.notification_id = "web-plan-2".to_owned();
+    update.plan_key = None;
+    update.seats = Some(8);
+    update.occurred_at = t - chrono::Duration::seconds(30);
+    assert_eq!(send(&update).await.1["status"], "accepted");
+    w.settle(2).await;
+    let a = w.access().await;
+    assert_eq!(
+        (a.plan_key.as_deref(), a.seats),
+        (Some("business"), Some(8))
+    );
+    assert_eq!(
+        w.count("SELECT count(*) FROM audit_log WHERE action = 'entitlement.change'")
+            .await,
+        2,
+        "one audit row for each change"
+    );
+    w.finish().await;
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn second_active_source_is_not_applied_and_opens_one_support_item(base: PgPool) {
+    let w = World::new(base, true).await;
+    let t = now_ms() - 60_000;
+    let buy = w
+        .pki
+        .notification(&w.note("n-apple", "SUBSCRIBED", t, t + 30 * DAY_MS));
+    assert_eq!(w.post(&buy).await.0, StatusCode::OK);
+    w.settle(1).await;
+
+    let now = Utc::now();
+    let web = |id: &str| billing::SubscriptionUpdate {
+        schema_version: 1,
+        source: billing::Source::Web,
+        notification_id: id.to_owned(),
+        kind: billing::UpdateKind::Active,
+        workspace_id: Some(w.ws),
+        external_id: "sub_web_double".to_owned(),
+        product_key: "pro.monthly".to_owned(),
+        period_ends_at: Some(now + chrono::Duration::days(30)),
+        plan_key: None,
+        seats: None,
+        customer_id: None,
+        occurred_at: now - chrono::Duration::seconds(5),
+    };
+    for (n, id) in ["web-double-1", "web-double-2"].into_iter().enumerate() {
+        let request = Request::post("/v1/webhooks/web-payment")
+            .header("x-signature", "s3cret")
+            .body(Body::from(serde_json::to_string(&web(id)).unwrap()))
+            .unwrap();
+        assert_eq!(w.send(request).await.1["status"], "accepted");
+        w.settle(2 + i64::try_from(n).unwrap()).await;
+    }
+    assert_eq!(w.count("SELECT count(*) FROM subscriptions").await, 1);
+    assert_eq!(
+        w.count("SELECT count(*) FROM subscriptions WHERE source = 'app_store'")
+            .await,
+        1
+    );
+    assert_eq!(
+        w.count(
+            "SELECT count(*) FROM support_requests
+             WHERE topic = 'subscription' AND diagnostics ->> 'kind' = 'double_source'
+               AND created_by IS NULL"
+        )
+        .await,
+        1,
+        "one support item for the same second subscription"
+    );
+    let a = w.access().await;
+    assert_eq!(a.source, AccessSource::Subscription);
     w.finish().await;
 }
 

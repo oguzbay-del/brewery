@@ -102,6 +102,16 @@ pub async fn run(stop: watch::Receiver<bool>) {
         std::sync::Arc::new(billing::apply::NotificationHandler),
         stopped(stop.clone()),
     ));
+    let billing_notify_task = tokio::spawn(consumer::run(
+        pool.clone(),
+        js.clone(),
+        consumer::ConsumerConfig::new(
+            billing::notify::CONSUMER_NAME,
+            &billing::notify::changed_filter(),
+        ),
+        std::sync::Arc::new(billing::notify::BillingNotificationHandler),
+        stopped(stop.clone()),
+    ));
     let device_task = tokio::spawn(consumer::run(
         pool.clone(),
         js.clone(),
@@ -181,6 +191,7 @@ pub async fn run(stop: watch::Receiver<bool>) {
     let _ = tokio::join!(
         relay_task,
         subscription_task,
+        billing_notify_task,
         device_task,
         alert_task,
         delivery_task,

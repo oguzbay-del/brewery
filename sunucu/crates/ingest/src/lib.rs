@@ -10,13 +10,14 @@
 
 pub mod apple;
 pub mod device;
-pub mod jws;
 pub mod ratelimit;
 
 use std::sync::{
     Arc,
     atomic::{AtomicU64, Ordering},
 };
+
+pub use billing::jws;
 
 use axum::{
     Json, Router,
@@ -55,6 +56,9 @@ pub struct IngestState {
     pub apple_environment: String,
     /// Accepted App Store product IDs (`APPLE_PRODUCT_IDS`). Empty accepts all product IDs.
     pub apple_product_ids: Vec<String>,
+    /// Plan of each App Store product (`APPLE_PRODUCT_PLANS`). A product that is not here
+    /// gives a subscription without a plan.
+    pub apple_product_plans: std::collections::HashMap<String, billing::PlanKey>,
     /// Web payment provider; `None` until decision O6.
     pub web_payment: Option<Arc<dyn WebPaymentProvider>>,
     /// Secret of the webhook of the support repository (`GITHUB_WEBHOOK_SECRET`); `None`
@@ -110,6 +114,9 @@ pub fn state_from_env() -> Result<Option<IngestState>, String> {
     if apple_product_ids.is_empty() {
         tracing::warn!("APPLE_PRODUCT_IDS is not set; all product IDs are accepted");
     }
+    let apple_product_plans =
+        billing::parse_product_plans(std::env::var("APPLE_PRODUCT_PLANS").ok().as_deref())
+            .map_err(|e| format!("APPLE_PRODUCT_PLANS: {e}"))?;
     let web_payment = PaddleProvider::from_env()
         .map_err(|error| error.to_string())?
         .map(|provider| Arc::new(provider) as Arc<dyn WebPaymentProvider>);
@@ -132,6 +139,7 @@ pub fn state_from_env() -> Result<Option<IngestState>, String> {
         bundle_id,
         apple_environment,
         apple_product_ids,
+        apple_product_plans,
         web_payment,
         github_secret: std::env::var("GITHUB_WEBHOOK_SECRET")
             .ok()
@@ -228,7 +236,16 @@ async fn app_store(State(state): State<IngestState>, body: Json<AppStoreBody>) -
             tracing::error!("App Store notification refused: APPLE_BUNDLE_ID is not set");
             reply(StatusCode::SERVICE_UNAVAILABLE, "no_bundle_id")
         }
-        Ok(apple::Parsed::Update(update)) => store(&state, &update).await,
+        Ok(apple::Parsed::Update(mut update)) => {
+            update.plan_key = state.apple_product_plans.get(&update.product_key).copied();
+            if update.plan_key.is_none() {
+                tracing::warn!(
+                    product_key = %update.product_key,
+                    "App Store product has no plan in APPLE_PRODUCT_PLANS"
+                );
+            }
+            store(&state, &update).await
+        }
         Ok(apple::Parsed::ProductNotAllowed { notification_type }) => {
             let count = IGNORED_APPLE_PRODUCT_COUNT.fetch_add(1, Ordering::Relaxed) + 1;
             tracing::warn!(%notification_type, count, "App Store product is not allowed");

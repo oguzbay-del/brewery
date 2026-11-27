@@ -69,11 +69,13 @@ pub enum ErrorCode {
     Internal,
     /// 503: a dependency (engine, database) does not answer.
     Unavailable,
+    /// 503: the payment provider is not configured or does not answer.
+    BillingUnavailable,
 }
 
 impl ErrorCode {
     /// All codes, in table order.
-    pub const ALL: [Self; 20] = [
+    pub const ALL: [Self; 21] = [
         Self::MalformedRequest,
         Self::Unauthenticated,
         Self::Forbidden,
@@ -94,6 +96,7 @@ impl ErrorCode {
         Self::RateLimited,
         Self::Internal,
         Self::Unavailable,
+        Self::BillingUnavailable,
     ];
 
     /// HTTP status of the code.
@@ -118,7 +121,7 @@ impl ErrorCode {
             Self::PreconditionRequired => StatusCode::PRECONDITION_REQUIRED,
             Self::RateLimited => StatusCode::TOO_MANY_REQUESTS,
             Self::Internal => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::Unavailable => StatusCode::SERVICE_UNAVAILABLE,
+            Self::Unavailable | Self::BillingUnavailable => StatusCode::SERVICE_UNAVAILABLE,
         }
     }
 
@@ -146,6 +149,7 @@ impl ErrorCode {
             Self::RateLimited => "rate_limited",
             Self::Internal => "internal",
             Self::Unavailable => "unavailable",
+            Self::BillingUnavailable => "billing_unavailable",
         }
     }
 
@@ -173,6 +177,7 @@ impl ErrorCode {
             Self::RateLimited => "Rate limited",
             Self::Internal => "Internal error",
             Self::Unavailable => "Service unavailable",
+            Self::BillingUnavailable => "Billing unavailable",
         }
     }
 

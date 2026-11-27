@@ -148,6 +148,9 @@ pub fn parse_notification(
         external_id: external_id.to_owned(),
         product_key: product_id.to_owned(),
         period_ends_at,
+        plan_key: None,
+        seats: None,
+        customer_id: None,
         occurred_at,
     })))
 }

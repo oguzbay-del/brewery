@@ -7,6 +7,7 @@ pub mod app_version;
 pub mod auth;
 pub mod authz;
 pub mod batches;
+pub mod billing_api;
 pub mod brew_day;
 pub mod concurrency;
 pub mod config;
@@ -85,6 +86,12 @@ pub struct AppState {
     pub engine: engine::EngineClient,
     /// Settings of the support panel routes (`/internal`, T2.30); `None` answers them with `503`.
     pub internal: Option<Arc<internal::InternalConfig>>,
+    /// Paddle API client for checkout and portal (B3); `None` answers them with
+    /// `503 billing_unavailable`.
+    pub paddle: Option<Arc<billing_api::PaddleApi>>,
+    /// Settings of the `StoreKit` transaction sync (B3); `None` answers it with
+    /// `503 billing_unavailable`.
+    pub apple_sync: Option<Arc<billing::apple_sync::AppleSyncSettings>>,
 }
 
 impl std::fmt::Debug for AppState {
@@ -109,6 +116,8 @@ impl AppState {
             auth_services: None,
             engine: engine::EngineClient::disabled(),
             internal: None,
+            paddle: None,
+            apple_sync: None,
         }
     }
 
@@ -116,6 +125,20 @@ impl AppState {
     #[must_use]
     pub fn with_internal(mut self, internal: internal::InternalConfig) -> Self {
         self.internal = Some(Arc::new(internal));
+        self
+    }
+
+    /// Turns web checkout and the customer portal on (B3).
+    #[must_use]
+    pub fn with_paddle(mut self, paddle: billing_api::PaddleApi) -> Self {
+        self.paddle = Some(Arc::new(paddle));
+        self
+    }
+
+    /// Turns the `StoreKit` transaction sync on (B3).
+    #[must_use]
+    pub fn with_apple_sync(mut self, settings: billing::apple_sync::AppleSyncSettings) -> Self {
+        self.apple_sync = Some(Arc::new(settings));
         self
     }
 

@@ -8,6 +8,7 @@
 //! - `external_events.processed_at` marks the event as applied.
 //! - A change that is older than `subscriptions.last_verified_at` is skipped (store order).
 
+use chrono::{DateTime, Utc};
 use db::outbox::{Entity, NewOutboxEvent, enqueue};
 use events::consumer::{BoxFuture, Event, Handler, HandlerError};
 use serde_json::{Value, json};
@@ -15,8 +16,8 @@ use sqlx::PgConnection;
 use uuid::Uuid;
 
 use crate::{
-    CHANGED_TOPIC, NOTIFICATION_ENTITY, NOTIFICATION_TOPIC, PAID_FEATURE, SubscriptionUpdate,
-    UPDATE_SCHEMA_VERSION,
+    CHANGED_TOPIC, NOTIFICATION_ENTITY, NOTIFICATION_TOPIC, PAID_FEATURE, PlanKey,
+    SubscriptionUpdate, UPDATE_SCHEMA_VERSION, UpdateKind,
 };
 
 /// Result of [`store`].
@@ -143,8 +144,173 @@ async fn handle_notification(event: &Event, tx: &mut PgConnection) -> Result<(),
     Ok(())
 }
 
+/// Stored entitlement values, for the audit row.
+type EntitlementRow = (Uuid, Option<String>, Option<i32>, Option<DateTime<Utc>>);
+
+async fn write_entitlement(
+    tx: &mut PgConnection,
+    workspace_id: Uuid,
+    subscription_id: Uuid,
+    update: &SubscriptionUpdate,
+    until: DateTime<Utc>,
+) -> Result<(), HandlerError> {
+    // The entitlement takes the plan and seats of the subscription row (a change without a
+    // plan keeps the stored one).
+    let previous: Option<EntitlementRow> = sqlx::query_as(
+        "SELECT id, plan_key, seats, valid_until FROM entitlements
+             WHERE workspace_id = $1 AND subscription_id = $2 AND feature = $3
+               AND deleted_at IS NULL",
+    )
+    .bind(workspace_id)
+    .bind(subscription_id)
+    .bind(PAID_FEATURE)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    let (entitlement_id, new_plan, new_seats): (Uuid, Option<String>, Option<i32>) =
+        sqlx::query_as(
+            "INSERT INTO entitlements
+                 (id, workspace_id, feature, source, subscription_id, valid_from, valid_until,
+                  plan_key, seats)
+             SELECT $1, $2, $3, 'subscription', $4, LEAST(now(), $5 - interval '1 second'), $5,
+                    s.plan_key, s.seats
+             FROM subscriptions s WHERE s.id = $4
+             ON CONFLICT (workspace_id, subscription_id, feature)
+                 WHERE subscription_id IS NOT NULL AND deleted_at IS NULL
+             DO UPDATE SET valid_until = EXCLUDED.valid_until,
+                           plan_key = EXCLUDED.plan_key,
+                           seats = EXCLUDED.seats,
+                           valid_from = LEAST(entitlements.valid_from,
+                                              EXCLUDED.valid_until - interval '1 second')
+             RETURNING id, plan_key, seats",
+        )
+        .bind(Uuid::now_v7())
+        .bind(workspace_id)
+        .bind(PAID_FEATURE)
+        .bind(subscription_id)
+        .bind(until)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(dberr)?;
+    db::append_audit(
+        tx,
+        workspace_id,
+        &db::NewAuditEntry {
+            actor_kind: db::ActorKind::System,
+            actor_id: None,
+            event: db::AuditEvent::EntitlementChange,
+            record_kind: "entitlement".to_owned(),
+            record_id: Some(entitlement_id),
+            previous_value: previous.map(|(_, plan, seats, valid_until)| {
+                json!({ "plan_key": plan, "seats": seats, "valid_until": valid_until })
+            }),
+            new_value: Some(json!({
+                "plan_key": new_plan,
+                "seats": new_seats,
+                "valid_until": until,
+                "status": update.kind.status(),
+            })),
+            reason: None,
+        },
+    )
+    .await
+    .map_err(|e| HandlerError::Retry(e.to_string()))?;
+
+    Ok(())
+}
+
+/// Whether the update gives paid access now (not an end, not a period in the past).
+fn is_live(update: &SubscriptionUpdate) -> bool {
+    matches!(update.kind, UpdateKind::Active | UpdateKind::Grace)
+        && update.period_ends_at.is_some_and(|end| end > Utc::now())
+}
+
+/// Takes a lock for the workspace, then looks for another subscription of the workspace that
+/// still gives access. A workspace has one live subscription: a second one (another source, or
+/// another id at the same source) is not applied.
+async fn has_other_live_subscription(
+    tx: &mut PgConnection,
+    workspace_id: Uuid,
+    update: &SubscriptionUpdate,
+) -> Result<bool, HandlerError> {
+    sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
+        .bind(workspace_id.to_string())
+        .execute(&mut *tx)
+        .await
+        .map_err(dberr)?;
+    let other: Option<String> = sqlx::query_scalar(
+        "SELECT source FROM subscriptions
+         WHERE workspace_id = $1 AND deleted_at IS NULL
+           AND NOT (source = $2 AND external_id = $3)
+           AND status IN ('active', 'grace')
+           AND (period_ends_at IS NULL OR period_ends_at > now())
+         LIMIT 1",
+    )
+    .bind(workspace_id)
+    .bind(update.source.subscription_source())
+    .bind(&update.external_id)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    Ok(other.is_some())
+}
+
+/// Opens a support request for the double source, once for each incoming subscription (the
+/// actor is the system: the request has no user author). The worker syncs it to the tracker.
+async fn open_double_source_item(
+    tx: &mut PgConnection,
+    workspace_id: Uuid,
+    update: &SubscriptionUpdate,
+) -> Result<(), HandlerError> {
+    tracing::warn!(
+        source = update.source.subscription_source(),
+        external_id = %update.external_id,
+        "second active subscription for a workspace: not applied"
+    );
+    let open: Option<Uuid> = sqlx::query_scalar(
+        "SELECT id FROM support_requests
+         WHERE workspace_id = $1 AND topic = 'subscription' AND deleted_at IS NULL
+           AND status IN ('open', 'answered')
+           AND diagnostics ->> 'kind' = 'double_source'
+           AND diagnostics ->> 'source' = $2 AND diagnostics ->> 'external_id' = $3
+         LIMIT 1",
+    )
+    .bind(workspace_id)
+    .bind(update.source.subscription_source())
+    .bind(&update.external_id)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    if open.is_some() {
+        return Ok(());
+    }
+    let id = Uuid::now_v7();
+    sqlx::query(
+        "INSERT INTO support_requests (id, workspace_id, topic, title, diagnostics)
+         VALUES ($1, $2, 'subscription', $3, $4)",
+    )
+    .bind(id)
+    .bind(workspace_id)
+    .bind("Second active subscription source")
+    .bind(json!({
+        "schema_version": 1,
+        "kind": "double_source",
+        "source": update.source.subscription_source(),
+        "external_id": update.external_id,
+        "product_key": update.product_key,
+    }))
+    .execute(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    support::reply::enqueue_sync(tx, workspace_id, id)
+        .await
+        .map_err(|e| HandlerError::Retry(e.to_string()))?;
+    Ok(())
+}
+
 /// Applies one update: upserts the subscription and its entitlement and writes the
-/// `subscription.changed` event. Returns `false` when the update is older than the stored state.
+/// `subscription.changed` event. Returns `false` when the update is older than the stored state,
+/// or when another live subscription exists (a support request is opened).
 ///
 /// # Errors
 /// [`HandlerError::Permanent`] for an update that cannot apply (no workspace, unknown
@@ -176,13 +342,24 @@ pub async fn apply(
         )));
     }
 
+    if is_live(update) && has_other_live_subscription(tx, workspace_id, update).await? {
+        open_double_source_item(tx, workspace_id, update).await?;
+        return Ok(false);
+    }
+
+    let plan = update.plan_key.map(PlanKey::as_str);
+    let seats = update.seats.map(|n| i32::try_from(n).unwrap_or(i32::MAX));
     let upserted: Option<(Uuid, i64)> = sqlx::query_as(
         "INSERT INTO subscriptions
              (id, workspace_id, source, external_id, product_key, status, period_ends_at,
-              last_verified_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              last_verified_at, plan_key, seats, paddle_customer_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          ON CONFLICT (source, external_id) DO UPDATE
          SET product_key = EXCLUDED.product_key,
+             plan_key = COALESCE(EXCLUDED.plan_key, subscriptions.plan_key),
+             seats = COALESCE(EXCLUDED.seats, subscriptions.seats),
+             paddle_customer_id = COALESCE(EXCLUDED.paddle_customer_id,
+                                           subscriptions.paddle_customer_id),
              status = EXCLUDED.status,
              period_ends_at = EXCLUDED.period_ends_at,
              last_verified_at = EXCLUDED.last_verified_at
@@ -199,6 +376,9 @@ pub async fn apply(
     .bind(update.kind.status())
     .bind(update.period_ends_at)
     .bind(update.occurred_at)
+    .bind(plan)
+    .bind(seats)
+    .bind(&update.customer_id)
     .fetch_optional(&mut *tx)
     .await
     .map_err(dberr)?;
@@ -210,24 +390,7 @@ pub async fn apply(
         return Ok(false);
     };
 
-    sqlx::query(
-        "INSERT INTO entitlements
-             (id, workspace_id, feature, source, subscription_id, valid_from, valid_until)
-         VALUES ($1, $2, $3, 'subscription', $4, LEAST(now(), $5 - interval '1 second'), $5)
-         ON CONFLICT (workspace_id, subscription_id, feature)
-             WHERE subscription_id IS NOT NULL AND deleted_at IS NULL
-         DO UPDATE SET valid_until = EXCLUDED.valid_until,
-                       valid_from = LEAST(entitlements.valid_from,
-                                          EXCLUDED.valid_until - interval '1 second')",
-    )
-    .bind(Uuid::now_v7())
-    .bind(workspace_id)
-    .bind(PAID_FEATURE)
-    .bind(subscription_id)
-    .bind(until)
-    .execute(&mut *tx)
-    .await
-    .map_err(dberr)?;
+    write_entitlement(tx, workspace_id, subscription_id, update, until).await?;
 
     enqueue(
         tx,
