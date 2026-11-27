@@ -927,3 +927,19 @@ Y T2.26, BeerXML/BeerJSON/CSV/JSON/ZIP dışa aktarma kapsamını ayrıca belgel
 | [Get started](../../marketing-site/src/pages/get-started.astro) — dört adımlı plan seçici | Kaynakta audience/seats/term için tarayıcı içi state, özet, radio ve geri/ileri düğmeleri var. Sayfa hesap, deneme, ödeme veya teklif talebi oluşturmadığını açıkça belirtir. | Bu akışı satın alma veya kayıt değil, plan önizlemesi olarak tanımla; seçici metnindeki kesin indirim ifadesini onaylanmamış koşullarla eşleştir. |
 
 Bu bölüm EN kaynaklarından ilk denetimdir. TR karşılıkları, ana sayfa, karşılaştırma, teknik ilkeler, modüller ve SSS ayrıca incelenecek. Gerçek tarayıcı/cihaz testi yapılmadı.
+
+
+### 4.2 Türkçe hedef kitle, fiyatlandırma ve plan seçimi
+
+| Rota ve kaynak | İddia / kanıt | Öneri |
+|---|---|---|
+| [Ev biracıları](../../marketing-site/src/pages/tr/homebrewers.astro) — altı adım ve kayıt döngüsü | T2.21 reçete sürümü, T2.16 motor, T2.22 ölçüm ve T2.25 cihaz API'si; §3.4–3.9. Tadım, cihaz ve bütün istemci akışı açık. SSS hesapların kullanıma sunulmadığını belirtir; örnek zaman çizelgesi gerçek kullanıcı kaydı değildir. | Doğrulanmış hesap ve kayıt işlevleri ile örnek çizimleri ayır. |
+| Ev biracıları — Tilt, iSpindel, RAPT, TiltBridge, Pitch | §3.6: T2.25 cihaz altyapısı; marka/protokol uyumluluğu ve dış webhook doğrulanmadı. | Marka bağlantısı vaat etme; yalnız test edilmiş bağlantı yollarını göster. |
+| Ev biracıları — BeerXML, BeerJSON, BSMX, Brewfather, Brewer's Friend | §3.6: T2.26 üç içe aktarma biçimi ve export işi; bütün yönler ve diğer biçimler doğrulanmadı. | Her biçim için doğrulanmış yönü belirt; yol haritasını mevcut işlev listesine dönüştürme. |
+| [Bira üreticileri](../../marketing-site/src/pages/tr/breweries.astro) — reçete, plan, fiili değer, fermentasyon, kalite | T2.21/22 sürüm, takvim ve parti API'si; T2.23 stok, K2 kap/lot; §3.8. Tank çizelgesi, laboratuvar ve serbest bırakma akışları açık. | Üretim kaydı ile tam kalite ve tank akışlarını ayır. |
+| Bira üreticileri — baş biracı, operatör, kalite rolü; onay kuyrukları | T2.13 izinler mevcut; üç rolün tam ekran akışları ve onay kuyruğu doğrulanmadı. SSS bunları planlanan tasarım olarak niteler. | Rol erişimini test edilmiş izinlerle sınırla. |
+| Bira üreticileri — API/webhook ve ERP sınırı | SSS kamu API'si ve webhook'un kullanıma sunulmadığını açıkça belirtir. ERP, CRM, muhasebe, satış, dağıtım ve müşterideki fıçı/depozito kapsam dışı. | İç API varlığını kamu entegrasyonu olarak sunma; kapsam sınırını koru. |
+| [Planlar ve fiyatlandırma](../../marketing-site/src/pages/tr/pricing.astro) — kullanıcı sayısı, deneme, dönemler | T2.28 abonelik API'si; Ev 1, İşletme 5/10/15/20; 3/1 ay deneme önizlemede etkin değil. %0/15/25/35 öneri; para birimi, KDV ve çok yıllı koşullar onaylanmamış. | Ticari onay olmadan kesin indirim veya aktif ödeme/deneme iddiası kullanma. |
+| [Plan yapılandırma](../../marketing-site/src/pages/tr/get-started.astro) — dört adım, kullanıcı, dönem, özet | Kaynakta radio ve tarayıcı içi state var. Hesap, abonelik ve teklif oluşturmaz; kart verisi toplanmaz. Adım 3 indirimleri kesin ifade ederken fiyat sayfası bunları öneri olarak tanımlar. | Her iki dilde aynı koşullu indirim metnini kullan; akışı satın alma değil plan önizlemesi olarak tanımla. |
+
+EN ve TR bu dört rota için işlev ve ticari sınırlar açısından büyük ölçüde eşleşiyor. Her iki dilde de doğrulanmamış özellikleri kullanıcıya yönelik emir cümleleriyle anlatma ve önerilen indirimleri kesin değer gibi gösterme riski var. Metin değişikliği bu raporun kapsamı dışındadır. Gerçek tarayıcı veya cihaz testi yapılmadı.
