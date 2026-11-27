@@ -173,7 +173,7 @@ impl JwsVerifier {
             if !has(&certs[0], OID_LEAF) {
                 return Err(JwsError::Chain("leaf marker extension missing"));
             }
-            if !has(&certs[1], OID_INTERMEDIATE) && certs.len() > 2 {
+            if !has(&certs[1], OID_INTERMEDIATE) {
                 return Err(JwsError::Chain("intermediate marker extension missing"));
             }
         }
