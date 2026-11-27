@@ -42,6 +42,8 @@
 
 ## Open work
 
+0. **Product (2026-11-27 handoff):** read the last entry of `gelistirme/DURUM.md`. Start the next session with Sonnet. Open: PR #441 (M2, review fixes), K4 step 2 PR, K4 steps 3–4 (owner answers), iOS sign-in task.
+
 1. **WP-16 / Issue #145:** access the exact selected first logo artwork; create faithful editable SVG master and only composition-supported lockups; run document 37 QA; owner approval remains pending.
 2. **Trademark/domain / Issue #146:** official record-by-record searches in US, UK, Australia and WIPO/Madrid; counsel must assess C-DAC's official **GistOra Tools** software name (one-letter spelling difference, software-sector adjacency; current commercial activity/rights unknown); verify the official Indonesian GISTORA/BASF application `DID2026030217` post-publication status; separately verify the third-party India lead `7525714` in IP India; capture current RDAP/registrar evidence. Indonesia's gazette publication is confirmed (Classes 1/5/31; 9 Apr–9 Jun 2026 publication period), but current status is unknown. No availability conclusion yet.
 3. **Goods/services:** document 40 is a counsel-review draft. Class 42 is likely core for hosted SaaS; Class 9 depends on branded downloadable software; Class 35 is not automatic merely because software supports a brewery's internal operations; Class 41 depends on separately marketed training.
