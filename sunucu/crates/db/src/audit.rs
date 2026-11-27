@@ -85,6 +85,8 @@ pub enum AuditEvent {
     ContainerFill,
     /// Labels with new scan codes were issued.
     LabelIssue,
+    /// A package type was created.
+    PackageTypeCreate,
     /// Data export was requested.
     DataExport,
     /// Account deletion was requested or carried out.
@@ -93,7 +95,7 @@ pub enum AuditEvent {
 
 impl AuditEvent {
     /// Every event kind.
-    pub const ALL: [Self; 31] = [
+    pub const ALL: [Self; 32] = [
         Self::RoleCreate,
         Self::RoleUpdate,
         Self::RoleDelete,
@@ -123,6 +125,7 @@ impl AuditEvent {
         Self::ContainerRetire,
         Self::ContainerFill,
         Self::LabelIssue,
+        Self::PackageTypeCreate,
         Self::DataExport,
         Self::AccountDelete,
     ];
@@ -160,6 +163,7 @@ impl AuditEvent {
             Self::ContainerRetire => "container.retire",
             Self::ContainerFill => "container.fill",
             Self::LabelIssue => "label.issue",
+            Self::PackageTypeCreate => "package_type.create",
             Self::DataExport => "data.export",
             Self::AccountDelete => "account.delete",
         }
