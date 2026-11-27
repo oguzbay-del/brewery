@@ -86,3 +86,40 @@
   outline: 3px solid var(--blue);
   outline-offset: 2px;
 }
+
+.app-shell__nav-mark {
+  color: var(--label2);
+  font-size: 0.875em;
+}
+
+.module-message,
+.module-banner,
+.module-notice {
+  max-width: 40rem;
+  margin-block: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--sep);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--label);
+}
+
+.module-banner,
+.module-notice {
+  border-inline-start: 4px solid var(--tint);
+}
+
+.module-reason {
+  margin-inline-start: var(--space-2);
+  color: var(--label2);
+}
+
+.app-shell button[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.app-shell button:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}

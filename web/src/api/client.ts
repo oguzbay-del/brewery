@@ -1,4 +1,15 @@
-import { apiErrorFromResponse } from './errors';
+import { apiErrorFromResponse, moduleErrorKind, type ModuleErrorKind } from './errors';
+
+type ModuleErrorListener = (kind: ModuleErrorKind) => void;
+const moduleErrorListeners = new Set<ModuleErrorListener>();
+
+/** Calls `listener` when a request fails with 403 `module_disabled` or `module_read_only`. */
+export function onModuleError(listener: ModuleErrorListener): () => void {
+  moduleErrorListeners.add(listener);
+  return () => {
+    moduleErrorListeners.delete(listener);
+  };
+}
 
 export interface ApiRequestOptions extends Omit<RequestInit, 'body' | 'headers' | 'method'> {
   method?: string;
@@ -52,7 +63,12 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
     body: body === undefined ? undefined : JSON.stringify(body),
   });
 
-  if (!response.ok) throw await apiErrorFromResponse(response);
+  if (!response.ok) {
+    const error = await apiErrorFromResponse(response);
+    const kind = moduleErrorKind(error);
+    if (kind) moduleErrorListeners.forEach((listener) => listener(kind));
+    throw error;
+  }
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
 }

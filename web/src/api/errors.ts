@@ -66,3 +66,15 @@ export async function apiErrorFromResponse(response: Response): Promise<ApiError
   }
   return new ApiError(response.status, problem, requestId);
 }
+
+export type ModuleErrorKind = 'disabled' | 'read_only';
+
+/** Returns the module problem kind of a 403 error, or null for any other error. */
+export function moduleErrorKind(error: ApiError): ModuleErrorKind | null {
+  if (error.status !== 403) return null;
+  // `module_read_only` is not in the OpenAPI ErrorCode list yet, so compare as a string.
+  const code: string = error.code;
+  if (code === 'module_disabled') return 'disabled';
+  if (code === 'module_read_only') return 'read_only';
+  return null;
+}
