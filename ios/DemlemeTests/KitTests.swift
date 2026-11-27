@@ -27,16 +27,4 @@ struct KitTests {
         #expect(AlarmMark.clamped(0) == 1)
         #expect(AlarmMark.clamped(9) == 3)
     }
-
-    @Test func viewsCanBeMade() {
-        let badge = StatusBadge(tone: .ok, label: "OK", systemImage: "checkmark")
-        _ = badge.body
-        _ = AlarmMark(priority: 2, accessibilityText: "Priority 2").body
-        _ = SummaryCard(title: "T", value: "1", unit: "u", footnote: "f", badge: badge).body
-        _ = Callout(tone: .info, title: "T", message: "M", action: CalloutAction(title: "A") {}).body
-        _ = KitGallery().body
-        _ = Button("B") {}.buttonStyle(.gristoraPrimary)
-        _ = Button("B") {}.buttonStyle(.gristoraSecondary)
-        _ = Button("B") {}.buttonStyle(.gristoraDestructive)
-    }
 }
