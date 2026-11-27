@@ -2,7 +2,7 @@
 
 Bu dosya sozlesme/openapi/openapi.json kaynağından belgeler/uret-api-ozet.py ile üretilir. Kaynak sözleşmeyi değiştirin; bu dosyayı elle düzenlemeyin.
 
-Toplam **233** operasyon. Yetki ve adım bilgisi yalnız OpenAPI operasyon alanlarından alınır. Boş hücre, sözleşmede ilgili bilgi bulunmadığını gösterir.
+Toplam **253** operasyon. Yetki ve adım bilgisi yalnız OpenAPI operasyon alanlarından alınır. Boş hücre, sözleşmede ilgili bilgi bulunmadığını gösterir.
 
 ## access
 
@@ -75,6 +75,17 @@ Batches, steps, actual amounts, measurements, the brew day package and the calen
 | GET | `/v1/workspaces/{workspace_id}/calendar` | The calendar: batches with a planned brew day in a date range, and their steps. | recipe.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/calendar/backward-plan` | Plans backward from the day the beer is ready: brew day, end of the fermentation and of the conditioning. The durations come from the fermentation profile of the recipe version. | recipe.view |  |  |
 
+## billing
+
+Web checkout, customer portal and billing state
+
+| Yöntem | Yol | Açıklama | Yetki / ek adım | Idempotency-Key | If-Match |
+|---|---|---|---|---|---|
+| GET | `/v1/billing` | Billing state: access, plan, seats, subscriptions and the live source. |  |  |  |
+| POST | `/v1/billing/apple/sync` | Syncs a `StoreKit` 2 transaction after a purchase or a restore. The worker applies the change. | billing.manage |  |  |
+| POST | `/v1/billing/checkout` | Starts a web checkout (Paddle). Clients on iOS use `StoreKit` instead. | billing.manage |  |  |
+| POST | `/v1/billing/portal` | Opens a Paddle customer portal session for the web subscription of the workspace. | billing.manage |  |  |
+
 ## containers
 
 Containers, scan codes, status changes, fills, recall and labels
@@ -87,6 +98,8 @@ Containers, scan codes, status changes, fills, recall and labels
 | GET | `/v1/workspaces/{workspace_id}/containers/{id}` | Reads one container with its latest history. | field.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/containers/{id}/retire` | Retires a container for good. A retired container cannot be filled or changed. Repeat is safe. | container.manage |  |  |
 | POST | `/v1/workspaces/{workspace_id}/labels` | Prints labels. Each target gets a new scan code whose token is in the QR code. The answer is one PDF with 24 labels on a page (A4 or US Letter by `paper`). Every call issues new codes. A reprint does not revoke earlier codes: retire a container to revoke its codes. | container.manage |  |  |
+| GET | `/v1/workspaces/{workspace_id}/package-types` | Lists the system package types and the package types of the workspace. | field.view |  |  |
+| POST | `/v1/workspaces/{workspace_id}/package-types` | Creates a package type in the workspace. | container.manage | required |  |
 | GET | `/v1/workspaces/{workspace_id}/recall/lots/{lot_id}/containers` | Recall query: the containers filled from a stock lot. A container matches when its last fill names the lot, or when its last fill line belongs to a batch that consumed the lot. Each container is listed once. | field.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/scan/resolve` | Resolves a scanned code to its target and the actions the caller may do. | field.view |  |  |
 | POST | `/v1/workspaces/{workspace_id}/scan/status` | Changes the status of the container that a scanned code points to. | container.status |  |  |
@@ -207,6 +220,27 @@ Notification inbox, preferences and alert rules
 | PUT | `/v1/workspaces/{workspace_id}/me/notification-preferences` | Changes the notification preferences of the caller. |  |  |  |
 | GET | `/v1/workspaces/{workspace_id}/notifications` | The inbox of the caller, newest first. |  |  |  |
 | POST | `/v1/workspaces/{workspace_id}/notifications/{id}/actions` | Approves, postpones or ignores a notification. |  |  |  |
+
+## oauth
+
+OAuth 2.1 authorization server, consent, connected apps (ADR-0015)
+
+| Yöntem | Yol | Açıklama | Yetki / ek adım | Idempotency-Key | If-Match |
+|---|---|---|---|---|---|
+| GET | `/.well-known/oauth-authorization-server` | `GET /.well-known/oauth-authorization-server` (RFC 8414). |  |  |  |
+| GET | `/.well-known/oauth-protected-resource/mcp` | `GET /.well-known/oauth-protected-resource/mcp` (RFC 9728). Write scopes are requested when needed, so the document lists the read scopes. |  |  |  |
+| GET | `/.well-known/oauth-protected-resource/v1` | `GET /.well-known/oauth-protected-resource/v1` (RFC 9728), the open API. |  |  |  |
+| GET | `/authorize` | `GET /authorize`: validates the request, stores it and sends the browser to the consent screen. Only the code flow with PKCE `S256` exists. |  |  |  |
+| POST | `/register` | `POST /register` (RFC 7591) for clients that cannot use a metadata document. Only public clients register; registration gives no access by itself. |  |  |  |
+| POST | `/revoke` | `POST /revoke` (RFC 7009). The answer is `200` for any token, known or not. |  |  |  |
+| POST | `/token` | `POST /token`: authorization code exchange and refresh with rotation. |  |  |  |
+| DELETE | `/v1/me/connected-apps` | `DELETE /v1/me/connected-apps`: remove every connection of the caller. |  |  |  |
+| GET | `/v1/me/connected-apps` | `GET /v1/me/connected-apps`. |  |  |  |
+| DELETE | `/v1/me/connected-apps/{grant_id}` | `DELETE /v1/me/connected-apps/{grant_id}`. |  |  |  |
+| GET | `/v1/me/oauth/requests/{request}` | `GET /v1/me/oauth/requests/{request}`. |  |  |  |
+| POST | `/v1/me/oauth/requests/{request}/decision` | `POST /v1/me/oauth/requests/{request}/decision`. |  |  |  |
+| GET | `/v1/workspaces/{workspace_id}/mcp` | `GET /v1/workspaces/{ws}/mcp`. | workspace.manage |  |  |
+| PUT | `/v1/workspaces/{workspace_id}/mcp` | `PUT /v1/workspaces/{ws}/mcp`: an administrator of a Business workspace turns MCP on or off. Off closes every MCP grant of the workspace; on does not bring them back. | workspace.manage |  |  |
 
 ## recipes
 
@@ -422,6 +456,7 @@ OpenAPI ErrorCode enum:
 - `rate_limited`
 - `internal`
 - `unavailable`
+- `billing_unavailable`
 
 Hata gövdesi RFC 9457 ProblemDetails biçimindedir. Zorunlu alanlar: type, title, status, code. İsteğe bağlı alanlar: current, errors, request_id. request_id açıklaması: Request id (`X-Request-Id`).
 
