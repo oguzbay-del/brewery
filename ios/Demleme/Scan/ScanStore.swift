@@ -115,7 +115,7 @@ final class ScanStore {
         }
     }
 
-    static func actionFailure(_ error: any Error) -> ScanActionFailure {
+    nonisolated static func actionFailure(_ error: any Error) -> ScanActionFailure {
         switch APIError.unwrap(error)?.status {
         case 401, 403: .forbidden
         case 409: .conflict
@@ -124,7 +124,7 @@ final class ScanStore {
     }
 
     /// An empty note is sent as no note.
-    static func clean(_ note: String?) -> String? {
+    nonisolated static func clean(_ note: String?) -> String? {
         guard let note = note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty else { return nil }
         return note
     }
