@@ -145,3 +145,17 @@ All ten reports scored 100 in Accessibility, Best Practices and SEO. Lab measure
 Source: corresponding *.report.json entries. EN mobile TBT and TR mobile LCP require repeat measurement and root cause analysis in MQ-13; the lab LCP goal is 2.5s. TBT is not INP. The single-run performance difference does not establish a regression or cause. Keep the existing Lighthouse CI.
 
 Next: review lower sections and missing matrix coverage using MQ-11a report evidence, capture current baseline where possible and finish MQ-01. Do not claim screen-reader or 200% actual zoom review. No runtime or production changes.
+
+## 9. Full-page desktop composition review
+
+27 November: reviewed all 12 full-page 1440px PNGs from artifact 15230321111 (run 46063650916, head 1187435). Contact sheets preserve original page proportions, but scaled text is not sufficient for pixel-level accessibility or clipping certification. The original files remain in the CI artifact.
+
+| Finding | Evidence | Action |
+|---|---|---|
+| EN and TR homepage both contain a large dark mid-page technical statement panel, separate from the hero and closing CTA | home-1440.png and tr-1440.png, after the three product screenshot cards | P2 design consistency: MQ-07 replace this mid-page dark treatment with Editorial Light paper/white; preserve verified content and original screenshots. |
+| Narrow FAQ heading column causes several one-word lines despite wide desktop viewport | breweries-1440.png ("Know the scope before the detail"), homebrewers-1440.png ("Clear answers for curious brewers") | P2 typography/layout: MQ-06 review heading column sizing and natural wraps, then verify both locales at all target widths. Do not truncate text. |
+| Long audience pages use two consecutive closing call-to-action bands, visually similar in purpose | breweries-1440.png and homebrewers-1440.png near footer | P2 editorial hierarchy: MQ-10 review distinct purpose, spacing and primary/secondary action hierarchy; preserve destinations and claims. |
+| Real product screens already appear in the EN/TR homepage, audience pages, compare, recipe design, workflow and technical pages | home-1440.png, tr-1440.png, breweries-1440.png, homebrewers-1440.png, compare-1440.png, features-recipe-design-1440.png, how-it-works-1440.png, technical-principles-1440.png | MQ-08 inventory and preserve; improve frame/caption hierarchy and readability where needed, no fake UI or recolouring. |
+| Existing warm paper/photo composition is strong in features, technical principles, pricing, FAQ and plan configuration; restrained forest closing CTA fits the new direction | corresponding 1440px PNGs | MQ-03/04 reuse these patterns and reduce one-off CSS; no wholesale redesign. |
+
+These are observed composition findings, not a claim that every page passed VQG. The remaining mobile lower sections and missing TR subpages, module and 404 captures require MQ-11a evidence. Keep MQ-01 open until the missing required evidence is addressed. No layout code changed in this audit.
