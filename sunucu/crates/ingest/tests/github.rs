@@ -35,6 +35,7 @@ async fn app(base: &PgPool, secret: Option<&[u8]>) -> axum::Router {
         bundle_id: None,
         apple_environment: "Production".to_owned(),
         apple_product_ids: Vec::new(),
+        apple_product_plans: std::collections::HashMap::new(),
         web_payment: None,
         github_secret: secret.map(|s| Arc::new(s.to_vec())),
     })

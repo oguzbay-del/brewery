@@ -14,6 +14,7 @@ ring.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sqlx.workspace = true
+support.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 uuid.workspace = true

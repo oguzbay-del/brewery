@@ -44,6 +44,7 @@ async fn signed_delivery_is_deduplicated_and_bad_signature_is_rejected(base: PgP
         bundle_id: None,
         apple_environment: "Production".to_owned(),
         apple_product_ids: Vec::new(),
+        apple_product_plans: std::collections::HashMap::new(),
         web_payment: Some(Arc::new(provider)),
         github_secret: None,
     });

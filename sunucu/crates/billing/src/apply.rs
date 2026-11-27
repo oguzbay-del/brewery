@@ -17,7 +17,7 @@ use uuid::Uuid;
 
 use crate::{
     CHANGED_TOPIC, NOTIFICATION_ENTITY, NOTIFICATION_TOPIC, PAID_FEATURE, PlanKey,
-    SubscriptionUpdate, UPDATE_SCHEMA_VERSION,
+    SubscriptionUpdate, UPDATE_SCHEMA_VERSION, UpdateKind,
 };
 
 /// Result of [`store`].
@@ -219,8 +219,98 @@ async fn write_entitlement(
     Ok(())
 }
 
+/// Whether the update gives paid access now (not an end, not a period in the past).
+fn is_live(update: &SubscriptionUpdate) -> bool {
+    matches!(update.kind, UpdateKind::Active | UpdateKind::Grace)
+        && update.period_ends_at.is_some_and(|end| end > Utc::now())
+}
+
+/// Takes a lock for the workspace, then looks for another subscription of the workspace that
+/// still gives access. A workspace has one live subscription: a second one (another source, or
+/// another id at the same source) is not applied.
+async fn has_other_live_subscription(
+    tx: &mut PgConnection,
+    workspace_id: Uuid,
+    update: &SubscriptionUpdate,
+) -> Result<bool, HandlerError> {
+    sqlx::query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))")
+        .bind(workspace_id.to_string())
+        .execute(&mut *tx)
+        .await
+        .map_err(dberr)?;
+    let other: Option<String> = sqlx::query_scalar(
+        "SELECT source FROM subscriptions
+         WHERE workspace_id = $1 AND deleted_at IS NULL
+           AND NOT (source = $2 AND external_id = $3)
+           AND status IN ('active', 'grace')
+           AND (period_ends_at IS NULL OR period_ends_at > now())
+         LIMIT 1",
+    )
+    .bind(workspace_id)
+    .bind(update.source.subscription_source())
+    .bind(&update.external_id)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    Ok(other.is_some())
+}
+
+/// Opens a support request for the double source, once for each incoming subscription (the
+/// actor is the system: the request has no user author). The worker syncs it to the tracker.
+async fn open_double_source_item(
+    tx: &mut PgConnection,
+    workspace_id: Uuid,
+    update: &SubscriptionUpdate,
+) -> Result<(), HandlerError> {
+    tracing::warn!(
+        source = update.source.subscription_source(),
+        external_id = %update.external_id,
+        "second active subscription for a workspace: not applied"
+    );
+    let open: Option<Uuid> = sqlx::query_scalar(
+        "SELECT id FROM support_requests
+         WHERE workspace_id = $1 AND topic = 'subscription' AND deleted_at IS NULL
+           AND status IN ('open', 'answered')
+           AND diagnostics ->> 'kind' = 'double_source'
+           AND diagnostics ->> 'source' = $2 AND diagnostics ->> 'external_id' = $3
+         LIMIT 1",
+    )
+    .bind(workspace_id)
+    .bind(update.source.subscription_source())
+    .bind(&update.external_id)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    if open.is_some() {
+        return Ok(());
+    }
+    let id = Uuid::now_v7();
+    sqlx::query(
+        "INSERT INTO support_requests (id, workspace_id, topic, title, diagnostics)
+         VALUES ($1, $2, 'subscription', $3, $4)",
+    )
+    .bind(id)
+    .bind(workspace_id)
+    .bind("Second active subscription source")
+    .bind(json!({
+        "schema_version": 1,
+        "kind": "double_source",
+        "source": update.source.subscription_source(),
+        "external_id": update.external_id,
+        "product_key": update.product_key,
+    }))
+    .execute(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    support::reply::enqueue_sync(tx, workspace_id, id)
+        .await
+        .map_err(|e| HandlerError::Retry(e.to_string()))?;
+    Ok(())
+}
+
 /// Applies one update: upserts the subscription and its entitlement and writes the
-/// `subscription.changed` event. Returns `false` when the update is older than the stored state.
+/// `subscription.changed` event. Returns `false` when the update is older than the stored state,
+/// or when another live subscription exists (a support request is opened).
 ///
 /// # Errors
 /// [`HandlerError::Permanent`] for an update that cannot apply (no workspace, unknown
@@ -250,6 +340,11 @@ pub async fn apply(
         return Err(HandlerError::Permanent(format!(
             "workspace {workspace_id} not found"
         )));
+    }
+
+    if is_live(update) && has_other_live_subscription(tx, workspace_id, update).await? {
+        open_double_source_item(tx, workspace_id, update).await?;
+        return Ok(false);
     }
 
     let plan = update.plan_key.map(PlanKey::as_str);

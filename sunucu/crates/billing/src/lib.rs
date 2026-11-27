@@ -53,6 +53,32 @@ impl PlanKey {
     }
 }
 
+/// Parses `APPLE_PRODUCT_PLANS`: `<product id>=home|business`, comma-separated. Empty entries
+/// are skipped.
+///
+/// # Errors
+/// A message for an entry without `=`, with an unknown plan or with a repeated product id.
+pub fn parse_product_plans(
+    value: Option<&str>,
+) -> Result<std::collections::HashMap<String, PlanKey>, String> {
+    let mut plans = std::collections::HashMap::new();
+    for entry in value.unwrap_or_default().split(',') {
+        let entry = entry.trim();
+        if entry.is_empty() {
+            continue;
+        }
+        let (product, plan) = entry
+            .split_once('=')
+            .ok_or_else(|| format!("expected <product id>=home|business, got {entry:?}"))?;
+        let (product, plan) = (product.trim(), plan.trim());
+        let plan = PlanKey::parse(plan).ok_or_else(|| format!("unknown plan {plan:?}"))?;
+        if product.is_empty() || plans.insert(product.to_owned(), plan).is_some() {
+            return Err(format!("empty or repeated product id in {entry:?}"));
+        }
+    }
+    Ok(plans)
+}
+
 /// Topic of the outbox event that `ingest` writes for a stored notification.
 pub const NOTIFICATION_TOPIC: &str = "subscription.notification_received";
 /// Topic of the outbox event that the worker writes after a change.
@@ -170,5 +196,22 @@ impl SubscriptionUpdate {
             ),
             UpdateKind::Refunded => Some(self.occurred_at),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used)]
+    use super::{PlanKey, parse_product_plans};
+
+    #[test]
+    fn product_plans_setting() {
+        assert!(parse_product_plans(None).is_ok_and(|m| m.is_empty()));
+        let plans = parse_product_plans(Some(" a.home=home, ,b.biz=business ")).unwrap();
+        assert_eq!(plans.get("a.home"), Some(&PlanKey::Home));
+        assert_eq!(plans.get("b.biz"), Some(&PlanKey::Business));
+        assert!(parse_product_plans(Some("a=gold")).is_err());
+        assert!(parse_product_plans(Some("a")).is_err());
+        assert!(parse_product_plans(Some("a=home,a=business")).is_err());
     }
 }
