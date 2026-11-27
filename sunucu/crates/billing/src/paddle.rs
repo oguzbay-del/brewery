@@ -227,14 +227,7 @@ impl PaddleProvider {
             .cloned()
             .or_else(|| plan_key.map(|plan| plan.as_str().to_owned()))
             .ok_or_else(|| malformed("unknown Paddle price id"))?;
-        let seats = data
-            .get("items")
-            .and_then(Value::as_array)
-            .and_then(|items| items.first())
-            .and_then(|item| item.get("quantity"))
-            .and_then(Value::as_u64)
-            .and_then(|n| u32::try_from(n).ok())
-            .filter(|n| *n >= 1);
+        let seats = item_seats(data);
 
         let workspace_id = envelope
             .pointer("/data/custom_data/workspace_id")
@@ -286,6 +279,7 @@ impl PaddleProvider {
             period_ends_at,
             plan_key,
             seats,
+            customer_id: customer_id(data),
             occurred_at,
         }))
     }
@@ -304,6 +298,24 @@ impl WebPaymentProvider for PaddleProvider {
             serde_json::from_slice(body).map_err(|_| malformed("body is not valid JSON"))?;
         self.map_event(&envelope)
     }
+}
+
+/// Seat count: the quantity of the first item (at least 1).
+fn item_seats(data: &serde_json::Map<String, Value>) -> Option<u32> {
+    data.get("items")
+        .and_then(Value::as_array)
+        .and_then(|items| items.first())
+        .and_then(|item| item.get("quantity"))
+        .and_then(Value::as_u64)
+        .and_then(|n| u32::try_from(n).ok())
+        .filter(|n| *n >= 1)
+}
+
+fn customer_id(data: &serde_json::Map<String, Value>) -> Option<String> {
+    data.get("customer_id")
+        .and_then(Value::as_str)
+        .filter(|id| !id.is_empty())
+        .map(str::to_owned)
 }
 
 fn required_str<'a>(value: &'a Value, key: &str) -> Result<&'a str, ProviderError> {
@@ -421,6 +433,7 @@ mod tests {
             "occurred_at": "2026-12-15T12:00:00Z",
             "data": {
                 "id": "sub_test",
+                "customer_id": "ctm_1",
                 "status": status,
                 "custom_data": {"workspace_id": WORKSPACE},
                 "items": [{"price": {"id": "pri_home"}}],
@@ -634,6 +647,7 @@ mod tests {
             .unwrap();
         assert_eq!(update.plan_key, Some(PlanKey::Business));
         assert_eq!(update.seats, Some(7));
+        assert_eq!(update.customer_id.as_deref(), Some("ctm_1"));
         assert_eq!(update.product_key, "business");
     }
 }

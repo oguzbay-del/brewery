@@ -104,6 +104,7 @@ mod tests {
             period_ends_at: Some(Utc::now()),
             plan_key: None,
             seats: None,
+            customer_id: None,
             occurred_at: Utc::now(),
         };
         let body = serde_json::to_vec(&update).unwrap();

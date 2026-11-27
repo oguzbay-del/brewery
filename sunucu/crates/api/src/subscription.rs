@@ -135,7 +135,15 @@ pub async fn get_subscription(
     let mut tx = ctx.begin(&state.db).await?;
     let a = access::access(&mut tx, ws).await?;
     let subs = access::subscriptions(&mut tx, ws).await?;
-    Ok(Json(SubscriptionState {
+    Ok(Json(state_view(a, subs)))
+}
+
+/// The API view of the access state and the subscriptions (shared with `billing_api`).
+pub(crate) fn state_view(
+    a: access::Access,
+    subs: Vec<access::SubscriptionInfo>,
+) -> SubscriptionState {
+    SubscriptionState {
         access: match a.level {
             AccessLevel::Full => AccessLevelDto::Full,
             AccessLevel::ReadOnly => AccessLevelDto::ReadOnly,
@@ -160,7 +168,7 @@ pub async fn get_subscription(
                 period_ends_at: s.period_ends_at,
             })
             .collect(),
-    }))
+    }
 }
 
 // --- registry entry ----------------------------------------------------------------------

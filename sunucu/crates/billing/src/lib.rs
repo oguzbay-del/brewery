@@ -181,6 +181,9 @@ pub struct SubscriptionUpdate {
     /// Number of seats. `None` when the source does not say.
     #[serde(default)]
     pub seats: Option<u32>,
+    /// Customer id at the web payment provider (Paddle `customer_id`). `None` for the App Store.
+    #[serde(default)]
+    pub customer_id: Option<String>,
     /// Time the source signed the notification. The worker ignores an older change.
     pub occurred_at: DateTime<Utc>,
 }

@@ -7,6 +7,7 @@ pub mod app_version;
 pub mod auth;
 pub mod authz;
 pub mod batches;
+pub mod billing_api;
 pub mod brew_day;
 pub mod concurrency;
 pub mod config;
@@ -85,6 +86,9 @@ pub struct AppState {
     pub engine: engine::EngineClient,
     /// Settings of the support panel routes (`/internal`, T2.30); `None` answers them with `503`.
     pub internal: Option<Arc<internal::InternalConfig>>,
+    /// Paddle API client for checkout and portal (B3); `None` answers them with
+    /// `503 billing_unavailable`.
+    pub paddle: Option<Arc<billing_api::PaddleApi>>,
 }
 
 impl std::fmt::Debug for AppState {
@@ -109,6 +113,7 @@ impl AppState {
             auth_services: None,
             engine: engine::EngineClient::disabled(),
             internal: None,
+            paddle: None,
         }
     }
 
@@ -116,6 +121,13 @@ impl AppState {
     #[must_use]
     pub fn with_internal(mut self, internal: internal::InternalConfig) -> Self {
         self.internal = Some(Arc::new(internal));
+        self
+    }
+
+    /// Turns web checkout and the customer portal on (B3).
+    #[must_use]
+    pub fn with_paddle(mut self, paddle: billing_api::PaddleApi) -> Self {
+        self.paddle = Some(Arc::new(paddle));
         self
     }
 

@@ -525,6 +525,7 @@ async fn web_payment_provider_flows_through_the_same_path(base: PgPool) {
         period_ends_at: Some(t + chrono::Duration::days(30)),
         plan_key: None,
         seats: None,
+        customer_id: None,
         occurred_at: t,
     };
     let post = |signature: Option<&'static str>, body: String| {
@@ -583,6 +584,7 @@ async fn plan_and_seats_reach_the_entitlement_and_each_change_is_audited(base: P
         period_ends_at: Some(t + chrono::Duration::days(30)),
         plan_key: Some(billing::PlanKey::Business),
         seats: Some(5),
+        customer_id: None,
         occurred_at: t - chrono::Duration::seconds(60),
     };
     let send = |u: &billing::SubscriptionUpdate| {
@@ -641,6 +643,7 @@ async fn second_active_source_is_not_applied_and_opens_one_support_item(base: Pg
         period_ends_at: Some(now + chrono::Duration::days(30)),
         plan_key: None,
         seats: None,
+        customer_id: None,
         occurred_at: now - chrono::Duration::seconds(5),
     };
     for (n, id) in ["web-double-1", "web-double-2"].into_iter().enumerate() {

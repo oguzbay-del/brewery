@@ -123,6 +123,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Billing state: access, plan, seats, subscriptions and the live source. */
+        get: operations["billing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Starts a web checkout (Paddle). Clients on iOS use `StoreKit` instead. */
+        post: operations["billing_checkout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/billing/portal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Opens a Paddle customer portal session for the web subscription of the workspace. */
+        post: operations["billing_portal"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/invitations/accept": {
         parameters: {
             query?: never;
@@ -3520,6 +3571,18 @@ export interface components {
              */
             version: number;
         };
+        /** @description Billing state of a workspace. */
+        BillingView: {
+            /**
+             * @description Source of the subscription that gives access now (`app_store` or `web`); absent when
+             *     none does.
+             */
+            active_source?: string | null;
+            /** @description Access level, plan, seats and subscriptions. */
+            subscription: components["schemas"]["SubscriptionState"];
+            /** @description Whether web checkout and the customer portal are configured on this server. */
+            web_billing_available: boolean;
+        };
         /** @description A brew day package. */
         BrewDayPackage: {
             /**
@@ -3724,6 +3787,26 @@ export interface components {
         ChangeHistoryList: {
             items: components["schemas"]["ChangeHistoryEntry"][];
             next_cursor: string | null;
+        };
+        /** @description Body of `POST /v1/billing/checkout`. */
+        CheckoutRequest: {
+            /** @description `home` or `business`. */
+            plan: string;
+            /**
+             * Format: int32
+             * @description Number of seats; default 1.
+             */
+            seats?: number | null;
+            /**
+             * Format: uuid
+             * @description Workspace to subscribe.
+             */
+            workspace_id: string;
+        };
+        /** @description Address of a checkout page. */
+        CheckoutView: {
+            /** @description Open this address in the browser. */
+            checkout_url: string;
         };
         /**
          * @description The kind of client signing in; decides how the session travels.
@@ -4292,7 +4375,7 @@ export interface components {
          *     catalog are generated from it (ADR-0008 rule 3.2).
          * @enum {string}
          */
-        ErrorCode: "malformed_request" | "unauthenticated" | "forbidden" | "step_up_required" | "entitlement_required" | "module_disabled" | "not_found" | "conflict" | "idempotency_in_progress" | "version_mismatch" | "payload_too_large" | "unsupported_media_type" | "validation_failed" | "idempotency_mismatch" | "calculation_failed" | "upgrade_required" | "precondition_required" | "rate_limited" | "internal" | "unavailable";
+        ErrorCode: "malformed_request" | "unauthenticated" | "forbidden" | "step_up_required" | "entitlement_required" | "module_disabled" | "not_found" | "conflict" | "idempotency_in_progress" | "version_mismatch" | "payload_too_large" | "unsupported_media_type" | "validation_failed" | "idempotency_mismatch" | "calculation_failed" | "upgrade_required" | "precondition_required" | "rate_limited" | "internal" | "unavailable" | "billing_unavailable";
         /** @description An export job. */
         ExportJob: {
             /**
@@ -6754,6 +6837,19 @@ export interface components {
         PinSet: {
             /** @description Six digits. */
             pin: string;
+        };
+        /** @description Body of `POST /v1/billing/portal`. */
+        PortalRequest: {
+            /**
+             * Format: uuid
+             * @description Workspace whose web subscription to manage.
+             */
+            workspace_id: string;
+        };
+        /** @description Address of a customer portal session. */
+        PortalView: {
+            /** @description Open this address in the browser. */
+            portal_url: string;
         };
         /** @description Notification preferences of the caller in the workspace. */
         Preferences: {
@@ -9257,6 +9353,373 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    billing_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace to inspect; the caller must be an active member. */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Billing state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "active_source": "web",
+                     *       "subscription": {
+                     *         "access": "full",
+                     *         "access_source": "subscription",
+                     *         "plan_key": "business",
+                     *         "seats": 5,
+                     *         "subscriptions": [
+                     *           {
+                     *             "period_ends_at": "2027-01-19T09:00:00Z",
+                     *             "product_key": "business",
+                     *             "source": "web",
+                     *             "status": "active"
+                     *           }
+                     *         ],
+                     *         "trial_ends_at": "2026-12-20T09:00:00Z",
+                     *         "valid_until": "2027-01-19T09:00:00Z"
+                     *       },
+                     *       "web_billing_available": true
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BillingView"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    billing_checkout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Checkout address */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "checkout_url": "https://checkout.example/pay/txn_01"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["CheckoutView"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable; Billing unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    billing_portal: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortalRequest"];
+            };
+        };
+        responses: {
+            /** @description Portal address */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "portal_url": "https://portal.example/session/cpls_01"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PortalView"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable; Billing unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

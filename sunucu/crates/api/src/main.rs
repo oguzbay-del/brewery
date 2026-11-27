@@ -84,6 +84,12 @@ async fn main() -> common::Result<()> {
     } else {
         tracing::warn!("INTERNAL_PROXY_TOKEN not set; support panel routes answer 503");
     }
+    // Web checkout and the customer portal need the four Paddle settings.
+    if let Some(paddle) = api::billing_api::PaddleApi::from_env()? {
+        state = state.with_paddle(paddle);
+    } else {
+        tracing::warn!("Paddle API settings are not complete; checkout and portal answer 503");
+    }
     let router = api::router(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));

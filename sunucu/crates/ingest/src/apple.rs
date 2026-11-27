@@ -150,6 +150,7 @@ pub fn parse_notification(
         period_ends_at,
         plan_key: None,
         seats: None,
+        customer_id: None,
         occurred_at,
     })))
 }

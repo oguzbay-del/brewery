@@ -352,12 +352,14 @@ pub async fn apply(
     let upserted: Option<(Uuid, i64)> = sqlx::query_as(
         "INSERT INTO subscriptions
              (id, workspace_id, source, external_id, product_key, status, period_ends_at,
-              last_verified_at, plan_key, seats)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+              last_verified_at, plan_key, seats, paddle_customer_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          ON CONFLICT (source, external_id) DO UPDATE
          SET product_key = EXCLUDED.product_key,
              plan_key = COALESCE(EXCLUDED.plan_key, subscriptions.plan_key),
              seats = COALESCE(EXCLUDED.seats, subscriptions.seats),
+             paddle_customer_id = COALESCE(EXCLUDED.paddle_customer_id,
+                                           subscriptions.paddle_customer_id),
              status = EXCLUDED.status,
              period_ends_at = EXCLUDED.period_ends_at,
              last_verified_at = EXCLUDED.last_verified_at
@@ -376,6 +378,7 @@ pub async fn apply(
     .bind(update.occurred_at)
     .bind(plan)
     .bind(seats)
+    .bind(&update.customer_id)
     .fetch_optional(&mut *tx)
     .await
     .map_err(dberr)?;
