@@ -27,16 +27,18 @@ export function fetchBilling(workspaceId: string, signal?: AbortSignal): Promise
   });
 }
 
-export function createCheckout(workspaceId: string, plan: BillingPlan, seats: number) {
+export function createCheckout(workspaceId: string, plan: BillingPlan, seats: number, csrfToken: string) {
   return apiFetch<{ checkout_url: string }>('/v1/billing/checkout', {
     method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken },
     body: { workspace_id: workspaceId, plan, seats },
   });
 }
 
-export function createPortal(workspaceId: string) {
+export function createPortal(workspaceId: string, csrfToken: string) {
   return apiFetch<{ portal_url: string }>('/v1/billing/portal', {
     method: 'POST',
+    headers: { 'X-CSRF-Token': csrfToken },
     body: { workspace_id: workspaceId },
   });
 }
