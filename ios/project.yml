@@ -39,9 +39,9 @@ targets:
         product: OpenAPIRuntime
       - package: swift-openapi-urlsession
         product: OpenAPIURLSession
-      - package: swift-openapi-generator
-        product: OpenAPIGenerator
-        type: plugin
+    buildToolPlugins:
+      - plugin: OpenAPIGenerator
+        package: swift-openapi-generator
     settings:
       base:
         INFOPLIST_FILE: Demleme/Info.plist
