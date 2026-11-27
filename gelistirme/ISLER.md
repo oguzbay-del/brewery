@@ -250,10 +250,10 @@ Rules:
 | O2 | Golden test numbers from the BeerSmith screen (`formuller/ALTIN-TEST.md`) | Stage 5 gate | todo |
 | O3 | Apple Developer account, macOS CI (GitHub Actions macOS or Xcode Cloud) | T0.9, stage 4 | active: macOS CI runs on GitHub macOS machines; the Apple Developer account and the device test are not done |
 | O4 | Google Cloud organization and billing | Stage 5 | active (owner, 2026-11-25) |
-| O5 | Delete the 7 old branches on GitHub | – | todo: turn on GitHub setting "Automatically delete head branches", then delete the old branches once (#255) |
+| O5 | Delete the 7 old branches on GitHub | – | done (2026-11-27, setting on; #255 ChatGPT deletes the old branches) |
 | O6 | Select a web payment provider (subscriptions outside the App Store). Decision: Paddle (merchant of record). Paddle collects and pays US sales tax and UK VAT. | T2.28 | done (2026-11-20) |
 | O9 | Select a tool for error and crash reports. Decision: Sentry (ADR-0010). Traces, metrics and logs stay in OpenTelemetry. | Stages 3–5 | done (2026-11-24) |
 | O8 | Approve the tier matrix and the prices (Claude writes the draft before the beta, task P2) | Stage 5 | todo: trial decided (Home 3 months, Business 1 month, 2026-11-25); prices wait for #358 |
-| O7 | Buy the gristora.com domain (after the trademark and domain review, Issue #146) | G7 | active (owner, 2026-11-25) |
+| O7 | Buy the gristora.com domain (after the trademark and domain review, Issue #146) | G7 | done (2026-11-27, gristora.com is bought) |
 | O10 | Open the Paddle account and complete the seller verification; give the API key and the webhook secret as cluster secrets (not in the repository) | B3, B5 | active (owner, 2026-11-25) |
 | O11 | App Store Connect: subscription group and product IDs for the Home plans | B6 | todo |
