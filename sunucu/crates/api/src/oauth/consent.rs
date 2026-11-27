@@ -25,7 +25,11 @@ use crate::{
 };
 
 pub(super) fn session_required(ctx: &RequestContext) -> ApiResult<()> {
-    if ctx.identity.session_id.is_some() && ctx.identity.oauth.is_none() {
+    // A shared-device session belongs to a terminal, not to a person at a browser.
+    if ctx.identity.session_id.is_some()
+        && ctx.identity.oauth.is_none()
+        && ctx.identity.actor_kind != db::ActorKind::Device
+    {
         Ok(())
     } else {
         Err(ApiError::new(ErrorCode::Forbidden))
@@ -454,4 +458,32 @@ pub async fn request_decide(
     )
     .map_err(|_| ApiError::new(ErrorCode::Internal))?;
     Ok(Json(DecisionResult { redirect_to: to }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::context::Identity;
+    use std::collections::BTreeSet;
+
+    fn ctx(actor_kind: db::ActorKind, session: bool) -> RequestContext {
+        RequestContext {
+            identity: Identity {
+                user_id: Uuid::nil(),
+                session_id: session.then(Uuid::nil),
+                actor_kind,
+                oauth: None,
+            },
+            workspace_id: None,
+            permissions: BTreeSet::new(),
+            scoped: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn only_a_person_session_can_consent() {
+        assert!(session_required(&ctx(db::ActorKind::User, true)).is_ok());
+        assert!(session_required(&ctx(db::ActorKind::Device, true)).is_err());
+        assert!(session_required(&ctx(db::ActorKind::User, false)).is_err());
+    }
 }
