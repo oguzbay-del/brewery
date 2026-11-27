@@ -30,7 +30,7 @@ private actor ScanTransport: ClientTransport {
     "expires_at":"2026-11-13T22:00:00Z","id":"0192f1c0-7a3b-7000-8000-00000000000b","step_up_at":null},\
     "user":{"contact_email":"a@example.com","display_name":"A","id":"0192f1c0-7a3b-7000-8000-00000000000a"},\
     "workspaces":[{"id":"0192f1c0-7a3b-7000-8000-00000000000c","mode":"business","name":"W",\
-    "region":"us","status":"active"}]}
+    "region":"us","status":"active","permissions":["container.status","field.view"]}]}
     """
     private let resolution: String
     private let status: HTTPResponse.Status
