@@ -64,5 +64,11 @@ Modüllerin mevcut P1 uygulaması için bkz. [#335](https://github.com/oguzbay-d
 
 ## Açık kararlar
 
-- App Store incelemesi: Birleşik Ev ve İşletme uygulamasının 3.1.3(c) kapsamı, Ev için web ve iOS katman eşlemesi ve mağaza bazında İşletme yönetim metni veya bağlantısı.
-- Oğuz: Kalan Apple dönemi için iade veya mahsup, bekleme süresinde İşletme erişiminin koşulları, plan katmanları, koltuk sınırları ve fiyatlar. Sağlayıcı ürün kimlikleri O10 ve O11 sırasında belirlenir.
+- App Store incelemesi: Ev için web ve iOS katman eşlemesi doğrulanacak (İşletme kısmı aşağıda karara bağlandı).
+- Plan katmanları, koltuk sınırları ve fiyatlar beta öncesine kaldı (O8). Kod plan anahtarıyla çalışır; rakamlar sonra girilir. Sağlayıcı ürün kimlikleri O10 ve O11 sırasında belirlenir.
+
+## Sahip kararları (Oğuz, 2026-11-27)
+
+- **Kalan Apple dönemi:** iade veya mahsup yok. Kullanıcı Apple aboneliğini kendisi iptal eder; abonelik dönem sonuna kadar sürer. Apple iadesini yalnız Apple yapar.
+- **Geçişte İşletme erişimi:** Paddle ödemesi alındığı anda İşletme açılır. Apple dönemi arka planda biter. Bu kısa sürede iki kaynak etkindir ve B4 kuralıyla bir destek kaydı açılır.
+- **iOS'ta İşletme (App Store 3.1.3(c)):** iOS uygulaması İşletme için yalnız plan durumunu gösterir. Satın alma veya web yönetim bağlantısı yoktur.
