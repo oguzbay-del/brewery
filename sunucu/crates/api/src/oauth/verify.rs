@@ -36,6 +36,20 @@ pub struct OAuthBinding {
     pub scopes: BTreeSet<String>,
     /// The resource (audience) of the token.
     pub resource: String,
+    /// The scope the current call needs (set by [`check_request`]; audit rows carry it).
+    pub call_scope: Option<String>,
+}
+
+impl OAuthBinding {
+    /// The audit channel of a call with this token: `mcp` for the MCP resource, else `api`.
+    #[must_use]
+    pub fn via(&self) -> &'static str {
+        if self.resource.ends_with("/mcp") {
+            "mcp"
+        } else {
+            "api"
+        }
+    }
 }
 
 #[derive(sqlx::FromRow)]
@@ -89,6 +103,7 @@ pub async fn authenticate(pool: &PgPool, token: &str) -> ApiResult<Identity> {
             workspace_id: row.workspace_id,
             scopes: row.scopes.into_iter().collect(),
             resource: row.resource,
+            call_scope: None,
         }),
     })
 }
@@ -104,7 +119,7 @@ pub fn check_request(
     path: &str,
     workspace_in_path: Option<Uuid>,
     binding: &OAuthBinding,
-) -> ApiResult<()> {
+) -> ApiResult<&'static str> {
     // A token of another resource (for example an MCP token on `/v1`) is not valid here.
     if binding.resource != state.config.oauth.api_resource {
         return Err(unauthenticated());
@@ -118,7 +133,7 @@ pub fn check_request(
         .and_then(scopes::scope_of_operation)
         .ok_or_else(|| ApiError::new(ErrorCode::Forbidden))?;
     if binding.scopes.contains(needed) {
-        Ok(())
+        Ok(needed)
     } else {
         Err(ApiError::new(ErrorCode::Forbidden)
             .with_errors(vec![FieldIssue::new("scope", "insufficient_scope")]))

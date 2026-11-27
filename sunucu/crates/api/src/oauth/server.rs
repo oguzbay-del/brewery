@@ -258,6 +258,7 @@ fn error_redirect(
         (status = 400, description = "Error about the client or redirect address", body = Object, example = json!({"error": "invalid_request", "error_description": "redirect_uri is not registered"})),
     )
 )]
+#[allow(clippy::too_many_lines)]
 pub async fn authorize(
     State(state): State<AppState>,
     headers: HeaderMap,
@@ -426,7 +427,7 @@ async fn audit(
     user_id: Uuid,
     event: AuditEvent,
     grant_id: Uuid,
-    client: &str,
+    (client_pk, client): (Uuid, &str),
     value: Value,
 ) {
     let ctx = DbContext {
@@ -436,6 +437,7 @@ async fn audit(
     };
     let result = async {
         let mut tx = db::begin(&state.db, &ctx).await?;
+        db::set_audit_channel(&mut tx, "app", Some(client_pk), Some(grant_id), None).await?;
         db::append_audit(
             &mut tx,
             workspace_id,
@@ -501,7 +503,17 @@ pub async fn token(
     }
 }
 
-type CodeRow = (Uuid, Uuid, String, String, Vec<String>, String, bool);
+type CodeRow = (
+    Uuid,
+    Uuid,
+    String,
+    String,
+    Vec<String>,
+    String,
+    bool,
+    Uuid,
+    Uuid,
+);
 type RefreshRow = (
     String,
     Option<Uuid>,
@@ -531,13 +543,33 @@ async fn exchange_code(
         .bind(token_hash(code))
         .fetch_optional(&mut *tx)
         .await?;
-    let Some((grant_id, client_pk, stored_redirect, challenge, granted, resource, replayed)) = row
+    let Some((
+        grant_id,
+        client_pk,
+        stored_redirect,
+        challenge,
+        granted,
+        resource,
+        replayed,
+        grant_user,
+        grant_workspace,
+    )) = row
     else {
         return Err(invalid_grant("the code is unknown or expired"));
     };
     if replayed {
         // The grant is revoked inside the function; keep that change.
         tx.commit().await?;
+        audit(
+            state,
+            grant_workspace,
+            grant_user,
+            AuditEvent::OauthGrantRevoke,
+            grant_id,
+            (client.id, &client.client_id),
+            json!({"by": "code_replay"}),
+        )
+        .await;
         return Err(invalid_grant("the code was used before"));
     }
     if client_pk != client.id
@@ -614,7 +646,7 @@ async fn refresh(state: &AppState, client: &Client, p: &Params) -> Result<Respon
                 user,
                 AuditEvent::OauthRefreshReuse,
                 grant,
-                &client.client_id,
+                (client.id, &client.client_id),
                 json!({"reason": "refresh_reuse"}),
             )
             .await;
@@ -670,7 +702,7 @@ pub async fn revoke(
                 user,
                 AuditEvent::OauthGrantRevoke,
                 grant,
-                &client.client_id,
+                (client.id, &client.client_id),
                 json!({"by": "client"}),
             )
             .await;

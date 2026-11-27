@@ -273,10 +273,43 @@ pub struct CanonicalFields<'a> {
     pub reason: Option<&'a str>,
 }
 
-/// The canonical (RFC 8785) bytes of a row. Absent values are JSON `null`; `created_at` is
-/// RFC 3339 UTC with six fractional digits.
+/// Channel and OAuth fields of a row (chain version 2, ADR-0015 rule 5.2).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AuditChannel {
+    /// `app`, `mcp` or `api`.
+    pub via: String,
+    /// Row id of the OAuth client.
+    pub oauth_client_id: Option<Uuid>,
+    /// OAuth grant.
+    pub oauth_grant_id: Option<Uuid>,
+    /// Scope of the call.
+    pub oauth_scope: Option<String>,
+}
+
+impl Default for AuditChannel {
+    fn default() -> Self {
+        Self {
+            via: "app".to_owned(),
+            oauth_client_id: None,
+            oauth_grant_id: None,
+            oauth_scope: None,
+        }
+    }
+}
+
+/// The canonical (RFC 8785) bytes of a row of chain version 1 (no channel fields). Absent
+/// values are JSON `null`; `created_at` is RFC 3339 UTC with six fractional digits.
 pub fn canonical_row(row: &CanonicalFields<'_>) -> Result<Vec<u8>> {
-    let value = json!({
+    canonical_value(row, None)
+}
+
+/// The canonical bytes of a row of chain version 2: version 1 plus the channel fields.
+pub fn canonical_row_v2(row: &CanonicalFields<'_>, channel: &AuditChannel) -> Result<Vec<u8>> {
+    canonical_value(row, Some(channel))
+}
+
+fn canonical_value(row: &CanonicalFields<'_>, channel: Option<&AuditChannel>) -> Result<Vec<u8>> {
+    let mut value = json!({
         "id": row.id,
         "workspace_id": row.workspace_id,
         "seq": row.seq,
@@ -290,6 +323,12 @@ pub fn canonical_row(row: &CanonicalFields<'_>) -> Result<Vec<u8>> {
         "new_value": row.new_value,
         "reason": row.reason,
     });
+    if let (Some(channel), Some(map)) = (channel, value.as_object_mut()) {
+        map.insert("via".to_owned(), json!(channel.via));
+        map.insert("oauth_client_id".to_owned(), json!(channel.oauth_client_id));
+        map.insert("oauth_grant_id".to_owned(), json!(channel.oauth_grant_id));
+        map.insert("oauth_scope".to_owned(), json!(channel.oauth_scope));
+    }
     serde_json_canonicalizer::to_vec(&value).map_err(|e| Error::AuditCanonical(e.to_string()))
 }
 
@@ -351,27 +390,32 @@ pub async fn append_audit(
     // The database stores microseconds; truncate here so the hash survives the round trip.
     let created_at = DateTime::<Utc>::from_timestamp_micros(Utc::now().timestamp_micros())
         .ok_or_else(|| Error::AuditCanonical("timestamp out of range".into()))?;
-    let canonical = canonical_row(&CanonicalFields {
-        id,
-        workspace_id,
-        seq,
-        created_at,
-        actor_kind: entry.actor_kind.as_str(),
-        actor_id: entry.actor_id,
-        action: entry.event.as_str(),
-        record_kind: &entry.record_kind,
-        record_id: entry.record_id,
-        previous_value: entry.previous_value.as_ref(),
-        new_value: entry.new_value.as_ref(),
-        reason: entry.reason.as_deref(),
-    })?;
+    let channel = current_channel(&mut *conn).await?;
+    let canonical = canonical_row_v2(
+        &CanonicalFields {
+            id,
+            workspace_id,
+            seq,
+            created_at,
+            actor_kind: entry.actor_kind.as_str(),
+            actor_id: entry.actor_id,
+            action: entry.event.as_str(),
+            record_kind: &entry.record_kind,
+            record_id: entry.record_id,
+            previous_value: entry.previous_value.as_ref(),
+            new_value: entry.new_value.as_ref(),
+            reason: entry.reason.as_deref(),
+        },
+        &channel,
+    )?;
     let hash = chain_hash(&prev_hash, &canonical);
 
     sqlx::query(
         "INSERT INTO audit_log (id, workspace_id, seq, created_at, actor_kind, actor_id, action,
                                 record_kind, record_id, previous_value, new_value, reason,
-                                prev_hash, hash)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
+                                prev_hash, hash, chain_version, via, oauth_client_id,
+                                oauth_grant_id, oauth_scope)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 2, $15, $16, $17, $18)",
     )
     .bind(id)
     .bind(workspace_id)
@@ -387,6 +431,10 @@ pub async fn append_audit(
     .bind(entry.reason.as_deref())
     .bind(prev_hash.as_slice())
     .bind(hash.as_slice())
+    .bind(&channel.via)
+    .bind(channel.oauth_client_id)
+    .bind(channel.oauth_grant_id)
+    .bind(channel.oauth_scope.as_deref())
     .execute(&mut *conn)
     .await?;
     sqlx::query(
@@ -399,6 +447,34 @@ pub async fn append_audit(
     .execute(&mut *conn)
     .await?;
     Ok(AuditRecord { id, seq, hash })
+}
+
+/// Reads the channel of the running transaction (set by [`crate::set_audit_channel`]).
+async fn current_channel(conn: &mut PgConnection) -> Result<AuditChannel> {
+    let row = sqlx::query(
+        "SELECT coalesce(nullif(current_setting('app.audit_via', true), ''), 'app') AS via,
+                nullif(current_setting('app.oauth_client_id', true), '') AS client,
+                nullif(current_setting('app.oauth_grant_id', true), '') AS grant_id,
+                nullif(current_setting('app.oauth_scope', true), '') AS scope",
+    )
+    .fetch_one(conn)
+    .await?;
+    let uuid = |name: &str| -> Result<Option<Uuid>> {
+        row.try_get::<Option<String>, _>(name)?
+            .map(|s| Uuid::parse_str(&s))
+            .transpose()
+            .map_err(|_| Error::InvalidAuditEntry("invalid channel setting"))
+    };
+    let via: String = row.try_get("via")?;
+    if !matches!(via.as_str(), "app" | "mcp" | "api") {
+        return Err(Error::InvalidAuditEntry("invalid channel"));
+    }
+    Ok(AuditChannel {
+        via,
+        oauth_client_id: uuid("client")?,
+        oauth_grant_id: uuid("grant_id")?,
+        oauth_scope: row.try_get("scope")?,
+    })
 }
 
 /// Where and how a chain is broken.
@@ -474,6 +550,7 @@ impl ChainReport {
 /// Recomputes and checks one workspace's chain. The connection must be able to read the
 /// workspace's rows: the workspace context is set here, and the owner/superuser migration
 /// role bypasses RLS anyway.
+#[allow(clippy::too_many_lines)]
 pub async fn verify_chain(conn: &mut PgConnection, workspace_id: Uuid) -> Result<ChainReport> {
     let mut tx = sqlx::Connection::begin(&mut *conn).await?;
     set_workspace_id(&mut tx, workspace_id).await?;
@@ -491,7 +568,8 @@ pub async fn verify_chain(conn: &mut PgConnection, workspace_id: Uuid) -> Result
     'scan: loop {
         let batch = sqlx::query(
             "SELECT id, seq, created_at, actor_kind, actor_id, action, record_kind, record_id,
-                    previous_value, new_value, reason, prev_hash, hash
+                    previous_value, new_value, reason, prev_hash, hash, chain_version, via,
+                    oauth_client_id, oauth_grant_id, oauth_scope
              FROM audit_log WHERE workspace_id = $1 AND seq > $2 ORDER BY seq LIMIT $3",
         )
         .bind(workspace_id)
@@ -525,7 +603,7 @@ pub async fn verify_chain(conn: &mut PgConnection, workspace_id: Uuid) -> Result
             let action: String = row.try_get("action")?;
             let record_kind: String = row.try_get("record_kind")?;
             let reason: Option<String> = row.try_get("reason")?;
-            let canonical = canonical_row(&CanonicalFields {
+            let fields = CanonicalFields {
                 id: row.try_get("id")?,
                 workspace_id,
                 seq,
@@ -538,7 +616,22 @@ pub async fn verify_chain(conn: &mut PgConnection, workspace_id: Uuid) -> Result
                 previous_value: previous_value.as_ref(),
                 new_value: new_value.as_ref(),
                 reason: reason.as_deref(),
-            })?;
+            };
+            // Rows of version 1 predate the channel fields and keep their old form.
+            let version: i16 = row.try_get("chain_version")?;
+            let canonical = if version >= 2 {
+                canonical_row_v2(
+                    &fields,
+                    &AuditChannel {
+                        via: row.try_get("via")?,
+                        oauth_client_id: row.try_get("oauth_client_id")?,
+                        oauth_grant_id: row.try_get("oauth_grant_id")?,
+                        oauth_scope: row.try_get("oauth_scope")?,
+                    },
+                )?
+            } else {
+                canonical_row(&fields)?
+            };
             if chain_hash(&prev_hash, &canonical) != stored_hash {
                 broken = Some(ChainBreak::HashMismatch { seq });
                 break 'scan;

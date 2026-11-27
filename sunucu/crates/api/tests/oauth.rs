@@ -785,6 +785,15 @@ async fn pkce_failure_and_code_replay_are_refused(pool: PgPool) {
         call(&w, "GET", &list, Some(access), None).await.status,
         StatusCode::UNAUTHORIZED
     );
+    let replay_rows: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM audit_log WHERE workspace_id = $1 AND action = 'oauth.grant_revoke'
+           AND new_value #>> '{detail,by}' = 'code_replay'",
+    )
+    .bind(ws)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert!(replay_rows >= 1);
 
     // An expired code is refused.
     let request = start(&w, &client, "recipes:read", API_RESOURCE).await;
@@ -1221,7 +1230,7 @@ async fn account_deletion_closes_every_connection(pool: PgPool) {
 }
 
 #[sqlx::test(migrations = "../../migrations")]
-async fn membership_changes_reach_the_token_on_the_next_request(pool: PgPool) {
+async fn a_closed_membership_or_workspace_closes_the_grants(pool: PgPool) {
     let w = world(&pool).await;
     let session = sign_in(&w, "jane").await;
     let ws = new_workspace(&w, &session, "business").await;
@@ -1231,7 +1240,8 @@ async fn membership_changes_reach_the_token_on_the_next_request(pool: PgPool) {
         call(&w, "GET", &list, Some(&t.access), None).await.status,
         StatusCode::OK
     );
-    // The member is removed from the workspace: the same token now gets 404.
+    // The membership closes: the token stops at once, and re-adding the member does not
+    // bring it back.
     sqlx::query("UPDATE workspace_members SET status = 'disabled' WHERE workspace_id = $1")
         .bind(ws)
         .execute(&pool)
@@ -1239,7 +1249,60 @@ async fn membership_changes_reach_the_token_on_the_next_request(pool: PgPool) {
         .unwrap();
     assert_eq!(
         call(&w, "GET", &list, Some(&t.access), None).await.status,
-        StatusCode::NOT_FOUND
+        StatusCode::UNAUTHORIZED
+    );
+    sqlx::query("UPDATE workspace_members SET status = 'active' WHERE workspace_id = $1")
+        .bind(ws)
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        call(&w, "GET", &list, Some(&t.access), None).await.status,
+        StatusCode::UNAUTHORIZED
+    );
+    let refreshed = form(
+        &w,
+        "/token",
+        &[
+            ("grant_type", "refresh_token"),
+            ("client_id", &t.client),
+            ("refresh_token", &t.refresh),
+        ],
+    )
+    .await;
+    assert_eq!(refreshed.body["error"], "invalid_grant");
+    let reason: String = sqlx::query_scalar("SELECT revoked_reason FROM oauth_grants")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(reason, "membership_closed");
+
+    // A deleted workspace closes every grant in it.
+    let other = new_workspace(&w, &session, "business").await;
+    let t2 = connect(&w, &session, other, "recipes:read", API_RESOURCE).await;
+    sqlx::query("UPDATE workspaces SET deleted_at = now() WHERE id = $1")
+        .bind(other)
+        .execute(&pool)
+        .await
+        .unwrap();
+    let reason: String =
+        sqlx::query_scalar("SELECT revoked_reason FROM oauth_grants WHERE workspace_id = $1")
+            .bind(other)
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(reason, "workspace_deleted");
+    assert_eq!(
+        call(
+            &w,
+            "GET",
+            &format!("/v1/workspaces/{other}/recipes"),
+            Some(&t2.access),
+            None
+        )
+        .await
+        .status,
+        StatusCode::UNAUTHORIZED
     );
 }
 
@@ -1365,4 +1428,191 @@ async fn search_with_a_token_leaves_out_types_without_scope(pool: PgPool) {
         assert_eq!(r.status, StatusCode::OK, "{:?}", r.body);
         assert_eq!(r.body["items"], json!([]));
     }
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn the_functions_check_the_caller_themselves(pool: PgPool) {
+    use db::{ActorKind, DbContext};
+    let w = world(&pool).await;
+    let session = sign_in(&w, "nora").await;
+    let ws = new_workspace(&w, &session, "business").await;
+    let t = connect(&w, &session, ws, "recipes:read", MCP_RESOURCE).await;
+    let owner = user_id(&pool, "nora").await;
+    let stranger_session = sign_in(&w, "nora-stranger").await;
+    let stranger = user_id(&pool, "nora-stranger").await;
+    let _ = (stranger_session, &t);
+    let app = app_pool(&pool).await;
+    let ctx = |user: Uuid, workspace: Option<Uuid>| DbContext {
+        user_id: Some(user),
+        workspace_id: workspace,
+        actor_kind: ActorKind::User,
+    };
+    let grant: Uuid = sqlx::query_scalar("SELECT id FROM oauth_grants")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    let client: Uuid = sqlx::query_scalar("SELECT id FROM oauth_clients")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+    // Another user's context cannot revoke the grant, in any of the three functions.
+    let mut tx = db::begin(&app, &ctx(stranger, Some(ws))).await.unwrap();
+    let rows: Vec<(Uuid, Uuid, Uuid)> =
+        sqlx::query_as("SELECT * FROM oauth_grant_revoke($1, $2, 'x')")
+            .bind(grant)
+            .bind(owner)
+            .fetch_all(&mut *tx)
+            .await
+            .unwrap();
+    assert!(rows.is_empty());
+    let rows: Vec<(Uuid, Uuid, Uuid)> =
+        sqlx::query_as("SELECT * FROM oauth_grant_revoke_all_user($1, 'x')")
+            .bind(owner)
+            .fetch_all(&mut *tx)
+            .await
+            .unwrap();
+    assert!(rows.is_empty());
+    // A non-administrator cannot use the workspace switch function.
+    let rows: Vec<(Uuid, Uuid, Uuid)> =
+        sqlx::query_as("SELECT * FROM oauth_workspace_revoke_all($1, $2, 'x')")
+            .bind(ws)
+            .bind(MCP_RESOURCE)
+            .fetch_all(&mut *tx)
+            .await
+            .unwrap();
+    assert!(rows.is_empty());
+    // A grant cannot be opened for another user.
+    let err = sqlx::query("SELECT * FROM oauth_grant_upsert($1, $2, $3, $4, $5, $6)")
+        .bind(Uuid::now_v7())
+        .bind(owner)
+        .bind(ws)
+        .bind(client)
+        .bind(vec!["recipes:read".to_owned()])
+        .bind(MCP_RESOURCE)
+        .fetch_all(&mut *tx)
+        .await;
+    assert!(err.is_err());
+    drop(tx);
+    // The stranger cannot open a grant for a workspace that they do not belong to either.
+    let mut tx = db::begin(&app, &ctx(stranger, Some(ws))).await.unwrap();
+    let err = sqlx::query("SELECT * FROM oauth_grant_upsert($1, $2, $3, $4, $5, $6)")
+        .bind(Uuid::now_v7())
+        .bind(stranger)
+        .bind(ws)
+        .bind(client)
+        .bind(vec!["recipes:read".to_owned()])
+        .bind(MCP_RESOURCE)
+        .fetch_all(&mut *tx)
+        .await;
+    assert!(err.is_err());
+    drop(tx);
+    let active: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM oauth_grants WHERE revoked_at IS NULL")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(active, 1);
+
+    // The administrator of the workspace can.
+    let mut tx = db::begin(&app, &ctx(owner, Some(ws))).await.unwrap();
+    let rows: Vec<(Uuid, Uuid, Uuid)> =
+        sqlx::query_as("SELECT * FROM oauth_workspace_revoke_all($1, $2, 'x')")
+            .bind(ws)
+            .bind(MCP_RESOURCE)
+            .fetch_all(&mut *tx)
+            .await
+            .unwrap();
+    assert_eq!(rows.len(), 1);
+}
+
+#[sqlx::test(migrations = "../../migrations")]
+async fn audit_rows_carry_the_channel_and_the_chain_verifies(pool: PgPool) {
+    use api::{RequestContext, context::Identity};
+    use db::{ActorKind, AuditEvent, NewAuditEntry};
+    let w = world(&pool).await;
+    let session = sign_in(&w, "omar").await;
+    let ws = new_workspace(&w, &session, "business").await;
+    let t = connect(&w, &session, ws, "recipes:read", API_RESOURCE).await;
+    // Consent wrote its row with the client and the grant.
+    let row: (String, Option<Uuid>, Option<Uuid>) = sqlx::query_as(
+        "SELECT via, oauth_client_id, oauth_grant_id FROM audit_log
+         WHERE workspace_id = $1 AND action = 'oauth.grant'",
+    )
+    .bind(ws)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(row.0, "app");
+    assert!(row.1.is_some() && row.2.is_some());
+
+    // A write made with a token gets `via`, client, grant and scope from the request context.
+    let grant: Uuid = sqlx::query_scalar("SELECT id FROM oauth_grants")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    let client: Uuid = sqlx::query_scalar("SELECT id FROM oauth_clients")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    let user = user_id(&pool, "omar").await;
+    let ctx = RequestContext {
+        identity: Identity {
+            user_id: user,
+            session_id: None,
+            actor_kind: ActorKind::User,
+            oauth: Some(api::oauth::OAuthBinding {
+                grant_id: grant,
+                client_pk: client,
+                client_id: t.client.clone(),
+                workspace_id: ws,
+                scopes: ["recipes:draft".to_owned()].into_iter().collect(),
+                resource: API_RESOURCE.to_owned(),
+                call_scope: Some("recipes:draft".to_owned()),
+            }),
+        },
+        workspace_id: Some(ws),
+        permissions: std::collections::BTreeSet::new(),
+        scoped: Vec::new(),
+    };
+    let app = app_pool(&pool).await;
+    let mut tx = ctx.begin(&app).await.unwrap();
+    db::append_audit(
+        &mut tx,
+        ws,
+        &NewAuditEntry {
+            actor_kind: ActorKind::User,
+            actor_id: Some(user),
+            event: AuditEvent::RecordDelete,
+            record_kind: "recipe".to_owned(),
+            record_id: None,
+            previous_value: None,
+            new_value: None,
+            reason: None,
+        },
+    )
+    .await
+    .unwrap();
+    tx.commit().await.unwrap();
+    let row: (String, Option<Uuid>, Option<Uuid>, Option<String>) = sqlx::query_as(
+        "SELECT via, oauth_client_id, oauth_grant_id, oauth_scope FROM audit_log
+         WHERE workspace_id = $1 AND action = 'record.delete'",
+    )
+    .bind(ws)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        row,
+        (
+            "api".to_owned(),
+            Some(client),
+            Some(grant),
+            Some("recipes:draft".to_owned())
+        )
+    );
+    let mut conn = pool.acquire().await.unwrap();
+    let report = db::verify_chain(&mut conn, ws).await.unwrap();
+    assert!(report.is_ok(), "{report:?}");
+    assert!(report.rows >= 2);
 }

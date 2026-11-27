@@ -174,6 +174,7 @@ fn max_age(cache_control: Option<&str>) -> i64 {
     ttl.clamp(60, MAX_CACHE_SECS)
 }
 
+#[allow(clippy::too_many_lines)]
 async fn fetch_cimd(state: &AppState, client_id: &str, ip: &str) -> Result<Client, ClientError> {
     let insecure = state.config.oauth.allow_insecure_cimd;
     let url = Url::parse(client_id).map_err(|_| ClientError::Invalid("client_id".into()))?;

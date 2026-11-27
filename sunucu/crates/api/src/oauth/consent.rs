@@ -313,10 +313,11 @@ pub(super) async fn audit_grant(
     ws: Uuid,
     event: AuditEvent,
     grant_id: Uuid,
-    client_id: &str,
+    (client_pk, client_id): (Uuid, &str),
     detail: serde_json::Value,
 ) -> ApiResult<()> {
     db::set_workspace_id(conn, ws).await?;
+    db::set_audit_channel(conn, "app", Some(client_pk), Some(grant_id), None).await?;
     db::append_audit(
         conn,
         ws,
@@ -332,6 +333,7 @@ pub(super) async fn audit_grant(
         },
     )
     .await?;
+    db::set_audit_channel(conn, "app", None, None, None).await?;
     Ok(())
 }
 
@@ -446,7 +448,7 @@ pub async fn request_decide(
         ws,
         AuditEvent::OauthGrant,
         grant_id,
-        &client.client_id,
+        (stored.client_pk, &client.client_id),
         json!({"scopes": granted, "widened": widened, "resource": stored.resource}),
     )
     .await?;
