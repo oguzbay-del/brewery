@@ -121,7 +121,8 @@ private actor RoutingTransport: ClientTransport {
             {"session":{"client":"ios","created_at":"2026-11-13T10:00:00Z","csrf_token":"x",\
             "expires_at":"2026-11-13T22:00:00Z","id":"0192f1c0-7a3b-7000-8000-00000000000b","step_up_at":null},\
             "user":{"contact_email":"a@example.com","display_name":"A","id":"0192f1c0-7a3b-7000-8000-00000000000a"},\
-            "workspaces":[{"id":"\(workspaceID)","mode":"home","name":"W","region":"us","status":"active"}]}
+            "workspaces":[{"id":"\(workspaceID)","mode":"home","name":"W","region":"us","status":"active",\
+            "permissions":["container.status","field.view"]}]}
             """
             return (response, HTTPBody(json))
         }

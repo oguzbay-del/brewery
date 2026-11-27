@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     let store: ModulesStore
+    let scanStore: ScanStore
     @State private var selection: AppTab = .home
 
     /// Tabs whose module is off are not shown. While the state loads or when it cannot be
@@ -28,6 +29,20 @@ struct ContentView: View {
         }
     }
 
+    /// Home: the app name and the scan screen. Scanning reads data only, so a read-only
+    /// module needs no banner here; the screen is hidden only when the module is off.
+    private var home: some View {
+        VStack(spacing: 0) {
+            Text(UiText.text("shell.app_name"))
+                .font(.largeTitle.bold())
+                .foregroundStyle(DemlemeColor.label)
+                .accessibilityIdentifier("app.title")
+            if store.access(for: "production") != .off {
+                ScanView(store: scanStore)
+            }
+        }
+    }
+
     @ViewBuilder
     private func screen(for tab: AppTab) -> some View {
         VStack(spacing: 0) {
@@ -35,10 +50,7 @@ struct ContentView: View {
             ModuleGate(moduleID: tab.moduleID, store: store) {
                 switch tab {
                 case .home:
-                    Text(UiText.text("shell.app_name"))
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(DemlemeColor.label)
-                        .accessibilityIdentifier("app.title")
+                    home
                 case .settings:
                     ModulesListView(store: store)
                 case .containers:
@@ -60,5 +72,8 @@ struct ContentView: View {
 
 #Preview {
     let error = APIConfiguration.ConfigurationError.missingBaseURL
-    return ContentView(store: ModulesStore(service: UnavailableModulesService(error: error)))
+    return ContentView(
+        store: ModulesStore(service: UnavailableModulesService(error: error)),
+        scanStore: ScanStore(service: UnavailableScanService(error: error))
+    )
 }

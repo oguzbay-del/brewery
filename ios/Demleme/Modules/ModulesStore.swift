@@ -39,14 +39,16 @@ final class ModulesStore {
             } else {
                 phase = .noWorkspace
             }
-        } catch let error as APIError {
-            switch error.status {
+        } catch {
+            guard let apiError = APIError.unwrap(error) else {
+                phase = .failed(requestID: nil)
+                return
+            }
+            switch apiError.status {
             case 401: phase = .signInRequired
             case 404: phase = .notMember
-            default: phase = .failed(requestID: error.requestId)
+            default: phase = .failed(requestID: apiError.requestId)
             }
-        } catch {
-            phase = .failed(requestID: nil)
         }
     }
 
@@ -62,7 +64,7 @@ final class ModulesStore {
 
     /// Call this with the error of a failed write; a module problem becomes a notice.
     func noteWriteError(_ error: any Error) {
-        switch (error as? APIError)?.code {
+        switch APIError.unwrap(error)?.code {
         case "module_disabled": notice = .disabled
         case "module_read_only": notice = .readOnly
         default: break
