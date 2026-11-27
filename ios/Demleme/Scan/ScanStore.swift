@@ -38,14 +38,12 @@ final class ScanStore {
         do {
             let card = try await service.resolve(code: code)
             phase = .card(card)
-        } catch let error as APIError {
-            switch error.status {
+        } catch {
+            switch APIError.unwrap(error)?.status {
             case 404: phase = .failed(.notFound)
             case 401, 403: phase = .failed(.forbidden)
             default: phase = .failed(.generic)
             }
-        } catch {
-            phase = .failed(.generic)
         }
     }
 

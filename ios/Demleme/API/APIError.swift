@@ -1,4 +1,5 @@
 import Foundation
+import OpenAPIRuntime
 
 /// Error thrown by the API client for every non-success response.
 ///
@@ -56,5 +57,15 @@ extension APIError {
             requestId: problem.requestId ?? headerRequestId,
             title: problem.title
         )
+    }
+}
+
+extension APIError {
+    /// Finds the `APIError` in an error from a generated operation. The generated client wraps
+    /// an error that the middleware throws in a `ClientError`; this looks inside it.
+    static func unwrap(_ error: any Error) -> APIError? {
+        if let apiError = error as? APIError { return apiError }
+        if let clientError = error as? ClientError { return unwrap(clientError.underlyingError) }
+        return nil
     }
 }

@@ -123,6 +123,7 @@ struct ScanCardView: View {
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DemlemeColor.card, in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("scan.card")
     }
 }
