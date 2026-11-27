@@ -22,3 +22,22 @@ body {
   line-height: var(--t-large-title-line);
   font-weight: var(--t-large-title-weight);
 }
+
+.app-shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  color: var(--tint);
+  white-space: nowrap;
+}
+
+.app-shell__brand svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 400px) {
+  .app-shell__wordmark {
+    display: none;
+  }
+}
