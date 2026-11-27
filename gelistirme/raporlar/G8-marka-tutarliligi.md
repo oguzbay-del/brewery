@@ -559,3 +559,51 @@ Sıra §3.3 envanterindeki dört bölüm ve 19 madde ile aynıdır. Durum: **Var
 | 19. Arşiv ve geri yükleme | Kısmi | A: T2.37 trash, 30 gün; R: version_immutable. Ayrı arşiv davranışı doğrulanmadı. |
 
 **Öneri:** reçete sayfasında sürüm, temel düzenleme ve organizasyon için kanıtlı kapsamı koru; şablon, otomatik dengeleme, tam biçim uyumluluğu ve İşletme onay sürecini mevcut özellik olarak sunma. Bu bölüm 19/256 katalog maddesinin ayrıntılı sınıflandırmasıdır.
+
+
+### 3.5 Madde bazında kanıt — brew-day ve inventory-costing
+
+Sıra §3.3 ile aynıdır. Kaynaklar: [API envanteri](../../sunucu/crates/api/CLAUDE.md) (A), [batches.rs](../../sunucu/crates/api/src/batches.rs) (B), [brew_day.rs](../../sunucu/crates/api/src/brew_day.rs) (D), [stock.rs](../../sunucu/crates/api/src/stock.rs) (S), [files.rs](../../sunucu/crates/api/src/files.rs) (F). Bu incelemede A yeniden okundu; B ve S için §3.2'deki doğrudan kod bulguları esas alındı. Belirsiz durum yokluk kanıtı değildir.
+
+#### brew-day (17 madde)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. iPhone tam ekran ve iPad/web adım listesi | Kısmi | A T2.22: adım API'si; cihaz ve ekran akışları doğrulanmadı. |
+| 2. Zamanlayıcı, başlat/bitir, gerçek zamanlar | Kısmi | A T2.22: adım ve gerçekleşen değerler; zamanlayıcı ve tüm zaman düzenleme davranışı doğrulanmadı. |
+| 3. Sonraki adım, hedef, ölçüm | Kısmi | A T2.22: adım, ölçüm ve özet; otomatik rehberlik doğrulanmadı. |
+| 4. Live Activity, Dynamic Island, zamana duyarlı bildirimler | Belirsiz | A T2.24: bildirim modülü; Apple sistem entegrasyonları için ayrı iOS kanıtı gerekli. |
+| 5. Eş zamanlı partiler | Kısmi | A T2.22: parti uçları; paralel kullanıcı akışı doğrulanmadı. |
+| 6. Gerçek miktar, zaman, sıcaklık ve hacim | Kısmi | A T2.22: gerçek miktar ve ölçüm; tüm alanların bir arada kaydı doğrulanmadı. |
+| 7. Adım düzenleme ve malzeme ikamesi | Kısmi | A T2.22: adım ve sapma kayıtları; ekleme/atlama/sıralama ve ikame kapsamı doğrulanmadı. |
+| 8. Sapma ve gerçek OG/IBU/ABV yeniden hesabı | Kısmi / Sonra | B: §3.2, gerçek ABV ölçümden gelir, motor hesabı açık TODO; A T2.22 sapma. |
+| 9. Hedef karşılaştırması ve yorum | Kısmi | A T2.22: özet ve sapma; bağlamsal yorum kanıtlanmadı. |
+| 10. Gerçekleşenden yeni reçete taslağı | Belirsiz | A T2.21 taslak ve T2.22 gerçekleşen değer ayrı işlevler; birleşik akış doğrulanmadı. |
+| 11. A4/US Letter üretim formu | Belirsiz | A T2.22: imzalı demleme paketi; basılabilir form ve sayfa ölçüsü kanıtlanmadı. |
+| 12. Basılı form QR bağlantısı | Belirsiz | A T2.22 paket; §3.2 kap QR kodu farklı işlevdir. |
+| 13. Numaralı sırada kâğıt ölçümü | Kısmi | A T2.22: istemci UUID ile tekrar güvenli ölçüm; kâğıt sırası akışı doğrulanmadı. |
+| 14. Apple tarama ve çıkarılan değer karşılaştırması | Kısmi | A T2.18/F: taranmış belge uçları; OCR ve Apple ekranı doğrulanmadı. |
+| 15. Zorunlu tarama ve saklama politikası | Belirsiz | A T2.18: belge saklama uçları; zorunluluk ve saklama kuralı kanıtlanmadı. |
+| 16. Ev modunda form özelleştirme | Belirsiz | A T2.22 paket; özel alan ve yerleşim kanıtı yok. |
+| 17. Hatırlatıcıdan hızlı ölçüm | Kısmi | A T2.22 ölçüm ve T2.24 bildirim; sistem kısayolu ve birleşik akış doğrulanmadı. |
+
+#### inventory-costing (14 madde)
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Altı malzeme grubu | Kısmi | A T2.21 reçete ve T2.27 kütüphane malzemesi araması; tüm alt türler doğrulanmadı. |
+| 2. Ayrıntılı özellikler ve özel malzeme | Kısmi | A T2.27 malzeme araması ve T2.37 geri yükleme; ayrıntılı alanlar doğrulanmadı. |
+| 3. İkame ve stoğa duyarlı planlama | Kısmi | A T2.23 reçeteden stok düşülerek alışveriş listesi; otomatik ikame kanıtlanmadı. |
+| 4. Malzemeye özgü birim ve bölgesel gösterim | Kısmi | S: kg/L ve paket adedi sınırı (§3.2); bölgesel UI doğrulanmadı. |
+| 5. Özel malt analizi ve COA | Belirsiz | A T2.18 belge uçları; COA ve malt analizi iş akışı kanıtlanmadı. |
+| 6. Ev stoku, minimum seviye, alışveriş | Kısmi | A T2.23 stok toplamı ve alışveriş listesi; minimum seviye doğrulanmadı. |
+| 7. Lot, tedarikçi, rezervasyon ve FIFO değerleme | Kısmi | A T2.23 lot ve en eski lottan düşüm; rezervasyon ve FIFO değerleme doğrulanmadı. |
+| 8. Mal kabul, barkod ve sayım | Kısmi | A T2.23 receive/count; barkod ekranı doğrulanmadı. |
+| 9. Hareket defteri | Kısmi | A T2.23 receive/consume/adjust/count; transfer işlemi doğrulanmadı. |
+| 10. Üretim lot kullanılabilirliği | Kısmi | A T2.23 stok toplamı ve parti düşümü; önceden lot kullanılabilirlik ekranı doğrulanmadı. |
+| 11. Ev reçete maliyeti | Belirsiz | S maliyet alanları (§3.1); hesap ve ekran kanıtı gerekli. |
+| 12. İşletme FIFO parti/litre maliyeti | Belirsiz | A T2.23 FIFO tüketim, FIFO maliyetleme sonucu değildir. |
+| 13. Şişe ve servis maliyeti | Belirsiz | A T2.23 stok ve §3.2 kap türleri; paket başına maliyet hesabı doğrulanmadı. |
+| 14. FIFO fiyatı ve miktarından tahmin | Belirsiz | A T2.23 en eski lottan düşüm; fiyat bazlı tahmin ayrıca kanıtlanmalı. |
+
+**Öneri:** üretim adımları, gerçek ölçümler, stok hareketleri ve alışveriş listesi için kanıtlı API kapsamını ayır. Otomatik hesap, Apple entegrasyonu, basılı/optik form ve FIFO maliyetleme iddialarını bağımsız kanıt olmadan mevcut özellik diye sunma. Toplam 50/256 katalog maddesi madde bazında sınıflandırıldı; kalan 206 açık.
