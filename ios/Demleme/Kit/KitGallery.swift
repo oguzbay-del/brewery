@@ -3,7 +3,8 @@ import SwiftUI
 /// Shows each Kit view in normal, disabled and long-text cases. For previews and manual checks.
 /// Sample text here is for design review only. It is not shipped in a screen.
 struct KitGallery: View {
-    private let longText = "A very long text that must wrap to a second line and then truncate with an ellipsis when it is still too long"
+    private let longText = "A very long text that must wrap to a second line "
+        + "and then truncate with an ellipsis when it is still too long"
 
     var body: some View {
         ScrollView {
