@@ -909,3 +909,21 @@ Kaynak: Y ve A (§3.7), [web index](../../web/index.html), [iOS project](../../i
 Y T2.26, BeerXML/BeerJSON/CSV/JSON/ZIP dışa aktarma kapsamını ayrıca belgeler; §3.6 madde 1 ve 16 için bu ek tarihsel kanıt mevcut, gerçek worker çıktısı ve istemci henüz incelenmedi. T2.28 eski tek aylık deneme kaydı güncel ürün kuralı değildir; API envanteri Ev 3 ay, İşletme 1 ay der. Fiyat ve ödeme akışının yayınlanabilirliği bu raporla onaylanmaz.
 
 **Kalan doğrulama:** özellik dışı sayfalar (ana sayfa, segmentler, fiyatlandırma, güvenlik, teknik yaklaşım, yardım/SSS ve diğer yayımlanan rotalar), logo ve iOS cihaz kanıtı, gerekli yerlerde doğrudan istemci/motor kaynakları ve sonuç tablosu. Taslak henüz kapanış ölçütünü karşılamıyor.
+
+
+## 4. Özellik kataloğu dışındaki sayfalar
+
+### 4.1 Hedef kitle, fiyatlandırma ve plan seçimi (EN)
+
+| Rota ve kaynak | İddia / kanıt | Öneri |
+|---|---|---|
+| [Homebrewers](../../marketing-site/src/pages/homebrewers.astro) — reçete, malzeme, su, hesap, demleme ve fermentasyon | Kısmi: T2.21 reçete, T2.16 motor, T2.22 parti, T2.25 cihaz API'si; §3.4–3.9. Altı adımın istemci akışı ve tadım notları doğrulanmadı. | Yalnız doğrulanmış akışları yayınla; planlanan işlevi mevcut özellik gibi gösterme. |
+| Homebrewers — import/export SSS | Metin her ikisini roadmap olarak gösteriyor. T2.26 API üç içe aktarma biçimini ve export işini belgeliyor; istemci ve BSMX doğrulaması açık. | API'de mevcut olanla kullanıcıya sunulan akışı ayır; desteklenmeyen biçimleri listeleme. |
+| [Breweries](../../marketing-site/src/pages/breweries.astro) — reçete, plan, gerçek üretim kaydı | Kısmi: T2.21 ve T2.22 sürüm, takvim, ölçüm ve sapma; ekip UI ve tank çizelgesi tam doğrulanmadı. | Kanıtı reçete sürümü ve parti kaydı ile sınırla. |
+| Breweries — lot, tank transferi, kalite/release | Kısmi / sonra: T2.23 stok, K2 kap/lot API; §3.8 üretim, kalite ve paketleme tabloları. Tam malzeme zinciri ve laboratuvar serbest bırakma doğrulanmadı. | Uçtan uca izlenebilirlik veya kalite onayı vaat etme. |
+| Breweries — roller, izinler, onay, API/webhook, ERP sınırı | T2.13 izin API'si var; onay kuyruğu kısmi. Sayfa kamu API/webhook'un mevcut olmadığını açıkça söyler. ERP, satış, dağıtım, CRM ve muhasebe kapsam dışı. | İç API ile kamu API'sini karıştırma; kapsam dışı sınırları koru. |
+| [Pricing](../../marketing-site/src/pages/pricing.astro) — 1 ev kullanıcısı; 5/10/15/20 işletme kullanıcısı; 3 ay/1 ay deneme | T2.28 abonelik API'si ve §3.9 madde 25; fiyat sayfası denemelerin aktif olmadığını belirtir. Koltuk satış akışı doğrulanmadı. | Aktif abonelik veya deneme başlatma iddiası kullanma; yayın şartlarını ticari onaya bağla. |
+| Pricing — %0/15/25/35 indirim, 20+ özel teklif | Metinde öneri olarak geçiyor; ticari onay, para birimi, vergi ve ödeme koşulları açık. | Onaysız indirimleri ve teklif vaatlerini yayın kapsamından çıkar. |
+| [Get started](../../marketing-site/src/pages/get-started.astro) — dört adımlı plan seçici | Kaynakta audience/seats/term için tarayıcı içi state, özet, radio ve geri/ileri düğmeleri var. Sayfa hesap, deneme, ödeme veya teklif talebi oluşturmadığını açıkça belirtir. | Bu akışı satın alma veya kayıt değil, plan önizlemesi olarak tanımla; seçici metnindeki kesin indirim ifadesini onaylanmamış koşullarla eşleştir. |
+
+Bu bölüm EN kaynaklarından ilk denetimdir. TR karşılıkları, ana sayfa, karşılaştırma, teknik ilkeler, modüller ve SSS ayrıca incelenecek. Gerçek tarayıcı/cihaz testi yapılmadı.
