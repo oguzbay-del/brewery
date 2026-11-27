@@ -161,7 +161,7 @@ for (const route of routes) {
         }
       }
       const name = "mq11a-" + route.locale + "-" +
-        (route.path.replace(/^\\/|\\/$/g, "").replaceAll("/", "-") || "home") +
+        (route.path.split("/").filter(Boolean).join("-") || "home") +
         "-" + width + "-default";
       const screenshot = name + ".png";
       await page.screenshot({
