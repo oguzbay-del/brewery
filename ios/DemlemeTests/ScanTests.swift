@@ -125,7 +125,7 @@ struct ScanCardTests {
 private struct StubScan: ScanService {
     let result: Result<ScanCard, APIError>
     var statusError: APIError?
-    var granted: Set<String> = ["container.status"]
+    var granted: Set<String> = ["container.status", "container.manage"]
 
     func resolve(code _: String) async throws -> ScanCard {
         try result.get()
@@ -234,6 +234,10 @@ struct ScanActionStoreTests {
         await store.loadPermissions()
         #expect(!store.isOffered(.changeStatus))
         #expect(!store.canBatch)
+        let statusOnly = ScanStore(service: StubScan(result: .success(card), granted: ["container.status"]))
+        await statusOnly.loadPermissions()
+        #expect(statusOnly.isOffered(.changeStatus))
+        #expect(!statusOnly.isOffered(.retire))
         let allowed = ScanStore(service: StubScan(result: .success(card)))
         await allowed.loadPermissions()
         #expect(allowed.isOffered(.changeStatus))

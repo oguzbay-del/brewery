@@ -85,11 +85,13 @@ final class ScanStore {
     }
 
     /// The server lists the permitted actions in the card. Write actions also need the
-    /// workspace permission `container.status` of the session, so an action is not offered
-    /// when the session says the caller cannot do it.
+    /// workspace permission of the session (`container.status` to change the status,
+    /// `container.manage` to retire), so an action is not offered when the session says the
+    /// caller cannot do it. Fill, recall and print label have no iPhone screen yet.
     func isOffered(_ action: ScanAction) -> Bool {
         switch action {
-        case .changeStatus, .retire: permissions.contains("container.status")
+        case .changeStatus: permissions.contains("container.status")
+        case .retire: permissions.contains("container.manage")
         case .view, .fill, .recall, .printLabel: false
         }
     }
