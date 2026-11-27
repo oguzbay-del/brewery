@@ -27,7 +27,12 @@ export function fetchBilling(workspaceId: string, signal?: AbortSignal): Promise
   });
 }
 
-export function createCheckout(workspaceId: string, plan: BillingPlan, seats: number, csrfToken: string) {
+export function createCheckout(
+  workspaceId: string,
+  plan: BillingPlan,
+  seats: number,
+  csrfToken: string,
+) {
   return apiFetch<{ checkout_url: string }>('/v1/billing/checkout', {
     method: 'POST',
     headers: { 'X-CSRF-Token': csrfToken },
