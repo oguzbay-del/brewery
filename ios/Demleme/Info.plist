@@ -4,5 +4,14 @@
 <dict>
 	<key>GRISTORA_API_BASE_URL</key>
 	<string>$(GRISTORA_API_BASE_URL)</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>bg</string>
+		<key>UIImageName</key>
+		<string>LaunchSymbol</string>
+		<key>UIImageRespectsSafeAreaInsets</key>
+		<false/>
+	</dict>
 </dict>
 </plist>

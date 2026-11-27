@@ -96,6 +96,27 @@ def check_colorsets():
             err(f"{rel}: no dark entry")
 
 
+def check_brand():
+    text = (IOS / "project.yml").read_text(encoding="utf-8")
+    if "INFOPLIST_KEY_CFBundleDisplayName: GRISTORA" not in text:
+        err("project.yml: display name must be GRISTORA")
+    assets = IOS / "Demleme/Resources/Assets.xcassets"
+    try:
+        icon = json.loads((assets / "AppIcon.appiconset/Contents.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as e:
+        return err(f"AppIcon Contents.json: {e}")
+    values = {a["value"] for i in icon.get("images", []) for a in i.get("appearances", [])}
+    if not {"dark", "tinted"} <= values:
+        err("AppIcon needs a dark and a tinted variant")
+    for image in icon.get("images", []):
+        if not (assets / "AppIcon.appiconset" / image.get("filename", "")).is_file():
+            err(f"AppIcon file missing: {image.get('filename')}")
+    if not (assets / "LaunchSymbol.imageset/Contents.json").is_file():
+        err("LaunchSymbol.imageset missing")
+    if "UILaunchScreen" not in (IOS / "Demleme/Info.plist").read_text(encoding="utf-8"):
+        err("Info.plist: UILaunchScreen missing")
+
+
 def check_generator():
     r = subprocess.run(
         [sys.executable, "-I", str(IOS / "scripts/gen_colors.py"), "--check"],
@@ -109,6 +130,7 @@ def main():
     check_project_yml()
     check_api_client()
     check_colorsets()
+    check_brand()
     check_generator()
     if errors:
         print("\n".join(f"ERROR: {e}" for e in errors), file=sys.stderr)
