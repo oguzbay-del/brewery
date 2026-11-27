@@ -9,7 +9,6 @@ protocol ScanService: Sendable {
 enum ScanServiceError: Error, Sendable, Equatable {
     case noWorkspace
     case unreadableResponse
-    case debug(String)
 }
 
 /// `POST /v1/workspaces/{workspace_id}/scan/resolve`.
@@ -19,24 +18,20 @@ struct LiveScanService: ScanService {
 
     func resolve(code: String) async throws -> ScanCard {
         guard let workspaceID = try await workspace.workspaceID() else { throw ScanServiceError.noWorkspace }
-        let output = try await api.client.scan_resolve(
-            .init(path: .init(workspace_id: workspaceID), body: .json(.init(code: code)))
-        )
-        guard case let .ok(ok) = output else { throw APIError.unexpected(status: 0) }
-        let resolution = try ok.body.json
+        let capture = APIResponseCapture()
+        let output = try await APIClient.capturing(capture) {
+            try await api.client.scan_resolve(
+                .init(path: .init(workspace_id: workspaceID), body: .json(.init(code: code)))
+            )
+        }
+        guard case .ok = output else { throw APIError.unexpected(status: 0) }
 
-        // The generated type is `Codable`. It is re-encoded and decoded into `ScanResolutionDTO`,
-        // so the card does not depend on how the generator names nullable objects.
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+        // The card is read from the raw JSON: the generated type drops the nullable objects
+        // `container`, `vessel` and `lot`.
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let data = try encoder.encode(resolution)
-        let probe = try? decoder.decode(ScanResolutionDTO.self, from: data)
-        if let probe, probe.container == nil, probe.vessel == nil, probe.lot == nil {
-            throw ScanServiceError.debug(String(data: data, encoding: .utf8) ?? "")
-        }
-        guard let dto = try? decoder.decode(ScanResolutionDTO.self, from: data),
+        guard let data = capture.data,
+              let dto = try? decoder.decode(ScanResolutionDTO.self, from: data),
               let card = ScanCard(dto)
         else {
             throw ScanServiceError.unreadableResponse

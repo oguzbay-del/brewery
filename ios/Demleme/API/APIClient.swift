@@ -2,6 +2,7 @@ import Foundation
 import HTTPTypes
 import OpenAPIRuntime
 import OpenAPIURLSession
+import Synchronization
 
 /// Per-request headers a caller can set. They travel in a task-local value, so the generated
 /// operations stay unchanged and the values never leak to other requests.
@@ -12,12 +13,31 @@ public struct APIRequestContext: Sendable, Equatable {
     @TaskLocal static var current = APIRequestContext()
 }
 
+/// Keeps the raw bytes of one successful response. The generated types drop some nullable objects
+/// (`oneOf` with `null`), so a caller that needs them reads the JSON itself. Set it with
+/// `APIClient.capturing(_:operation:)`; it is only filled for the operations inside that call.
+public final class APIResponseCapture: Sendable {
+    private let stored = Mutex<Data?>(nil)
+
+    public init() {}
+
+    /// Raw body of the last successful response, if any.
+    public var data: Data? { stored.withLock { $0 } }
+
+    func store(_ data: Data) {
+        stored.withLock { $0 = data }
+    }
+
+    @TaskLocal static var current: APIResponseCapture?
+}
+
 /// Adds the common headers (same set as `web/src/api/client.ts`) and maps error responses to `APIError`.
 public struct APIHeadersMiddleware: ClientMiddleware {
     static let requestIdName = HTTPField.Name("X-Request-Id")!
     static let idempotencyKeyName = HTTPField.Name("Idempotency-Key")!
     static let ifMatchName = HTTPField.Name("If-Match")!
     static let maxErrorBodyBytes = 1 << 20
+    static let maxCapturedBodyBytes = 8 << 20
 
     private let languageProvider: @Sendable () -> String
     private let makeRequestId: @Sendable () -> String
@@ -45,7 +65,12 @@ public struct APIHeadersMiddleware: ClientMiddleware {
         if let etag = context.ifMatch { request.headerFields[Self.ifMatchName] = etag }
 
         let (response, responseBody) = try await next(request, body, baseURL)
-        guard response.status.code >= 400 else { return (response, responseBody) }
+        if response.status.code < 400 {
+            guard let capture = APIResponseCapture.current, let responseBody else { return (response, responseBody) }
+            let data = try await Data(collecting: responseBody, upTo: Self.maxCapturedBodyBytes)
+            capture.store(data)
+            return (response, HTTPBody(data))
+        }
 
         var data = Data()
         if let responseBody {
@@ -88,6 +113,14 @@ public struct APIClient: Sendable {
             APIRequestContext(idempotencyKey: idempotencyKey, ifMatch: ifMatch),
             operation: operation
         )
+    }
+
+    /// Runs `operation` and keeps the raw body of its successful response in `capture`.
+    public static func capturing<T: Sendable>(
+        _ capture: APIResponseCapture,
+        operation: @Sendable () async throws -> T
+    ) async rethrows -> T {
+        try await APIResponseCapture.$current.withValue(capture, operation: operation)
     }
 
     /// Language tag for `Accept-Language`, from the app locale.
