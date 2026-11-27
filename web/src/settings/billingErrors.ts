@@ -1,10 +1,8 @@
 import { ApiError } from '../api/errors';
 
-export type BillingProblem =
-  | 'billing_unavailable'
-  | 'already_subscribed'
-  | 'other_source_active'
-  | 'forbidden';
+type BillingConflict = 'already_subscribed' | 'other_source_active';
+
+export type BillingProblem = BillingConflict | 'billing_unavailable' | 'forbidden';
 
 export function billingProblem(error: unknown): BillingProblem | null {
   if (!(error instanceof ApiError)) return null;
