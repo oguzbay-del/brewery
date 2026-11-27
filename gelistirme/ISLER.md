@@ -155,6 +155,35 @@ The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus 
 | 5 Home MVP beta | Cloud setup, beta | Interviews and golden test are complete; independent security review |
 | 6 Business | Business screens | Step by step |
 
+## UI quality program: UIQ (stages 3–4)
+
+Decision (Oğuz, 2026-11-27; ADR-0016): the GRISTORA React UI Kit, the GRISTORA SwiftUI Kit, adaptive layout for web and iPad, and the Visual Quality Gate in CI. The full task table, the standards and the done criteria are in `gelistirme/uiq/README.md` › 9. This table gives only the status and the issue.
+
+Rules:
+- New screens of stage 3 use Kit parts when the part exists. Do not add a screen-specific copy of a Kit part.
+- Do not add a dependency other than `react-aria-components@1.22.1`.
+- Visual baselines are class C. Only Claude commits them.
+
+| Task | Owner | Model | Issue | Status |
+|---|---|---|---|---|
+| UIQ-01 audit | Claude | Sonnet, Opus | – | done (2026-11-27) |
+| UIQ-02 Apple patterns | Claude | Opus | – | done (2026-11-27) |
+| UIQ-03a structural tokens | Claude | Sonnet | – | done (2026-11-27) |
+| UIQ-03b chart palette, design system README and Artifact | Claude | Opus | – | todo |
+| UIQ-04 React Kit skeleton and gallery | ChatGPT | – | ISSUE04 | todo |
+| UIQ-05 SwiftUI Kit skeleton | Claude | Sonnet | – | active |
+| UIQ-06 web adaptive AppShell, `check-css.mjs` | ChatGPT | – | ISSUE06 | blocked (UIQ-04, UIQ-08) |
+| UIQ-07 iPad adaptive root | Claude | Sonnet | – | todo |
+| UIQ-08 React Aria pilot | ChatGPT | – | ISSUE08 | blocked (UIQ-04) |
+| UIQ-09 React Aria rollout | ChatGPT | – | – | todo |
+| UIQ-10 web geometry and screenshot tests | ChatGPT | – | ISSUE10 | blocked (UIQ-04) |
+| UIQ-11 iPad screenshot and audit tests | Claude | Sonnet | – | todo |
+| UIQ-12 CI Visual Quality Gate | Claude | Sonnet | – | todo |
+| UIQ-13 move screens to the Kit | ChatGPT (web), Claude (iOS) | Sonnet | – | todo |
+| UIQ-14 theme, language, accessibility audit | ChatGPT | – | – | todo |
+| UIQ-15 fix found defects | ChatGPT, Claude | Sonnet | – | todo |
+| UIQ-16 final quality and performance review | Claude | Opus | – | todo |
+
 ## Product modules (stage 5)
 
 Decision (Oğuz, 2026-11-20): the product has modules (plan › Modüller): Core, Devices, Stock, Production, Quality, Cost and reports, Tax and compliance, Team, Connections. Each module can be on or off for each workspace. The tier matrix (O8) uses the modules. The module borders keep the product out of ERP.

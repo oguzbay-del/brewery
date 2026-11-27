@@ -58,6 +58,8 @@ Protected paths (always class C):
 - `sunucu/crates/api/src/auth/`, step-up, account deletion, `internal.rs`
 - `altyapi/k8s/` (network policies, ingress, mTLS, secrets), `altyapi/terraform/`
 - `.github/workflows/`, `adr/`, `gelistirme/ISLER.md`, `gelistirme/DURUM.md`, all `CLAUDE.md` files
+- Visual baselines: `**/*-snapshots/**`, `ios/DemlemeUITests/Baselines/**`. Do not update them, also not with `--update-snapshots`. Only a CI baseline job makes them; Claude reviews and commits them (ADR-0016 › 5).
+- `tasarim-sistemi/tokens.json` and the token generators (`web/scripts/gen-tokens.mjs`, `ios/scripts/gen_colors.py`)
 
 Rules for all classes:
 
