@@ -488,6 +488,7 @@ dependencies = [
  "common",
  "db",
  "events",
+ "notifier",
  "ring",
  "serde",
  "serde_json",

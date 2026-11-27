@@ -11,6 +11,7 @@
 
 pub mod access;
 pub mod apply;
+pub mod notify;
 pub mod paddle;
 pub mod provider;
 

@@ -25,6 +25,8 @@ pub const JOB_SUPPORT_CLOSE: &str = "support-close-resolved";
 pub const JOB_UPLOAD_CLEANUP: &str = "upload-cleanup";
 /// Job name: account deletion after its grace period (T2.31c).
 pub const JOB_ACCOUNT_DELETIONS: &str = "account-deletion-purge";
+/// Hourly job: trial-ending notifications (B7).
+pub const JOB_TRIAL_REMINDERS: &str = "billing-trial-reminders";
 
 const DAY: Duration = Duration::from_hours(23);
 const WEEK: Duration = Duration::from_hours(7 * 24 - 1);
@@ -198,6 +200,13 @@ pub async fn tick_with_github(
         let outcome =
             crate::account_deletion::purge_due_and_clean(pool, file_store, apple, github).await;
         record(pool, JOB_ACCOUNT_DELETIONS, outcome).await;
+    }
+    if claim(pool, JOB_TRIAL_REMINDERS, TICK).await {
+        let outcome = billing::notify::run_trial_reminders(pool, now)
+            .await
+            .map(|created| (RunStatus::Ok, format!("created {created}")))
+            .map_err(|e| crate::Error::Db(e.into()));
+        record(pool, JOB_TRIAL_REMINDERS, outcome).await;
     }
     if claim(pool, JOB_SOFT_DELETES, DAY).await {
         let outcome = retention::purge_soft_deletes(pool, now)
