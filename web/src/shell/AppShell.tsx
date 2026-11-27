@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { useModuleAccess } from '../modules/ModulesProvider';
+import { ROUTE_MODULES, type AppRoute } from './navigation';
 import { useTheme } from './ThemeProvider';
 import type { ThemeChoice } from './ThemeProvider';
 
@@ -10,6 +12,7 @@ export interface ShellLabels {
   recipes: string;
   batches: string;
   settings: string;
+  readOnly: string;
   theme: string;
   light: string;
   dark: string;
@@ -19,6 +22,26 @@ export interface ShellLabels {
 interface AppShellProps {
   labels: ShellLabels;
   children: ReactNode;
+}
+
+function NavLink({
+  route,
+  label,
+  readOnlyLabel,
+}: {
+  route: AppRoute;
+  label: string;
+  readOnlyLabel: string;
+}) {
+  const access = useModuleAccess(ROUTE_MODULES[route]);
+  // Hide the entry of a module that is off; keep a read-only entry with text.
+  if (access === 'off') return null;
+  return (
+    <a href={`#${route}`}>
+      {label}
+      {access === 'read_only' && <span className="app-shell__nav-mark"> ({readOnlyLabel})</span>}
+    </a>
+  );
 }
 
 export function AppShell({ labels, children }: AppShellProps) {
@@ -34,10 +57,10 @@ export function AppShell({ labels, children }: AppShellProps) {
           {labels.appName}
         </a>
         <nav className="app-shell__navigation" aria-label={labels.navigation}>
-          <a href="#/">{labels.home}</a>
-          <a href="#/recipes">{labels.recipes}</a>
-          <a href="#/batches">{labels.batches}</a>
-          <a href="#/settings">{labels.settings}</a>
+          <NavLink route="/" label={labels.home} readOnlyLabel={labels.readOnly} />
+          <NavLink route="/recipes" label={labels.recipes} readOnlyLabel={labels.readOnly} />
+          <NavLink route="/batches" label={labels.batches} readOnlyLabel={labels.readOnly} />
+          <NavLink route="/settings" label={labels.settings} readOnlyLabel={labels.readOnly} />
         </nav>
         <label className="app-shell__theme-control">
           <span>{labels.theme}</span>

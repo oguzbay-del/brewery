@@ -6,7 +6,7 @@ export type Mode = "home" | "brewery";
 export type QuantityId = "volume" | "mass" | "temperature" | "gravity" | "color" | "pressure" | "time" | "length" | "percent" | "concentration" | "hardness" | "co2" | "dose" | "ratio" | "bitterness" | "ph";
 export type UnitId = "l" | "ml" | "hl" | "gal_us" | "qt_us" | "fl_oz_us" | "gal_uk" | "qt_uk" | "fl_oz_uk" | "bbl_us" | "bbl_uk" | "kg" | "g" | "lb" | "oz" | "c" | "f" | "sg" | "sg_x1000" | "plato" | "brix" | "srm" | "ebc" | "lovibond" | "bar" | "kpa" | "psi" | "min" | "h" | "d" | "m" | "ft" | "pct" | "ppm" | "mg_l" | "caco3_mg_l" | "dh" | "fh" | "meq_l" | "vol" | "g_l_co2" | "g_l" | "oz_gal_us" | "oz_gal_uk" | "lb_bbl_us" | "l_kg" | "qt_lb" | "ibu" | "ph";
 export type FieldKey = "recipe.batch_volume_l" | "recipe.boil_volume_l" | "recipe.boil_time_min" | "recipe.efficiency_pct" | "equipment.trub_loss_l" | "equipment.pre_trub_loss_l" | "equipment.altitude_m" | "equipment.hop_util_pct" | "equipment.whirlpool_time_min" | "fermentable.amount_kg" | "fermentable.yield_pct" | "fermentable.color_srm" | "fermentable.late_extract_min" | "hop.amount_kg" | "hop.alpha_pct" | "hop.time_min" | "hop.whirlpool_temp_c" | "yeast.min_attenuation_pct" | "yeast.max_attenuation_pct" | "yeast.tolerance_abv_pct" | "yeast.viability_pct" | "mash.grain_weight_kg" | "mash.step_temp_c" | "mash.step_time_min" | "mash.thickness_l_per_kg" | "measurement.sg" | "measurement.og_sg" | "measurement.fg_sg" | "measurement.temp_c" | "measurement.ph" | "target.ibu" | "target.color_srm" | "target.mash_ph" | "target.co2_vol" | "process.keg_pressure_bar" | "process.priming_g_per_l" | "water.calcium_ppm" | "water.magnesium_ppm" | "water.sodium_ppm" | "water.chloride_ppm" | "water.sulfate_ppm" | "water.bicarbonate_ppm" | "water.ph" | "tool.volume_l" | "tool.mass_kg";
-export type UiKey = "shell.app_name" | "shell.skip_to_content" | "shell.navigation" | "nav.home" | "nav.recipes" | "nav.batches" | "nav.settings" | "theme.label" | "theme.light" | "theme.dark" | "theme.high_contrast" | "nav.containers" | "modules.title" | "modules.on" | "modules.off" | "modules.read_only" | "modules.loading" | "modules.empty" | "modules.error" | "modules.error_request_id" | "modules.sign_in_required" | "modules.not_member" | "module.core" | "module.devices" | "module.stock" | "module.production" | "module.quality" | "module.cost_reports" | "module.tax_compliance" | "module.team" | "containers.title" | "containers.loading" | "containers.empty" | "containers.error" | "containers.status_counts" | "containers.events" | "containers.events_empty" | "containers.print_labels" | "containers.paper_a4" | "containers.paper_letter" | "containers.module_off" | "containers.status_clean" | "containers.status_filled" | "containers.status_out" | "containers.status_dirty" | "containers.status_maintenance" | "containers.status_retired";
+export type UiKey = "shell.app_name" | "shell.skip_to_content" | "shell.navigation" | "nav.home" | "nav.recipes" | "nav.batches" | "nav.settings" | "theme.label" | "theme.light" | "theme.dark" | "theme.high_contrast" | "nav.containers" | "modules.title" | "modules.on" | "modules.off" | "modules.read_only" | "modules.loading" | "modules.empty" | "modules.error" | "modules.error_request_id" | "modules.sign_in_required" | "modules.not_member" | "modules.upgrade_title" | "modules.upgrade_body" | "modules.upgrade_link" | "modules.read_only_banner" | "modules.read_only_reason" | "modules.api_disabled" | "modules.api_read_only" | "modules.dismiss" | "module.core" | "module.devices" | "module.stock" | "module.production" | "module.quality" | "module.cost_reports" | "module.tax_compliance" | "module.team" | "containers.title" | "containers.loading" | "containers.empty" | "containers.error" | "containers.status_counts" | "containers.events" | "containers.events_empty" | "containers.print_labels" | "containers.paper_a4" | "containers.paper_letter" | "containers.module_off" | "containers.status_clean" | "containers.status_filled" | "containers.status_out" | "containers.status_dirty" | "containers.status_maintenance" | "containers.status_retired";
 export type FieldErrorCode = "invalid_number" | "out_of_range";
 
 export interface UnitDef {
@@ -544,6 +544,14 @@ export const TEXTS: Record<Locale, LocaleTexts> = {
       "modules.error_request_id": "İstek kimliği",
       "modules.sign_in_required": "Oturum açmak gerekir",
       "modules.not_member": "Bu çalışma alanının üyesi değilsin",
+      "modules.upgrade_title": "{module} modülü kapalı",
+      "modules.upgrade_body": "Bu çalışma alanında {module} modülü kapalı. Bu ekranı kullanmak için modülü aç ya da planını yükselt.",
+      "modules.upgrade_link": "Ayarlar › Modüller sayfasını aç",
+      "modules.read_only_banner": "{module} modülü salt okunur. Verileri görebilirsin, değiştiremezsin.",
+      "modules.read_only_reason": "Salt okunur: {module} modülü veri değişikliğine kapalı.",
+      "modules.api_disabled": "Bu işlem için gereken modül bu çalışma alanında kapalı.",
+      "modules.api_read_only": "Bu işlem için gereken modül salt okunur, değişiklik yapılamaz.",
+      "modules.dismiss": "Kapat",
       "module.core": "Çekirdek",
       "module.devices": "Cihazlar",
       "module.stock": "Stok",
@@ -954,6 +962,14 @@ export const TEXTS: Record<Locale, LocaleTexts> = {
       "modules.error_request_id": "Request ID",
       "modules.sign_in_required": "Sign in required",
       "modules.not_member": "You are not a member of this workspace",
+      "modules.upgrade_title": "The {module} module is off",
+      "modules.upgrade_body": "The {module} module is off in this workspace. Turn it on or upgrade your plan to use this screen.",
+      "modules.upgrade_link": "Open Settings › Modules",
+      "modules.read_only_banner": "The {module} module is read only. You can view data but not change it.",
+      "modules.read_only_reason": "Read only: the {module} module does not allow changes.",
+      "modules.api_disabled": "The module this action needs is off in this workspace.",
+      "modules.api_read_only": "The module this action needs is read only, so it cannot be changed.",
+      "modules.dismiss": "Dismiss",
       "module.core": "Core",
       "module.devices": "Devices",
       "module.stock": "Stock",

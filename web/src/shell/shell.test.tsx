@@ -12,6 +12,7 @@ const labels: ShellLabels = {
   recipes: 'Recipes',
   batches: 'Batches',
   settings: 'Settings',
+  readOnly: 'Read only',
   theme: 'Theme',
   light: 'Light',
   dark: 'Dark',

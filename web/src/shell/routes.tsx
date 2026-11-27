@@ -2,8 +2,10 @@ import { useSyncExternalStore } from 'react';
 import type { ShellLabels } from './AppShell';
 import { ModulesList } from '../settings/ModulesList';
 
-export const ROUTES = ['/', '/recipes', '/batches', '/settings'] as const;
-export type AppRoute = (typeof ROUTES)[number];
+import { ModuleGate, ModuleNotice } from '../modules/ModuleGate';
+import { ROUTE_MODULES, ROUTES, type AppRoute } from './navigation';
+
+export { ROUTES, type AppRoute };
 
 export function readHashRoute(hash: string): AppRoute {
   const candidate = hash.startsWith('#') ? hash.slice(1) : hash;
@@ -36,7 +38,10 @@ export function RouteContent({ labels }: { labels: ShellLabels }) {
   return (
     <section aria-labelledby="app-route-heading">
       <h1 id="app-route-heading">{title[route]}</h1>
-      {route === '/settings' && <ModulesList />}
+      <ModuleNotice />
+      <ModuleGate moduleId={ROUTE_MODULES[route]}>
+        {route === '/settings' && <ModulesList />}
+      </ModuleGate>
     </section>
   );
 }
