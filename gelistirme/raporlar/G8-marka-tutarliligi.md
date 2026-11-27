@@ -6,6 +6,7 @@
 
 | Bulgu | Kaynak | Öneri |
 |---|---|---|
+| Ana sayfaların hero/meta açıklaması geliştirme durumunu gösteriyor; ürün derinliği EN/TR olgunluk ifadesi farklı. | [EN ana sayfa](../../marketing-site/src/pages/index.astro), [TR ana sayfa](../../marketing-site/src/pages/tr/index.astro), §4.3 | Her iki dilde yalnız doğrulanmış ürün işlevlerine dayalı metin kullan; planlanan iddiaları çıkar. |
 | iOS görünen adı GRISTORA, ancak uygulama bundle kimliği hâlâ `app.demleme.Demleme`. ADR-0012 §4 hedefi `com.gristora.app`. | [ios/project.yml](../../ios/project.yml), ADR-0012 §4 | İlk TestFlight yüklemesinden önce uygulama ve test hedeflerinin kimliklerini ADR ile eşleştir; imzalama, Apple giriş ve universal link etkilerini Claude ile doğrula. İç proje ve hedef adlarının değişmesi gerekmez. |
 
 ## 2. Doğrulanmış ortak öğeler
@@ -943,3 +944,20 @@ Bu bölüm EN kaynaklarından ilk denetimdir. TR karşılıkları, ana sayfa, ka
 | [Plan yapılandırma](../../marketing-site/src/pages/tr/get-started.astro) — dört adım, kullanıcı, dönem, özet | Kaynakta radio ve tarayıcı içi state var. Hesap, abonelik ve teklif oluşturmaz; kart verisi toplanmaz. Adım 3 indirimleri kesin ifade ederken fiyat sayfası bunları öneri olarak tanımlar. | Her iki dilde aynı koşullu indirim metnini kullan; akışı satın alma değil plan önizlemesi olarak tanımla. |
 
 EN ve TR bu dört rota için işlev ve ticari sınırlar açısından büyük ölçüde eşleşiyor. Her iki dilde de doğrulanmamış özellikleri kullanıcıya yönelik emir cümleleriyle anlatma ve önerilen indirimleri kesin değer gibi gösterme riski var. Metin değişikliği bu raporun kapsamı dışındadır. Gerçek tarayıcı veya cihaz testi yapılmadı.
+
+
+### 4.3 Ana sayfa (EN ve TR)
+
+Kaynaklar: [EN ana sayfa](../../marketing-site/src/pages/index.astro), [TR ana sayfa](../../marketing-site/src/pages/tr/index.astro). İki rota aynı dört adımlı örneği ve aynı özellik grubu seçim mantığını kullanır.
+
+| İddia veya anlatım | Durum ve kanıt | Öneri |
+|---|---|---|
+| Reçete hedefi, demleme ölçümü ve parti kaydı birlikte izlenir | Kısmi: T2.21 reçete sürümü, T2.22 [batches.rs](../../sunucu/crates/api/src/batches.rs) ve [brew_day.rs](../../sunucu/crates/api/src/brew_day.rs); §3.1. İstemcide tek akış doğrulanmadı. | Kanıtlanmış kayıtları anlat; uçtan uca hazır iş akışı iddiası kullanma. |
+| Örnek 500 L hedef, 490 L aktarım, ikinci gün 19 °C ve parti karşılaştırması | T2.22 hedef ve ölçüm verisi; dört adım örnektir, gerçek müşteri verisi değildir. | Örnek niteliğini koru; otomatik karşılaştırma ekranı doğrulanmadan vaat etme. |
+| Hesapların net terminolojisi, tutarlı birimler ve sonuç açıklaması | T2.16 [engine.rs](../../sunucu/crates/api/src/engine.rs), §3.5 hesap kataloğu. Tüm hesapların açıklama arayüzü doğrulanmadı. | Motor ve açıklama ekranı kanıtını ayır. |
+| İşletme üretim, kalite, malzeme ve paketleme alanları | T2.22 parti, T2.23 stok ve K2 kap API'si; §3.8. Kalite ve tam istemci zinciri açık. | Katalogdaki doğrulanmış maddelerle sınırla. |
+| Ev biracısı reçete, hesaplama ve günlük akışı | T2.21, T2.16, T2.22; §3.4–3.6. Tam istemci akışı açık. | Mevcut ve belirsiz işlevleri ayır. |
+| Planları inceleme ve karşılaştırma | Ana sayfa yalnız pricing/compare bağlantıları verir; §4.1–4.2. Aktif ödeme kanıtı değil. | Bağlantıyı plan karşılaştırması olarak tut. |
+
+**Metin uyumsuzluğu:** iki ana sayfanın meta açıklaması ve hero metni doğrudan geliştirme sürecini belirtir; örnek, ürün derinliği ve plan CTA bölümlerinde de planlanan kapsam anlatılır. TR ürün derinliği metni EN'deki planlanan nitelemesini kaldırmıştır. Sahip kararındaki mevcut işlev odaklı yayın yaklaşımıyla hizalanmalı; yalnız planlanan veya belirsiz işlevler çıkarılmalı, geliştirme durumunu gizlemek için mevcut olmayan işlevler kesin ifadeyle sunulmamalı. ProductScreens bileşenindeki görseller ayrı kaynak denetimi gerektirir.
+
