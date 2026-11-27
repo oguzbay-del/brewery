@@ -2,6 +2,7 @@ import { useText } from './i18n/useText';
 import { AppShell, type ShellLabels } from './shell/AppShell';
 import { RouteContent } from './shell/routes';
 import { ThemeProvider } from './shell/ThemeProvider';
+import { WorkspaceProvider } from './workspace/WorkspaceProvider';
 import './shell/shell.css';
 
 export default function App() {
@@ -21,9 +22,11 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <AppShell labels={labels}>
-        <RouteContent labels={labels} />
-      </AppShell>
+      <WorkspaceProvider>
+        <AppShell labels={labels}>
+          <RouteContent labels={labels} />
+        </AppShell>
+      </WorkspaceProvider>
     </ThemeProvider>
   );
 }
