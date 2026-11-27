@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import type { ShellLabels } from './AppShell';
 import { ModulesList } from '../settings/ModulesList';
 
+import { ContainersScreen } from '../containers/ContainersScreen';
 import { ModuleGate, ModuleNotice } from '../modules/ModuleGate';
 import { ROUTE_MODULES, ROUTES, type AppRoute } from './navigation';
 
@@ -32,6 +33,7 @@ export function RouteContent({ labels }: { labels: ShellLabels }) {
     '/': labels.home,
     '/recipes': labels.recipes,
     '/batches': labels.batches,
+    '/containers': labels.containers,
     '/settings': labels.settings,
   };
 
@@ -40,6 +42,7 @@ export function RouteContent({ labels }: { labels: ShellLabels }) {
       <h1 id="app-route-heading">{title[route]}</h1>
       <ModuleNotice />
       <ModuleGate moduleId={ROUTE_MODULES[route]}>
+        {route === '/containers' && <ContainersScreen />}
         {route === '/settings' && <ModulesList />}
       </ModuleGate>
     </section>
