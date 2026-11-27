@@ -68,11 +68,14 @@ fn changed(s: &Seed, subscription: Uuid, version: i64, status: &str) -> Event {
 }
 
 async fn deliver(pool: &PgPool, event: &Event) {
-    let mut conn = pool.acquire().await.unwrap();
+    // The consumer framework runs a handler inside a transaction; the workspace context is
+    // `SET LOCAL`, so it needs one here too.
+    let mut tx = pool.begin().await.unwrap();
     BillingNotificationHandler
-        .handle(event, &mut conn)
+        .handle(event, &mut tx)
         .await
         .unwrap();
+    tx.commit().await.unwrap();
 }
 
 #[sqlx::test(migrator = "db::MIGRATOR")]
