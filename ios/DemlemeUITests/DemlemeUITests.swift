@@ -59,4 +59,44 @@ final class DemlemeUITests: XCTestCase {
         let row = app.descendants(matching: .any)["module.row.production"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
     }
+
+    @MainActor
+    private func scan(_ code: String, in app: XCUIApplication) {
+        let field = app.textFields["scan.code_field"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText(code)
+        app.buttons["scan.resolve"].tap()
+    }
+
+    @MainActor
+    func testScanShowsCardWithOnlyPermittedActions() throws {
+        let app = launch(modules: "core:on,production:on")
+        scan("KEG-1", in: app)
+        XCTAssertTrue(app.descendants(matching: .any)["scan.card"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["scan.action.change_status"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["scan.action.fill"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["scan.action.retire"].exists)
+    }
+
+    @MainActor
+    func testScanCardWithoutActionsSaysSo() throws {
+        let app = launch(modules: "core:on,production:on")
+        scan("LOT-1", in: app)
+        XCTAssertTrue(app.staticTexts["scan.no_actions"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testUnknownCodeShowsError() throws {
+        let app = launch(modules: "core:on,production:on")
+        scan("NOPE", in: app)
+        XCTAssertTrue(app.staticTexts["scan.error"].waitForExistence(timeout: 5))
+    }
+
+    @MainActor
+    func testOffProductionModuleHidesScan() throws {
+        let app = launch(modules: "core:on,production:off")
+        XCTAssertTrue(app.staticTexts["app.title"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.textFields["scan.code_field"].exists)
+    }
 }
