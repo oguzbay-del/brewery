@@ -62,8 +62,10 @@ Kaynak: [MCP Authorization](https://modelcontextprotocol.io/specification/2026-0
    |---|---|
    | Yetkilendirme kodu | 60 sn, tek kullanımlık |
    | Erişim belirteci | 1 saat |
-   | Yenileme belirteci | her kullanımda yenisi; 30 gün işlemsizlik, 90 gün en uzun |
-   | Onay (grant) | yenileme zinciri yaşadıkça; 90 gün sonra yeniden onay |
+   | Yenileme belirteci | her kullanımda yenisi; 30 gün işlemsizlikte biter |
+   | Onay (grant) | yenileme zinciri yaşadıkça; zorunlu yeniden onay yoktur |
+
+   Zorunlu 90 günlük yeniden onay ve 90 günlük en uzun ömür yoktur (Oğuz, 2026-11-27). Tek süre sınırı yenileme belirtecinin 30 günlük işlemsizlik süresidir.
 
 6. **Yenileme ve tekrar tespiti:** her yenilemede eski yenileme belirteci kapanır (OAuth 2.1 madde 4.3.1). Kapanmış bir yenileme belirteci yeniden gelirse bütün onay zinciri (grant ailesi) iptal edilir ve denetim kaydına yazılır. Yenilemede kapsam genişletilemez.
 7. **İptal:**
@@ -82,6 +84,7 @@ Kaynak: [MCP Authorization](https://modelcontextprotocol.io/specification/2026-0
 5. **İkinci adım:** OAuth belirteci ikinci adım koşulunu hiçbir zaman sağlamaz. `ProtectedAction` listesindeki işlemler (ADR-0009 madde 5.3) ve izinlerden `users.manage`, `workspace.manage`, `billing.manage`, `support.grant`, `devices.manage` hiçbir kapsamla OAuth'a açılmaz. Böyle bir uç OAuth belirteciyle çağrılırsa `403 forbidden` döner, `step_up_required` dönmez.
 6. **Onay ve bağlantı yönetimi (Oğuz, 2026-11-27):** Onay, Ev'de de İşletme'de de geçerli bir oturum ister. İşletme'de yazma kapsamı için passkey ikinci adımı yoktur. Bu kural İşletme yöneticisinin passkey zorunluluğuna (ADR-0009 madde 5.4) dokunmaz. Üyeler kendi bağlantılarını kendileri yönetir (onay verme, kapsam daraltma, kaldırma). İlk sürümde yönetici üyelerin bağlantılarını görmez ve kaldıramaz.
 7. **Abonelik ve modül:** ürün modülü kapalı ya da salt okunursa (`module_access`) araç `/v1` ile aynı sonucu verir: yazma `403 entitlement_required`, okuma açık. `tools/list` yalnız o çalışma alanında modülü açık olan araçları gösterir.
+9. **Çalışma alanı kapatma anahtarı (Oğuz, 2026-11-27):** İşletme yöneticisi, çalışma alanı ayarıyla MCP'yi çalışma alanı için tümden kapatabilir. Ayar kapalıyken yeni onay verilmez ve araç çağrıları reddedilir. Ayar kapatıldığında o çalışma alanının mevcut MCP bağlantıları (onaylar ve belirteçler) iptal edilir; ayarı yeniden açmak iptal edilenleri geri getirmez, kullanıcılar yeniden onay verir. Kapatma ve açma denetim kaydına yazılır. Bu, üyelerin bağlantılarını tek tek görme ve kaldırma yetkisi değildir (madde 6).
 8. **Plan (Oğuz, 2026-11-27):** Ev'de MCP ücretli Ev planı ister (`PAID_FEATURE`); deneme süresinde de açıktır. Ücretsiz Ev'de onay verilmez ve mevcut belirteç `403 entitlement_required` döner.
 
 ### 4. Kapsamlar ve araçlar
@@ -182,13 +185,13 @@ Mevcut Redis sabit pencere düzeni (`ratelimit.rs`) yeni anahtarlarla kullanıl�
 | CIMD belge çekme, istemci adresi | 5 dakikada 1 (önbellek dışında) |
 | Belirteç ucu, istemci | dakikada 30 |
 
-Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlıkları döner; MCP'de araç hatası olarak (`isError: true`) bekleme süresiyle iletilir. Redis yoksa ADR-0008 madde 11.2 geçerlidir (sınır uygulanmaz, günlüğe yazılır). Yazma araçları için Redis kaybında kapalı kalma (fail closed) Açık kararlardadır.
+Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlıkları döner; MCP'de araç hatası olarak (`isError: true`) bekleme süresiyle iletilir. Redis yoksa ADR-0008 madde 11.2 geçerlidir (sınır uygulanmaz, günlüğe yazılır). Bunun istisnası MCP yazma araçlarıdır (Oğuz, 2026-11-27): Redis yoksa yazma araçları kapalı kalır (fail closed), `isError: true` ile hata döner ve işlem yapılmaz. Okuma araçları çalışmaya devam eder (sınır uygulanmaz, günlüğe yazılır).
 
 ### 8. Onay ekranı
 
 1. AS yetkilendirme ucu isteği doğrular (istemci, yönlendirme adresi, PKCE, `resource`, kapsamlar), sonra kullanıcıyı web uygulamasındaki onay sayfasına gönderir (`https://app.gristora.com/oauth/consent?request=<kısa ömürlü kimlik>`). Oturum yoksa önce giriş yapılır. iOS'ta onay sistem tarayıcısında açılır; uygulama içinde ayrı onay ekranı yoktur.
 2. Ekranda bulunanlar:
-   - istemci adı ve logosu (CIMD veya DCR belgesinden), yanında "doğrulanmamış" işareti (ilk sürümde her istemci doğrulanmamıştır);
+   - istemci adı ve logosu (CIMD veya DCR belgesinden), yanında "doğrulanmamış" işareti. İlk sürümde güvenilir istemci listesi ve "doğrulanmış" işareti yoktur; bütün istemciler doğrulanmamış görünür (Oğuz, 2026-11-27). Liste beta sonrasına bırakıldı;
    - `client_id` ana bilgisayarı ve yönlendirme adresinin ana bilgisayarı (belirtimde zorunlu); yalnız `localhost` adresi varsa ayrı uyarı;
    - çalışma alanı seçimi (tek seçim);
    - kapsamlar, okuma ve yazma diye iki grupta, düz dille (madde 4 tablosu); `costs:read` kendi satırında, "maliyet bilgilerinizi görür" uyarısıyla ayrıca ve belirgin gösterilir; kullanıcının rolünün vermediği kapsam gri ve "rolünüz izin vermiyor" notuyla;
@@ -252,10 +255,4 @@ Aşılırsa `/v1` ile aynı biçimde `429`, `Retry-After` ve `RateLimit` başlı
 
 ## Açık kararlar (owner)
 
-Oğuz 2026-11-27'de şu soruları karara bağladı; kararlar yukarıdaki maddelere işlendi: MCP alan adı (madde 1.2), okuma denetimi (madde 5.5), maliyet alanları (madde 3.4, 4), İşletme onay kuralı ve üye bağlantıları (madde 3.6), süreler (madde 2.5), hız sınırı değerleri (madde 7), DCR ve CIMD (madde 2.3), plan (madde 3.8, 9.5), açık API kapsamı (madde 9.3).
-
-Cevap bekleyen kalanlar:
-
-1. **Çalışma alanı kapatma anahtarı:** İşletme yöneticisi, çalışma alanı ayarıyla MCP'yi tümden kapatabilsin mi?
-2. **Hız sınırı, Redis kaybı:** yazma araçlarında Redis yokken kapalı kalma (fail closed) istenir mi? (Madde 7'deki değerler kabul edildi.)
-3. **Bilinen istemciler:** Claude ve ChatGPT için alan adına dayalı güven listesi ve "doğrulanmış" işareti istenir mi? İlk sürümde her istemci doğrulanmamıştır (madde 8.2).
+Açık karar kalmadı. Oğuz 2026-11-27'de bütün soruları karara bağladı; kararlar yukarıdaki maddelere işlendi: MCP alan adı (madde 1.2), okuma denetimi (madde 5.5), maliyet alanları (madde 3.4, 4), İşletme onay kuralı ve üye bağlantıları (madde 3.6), süreler ve 90 günlük kuralın olmaması (madde 2.5), hız sınırı değerleri ve Redis kaybında yazma araçlarının kapalı kalması (madde 7), DCR ve CIMD (madde 2.3), plan (madde 3.8, 9.5), açık API kapsamı (madde 9.3), çalışma alanı kapatma anahtarı (madde 3.9), güvenilir istemci listesi ve "doğrulanmış" işareti olmaması (madde 8.2).
