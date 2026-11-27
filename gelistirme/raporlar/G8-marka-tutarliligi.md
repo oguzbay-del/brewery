@@ -862,3 +862,50 @@ Kaynak: Y, A ve [containers.rs](../../sunucu/crates/api/src/containers.rs) (C, m
 **Öneri:** İşletme kalite, tank, CIP ve paketleme raporlaması için veri modelini işleyen API ve ekran kanıtı ile ayır. Vergi hesap motorunun bulunması, hiçbir ülke için mevzuat uyumluluğunun onayı değildir. Pazarlamada mevzuat raporu veya HACCP uyumluluğu vaat etme.
 
 Bu iki bölüm 108 yeni maddeyi sınıflandırır. Toplam 225/256 katalog maddesi incelendi. Kalan 31 madde platform-security-data; ayrıca özellik dışı sayfalar, doğrudan motor/istemci kanıtı ve raporun sonuç bölümü açık.
+
+
+### 3.9 Madde bazında kanıt — platform-security-data (31)
+
+Kaynak: Y ve A (§3.7), [web index](../../web/index.html), [iOS project](../../ios/project.yml), [engine.rs](../../sunucu/crates/api/src/engine.rs). Güvenlik için test veya kodun varlığı üretim ortamının güvenlik onayı değildir. Y'nin 4 iOS aşaması cihaz testini ayrıca gerektirir.
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Tam özellikli iPad SwiftUI | Kısmi / Sonra | Y T0.6 SwiftUI iskeleti ve Aşama 4 cihaz testi; tam özellik kapsamı doğrulanmadı. |
+| 2. iPhone seçili akışlar, iPad/web tasarım | Kısmi / Sonra | Y Aşama 4 iPhone ekran sınırı, T2.22/23/24 API; tüm istemci akışları açık. |
+| 3. Tam özellikli React/TypeScript web | Kısmi | web/index.html ve G5 markalama; tüm özelliklerin tarayıcı testi doğrulanmadı. |
+| 4. Apple Watch desteklenmez | Kapsam dışı | §3.3 ürün sınırı; destek iddiası değil. |
+| 5. Android ve ayrı masaüstü uygulamaları yok | Kapsam dışı | §3.3 ürün sınırı; destek iddiası değil. |
+| 6. Rust motoru sunucuda, istemcide formül yok | Var (mimari) | E gRPC istemcisi, sunucu/CLAUDE.md engine/engine-service ve AGENTS.md istemci yasağı; tüm istemci kaynakları ayrıca taranmalı. |
+| 7. Web/Apple ortak API ve model | Kısmi | Y T2.10 OpenAPI, T2.17 ortak katalog üretimi TS/Swift; iki istemcinin tüm uçları doğrulanmadı. |
+| 8. Sınırlı çevrimdışı demleme paketi | Var (API) / Kısmi | A T2.22 imzalı paket, Y T2.22 süre/hedef/zamanlayıcı; çevrimdışı cihaz testi açık. |
+| 9. Genel offline yok, ölçüm kuyruğu | Kısmi | Y T2.22 tekrar güvenli UUID ve paket ID, A T2.22; bağlantı sonrası istemci kuyruğu doğrulanmadı. |
+| 10. Sürümlü sonuçlar ve değişmez tarif/parti referansı | Var (API) | E engine_version, A T2.21 immutable publish, T2.22 onaylı sürümden parti. |
+| 11. Apple/Google/e-posta giriş, parola yok | Kısmi | Y T2.11 tek kullanımlık e-posta, JWKS; A auth; tüm istemci seçenekleri ve parola yolu yokluğu ayrıca doğrulanmalı. |
+| 12. Passkey, oturum ve uzaktan kapatma | Var (API) | A T2.11/12 /me/sessions ve /me/passkeys; Y T2.11 her yerden çıkış. |
+| 13. İzolasyon, izin, yalnız eklemeli audit | Var (tasarım/API) | Y T2.5 RLS, T2.13 matris, T2.14 audit; A db transaction. Üretim konfigürasyonu doğrulanmadı. |
+| 14. Şifreli depolama, dosya, süreli destek | Kısmi | A T2.18 signed links ve T2.30 72h grant; depolama şifrelemesi üretim kanıtı yok. |
+| 15. Veri taşınabilirliği ve hesap silme | Kısmi | Y T2.26 export, T2.31 silme/ZIP; tüm veri kapsamı ve gerçek kullanıcı akışı açık. |
+| 16. Aranabilir yardım ve destek kutusu | Kısmi | A T2.29 support.rs; yardım araması doğrulanmadı. |
+| 17. Müşteriye açık talep geçmişi ve yanıt | Var (API) | A support.rs, yalnız customer görünür mesajlar ve kendi talepleri. |
+| 18. Gerekçeli süreli destek erişimi/audit | Var (API) | A support_access.rs, internal.rs, 72h grant, reason/audit. |
+| 19. Ayrı dahili destek çalışma alanı | Var (API) / Kısmi | A internal.rs, public gateway dışında; Y T2.32 ağ testi. Dahili UI doğrulanmadı. |
+| 20. Sistem durumu ve destek tanılaması | Kısmi | A /healthz, /readyz, /v1/version; müşteriye açık durum ve tanılama ekranı kanıtı yok. |
+| 21. Rehberli kurulum, mod/bölge/ekipman | Kısmi | Y T2.11 mod/bölge, T2.20 equipment wizard; birleşik UI doğrulanmadı. |
+| 22. Genel arama dört kayıt türü | Var (API) | A search.rs /search, recipes/batches/ingredients/stock lots, T2.27. |
+| 23. Bölgesel birimler/sayı/tarih/EN/TR | Kısmi | Y T2.17 ortak katalog, T2.38 birim sabitleri; tüm yerel biçimler ve UI doğrulanmadı. |
+| 24. Tema/görünüm/bildirim/ekipman/hesap/stil ayarı | Kısmi | Y T2.20 settings, T2.24 preferences, T2.19 style guides; tema ve tüm ekranlar açık. |
+| 25. Abonelik ve hak | Var (API) / Sonra | A subscription.rs, Y P1/B2/B3; B5 web ve B6 iOS akışları ayrıca doğrulanmalı. |
+| 26. Hesap bağlama, oturum, export/silme | Var (API) / Kısmi | A T2.11 identities/sessions; Y T2.31 export/silme; tüm istemci akışı açık. |
+| 27. Live Activity, Dynamic Island, widget, bildirim, tarama | Kısmi / Sonra | Y Aşama 4 Live Activity, T2.18 tarama uçları, T2.24 fake APNs; iOS cihaz akışları açık. |
+| 28. Siri/Kısayollar | Sonra / Belirsiz | Y K4 App Intents kapsamı; tüm Siri işlevleri doğrulanmadı. |
+| 29. Watch/Android/ayrı masaüstü kapsam dışı | Kapsam dışı | §3.3 ürün sınırı, 4 ve 5 ile aynı; mevcut özellik iddiası değildir. |
+| 30. Face ID/PIN, paylaşılan PIN, yönetici passkey | Kısmi | A T2.12 shared_device.rs, pin.rs, passkey.rs; yerel Face ID ve uygulama kilidi doğrulanmadı. |
+| 31. Şifreli yedekleme, taşınabilirlik, destek geçmişi | Kısmi | Y T2.26/T2.31 export, A T2.30 support history; üretim yedekleme/şifreleme kanıtı açık. |
+
+### 3.10 Katalog denetimi özeti ve kaynak sınırları
+
+16 rota, her dilde 52 bölüm ve 256 madde: tüm 256 karşılıklı katalog maddesi ilk kez madde bazında sınıflandırıldı. EN/TR bölüm sırası eşleşmesi çeviri doğruluğu kanıtı değildir. Şimdilik yalnız API, mimari ve tarihsel iş kayıtları düzeyinde kanıt var; doğrudan kodu okunmayan alanlar kısmi veya belirsiz bırakıldı. Belirsiz bir işlevi yok saymak veya sonraya kesin atamak doğru değildir. T2.7 gibi açık sonraki aşama kaydı olanlarda Sonra etiketi kullanıldı. Kapsam dışı satırları (Watch/Android/masaüstü ve cihaz kontrolü) özellik vaadi değildir.
+
+Y T2.26, BeerXML/BeerJSON/CSV/JSON/ZIP dışa aktarma kapsamını ayrıca belgeler; §3.6 madde 1 ve 16 için bu ek tarihsel kanıt mevcut, gerçek worker çıktısı ve istemci henüz incelenmedi. T2.28 eski tek aylık deneme kaydı güncel ürün kuralı değildir; API envanteri Ev 3 ay, İşletme 1 ay der. Fiyat ve ödeme akışının yayınlanabilirliği bu raporla onaylanmaz.
+
+**Kalan doğrulama:** özellik dışı sayfalar (ana sayfa, segmentler, fiyatlandırma, güvenlik, teknik yaklaşım, yardım/SSS ve diğer yayımlanan rotalar), logo ve iOS cihaz kanıtı, gerekli yerlerde doğrudan istemci/motor kaynakları ve sonuç tablosu. Taslak henüz kapanış ölçütünü karşılamıyor.
