@@ -170,13 +170,13 @@ Rules:
 | UIQ-02 Apple patterns | Claude | Opus | – | done (2026-11-27) |
 | UIQ-03a structural tokens | Claude | Sonnet | – | done (2026-11-27) |
 | UIQ-03b chart palette, design system README and Artifact | Claude | Opus | – | todo |
-| UIQ-04 React Kit skeleton and gallery | ChatGPT | – | ISSUE04 | todo |
+| UIQ-04 React Kit skeleton and gallery | ChatGPT | – | #444 | todo |
 | UIQ-05 SwiftUI Kit skeleton | Claude | Sonnet | – | active |
-| UIQ-06 web adaptive AppShell, `check-css.mjs` | ChatGPT | – | ISSUE06 | blocked (UIQ-04, UIQ-08) |
+| UIQ-06 web adaptive AppShell, `check-css.mjs` | ChatGPT | – | #447 | blocked (UIQ-04, UIQ-08) |
 | UIQ-07 iPad adaptive root | Claude | Sonnet | – | todo |
-| UIQ-08 React Aria pilot | ChatGPT | – | ISSUE08 | blocked (UIQ-04) |
+| UIQ-08 React Aria pilot | ChatGPT | – | #445 | blocked (UIQ-04) |
 | UIQ-09 React Aria rollout | ChatGPT | – | – | todo |
-| UIQ-10 web geometry and screenshot tests | ChatGPT | – | ISSUE10 | blocked (UIQ-04) |
+| UIQ-10 web geometry and screenshot tests | ChatGPT | – | #446 | blocked (UIQ-04) |
 | UIQ-11 iPad screenshot and audit tests | Claude | Sonnet | – | todo |
 | UIQ-12 CI Visual Quality Gate | Claude | Sonnet | – | todo |
 | UIQ-13 move screens to the Kit | ChatGPT (web), Claude (iOS) | Sonnet | – | todo |
