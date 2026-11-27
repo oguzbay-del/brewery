@@ -90,6 +90,12 @@ async fn main() -> common::Result<()> {
     } else {
         tracing::warn!("Paddle API settings are not complete; checkout and portal answer 503");
     }
+    // The StoreKit transaction sync needs the bundle id (the same settings as the webhook).
+    match billing::apple_sync::AppleSyncSettings::from_lookup(|name| std::env::var(name).ok()) {
+        Ok(Some(settings)) => state = state.with_apple_sync(settings),
+        Ok(None) => tracing::warn!("APPLE_BUNDLE_ID not set; the StoreKit sync answers 503"),
+        Err(e) => return Err(std::io::Error::other(e).into()),
+    }
     let router = api::router(state);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));

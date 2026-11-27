@@ -235,6 +235,67 @@ async fn portal_uses_the_customer_of_the_web_subscription(pool: PgPool) {
     assert_eq!(w.seen.lock().unwrap()[0].0, "portal:ctm_77");
 }
 
+/// A world where the `StoreKit` sync is on (the real Apple root: only failure paths are tested
+/// here; the success path is in `crates/ingest/tests/apple_sync.rs`).
+async fn apple_world(pool: PgPool, permissions: &[&str]) -> World {
+    let w = world(pool, true, permissions).await;
+    let settings = billing::apple_sync::AppleSyncSettings::from_lookup(|n| match n {
+        "APPLE_BUNDLE_ID" => Some("app.demleme".to_owned()),
+        _ => None,
+    })
+    .unwrap()
+    .unwrap();
+    let auth = Arc::new(FakeAuth::default());
+    auth.add(w.user, w.ws, permissions);
+    let state = state_with(
+        &w.pool,
+        Redis::disabled(),
+        auth,
+        config("postgres://unused"),
+    )
+    .await
+    .with_apple_sync(settings);
+    World {
+        app: api::build(state, Router::new()),
+        ..w
+    }
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn apple_sync_rules(pool: PgPool) {
+    let body = |ws: Uuid| json!({"workspace_id": ws, "signed_transaction": "not.a.jws"});
+
+    // No permission.
+    let w = apple_world(pool.clone(), &[]).await;
+    let r = post_json(&w, "/v1/billing/apple/sync", &body(w.ws)).await;
+    assert_eq!(r.status, StatusCode::FORBIDDEN);
+
+    // A bad transaction is a validation error, and nothing is stored.
+    let w = apple_world(pool.clone(), &["billing.manage"]).await;
+    let r = post_json(&w, "/v1/billing/apple/sync", &body(w.ws)).await;
+    assert_eq!(r.status, StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(r.body["errors"][0]["code"], "invalid_transaction");
+    let stored: i64 = sqlx::query_scalar("SELECT count(*) FROM external_events")
+        .fetch_one(&w.pool)
+        .await
+        .unwrap();
+    assert_eq!(stored, 0);
+
+    // The web source is live.
+    add_subscription(&w, "web", Some("ctm_1")).await;
+    let r = post_json(&w, "/v1/billing/apple/sync", &body(w.ws)).await;
+    assert_eq!(r.status, StatusCode::CONFLICT);
+    assert_eq!(r.body["errors"][0]["code"], "other_source_active");
+
+    // No settings: 503.
+    let w = world(pool, true, &["billing.manage"]).await;
+    let r = post_json(&w, "/v1/billing/apple/sync", &body(w.ws)).await;
+    assert_eq!(
+        (r.status, r.body["code"].as_str()),
+        (StatusCode::SERVICE_UNAVAILABLE, Some("billing_unavailable"))
+    );
+}
+
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn portal_refuses_when_the_app_store_is_live(pool: PgPool) {
     let w = world(pool, true, &["billing.manage"]).await;

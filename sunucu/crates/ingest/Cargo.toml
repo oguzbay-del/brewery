@@ -22,7 +22,6 @@ thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 uuid.workspace = true
-x509-parser = { version = "0.18.1", features = ["verify"] }
 
 [dev-dependencies]
 async-nats.workspace = true

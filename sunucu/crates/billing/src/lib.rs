@@ -10,7 +10,9 @@
 //! - [`provider::WebPaymentProvider`] is the interface for a web payment provider (decision O6).
 
 pub mod access;
+pub mod apple_sync;
 pub mod apply;
+pub mod jws;
 pub mod notify;
 pub mod paddle;
 pub mod provider;

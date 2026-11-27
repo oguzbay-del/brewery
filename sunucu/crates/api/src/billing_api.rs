@@ -16,7 +16,11 @@
 use std::{fmt, sync::Arc, time::Duration};
 
 use axum::{Json, Router, extract::State, http::HeaderMap, routing::get, routing::post};
-use billing::{PlanKey, access};
+use billing::{
+    PlanKey, access,
+    apple_sync::{self, SyncError},
+    apply,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sqlx::PgConnection;
@@ -271,6 +275,22 @@ pub struct PortalView {
     pub portal_url: String,
 }
 
+/// Body of `POST /v1/billing/apple/sync`.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct AppleSyncRequest {
+    /// Workspace of the purchase (the `appAccountToken` of the transaction).
+    pub workspace_id: Uuid,
+    /// The `StoreKit` 2 transaction as a signed JWS (`Transaction.jwsRepresentation`).
+    pub signed_transaction: String,
+}
+
+/// Result of a transaction sync.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct AppleSyncView {
+    /// `queued` (the worker applies it) or `duplicate` (this transaction was synced before).
+    pub status: String,
+}
+
 /// Routes of this module.
 pub fn routes(state: &AppState) -> Router<AppState> {
     authenticated(
@@ -278,7 +298,8 @@ pub fn routes(state: &AppState) -> Router<AppState> {
         Router::new()
             .route("/v1/billing", get(billing_get))
             .route("/v1/billing/checkout", post(billing_checkout))
-            .route("/v1/billing/portal", post(billing_portal)),
+            .route("/v1/billing/portal", post(billing_portal))
+            .route("/v1/billing/apple/sync", post(billing_apple_sync)),
     )
 }
 
@@ -426,6 +447,64 @@ pub async fn billing_portal(
     Ok(Json(PortalView { portal_url }))
 }
 
+/// Syncs a `StoreKit` 2 transaction after a purchase or a restore. The worker applies the change.
+#[utoipa::path(
+    post,
+    path = "/v1/billing/apple/sync",
+    tag = "billing",
+    operation_id = "billing_apple_sync",
+    request_body = AppleSyncRequest,
+    responses((
+        status = 200,
+        description = "Transaction accepted",
+        body = AppleSyncView,
+        example = json!({"status": "queued"})
+    ))
+)]
+pub async fn billing_apple_sync(
+    State(state): State<AppState>,
+    ctx: RequestContext,
+    ApiJson(body): ApiJson<AppleSyncRequest>,
+) -> ApiResult<Json<AppleSyncView>> {
+    let ws = body.workspace_id;
+    let ctx = member_context(&state, ctx, ws).await?;
+    ctx.require(MANAGE)?;
+    let settings = state
+        .apple_sync
+        .clone()
+        .ok_or_else(|| ApiError::new(ErrorCode::BillingUnavailable))?;
+    let mut tx = ctx.begin(&state.db).await?;
+    if live_source(&mut tx, ws).await?.as_deref() == Some("web") {
+        return Err(conflict("other_source_active"));
+    }
+    let now = chrono::Utc::now().timestamp();
+    let update = apple_sync::parse_transaction(&settings, &body.signed_transaction, now, ws)
+        .map_err(|e| sync_error(&e))?;
+    let stored = apply::store(&mut tx, &update).await?;
+    tx.commit().await?;
+    let status = match stored {
+        apply::Stored::Queued(_) => "queued",
+        apply::Stored::Duplicate => "duplicate",
+    };
+    Ok(Json(AppleSyncView {
+        status: status.to_owned(),
+    }))
+}
+
+fn sync_error(e: &SyncError) -> ApiError {
+    tracing::info!(error = %e, "StoreKit transaction rejected");
+    let issue = |code: &'static str| {
+        ApiError::new(ErrorCode::ValidationFailed)
+            .with_errors(vec![FieldIssue::new("/signed_transaction", code)])
+    };
+    match e {
+        SyncError::Workspace => conflict("workspace_mismatch"),
+        SyncError::Jws(_) | SyncError::Field(_) => issue("invalid_transaction"),
+        SyncError::Bundle | SyncError::Environment => issue("wrong_app"),
+        SyncError::Product => issue("product_not_allowed"),
+    }
+}
+
 // --- registry entry ----------------------------------------------------------------------
 
 mod spec {
@@ -487,19 +566,40 @@ mod spec {
                 BillingUnavailable,
             ],
         ),
+        op(
+            "billing_apple_sync",
+            false,
+            Some("billing.manage"),
+            &[
+                MalformedRequest,
+                Unauthenticated,
+                Forbidden,
+                NotFound,
+                Conflict,
+                UnsupportedMediaType,
+                ValidationFailed,
+                UpgradeRequired,
+                RateLimited,
+                Internal,
+                Unavailable,
+                BillingUnavailable,
+            ],
+        ),
     ];
 }
 
 /// `OpenAPI` fragment of this module.
 #[derive(Debug, utoipa::OpenApi)]
 #[openapi(
-    paths(billing_get, billing_checkout, billing_portal),
+    paths(billing_get, billing_checkout, billing_portal, billing_apple_sync),
     components(schemas(
         BillingView,
         CheckoutRequest,
         CheckoutView,
         PortalRequest,
-        PortalView
+        PortalView,
+        AppleSyncRequest,
+        AppleSyncView
     )),
     tags((name = "billing", description = "Web checkout, customer portal and billing state"))
 )]

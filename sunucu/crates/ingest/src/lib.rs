@@ -10,13 +10,14 @@
 
 pub mod apple;
 pub mod device;
-pub mod jws;
 pub mod ratelimit;
 
 use std::sync::{
     Arc,
     atomic::{AtomicU64, Ordering},
 };
+
+pub use billing::jws;
 
 use axum::{
     Json, Router,

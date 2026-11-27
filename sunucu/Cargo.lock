@@ -484,6 +484,7 @@ checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
 name = "billing"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "chrono",
  "common",
  "db",
@@ -498,6 +499,7 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "x509-parser",
 ]
 
 [[package]]
@@ -2049,7 +2051,6 @@ dependencies = [
  "tower",
  "tracing",
  "uuid",
- "x509-parser",
 ]
 
 [[package]]

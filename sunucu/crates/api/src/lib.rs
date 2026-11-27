@@ -89,6 +89,9 @@ pub struct AppState {
     /// Paddle API client for checkout and portal (B3); `None` answers them with
     /// `503 billing_unavailable`.
     pub paddle: Option<Arc<billing_api::PaddleApi>>,
+    /// Settings of the `StoreKit` transaction sync (B3); `None` answers it with
+    /// `503 billing_unavailable`.
+    pub apple_sync: Option<Arc<billing::apple_sync::AppleSyncSettings>>,
 }
 
 impl std::fmt::Debug for AppState {
@@ -114,6 +117,7 @@ impl AppState {
             engine: engine::EngineClient::disabled(),
             internal: None,
             paddle: None,
+            apple_sync: None,
         }
     }
 
@@ -128,6 +132,13 @@ impl AppState {
     #[must_use]
     pub fn with_paddle(mut self, paddle: billing_api::PaddleApi) -> Self {
         self.paddle = Some(Arc::new(paddle));
+        self
+    }
+
+    /// Turns the `StoreKit` transaction sync on (B3).
+    #[must_use]
+    pub fn with_apple_sync(mut self, settings: billing::apple_sync::AppleSyncSettings) -> Self {
+        self.apple_sync = Some(Arc::new(settings));
         self
     }
 
