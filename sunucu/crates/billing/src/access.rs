@@ -83,7 +83,14 @@ pub struct Access {
     pub trial_ends_at: DateTime<Utc>,
     /// End of the entitlement that gives access now; `None` for the trial and for an open end.
     pub valid_until: Option<DateTime<Utc>>,
+    /// Plan of the entitlement that gives access now (`home` or `business`). `None` for the
+    /// trial and for an entitlement without a plan: the module set then follows the mode.
+    pub plan_key: Option<String>,
+    /// Seat count of that entitlement.
+    pub seats: Option<i32>,
 }
+
+type PaidRow = (String, Option<DateTime<Utc>>, Option<String>, Option<i32>);
 
 /// Computes the access of `workspace_id` at the database time.
 ///
@@ -97,8 +104,8 @@ pub async fn access(conn: &mut PgConnection, workspace_id: Uuid) -> sqlx::Result
             .await?;
     let trial_ends_at = trial_end(created_at, &mode);
     let trial_open = trial_ends_at > now;
-    let paid: Option<(String, Option<DateTime<Utc>>)> = sqlx::query_as(
-        "SELECT source, valid_until FROM entitlements
+    let paid: Option<PaidRow> = sqlx::query_as(
+        "SELECT source, valid_until, plan_key, seats FROM entitlements
          WHERE workspace_id = $1 AND feature = $2 AND deleted_at IS NULL
            AND valid_from <= now() AND (valid_until IS NULL OR valid_until > now())
          ORDER BY valid_until DESC NULLS FIRST LIMIT 1",
@@ -108,7 +115,7 @@ pub async fn access(conn: &mut PgConnection, workspace_id: Uuid) -> sqlx::Result
     .fetch_optional(&mut *conn)
     .await?;
     Ok(match paid {
-        Some((source, valid_until)) => Access {
+        Some((source, valid_until, plan_key, seats)) => Access {
             level: AccessLevel::Full,
             source: match source.as_str() {
                 "subscription" => AccessSource::Subscription,
@@ -118,18 +125,24 @@ pub async fn access(conn: &mut PgConnection, workspace_id: Uuid) -> sqlx::Result
             },
             trial_ends_at,
             valid_until,
+            plan_key,
+            seats,
         },
         None if trial_open => Access {
             level: AccessLevel::Full,
             source: AccessSource::Trial,
             trial_ends_at,
             valid_until: None,
+            plan_key: None,
+            seats: None,
         },
         None => Access {
             level: AccessLevel::ReadOnly,
             source: AccessSource::None,
             trial_ends_at,
             valid_until: None,
+            plan_key: None,
+            seats: None,
         },
     })
 }

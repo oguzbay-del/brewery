@@ -7890,6 +7890,16 @@ export interface components {
             access: components["schemas"]["AccessLevelDto"];
             /** @description Reason for the access level. */
             access_source: components["schemas"]["AccessSourceDto"];
+            /**
+             * @description Plan of the entitlement that gives access now (`home` or `business`); absent for the
+             *     trial and for an entitlement without a plan.
+             */
+            plan_key?: string | null;
+            /**
+             * Format: int32
+             * @description Seat count of that entitlement.
+             */
+            seats?: number | null;
             /** @description Subscriptions, oldest first. */
             subscriptions: components["schemas"]["SubscriptionView"][];
             /**

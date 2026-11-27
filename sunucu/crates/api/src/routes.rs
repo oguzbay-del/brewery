@@ -227,7 +227,7 @@ pub async fn meta_modules(
         permissions: membership.permissions,
         scoped: membership.scoped,
     };
-    let (mode, has_paid_feature) = workspace_mode_and_paid(
+    let (mode, has_paid_feature, plan_key) = workspace_mode_and_paid(
         &state.db,
         &workspace_context.db_context(),
         query.workspace_id,
@@ -236,7 +236,12 @@ pub async fn meta_modules(
     let modules = modules::PRODUCT_MODULES
         .iter()
         .map(|module| {
-            let access = modules::module_access(module.id, &mode, has_paid_feature);
+            let access = modules::module_access_for_plan(
+                module.id,
+                &mode,
+                has_paid_feature,
+                plan_key.as_deref(),
+            );
             ModuleState {
                 id: module.id.to_owned(),
                 enabled: access == modules::ModuleAccess::Full,

@@ -8,6 +8,7 @@
 //! - `external_events.processed_at` marks the event as applied.
 //! - A change that is older than `subscriptions.last_verified_at` is skipped (store order).
 
+use chrono::{DateTime, Utc};
 use db::outbox::{Entity, NewOutboxEvent, enqueue};
 use events::consumer::{BoxFuture, Event, Handler, HandlerError};
 use serde_json::{Value, json};
@@ -15,8 +16,8 @@ use sqlx::PgConnection;
 use uuid::Uuid;
 
 use crate::{
-    CHANGED_TOPIC, NOTIFICATION_ENTITY, NOTIFICATION_TOPIC, PAID_FEATURE, SubscriptionUpdate,
-    UPDATE_SCHEMA_VERSION,
+    CHANGED_TOPIC, NOTIFICATION_ENTITY, NOTIFICATION_TOPIC, PAID_FEATURE, PlanKey,
+    SubscriptionUpdate, UPDATE_SCHEMA_VERSION,
 };
 
 /// Result of [`store`].
@@ -143,6 +144,81 @@ async fn handle_notification(event: &Event, tx: &mut PgConnection) -> Result<(),
     Ok(())
 }
 
+/// Stored entitlement values, for the audit row.
+type EntitlementRow = (Uuid, Option<String>, Option<i32>, Option<DateTime<Utc>>);
+
+async fn write_entitlement(
+    tx: &mut PgConnection,
+    workspace_id: Uuid,
+    subscription_id: Uuid,
+    update: &SubscriptionUpdate,
+    until: DateTime<Utc>,
+) -> Result<(), HandlerError> {
+    // The entitlement takes the plan and seats of the subscription row (a change without a
+    // plan keeps the stored one).
+    let previous: Option<EntitlementRow> = sqlx::query_as(
+        "SELECT id, plan_key, seats, valid_until FROM entitlements
+             WHERE workspace_id = $1 AND subscription_id = $2 AND feature = $3
+               AND deleted_at IS NULL",
+    )
+    .bind(workspace_id)
+    .bind(subscription_id)
+    .bind(PAID_FEATURE)
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(dberr)?;
+    let (entitlement_id, new_plan, new_seats): (Uuid, Option<String>, Option<i32>) =
+        sqlx::query_as(
+            "INSERT INTO entitlements
+                 (id, workspace_id, feature, source, subscription_id, valid_from, valid_until,
+                  plan_key, seats)
+             SELECT $1, $2, $3, 'subscription', $4, LEAST(now(), $5 - interval '1 second'), $5,
+                    s.plan_key, s.seats
+             FROM subscriptions s WHERE s.id = $4
+             ON CONFLICT (workspace_id, subscription_id, feature)
+                 WHERE subscription_id IS NOT NULL AND deleted_at IS NULL
+             DO UPDATE SET valid_until = EXCLUDED.valid_until,
+                           plan_key = EXCLUDED.plan_key,
+                           seats = EXCLUDED.seats,
+                           valid_from = LEAST(entitlements.valid_from,
+                                              EXCLUDED.valid_until - interval '1 second')
+             RETURNING id, plan_key, seats",
+        )
+        .bind(Uuid::now_v7())
+        .bind(workspace_id)
+        .bind(PAID_FEATURE)
+        .bind(subscription_id)
+        .bind(until)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(dberr)?;
+    db::append_audit(
+        tx,
+        workspace_id,
+        &db::NewAuditEntry {
+            actor_kind: db::ActorKind::System,
+            actor_id: None,
+            event: db::AuditEvent::EntitlementChange,
+            record_kind: "entitlement".to_owned(),
+            record_id: Some(entitlement_id),
+            previous_value: previous.map(|(_, plan, seats, valid_until)| {
+                json!({ "plan_key": plan, "seats": seats, "valid_until": valid_until })
+            }),
+            new_value: Some(json!({
+                "plan_key": new_plan,
+                "seats": new_seats,
+                "valid_until": until,
+                "status": update.kind.status(),
+            })),
+            reason: None,
+        },
+    )
+    .await
+    .map_err(|e| HandlerError::Retry(e.to_string()))?;
+
+    Ok(())
+}
+
 /// Applies one update: upserts the subscription and its entitlement and writes the
 /// `subscription.changed` event. Returns `false` when the update is older than the stored state.
 ///
@@ -176,13 +252,17 @@ pub async fn apply(
         )));
     }
 
+    let plan = update.plan_key.map(PlanKey::as_str);
+    let seats = update.seats.map(|n| i32::try_from(n).unwrap_or(i32::MAX));
     let upserted: Option<(Uuid, i64)> = sqlx::query_as(
         "INSERT INTO subscriptions
              (id, workspace_id, source, external_id, product_key, status, period_ends_at,
-              last_verified_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              last_verified_at, plan_key, seats)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (source, external_id) DO UPDATE
          SET product_key = EXCLUDED.product_key,
+             plan_key = COALESCE(EXCLUDED.plan_key, subscriptions.plan_key),
+             seats = COALESCE(EXCLUDED.seats, subscriptions.seats),
              status = EXCLUDED.status,
              period_ends_at = EXCLUDED.period_ends_at,
              last_verified_at = EXCLUDED.last_verified_at
@@ -199,6 +279,8 @@ pub async fn apply(
     .bind(update.kind.status())
     .bind(update.period_ends_at)
     .bind(update.occurred_at)
+    .bind(plan)
+    .bind(seats)
     .fetch_optional(&mut *tx)
     .await
     .map_err(dberr)?;
@@ -210,24 +292,7 @@ pub async fn apply(
         return Ok(false);
     };
 
-    sqlx::query(
-        "INSERT INTO entitlements
-             (id, workspace_id, feature, source, subscription_id, valid_from, valid_until)
-         VALUES ($1, $2, $3, 'subscription', $4, LEAST(now(), $5 - interval '1 second'), $5)
-         ON CONFLICT (workspace_id, subscription_id, feature)
-             WHERE subscription_id IS NOT NULL AND deleted_at IS NULL
-         DO UPDATE SET valid_until = EXCLUDED.valid_until,
-                       valid_from = LEAST(entitlements.valid_from,
-                                          EXCLUDED.valid_until - interval '1 second')",
-    )
-    .bind(Uuid::now_v7())
-    .bind(workspace_id)
-    .bind(PAID_FEATURE)
-    .bind(subscription_id)
-    .bind(until)
-    .execute(&mut *tx)
-    .await
-    .map_err(dberr)?;
+    write_entitlement(tx, workspace_id, subscription_id, update, until).await?;
 
     enqueue(
         tx,

@@ -69,6 +69,11 @@ pub struct SubscriptionState {
     pub trial_ends_at: DateTime<Utc>,
     /// End of the entitlement that gives access now; absent for the trial.
     pub valid_until: Option<DateTime<Utc>>,
+    /// Plan of the entitlement that gives access now (`home` or `business`); absent for the
+    /// trial and for an entitlement without a plan.
+    pub plan_key: Option<String>,
+    /// Seat count of that entitlement.
+    pub seats: Option<i32>,
     /// Subscriptions, oldest first.
     pub subscriptions: Vec<SubscriptionView>,
 }
@@ -144,6 +149,8 @@ pub async fn get_subscription(
         },
         trial_ends_at: a.trial_ends_at,
         valid_until: a.valid_until,
+        plan_key: a.plan_key,
+        seats: a.seats,
         subscriptions: subs
             .into_iter()
             .map(|s| SubscriptionView {

@@ -254,6 +254,8 @@ impl PaddleProvider {
             external_id: external_id.to_owned(),
             product_key,
             period_ends_at,
+            plan_key: None,
+            seats: None,
             occurred_at,
         }))
     }

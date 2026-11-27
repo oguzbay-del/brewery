@@ -63,6 +63,8 @@ pub enum AuditEvent {
     SubscriptionManualAdjust,
     /// An entitlement was corrected by hand (reason required).
     EntitlementManualAdjust,
+    /// An entitlement changed through a verified subscription notification.
+    EntitlementChange,
     /// A support grant was given, revoked or used.
     SupportGrantChange,
     /// A support staff action (one row per `support_actions` row; reason required).
@@ -95,7 +97,7 @@ pub enum AuditEvent {
 
 impl AuditEvent {
     /// Every event kind.
-    pub const ALL: [Self; 32] = [
+    pub const ALL: [Self; 33] = [
         Self::RoleCreate,
         Self::RoleUpdate,
         Self::RoleDelete,
@@ -114,6 +116,7 @@ impl AuditEvent {
         Self::TrashRestore,
         Self::SubscriptionManualAdjust,
         Self::EntitlementManualAdjust,
+        Self::EntitlementChange,
         Self::SupportGrantChange,
         Self::SupportAction,
         Self::LoginMethodAdd,
@@ -152,6 +155,7 @@ impl AuditEvent {
             Self::TrashRestore => "trash.restore",
             Self::SubscriptionManualAdjust => "subscription.manual_adjust",
             Self::EntitlementManualAdjust => "entitlement.manual_adjust",
+            Self::EntitlementChange => "entitlement.change",
             Self::SupportGrantChange => "support.grant_change",
             Self::SupportAction => "support.action",
             Self::LoginMethodAdd => "login_method.add",

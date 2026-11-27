@@ -522,6 +522,8 @@ async fn web_payment_provider_flows_through_the_same_path(base: PgPool) {
         external_id: "sub_web_1".to_owned(),
         product_key: "pro.monthly".to_owned(),
         period_ends_at: Some(t + chrono::Duration::days(30)),
+        plan_key: None,
+        seats: None,
         occurred_at: t,
     };
     let post = |signature: Option<&'static str>, body: String| {
@@ -562,6 +564,57 @@ async fn web_payment_provider_flows_through_the_same_path(base: PgPool) {
         .unwrap();
     assert_eq!(source, "web");
     assert_eq!(w.fake.accepted(), 3);
+    w.finish().await;
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn plan_and_seats_reach_the_entitlement_and_each_change_is_audited(base: PgPool) {
+    let w = World::new(base, true).await;
+    let t = Utc::now();
+    let mut update = billing::SubscriptionUpdate {
+        schema_version: 1,
+        source: billing::Source::Web,
+        notification_id: "web-plan-1".to_owned(),
+        kind: billing::UpdateKind::Active,
+        workspace_id: Some(w.ws),
+        external_id: "sub_plan_1".to_owned(),
+        product_key: "pro.monthly".to_owned(),
+        period_ends_at: Some(t + chrono::Duration::days(30)),
+        plan_key: Some(billing::PlanKey::Business),
+        seats: Some(5),
+        occurred_at: t - chrono::Duration::seconds(60),
+    };
+    let send = |u: &billing::SubscriptionUpdate| {
+        let request = Request::post("/v1/webhooks/web-payment")
+            .header("x-signature", "s3cret")
+            .body(Body::from(serde_json::to_string(u).unwrap()))
+            .unwrap();
+        w.send(request)
+    };
+    assert_eq!(send(&update).await.1["status"], "accepted");
+    w.settle(1).await;
+    let a = w.access().await;
+    assert_eq!(a.plan_key.as_deref(), Some("business"));
+    assert_eq!(a.seats, Some(5));
+
+    // A later change without a plan keeps the stored plan; the seat count changes.
+    update.notification_id = "web-plan-2".to_owned();
+    update.plan_key = None;
+    update.seats = Some(8);
+    update.occurred_at = t - chrono::Duration::seconds(30);
+    assert_eq!(send(&update).await.1["status"], "accepted");
+    w.settle(2).await;
+    let a = w.access().await;
+    assert_eq!(
+        (a.plan_key.as_deref(), a.seats),
+        (Some("business"), Some(8))
+    );
+    assert_eq!(
+        w.count("SELECT count(*) FROM audit_log WHERE action = 'entitlement.change'")
+            .await,
+        2,
+        "one audit row for each change"
+    );
     w.finish().await;
 }
 

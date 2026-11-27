@@ -102,6 +102,8 @@ mod tests {
             external_id: "sub_1".into(),
             product_key: "pro".into(),
             period_ends_at: Some(Utc::now()),
+            plan_key: None,
+            seats: None,
             occurred_at: Utc::now(),
         };
         let body = serde_json::to_vec(&update).unwrap();

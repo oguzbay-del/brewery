@@ -209,6 +209,32 @@ pub(crate) enum ModuleAccess {
 }
 
 pub(crate) fn module_access(module_id: &str, mode: &str, has_paid_feature: bool) -> ModuleAccess {
+    module_access_for_plan(module_id, mode, has_paid_feature, None)
+}
+
+/// Whether a plan (`home` or `business`) includes a product module. An unknown plan includes
+/// nothing.
+#[must_use]
+pub fn plan_includes(plan_key: &str, module_id: &str) -> bool {
+    PRODUCT_MODULES
+        .iter()
+        .find(|module| module.id == module_id)
+        .is_some_and(|module| match plan_key {
+            "home" => module.home,
+            "business" => module.business,
+            _ => false,
+        })
+}
+
+/// Like [`module_access`], with the plan of the paid entitlement. The workspace mode still
+/// decides which modules exist. A paid module that the plan does not include is read-only.
+/// `plan_key` `None` (trial, or an entitlement without a plan) follows the mode only.
+pub(crate) fn module_access_for_plan(
+    module_id: &str,
+    mode: &str,
+    has_paid_feature: bool,
+    plan_key: Option<&str>,
+) -> ModuleAccess {
     let Some(module) = PRODUCT_MODULES.iter().find(|module| module.id == module_id) else {
         return ModuleAccess::Disabled;
     };
@@ -219,7 +245,9 @@ pub(crate) fn module_access(module_id: &str, mode: &str, has_paid_feature: bool)
     };
     if !included {
         ModuleAccess::Disabled
-    } else if module.free || has_paid_feature {
+    } else if module.free
+        || (has_paid_feature && plan_key.is_none_or(|plan| plan_includes(plan, module_id)))
+    {
         ModuleAccess::Full
     } else {
         ModuleAccess::ReadOnly
@@ -274,4 +302,26 @@ pub fn module_for_path(path: &str) -> Option<&'static str> {
     path_module_map()
         .iter()
         .find_map(|(template, product_id)| path_matches(template, path).then_some(*product_id))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ModuleAccess, module_access_for_plan, plan_includes};
+
+    #[test]
+    fn plan_sets_the_paid_module_set() {
+        let access = |module, mode, plan| module_access_for_plan(module, mode, true, plan);
+        // No plan (trial, promo, manual): the mode decides.
+        assert!(access("production", "business", None) == ModuleAccess::Full);
+        // The Business plan unlocks the Business modules; the Home plan does not.
+        assert!(access("production", "business", Some("business")) == ModuleAccess::Full);
+        assert!(access("production", "business", Some("home")) == ModuleAccess::ReadOnly);
+        // The mode still decides which modules exist.
+        assert!(access("production", "home", Some("business")) == ModuleAccess::Disabled);
+        // Free modules stay free under any plan.
+        assert!(access("core", "home", Some("home")) == ModuleAccess::Full);
+        assert!(plan_includes("business", "team"));
+        assert!(!plan_includes("home", "team"));
+        assert!(!plan_includes("gold", "core"));
+    }
 }

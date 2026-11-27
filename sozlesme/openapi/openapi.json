@@ -10243,6 +10243,21 @@
             "$ref": "#/components/schemas/AccessSourceDto",
             "description": "Reason for the access level."
           },
+          "plan_key": {
+            "description": "Plan of the entitlement that gives access now (`home` or `business`); absent for the\ntrial and for an entitlement without a plan.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "seats": {
+            "description": "Seat count of that entitlement.",
+            "format": "int32",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
           "subscriptions": {
             "description": "Subscriptions, oldest first.",
             "items": {

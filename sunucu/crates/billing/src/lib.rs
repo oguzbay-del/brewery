@@ -20,6 +20,39 @@ use uuid::Uuid;
 
 /// Feature key of the entitlement row that unlocks every paid feature.
 pub const PAID_FEATURE: &str = "paid_features";
+/// Plan of a paid subscription. It sets the module set of the workspace (`api::modules`).
+/// Tier names, seat limits and prices are not decided (ADR-0013), so the plan key has only two
+/// values and the seat count is a plain integer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PlanKey {
+    /// Home plan.
+    Home,
+    /// Business plan.
+    Business,
+}
+
+impl PlanKey {
+    /// Value of the `plan_key` column.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Home => "home",
+            Self::Business => "business",
+        }
+    }
+
+    /// Reads the value of the `plan_key` column.
+    #[must_use]
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "home" => Some(Self::Home),
+            "business" => Some(Self::Business),
+            _ => None,
+        }
+    }
+}
+
 /// Topic of the outbox event that `ingest` writes for a stored notification.
 pub const NOTIFICATION_TOPIC: &str = "subscription.notification_received";
 /// Topic of the outbox event that the worker writes after a change.
@@ -114,6 +147,13 @@ pub struct SubscriptionUpdate {
     pub product_key: String,
     /// End of the paid period, or of the grace period for [`UpdateKind::Grace`].
     pub period_ends_at: Option<DateTime<Utc>>,
+    /// Plan of the product. `None` when the source does not say: the module set then follows
+    /// the workspace mode.
+    #[serde(default)]
+    pub plan_key: Option<PlanKey>,
+    /// Number of seats. `None` when the source does not say.
+    #[serde(default)]
+    pub seats: Option<u32>,
     /// Time the source signed the notification. The worker ignores an older change.
     pub occurred_at: DateTime<Utc>,
 }
