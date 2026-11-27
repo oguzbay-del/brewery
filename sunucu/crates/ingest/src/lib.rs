@@ -11,6 +11,7 @@
 pub mod apple;
 pub mod device;
 pub mod jws;
+pub mod ratelimit;
 
 use std::sync::{
     Arc,
@@ -77,8 +78,13 @@ pub fn router() -> Router {
     common::http::health_router(SERVICE_NAME, env!("CARGO_PKG_VERSION"))
 }
 
-/// Builds the router with the health endpoint and the webhook routes.
+/// Builds the router with the health endpoint and the webhook routes, without a device rate limit.
 pub fn router_with(state: IngestState) -> Router {
+    router_with_limiter(state, ratelimit::DeviceLimiter::disabled())
+}
+
+/// Builds the router with the webhook routes and the rate limits of the device endpoint (T2.54).
+pub fn router_with_limiter(state: IngestState, limiter: ratelimit::DeviceLimiter) -> Router {
     let hooks = Router::new()
         .route("/v1/webhooks/app-store", post(app_store))
         .route("/v1/webhooks/web-payment", post(web_payment))
@@ -88,6 +94,7 @@ pub fn router_with(state: IngestState) -> Router {
         .route("/v1/ingest/{key}", post(device::ingest_default))
         .route("/v1/ingest/{key}/{format}", post(device::ingest_format))
         .layer(axum::extract::DefaultBodyLimit::max(device::BODY_LIMIT))
+        .layer(axum::Extension(limiter))
         .route("/v1/webhooks/github", post(github_hook))
         .with_state(state);
     let hooks = hooks.merge(device_routes);
@@ -131,6 +138,23 @@ pub fn state_from_env() -> Result<Option<IngestState>, String> {
             .filter(|s| !s.is_empty())
             .map(|s| Arc::new(s.into_bytes())),
     }))
+}
+
+/// Builds the rate limiter of the device endpoint from the environment: `REDIS_URL` (or
+/// `REDIS_URL_FILE`), `INGEST_DEVICE_RATE_PER_MINUTE`, `INGEST_INVALID_KEY_RATE_PER_MINUTE` and
+/// `TRUST_FORWARDED_FOR`. Without Redis the limit is off (fail open).
+pub fn limiter_from_env() -> Result<ratelimit::DeviceLimiter, String> {
+    let lookup = |n: &str| std::env::var(n).ok();
+    let config = ratelimit::IngestRateConfig::from_lookup(lookup)?;
+    let url = common::config::secret_from_lookup(lookup, "REDIS_URL", "REDIS_URL_FILE")
+        .map_err(|e| e.to_string())?;
+    let Some(url) = url else {
+        tracing::warn!("REDIS_URL not set; the device rate limit is off");
+        return Ok(ratelimit::DeviceLimiter::disabled());
+    };
+    let redis = common::redis_client::Redis::connect_lazy(&url)
+        .map_err(|e| format!("invalid REDIS_URL: {e}"))?;
+    Ok(ratelimit::DeviceLimiter::redis(redis, config))
 }
 
 /// Maps the value of `APPLE_ENVIRONMENT` to `Production` or `Sandbox`. Empty or missing gives

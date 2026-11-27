@@ -95,6 +95,34 @@ impl Redis {
         }
     }
 
+    /// Adds one to the counter `key` and sets its expiry to `ttl_secs` on the first add.
+    /// `None` when Redis is unavailable.
+    pub async fn incr_expire(&self, key: String, ttl_secs: u64) -> Option<i64> {
+        const SCRIPT: &str = "local c = redis.call('INCR', KEYS[1]) \
+            if c == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end \
+            return c";
+        self.run(|mut c| async move {
+            redis::Script::new(SCRIPT)
+                .key(key)
+                .arg(ttl_secs)
+                .invoke_async::<i64>(&mut c)
+                .await
+        })
+        .await
+    }
+
+    /// Value of the counter `key` (0 when it does not exist). `None` when Redis is unavailable.
+    pub async fn get_count(&self, key: String) -> Option<i64> {
+        self.run(|mut c| async move {
+            redis::cmd("GET")
+                .arg(key)
+                .query_async::<Option<i64>>(&mut c)
+                .await
+        })
+        .await
+        .map(Option::unwrap_or_default)
+    }
+
     /// `PING`; `false` when unavailable or not configured.
     pub async fn ping(&self) -> bool {
         self.run(|mut c| async move { redis::cmd("PING").query_async::<String>(&mut c).await })
