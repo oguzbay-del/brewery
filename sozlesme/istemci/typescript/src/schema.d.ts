@@ -4,6 +4,80 @@
  */
 
 export interface paths {
+    "/.well-known/oauth-authorization-server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** `GET /.well-known/oauth-authorization-server` (RFC 8414). */
+        get: operations["oauth_server_metadata"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/.well-known/oauth-protected-resource/mcp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * `GET /.well-known/oauth-protected-resource/mcp` (RFC 9728). Write scopes are requested when
+         *     needed, so the document lists the read scopes.
+         */
+        get: operations["oauth_resource_metadata"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/.well-known/oauth-protected-resource/v1": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** `GET /.well-known/oauth-protected-resource/v1` (RFC 9728), the open API. */
+        get: operations["oauth_api_resource_metadata"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/authorize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * `GET /authorize`: validates the request, stores it and sends the browser to the consent
+         *     screen. Only the code flow with PKCE `S256` exists.
+         */
+        get: operations["oauth_authorize"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -32,6 +106,60 @@ export interface paths {
         get: operations["health_ready"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * `POST /register` (RFC 7591) for clients that cannot use a metadata document. Only public
+         *     clients register; registration gives no access by itself.
+         */
+        post: operations["oauth_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** `POST /revoke` (RFC 7009). The answer is `200` for any token, known or not. */
+        post: operations["oauth_revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** `POST /token`: authorization code exchange and refresh with rotation. */
+        post: operations["oauth_token"];
         delete?: never;
         options?: never;
         head?: never;
@@ -211,6 +339,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/connected-apps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** `GET /v1/me/connected-apps`. */
+        get: operations["connected_app_list"];
+        put?: never;
+        post?: never;
+        /** `DELETE /v1/me/connected-apps`: remove every connection of the caller. */
+        delete: operations["connected_app_clear"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/connected-apps/{grant_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** `DELETE /v1/me/connected-apps/{grant_id}`. */
+        delete: operations["connected_app_revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/me/deletion": {
         parameters: {
             query?: never;
@@ -260,6 +423,40 @@ export interface paths {
         post?: never;
         /** Removes a sign-in method. The last one stays; a sign-in in the last 10 minutes is needed. */
         delete: operations["me_identities_unlink"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/oauth/requests/{request}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** `GET /v1/me/oauth/requests/{request}`. */
+        get: operations["oauth_request_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/oauth/requests/{request}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** `POST /v1/me/oauth/requests/{request}/decision`. */
+        post: operations["oauth_request_decide"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1607,6 +1804,27 @@ export interface paths {
         put?: never;
         /** Writes the values of a history row back (a new change with its own history row) */
         post: operations["mash_profiles_restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/workspaces/{workspace_id}/mcp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** `GET /v1/workspaces/{ws}/mcp`. */
+        get: operations["workspace_mcp_get"];
+        /**
+         * `PUT /v1/workspaces/{ws}/mcp`: an administrator of a Business workspace turns MCP on or off.
+         *     Off closes every MCP grant of the workspace; on does not bring them back.
+         */
+        put: operations["workspace_mcp_set"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3852,6 +4070,106 @@ export interface components {
             /** @description Lowest supported web build, or `null`. */
             min_web_version?: string | null;
         };
+        /** @description A client of the caller's account with its grant. */
+        ConnectedApp: {
+            /** @description The `client_id` text. */
+            client_id: string;
+            /** @description Name of the client. */
+            client_name: string;
+            /**
+             * Format: date-time
+             * @description When the user gave consent.
+             */
+            created_at: string;
+            /**
+             * Format: uuid
+             * @description Grant id (use it to remove the connection).
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description Last use of a token (written at most once a minute).
+             */
+            last_used_at?: string | null;
+            /** @description Logo address. */
+            logo_uri?: string | null;
+            /** @description The resource: the MCP address or the open API address. */
+            resource: string;
+            /** @description Granted scopes. */
+            scopes: string[];
+            /**
+             * Format: uuid
+             * @description Workspace of the grant.
+             */
+            workspace_id: string;
+            /** @description Name of that workspace. */
+            workspace_name: string;
+        };
+        /** @description The list of connected apps. */
+        ConnectedApps: {
+            /** @description Active grants of the caller. */
+            items: components["schemas"]["ConnectedApp"][];
+        };
+        /**
+         * @description The client as the consent screen shows it. Every client is "unverified" in the first
+         *     release (ADR-0015 rule 8.2).
+         */
+        ConsentClient: {
+            /** @description The `client_id` text. */
+            client_id: string;
+            /** @description Host of the `client_id` address (empty for a registered client). */
+            client_id_host: string;
+            /** @description Name from the client document. */
+            client_name: string;
+            /** @description Client home page. */
+            client_uri?: string | null;
+            /** @description The redirect address is on this computer (extra warning). */
+            localhost_redirect: boolean;
+            /** @description Logo address. */
+            logo_uri?: string | null;
+            /** @description Host of the redirect address. */
+            redirect_host: string;
+            /** @description Always `false` in the first release. */
+            verified: boolean;
+        };
+        /** @description An authorization request, for the consent screen. */
+        ConsentRequestView: {
+            /** @description The client. */
+            client: components["schemas"]["ConsentClient"];
+            /** @description Requested scopes. */
+            requested_scopes: components["schemas"]["ConsentScope"][];
+            /** @description The resource (`api` or `mcp` address). */
+            resource: string;
+            /** @description Workspaces of the user. */
+            workspaces: components["schemas"]["ConsentWorkspace"][];
+        };
+        /** @description A requested scope. */
+        ConsentScope: {
+            /** @description The scope. */
+            scope: string;
+            /** @description The scope writes records. */
+            write: boolean;
+        };
+        /** @description A workspace the user can pick. */
+        ConsentWorkspace: {
+            /** @description Requested scopes that the role of the user allows. */
+            allowed_scopes: string[];
+            /** @description The workspace can take this grant. */
+            eligible: boolean;
+            /** @description Scopes the client already has here (the screen shows only the new ones). */
+            granted_scopes: string[];
+            /**
+             * Format: uuid
+             * @description Workspace id.
+             */
+            id: string;
+            /** @description Why not: `business_only`, `plan_required` or `mcp_disabled`. */
+            ineligible_reason?: string | null;
+            /** @description `home` or `business`. */
+            mode: string;
+            /** @description Name. */
+            name: string;
+        };
         /** @description A reusable container (keg, cask, bottle crate and so on) with its current state. */
         Container: {
             /**
@@ -4055,6 +4373,23 @@ export interface components {
         CreatedContainers: {
             /** @description The new containers in the order of the request. */
             items: components["schemas"]["CreatedContainer"][];
+        };
+        /** @description Body of the decision. */
+        Decision: {
+            /** @description `approve` or `deny`. */
+            decision: string;
+            /** @description Scopes to give; they may be fewer than requested. All requested scopes when absent. */
+            scopes?: string[] | null;
+            /**
+             * Format: uuid
+             * @description The one workspace (required for `approve`).
+             */
+            workspace_id?: string | null;
+        };
+        /** @description Where the screen sends the browser next. */
+        DecisionResult: {
+            /** @description The redirect address of the client with `code` (or `error`), `state` and `iss`. */
+            redirect_to: string;
         };
         /** @description The answer of a batch deduction. */
         DeductionResult: {
@@ -5157,6 +5492,21 @@ export interface components {
             temp_c: number;
             /** Format: double */
             time_min: number;
+        };
+        /** @description The MCP switch of a workspace. */
+        McpSwitch: {
+            /** @description MCP is on for the workspace. */
+            enabled: boolean;
+            /**
+             * Format: int64
+             * @description Grants closed by this change (only on a switch to off).
+             */
+            revoked_grants: number;
+        };
+        /** @description Body of `PUT /v1/workspaces/{ws}/mcp`. */
+        McpSwitchBody: {
+            /** @description New state. */
+            enabled: boolean;
         };
         /** @description A measurement. */
         Measurement: {
@@ -8782,6 +9132,215 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    oauth_server_metadata: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Authorization server metadata (RFC 8414) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "authorization_endpoint": "https://auth.gristora.com/authorize",
+                     *       "code_challenge_methods_supported": [
+                     *         "S256"
+                     *       ],
+                     *       "issuer": "https://auth.gristora.com",
+                     *       "token_endpoint": "https://auth.gristora.com/token"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_resource_metadata: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Protected resource metadata of MCP (RFC 9728) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "authorization_servers": [
+                     *         "https://auth.gristora.com"
+                     *       ],
+                     *       "bearer_methods_supported": [
+                     *         "header"
+                     *       ],
+                     *       "resource": "https://api.gristora.com/mcp",
+                     *       "scopes_supported": [
+                     *         "recipes:read"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_api_resource_metadata: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Protected resource metadata of the open API (RFC 9728) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "authorization_servers": [
+                     *         "https://auth.gristora.com"
+                     *       ],
+                     *       "bearer_methods_supported": [
+                     *         "header"
+                     *       ],
+                     *       "resource": "https://api.gristora.com/v1",
+                     *       "scopes_supported": [
+                     *         "recipes:read"
+                     *       ]
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_authorize: {
+        parameters: {
+            query: {
+                /** @description `code` */
+                response_type: string;
+                /** @description HTTPS address of the client metadata document, or a registered id */
+                client_id: string;
+                /** @description Exact registered redirect address */
+                redirect_uri: string;
+                /** @description Required */
+                state: string;
+                /** @description PKCE S256 challenge */
+                code_challenge: string;
+                /** @description `S256` */
+                code_challenge_method: string;
+                /** @description MCP or open API address (RFC 8707) */
+                resource: string;
+                /** @description Space-separated scopes */
+                scope?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Redirect to the consent page, or to the client with an error */
+            302: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example  */
+                    "text/plain": string;
+                };
+            };
+            /** @description Error about the client or redirect address */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "invalid_request",
+                     *       "error_description": "redirect_uri is not registered"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     health_check: {
         parameters: {
             query?: never;
@@ -8841,6 +9400,277 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["ReadyResponse"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Client metadata (RFC 7591); public clients only */
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Registered client */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "client_id": "dcr_0192f1c07a3b7000800000000000000a",
+                     *       "client_id_issued_at": 1795000000,
+                     *       "client_name": "Agent",
+                     *       "grant_types": [
+                     *         "authorization_code",
+                     *         "refresh_token"
+                     *       ],
+                     *       "redirect_uris": [
+                     *         "https://agent.example/cb"
+                     *       ],
+                     *       "response_types": [
+                     *         "code"
+                     *       ],
+                     *       "token_endpoint_auth_method": "none"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Invalid client metadata */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "invalid_client_metadata",
+                     *       "error_description": "redirect_uris"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description token and client_id (RFC 7009) */
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Revoked, or the token was not known */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example  */
+                    "text/plain": string;
+                };
+            };
+            /** @description OAuth error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "invalid_request",
+                     *       "error_description": "token"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Unknown client */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "invalid_client",
+                     *       "error_description": "unknown client"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_token: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description authorization_code or refresh_token grant */
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Tokens */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "access_token": "gso_at_abc",
+                     *       "expires_in": 3600,
+                     *       "refresh_token": "gso_rt_abc",
+                     *       "scope": "recipes:read",
+                     *       "token_type": "Bearer"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description OAuth error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "invalid_grant",
+                     *       "error_description": "the code was used before"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Unknown client */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "error": "invalid_client",
+                     *       "error_description": "unknown client"
+                     *     }
+                     */
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Internal error */
@@ -10014,6 +10844,226 @@ export interface operations {
             };
         };
     };
+    connected_app_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active grants of the caller */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "client_id": "https://agent.example/oauth/client.json",
+                     *           "client_name": "Example Agent",
+                     *           "created_at": "2026-11-27T10:00:00Z",
+                     *           "id": "0192f1c07a3b7000800000000000000a",
+                     *           "last_used_at": null,
+                     *           "logo_uri": null,
+                     *           "resource": "https://api.gristora.com/mcp",
+                     *           "scopes": [
+                     *             "recipes:read"
+                     *           ],
+                     *           "workspace_id": "0192f1c07a3b7000800000000000000b",
+                     *           "workspace_name": "Home"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ConnectedApps"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    connected_app_clear: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Every connection is removed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    connected_app_revoke: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Grant id */
+                grant_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The connection is removed; its tokens stop working */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     account_deletion_get: {
         parameters: {
             query?: never;
@@ -10592,6 +11642,198 @@ export interface operations {
             };
             /** @description Upgrade required */
             426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_request_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Short-lived request id from the consent address */
+                request: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The request for the consent screen */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "client": {
+                     *         "client_id": "https://agent.example/oauth/client.json",
+                     *         "client_id_host": "agent.example",
+                     *         "client_name": "Example Agent",
+                     *         "client_uri": null,
+                     *         "localhost_redirect": false,
+                     *         "logo_uri": null,
+                     *         "redirect_host": "agent.example",
+                     *         "verified": false
+                     *       },
+                     *       "requested_scopes": [
+                     *         {
+                     *           "scope": "recipes:read",
+                     *           "write": false
+                     *         }
+                     *       ],
+                     *       "resource": "https://api.gristora.com/mcp",
+                     *       "workspaces": [
+                     *         {
+                     *           "allowed_scopes": [
+                     *             "recipes:read"
+                     *           ],
+                     *           "eligible": true,
+                     *           "granted_scopes": [],
+                     *           "id": "0192f1c07a3b7000800000000000000a",
+                     *           "ineligible_reason": null,
+                     *           "mode": "home",
+                     *           "name": "Home"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ConsentRequestView"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    oauth_request_decide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Request id from the consent address */
+                request: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Decision"];
+            };
+        };
+        responses: {
+            /** @description Redirect address for the browser */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "redirect_to": "https://agent.example/cb?code=abc&state=xyz&iss=https%3A%2F%2Fauth.gristora.com"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DecisionResult"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Subscription required */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -25817,6 +27059,162 @@ export interface operations {
             };
             /** @description Upgrade required */
             426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    workspace_mcp_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace id */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description State of the MCP switch */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "enabled": true,
+                     *       "revoked_grants": 0
+                     *     }
+                     */
+                    "application/json": components["schemas"]["McpSwitch"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    workspace_mcp_set: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace id */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["McpSwitchBody"];
+            };
+        };
+        responses: {
+            /** @description New state of the switch */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "enabled": false,
+                     *       "revoked_grants": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["McpSwitch"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

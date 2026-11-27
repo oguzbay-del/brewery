@@ -77,6 +77,32 @@ pub async fn set_actor_kind(tx: &mut PgConnection, kind: ActorKind) -> Result<()
     set_local(tx, "app.actor_kind", kind.as_str()).await
 }
 
+/// Sets the audit channel of the current transaction: `via` (`app`, `mcp`, `api`) and, for an
+/// OAuth call, the client row, the grant and the scope of the call. [`crate::append_audit`] copies
+/// them into each audit row of the transaction (ADR-0015 rule 5.2).
+pub async fn set_audit_channel(
+    tx: &mut PgConnection,
+    via: &str,
+    oauth_client_id: Option<Uuid>,
+    oauth_grant_id: Option<Uuid>,
+    oauth_scope: Option<&str>,
+) -> Result<()> {
+    set_local(tx, "app.audit_via", via).await?;
+    set_local(
+        tx,
+        "app.oauth_client_id",
+        &oauth_client_id.map(|u| u.to_string()).unwrap_or_default(),
+    )
+    .await?;
+    set_local(
+        tx,
+        "app.oauth_grant_id",
+        &oauth_grant_id.map(|u| u.to_string()).unwrap_or_default(),
+    )
+    .await?;
+    set_local(tx, "app.oauth_scope", oauth_scope.unwrap_or_default()).await
+}
+
 /// Sets `app.staff_id` for the current transaction. The ID must come from the authenticated
 /// request context, never from a caller parameter. `support_find_workspace` reads it.
 pub async fn set_staff_id(tx: &mut PgConnection, staff_id: Uuid) -> Result<()> {

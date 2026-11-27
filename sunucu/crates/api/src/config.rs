@@ -51,6 +51,8 @@ pub struct ApiConfig {
     pub storage: Option<storage::S3Config>,
     /// Sign-in settings (T2.11).
     pub auth: crate::auth::AuthConfig,
+    /// OAuth authorization server settings (M2).
+    pub oauth: crate::oauth::OAuthConfig,
 }
 
 fn parse_u32(
@@ -128,6 +130,8 @@ impl ApiConfig {
             name: "S3_ENDPOINT",
             reason: e.to_string(),
         })?;
+        let auth = crate::auth::AuthConfig::from_lookup(&lookup)?;
+        let oauth = crate::oauth::OAuthConfig::from_lookup(&lookup, &auth.web_base_url);
         Ok(Self {
             service,
             database_url,
@@ -135,7 +139,8 @@ impl ApiConfig {
             min_versions,
             rate,
             storage,
-            auth: crate::auth::AuthConfig::from_lookup(&lookup)?,
+            auth,
+            oauth,
         })
     }
 }

@@ -185,6 +185,12 @@ impl crate::Authenticator for AuthServices {
             if token.len() > 256 {
                 return Err(unauthenticated());
             }
+            if matches!(Self::token_of(headers)?, Some((_, false)))
+                && (crate::oauth::verify::is_access_token(&token)
+                    || token.starts_with(crate::oauth::REFRESH_PREFIX))
+            {
+                return crate::oauth::verify::authenticate(&self.db, &token).await;
+            }
             let hash = tokens::token_hash(&token);
             let record = self
                 .sessions
@@ -204,6 +210,7 @@ impl crate::Authenticator for AuthServices {
                 } else {
                     ActorKind::User
                 },
+                oauth: None,
             })
         })
     }

@@ -254,6 +254,9 @@ pub async fn account_deletion_request(
     if !already_pending {
         append_account_audit(&mut tx, user_id, &request, "pending").await?;
     }
+    // OAuth connections end with the account, in the same transaction as the request
+    // (ADR-0015 rule 2.7).
+    crate::oauth::apps::revoke_all_in_tx(&mut tx, &ctx, "account_deletion").await?;
     tx.commit().await?;
 
     // This also removes the Redis session-cache entries.

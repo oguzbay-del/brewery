@@ -39,6 +39,9 @@ pub struct Identity {
     pub session_id: Option<Uuid>,
     /// Who acts (`user`, `device`, ...).
     pub actor_kind: ActorKind,
+    /// Set when an OAuth access token authenticated the call (ADR-0015). Such a call has no
+    /// session and never counts as a second step.
+    pub oauth: Option<crate::oauth::OAuthBinding>,
 }
 
 /// A member's effective permissions inside one workspace.
@@ -144,7 +147,19 @@ impl RequestContext {
 
     /// Opens the request transaction with the context applied.
     pub async fn begin(&self, pool: &PgPool) -> ApiResult<Transaction<'static, Postgres>> {
-        Ok(db::begin(pool, &self.db_context()).await?)
+        let mut tx = db::begin(pool, &self.db_context()).await?;
+        // Audit rows of an OAuth call carry the channel, client, grant and scope (ADR-0015).
+        if let Some(binding) = &self.identity.oauth {
+            db::set_audit_channel(
+                &mut tx,
+                binding.via(),
+                Some(binding.client_pk),
+                Some(binding.grant_id),
+                binding.call_scope.as_deref(),
+            )
+            .await?;
+        }
+        Ok(tx)
     }
 }
 
@@ -184,6 +199,12 @@ async fn resolve(
     let workspace_id = workspace_in_path(path)?;
     let identity = state.auth.authenticate(headers).await?;
     state.auth.check_csrf(method, headers, &identity).await?;
+    let mut identity = identity;
+    if let Some(binding) = &mut identity.oauth {
+        let scope =
+            crate::oauth::verify::check_request(state, method, path, workspace_id, binding)?;
+        binding.call_scope = Some(scope.to_owned());
+    }
     let membership = match workspace_id {
         Some(ws) => state
             .auth
@@ -191,6 +212,13 @@ async fn resolve(
             .await?
             .ok_or_else(|| ApiError::new(ErrorCode::NotFound))?,
         None => Membership::default(),
+    };
+    let membership = match &identity.oauth {
+        Some(binding) => {
+            crate::oauth::verify::gate(state, method, binding).await?;
+            crate::oauth::scopes::narrow(membership, &binding.scopes)
+        }
+        None => membership,
     };
     state
         .rate

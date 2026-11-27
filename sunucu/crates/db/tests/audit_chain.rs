@@ -1,6 +1,10 @@
 //! Audit log hash chain (T2.14): append API, verification, tamper detection, concurrency.
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::items_after_statements
+)]
 
 mod common;
 
@@ -343,5 +347,108 @@ fn canonical_form_is_stable() {
     assert!(
         text.contains(r#""new_value":{"a":[true,null],"b":1}"#),
         "{text}"
+    );
+}
+
+/// Chain version 2 (ADR-0015 rule 5.3): the channel fields are part of the hash, and rows of
+/// version 1 still verify with their old form.
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn channel_fields_are_in_the_hash_and_old_rows_still_verify(pool: PgPool) {
+    use db::{CanonicalFields, canonical_row, chain_hash};
+    let app = pool_as(&pool, Role::Api).await;
+    let ws = id(1);
+    create_workspace(&app, ws, "A").await.unwrap();
+
+    // A row of version 1, as written before the migration (no channel fields in the hash).
+    let row_id = id(900);
+    let created_at = chrono::DateTime::from_timestamp_micros(1_700_000_000_000_000).unwrap();
+    let canonical = canonical_row(&CanonicalFields {
+        id: row_id,
+        workspace_id: ws,
+        seq: 1,
+        created_at,
+        actor_kind: "user",
+        actor_id: None,
+        action: "role.update",
+        record_kind: "role",
+        record_id: None,
+        previous_value: None,
+        new_value: None,
+        reason: None,
+    })
+    .unwrap();
+    let hash = chain_hash(&GENESIS_HASH, &canonical);
+    sqlx::query(
+        "INSERT INTO audit_log (id, workspace_id, seq, created_at, actor_kind, action, record_kind,
+                                prev_hash, hash)
+         VALUES ($1, $2, 1, $3, 'user', 'role.update', 'role', $4, $5)",
+    )
+    .bind(row_id)
+    .bind(ws)
+    .bind(created_at)
+    .bind(GENESIS_HASH.as_slice())
+    .bind(hash.as_slice())
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO audit_heads (workspace_id, last_seq, last_hash) VALUES ($1, 1, $2)
+         ON CONFLICT (workspace_id) DO UPDATE SET last_seq = 1, last_hash = $2",
+    )
+    .bind(ws)
+    .bind(hash.as_slice())
+    .execute(&pool)
+    .await
+    .unwrap();
+    assert!(verify(&pool, ws).await.is_ok());
+
+    // Rows of version 2: one from the app, one from an OAuth call.
+    let (client, grant) = (id(701), id(702));
+    for oauth in [false, true] {
+        let mut tx = app.begin().await.unwrap();
+        set_context(&mut tx, Some(ws), None).await.unwrap();
+        if oauth {
+            db::set_audit_channel(
+                &mut tx,
+                "api",
+                Some(client),
+                Some(grant),
+                Some("recipes:draft"),
+            )
+            .await
+            .unwrap();
+        }
+        append_audit(&mut tx, ws, &entry(AuditEvent::RoleUpdate, 2))
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+    }
+    type Row = (i16, String, Option<Uuid>, Option<Uuid>, Option<String>);
+    let rows: Vec<Row> = sqlx::query_as(
+        "SELECT chain_version, via, oauth_client_id, oauth_grant_id, oauth_scope
+         FROM audit_log ORDER BY seq",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(rows[0], (1, "app".into(), None, None, None));
+    assert_eq!(rows[1], (2, "app".into(), None, None, None));
+    assert_eq!(
+        rows[2],
+        (
+            2,
+            "api".into(),
+            Some(client),
+            Some(grant),
+            Some("recipes:draft".into())
+        )
+    );
+    assert!(verify(&pool, ws).await.is_ok());
+
+    // Changing any channel field breaks the chain.
+    tamper(&pool, "UPDATE audit_log SET via = 'mcp' WHERE seq = 3").await;
+    assert_eq!(
+        verify(&pool, ws).await.broken,
+        Some(ChainBreak::HashMismatch { seq: 3 })
     );
 }
