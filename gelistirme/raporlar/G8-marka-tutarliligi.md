@@ -43,4 +43,19 @@ Kaynak: [yayındaki özellik sayfalarının veri dosyası](../../marketing-site/
 | connected-devices | T2.25 cihaz kaydı, parti eşleme, anahtar yenileme; T2.24 uyarılar | Belirli marka ve protokol bağlantıları doğrulanmadı; salt okunur ve geleceğe dönük ifadeler korunmalı. |
 | imports-exports-tools | T2.26 [import_export.rs](../../sunucu/crates/api/src/import_export.rs): üç doğrulanmış aktarım biçimi, aktarımı uygulama, dışa aktarma işi ve indirme bağlantısı | BSMX açık; diğer araç ve biçimler tek tek doğrulanmalı. |
 
+| platform-security-data | T2.11 Apple/Google/e-posta oturumu, T2.12 passkey ve ortak cihaz, T2.13 izinler, T2.16 motor, T2.27 arama, T2.28 [subscription.rs](../../sunucu/crates/api/src/subscription.rs), T2.29–30 destek: [API envanteri](../../sunucu/crates/api/CLAUDE.md) | Tam özellikli iPad/web, offline kuyruk, Siri, widget, yedekleme ve tüm dışa aktarma/silme akışları kullanıcı uçtan uca testleriyle doğrulanmalı. Platform kapsam dışı listesi mevcut özellik iddiası değildir. |
+| analytics-reports | T2.22 [batches.rs](../../sunucu/crates/api/src/batches.rs) plan/gerçek ölçüm kaydı; T2.23 [stock.rs](../../sunucu/crates/api/src/stock.rs) maliyet alanları; K2 [containers.rs](../../sunucu/crates/api/src/containers.rs) kap, dolum ve geri çağırma | Trend, verim, litre maliyeti, tank kullanım ve üretim KPI'ları için doğrudan rapor/ekran kanıtı henüz yok. |
+
+### 3.2 Doğrudan kaynak kodundan doğrulanan sınırlar
+
+| Pazarlama iddiası | Kod bulgusu | Öneri |
+|---|---|---|
+| Brew day: gerçek OG, IBU ve ABV yeniden hesaplanır | [batches.rs](../../sunucu/crates/api/src/batches.rs) başındaki TODO: gerçek ABV şu an ölçümden gelir; OG/FG ile motor hesabı bekliyor. | Otomatik gerçek ABV hesabını mevcut özellik olarak sunma. OG ve IBU için ayrıca kanıt gerekli. |
+| Fermentasyon: paketlemeye hazır, paketlendi ve kapandı ayrı aşamalar | Aynı dosyada STAGES: planned, brewing, fermenting, conditioning, packaging, completed, cancelled. | Pazarlama aşamalarını gerçek geçişlerle hizala; UI eşlemesini ayrıca kontrol et. |
+| Stok: tüm maya stok birimleri otomatik düşülür | [stock.rs](../../sunucu/crates/api/src/stock.rs) TODO: kg/L desteklenir; paket adedi için gerçek parti kaydında miktar gerekli. | Adet bazında otomatik düşüm iddiasını doğrulamadan kullanma. |
+| Paketleme: şişe, kutu, keg, cask ve lot izleme | [containers.rs](../../sunucu/crates/api/src/containers.rs) dört paket türü, dolum lotu, durum, QR, etiket ve geri çağırma API'sini doğrular. PDF etiket metni ASCII ile sınırlı; SSE istemci işi açık. | Özelliği bu kapsamla sınırla; tüm dillerde etiket ve canlı senkronizasyon vaat etme. |
+| Abonelik yönetimi | [subscription.rs](../../sunucu/crates/api/src/subscription.rs) erişim kaynağı, plan, koltuk, dönem ve deneme sonunu döndürür; ücretli yazma engeli var, okuma ve export açık kalır. | API ile ödeme ekranını ayrı değerlendir; #427 henüz açık. |
+
+16 özellik grubunun tamamı ilk eşlemede yer aldı. Her alt iddia için ayrıntılı kanıt ve EN/TR rota karşılaştırması halen açık.
+
 **Öncelikli metin riski:** hesap motoru, reçete ve üretim sayfalarındaki kesin şimdiki zaman ifadeleri, bir API modülünün varlığıyla tüm alt özelliklerin çalıştığı izlenimini verebilir. Mevcut işlevi yalnız doğrulanan maddeye bağla; doğrulanmayan iddiaları yayın kapsamından çıkar. Bu rapor henüz tüm özellik maddelerini kapsamıyor.
