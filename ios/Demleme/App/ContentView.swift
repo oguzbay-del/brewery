@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     let store: ModulesStore
     let scanStore: ScanStore
+    let batchStore: BatchScanStore
     @State private var selection: AppTab = .home
 
     /// Tabs whose module is off are not shown. While the state loads or when it cannot be
@@ -38,7 +39,7 @@ struct ContentView: View {
                 .foregroundStyle(DemlemeColor.label)
                 .accessibilityIdentifier("app.title")
             if store.access(for: "production") != .off {
-                ScanView(store: scanStore)
+                ScanView(store: scanStore, batch: batchStore, modules: store)
             }
         }
     }
@@ -74,6 +75,7 @@ struct ContentView: View {
     let error = APIConfiguration.ConfigurationError.missingBaseURL
     return ContentView(
         store: ModulesStore(service: UnavailableModulesService(error: error)),
-        scanStore: ScanStore(service: UnavailableScanService(error: error))
+        scanStore: ScanStore(service: UnavailableScanService(error: error)),
+        batchStore: BatchScanStore(service: UnavailableScanService(error: error))
     )
 }

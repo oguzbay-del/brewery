@@ -3,30 +3,54 @@ import SwiftUI
 /// The scan screen: camera scan with a manual entry as a fallback, then the card of the code.
 struct ScanView: View {
     let store: ScanStore
+    let batch: BatchScanStore
+    let modules: ModulesStore
     @State private var cameraOn = false
+    @State private var batchMode = false
 
     var body: some View {
-        @Bindable var store = store
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                switch store.phase {
-                case let .card(card):
-                    ScanCardView(card: card)
-                    Button(UiText.text("scan.title")) { reset() }
-                        .accessibilityIdentifier("scan.again")
-                case .resolving:
-                    ProgressView(UiText.text("scan.resolving"))
-                        .accessibilityIdentifier("scan.resolving")
-                case .idle, .failed:
-                    entry(code: $store.manualCode)
-                    if case let .failed(failure) = store.phase {
-                        Text(UiText.text(Self.failureKey(failure)))
-                            .foregroundStyle(DemlemeColor.red)
-                            .accessibilityIdentifier("scan.error")
-                    }
+                if batchMode {
+                    BatchScanView(store: batch, modules: modules)
+                    Button(UiText.text("scan.batch_close")) { batchMode = false }
+                        .accessibilityIdentifier("scan.batch_close")
+                } else {
+                    single
                 }
             }
             .padding()
+        }
+        .task { await store.loadPermissions() }
+    }
+
+    @ViewBuilder
+    private var single: some View {
+        @Bindable var store = store
+        switch store.phase {
+        case let .card(card):
+            ScanCardView(
+                card: card,
+                store: store,
+                writesBlocked: modules.access(for: "production").blocksWrites,
+                onModuleError: modules.noteWriteError
+            )
+            Button(UiText.text("scan.title")) { reset() }
+                .accessibilityIdentifier("scan.again")
+        case .resolving:
+            ProgressView(UiText.text("scan.resolving"))
+                .accessibilityIdentifier("scan.resolving")
+        case .idle, .failed:
+            entry(code: $store.manualCode)
+            if case let .failed(failure) = store.phase {
+                Text(UiText.text(Self.failureKey(failure)))
+                    .foregroundStyle(DemlemeColor.red)
+                    .accessibilityIdentifier("scan.error")
+            }
+            if store.canBatch {
+                Button(UiText.text("scan.batch_title")) { batchMode = true }
+                    .accessibilityIdentifier("scan.batch_open")
+            }
         }
     }
 
@@ -90,6 +114,13 @@ struct ScanView: View {
 /// The object and only the actions the server lists for the caller.
 struct ScanCardView: View {
     let card: ScanCard
+    let store: ScanStore
+    let writesBlocked: Bool
+    let onModuleError: @MainActor (any Error) -> Void
+    @State private var askStatus = false
+    @State private var askRetire = false
+
+    private var offered: [ScanAction] { card.actions.filter(store.isOffered) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -109,21 +140,79 @@ struct ScanCardView: View {
             }
             Divider()
             Text(UiText.text("scan.actions_title")).font(.headline)
-            if card.actions.isEmpty {
+            if offered.isEmpty {
                 Text(UiText.text("scan.no_actions"))
                     .font(.footnote)
                     .foregroundStyle(DemlemeColor.label2)
                     .accessibilityIdentifier("scan.no_actions")
             }
-            ForEach(card.actions, id: \.rawValue) { action in
-                Label(UiText.text(action.textKey), systemImage: "chevron.right")
+            ForEach(offered, id: \.rawValue) { action in
+                Button(UiText.text(action.textKey)) { start(action) }
+                    .buttonStyle(.bordered)
+                    .disabled(writesBlocked || store.actionState == .running)
                     .accessibilityIdentifier("scan.action." + action.rawValue)
             }
+            if writesBlocked, !offered.isEmpty {
+                Text(UiText.text("modules.read_only_reason", ["module": UiText.moduleName("production")]))
+                    .font(.caption)
+                    .foregroundStyle(DemlemeColor.label2)
+            }
+            actionMessage
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(DemlemeColor.card, in: RoundedRectangle(cornerRadius: 12))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("scan.card")
+        .confirmationDialog(UiText.text("scan.new_status"), isPresented: $askStatus, titleVisibility: .visible) {
+            ForEach(ContainerStatusChoice.allCases) { choice in
+                Button(UiText.text(choice.textKey)) { run(choice.rawValue) }
+                    .accessibilityIdentifier("scan.status." + choice.rawValue)
+            }
+            Button(UiText.text("scan.cancel"), role: .cancel) {}
+        }
+        .confirmationDialog(UiText.text("scan.retire_confirm"), isPresented: $askRetire, titleVisibility: .visible) {
+            Button(UiText.text("scan.action_retire"), role: .destructive) { run("retired") }
+                .accessibilityIdentifier("scan.retire_confirm")
+            Button(UiText.text("scan.cancel"), role: .cancel) {}
+        }
+    }
+
+    @ViewBuilder
+    private var actionMessage: some View {
+        switch store.actionState {
+        case .idle:
+            EmptyView()
+        case .running:
+            ProgressView()
+        case .done:
+            Text(UiText.text("scan.action_done"))
+                .foregroundStyle(DemlemeColor.green)
+                .accessibilityIdentifier("scan.action_done")
+        case let .failed(failure):
+            Text(UiText.text(Self.failureKey(failure)))
+                .foregroundStyle(DemlemeColor.red)
+                .accessibilityIdentifier("scan.action_error")
+        }
+    }
+
+    private func start(_ action: ScanAction) {
+        switch action {
+        case .changeStatus: askStatus = true
+        case .retire: askRetire = true
+        case .view, .fill, .recall, .printLabel: break
+        }
+    }
+
+    private func run(_ status: String) {
+        Task { await store.setStatus(status, note: nil, onModuleError: onModuleError) }
+    }
+
+    static func failureKey(_ failure: ScanActionFailure) -> String {
+        switch failure {
+        case .forbidden: "scan.error_forbidden"
+        case .conflict: "scan.action_conflict"
+        case .generic: "scan.action_error"
+        }
     }
 }

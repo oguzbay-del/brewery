@@ -124,9 +124,25 @@ struct ScanCardTests {
 
 private struct StubScan: ScanService {
     let result: Result<ScanCard, APIError>
+    var statusError: APIError?
+    var granted: Set<String> = ["container.status"]
 
     func resolve(code _: String) async throws -> ScanCard {
         try result.get()
+    }
+
+    func setStatus(code _: String, status _: String, note _: String?) async throws {
+        if let statusError { throw statusError }
+    }
+
+    func setStatusBatch(codes: [String], status _: String, note _: String?) async throws -> BatchOutcome {
+        if let statusError { throw statusError }
+        let items = codes.enumerated().map { BatchItem(index: $0, code: $1, ok: true, unchanged: false, error: nil) }
+        return BatchOutcome(changed: items.count, failed: 0, items: items)
+    }
+
+    func permissions() async throws -> Set<String> {
+        granted
     }
 }
 
@@ -158,5 +174,112 @@ struct ScanStoreTests {
         let broken = ScanStore(service: StubScan(result: .failure(.unexpected(status: 500))))
         await broken.resolve("X")
         #expect(broken.phase == .failed(.generic))
+    }
+}
+
+private let batchJSON = """
+{"changed":1,"failed":2,"results":[{"index":0,"ok":true,"unchanged":false,"container":null,"error":null},\
+{"index":1,"ok":false,"unchanged":false,"container":null,"error":"not_found"},\
+{"index":2,"ok":false,"unchanged":false,"container":null,"error":"container_retired"}]}
+"""
+
+struct ScanActionTests {
+    @Test func batchResultHasOneRowForEachCode() async throws {
+        let transport = ScanTransport(resolution: batchJSON)
+        let service = makeService(transport)
+        let outcome = try await service.setStatusBatch(codes: ["A", "B", "C"], status: "clean", note: nil)
+        #expect(outcome.changed == 1)
+        #expect(outcome.failed == 2)
+        #expect(outcome.items.map(\.code) == ["A", "B", "C"])
+        #expect(outcome.items.map(BatchScanStore.resultKey) == [
+            "scan.batch_result_ok", "scan.batch_error_not_found", "scan.batch_error_container_retired",
+        ])
+        let paths = await transport.paths
+        #expect(paths.last == "/v1/workspaces/0192f1c0-7a3b-7000-8000-00000000000c/scan/status-batch")
+        let bodies = await transport.bodies
+        #expect(bodies.last?.contains("\"clean\"") == true)
+    }
+
+    @Test func unknownBatchErrorHasAGenericText() {
+        let item = BatchItem(index: 0, code: "X", ok: false, unchanged: false, error: "something_new")
+        #expect(BatchScanStore.resultKey(item) == "scan.batch_error_other")
+        let same = BatchItem(index: 0, code: "X", ok: true, unchanged: true, error: nil)
+        #expect(BatchScanStore.resultKey(same) == "scan.batch_result_unchanged")
+    }
+
+    @Test func permissionsComeFromTheSession() async throws {
+        let transport = ScanTransport(resolution: "{}")
+        let permissions = try await makeService(transport).permissions()
+        #expect(permissions == ["container.status", "field.view"])
+    }
+
+    @Test func catalogHasEveryBatchAndStatusText() {
+        let keys = ["scan.batch_result_ok", "scan.batch_result_unchanged", "scan.batch_error_not_found",
+                    "scan.batch_error_not_a_container", "scan.batch_error_container_retired",
+                    "scan.batch_error_other", "scan.action_conflict"]
+            + ContainerStatusChoice.allCases.map(\.textKey)
+        for key in keys {
+            #expect(UiText.text(key, locale: .en) != key)
+            #expect(UiText.text(key, locale: .tr) != key)
+        }
+    }
+}
+
+@MainActor
+struct ScanActionStoreTests {
+    private let card = ScanCard(kind: .container, id: UUID(), label: "K", details: [], actions: [.changeStatus, .fill])
+
+    @Test func writeActionsNeedContainerStatusPermission() async {
+        let store = ScanStore(service: StubScan(result: .success(card), granted: ["field.view"]))
+        await store.loadPermissions()
+        #expect(!store.isOffered(.changeStatus))
+        #expect(!store.canBatch)
+        let allowed = ScanStore(service: StubScan(result: .success(card)))
+        await allowed.loadPermissions()
+        #expect(allowed.isOffered(.changeStatus))
+        #expect(allowed.isOffered(.retire))
+        #expect(!allowed.isOffered(.fill))
+        #expect(allowed.canBatch)
+    }
+
+    @Test func statusChangeReadsTheCardAgain() async {
+        let store = ScanStore(service: StubScan(result: .success(card)))
+        await store.resolve("K")
+        await store.setStatus("clean", note: "  ")
+        #expect(store.actionState == .done)
+        #expect(store.phase == .card(card))
+    }
+
+    @Test func statusErrorsMapToFailures() async {
+        var service = StubScan(result: .success(card))
+        service.statusError = .unexpected(status: 409)
+        let store = ScanStore(service: service)
+        await store.resolve("K")
+        var noticed = false
+        await store.setStatus("out", note: nil) { _ in noticed = true }
+        #expect(store.actionState == .failed(.conflict))
+        #expect(noticed)
+        #expect(ScanStore.actionFailure(APIError.unexpected(status: 403)) == .forbidden)
+        #expect(ScanStore.actionFailure(APIError.unexpected(status: 500)) == .generic)
+    }
+
+    @Test func batchAddsEachCodeOnceAndSubmits() async {
+        let batch = BatchScanStore(service: StubScan(result: .success(card)))
+        batch.add("KEG-1")
+        batch.add(" KEG-1 ")
+        batch.add("")
+        batch.manualCode = "KEG-2"
+        batch.addManualCode()
+        #expect(batch.codes == ["KEG-1", "KEG-2"])
+        await batch.submit()
+        #expect(batch.outcome?.changed == 2)
+        batch.remove("KEG-1")
+        #expect(batch.codes == ["KEG-2"])
+        #expect(batch.outcome == nil)
+    }
+
+    @Test func emptyNoteIsNotSent() {
+        #expect(ScanStore.clean("  \n") == nil)
+        #expect(ScanStore.clean(" late ") == "late")
     }
 }
