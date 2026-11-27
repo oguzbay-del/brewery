@@ -45,18 +45,23 @@ fn params(ca: bool, marker: Option<&[u64]>) -> CertificateParams {
 impl Pki {
     /// A new chain. `markers` adds the Apple marker extensions.
     pub fn new(markers: bool) -> Self {
+        Self::with_markers(markers, markers)
+    }
+
+    /// A new chain with separate control of the leaf and intermediate markers.
+    pub fn with_markers(leaf_marker: bool, intermediate_marker: bool) -> Self {
         let root_key = KeyPair::generate_for(&PKCS_ECDSA_P256_SHA256).unwrap();
         let root_params = params(true, None);
         let root = root_params.self_signed(&root_key).unwrap();
         let root_issuer = Issuer::new(root_params, root_key);
 
         let inter_key = KeyPair::generate_for(&PKCS_ECDSA_P256_SHA256).unwrap();
-        let inter_params = params(true, markers.then_some(OID_INTERMEDIATE));
+        let inter_params = params(true, intermediate_marker.then_some(OID_INTERMEDIATE));
         let inter = inter_params.signed_by(&inter_key, &root_issuer).unwrap();
         let inter_issuer = Issuer::new(inter_params, inter_key);
 
         let leaf_key = KeyPair::generate_for(&PKCS_ECDSA_P256_SHA256).unwrap();
-        let leaf_params = params(false, markers.then_some(OID_LEAF));
+        let leaf_params = params(false, leaf_marker.then_some(OID_LEAF));
         let leaf = leaf_params.signed_by(&leaf_key, &inter_issuer).unwrap();
 
         Self {

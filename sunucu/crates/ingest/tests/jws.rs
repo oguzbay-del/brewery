@@ -52,6 +52,30 @@ fn chain_without_root_entry_is_anchored_by_the_trusted_root() {
 }
 
 #[test]
+fn two_certificate_chain_with_markers_passes() {
+    let pki = Pki::with_markers(true, true);
+    let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
+    let jws = pki.sign_with(&[&pki.leaf_der, &pki.intermediate_der], &json!({"a": 1}));
+    assert!(v.verify(&jws, now()).is_ok());
+}
+
+#[test]
+fn two_certificate_chain_without_intermediate_marker_is_rejected() {
+    let pki = Pki::with_markers(true, false);
+    let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
+    let jws = pki.sign_with(&[&pki.leaf_der, &pki.intermediate_der], &json!({"a": 1}));
+    assert_eq!(
+        v.verify(&jws, now()),
+        Err(JwsError::Chain("intermediate marker extension missing"))
+    );
+    let three = pki.sign(&json!({"a": 1}));
+    assert_eq!(
+        v.verify(&three, now()),
+        Err(JwsError::Chain("intermediate marker extension missing"))
+    );
+}
+
+#[test]
 fn tampered_payload_is_rejected() {
     let pki = Pki::new(true);
     let v = JwsVerifier::with_roots(vec![pki.root_der.clone()], true);
