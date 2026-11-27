@@ -8644,6 +8644,12 @@ export interface components {
             mode: string;
             /** @description Name. */
             name: string;
+            /**
+             * @description Effective workspace-wide permission codes of the caller, sorted. Empty when the
+             *     membership is not active. Permissions limited to one recipe, batch, vessel or area are
+             *     not listed.
+             */
+            permissions: string[];
             /** @description `us` or `uk`. */
             region: string;
             /** @description Membership status (`active` or `disabled`). */
@@ -11188,6 +11194,10 @@ export interface operations {
                      *           "id": "0192f1c0-7a3b-7000-8000-00000000000c",
                      *           "mode": "home",
                      *           "name": "Home brewery",
+                     *           "permissions": [
+                     *             "cost.view",
+                     *             "recipe.edit"
+                     *           ],
                      *           "region": "us",
                      *           "status": "active"
                      *         }
