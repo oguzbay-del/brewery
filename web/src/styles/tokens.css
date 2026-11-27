@@ -91,6 +91,46 @@
   --radius-pill: 999px;
   --shadow-seg: 0 1px 2px rgba(0,0,0,.12);
   --shadow-knob: 0 1px 3px rgba(0,0,0,.25);
+  --tap-min: 44px;
+  --badge-size: 28px;
+  --toggle-width: 44px;
+  --control-height: 44px;
+  --control-height-sm: 32px;
+  --row-regular: 44px;
+  --row-compact: 32px;
+  --row-relaxed: 52px;
+  --icon-sm: 16px;
+  --icon-md: 20px;
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+  --sidebar-min: 220px;
+  --sidebar-ideal: 260px;
+  --sidebar-max: 320px;
+  --inspector-min: 280px;
+  --inspector-ideal: 320px;
+  --inspector-max: 400px;
+  --content-min: 480px;
+  --form-max: 640px;
+  --content-max: 1200px;
+  --bp-sidebar: 740px;
+  --bp-inspector: 1060px;
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-sidebar-overlay: 200;
+  --z-popover: 300;
+  --z-sheet: 400;
+  --z-dialog: 500;
+  --z-toast: 600;
+  --z-skip-link: 700;
+  --motion-fast: 150ms;
+  --motion-base: 250ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
 }
 
 @media (prefers-color-scheme: dark) {

@@ -64,3 +64,42 @@ enum DemlemeColor {
         "hp-a3",
     ]
 }
+
+/// Base values. Scale text-related values with @ScaledMetric at the call site.
+enum DemlemeMetric {
+    static let space1: CGFloat = 4
+    static let space2: CGFloat = 8
+    static let space3: CGFloat = 12
+    static let space4: CGFloat = 16
+    static let space5: CGFloat = 20
+    static let space6: CGFloat = 24
+    static let space8: CGFloat = 32
+    static let radiusXs: CGFloat = 7
+    static let radiusSm: CGFloat = 9
+    static let radiusMd: CGFloat = 12
+    static let radiusLg: CGFloat = 14
+    static let radiusPill: CGFloat = 999
+    static let tapMin: CGFloat = 44
+    static let badgeSize: CGFloat = 28
+    static let toggleWidth: CGFloat = 44
+    static let controlHeight: CGFloat = 44
+    static let controlHeightSm: CGFloat = 32
+    static let rowRegular: CGFloat = 44
+    static let rowCompact: CGFloat = 32
+    static let rowRelaxed: CGFloat = 52
+    static let iconSm: CGFloat = 16
+    static let iconMd: CGFloat = 20
+    static let focusRingWidth: CGFloat = 3
+    static let focusRingOffset: CGFloat = 2
+    static let sidebarMin: CGFloat = 220
+    static let sidebarIdeal: CGFloat = 260
+    static let sidebarMax: CGFloat = 320
+    static let inspectorMin: CGFloat = 280
+    static let inspectorIdeal: CGFloat = 320
+    static let inspectorMax: CGFloat = 400
+    static let contentMin: CGFloat = 480
+    static let formMax: CGFloat = 640
+    static let contentMax: CGFloat = 1200
+    static let bpSidebar: CGFloat = 740
+    static let bpInspector: CGFloat = 1060
+}

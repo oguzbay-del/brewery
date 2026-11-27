@@ -15,6 +15,11 @@ struct TokensTests {
         }
     }
 
+    @Test func metricsAreConsistent() {
+        #expect(DemlemeMetric.tapMin == 44)
+        #expect(DemlemeMetric.sidebarIdeal + DemlemeMetric.contentMin == DemlemeMetric.bpSidebar)
+    }
+
     @Test func coreTokensExist() {
         let required = ["bg", "card", "label", "tint", "tint-fill", "tint-ink"]
         for name in required {
