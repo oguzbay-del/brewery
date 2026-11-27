@@ -5,6 +5,9 @@
 //! print issues a new code for each target. Old codes stay valid unless the request asks to revoke
 //! them. Every change of a container writes one row in the append-only table `container_event`.
 //!
+//! Package types (`package_types`, system rows and workspace rows) are listed and created here
+//! (T2.59, issue #409). A system row has `workspace_id IS NULL` and is read-only.
+//!
 //! Permissions: `field.view` reads, `container.status` changes status and fills,
 //! `container.manage` creates, retires and prints labels. The product module is Production
 //! (`modules::MODULE_KEY_MAP`). Each status change, retire, fill and label print writes one audit
@@ -387,6 +390,60 @@ pub struct LabelBody {
 }
 
 // --- helpers ------------------------------------------------------------------------------
+
+/// A package type (bottle, can, keg or cask size).
+#[derive(Debug, Clone, Serialize, FromRow, ToSchema)]
+pub struct PackageType {
+    /// Identifier.
+    pub id: Uuid,
+    /// `bottle`, `can`, `keg`, `cask`.
+    pub kind: String,
+    /// Name.
+    pub name: String,
+    /// Volume in litres.
+    pub volume_l: f64,
+    /// The package is not reused.
+    pub single_use: bool,
+    /// Material (for example `stainless steel`).
+    pub material: Option<String>,
+    /// Empty weight in kg.
+    pub tare_kg: Option<f64>,
+    /// `true` for a system row (shared by all workspaces, read-only).
+    pub system: bool,
+}
+
+/// The package types of a workspace: system rows first, then by name.
+#[derive(Debug, Serialize, ToSchema)]
+pub struct PackageTypeList {
+    /// The rows.
+    pub items: Vec<PackageType>,
+}
+
+/// Body of a package type create.
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreatePackageType {
+    /// `bottle`, `can`, `keg` or `cask`.
+    pub kind: String,
+    /// Name (1 to 200 characters).
+    pub name: String,
+    /// Volume in litres (more than 0).
+    pub volume_l: f64,
+    /// The package is not reused (default `false`).
+    pub single_use: Option<bool>,
+    /// Material (at most 100 characters).
+    pub material: Option<String>,
+    /// Empty weight in kg (0 or more).
+    pub tare_kg: Option<f64>,
+}
+
+const PACKAGE_TYPE_SQL: &str = "SELECT id, kind, name, volume_l, single_use, material, tare_kg, \
+     (workspace_id IS NULL) AS system FROM package_types";
+
+fn package_type_example() -> Value {
+    json!({"id": "0190b6a0-7c1e-7a52-8d5e-3f2a9c4b1d10", "kind": "keg", "name": "Keg 30 L",
+        "volume_l": 30.0, "single_use": false, "material": "stainless steel", "tare_kg": 9.5,
+        "system": false})
+}
 
 fn container_example() -> Value {
     json!({
@@ -1795,6 +1852,139 @@ pub async fn label_print(
     Ok(response)
 }
 
+/// Lists the system package types and the package types of the workspace.
+#[utoipa::path(
+    get,
+    path = "/v1/workspaces/{workspace_id}/package-types",
+    tag = "containers",
+    operation_id = "package_type_list",
+    params(("workspace_id" = Uuid, Path, description = "Workspace")),
+    responses((status = 200, description = "System rows first, then by name",
+        body = PackageTypeList, example = json!({"items": [package_type_example()]})))
+)]
+pub async fn package_type_list(
+    State(state): State<AppState>,
+    ctx: RequestContext,
+) -> ApiResult<Json<PackageTypeList>> {
+    if !ctx.has_permission(READ_PERMISSION) {
+        ctx.require(MANAGE_PERMISSION)?;
+    }
+    let mut tx = ctx.begin(&state.db).await?;
+    let items: Vec<PackageType> = sqlx::query_as(sqlx::AssertSqlSafe(format!(
+        "{PACKAGE_TYPE_SQL} WHERE deleted_at IS NULL ORDER BY (workspace_id IS NULL) DESC, name, id"
+    )))
+    .fetch_all(&mut *tx)
+    .await?;
+    Ok(Json(PackageTypeList { items }))
+}
+
+/// Creates a package type in the workspace.
+#[utoipa::path(
+    post,
+    path = "/v1/workspaces/{workspace_id}/package-types",
+    tag = "containers",
+    operation_id = "package_type_create",
+    params(
+        ("workspace_id" = Uuid, Path, description = "Workspace"),
+        ("Idempotency-Key" = String, Header, description = "Client generated key (ADR-0008 rule 6)")
+    ),
+    request_body = CreatePackageType,
+    responses((status = 201, description = "The new package type", body = PackageType,
+        example = json!(package_type_example())))
+)]
+pub async fn package_type_create(
+    State(state): State<AppState>,
+    ctx: RequestContext,
+    ApiJson(body): ApiJson<CreatePackageType>,
+) -> ApiResult<Response> {
+    ctx.require(MANAGE_PERMISSION)?;
+    let ws = workspace(&ctx)?;
+    let user = ctx.identity.user_id;
+    let mut issues = Vec::new();
+    if !matches!(body.kind.as_str(), "bottle" | "can" | "keg" | "cask") {
+        issues.push(FieldIssue::new("/kind", "invalid_value"));
+    }
+    if body.name.is_empty() || body.name.chars().count() > 200 {
+        issues.push(FieldIssue::new("/name", "invalid_length"));
+    }
+    if !body.volume_l.is_finite() || body.volume_l <= 0.0 {
+        issues.push(FieldIssue::new("/volume_l", "invalid_value"));
+    }
+    if body
+        .material
+        .as_deref()
+        .is_some_and(|m| m.chars().count() > 100)
+    {
+        issues.push(FieldIssue::new("/material", "invalid_length"));
+    }
+    if body.tare_kg.is_some_and(|t| !t.is_finite() || t < 0.0) {
+        issues.push(FieldIssue::new("/tare_kg", "invalid_value"));
+    }
+    if !issues.is_empty() {
+        return Err(ApiError::validation(issues));
+    }
+    let id = Uuid::now_v7();
+    let mut tx = ctx.begin(&state.db).await?;
+    sqlx::query(
+        "INSERT INTO package_types (id, workspace_id, kind, name, volume_l, single_use, material, \
+             tare_kg, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+    )
+    .bind(id)
+    .bind(ws)
+    .bind(&body.kind)
+    .bind(&body.name)
+    .bind(body.volume_l)
+    .bind(body.single_use.unwrap_or(false))
+    .bind(&body.material)
+    .bind(body.tare_kg)
+    .bind(user)
+    .execute(&mut *tx)
+    .await
+    .map_err(constraint_error)?;
+    let row: PackageType = sqlx::query_as(sqlx::AssertSqlSafe(format!(
+        "{PACKAGE_TYPE_SQL} WHERE id = $1"
+    )))
+    .bind(id)
+    .fetch_one(&mut *tx)
+    .await?;
+    let new = json!({"kind": row.kind, "volume_l": row.volume_l, "single_use": row.single_use});
+    db::append_audit(
+        &mut tx,
+        ws,
+        &NewAuditEntry {
+            actor_kind: ctx.identity.actor_kind,
+            actor_id: Some(user),
+            event: AuditEvent::PackageTypeCreate,
+            record_kind: "package_type".to_owned(),
+            record_id: Some(id),
+            previous_value: None,
+            new_value: Some(new.clone()),
+            reason: None,
+        },
+    )
+    .await?;
+    db::outbox::enqueue(
+        &mut tx,
+        &db::outbox::NewOutboxEvent {
+            topic: "package_type.created".to_owned(),
+            workspace_id: Some(ws),
+            entity: Some(db::outbox::Entity {
+                kind: "package_type".to_owned(),
+                id,
+                version: 1,
+            }),
+            data: Some(new),
+        },
+    )
+    .await?;
+    tx.commit().await?;
+    Ok(created_response(
+        &format!("/v1/workspaces/{ws}/package-types"),
+        1,
+        &row,
+    ))
+}
+
 // --- routes -------------------------------------------------------------------------------
 
 /// The routes of the module.
@@ -1804,10 +1994,12 @@ pub fn routes(state: &AppState) -> Router<AppState> {
         state,
         Router::new()
             .route(&format!("{WS}/containers"), post(container_create))
-            .route(&format!("{WS}/containers/fill"), post(container_fill)),
+            .route(&format!("{WS}/containers/fill"), post(container_fill))
+            .route(&format!("{WS}/package-types"), post(package_type_create)),
     );
     let others = Router::new()
         .route(&format!("{WS}/containers"), get(container_list))
+        .route(&format!("{WS}/package-types"), get(package_type_list))
         .route(&format!("{WS}/containers/{{id}}"), get(container_get))
         .route(
             &format!("{WS}/containers/{{id}}/retire"),
@@ -1918,6 +2110,13 @@ mod spec {
             CREATE,
         ),
         file_op("recall_containers", Some("field.view"), None, READ),
+        file_op("package_type_list", Some("field.view"), None, READ),
+        file_op(
+            "package_type_create",
+            Some("container.manage"),
+            Some(Concurrency::Append),
+            CREATE,
+        ),
         file_op(
             "label_print",
             Some("container.manage"),
@@ -1940,7 +2139,9 @@ mod spec {
         scan_status_batch,
         container_fill,
         recall_containers,
-        label_print
+        label_print,
+        package_type_list,
+        package_type_create
     ),
     components(schemas(
         Container,
@@ -1968,7 +2169,10 @@ mod spec {
         FillBody,
         LabelTarget,
         LabelBody,
-        PaperQuery
+        PaperQuery,
+        PackageType,
+        PackageTypeList,
+        CreatePackageType
     )),
     tags((name = "containers", description = "Containers, scan codes, status changes, fills, recall and labels"))
 )]

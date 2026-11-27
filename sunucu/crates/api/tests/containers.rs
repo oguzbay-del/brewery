@@ -57,6 +57,18 @@ async fn package_type(pool: &PgPool, ws: Uuid, name: &str) -> Uuid {
     id
 }
 
+/// Creates a keg package type over HTTP.
+async fn package_type_http(w: &World, name: &str) -> Uuid {
+    let r = post(
+        w,
+        "/package-types",
+        json!({"kind": "keg", "name": name, "volume_l": 30.0}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{}", r.body);
+    r.body["id"].as_str().unwrap().parse().unwrap()
+}
+
 /// Creates containers `KEG-0001..` and returns (ids, tokens).
 async fn create(w: &World, pt: Uuid, count: u32) -> (Vec<String>, Vec<String>) {
     let r = post(
@@ -130,7 +142,7 @@ async fn scan(w: &World, user: Uuid, path: &str, body: Value) -> support::Reply 
 #[sqlx::test(migrator = "db::MIGRATOR")]
 async fn create_list_counts_detail_and_retire(pool: PgPool) {
     let w = container_world(&pool).await;
-    let pt = package_type(&pool, w.ws, "Keg 30 L").await;
+    let pt = package_type_http(&w, "Keg 30 L").await;
     let (ids, _) = create(&w, pt, 3).await;
     assert_eq!(ids.len(), 3);
     // A used serial number is a conflict.
@@ -528,4 +540,133 @@ async fn a_code_of_another_workspace_is_404_and_actions_follow_permissions(pool:
     w.auth.add(mid, w.ws, &["field.view", "container.status"]);
     let r = scan(&w, mid, "/scan/resolve", json!({"code": tokens[0]})).await;
     assert_eq!(r.body["actions"], json!(["view", "change_status", "fill"]));
+}
+
+#[sqlx::test(migrator = "db::MIGRATOR")]
+async fn package_types_list_create_validate_gate_and_replay(pool: PgPool) {
+    let w = container_world(&pool).await;
+    // A system row, and a row of another workspace.
+    let system = Uuid::now_v7();
+    sqlx::query(
+        "INSERT INTO package_types (id, workspace_id, kind, name, volume_l)
+         VALUES ($1, NULL, 'bottle', 'Z system bottle', 0.5)",
+    )
+    .bind(system)
+    .execute(&pool)
+    .await
+    .unwrap();
+    let foreign_ws = Uuid::now_v7();
+    support::insert_workspace(&pool, foreign_ws).await;
+    package_type(&pool, foreign_ws, "Foreign keg").await;
+
+    let r = post(
+        &w,
+        "/package-types",
+        json!({"kind": "cask", "name": "A cask", "volume_l": 40.5, "single_use": true,
+            "material": "oak", "tare_kg": 12.0}),
+    )
+    .await;
+    assert_eq!(r.status, StatusCode::CREATED, "{}", r.body);
+    assert_eq!(r.body["system"], false);
+    assert_eq!(r.body["single_use"], true);
+    assert_eq!(r.body["material"], "oak");
+    let created = r.body["id"].as_str().unwrap().to_owned();
+
+    let list = get(&w, "/package-types").await;
+    assert_eq!(list.status, StatusCode::OK, "{}", list.body);
+    let items = list.body["items"].as_array().unwrap();
+    let names: Vec<&str> = items.iter().map(|i| i["name"].as_str().unwrap()).collect();
+    assert_eq!(names, ["Z system bottle", "A cask"]);
+    assert_eq!(items[0]["system"], true);
+    assert_eq!(items[1]["id"], created.as_str());
+
+    // A soft-deleted row is not listed.
+    sqlx::query("UPDATE package_types SET deleted_at = now() WHERE id = $1")
+        .bind(created.parse::<Uuid>().unwrap())
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        get(&w, "/package-types").await.body["items"]
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+
+    // Audit row and outbox event.
+    let audits: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM audit_log WHERE action = 'package_type.create'")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    let events: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM outbox WHERE topic = 'package_type.created'")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!((audits, events), (1, 1));
+
+    // Permissions: field.view lists, but cannot create.
+    let denied = call_as(
+        &w,
+        w.other,
+        "POST",
+        "/package-types",
+        Some(json!({"kind": "keg", "name": "X", "volume_l": 1})),
+        &[("idempotency-key", &Uuid::now_v7().to_string())],
+    )
+    .await;
+    assert_eq!(denied.status, StatusCode::FORBIDDEN);
+    let seen = call_as(&w, w.other, "GET", "/package-types", None, &[]).await;
+    assert_eq!(seen.status, StatusCode::OK);
+
+    // Validation.
+    for body in [
+        json!({"kind": "tank", "name": "X", "volume_l": 1}),
+        json!({"kind": "keg", "name": "", "volume_l": 1}),
+        json!({"kind": "keg", "name": "X", "volume_l": 0}),
+        json!({"kind": "keg", "name": "X", "volume_l": 1, "tare_kg": -1}),
+        json!({"kind": "keg", "name": "X", "volume_l": 1, "material": "m".repeat(101)}),
+    ] {
+        let bad = post(&w, "/package-types", body).await;
+        assert_eq!(bad.status, StatusCode::UNPROCESSABLE_ENTITY, "{}", bad.body);
+    }
+
+    // Idempotent replay returns the same row.
+    let key = [("idempotency-key", "pt-replay-1")];
+    let body = json!({"kind": "can", "name": "Can 0.44 L", "volume_l": 0.44});
+    let first = call_as(
+        &w,
+        w.admin,
+        "POST",
+        "/package-types",
+        Some(body.clone()),
+        &key,
+    )
+    .await;
+    let again = call_as(&w, w.admin, "POST", "/package-types", Some(body), &key).await;
+    assert_eq!(first.status, StatusCode::CREATED, "{}", first.body);
+    assert_eq!(again.status, StatusCode::CREATED, "{}", again.body);
+    assert_eq!(first.body["id"], again.body["id"]);
+    let count: i64 =
+        sqlx::query_scalar("SELECT count(*) FROM package_types WHERE name = 'Can 0.44 L'")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(count, 1);
+
+    // Module gate: Production is off in a Home workspace.
+    sqlx::query("UPDATE workspaces SET mode = 'home' WHERE id = $1")
+        .bind(w.ws)
+        .execute(&pool)
+        .await
+        .unwrap();
+    for gated in [
+        get(&w, "/package-types").await,
+        get(&w, "/containers").await,
+    ] {
+        assert_eq!(gated.status, StatusCode::FORBIDDEN);
+        assert_eq!(gated.body["code"], "module_disabled");
+    }
 }

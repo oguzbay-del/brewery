@@ -1718,6 +1718,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/workspaces/{workspace_id}/package-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Lists the system package types and the package types of the workspace. */
+        get: operations["package_type_list"];
+        put?: never;
+        /** Creates a package type in the workspace. */
+        post: operations["package_type_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/workspaces/{workspace_id}/recall/lots/{lot_id}/containers": {
         parameters: {
             query?: never;
@@ -3890,6 +3908,27 @@ export interface components {
              */
             start_at?: number | null;
         };
+        /** @description Body of a package type create. */
+        CreatePackageType: {
+            /** @description `bottle`, `can`, `keg` or `cask`. */
+            kind: string;
+            /** @description Material (at most 100 characters). */
+            material?: string | null;
+            /** @description Name (1 to 200 characters). */
+            name: string;
+            /** @description The package is not reused (default `false`). */
+            single_use?: boolean | null;
+            /**
+             * Format: double
+             * @description Empty weight in kg (0 or more).
+             */
+            tare_kg?: number | null;
+            /**
+             * Format: double
+             * @description Volume in litres (more than 0).
+             */
+            volume_l: number;
+        };
         /** @description A created container with its scan token. The token is shown only once. */
         CreatedContainer: {
             /** @description The container. */
@@ -5573,6 +5612,39 @@ export interface components {
              * @description Record version.
              */
             version: number;
+        };
+        /** @description A package type (bottle, can, keg or cask size). */
+        PackageType: {
+            /**
+             * Format: uuid
+             * @description Identifier.
+             */
+            id: string;
+            /** @description `bottle`, `can`, `keg`, `cask`. */
+            kind: string;
+            /** @description Material (for example `stainless steel`). */
+            material?: string | null;
+            /** @description Name. */
+            name: string;
+            /** @description The package is not reused. */
+            single_use: boolean;
+            /** @description `true` for a system row (shared by all workspaces, read-only). */
+            system: boolean;
+            /**
+             * Format: double
+             * @description Empty weight in kg.
+             */
+            tare_kg?: number | null;
+            /**
+             * Format: double
+             * @description Volume in litres.
+             */
+            volume_l: number;
+        };
+        /** @description The package types of a workspace: system rows first, then by name. */
+        PackageTypeList: {
+            /** @description The rows. */
+            items: components["schemas"]["PackageType"][];
         };
         /** @description A page of a list endpoint: `{ "items": [...], "next_cursor": "..." | null }`. */
         Page_Attachment: {
@@ -26769,6 +26841,286 @@ export interface operations {
                 };
             };
             /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    package_type_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description System rows first, then by name */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "items": [
+                     *         {
+                     *           "id": "0190b6a0-7c1e-7a52-8d5e-3f2a9c4b1d10",
+                     *           "kind": "keg",
+                     *           "material": "stainless steel",
+                     *           "name": "Keg 30 L",
+                     *           "single_use": false,
+                     *           "system": false,
+                     *           "tare_kg": 9.5,
+                     *           "volume_l": 30
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PackageTypeList"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Module disabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Upgrade required */
+            426: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    package_type_create: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Client generated key (ADR-0008 rule 6) */
+                "Idempotency-Key": string;
+            };
+            path: {
+                /** @description Workspace */
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePackageType"];
+            };
+        };
+        responses: {
+            /** @description The new package type */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "0190b6a0-7c1e-7a52-8d5e-3f2a9c4b1d10",
+                     *       "kind": "keg",
+                     *       "material": "stainless steel",
+                     *       "name": "Keg 30 L",
+                     *       "single_use": false,
+                     *       "system": false,
+                     *       "tare_kg": 9.5,
+                     *       "volume_l": 30
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PackageType"];
+                };
+            };
+            /** @description Malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unauthenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Forbidden; Module disabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Conflict; Request with this idempotency key is in progress */
+            409: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Payload too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Unsupported media type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Validation failed; Idempotency key reused with a different request */
             422: {
                 headers: {
                     [name: string]: unknown;
