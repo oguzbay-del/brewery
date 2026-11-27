@@ -13,7 +13,7 @@ Reviewed the public page content on 27 November:
 
 Keep forest #0B2F26 for brand anchors, stone #F7F6F3 for editorial canvas, slate #475569 for text and amber #F4A261 for emphasis. Use existing accessible dark amber text token on light surfaces. Preserve approved vector logo, Plus Jakarta Sans, Inter, occasional serif emphasis and existing radius tokens. Do not recolor the product screenshots. Do not introduce external fonts or dependencies.
 
-Use a quiet light canvas for long reading and a forest feature panel for a major technical story. Use one primary CTA per section; secondary actions are understated links. Keep one focal image per section. Prefer image/text split sections over repeating rows of small cards. Avoid decorative dashboards, heavy shadows, floating fake UI, parallax and autoplay.
+Owner decision (27 November 2026, MQ-00b #456): Editorial Light is the single marketing design direction. Use stone paper, warm paper and white surfaces for editorial and technical content. Technical precision comes from hierarchy, whitespace, original product screenshots and restrained rules, not dark panels. Forest Green remains only in existing brand anchors (hero, header/footer as appropriate, and restrained closing CTA). No Technical Dark theme, ordinary dark-mode switch or recurring dark technical panels; high contrast remains an accessibility adaptation. Use one primary CTA per section; secondary actions are understated links. Keep one focal image per section. Prefer image/text split sections over repeating rows of small cards. Avoid decorative dashboards, heavy shadows, floating fake UI, parallax and autoplay.
 
 Candidate layout: use existing 1240px shell initially, with 32px desktop gutters subject to MQ-03 audit; 12/8/4 conceptual column structure; mobile gutters from existing shared CSS. Use flexible grid with minmax(0,1fr). Prefer natural content height and wrap to a new line. Do not lock a paragraph or action group to a fixed height. Use existing type tokens before introducing new ones. Headings use display family, body Inter, serif only a short editorial accent. Proposed reading width 55–70 characters for longer prose; verify both languages. Maintain visible focus and accessible contrast.
 
@@ -24,7 +24,7 @@ Desktop reading order, not fixed pixel geometry:
     [ shared header / logo / nav / language / primary action ]
     [ forest hero: clear proposition + brewery CTA | authentic brewery image ]
     [ stone: concise bridge — brewing work, not a feature list ]
-    [ technical spotlight: real product screenshot | title + context + link ]
+    [ warm paper / white technical spotlight: real product screenshot | title + context + link ]
     [ editorial split: physical brewing detail | workflow narrative ]
     [ recipe / brew day / batch review — concise sequential evidence ]
     [ professional brewery path (primary) | homebrewer path (secondary) ]
@@ -39,7 +39,7 @@ Mobile: header with native menu; proposition then actions then image where a bac
 | Pattern | Treatment | Reuse / validation |
 |---|---|---|
 | Hero | One focal brewing photo, concise headline and two differentiated actions; dark forest overlay only if contrast is verified | Existing homepage hero and PagePhoto; check 320/390/768/1024/1440 and zoom |
-| Technical spotlight | One large real screenshot in restrained neutral frame; adjacent short context and verified feature link; avoid tiny illegible composite grids | ProductScreens and MQ-08 register; verify source, readability, caption and image dimensions |
+| Technical spotlight | One large real screenshot in restrained white or warm-paper frame; adjacent short context and verified feature link; avoid tiny illegible composite grids | ProductScreens and MQ-08 register; verify source, readability, caption and image dimensions |
 | Editorial split | Real production, human or ingredient detail with short narrative; alternate image side only when DOM order is preserved | PagePhoto, shared section pattern; preserve original crop and alt metadata |
 | Workflow | Numbered sequential steps, examples clearly marked, links to actual scope | Existing WorkflowLinks and feature data; no new claim |
 | Audience | Professional path visually primary, separate Home route; no competing identical primary actions | Existing audience layout and CTAs |
@@ -53,7 +53,7 @@ Select from owner-provided brewery photography. Prefer real tanks, brewery floor
 
 ## Review and acceptance
 
-- Before implementation record current screenshot and commit baseline under MQ-01. The above sketch is a proposal to test in MQ-07; it does not authorize a live release.
+- Before implementation record current screenshot and commit baseline under MQ-01 and run MQ-11a early visual QA. Use the latest DESIGN.md and DESIGN-EXCELLENCE.md (MQ-00b #456). The above sketch is a proposal to test in MQ-07; it does not authorize a live release.
 - At each of five marketing viewport widths, compare EN/TR visual hierarchy, line wrap, CTA visibility, image crop, screenshot readability, grid alignment and keyboard focus; check actual 200% zoom manually.
 - Use existing Playwright/axe and Lighthouse. Keep current metadata, canonical routes, mobile navigation, reduced motion, and approved visual assets.
 - Keep claim text unchanged until the G8 evidence and claim decisions permit a correction. No invented metrics, customer logos, trial, purchase or live integrations.
