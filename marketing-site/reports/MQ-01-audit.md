@@ -105,3 +105,43 @@ Artifacts for that exact run (not current-main measurements):
 The artifact listing confirms existence and provenance, not visual or numerical results. Review the contents before closing MQ-01.
 
 Additional browser source checks: `tests/browser/compare-table-accessibility.spec.js` tests the EN comparison scroll region at 320 and 390px with visible keyboard focus, ArrowRight scrolling and no page overflow. `comparison.spec.js` tests EN plan entry links at 390px and intentional table scrolling at 320px; it also tests row-group headings on both EN and TR comparison pages. Preserve these intentional scroll regions in VQG, and extend TR keyboard and responsive coverage rather than replacing the existing tests. No additional rendering defect is inferred from this coverage inventory.
+
+## 8. Actual artifact inspection (27 November 2026)
+
+Evidence: [marketing CI 46063650916](https://github.com/oguzbay-del/brewery/actions/runs/46063650916), head `1187435b55dd9163d87f208c1cead92a11fd77d0`. Guard passed. Cloudflare reported successful preview. Downloaded screenshot artifact [15230321111](https://github.com/oguzbay-del/brewery/actions/runs/46063650916/artifacts/15230321111) and Lighthouse artifact [15229926431](https://github.com/oguzbay-del/brewery/actions/runs/46063650916/artifacts/15229926431). The branch changes documentation only; evidence is for that build, not an independently measured production page.
+
+### Screenshot review
+
+The archive contains 36 PNG files. Inspected contact sheets of the top sections of all 12 captured routes at 390 and 1440px, and the EN/TR homepage at 320, 768, 1024px. Contact sheets are scaled crops of actual CI PNGs, not complete page review. The 320px crop does not include the complete hero actions; no visibility assertion for them from that crop. No Turkish subpage screenshots beyond Home exist in this archive.
+
+| Finding | Evidence | Severity / next |
+|---|---|---|
+| Soft image detail in tall mobile homepage crop compared with desktop | home-320.png, tr-320.png, home-390.png, tr-390.png, home-1440.png, tr-1440.png | P2 visual improvement; MQ-09 review focal point and image source sizes without degrading transfer |
+| Long TR hero headline occupies an additional line at 390 and 1440px versus EN; both top sections remain readable in the inspected crops | home-390.png, tr-390.png, home-1440.png, tr-1440.png | Layout test case, not a defect by itself; preserve natural wrapping |
+| Audience heroes have solid Forest Green intro sections, while other reviewed subpage intros use paper surfaces | breweries-390.png, homebrewers-390.png, compare-390.png, pricing-390.png and 1440 counterparts | P2 consistency review for Editorial Light; brand hero is permitted, no recurring dark technical panels |
+| Existing feature detail, FAQ, pricing and workflow intros already express the approved warm paper + forest ink + serif hierarchy | features-recipe-design-1440.png, faq-1440.png, pricing-1440.png, how-it-works-1440.png | Reuse rather than redesign from scratch |
+| Development/roadmap wording appears in hero and feature introductions | home-390.png, tr-390.png, features-390.png, features-recipe-design-390.png | Content evidence for G8; do not change claims in visual task |
+| Missing representative TR subpage, module and 404 screenshots | Archive file list | Coverage gap, not an observed layout defect; MQ-11a |
+
+No obvious major overlap or clipping in inspected top sections at 390/1440px. This is not proof of full-page geometry, interactive state, keyboard, zoom or accessibility acceptance. Full-page lower sections and audience intermediate widths still need review; do not close the task solely on this subset.
+
+### Lighthouse JSON measurements
+
+All ten reports scored 100 in Accessibility, Best Practices and SEO. Lab measurements at localhost (not production field metrics):
+
+| Page | Device | Performance | LCP (s) | TBT (ms) | CLS |
+|---|---|---:|---:|---:|---:|
+| Home EN | Desktop | 100 | 0.51 | 0 | 0 |
+| Home EN | Mobile | 90 | 2.03 | 384 | 0 |
+| Home TR | Desktop | 100 | 0.61 | 0 | 0 |
+| Home TR | Mobile | 95 | 2.78 | 0 | 0 |
+| Compare EN | Desktop | 100 | 0.45 | 0 | 0 |
+| Compare EN | Mobile | 100 | 1.88 | 0 | 0 |
+| How it works EN | Desktop | 100 | 0.45 | 0 | 0 |
+| How it works EN | Mobile | 100 | 1.88 | 0 | 0 |
+| Pricing EN | Desktop | 100 | 0.41 | 0 | 0 |
+| Pricing EN | Mobile | 100 | 1.80 | 0 | 0 |
+
+Source: corresponding *.report.json entries. EN mobile TBT and TR mobile LCP require repeat measurement and root cause analysis in MQ-13; the lab LCP goal is 2.5s. TBT is not INP. The single-run performance difference does not establish a regression or cause. Keep the existing Lighthouse CI.
+
+Next: review lower sections and missing matrix coverage using MQ-11a report evidence, capture current baseline where possible and finish MQ-01. Do not claim screen-reader or 200% actual zoom review. No runtime or production changes.
