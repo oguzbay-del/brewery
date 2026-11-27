@@ -6,6 +6,7 @@
 
 | Bulgu | Kaynak | Öneri |
 |---|---|---|
+| EN/TR karşılaştırma ve iş akışı sayfalarında planlanan özelliklerin olgunluk açıklaması farklı; karşılaştırma tablosu canlı sunucu hakkı okumuyor. | [EN compare](../../marketing-site/src/pages/compare.astro), [TR compare](../../marketing-site/src/pages/tr/compare.astro), §4.4 | Gerçek doğrulanmış işlev ve plan kapsamını iki dilde aynı şekilde göster. |
 | Ana sayfaların hero/meta açıklaması geliştirme durumunu gösteriyor; ürün derinliği EN/TR olgunluk ifadesi farklı. | [EN ana sayfa](../../marketing-site/src/pages/index.astro), [TR ana sayfa](../../marketing-site/src/pages/tr/index.astro), §4.3 | Her iki dilde yalnız doğrulanmış ürün işlevlerine dayalı metin kullan; planlanan iddiaları çıkar. |
 | iOS görünen adı GRISTORA, ancak uygulama bundle kimliği hâlâ `app.demleme.Demleme`. ADR-0012 §4 hedefi `com.gristora.app`. | [ios/project.yml](../../ios/project.yml), ADR-0012 §4 | İlk TestFlight yüklemesinden önce uygulama ve test hedeflerinin kimliklerini ADR ile eşleştir; imzalama, Apple giriş ve universal link etkilerini Claude ile doğrula. İç proje ve hedef adlarının değişmesi gerekmez. |
 
@@ -960,4 +961,25 @@ Kaynaklar: [EN ana sayfa](../../marketing-site/src/pages/index.astro), [TR ana s
 | Planları inceleme ve karşılaştırma | Ana sayfa yalnız pricing/compare bağlantıları verir; §4.1–4.2. Aktif ödeme kanıtı değil. | Bağlantıyı plan karşılaştırması olarak tut. |
 
 **Metin uyumsuzluğu:** iki ana sayfanın meta açıklaması ve hero metni doğrudan geliştirme sürecini belirtir; örnek, ürün derinliği ve plan CTA bölümlerinde de planlanan kapsam anlatılır. TR ürün derinliği metni EN'deki planlanan nitelemesini kaldırmıştır. Sahip kararındaki mevcut işlev odaklı yayın yaklaşımıyla hizalanmalı; yalnız planlanan veya belirsiz işlevler çıkarılmalı, geliştirme durumunu gizlemek için mevcut olmayan işlevler kesin ifadeyle sunulmamalı. ProductScreens bileşenindeki görseller ayrı kaynak denetimi gerektirir.
+
+
+
+### 4.4 Karşılaştırma ve nasıl çalışır (EN/TR)
+
+Kaynaklar: [EN karşılaştırma](../../marketing-site/src/pages/compare.astro), [TR karşılaştırma](../../marketing-site/src/pages/tr/compare.astro), [EN iş akışı](../../marketing-site/src/pages/how-it-works.astro), [TR iş akışı](../../marketing-site/src/pages/tr/how-it-works.astro).
+
+| İddia | Durum ve kanıt | Öneri |
+|---|---|---|
+| Ev 1 kullanıcı, işletme 5+ kullanıcı | T2.13 üyelik/izin; T2.28 abonelik API'si; §4.1–4.2. Satış ve koltuk satın alma akışı doğrulanmadı. | Plan kapsamı ile aktif satın alma olanağını ayır. |
+| Özellik karşılaştırmasında modül aşamalarına göre kapsam | Her iki sayfada stageFor, features ve modules veri dosyalarına dayanır. Bu mantık sunucudan canlı hak veya özellik durumu okumaz. EN açıklaması etiketlerin mevcut kullanılabilirlik anlamına gelmediğini belirtir; TR eşdeğer açıklama göstermez. | Modül etiketlerini gerçek haklarla eşleştir; yalnız doğrulanmış kapsamı yayınla. |
+| Ev iş akışı: reçete, stil, malzeme, ekipman ve parti büyüklüğü | T2.21 recipes.rs, recipe_org.rs; §3.4. Her girdinin UI doğrulaması açık. | Reçete sürümü ve hedef verisiyle sınırla. |
+| Ev: su, mayşe, maya ve yöntem/varsayımlarla hesaplama | T2.16 engine.rs; §3.5 ve §3.7. Açıklamalı hesap arayüzü tam doğrulanmadı. | Motor sonuçlarıyla istemci açıklama işlevini ayır. |
+| Ev: plan/fiili süre, miktar, sıcaklık, gözlem ve sonraki reçete için tadım | T2.22 batches.rs ve brew_day.rs; §3.2. Tadım ve bütün parti inceleme UI'si açık. | Doğrulanmış kayıtları anlat, tadım/analiz vaat etme. |
+| Ev: salt okunur cihaz girdisi, kaynak, birim, zaman damgası | T2.25 devices.rs, §3.6; iki dilde de cihaz özelliği doğrulamaya bağlı olarak ifade edilir. Marka ve uçtan uca akış açık. | Test edilmiş cihaz ve protokolü ayır; uzaktan kontrol kapsam dışı. |
+| İşletme: reçete sürümü, görev ve ekipman planı | T2.21, T2.22 takvim ve geriye planlama; §3.1. Kapasite ve ekipman çizelgelemesinin bütün UI akışı doğrulanmadı. | Takvim ve sürüm kaydıyla sınırlı ifade. |
+| İşletme: fiili ölçüm, operatör notu, tank gözlemi ve sapma | T2.22 batches.rs, brew_day.rs; §3.2. Tank olaylarının bütün istemci akışı açık. | Kayıt API'si ile tam operasyon iş akışını ayır. |
+| İşletme: kalite/laboratuvar, lot ilişkisi, yöntem, kaynak ve operatör | T2.23 stock.rs, K2 containers.rs, T2.22 ölçümler; §3.8. Kalite sonuçları ve tam lot zinciri doğrulanmadı. | Uçtan uca kalite ve izlenebilirlik iddiası kullanma. |
+| ERP, satış, CRM, muhasebe, sevkiyat, müşteri fıçısı ve depozito kapsam dışı | EN/TR how-it-works metninde açık ürün sınırı; §4.1–4.2 ile uyumlu. | Sınırı koru; tesis içi kap/lot takibini müşteri fıçısı takibiyle karıştırma. |
+
+**Dil tutarsızlığı:** EN compare sayfası planlanan sürüm sırasını ve mevcut olmayan kapsamı açıklar; TR sayfası bu uyarıyı göstermez. EN how-it-works başlıklarında ve girişinde planlanan iş akışı belirtilir; TR giriş ve bölüm başlıkları doğrudan ürün akışını anlatır (cihaz istisnası iki dilde de koşulludur). Her iki dilde aynı doğrulanmış kapsamı kullan; yol haritası etiketlerini kaldırırken mevcut olmayan işlevi kesin iddiaya dönüştürme. Modül verisinin tek tek doğrulanması ayrı bölüme bırakılmıştır.
 
