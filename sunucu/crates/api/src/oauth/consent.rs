@@ -103,6 +103,16 @@ pub struct ConsentRequestView {
     pub workspaces: Vec<ConsentWorkspace>,
 }
 
+type RequestRow = (
+    Uuid,
+    String,
+    Vec<String>,
+    String,
+    String,
+    String,
+    DateTime<Utc>,
+);
+
 struct StoredRequest {
     client_pk: Uuid,
     redirect_uri: String,
@@ -113,15 +123,7 @@ struct StoredRequest {
 }
 
 async fn load_request(conn: &mut PgConnection, request: &str) -> ApiResult<StoredRequest> {
-    let row: Option<(
-        Uuid,
-        String,
-        Vec<String>,
-        String,
-        String,
-        String,
-        DateTime<Utc>,
-    )> = sqlx::query_as("SELECT * FROM oauth_request_get($1)")
+    let row: Option<RequestRow> = sqlx::query_as("SELECT * FROM oauth_request_get($1)")
         .bind(token_hash(request))
         .fetch_optional(conn)
         .await?;
@@ -342,6 +344,7 @@ pub(super) async fn audit_grant(
          example = json!({"redirect_to": "https://agent.example/cb?code=abc&state=xyz&iss=https%3A%2F%2Fauth.gristora.com"})),
     )
 )]
+#[allow(clippy::too_many_lines)]
 pub async fn request_decide(
     State(state): State<AppState>,
     ctx: RequestContext,

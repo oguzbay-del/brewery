@@ -183,16 +183,6 @@ async fn fetch_cimd(state: &AppState, client_id: &str) -> Result<Client, ClientE
         .host_str()
         .ok_or_else(|| ClientError::Invalid("client_id".into()))?
         .to_owned();
-    // One fetch per client address and 5 minutes (outside the cache).
-    let key = format!("oauth:cimd:{}", hex(&token_hash(client_id)));
-    if state
-        .redis
-        .incr_expire(key, 300)
-        .await
-        .is_some_and(|n| n > 1)
-    {
-        return Err(ClientError::Unavailable("rate limited".into()));
-    }
     let port = url.port_or_known_default().unwrap_or(443);
     let addrs: Vec<SocketAddr> = tokio::time::timeout(
         FETCH_TIMEOUT,
@@ -206,6 +196,16 @@ async fn fetch_cimd(state: &AppState, client_id: &str) -> Result<Client, ClientE
         return Err(ClientError::Invalid(
             "client_id address is not allowed".into(),
         ));
+    }
+    // One fetch per client address and 5 minutes (outside the cache).
+    let key = format!("oauth:cimd:{}", hex(&token_hash(client_id)));
+    if state
+        .redis
+        .incr_expire(key, 300)
+        .await
+        .is_some_and(|n| n > 1)
+    {
+        return Err(ClientError::Unavailable("rate limited".into()));
     }
     let http = reqwest::Client::builder()
         .redirect(reqwest::redirect::Policy::none())

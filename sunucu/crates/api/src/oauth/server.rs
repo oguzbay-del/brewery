@@ -472,6 +472,16 @@ pub async fn token(
     }
 }
 
+type CodeRow = (Uuid, Uuid, String, String, Vec<String>, String, bool);
+type RefreshRow = (
+    String,
+    Option<Uuid>,
+    Option<Uuid>,
+    Option<Uuid>,
+    Option<Vec<String>>,
+    Option<String>,
+);
+
 fn invalid_grant(m: &str) -> OAuthError {
     OAuthError::bad("invalid_grant", m)
 }
@@ -488,11 +498,10 @@ async fn exchange_code(
     let redirect_uri = param(p, "redirect_uri")
         .ok_or_else(|| OAuthError::bad("invalid_request", "redirect_uri"))?;
     let mut tx = state.db.begin().await?;
-    let row: Option<(Uuid, Uuid, String, String, Vec<String>, String, bool)> =
-        sqlx::query_as("SELECT * FROM oauth_code_consume($1)")
-            .bind(token_hash(code))
-            .fetch_optional(&mut *tx)
-            .await?;
+    let row: Option<CodeRow> = sqlx::query_as("SELECT * FROM oauth_code_consume($1)")
+        .bind(token_hash(code))
+        .fetch_optional(&mut *tx)
+        .await?;
     let Some((grant_id, client_pk, stored_redirect, challenge, granted, resource, replayed)) = row
     else {
         return Err(invalid_grant("the code is unknown or expired"));
@@ -553,23 +562,17 @@ async fn refresh(state: &AppState, client: &Client, p: &Params) -> Result<Respon
         format!("{ACCESS_PREFIX}{}", new_token()),
         format!("{REFRESH_PREFIX}{}", new_token()),
     );
-    let row: (
-        String,
-        Option<Uuid>,
-        Option<Uuid>,
-        Option<Uuid>,
-        Option<Vec<String>>,
-        Option<String>,
-    ) = sqlx::query_as("SELECT * FROM oauth_refresh_rotate($1, $2, $3, $4, $5, $6, $7)")
-        .bind(token_hash(old))
-        .bind(client.id)
-        .bind(requested)
-        .bind(token_hash(&access))
-        .bind(token_hash(&new_refresh))
-        .bind(ACCESS_TTL_SECS)
-        .bind(REFRESH_TTL_SECS)
-        .fetch_one(&state.db)
-        .await?;
+    let row: RefreshRow =
+        sqlx::query_as("SELECT * FROM oauth_refresh_rotate($1, $2, $3, $4, $5, $6, $7)")
+            .bind(token_hash(old))
+            .bind(client.id)
+            .bind(requested)
+            .bind(token_hash(&access))
+            .bind(token_hash(&new_refresh))
+            .bind(ACCESS_TTL_SECS)
+            .bind(REFRESH_TTL_SECS)
+            .fetch_one(&state.db)
+            .await?;
     match row {
         (status, Some(grant), Some(user), Some(ws), Some(granted), _) if status == "ok" => {
             let _ = (grant, user, ws);
@@ -658,7 +661,7 @@ pub async fn revoke(
         (status = 201, description = "Registered client", body = Object, example = json!({
             "client_id": "dcr_0192f1c07a3b7000800000000000000a", "client_name": "Agent",
             "redirect_uris": ["https://agent.example/cb"], "grant_types": ["authorization_code", "refresh_token"],
-            "response_types": ["code"], "token_endpoint_auth_method": "none", "client_id_issued_at": 1795000000})),
+            "response_types": ["code"], "token_endpoint_auth_method": "none", "client_id_issued_at": 1_795_000_000})),
         (status = 400, description = "Invalid client metadata", body = Object, example = json!({"error": "invalid_client_metadata", "error_description": "redirect_uris"})),
     )
 )]

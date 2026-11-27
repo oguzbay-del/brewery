@@ -258,6 +258,8 @@ pub async fn account_deletion_request(
 
     // This also removes the Redis session-cache entries.
     auth.sessions.revoke_all(user_id, None).await?;
+    // OAuth connections end with the account (ADR-0015 rule 2.7).
+    crate::oauth::apps::revoke_all_for_user(&state, &ctx).await?;
     Ok(Json(request.into()))
 }
 
