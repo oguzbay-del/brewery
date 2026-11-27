@@ -141,7 +141,7 @@ async fn audit_revocations(
             *ws,
             AuditEvent::OauthGrantRevoke,
             *grant,
-            &client_id,
+            (*client_pk, &client_id),
             json!({"by": by}),
         )
         .await?;
@@ -202,13 +202,27 @@ pub async fn connected_app_clear(
 /// Database errors.
 pub async fn revoke_all_for_user(state: &AppState, ctx: &RequestContext) -> ApiResult<usize> {
     let mut tx = ctx.begin(&state.db).await?;
+    let n = revoke_all_in_tx(&mut tx, ctx, "user_revoked_all").await?;
+    tx.commit().await?;
+    Ok(n)
+}
+
+/// Like [`revoke_all_for_user`], inside the transaction of the caller (account deletion).
+///
+/// # Errors
+/// Database errors.
+pub async fn revoke_all_in_tx(
+    tx: &mut PgConnection,
+    ctx: &RequestContext,
+    reason: &str,
+) -> ApiResult<usize> {
     let rows: Vec<(Uuid, Uuid, Uuid)> =
-        sqlx::query_as("SELECT * FROM oauth_grant_revoke_all_user($1, 'user_revoked_all')")
+        sqlx::query_as("SELECT * FROM oauth_grant_revoke_all_user($1, $2)")
             .bind(ctx.identity.user_id)
+            .bind(reason)
             .fetch_all(&mut *tx)
             .await?;
-    audit_revocations(&mut tx, ctx, &rows, "user_all").await?;
-    tx.commit().await?;
+    audit_revocations(tx, ctx, &rows, "user_all").await?;
     Ok(rows.len())
 }
 
