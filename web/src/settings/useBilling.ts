@@ -6,11 +6,13 @@ type BillingState =
   | { status: 'error' }
   | { status: 'ready'; data: BillingView };
 
+interface BillingResult {
+  workspaceId: string;
+  state: BillingState;
+}
+
 export function useBilling(workspaceId: string): BillingState {
-  const [result, setResult] = useState<{
-    workspaceId: string;
-    state: BillingState;
-  } | null>(null);
+  const [result, setResult] = useState<BillingResult | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
