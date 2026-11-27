@@ -34,7 +34,12 @@
 }
 
 .app-shell__brand {
-  color: var(--label);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  white-space: nowrap;
+  color: var(--tint);
   font-weight: var(--t-headline-weight);
   text-decoration: none;
 }
@@ -122,4 +127,14 @@
 .app-shell button:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: 2px;
+}
+
+.app-shell__brand svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 400px) {
+  .app-shell__wordmark {
+    display: none;
+  }
 }

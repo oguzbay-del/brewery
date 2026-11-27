@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { BrandSymbol } from './BrandSymbol';
 import { useModuleAccess } from '../modules/ModulesProvider';
 import { ROUTE_MODULES, type AppRoute } from './navigation';
 import { useTheme } from './ThemeProvider';
@@ -55,7 +56,8 @@ export function AppShell({ labels, children }: AppShellProps) {
       </a>
       <header className="app-shell__header">
         <a className="app-shell__brand" href="#/" aria-label={labels.appName}>
-          {labels.appName}
+          <BrandSymbol />
+          <span className="app-shell__wordmark">{labels.appName}</span>
         </a>
         <nav className="app-shell__navigation" aria-label={labels.navigation}>
           <NavLink route="/" label={labels.home} readOnlyLabel={labels.readOnly} />
