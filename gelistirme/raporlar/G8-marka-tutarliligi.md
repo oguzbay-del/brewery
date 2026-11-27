@@ -531,3 +531,31 @@ Madde envanteri (TR, kaynak yukarıdaki veri dosyasıdır). Her madde için grup
 - FIFO malzeme maliyeti ve litre başına maliyet
 - Tank kullanımı, parti çıktısı ve üretim panosu metrikleri
 - Malzeme lotundan paketleme çalışmasına lot izlenebilirliği ve geri çağırma raporu
+
+### 3.4 Madde bazında kanıt — recipe-design
+
+Sıra §3.3 envanterindeki dört bölüm ve 19 madde ile aynıdır. Durum: **Var (API)** = belirtilen kapsamın sunucu kodu mevcut; **Kısmi** = iddianın yalnız bir kısmı doğrulandı; **Sonra** = açık geliştirme kapsamı; **Belirsiz** = yeterli kanıt bulunmadı, mevcut özellik olarak kullanılmamalı. Kaynaklar: [recipes.rs](../../sunucu/crates/api/src/recipes.rs) (R), [recipe_org.rs](../../sunucu/crates/api/src/recipe_org.rs) (O), [API envanteri](../../sunucu/crates/api/CLAUDE.md) (A), [ISLER](../ISLER.md) (I; yol haritası kanıtıdır, canlı görev durumu değildir).
+
+| Madde | Durum | Kanıt / eksik kapsam |
+|---|---|---|
+| 1. Boş reçete ve malzeme önerisi | Kısmi | R: recipe_create, NewRecipe, VersionInput; öneri algoritması kanıtlanmadı. I: T2.21. |
+| 2. Stil şablonları | Belirsiz | I: T2.19 stil kılavuzu ve örnek veri; gerçek başlangıç şablonu ve uyarlama akışı kanıtlanmadı. |
+| 3. Kopyalama/yeni sürüm | Kısmi | R: NewDraft.from_version_id ve recipe_version_create yeni sürüm sağlar; ayrı reçeteye kopyalama akışı doğrulanmadı. |
+| 4. İçe aktarma biçimleri | Kısmi | A: T2.26, BeerXML, BeerJSON ve Brewfather JSON; .bsmx örnek bekliyor, Brewer's Friend uyumluluğu doğrulanmadı. |
+| 5. Malzeme ve proses düzenleme | Var (API) | R: VersionInput, FermentableLine, HopLine, YeastLine, MiscLine, mash_snapshot, fermentation_snapshot, boil_time_min. İstemci ekranı ayrıca doğrulanmalı. |
+| 6. Yüzdeler ve hedefleri dengede tutma | Kısmi | R: VersionInput hedef OG, IBU, SRM alanlarını içerir; otomatik dengeleme kanıtlanmadı. |
+| 7. All-grain/ekstrakt dönüşümü, ikame, yuvarlama | Kısmi | R: VersionInput.kind; scale işlevindeki TODO küçük miktar yuvarlamasını Aşama 3'e bırakır. Otomatik dönüşüm ve ikame doğrulanmadı. |
+| 8. Hacim/verim/ekipmana göre ölçekleme | Kısmi | R: ScaleBody.factor, batch_volume_l, calculate ve recipe_version_scale; verim ve ekipman bazlı ölçekleme ayrı doğrulanmalı. |
+| 9. Uyarı ve tek adım düzeltme | Kısmi | R: constraint_error ve recipe_version_calculate; tek adım düzeltme önerisi kanıtlanmadı. |
+| 10. BJCP/BA ve özel kılavuz | Kısmi | I: T2.19 stil kılavuzları; gerçek kılavuz verisi örnek seed'den ayrı karardır. Tam veri setleri doğrulanmadı. |
+| 11. Stil aralığı karşılaştırma/eşleme | Kısmi | I: T2.19 eşleme uçları; aralık karşılaştırma ekranı doğrulanmadı. |
+| 12. Reçete/sürüm karşılaştırma | Var (API) | R: recipe_version_compare, /recipe-versions/{id}/compare/{other_id}. Yan yana ekran ayrıca doğrulanmalı. |
+| 13. Değişmez sürüm ve İşletme onayı | Kısmi / Sonra | R: recipe_version_publish, version_immutable; TODO: submit/review/reject Aşama 6. I: T2.21. |
+| 14. Kilit ve parti sürümü | Var (API) | R: RecipePatch.is_locked, O: edit-session; batches.rs: immutable recipe_version_id. |
+| 15. Arama/filtre/klasör/etiket | Var (API) | R: RecipeFilter, O: folders/tags, A: T2.27 global search. Parti organizasyonunun tümü ayrıca doğrulanmalı. |
+| 16. Favoriler ve sütun seçimi | Kısmi | O: recipefavorite_put/delete; sütun kişiselleştirme doğrulanmadı. |
+| 17. Üretim türleri ve yöntemler | Kısmi | R: VersionInput.kind extract, partial_mash, all_grain, cider, mead, wine, seltzer; mash_snapshot içinde `biab`. Tüm istemci akışları doğrulanmadı. |
+| 18. Not, renk, görsel, özel alan | Kısmi | R: NewRecipe.notes ve RecipePatch.notes; A: T2.18 attachments. Renk ve özel alanlar doğrulanmadı. |
+| 19. Arşiv ve geri yükleme | Kısmi | A: T2.37 trash, 30 gün; R: version_immutable. Ayrı arşiv davranışı doğrulanmadı. |
+
+**Öneri:** reçete sayfasında sürüm, temel düzenleme ve organizasyon için kanıtlı kapsamı koru; şablon, otomatik dengeleme, tam biçim uyumluluğu ve İşletme onay sürecini mevcut özellik olarak sunma. Bu bölüm 19/256 katalog maddesinin ayrıntılı sınıflandırmasıdır.
