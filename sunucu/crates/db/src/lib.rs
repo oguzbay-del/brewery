@@ -40,8 +40,8 @@ pub use audit::{
     append_audit, canonical_row, chain_hash, changed_field, verify_all_chains, verify_chain,
 };
 pub use context::{
-    ActorKind, DbContext, IDEMPOTENCY_KEY, begin, set_actor_kind, set_context, set_user_id,
-    set_workspace_id,
+    ActorKind, DbContext, IDEMPOTENCY_KEY, begin, begin_staff, set_actor_kind, set_context,
+    set_staff_id, set_user_id, set_workspace_id,
 };
 pub use error::{Error, Result};
 pub use measurement::{

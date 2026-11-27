@@ -15,6 +15,9 @@ pub enum ActorKind {
     System,
     /// A paired shared device acting for a member.
     Device,
+    /// A support staff member who works outside a workspace (panel search). The transaction is
+    /// read-only and `app.staff_id` names the staff user (see [`begin_staff`]).
+    Staff,
 }
 
 impl ActorKind {
@@ -26,6 +29,7 @@ impl ActorKind {
             Self::Support => "support",
             Self::System => "system",
             Self::Device => "device",
+            Self::Staff => "staff",
         }
     }
 }
@@ -73,10 +77,28 @@ pub async fn set_actor_kind(tx: &mut PgConnection, kind: ActorKind) -> Result<()
     set_local(tx, "app.actor_kind", kind.as_str()).await
 }
 
-/// Applies the whole [`DbContext`] to the current transaction. A support actor also makes the
-/// transaction read-only (ADR-0007 rule 2.3).
+/// Sets `app.staff_id` for the current transaction. The ID must come from the authenticated
+/// request context, never from a caller parameter. `support_find_workspace` reads it.
+pub async fn set_staff_id(tx: &mut PgConnection, staff_id: Uuid) -> Result<()> {
+    set_local(tx, "app.staff_id", &staff_id.to_string()).await
+}
+
+/// Starts a read-only transaction for a staff member (`app.actor_kind = 'staff'`,
+/// `app.staff_id`). No user or workspace is set, so no workspace row matches an RLS policy.
+pub async fn begin_staff(pool: &PgPool, staff_id: Uuid) -> Result<Transaction<'static, Postgres>> {
+    let mut tx = pool.begin().await?;
+    sqlx::query("SET TRANSACTION READ ONLY")
+        .execute(&mut *tx)
+        .await?;
+    set_actor_kind(&mut tx, ActorKind::Staff).await?;
+    set_staff_id(&mut tx, staff_id).await?;
+    Ok(tx)
+}
+
+/// Applies the whole [`DbContext`] to the current transaction. A support or staff actor also
+/// makes the transaction read-only (ADR-0007 rule 2.3).
 pub async fn set_context(tx: &mut PgConnection, ctx: &DbContext) -> Result<()> {
-    if ctx.actor_kind == ActorKind::Support {
+    if matches!(ctx.actor_kind, ActorKind::Support | ActorKind::Staff) {
         sqlx::query("SET TRANSACTION READ ONLY")
             .execute(&mut *tx)
             .await?;
@@ -106,7 +128,7 @@ tokio::task_local! {
 pub async fn begin(pool: &PgPool, ctx: &DbContext) -> Result<Transaction<'static, Postgres>> {
     let mut tx = pool.begin().await?;
     set_context(&mut tx, ctx).await?;
-    if ctx.actor_kind != ActorKind::Support
+    if !matches!(ctx.actor_kind, ActorKind::Support | ActorKind::Staff)
         && let Ok(key) = IDEMPOTENCY_KEY.try_with(|k| *k)
     {
         sqlx::query(

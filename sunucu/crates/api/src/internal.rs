@@ -207,6 +207,8 @@ async fn search(
         return Err(issue("q", "length_out_of_range"));
     }
     tracing::info!(staff = %staff.id, "support search");
+    // The function checks `app.actor_kind = 'staff'` and the active staff user itself.
+    let mut tx = db::begin_staff(&state.db, staff.id).await?;
     let rows: Vec<(
         Uuid,
         String,
@@ -216,8 +218,9 @@ async fn search(
         chrono::DateTime<chrono::Utc>,
     )> = sqlx::query_as("SELECT * FROM support_find_workspace($1)")
         .bind(q)
-        .fetch_all(&state.db)
+        .fetch_all(&mut *tx)
         .await?;
+    tx.rollback().await?;
     Ok(Json(json!(
         rows.into_iter()
             .map(|(id, name, mode, region, pseudonym, created_at)| json!({
