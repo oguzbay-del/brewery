@@ -68,6 +68,6 @@ GRISTORA; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve we
 ## İkonlar ve logo
 
 - Uygulamada Apple SF Symbols kullanılır; çizgi kalınlığı metin ağırlığını izler. Konsept ve buradaki önizlemeler SF Symbols'e benzeyen basit çizgi ikonlarla çizilmiştir; web uygulamasında SF Symbols lisansı web'e izin vermediği için ayrı bir ikon seti seçilmesi gerekir.
-- Onaylı marka dosyaları: [açık zemin logosu](assets/brand/gristora-logo.svg), [koyu zemin logosu](assets/brand/gristora-logo-light.svg), [sembol](assets/brand/gristora-symbol.svg), [sloganlı logo](assets/brand/gristora-logo-proof.svg). Dosyaları değiştirme.
+- Onaylı marka dosyaları: [koyu zemin logosu](assets/brand/gristora-logo.svg) (açık yazı), [açık zemin logosu](assets/brand/gristora-logo-light.svg) (Forest Green yazı), [sembol](assets/brand/gristora-symbol.svg) (uygulama başlığında sembol ve yanında metin olarak "GRISTORA", ADR-0012 › 3), [sloganlı logo](assets/brand/gristora-logo-proof.svg). Dosyaları değiştirme.
 - Plus Jakarta Sans yalnız marka başlıkları içindir. Uygulama sistem yazısını korur.
-- Marka renkleri `brand-forest`, `brand-amber`, `brand-amber-text`, `brand-stone`, `brand-slate` mevcut semantik renklerin yerine geçmez. Koyu tema marka değerleri ve iOS varlık kataloğu henüz kararlaştırılmadı.
+- Marka rengi uygulamaya yalnız vurgu olarak girer (ADR-0012 › 3): `tint-fill` açık ve koyu temada Amber Gold `#F4A261`, koyu temada `tint` de `#F4A261`. Açık temada Amber Gold yazı rengi olmaz (beyaz üzerinde 2.06:1). Yüksek karşıtlık temaları marka rengini kullanmaz. Forest Green, Stone Beige ve Slate Gray uygulamada renk token'ı olmaz; Forest Green yalnız uygulama ikonu zemininde ve yazdırılan formların sembolünde görünür.

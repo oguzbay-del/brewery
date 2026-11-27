@@ -1,10 +1,5 @@
 /* GRISTORA Tasarım Sistemi — generated from tokens.json */
 :root, [data-theme="light"] {
-  --brand-forest: #0B2F26;
-  --brand-amber: #F4A261;
-  --brand-amber-text: #8B4A1F;
-  --brand-stone: #F7F6F3;
-  --brand-slate: #475569;
   --bg: #f2f2f7;
   --card: #ffffff;
   --fill: #e5e5ea;
@@ -14,7 +9,7 @@
   --label2: rgba(60,60,67,.75);
   --label3: rgba(60,60,67,.35);
   --tint: #985600;
-  --tint-fill: #e8901f;
+  --tint-fill: #F4A261;
   --tint-ink: #1a1206;
   --tint-soft: rgba(152,86,0,.13);
   --green: #1d7233;
@@ -44,10 +39,10 @@
   --label: #ffffff;
   --label2: rgba(235,235,245,.62);
   --label3: rgba(235,235,245,.32);
-  --tint: #f0a03c;
-  --tint-fill: #f0a03c;
+  --tint: #F4A261;
+  --tint-fill: #F4A261;
   --tint-ink: #1a1206;
-  --tint-soft: rgba(240,160,60,.18);
+  --tint-soft: rgba(244,162,97,.18);
   --green: #30d158;
   --yellow: #ffd60a;
   --red: #ff453a;
