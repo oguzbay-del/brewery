@@ -45,11 +45,10 @@ function requestId(): string {
   throw new Error('Secure UUID generation is unavailable');
 }
 
-/** Sends a JSON API request and returns its decoded response. */
-export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+async function send(path: string, options: ApiRequestOptions, accept: string): Promise<Response> {
   const { method, body, headers: suppliedHeaders, ifMatch, idempotencyKey, ...rest } = options;
   const headers = new Headers(suppliedHeaders);
-  headers.set('Accept', 'application/json');
+  headers.set('Accept', accept);
   headers.set('X-Request-ID', requestId());
   if (body !== undefined) headers.set('Content-Type', 'application/json');
   if (ifMatch !== undefined) headers.set('If-Match', ifMatch);
@@ -62,13 +61,27 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-
   if (!response.ok) {
     const error = await apiErrorFromResponse(response);
     const kind = moduleErrorKind(error);
     if (kind) moduleErrorListeners.forEach((listener) => listener(kind));
     throw error;
   }
+  return response;
+}
+
+/** Sends a JSON API request and returns its decoded response. */
+export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  const response = await send(path, options, 'application/json');
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
+}
+
+/** Sends an API request that answers with a file (for example a PDF) and returns the file. */
+export async function apiFetchBlob(
+  path: string,
+  options: ApiRequestOptions = {},
+  accept = 'application/pdf',
+): Promise<Blob> {
+  return (await send(path, options, accept)).blob();
 }

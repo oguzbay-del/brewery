@@ -14,6 +14,7 @@ export default function App() {
     home: useText('ui.nav.home'),
     recipes: useText('ui.nav.recipes'),
     batches: useText('ui.nav.batches'),
+    containers: useText('ui.nav.containers'),
     settings: useText('ui.nav.settings'),
     readOnly: useText('ui.modules.read_only'),
     theme: useText('ui.theme.label'),

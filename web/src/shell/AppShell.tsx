@@ -11,6 +11,7 @@ export interface ShellLabels {
   home: string;
   recipes: string;
   batches: string;
+  containers: string;
   settings: string;
   readOnly: string;
   theme: string;
@@ -60,6 +61,7 @@ export function AppShell({ labels, children }: AppShellProps) {
           <NavLink route="/" label={labels.home} readOnlyLabel={labels.readOnly} />
           <NavLink route="/recipes" label={labels.recipes} readOnlyLabel={labels.readOnly} />
           <NavLink route="/batches" label={labels.batches} readOnlyLabel={labels.readOnly} />
+          <NavLink route="/containers" label={labels.containers} readOnlyLabel={labels.readOnly} />
           <NavLink route="/settings" label={labels.settings} readOnlyLabel={labels.readOnly} />
         </nav>
         <label className="app-shell__theme-control">
