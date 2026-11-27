@@ -726,6 +726,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
+ "redis",
  "sentry",
  "sentry-tracing",
  "serde",

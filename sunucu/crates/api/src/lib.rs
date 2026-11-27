@@ -28,7 +28,7 @@ pub mod pagination;
 pub mod ratelimit;
 pub mod recipe_org;
 pub mod recipes;
-pub mod redis_client;
+pub use common::redis_client;
 pub mod request;
 pub mod routes;
 pub mod search;

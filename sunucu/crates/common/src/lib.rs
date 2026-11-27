@@ -7,6 +7,8 @@ pub mod error;
 pub mod http;
 #[cfg(feature = "otel")]
 pub mod otel;
+#[cfg(feature = "redis")]
+pub mod redis_client;
 pub mod retention;
 #[cfg(feature = "sentry")]
 pub mod sentry;
