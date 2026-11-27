@@ -6,7 +6,7 @@ export type Mode = "home" | "brewery";
 export type QuantityId = "volume" | "mass" | "temperature" | "gravity" | "color" | "pressure" | "time" | "length" | "percent" | "concentration" | "hardness" | "co2" | "dose" | "ratio" | "bitterness" | "ph";
 export type UnitId = "l" | "ml" | "hl" | "gal_us" | "qt_us" | "fl_oz_us" | "gal_uk" | "qt_uk" | "fl_oz_uk" | "bbl_us" | "bbl_uk" | "kg" | "g" | "lb" | "oz" | "c" | "f" | "sg" | "sg_x1000" | "plato" | "brix" | "srm" | "ebc" | "lovibond" | "bar" | "kpa" | "psi" | "min" | "h" | "d" | "m" | "ft" | "pct" | "ppm" | "mg_l" | "caco3_mg_l" | "dh" | "fh" | "meq_l" | "vol" | "g_l_co2" | "g_l" | "oz_gal_us" | "oz_gal_uk" | "lb_bbl_us" | "l_kg" | "qt_lb" | "ibu" | "ph";
 export type FieldKey = "recipe.batch_volume_l" | "recipe.boil_volume_l" | "recipe.boil_time_min" | "recipe.efficiency_pct" | "equipment.trub_loss_l" | "equipment.pre_trub_loss_l" | "equipment.altitude_m" | "equipment.hop_util_pct" | "equipment.whirlpool_time_min" | "fermentable.amount_kg" | "fermentable.yield_pct" | "fermentable.color_srm" | "fermentable.late_extract_min" | "hop.amount_kg" | "hop.alpha_pct" | "hop.time_min" | "hop.whirlpool_temp_c" | "yeast.min_attenuation_pct" | "yeast.max_attenuation_pct" | "yeast.tolerance_abv_pct" | "yeast.viability_pct" | "mash.grain_weight_kg" | "mash.step_temp_c" | "mash.step_time_min" | "mash.thickness_l_per_kg" | "measurement.sg" | "measurement.og_sg" | "measurement.fg_sg" | "measurement.temp_c" | "measurement.ph" | "target.ibu" | "target.color_srm" | "target.mash_ph" | "target.co2_vol" | "process.keg_pressure_bar" | "process.priming_g_per_l" | "water.calcium_ppm" | "water.magnesium_ppm" | "water.sodium_ppm" | "water.chloride_ppm" | "water.sulfate_ppm" | "water.bicarbonate_ppm" | "water.ph" | "tool.volume_l" | "tool.mass_kg";
-export type UiKey = "shell.app_name" | "shell.skip_to_content" | "shell.navigation" | "nav.home" | "nav.recipes" | "nav.batches" | "nav.settings" | "theme.label" | "theme.light" | "theme.dark" | "theme.high_contrast" | "nav.containers" | "modules.title" | "modules.on" | "modules.off" | "modules.read_only" | "modules.loading" | "modules.empty" | "modules.error" | "modules.error_request_id" | "modules.sign_in_required" | "modules.not_member" | "modules.upgrade_title" | "modules.upgrade_body" | "modules.upgrade_link" | "modules.read_only_banner" | "modules.read_only_reason" | "modules.api_disabled" | "modules.api_read_only" | "modules.dismiss" | "module.core" | "module.devices" | "module.stock" | "module.production" | "module.quality" | "module.cost_reports" | "module.tax_compliance" | "module.team" | "containers.title" | "containers.loading" | "containers.empty" | "containers.error" | "containers.status_counts" | "containers.events" | "containers.events_empty" | "containers.print_labels" | "containers.paper_a4" | "containers.paper_letter" | "containers.module_off" | "containers.status_clean" | "containers.status_filled" | "containers.status_out" | "containers.status_dirty" | "containers.status_maintenance" | "containers.status_retired" | "containers.serial" | "containers.status" | "containers.package_type" | "containers.filter_all" | "containers.load_more" | "containers.select_one" | "containers.paper" | "containers.print_none" | "containers.print_error" | "containers.detail" | "containers.close_detail" | "containers.col_event" | "containers.col_note" | "containers.col_when" | "containers.event_scan" | "containers.event_status_changed" | "containers.event_fill" | "containers.event_note" | "containers.retire" | "containers.retire_note" | "containers.action_error" | "containers.create_title" | "containers.prefix" | "containers.count" | "containers.create" | "containers.package_types_empty";
+export type UiKey = "shell.app_name" | "shell.skip_to_content" | "shell.navigation" | "nav.home" | "nav.recipes" | "nav.batches" | "nav.settings" | "theme.label" | "theme.light" | "theme.dark" | "theme.high_contrast" | "nav.containers" | "modules.title" | "modules.on" | "modules.off" | "modules.read_only" | "modules.loading" | "modules.empty" | "modules.error" | "modules.error_request_id" | "modules.sign_in_required" | "modules.not_member" | "modules.upgrade_title" | "modules.upgrade_body" | "modules.upgrade_link" | "modules.read_only_banner" | "modules.read_only_reason" | "modules.api_disabled" | "modules.api_read_only" | "modules.dismiss" | "module.core" | "module.devices" | "module.stock" | "module.production" | "module.quality" | "module.cost_reports" | "module.tax_compliance" | "module.team" | "containers.title" | "containers.loading" | "containers.empty" | "containers.error" | "containers.status_counts" | "containers.events" | "containers.events_empty" | "containers.print_labels" | "containers.paper_a4" | "containers.paper_letter" | "containers.module_off" | "containers.status_clean" | "containers.status_filled" | "containers.status_out" | "containers.status_dirty" | "containers.status_maintenance" | "containers.status_retired" | "containers.serial" | "containers.status" | "containers.package_type" | "containers.filter_all" | "containers.load_more" | "containers.select_one" | "containers.paper" | "containers.print_none" | "containers.print_error" | "containers.detail" | "containers.close_detail" | "containers.col_event" | "containers.col_note" | "containers.col_when" | "containers.event_scan" | "containers.event_status_changed" | "containers.event_fill" | "containers.event_note" | "containers.retire" | "containers.retire_note" | "containers.action_error" | "containers.create_title" | "containers.prefix" | "containers.count" | "containers.create" | "containers.package_types_empty" | "nav.scan" | "scan.title" | "scan.intro" | "scan.code_label" | "scan.code_placeholder" | "scan.resolve" | "scan.camera" | "scan.camera_close" | "scan.camera_unavailable" | "scan.resolving" | "scan.result_title" | "scan.kind_container" | "scan.kind_vessel" | "scan.kind_lot" | "scan.actions_title" | "scan.no_actions" | "scan.action_view" | "scan.action_change_status" | "scan.action_fill" | "scan.action_retire" | "scan.action_recall" | "scan.action_print_label" | "scan.detail_serial" | "scan.detail_status" | "scan.detail_package" | "scan.detail_volume" | "scan.detail_code" | "scan.detail_name" | "scan.detail_capacity" | "scan.detail_cleaning" | "scan.detail_ingredient" | "scan.detail_quantity" | "scan.detail_expires" | "scan.error_not_found" | "scan.error_forbidden" | "scan.error_generic";
 export type FieldErrorCode = "invalid_number" | "out_of_range";
 
 export interface UnitDef {
@@ -602,7 +602,43 @@ export const TEXTS: Record<Locale, LocaleTexts> = {
       "containers.prefix": "Seri öneki",
       "containers.count": "Adet",
       "containers.create": "Ekle",
-      "containers.package_types_empty": "Önce bir ambalaj türü tanımla"
+      "containers.package_types_empty": "Önce bir ambalaj türü tanımla",
+      "nav.scan": "Tara",
+      "scan.title": "Tara",
+      "scan.intro": "Tank, lot veya fıçı kodunu okut ya da elle yaz.",
+      "scan.code_label": "Kod",
+      "scan.code_placeholder": "Kodu yaz veya yapıştır",
+      "scan.resolve": "Kodu aç",
+      "scan.camera": "Kamerayla tara",
+      "scan.camera_close": "Kamerayı kapat",
+      "scan.camera_unavailable": "Bu cihazda kamerayla tarama kullanılamıyor. Kodu elle yaz.",
+      "scan.resolving": "Kod aranıyor",
+      "scan.result_title": "Okunan kayıt",
+      "scan.kind_container": "Fıçı",
+      "scan.kind_vessel": "Tank",
+      "scan.kind_lot": "Lot",
+      "scan.actions_title": "Eylemler",
+      "scan.no_actions": "Bu kayıt için yapabileceğin eylem yok.",
+      "scan.action_view": "Görüntüle",
+      "scan.action_change_status": "Durumu değiştir",
+      "scan.action_fill": "Doldur",
+      "scan.action_retire": "Emekliye ayır",
+      "scan.action_recall": "Geri çağır",
+      "scan.action_print_label": "Etiket yazdır",
+      "scan.detail_serial": "Seri no",
+      "scan.detail_status": "Durum",
+      "scan.detail_package": "Ambalaj türü",
+      "scan.detail_volume": "Hacim",
+      "scan.detail_code": "Kod",
+      "scan.detail_name": "Ad",
+      "scan.detail_capacity": "Kapasite",
+      "scan.detail_cleaning": "Temizlik durumu",
+      "scan.detail_ingredient": "Malzeme",
+      "scan.detail_quantity": "Miktar",
+      "scan.detail_expires": "Son kullanma",
+      "scan.error_not_found": "Bu kod bulunamadı.",
+      "scan.error_forbidden": "Bu işlem için yetkin yok veya Üretim modülü kapalı.",
+      "scan.error_generic": "Kod okunamadı. Tekrar dene."
     }
   },
   "en": {
@@ -1046,7 +1082,43 @@ export const TEXTS: Record<Locale, LocaleTexts> = {
       "containers.prefix": "Serial prefix",
       "containers.count": "Count",
       "containers.create": "Add",
-      "containers.package_types_empty": "Define a package type first"
+      "containers.package_types_empty": "Define a package type first",
+      "nav.scan": "Scan",
+      "scan.title": "Scan",
+      "scan.intro": "Scan a tank, lot or keg code, or type it.",
+      "scan.code_label": "Code",
+      "scan.code_placeholder": "Type or paste the code",
+      "scan.resolve": "Open code",
+      "scan.camera": "Scan with camera",
+      "scan.camera_close": "Close camera",
+      "scan.camera_unavailable": "Camera scanning is not available on this device. Type the code.",
+      "scan.resolving": "Looking up the code",
+      "scan.result_title": "Scanned record",
+      "scan.kind_container": "Keg",
+      "scan.kind_vessel": "Tank",
+      "scan.kind_lot": "Lot",
+      "scan.actions_title": "Actions",
+      "scan.no_actions": "You have no actions for this record.",
+      "scan.action_view": "View",
+      "scan.action_change_status": "Change status",
+      "scan.action_fill": "Fill",
+      "scan.action_retire": "Retire",
+      "scan.action_recall": "Recall",
+      "scan.action_print_label": "Print label",
+      "scan.detail_serial": "Serial no.",
+      "scan.detail_status": "Status",
+      "scan.detail_package": "Package type",
+      "scan.detail_volume": "Volume",
+      "scan.detail_code": "Code",
+      "scan.detail_name": "Name",
+      "scan.detail_capacity": "Capacity",
+      "scan.detail_cleaning": "Cleaning status",
+      "scan.detail_ingredient": "Ingredient",
+      "scan.detail_quantity": "Quantity",
+      "scan.detail_expires": "Expires",
+      "scan.error_not_found": "This code was not found.",
+      "scan.error_forbidden": "You have no permission for this, or the Production module is off.",
+      "scan.error_generic": "The code could not be read. Try again."
     }
   }
 };

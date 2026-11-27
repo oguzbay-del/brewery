@@ -9,14 +9,16 @@ protocol ModulesService: Sendable {
 /// Reads `GET /v1/me/session` for the workspace, then `GET /v1/meta?workspace_id=` (same as the web).
 struct LiveModulesService: ModulesService {
     let api: APIClient
+    let workspace: WorkspaceResolver
+
+    init(api: APIClient, workspace: WorkspaceResolver? = nil) {
+        self.api = api
+        self.workspace = workspace ?? WorkspaceResolver(api: api)
+    }
 
     func loadModules() async throws -> [ModuleSnapshot]? {
-        let session = try await api.client.me_session_get(.init())
-        guard case let .ok(sessionOK) = session else { throw APIError.unexpected(status: 0) }
-        let info = try sessionOK.body.json
-        guard let workspace = info.workspaces.first else { return nil }
-
-        let meta = try await api.client.meta_modules_get(.init(query: .init(workspace_id: workspace.id)))
+        guard let workspaceID = try await workspace.workspaceID() else { return nil }
+        let meta = try await api.client.meta_modules_get(.init(query: .init(workspace_id: workspaceID)))
         guard case let .ok(metaOK) = meta else { throw APIError.unexpected(status: 0) }
         return try metaOK.body.json.modules.map {
             ModuleSnapshot(id: $0.id, enabled: $0.enabled, readOnly: $0.read_only)
