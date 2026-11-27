@@ -53,6 +53,7 @@ pub const MODULES: &[Module] = &[
     crate::internal::MODULE,
     crate::import_export::MODULE,
     crate::account_deletion::MODULE,
+    crate::oauth::MODULE,
 ];
 
 /// The routes of all modules, with the auth services as a request extension.
@@ -178,6 +179,7 @@ pub const MODULE_KEY_MAP: &[(&str, &str)] = &[
     ("internal", "core"),
     ("import-export", "core"),
     ("account_deletion", "core"),
+    ("oauth", "core"),
 ];
 
 /// Returns the product module for an API module name.
@@ -263,7 +265,7 @@ pub fn is_export_path(path: &str) -> bool {
         .any(|segment| matches!(segment, "export" | "exports"))
 }
 
-fn path_matches(template: &str, actual: &str) -> bool {
+pub(crate) fn path_matches(template: &str, actual: &str) -> bool {
     let template: Vec<_> = template.trim_start_matches('/').split('/').collect();
     let actual: Vec<_> = actual.trim_start_matches('/').split('/').collect();
     template.len() == actual.len()

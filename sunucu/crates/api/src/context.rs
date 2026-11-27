@@ -39,6 +39,9 @@ pub struct Identity {
     pub session_id: Option<Uuid>,
     /// Who acts (`user`, `device`, ...).
     pub actor_kind: ActorKind,
+    /// Set when an OAuth access token authenticated the call (ADR-0015). Such a call has no
+    /// session and never counts as a second step.
+    pub oauth: Option<crate::oauth::OAuthBinding>,
 }
 
 /// A member's effective permissions inside one workspace.
@@ -184,6 +187,9 @@ async fn resolve(
     let workspace_id = workspace_in_path(path)?;
     let identity = state.auth.authenticate(headers).await?;
     state.auth.check_csrf(method, headers, &identity).await?;
+    if let Some(binding) = &identity.oauth {
+        crate::oauth::verify::check_request(state, method, path, workspace_id, binding)?;
+    }
     let membership = match workspace_id {
         Some(ws) => state
             .auth
@@ -191,6 +197,13 @@ async fn resolve(
             .await?
             .ok_or_else(|| ApiError::new(ErrorCode::NotFound))?,
         None => Membership::default(),
+    };
+    let membership = match &identity.oauth {
+        Some(binding) => {
+            crate::oauth::verify::gate(state, method, binding).await?;
+            crate::oauth::scopes::narrow(membership, &binding.scopes)
+        }
+        None => membership,
     };
     state
         .rate

@@ -627,6 +627,7 @@ mod tests {
                 user_id: Uuid::nil(),
                 session_id: None,
                 actor_kind: db::ActorKind::User,
+                oauth: None,
             },
             workspace_id: Some(Uuid::nil()),
             permissions: perms.iter().map(|p| p.as_str().to_owned()).collect(),

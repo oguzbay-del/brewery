@@ -108,6 +108,7 @@ impl Authenticator for FakeAuth {
                 user_id: user,
                 session_id: None,
                 actor_kind: self.actor.lock().unwrap().unwrap_or(ActorKind::User),
+                oauth: None,
             })
         })
     }

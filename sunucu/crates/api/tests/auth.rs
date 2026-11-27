@@ -1881,6 +1881,7 @@ async fn first_workspace_makes_the_user_its_administrator(pool: PgPool) {
                 user_id,
                 session_id: None,
                 actor_kind: db::ActorKind::User,
+                oauth: None,
             },
             ws,
         )

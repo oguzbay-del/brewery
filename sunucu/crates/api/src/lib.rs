@@ -24,6 +24,7 @@ pub mod internal;
 pub mod library;
 pub mod modules;
 pub mod notifications;
+pub mod oauth;
 pub mod openapi;
 pub mod pagination;
 pub mod ratelimit;
