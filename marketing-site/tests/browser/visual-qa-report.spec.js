@@ -127,12 +127,26 @@ test("MQ-11a detects an intentional geometry defect in an isolated fixture", asy
   expect(findings.some((f) => f.rule === "horizontal-clipping")).toBe(true);
 });
 
-for (const route of routes) {
-  for (const width of widths) {
-    test(`MQ-11a visual report ${route.locale} ${route.path} ${width}px`, async ({ page, browser }, testInfo) => {
+const cases = routes.flatMap((route) => widths.map((width) => ({
+  route, width, state: "default",
+})));
+for (const route of routes.filter((r) => r.path === "/" || r.path === "/tr/" || r.path.endsWith("/faq/"))) {
+  for (const width of [390, 1440]) {
+    for (const state of ["forced-colors", "reduced-motion", "keyboard-focus"]) {
+      cases.push({ route, width, state });
+    }
+  }
+}
+
+for (const { route, width, state } of cases) {
+    test(`MQ-11a visual report ${route.locale} ${route.path} ${width}px ${state}`, async ({ page, browser }, testInfo) => {
       test.setTimeout(60_000);
       await page.setViewportSize({ width, height: 900 });
-      await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
+      await page.emulateMedia({
+        reducedMotion: state === "reduced-motion" ? "reduce" : "no-preference",
+        forcedColors: state === "forced-colors" ? "active" : "none",
+        colorScheme: "light",
+      });
       const response = await page.goto(route.path, { waitUntil: "load" });
       if (route.missing) expect(response?.status()).toBe(404);
       else expect(response?.ok()).toBeTruthy();
@@ -144,6 +158,40 @@ for (const route of routes) {
         }));
       });
       const findings = await inspectGeometry(page);
+      if (state === "keyboard-focus") {
+        await page.keyboard.press("Tab");
+        const focus = await page.evaluate(() => {
+          const el = document.activeElement;
+          if (!el || el === document.body) return null;
+          const box = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          return {
+            selector: el.id ? "#" + CSS.escape(el.id) : el.localName,
+            focusVisible: el.matches(":focus-visible"),
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+            boxShadow: style.boxShadow,
+            bounds: { left: box.left, right: box.right, top: box.top, bottom: box.bottom },
+          };
+        });
+        if (!focus || !focus.focusVisible || focus.bounds.right <= 0 ||
+            focus.bounds.left >= width || focus.bounds.bottom <= 0 || focus.bounds.top >= 900) {
+          findings.push({
+            rule: "keyboard-focus-visibility", selector: focus?.selector || "document",
+            expected: "First keyboard focus is visible inside the viewport",
+            actual: focus, severity: "P1",
+          });
+        }
+        // A custom focus treatment may be valid; this is a review hint only.
+        if (focus && (focus.outlineStyle === "none" || focus.outlineWidth === "0px") &&
+            focus.boxShadow === "none") {
+          findings.push({
+            rule: "keyboard-focus-indicator-review", selector: focus.selector,
+            expected: "Visible focus treatment, including custom indicators",
+            actual: focus, severity: "P2",
+          });
+        }
+      }
       // Existing axe assertions stay unchanged. New route coverage is report-only.
       if (width === 390 || width === 1440) {
         const result = await new AxeBuilder({ page })
@@ -162,7 +210,7 @@ for (const route of routes) {
       }
       const name = "mq11a-" + route.locale + "-" +
         (route.path.split("/").filter(Boolean).join("-") || "home") +
-        "-" + width + "-default";
+        "-" + width + "-" + state;
       const screenshot = name + ".png";
       await page.screenshot({
         path: testInfo.outputPath(screenshot),
@@ -173,7 +221,7 @@ for (const route of routes) {
         mode: "report-only", ...await provenance(), route: route.path,
         locale: route.locale, viewport: { width, height: 900 },
         browser: testInfo.project.name, browserVersion: browser.version(),
-        state: "default", screenshot, findings,
+        state, screenshot, findings,
         limitations: ["Not a visual acceptance pass", "Intentional scroll regions excluded from element checks"],
       };
       await writeFile(testInfo.outputPath(name + ".json"), JSON.stringify(evidence, null, 2));
@@ -181,5 +229,4 @@ for (const route of routes) {
       // until a protected workflow change permits JSON artifact upload.
       console.log("MQ11A_REPORT " + JSON.stringify(evidence));
     });
-  }
 }
