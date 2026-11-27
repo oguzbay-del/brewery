@@ -116,6 +116,11 @@ pub async fn search(
             out
         }
     };
+    // An OAuth token sees only the result types that its scopes allow (ADR-0015 rule 4).
+    let types = match &ctx.identity.oauth {
+        Some(binding) => types_for_scopes(types, &binding.scopes),
+        None => types,
+    };
     let limit = query.limit.unwrap_or(DEFAULT_LIMIT);
     if !(1..=MAX_LIMIT).contains(&limit) {
         return Err(crate::error::ApiError::validation(vec![
@@ -164,6 +169,48 @@ pub async fn search(
     .fetch_all(&mut *tx)
     .await?;
     Ok(Json(SearchResults { items }))
+}
+
+/// Keeps the result types that the scopes of an OAuth token allow: batches need `batches:read`,
+/// stock needs `stock:read`, recipes and library ingredients need `recipes:read`.
+fn types_for_scopes(
+    types: Vec<String>,
+    scopes: &std::collections::BTreeSet<String>,
+) -> Vec<String> {
+    types
+        .into_iter()
+        .filter(|t| {
+            scopes.contains(match t.as_str() {
+                "batch" => "batches:read",
+                "stock" => "stock:read",
+                _ => "recipes:read",
+            })
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod scope_tests {
+    use super::*;
+
+    #[test]
+    fn a_token_sees_only_the_types_of_its_scopes() {
+        let all: Vec<String> = TYPES.iter().map(|t| (*t).to_owned()).collect();
+        let scopes = |s: &[&str]| s.iter().map(|x| (*x).to_owned()).collect();
+        assert_eq!(
+            types_for_scopes(all.clone(), &scopes(&["recipes:read"])),
+            ["recipe", "ingredient"]
+        );
+        assert_eq!(
+            types_for_scopes(all.clone(), &scopes(&["recipes:read", "batches:read"])),
+            ["recipe", "batch", "ingredient"]
+        );
+        assert_eq!(
+            types_for_scopes(all.clone(), &scopes(&["recipes:read", "stock:read"])),
+            ["recipe", "ingredient", "stock"]
+        );
+        assert!(types_for_scopes(all, &scopes(&["calc"])).is_empty());
+    }
 }
 
 /// The search route, wrapped with the sign-in layer.
