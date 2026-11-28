@@ -41,16 +41,13 @@ function Gallery() {
           const status: StatusTone = item.id === 'error' ? 'error' : 'neutral';
           const kind: StateViewProps['kind'] =
             item.id === 'error' ? 'error' : item.id === 'normal' ? 'loading' : 'empty';
+          const action = item.id === 'disabled' ? <button disabled>{text.retry}</button> : undefined;
+          const stateTitle =
+            kind === 'loading' ? text.loading : kind === 'empty' ? text.empty : item.title;
           return (
             <section key={item.id} className="kit-gallery-case" data-case={item.id}>
               <h2>{item.label}</h2>
-              <Callout
-                tone={tone}
-                title={item.title}
-                action={
-                  item.id === 'disabled' ? <button disabled>{text.retry}</button> : undefined
-                }
-              >
+              <Callout tone={tone} title={item.title} action={action}>
                 {item.detail}
               </Callout>
               <SummaryCard
@@ -61,13 +58,9 @@ function Gallery() {
               />
               <StateView
                 kind={kind}
-                title={
-                  kind === 'loading' ? text.loading : kind === 'empty' ? text.empty : item.title
-                }
+                title={stateTitle}
                 description={item.detail}
-                action={
-                  item.id === 'disabled' ? <button disabled>{text.retry}</button> : undefined
-                }
+                action={action}
               />
               <StatusBadge tone={status} label={item.title} />
               <div className="kit-gallery-alarms">
