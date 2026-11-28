@@ -84,6 +84,37 @@ async function inspectGeometry(page) {
       if (el.tagName === "IMG" && (!el.complete || el.naturalWidth === 0)) {
         report("image-load", el, "loaded image", { src: el.currentSrc, complete: el.complete });
       }
+      // A fill image can be stretched. Cover/contain intentionally preserve ratio.
+      if (el.tagName === "IMG" && el.complete && el.naturalWidth > 0 &&
+          el.naturalHeight > 0 && style.objectFit === "fill" &&
+          el.clientWidth > 0 && el.clientHeight > 0) {
+        const intrinsic = el.naturalWidth / el.naturalHeight;
+        const displayed = el.clientWidth / el.clientHeight;
+        if (Math.abs(displayed / intrinsic - 1) > 0.05) {
+          report("image-aspect-review", el, "Intrinsic aspect ratio within 5% when object-fit is fill", {
+            intrinsic, displayed, src: el.currentSrc,
+          }, "P2");
+        }
+      }
+      // Check meaningful text and controls against clipping ancestors. Do not
+      // classify intended image cropping or labelled horizontal scroll as defects.
+      if (el.tagName !== "IMG") {
+        for (let parent = el.parentElement; parent && parent !== document.body; parent = parent.parentElement) {
+          const parentStyle = getComputedStyle(parent);
+          const parentBox = parent.getBoundingClientRect();
+          const left = parentBox.left + parent.clientLeft;
+          const top = parentBox.top + parent.clientTop;
+          const clipX = ["hidden", "clip"].includes(parentStyle.overflowX);
+          const clipY = ["hidden", "clip"].includes(parentStyle.overflowY);
+          if ((clipX && (box.left < left - tolerance || box.right > left + parent.clientWidth + tolerance)) ||
+              (clipY && (box.top < top - tolerance || box.bottom > top + parent.clientHeight + tolerance))) {
+            report("ancestor-clipping-review", el, "Meaningful element fits clipping ancestor", {
+              ancestor: identify(parent), clipX, clipY,
+            }, "P2");
+            break;
+          }
+        }
+      }
     }
     for (const group of document.querySelectorAll(".sx-card-grid, .sx-audience-grid")) {
       const children = Array.from(group.children).filter(visible);
@@ -125,6 +156,9 @@ test("MQ-11a detects an intentional geometry defect in an isolated fixture", asy
   expect(findings.some((f) => f.rule === "page-overflow")).toBe(true);
   expect(findings.some((f) => f.rule === "sibling-overlap")).toBe(true);
   expect(findings.some((f) => f.rule === "horizontal-clipping")).toBe(true);
+  await page.setContent('<main><div style="width:50px;height:30px;overflow:hidden"><button style="width:120px;height:50px">Clipped control</button></div></main>');
+  const clipped = await inspectGeometry(page);
+  expect(clipped.some((f) => f.rule === "ancestor-clipping-review")).toBe(true);
 });
 
 const cases = routes.flatMap((route) => widths.map((width) => ({
