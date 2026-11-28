@@ -355,6 +355,40 @@
         },
         "type": "object"
       },
+      "AppleCallbackForm": {
+        "description": "Form body of the Apple callback (`response_mode=form_post`). Documentation schema only;\nthe handler reads the raw body.",
+        "properties": {
+          "code": {
+            "description": "Authorization code.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "description": "Error code of Apple, if the user did not agree.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "state": {
+            "description": "The `state` from the start step.",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "user": {
+            "description": "JSON with the name of the user. Apple sends it only on the first authorization.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
       "AppleSyncRequest": {
         "description": "Body of `POST /v1/billing/apple/sync`.",
         "properties": {
@@ -13614,6 +13648,102 @@
         "x-permission": "none"
       }
     },
+    "/v1/auth/apple/callback": {
+      "post": {
+        "description": "The user is in the browser, so an error does not give a JSON body: it gives `303` to\n`<web base url>/sign-in?error=<code>`. Codes: `invalid_state` (state missing, wrong, used,\nexpired, or not tied to this browser), `access_denied`, `provider_error`, `missing_code`,\n`code_invalid`, `nonce_invalid`, `sign_in_failed`, `provider_unavailable`,\n`provider_not_configured`. A good sign-in sets `__Host-session`, clears\n`__Host-oauth_state` and answers `303` to the `return_to` path.",
+        "operationId": "auth_apple_callback",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/AppleCallbackForm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "303": {
+            "description": "To the web app (signed in) or to `/sign-in?error=<code>`",
+            "headers": {
+              "Location": {
+                "description": "Web app address",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "`__Host-session` (on success) and the cleared `__Host-oauth_state`",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [],
+        "summary": "Callback of Apple (`response_mode=form_post`). Answers `303` in every case.",
+        "tags": [
+          "auth"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
     "/v1/auth/email/start": {
       "post": {
         "operationId": "auth_email_start",
@@ -14361,6 +14491,121 @@
         "x-permission": "none"
       }
     },
+    "/v1/auth/google/callback": {
+      "get": {
+        "description": "The answers are the same as for `POST /v1/auth/apple/callback`.",
+        "operationId": "auth_google_callback",
+        "parameters": [
+          {
+            "description": "Authorization code",
+            "in": "query",
+            "name": "code",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The `state` from the start step",
+            "in": "query",
+            "name": "state",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Error code of Google",
+            "in": "query",
+            "name": "error",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "To the web app (signed in) or to `/sign-in?error=<code>`",
+            "headers": {
+              "Location": {
+                "description": "Web app address",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "`__Host-session` (on success) and the cleared `__Host-oauth_state`",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          }
+        },
+        "security": [],
+        "summary": "Callback of Google (code in the query). Answers `303` in every case.",
+        "tags": [
+          "auth"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
     "/v1/auth/nonce": {
       "post": {
         "operationId": "auth_nonce_create",
@@ -14479,6 +14724,174 @@
         },
         "security": [],
         "summary": "Opens a sign-in attempt: a single-use nonce (ADR-0009 rule 1.2).",
+        "tags": [
+          "auth"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/auth/{provider}/start": {
+      "get": {
+        "description": "The server keeps `state`, `nonce` and the PKCE verifier (Google) in Redis for 10 minutes and\nsets the cookie `__Host-oauth_state` (`Secure`, `HttpOnly`, `SameSite=None`). `return_to` is\na path in the web app. A value that is not a relative path starts with one `/` gives `/`.\nWithout the provider settings the answer is `503` with the error `provider_not_configured`.",
+        "operationId": "auth_web_start",
+        "parameters": [
+          {
+            "description": "`apple` or `google`",
+            "in": "path",
+            "name": "provider",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Path in the web app to open after sign-in (default `/`)",
+            "in": "query",
+            "name": "return_to",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "`true`: keep the session across browser restarts",
+            "in": "query",
+            "name": "remember",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "303": {
+            "description": "To the provider authorize page. Sets the cookie `__Host-oauth_state`.",
+            "headers": {
+              "Location": {
+                "description": "Provider authorize address",
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "description": "`__Host-oauth_state`, 10 minutes",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Starts a web sign-in with Apple or Google. Answers `303` to the provider authorize page.",
         "tags": [
           "auth"
         ],

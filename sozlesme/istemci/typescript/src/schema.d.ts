@@ -183,6 +183,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/apple/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Callback of Apple (`response_mode=form_post`). Answers `303` in every case.
+         * @description The user is in the browser, so an error does not give a JSON body: it gives `303` to
+         *     `<web base url>/sign-in?error=<code>`. Codes: `invalid_state` (state missing, wrong, used,
+         *     expired, or not tied to this browser), `access_denied`, `provider_error`, `missing_code`,
+         *     `code_invalid`, `nonce_invalid`, `sign_in_failed`, `provider_unavailable`,
+         *     `provider_not_configured`. A good sign-in sets `__Host-session`, clears
+         *     `__Host-oauth_state` and answers `303` to the `return_to` path.
+         */
+        post: operations["auth_apple_callback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/email/start": {
         parameters: {
             query?: never;
@@ -234,6 +259,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/google/callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Callback of Google (code in the query). Answers `303` in every case.
+         * @description The answers are the same as for `POST /v1/auth/apple/callback`.
+         */
+        get: operations["auth_google_callback"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/nonce": {
         parameters: {
             query?: never;
@@ -245,6 +290,29 @@ export interface paths {
         put?: never;
         /** Opens a sign-in attempt: a single-use nonce (ADR-0009 rule 1.2). */
         post: operations["auth_nonce_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/{provider}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Starts a web sign-in with Apple or Google. Answers `303` to the provider authorize page.
+         * @description The server keeps `state`, `nonce` and the PKCE verifier (Google) in Redis for 10 minutes and
+         *     sets the cookie `__Host-oauth_state` (`Secure`, `HttpOnly`, `SameSite=None`). `return_to` is
+         *     a path in the web app. A value that is not a relative path starts with one `/` gives `/`.
+         *     Without the provider settings the answer is `503` with the error `provider_not_configured`.
+         */
+        get: operations["auth_web_start"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3694,6 +3762,20 @@ export interface components {
              * @description Priority.
              */
             priority?: number | null;
+        };
+        /**
+         * @description Form body of the Apple callback (`response_mode=form_post`). Documentation schema only;
+         *     the handler reads the raw body.
+         */
+        AppleCallbackForm: {
+            /** @description Authorization code. */
+            code?: string | null;
+            /** @description Error code of Apple, if the user did not agree. */
+            error?: string | null;
+            /** @description The `state` from the start step. */
+            state?: string | null;
+            /** @description JSON with the name of the user. Apple sends it only on the first authorization. */
+            user?: string | null;
         };
         /** @description Body of `POST /v1/billing/apple/sync`. */
         AppleSyncRequest: {
@@ -10063,6 +10145,52 @@ export interface operations {
             };
         };
     };
+    auth_apple_callback: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": components["schemas"]["AppleCallbackForm"];
+            };
+        };
+        responses: {
+            /** @description To the web app (signed in) or to `/sign-in?error=<code>` */
+            303: {
+                headers: {
+                    /** @description Web app address */
+                    Location?: string;
+                    /** @description `__Host-session` (on success) and the cleared `__Host-oauth_state` */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     auth_email_start: {
         parameters: {
             query?: never;
@@ -10406,6 +10534,55 @@ export interface operations {
             };
         };
     };
+    auth_google_callback: {
+        parameters: {
+            query?: {
+                /** @description Authorization code */
+                code?: string;
+                /** @description The `state` from the start step */
+                state?: string;
+                /** @description Error code of Google */
+                error?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description To the web app (signed in) or to `/sign-in?error=<code>` */
+            303: {
+                headers: {
+                    /** @description Web app address */
+                    Location?: string;
+                    /** @description `__Host-session` (on success) and the cleared `__Host-oauth_state` */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     auth_nonce_create: {
         parameters: {
             query?: never;
@@ -10462,6 +10639,76 @@ export interface operations {
             /** @description Internal error */
             500: {
                 headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    auth_web_start: {
+        parameters: {
+            query?: {
+                /** @description Path in the web app to open after sign-in (default `/`) */
+                return_to?: string;
+                /** @description `true`: keep the session across browser restarts */
+                remember?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description `apple` or `google` */
+                provider: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description To the provider authorize page. Sets the cookie `__Host-oauth_state`. */
+            303: {
+                headers: {
+                    /** @description Provider authorize address */
+                    Location?: string;
+                    /** @description `__Host-oauth_state`, 10 minutes */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Rate limited */
+            429: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Internal error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Service unavailable */
+            503: {
+                headers: {
+                    /** @description Seconds to wait before retrying */
+                    "Retry-After"?: number;
                     [name: string]: unknown;
                 };
                 content: {

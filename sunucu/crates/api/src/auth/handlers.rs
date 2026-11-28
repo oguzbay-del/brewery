@@ -42,6 +42,8 @@ const HOUR_SECS: u64 = 3600;
 const EMAIL_PER_ADDRESS_PER_HOUR: u32 = 5;
 const EMAIL_PER_IP_PER_HOUR: u32 = 20;
 
+mod web_flow;
+
 type Svc = Extension<Arc<AuthServices>>;
 
 // --- bodies --------------------------------------------------------------------------------
@@ -351,6 +353,38 @@ pub(crate) struct IdentityClaim {
     display_name: String,
 }
 
+/// The identity claim of a verified ID token.
+fn identity_claim(provider: &'static str, claims: super::oidc::Claims) -> IdentityClaim {
+    let email = claims.email.as_deref().and_then(normalize_email);
+    IdentityClaim {
+        provider,
+        subject: claims.sub,
+        audiences: claims.audiences,
+        email_verified: claims.email_verified && email.is_some(),
+        email,
+        display_name: claims.name.unwrap_or_default(),
+    }
+}
+
+/// Encrypts the Apple refresh token for storage (`user_identities.provider_refresh_token_enc`).
+fn seal_apple_refresh(
+    svc: &AuthServices,
+    client_id: &str,
+    refresh_token: &str,
+) -> ApiResult<Vec<u8>> {
+    let cipher = svc
+        .config
+        .provider_token_cipher
+        .as_ref()
+        .ok_or_else(|| ApiError::unavailable(30))?;
+    cipher
+        .encrypt(
+            &apple_auth::ApplePayload::encode_v1(client_id, refresh_token)
+                .map_err(|_| ApiError::new(ErrorCode::Internal))?,
+        )
+        .map_err(|_| ApiError::new(ErrorCode::Internal))
+}
+
 /// The device a session is created for.
 #[derive(Debug, Clone)]
 pub(crate) struct Device {
@@ -402,6 +436,20 @@ impl AuthServices {
         Ok(row.is_some())
     }
 
+    /// Verifies the signature and the claims of an Apple or Google ID token (not the nonce).
+    async fn verify_id_token(
+        &self,
+        provider: &'static str,
+        id_token: &str,
+    ) -> ApiResult<super::oidc::Claims> {
+        let verifier: Option<&OidcVerifier> = match provider {
+            "apple" => self.apple.as_ref(),
+            _ => self.google.as_ref(),
+        };
+        let verifier = verifier.ok_or_else(|| ApiError::new(ErrorCode::NotFound))?;
+        verifier.verify(id_token).await.map_err(oidc_error)
+    }
+
     /// Verifies an Apple or Google token and the single-use nonce.
     async fn verify_provider(
         &self,
@@ -409,12 +457,7 @@ impl AuthServices {
         id_token: &str,
         nonce: &str,
     ) -> ApiResult<IdentityClaim> {
-        let verifier: Option<&OidcVerifier> = match provider {
-            "apple" => self.apple.as_ref(),
-            _ => self.google.as_ref(),
-        };
-        let verifier = verifier.ok_or_else(|| ApiError::new(ErrorCode::NotFound))?;
-        let claims = verifier.verify(id_token).await.map_err(oidc_error)?;
+        let claims = self.verify_id_token(provider, id_token).await?;
         // The nonce row is used up whatever the outcome, so a token cannot be replayed.
         let known = self.consume_nonce(nonce).await?;
         // Apple copies the nonce the client gave it, which is the SHA-256 (hex) of the raw one.
@@ -426,15 +469,7 @@ impl AuthServices {
         if !known || claims.nonce.as_deref() != Some(expected.as_str()) {
             return Err(problem("nonce_invalid", "/nonce"));
         }
-        let email = claims.email.as_deref().and_then(normalize_email);
-        Ok(IdentityClaim {
-            provider,
-            subject: claims.sub,
-            audiences: claims.audiences,
-            email_verified: claims.email_verified && email.is_some(),
-            email,
-            display_name: claims.name.unwrap_or_default(),
-        })
+        Ok(identity_claim(provider, claims))
     }
 
     /// Consumes an e-mail link token (single use, 15 minutes) into an identity claim.
@@ -735,19 +770,7 @@ async fn provider_login(
                     return Err(ApiError::unavailable(30));
                 }
             };
-            let cipher = svc
-                .config
-                .provider_token_cipher
-                .as_ref()
-                .ok_or_else(|| ApiError::unavailable(30))?;
-            Some(
-                cipher
-                    .encrypt(
-                        &apple_auth::ApplePayload::encode_v1(&client_id, &refresh_token)
-                            .map_err(|_| ApiError::new(ErrorCode::Internal))?,
-                    )
-                    .map_err(|_| ApiError::new(ErrorCode::Internal))?,
-            )
+            Some(seal_apple_refresh(svc, &client_id, &refresh_token)?)
         } else {
             None
         }
@@ -1330,7 +1353,10 @@ pub fn routes(state: &AppState) -> Router<AppState> {
         .route("/v1/auth/apple", post(apple_login))
         .route("/v1/auth/google", post(google_login))
         .route("/v1/auth/email/start", post(email_start))
-        .route("/v1/auth/email/verify", post(email_verify));
+        .route("/v1/auth/email/verify", post(email_verify))
+        .route("/v1/auth/{provider}/start", get(web_flow::start))
+        .route("/v1/auth/apple/callback", post(web_flow::apple_callback))
+        .route("/v1/auth/google/callback", get(web_flow::google_callback));
     let me = crate::authenticated(
         state,
         Router::new()
@@ -1426,6 +1452,27 @@ mod spec {
             ],
         },
         OperationSpec {
+            operation_id: "auth_web_start",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[NotFound, RateLimited, Unavailable, Internal],
+        },
+        OperationSpec {
+            operation_id: "auth_apple_callback",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[RateLimited, Internal],
+        },
+        OperationSpec {
+            operation_id: "auth_google_callback",
+            public: true,
+            permission: None,
+            concurrency: None,
+            errors: &[RateLimited, Internal],
+        },
+        OperationSpec {
             operation_id: "me_session_get",
             public: false,
             permission: None,
@@ -1516,6 +1563,9 @@ mod spec {
         google_login,
         email_start,
         email_verify,
+        web_flow::start,
+        web_flow::apple_callback,
+        web_flow::google_callback,
         session_get,
         session_delete,
         sessions_list,

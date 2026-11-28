@@ -23,6 +23,9 @@ patches:
   - target: { kind: HTTPRoute, name: dahili }
     patch: |-
       - { op: replace, path: /spec/hostnames/0, value: internal.demleme.local }
+  - target: { kind: HTTPRoute, name: uygulama }
+    patch: |-
+      - { op: replace, path: /spec/hostnames/0, value: app.demleme.local }
 images:
   - { name: demleme/api, newTag: dev }
   - { name: demleme/engine-service, newTag: dev }

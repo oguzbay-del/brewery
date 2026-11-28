@@ -8,14 +8,16 @@
 //! Use it in-process (`FakeOidc::new` and [`FakeOidc::mint`]) or over HTTP (`POST /{provider}/mint`).
 
 use std::{
+    collections::HashMap,
     sync::{Arc, Mutex, PoisonError},
     time::{SystemTime, UNIX_EPOCH},
 };
 
 use axum::{
-    Json, Router,
-    extract::{Path, State},
+    Form, Json, Router,
+    extract::{Path, Query, State},
     http::StatusCode,
+    response::{Html, IntoResponse, Redirect, Response},
     routing::{get, post},
 };
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
@@ -27,7 +29,7 @@ use rsa::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use sha2_010::Sha256;
+use sha2_010::{Digest, Sha256};
 
 /// Key size; the API verifier accepts 2048 to 8192 bits.
 const KEY_BITS: usize = 2048;
@@ -155,6 +157,15 @@ impl Key {
     }
 }
 
+/// An authorization code the fake authorize page issued.
+struct CodeRecord {
+    client_id: String,
+    nonce: Option<String>,
+    /// PKCE challenge (S256), if the authorize request had one.
+    challenge: Option<String>,
+    spec: MintSpec,
+}
+
 struct Keys {
     apple: Key,
     google: Key,
@@ -166,6 +177,7 @@ struct Keys {
 pub struct FakeOidc {
     base_url: String,
     keys: Mutex<Keys>,
+    codes: Mutex<HashMap<String, CodeRecord>>,
 }
 
 impl std::fmt::Debug for FakeOidc {
@@ -199,6 +211,7 @@ impl FakeOidc {
                 wrong: Key::generate("wrong-1".to_owned()),
                 rotations: 1,
             }),
+            codes: Mutex::new(HashMap::new()),
         })
     }
 
@@ -251,6 +264,32 @@ impl FakeOidc {
             Provider::Google => keys.google = key,
         }
         kid
+    }
+
+    /// Issues a single-use authorization code for the code flow. The token endpoint mints
+    /// an ID token from `spec` (with `aud` set to `client_id` and the given `nonce`).
+    #[must_use]
+    pub fn issue_code(
+        &self,
+        client_id: &str,
+        nonce: Option<String>,
+        challenge: Option<String>,
+        spec: MintSpec,
+    ) -> String {
+        let code = URL_SAFE_NO_PAD.encode(rand::random::<[u8; 18]>());
+        self.codes
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .insert(
+                code.clone(),
+                CodeRecord {
+                    client_id: client_id.to_owned(),
+                    nonce,
+                    challenge,
+                    spec,
+                },
+            );
+        code
     }
 
     /// Mints an ID token as `spec` describes.
@@ -314,6 +353,8 @@ impl FakeOidc {
             .route("/{provider}/jwks", get(jwks))
             .route("/{provider}/mint", post(mint))
             .route("/{provider}/rotate", post(rotate))
+            .route("/{provider}/authorize", get(authorize))
+            .route("/{provider}/token", post(token))
             .with_state(self.clone())
     }
 }
@@ -352,6 +393,103 @@ async fn mint(
 async fn rotate(State(s): Shared, Path(p): Path<String>) -> Result<Json<Value>, StatusCode> {
     let provider = provider_of(&p)?;
     Ok(Json(json!({"kid": s.rotate(provider)})))
+}
+
+fn html_escape(v: &str) -> String {
+    v.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+}
+
+/// The authorize page of the code flow, for tests and local runs. It signs the user in at once.
+/// Test hints: `fake_sub`, `fake_email`, `fake_name`. `response_mode=form_post` (Apple) answers
+/// with a page that posts the result; otherwise it answers `303` with the result in the query.
+async fn authorize(
+    State(s): Shared,
+    Path(p): Path<String>,
+    Query(q): Query<HashMap<String, String>>,
+) -> Result<Response, StatusCode> {
+    provider_of(&p)?;
+    let get = |k: &str| q.get(k).filter(|v| !v.is_empty()).cloned();
+    let client_id = get("client_id").ok_or(StatusCode::BAD_REQUEST)?;
+    let redirect_uri = get("redirect_uri").ok_or(StatusCode::BAD_REQUEST)?;
+    let email = get("fake_email");
+    let spec = MintSpec {
+        sub: get("fake_sub").unwrap_or_else(|| "fake-user-1".to_owned()),
+        email_verified: email.as_ref().map(|_| true),
+        email,
+        name: get("fake_name"),
+        ..MintSpec::default()
+    };
+    let code = s.issue_code(&client_id, get("nonce"), get("code_challenge"), spec);
+    let state = get("state").unwrap_or_default();
+    if get("response_mode").as_deref() == Some("form_post") {
+        return Ok(Html(format!(
+            "<!doctype html><form method=\"post\" action=\"{}\">\
+             <input type=\"hidden\" name=\"code\" value=\"{}\">\
+             <input type=\"hidden\" name=\"state\" value=\"{}\"></form>\
+             <script>document.forms[0].submit()</script>",
+            html_escape(&redirect_uri),
+            html_escape(&code),
+            html_escape(&state)
+        ))
+        .into_response());
+    }
+    let mut url = url::Url::parse(&redirect_uri).map_err(|_| StatusCode::BAD_REQUEST)?;
+    url.query_pairs_mut()
+        .append_pair("code", &code)
+        .append_pair("state", &state);
+    Ok(Redirect::to(url.as_str()).into_response())
+}
+
+/// The token endpoint of the code flow: trades a code (once) for an ID token. It checks the
+/// client id and, when the authorize request had a challenge, the PKCE verifier.
+async fn token(
+    State(s): Shared,
+    Path(p): Path<String>,
+    Form(f): Form<HashMap<String, String>>,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let bad = |e: &str| (StatusCode::BAD_REQUEST, Json(json!({"error": e})));
+    let provider = provider_of(&p).map_err(|c| (c, Json(json!({}))))?;
+    if f.get("grant_type").map(String::as_str) != Some("authorization_code") {
+        return Err(bad("unsupported_grant_type"));
+    }
+    let record = f
+        .get("code")
+        .and_then(|c| {
+            s.codes
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .remove(c)
+        })
+        .ok_or_else(|| bad("invalid_grant"))?;
+    if f.get("client_id") != Some(&record.client_id) {
+        return Err(bad("invalid_client"));
+    }
+    if let Some(challenge) = &record.challenge {
+        let ok = f
+            .get("code_verifier")
+            .is_some_and(|v| URL_SAFE_NO_PAD.encode(Sha256::digest(v.as_bytes())) == *challenge);
+        if !ok {
+            return Err(bad("invalid_grant"));
+        }
+    }
+    let spec = MintSpec {
+        aud: record.client_id,
+        nonce: record.nonce,
+        ..record.spec
+    };
+    let mut body = json!({
+        "access_token": "fake-access-token",
+        "token_type": "Bearer",
+        "expires_in": 3600,
+        "id_token": s.mint(provider, &spec),
+    });
+    if provider == Provider::Apple {
+        body["refresh_token"] = json!("fake-apple-refresh-token");
+    }
+    Ok(Json(body))
 }
 
 /// A running in-process server.

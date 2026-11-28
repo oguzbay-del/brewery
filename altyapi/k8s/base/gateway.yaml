@@ -54,6 +54,25 @@ spec:
       backendRefs:
         - { name: api, port: 8080 }
 ---
+# Web uygulaması konak adı (`app.`): yalnız `/v1` yolları `api`'ye gider (aynı kökenden API; CORS yok).
+# Web ile giriş geri çağrıları (`/v1/auth/{apple,google}/callback`) bu konakta çalışır, çünkü
+# `__Host-` çerezleri konağa bağlıdır. `api.` konağı iOS, MCP ve açık API için `genel` rotasında kalır.
+# `/internal` ve `/v1/ingest`, `/v1/webhooks` bu konakta sunulmaz. Konak adı overlay'de değişir.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: uygulama
+spec:
+  parentRefs:
+    - { name: kenar, sectionName: genel }
+  hostnames:
+    - app.demleme.invalid
+  rules:
+    - matches:
+        - path: { type: PathPrefix, value: /v1 }
+      backendRefs:
+        - { name: api, port: 8080 }
+---
 # Dahili konak adı yalnız oauth2-proxy'ye gider; başka yol sunulmaz.
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

@@ -63,6 +63,8 @@ pub struct AuthServices {
     pub(crate) mailer: Arc<dyn Mailer>,
     pub(crate) sessions: SessionStore,
     pub(crate) redis: Redis,
+    /// HTTP client of the web flow token exchange (no redirects, bounded time).
+    pub(crate) web_http: reqwest::Client,
     pub(crate) webauthn: Option<webauthn_rs::prelude::Webauthn>,
 }
 
@@ -133,7 +135,13 @@ impl AuthServices {
             .clone()
             .map(apple_token::AppleTokenClient::new)
             .transpose()?;
+        oidc::install_crypto_provider();
+        let web_http = reqwest::Client::builder()
+            .timeout(Duration::from_secs(10))
+            .redirect(reqwest::redirect::Policy::none())
+            .build()?;
         Ok(Self {
+            web_http,
             apple: verifier(&config.apple),
             apple_token_client,
             google: verifier(&config.google),

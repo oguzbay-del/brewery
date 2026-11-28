@@ -281,7 +281,7 @@ mod tests {
                     );
                 } else {
                     assert!(
-                        matches!(status.as_str(), "204" | "304"),
+                        matches!(status.as_str(), "204" | "303" | "304"),
                         "{label} {status}: no content"
                     );
                 }

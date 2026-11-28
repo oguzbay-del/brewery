@@ -43,6 +43,15 @@ struct TokenResponse {
     id_token: Option<String>,
 }
 
+/// Tokens of one web code exchange.
+#[derive(Debug)]
+pub struct WebTokens {
+    /// The ID token. The caller verifies it.
+    pub id_token: String,
+    /// The refresh token, if Apple sent one.
+    pub refresh_token: Option<String>,
+}
+
 /// Exchanges Apple authorization codes and returns refresh tokens.
 #[derive(Clone, Debug)]
 pub struct AppleTokenClient {
@@ -82,6 +91,75 @@ impl AppleTokenClient {
             return Err(AppleTokenError::InvalidClientId);
         }
         Ok(client_id)
+    }
+
+    /// Exchanges the code of the web redirect flow (T3.1). The caller verifies the ID token and
+    /// its nonce. `client_id` is the web service id; `redirect_uri` is the one sent to Apple.
+    ///
+    /// # Errors
+    /// Returns an error when the code, client ID, signing key or Apple response is invalid.
+    pub async fn exchange_web_code(
+        &self,
+        token_url: &str,
+        code: &str,
+        client_id: &str,
+        redirect_uri: &str,
+    ) -> Result<WebTokens, AppleTokenError> {
+        if code.is_empty() || code.len() > 4096 {
+            return Err(AppleTokenError::InvalidCode);
+        }
+        if !self
+            .inner
+            .settings()
+            .client_ids
+            .iter()
+            .any(|id| id == client_id)
+        {
+            return Err(AppleTokenError::InvalidClientId);
+        }
+        let client_secret = self
+            .inner
+            .client_secret(client_id)
+            .map_err(|_| AppleTokenError::ClientSecret)?;
+        let body = {
+            let mut form = url::form_urlencoded::Serializer::new(String::new());
+            form.append_pair("grant_type", "authorization_code");
+            form.append_pair("code", code);
+            form.append_pair("client_id", client_id);
+            form.append_pair("client_secret", &client_secret);
+            form.append_pair("redirect_uri", redirect_uri);
+            form.finish()
+        };
+        let response = self
+            .inner
+            .http()
+            .post(token_url)
+            .header(
+                reqwest::header::CONTENT_TYPE,
+                "application/x-www-form-urlencoded",
+            )
+            .body(body)
+            .send()
+            .await
+            .map_err(|_| AppleTokenError::Request)?
+            .error_for_status()
+            .map_err(|_| AppleTokenError::Request)?;
+        let bytes = response
+            .bytes()
+            .await
+            .map_err(|_| AppleTokenError::Request)?;
+        if bytes.len() > 65_536 {
+            return Err(AppleTokenError::Request);
+        }
+        let response: TokenResponse =
+            serde_json::from_slice(&bytes).map_err(|_| AppleTokenError::Request)?;
+        Ok(WebTokens {
+            id_token: response
+                .id_token
+                .filter(|token| !token.is_empty())
+                .ok_or(AppleTokenError::MissingIdToken)?,
+            refresh_token: response.refresh_token.filter(|token| !token.is_empty()),
+        })
     }
 
     /// Exchanges a single-use authorization code for its refresh token.

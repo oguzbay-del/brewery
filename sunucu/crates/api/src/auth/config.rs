@@ -15,6 +15,33 @@ pub struct ProviderSettings {
     pub jwks_url: String,
 }
 
+/// Settings of the web redirect code flow of one provider (T3.1).
+#[derive(Clone, PartialEq, Eq)]
+pub struct WebFlowProvider {
+    /// Address of the provider authorize page. The browser opens it.
+    pub authorize_url: String,
+    /// Address of the provider token endpoint. Only the server calls it.
+    pub token_url: String,
+    /// Client id of the web app (Apple: the service id). It must be in the `*_CLIENT_IDS` list.
+    pub client_id: String,
+    /// Client secret. Google only; Apple signs a client secret JWT.
+    pub client_secret: Option<String>,
+}
+
+impl std::fmt::Debug for WebFlowProvider {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("WebFlowProvider")
+            .field("authorize_url", &self.authorize_url)
+            .field("token_url", &self.token_url)
+            .field("client_id", &self.client_id)
+            .field(
+                "client_secret",
+                &self.client_secret.as_ref().map(|_| "<redacted>"),
+            )
+            .finish()
+    }
+}
+
 /// SMTP relay for the e-mail link (mailpit locally).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SmtpSettings {
@@ -35,6 +62,13 @@ pub struct AuthConfig {
     pub apple_token: Option<AppleTokenSettings>,
     /// AES-256-GCM cipher for stored provider refresh tokens.
     pub provider_token_cipher: Option<Aes256GcmTokenCipher>,
+    /// Web redirect flow of Apple; `None` while `APPLE_WEB_CLIENT_ID` is unset.
+    pub web_apple: Option<WebFlowProvider>,
+    /// Web redirect flow of Google; `None` while `GOOGLE_WEB_CLIENT_ID` or the secret is unset.
+    pub web_google: Option<WebFlowProvider>,
+    /// Public base address of the callback routes (`WEB_AUTH_REDIRECT_BASE_URL`).
+    /// The default is `web_base_url`. The `__Host-` cookies tie the flow to this host.
+    pub web_redirect_base_url: String,
     /// Base address of the web app, used in the e-mail link.
     pub web_base_url: String,
     /// Origins allowed on cookie-authenticated writes (CSRF, ADR-0009 rule 3.5).
@@ -77,6 +111,9 @@ impl std::fmt::Debug for AuthConfig {
                 "provider_token_cipher",
                 &self.provider_token_cipher.is_some(),
             )
+            .field("web_apple", &self.web_apple)
+            .field("web_google", &self.web_google)
+            .field("web_redirect_base_url", &self.web_redirect_base_url)
             .field("web_base_url", &self.web_base_url)
             .field("web_origins", &self.web_origins)
             .field("csrf_key", &"<redacted>")
@@ -122,6 +159,92 @@ where
         audiences,
         jwks_url,
     })
+}
+
+fn non_empty<F>(lookup: &F, name: &str) -> Option<String>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    lookup(name)
+        .map(|v| v.trim().to_owned())
+        .filter(|v| !v.is_empty())
+}
+
+/// Reads the web flow settings of one provider. `secret` is the Google client secret.
+fn web_flow<F>(
+    lookup: &F,
+    prefix: &str,
+    audiences: &[String],
+    defaults: (&str, &str),
+    secret: Option<String>,
+) -> Result<Option<WebFlowProvider>>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let Some(client_id) = non_empty(lookup, &format!("{prefix}_WEB_CLIENT_ID")) else {
+        return Ok(None);
+    };
+    if !audiences.contains(&client_id) {
+        return Err(Error::InvalidEnv {
+            name: if prefix == "APPLE" {
+                "APPLE_WEB_CLIENT_ID"
+            } else {
+                "GOOGLE_WEB_CLIENT_ID"
+            },
+            reason: format!("must be listed in {prefix}_CLIENT_IDS"),
+        });
+    }
+    Ok(Some(WebFlowProvider {
+        authorize_url: non_empty(lookup, &format!("{prefix}_AUTHORIZE_URL"))
+            .unwrap_or_else(|| defaults.0.to_owned()),
+        token_url: non_empty(lookup, &format!("{prefix}_WEB_TOKEN_URL"))
+            .unwrap_or_else(|| defaults.1.to_owned()),
+        client_id,
+        client_secret: secret,
+    }))
+}
+
+/// The web redirect flow settings: Apple, Google and the public base address of the callbacks.
+fn web_settings<F>(
+    lookup: &F,
+    apple_ids: &[String],
+    google_ids: &[String],
+    web_base_url: &str,
+) -> Result<(Option<WebFlowProvider>, Option<WebFlowProvider>, String)>
+where
+    F: Fn(&str) -> Option<String>,
+{
+    let web_apple = web_flow(
+        lookup,
+        "APPLE",
+        apple_ids,
+        (
+            "https://appleid.apple.com/auth/authorize",
+            "https://appleid.apple.com/auth/token",
+        ),
+        None,
+    )?;
+    let google_secret =
+        secret_from_lookup(lookup, "GOOGLE_CLIENT_SECRET", "GOOGLE_CLIENT_SECRET_FILE")?
+            .map(|v| v.trim().to_owned())
+            .filter(|v| !v.is_empty());
+    // Google needs the secret for the code exchange; without it the flow stays off.
+    let web_google = web_flow(
+        lookup,
+        "GOOGLE",
+        google_ids,
+        (
+            "https://accounts.google.com/o/oauth2/v2/auth",
+            "https://oauth2.googleapis.com/token",
+        ),
+        google_secret.clone(),
+    )?
+    .filter(|_| google_secret.is_some());
+    let redirect_base = non_empty(lookup, "WEB_AUTH_REDIRECT_BASE_URL").map_or_else(
+        || web_base_url.to_owned(),
+        |v| v.trim_end_matches('/').to_owned(),
+    );
+    Ok((web_apple, web_google, redirect_base))
 }
 
 /// `https://app.example.com/some/path` → `https://app.example.com`.
@@ -230,6 +353,15 @@ impl AuthConfig {
             .as_ref()
             .map(|p| p.audiences.clone())
             .unwrap_or_default();
+        let (web_apple, web_google, web_redirect_base_url) = web_settings(
+            lookup,
+            &apple_ids,
+            google
+                .as_ref()
+                .map(|p| p.audiences.as_slice())
+                .unwrap_or_default(),
+            &web_base_url,
+        )?;
         let apple_token = AppleTokenSettings::from_lookup(lookup, &apple_ids)?;
         let provider_token_cipher =
             Aes256GcmTokenCipher::from_lookup(lookup, apple_token.is_some())?;
@@ -239,6 +371,9 @@ impl AuthConfig {
             google,
             apple_token,
             provider_token_cipher,
+            web_apple,
+            web_google,
+            web_redirect_base_url,
             web_base_url,
             web_origins,
             csrf_key,
@@ -294,6 +429,45 @@ mod tests {
         assert_eq!(apple.jwks_url, "https://appleid.apple.com/auth/keys");
         assert!(cfg.google.is_none());
         assert_eq!(cfg.web_origins, ["https://app.example.com"]);
+    }
+
+    #[test]
+    fn web_flow_needs_a_listed_client_id_and_google_needs_its_secret() {
+        let base = |extra: &'static [(&'static str, &'static str)]| {
+            move |n: &str| {
+                extra
+                    .iter()
+                    .find(|(k, _)| *k == n)
+                    .map(|(_, v)| (*v).to_owned())
+                    .or_else(|| match n {
+                        "GOOGLE_CLIENT_IDS" => Some("g-web".to_owned()),
+                        "CSRF_HMAC_KEY" => Some("test-csrf-key-0123456789".to_owned()),
+                        _ => None,
+                    })
+            }
+        };
+        let off = AuthConfig::from_lookup(&base(&[])).unwrap();
+        assert!(off.web_google.is_none() && off.web_apple.is_none());
+        // The client id is set but the secret is missing: the flow stays off.
+        let no_secret = AuthConfig::from_lookup(&base(&[("GOOGLE_WEB_CLIENT_ID", "g-web")]));
+        assert!(no_secret.unwrap().web_google.is_none());
+        let on = AuthConfig::from_lookup(&base(&[
+            ("GOOGLE_WEB_CLIENT_ID", "g-web"),
+            ("GOOGLE_CLIENT_SECRET", "s3cret"),
+        ]))
+        .unwrap();
+        let g = on.web_google.unwrap();
+        assert_eq!(g.token_url, "https://oauth2.googleapis.com/token");
+        assert!(!format!("{g:?}").contains("s3cret"));
+        assert_eq!(on.web_redirect_base_url, "http://localhost:3000");
+        // A client id outside the audience list is a configuration error.
+        assert!(
+            AuthConfig::from_lookup(&base(&[
+                ("GOOGLE_WEB_CLIENT_ID", "other"),
+                ("GOOGLE_CLIENT_SECRET", "s3cret"),
+            ]))
+            .is_err()
+        );
     }
 
     #[test]

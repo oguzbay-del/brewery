@@ -242,6 +242,18 @@ services:
       GOOGLE_CLIENT_IDS: demleme-dev.apps.googleusercontent.example
       GOOGLE_ISSUER: http://fake-oidc:9000/google
       GOOGLE_JWKS_URL: http://fake-oidc:9000/google/jwks
+      # Web sign-in with the redirect code flow (T3.1). The browser opens the authorize page on
+      # localhost; only the API calls the token endpoint (compose network). The web client id is
+      # the same as the app id here. The Apple flow also needs APPLE_TEAM_ID, APPLE_KEY_ID and
+      # APPLE_PRIVATE_KEY (it signs the client secret); without them it answers 503.
+      APPLE_WEB_CLIENT_ID: com.demleme.app.dev
+      APPLE_AUTHORIZE_URL: http://localhost:${FAKE_OIDC_PORT:-9000}/apple/authorize
+      APPLE_WEB_TOKEN_URL: http://fake-oidc:9000/apple/token
+      GOOGLE_WEB_CLIENT_ID: demleme-dev.apps.googleusercontent.example
+      GOOGLE_AUTHORIZE_URL: http://localhost:${FAKE_OIDC_PORT:-9000}/google/authorize
+      GOOGLE_WEB_TOKEN_URL: http://fake-oidc:9000/google/token
+      # Local-only value. Production takes it from the secret manager (GOOGLE_CLIENT_SECRET_FILE).
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-demleme-yerel-google-gizli}
       WEB_BASE_URL: http://localhost:3000
       MAIL_FROM: no-reply@demleme.local
       # Yalnız yerel geliştirme değeri; kümede sır yöneticisinden gelir (CSRF_HMAC_KEY_FILE).

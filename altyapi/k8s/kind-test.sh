@@ -60,6 +60,13 @@ code=$(edge_code internal.demleme.local /internal/v1/workspaces)
 if [ "$code" = 403 ]; then ok "dahili konak -> oauth2-proxy -> api /internal/v1 403 (jeton ve e-posta başlığı ulaştı)"; else bad "dahili konak /internal/v1/workspaces ($code; 403 olmalıydı)"; fi
 code=$(edge_code internal.demleme.local /v1/workspaces)
 if [ "$code" = 404 ]; then ok "dahili konak /internal dışındaki yolu sunmaz (404)"; else bad "dahili konak /v1/workspaces ($code; 404 olmalıydı)"; fi
+# Web uygulaması konak adı (T3.1): /v1 api'ye ulaşır, /internal sunulmaz.
+code=$(edge_code app.demleme.local /v1/version)
+if [ "$code" = 200 ]; then ok "app konağı /v1/version api'ye ulaşır (200)"; else bad "app konağı /v1/version ($code; 200 olmalıydı)"; fi
+code=$(edge_code app.demleme.local /v1/auth/github/start)
+if [ "$code" = 404 ]; then ok "app konağı /v1/auth/{sağlayıcı}/start api'ye ulaşır (bilinmeyen sağlayıcı 404)"; else bad "app konağı /v1/auth/github/start ($code; 404 olmalıydı)"; fi
+code=$(edge_code app.demleme.local /internal/v1/workspaces)
+if [ "$code" = 404 ]; then ok "app konağı /internal/v1/... 404"; else bad "app konağı /internal/v1/... ($code; 404 olmalıydı)"; fi
 kill "$pf" 2>/dev/null; wait "$pf" 2>/dev/null
 
 echo "engine-service (gRPC)"
