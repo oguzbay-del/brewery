@@ -14,11 +14,11 @@ export const screens = {
   "bd": {
     "tr": [
       "Demleme günü",
-      "Operatör aktif adımı ve zamanlayıcıyı iPad üzerinden takip eder."
+      "Kavram ekranı, aktif adımı ve zamanlayıcıyı birlikte gösterir."
     ],
     "en": [
       "Brew day",
-      "On the brew floor, the operator follows the current step and timer on iPad."
+      "The concept screen shows the current step and timer together."
     ],
     "width": 1209,
     "height": 842
