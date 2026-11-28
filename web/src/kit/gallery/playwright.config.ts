@@ -11,9 +11,6 @@ export default defineConfig({
     viewport: { width: 1366, height: 1024 },
     deviceScaleFactor: 1,
     reducedMotion: 'reduce',
-    launchOptions: {
-      executablePath: process.env['PW_CHROMIUM_PATH'] ?? '/opt/pw-browsers/chromium',
-    },
   },
   webServer: {
     command: `npm run build:kit && npm run preview -- --mode kit --host 127.0.0.1 --port ${port} --strictPort`,
