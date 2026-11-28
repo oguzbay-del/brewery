@@ -30,8 +30,8 @@ Source: Claude review on PR #469 at head ccdae1ee9fa2f47f5f4e7a52d7146bdafd2cc31
 |---|---|---|---|---|---|---|
 | home-hero | CSS 62% 50% at <=760px; 50% 48% desktop | No specific finding recorded | Subject very dark; headline readable | No specific finding recorded | Empty forest strip with hard edge | MQ-07 defects |
 | breweries-hero | Center; hero frame, 4:3 mobile | Brewer retained; right vessel clipped | No separate finding | No separate finding | No separate finding | Partial evidence |
-| features-hero | Center; hero frame, 4:3 mobile | Subject retained in review | No separate finding | No separate finding | No separate finding | Partial evidence |
-| how-it-works-hero | Center; hero frame, 4:3 mobile | Subject retained in TR review | No separate finding | No separate finding | No separate finding | Partial evidence |
+| features-hero | Center; hero frame, 4:3 mobile | No separate finding | No separate finding | No separate finding | No separate finding | Partial evidence |
+| how-it-works-hero | Center; hero frame, 4:3 mobile | No separate finding | No separate finding | No separate finding | No separate finding | Partial evidence |
 | homebrewers-hero | Hero frame | Not checked | Not checked | Not checked | Not checked | Open |
 | technical-principles-hero | Hero frame | Not checked | Not checked | Not checked | Not checked | Open |
 | compare-hero | Hero frame | Not checked | Not checked | Not checked | Not checked | Open |
@@ -68,3 +68,46 @@ These are contact-sheet findings, not viewport-specific acceptance. The proposed
 - Current reviewed head marketing CI 46123343127 and guard 46123343070 passed. Lighthouse job passed in CI, but comparative Lighthouse measurement was not run by Claude. No comparative performance claim.
 - The owner supplied the raw archive. Rights and original source provenance remain unverified; do not certify them.
 - No source photos, CSS, optimizer, public copy, dependencies or production settings changed in this PR. Complete screenshot review and exact-head CI before acceptance.
+
+## Per-key source and route inventory
+
+Sources: PHOTO-ASSETS.md (blob 92a05be77aa1a04ceec3f848a4b02a84e99222ab), photos.ts (blob 981e720832a6f0d751e5b544c7aea67b11f87439), optimizer mapping. The route column is the expected mapping from featurePhoto(slug), not a built-HTML inspection. Verify both locales and the actual placement; an unused key is possible. For curated rows the source path is inside brewing-editorial-photos.zip. Non-curated raw filename extension and original dimensions remain unverified; the optimizer selects a JPG/PNG by stem. All rows below have viewport-specific visual review pending unless recorded in the earlier evidence table.
+
+| Feature key | Source file or stem | Original size | Delivered aspect / focal point | Expected EN / TR detail route |
+|---|---|---|---|---|
+| feature-equipment-calibration | Feature-equipment-calibration.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/equipment-calibration; /tr/features/equipment-calibration |
+| feature-production-management | feature-production-management.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/production-management; /tr/features/production-management |
+| feature-inventory-costing | feature-inventory-costing.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/inventory-costing; /tr/features/inventory-costing |
+| feature-fermentation-monitoring | active-fermentation-carboy.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/fermentation-monitoring; /tr/features/fermentation-monitoring |
+| feature-planning-scheduling | feature-planning-scheduling.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/planning-scheduling; /tr/features/planning-scheduling |
+| feature-quality-laboratory | feature-quality-laboratory.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/quality-laboratory; /tr/features/quality-laboratory |
+| feature-packaging-compliance | feature-packaging-compliance.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/packaging-compliance; /tr/features/packaging-compliance |
+| feature-team-notifications | feature-team-notifications.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/team-notifications; /tr/features/team-notifications |
+| feature-connected-devices | feature-connected-devices.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/connected-devices; /tr/features/connected-devices |
+| feature-imports-exports-tools | Feature-imports-exports-tools.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/imports-exports-tools; /tr/features/imports-exports-tools |
+| feature-platform-security-data | Feature-platform-security-data.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/platform-security-data; /tr/features/platform-security-data |
+| feature-analytics-reports | feature-analytics-reports.jpg | 896×1200 | 3:2; x full, y 0.50 | /features/analytics-reports; /tr/features/analytics-reports |
+| feature-recipe-design | feature-recipe-design (raw stem) | Not checked | 3:2; center | /features/recipe-design; /tr/features/recipe-design |
+| feature-brewing-calculations | feature-brewing-calculations (raw stem) | Not checked | 3:2; center | /features/brewing-calculations; /tr/features/brewing-calculations |
+| feature-water-mash-yeast | feature-water-mash-yeast (raw stem) | Not checked | 3:2; center | /features/water-mash-yeast; /tr/features/water-mash-yeast |
+| feature-brew-day | feature-brew-day (raw stem) | Not checked | 3:2; center | /features/brew-day; /tr/features/brew-day |
+
+| Page photo key | Raw source stem | Expected EN / TR route |
+|---|---|---|
+| home-hero | home-hero | /; /tr/ |
+| breweries-hero | breweries-hero | /breweries; /tr/breweries |
+| homebrewers-hero | homebrewers-hero | /homebrewers; /tr/homebrewers |
+| features-hero | features-hero | /features; /tr/features |
+| how-it-works-hero | how-it-works-hero | /how-it-works; /tr/how-it-works |
+| compare-hero | compare-hero | /compare; /tr/compare |
+| pricing-hero | pricing-hero | /pricing; /tr/pricing |
+| faq-hero | faq-hero | /faq; /tr/faq |
+| get-started-hero | get-started-hero | /get-started; /tr/get-started |
+| technical-principles-hero | technical-principles-hero | /technical-principles; /tr/technical-principles |
+| 404 | 404 | 404 route; locale-specific use not checked |
+
+Raw hero source sizes and extensions not checked. Hero delivery uses the 1408:768 frame and 4:3 mobile CSS except where specialized rules apply; see home focus exception above. Do not infer rights or source dimensions from derivative names.
+
+For the portrait fermentation original, the optimizer's integer 3:2 crop is 896×597. At y=0.50 the top offset is 302 px; at proposed y=0.25 it is 2 px. This is a geometric proposal only; inspect the two output images before choosing. For team-notifications the portrait crop uses the entire 896 px width, so a horizontal shift at optimizer stage cannot restore a face already cut off at the source edge; inspect the raw image and subsequent CSS crop first.
+
+CI for doc head caccbf0: marketing 46137932370 and protected-path guard 46137932440 both passed. Latest inventory commit requires new checks. Built-HTML placement proof, source dimensions for non-curated images and complete visual review remain open.
