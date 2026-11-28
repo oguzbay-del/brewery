@@ -1,30 +1,40 @@
-# MQ-03 — Marketing token inventory
+# MQ-03 — Marketing token contract
 
-Status: initial source inventory, not a completed visual change.
-Source: main, 28 November 2026; global.css blob 1488817355ffb0a46b1a7af3e7f69a46d3c76f22 and stitch-layout.css blob 750bdfdd9e87e9033149fd968d2e3842f75542e3. DESIGN.md governs the target.
+Scope: marketing-site only. DESIGN.md governs the target. This records the implemented CSS foundation, not a visual acceptance or product token change.
 
-| Role | Current variable/value | Target |
-|---|---|---|
-| Paper | --page #F7F6F3 | Keep |
-| Editorial band | --sx-band #F0EFEB | Keep |
-| Card | --surface and --sx-card #FFFFFF | Alias --sx-card to --surface after cascade review |
-| Primary text | --ink and --forest #0B2F26 | Preserve brand value; alias only if semantics remain distinct |
-| Supporting text | --muted #475569 | Keep |
-| Decorative boundary | --line rgba(11,47,38,.18) | Decoration only |
-| Meaningful boundary | Candidate #777C73 in DESIGN.md | Verify computed contrast and focus before use |
-| Accent text | --amber #8B4A1F | Keep |
-| Accent fill | --amber-fill #F4A261 | Keep |
-| Accent ink | --amber-ink #0B2F26 | Keep |
-| Quiet panels | --soft #E8E7E3; --sx-soft #F4F3F0 | Distinct surfaces; do not merge without checking usage |
-| Brand anchor | --sx-on-dark #F7F6F3; --sx-on-dark-muted #C9D3CF; --sx-amber-on-dark #F4A261 | Limit to approved brand anchors |
-| Content width | --content 1240px | Keep |
-| Typography | Inter and Plus Jakarta Sans imports; --serif Georgia; --sans initial system stack | Verify effective later declarations and font use |
+## Effective token map
 
-## Implementation order
-1. Read the complete effective cascade and layout imports. Inventory existing radius, font, shadow and breakpoint declarations before changing them.
-2. Map the approved 4/8/16/24/32/48/64/96 spacing candidates to existing usage. Preserve responsive gutters and use logical dimensions. Avoid a duplicate palette.
-3. Convert recurring dark technical/editorial sections to light surfaces through paired foreground and background changes, not independent color changes. Keep hero/header/footer/closing CTA brand anchors where approved.
-4. Inspect MQ-11a contrast reports by state and selector. Forced colors and image overlays require separate checks; do not assume all 72 observations have one cause.
-5. Use exact-head browser and Lighthouse evidence; compare EN/TR at five widths and review focus, 200% zoom and long strings. Keep report-mode findings separate from acceptance.
+| Role | CSS variable and value |
+|---|---|
+| Paper | --page #F7F6F3 |
+| Editorial band | --sx-band #F0EFEB |
+| Card | --surface #FFFFFF; --sx-card aliases --surface |
+| Primary text and brand | --ink and --forest #0B2F26; separate semantic roles |
+| Supporting text | --muted #475569 |
+| Decorative boundary | --line rgba(11,47,38,.18); not a control boundary |
+| Strong boundary | --border-strong #777C73; candidate for meaningful boundaries, verify actual state |
+| Focus | --focus-ring #0066cc; existing link and summary focus color, 3px outline and 4px offset |
+| Accent text | --amber #8B4A1F |
+| Accent fill | --amber-fill #F4A261 |
+| Accent ink | --amber-ink #0B2F26 |
+| Quiet panels | --soft #E8E7E3 and --sx-soft #F4F3F0; distinct surfaces |
+| Brand anchor | --sx-on-dark aliases --page; --sx-on-dark-muted #C9D3CF; --sx-amber-on-dark aliases --amber-fill |
+| Content width | --content 1240px |
+| Font body | --sans Inter Variable, Inter and system fallbacks (effective later root) |
+| Font headings | --display Plus Jakarta Sans Variable, Plus Jakarta Sans, Inter Variable, sans-serif |
+| Editorial accent | --serif Georgia, Times New Roman, serif |
+| Radii | --radius-card 18px; --radius-panel 24px; --radius-chip and --radius-control 999px |
+| Shadow | --card-shadow existing two-layer low-opacity forest shadow |
 
-No product tokens, dependencies, baseline changes or new theme. This initial commit does not change CSS or certify visual quality.
+## Layout and interaction
+
+- Shared spacing variables --space-4/8/16/24/32/48/64/96 use the corresponding pixel values. Use them for new patterns; do not rewrite every existing spacing value in this package.
+- The shared shell keeps the 1240px cap with symmetric --gutter. Existing responsive gutters are preserved: 32px default, 24px at <=1050px, 22px at <=760px and 18px at <=380px.
+- Keep existing heading sizes until MQ-06 verifies the proposed fluid type scale and long TR text. The conceptual 12/8/4 grid guides layout; avoid fixed tracks when content needs flexibility. Use minmax(0,1fr), logical dimensions and natural height.
+- Preserve the existing skip-link layer (20), native focus and reduced-motion rules. Do not introduce a second theme or global stacking scale without checking component needs.
+- The quote and technical story now use paper surfaces with matching text, emphasis, link and boundary colors. Retain hero/closing CTA brand anchors. Further recurring dark panels require paired foreground/background review, not a global inversion.
+- Candidate status colors and stronger boundaries in DESIGN.md are available for future real controls/feedback; do not add unused status styles.
+
+## Evidence and remaining work
+
+The CSS commits c3b8f02 and 86d36f0 apply the above aliases, spacing, gutters, focus and paired light surfaces. The exact CSS head 86d36f03e8d7bf92c360b4f85e2cba6a9a7af9cd passed marketing CI 46123275378, protected-path guard 46123275347 and 296 browser tests. Preview: https://30e23af0.gristora.pages.dev. The screenshot upload and Lighthouse steps passed; the report-only results are not visual acceptance. Verify the final documentation head CI before merge. Review the remaining report-mode contrast, image bounds and actual before/after screenshots. High contrast and 200% zoom still need visual verification. MQ-04 and MQ-06 consume the shared contract after acceptance. No product tokens, protected baselines, new dependencies or production settings changed.
