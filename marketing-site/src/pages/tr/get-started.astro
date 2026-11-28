@@ -107,13 +107,13 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
             <section class="wizard-step" data-step="3" hidden>
               <p class="step-kicker">ADIM 03 / 04</p>
               <h2 tabindex="-1"><em>Ödeme dönemini</em> seçin.</h2>
-              <p class="step-description">Daha uzun taahhütler, aylık referans fiyata göre daha büyük indirim alır.</p>
+              <p class="step-description">Önerilen indirimler, aylık referans fiyata göre gösterilir. Nihai ticari koşullar henüz onaylanmamıştır.</p>
               <fieldset class="billing-options">
                 <legend>Ödeme dönemi</legend>
-                <label><input type="radio" name="term" value="monthly" aria-label="Aylık faturalama" checked /><span><strong>Aylık</strong><small>Esnek, ay ay</small><b>%0 tasarruf</b></span></label>
-                <label><input type="radio" name="term" value="annual" aria-label="Yıllık faturalama" /><span><strong>Yıllık</strong><small>Bir yıllık taahhüt</small><b>%15 tasarruf</b></span></label>
-                <label><input type="radio" name="term" value="two-year" aria-label="İki yıllık faturalama" /><span><strong>2 yıl</strong><small>İki yıllık taahhüt</small><b>%25 tasarruf</b></span></label>
-                <label><input type="radio" name="term" value="three-year" aria-label="Üç yıllık faturalama" /><span><strong>3 yıl</strong><small>Üç yıllık taahhüt</small><b>%35 tasarruf</b></span></label>
+                <label><input type="radio" name="term" value="monthly" aria-label="Aylık faturalama" checked /><span><strong>Aylık</strong><small>Esnek, ay ay</small><b>%0 önerilen tasarruf</b></span></label>
+                <label><input type="radio" name="term" value="annual" aria-label="Yıllık faturalama" /><span><strong>Yıllık</strong><small>Bir yıllık taahhüt</small><b>%15 önerilen tasarruf</b></span></label>
+                <label><input type="radio" name="term" value="two-year" aria-label="İki yıllık faturalama" /><span><strong>2 yıl</strong><small>İki yıllık taahhüt</small><b>%25 önerilen tasarruf</b></span></label>
+                <label><input type="radio" name="term" value="three-year" aria-label="Üç yıllık faturalama" /><span><strong>3 yıl</strong><small>Üç yıllık taahhüt</small><b>%35 önerilen tasarruf</b></span></label>
               </fieldset>
               <div class="trial-note" id="trial-note">Yalnızca önerilen deneme koşulları; bu önizlemede hiçbir deneme etkin değildir.</div>
               <div class="contact-tier" id="custom-billing" hidden><strong>Özel ekip planı</strong><p>20'nin üzerindeki ekipler için faturalama koşulları ve fiyatlandırma ayrı ayrı hazırlanır.</p></div>
@@ -123,7 +123,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <p class="step-kicker">ADIM 04 / 04</p>
               <h2 tabindex="-1"><em>Planınızı</em> gözden geçirin.</h2>
               <p class="step-description">Üretim türünüz, ekip büyüklüğünüz ve ödeme döneminiz aşağıda. Bu özet teklif talebi oluşturmaz.</p>
-              <dl class="review-list"><div><dt>Üretim türü</dt><dd id="review-audience">—</dd></div><div><dt>Kullanıcılar</dt><dd id="review-seats">—</dd></div><div><dt>Ödeme dönemi</dt><dd id="review-term">—</dd></div><div><dt>Tasarruf</dt><dd id="review-discount">—</dd></div><div><dt>Deneme</dt><dd id="review-trial">—</dd></div><div><dt>Öngörülen ödeme yöntemi</dt><dd>Kredi veya banka kartı · burada toplanmaz</dd></div></dl>
+              <dl class="review-list"><div><dt>Üretim türü</dt><dd id="review-audience">—</dd></div><div><dt>Kullanıcılar</dt><dd id="review-seats">—</dd></div><div><dt>Ödeme dönemi</dt><dd id="review-term">—</dd></div><div><dt>Önerilen tasarruf</dt><dd id="review-discount">—</dd></div><div><dt>Deneme</dt><dd id="review-trial">—</dd></div><div><dt>Öngörülen ödeme yöntemi</dt><dd>Kredi veya banka kartı · burada toplanmaz</dd></div></dl>
               <p class="step-helper">Herhangi bir seçimi değiştirmek için geri dönebilirsiniz. <a href={`${base}tr/pricing/`}>Tüm planları ve koşulları inceleyin</a>.</p>
             </section>
 
@@ -133,7 +133,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
         <aside class="wizard-summary" aria-live="polite">
           <p class="eyebrow">SEÇİMİNİZ</p><h2>Plan <em>özeti</em></h2>
-          <dl><div><dt>Üretim türü</dt><dd id="summary-audience">Bir yol seçin</dd></div><div><dt>Kullanıcılar</dt><dd id="summary-seats">—</dd></div><div><dt>Süre</dt><dd id="summary-term">Aylık</dd></div><div><dt>Tasarruf</dt><dd id="summary-discount">%0</dd></div><div><dt>Deneme</dt><dd id="summary-trial">Bir yol seçin</dd></div></dl>
+          <dl><div><dt>Üretim türü</dt><dd id="summary-audience">Bir yol seçin</dd></div><div><dt>Kullanıcılar</dt><dd id="summary-seats">—</dd></div><div><dt>Süre</dt><dd id="summary-term">Aylık</dd></div><div><dt>Önerilen tasarruf</dt><dd id="summary-discount">%0</dd></div><div><dt>Deneme</dt><dd id="summary-trial">Bir yol seçin</dd></div></dl>
           <p class="summary-note">Yalnızca önerilen koşullar: Ev için planlanan üç aylık, bira üreticisi için planlanan bir aylık deneme vardır. Bu önizlemede iki deneme de etkin değildir.</p>
           <a href={`${base}tr/compare/`}>İşlevleri karşılaştırın ↗</a>
         </aside>
