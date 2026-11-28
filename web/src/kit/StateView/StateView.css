@@ -1,0 +1,43 @@
+.kit-state-view {
+  container-type: inline-size;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--label);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.kit-state-view svg {
+  inline-size: var(--icon-md);
+  block-size: var(--icon-md);
+  color: var(--blue);
+}
+
+.kit-state-view[data-kind='error'] svg {
+  color: var(--red);
+}
+
+.kit-state-view h2 {
+  margin-block: var(--space-2);
+  font-size: var(--t-headline-size);
+  line-height: var(--t-headline-line);
+  font-weight: var(--t-headline-weight);
+}
+
+.kit-state-view p {
+  margin: 0;
+  color: var(--label2);
+  font-size: var(--t-callout-size);
+  line-height: var(--t-callout-line);
+}
+
+@container (max-width: 280px) {
+  .kit-state-view > div {
+    max-inline-size: 100%;
+  }
+}

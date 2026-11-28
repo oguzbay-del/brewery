@@ -1,0 +1,77 @@
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--label);
+  font-family: var(--font-sys);
+}
+
+.kit-gallery {
+  max-inline-size: var(--content-max);
+  margin-inline: auto;
+  padding: var(--space-4);
+}
+
+.kit-gallery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-block-end: var(--space-4);
+}
+
+.kit-gallery-header label {
+  display: grid;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+.kit-gallery-header select,
+.kit-gallery button {
+  min-block-size: var(--control-height);
+  max-inline-size: 100%;
+  font: inherit;
+  color: var(--label);
+  background: var(--card);
+  border: solid var(--sep);
+  border-radius: var(--radius-sm);
+  padding-inline: var(--space-2);
+}
+
+.kit-gallery :focus-visible {
+  outline: var(--focus-ring-width) solid var(--blue);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.kit-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--sidebar-ideal)), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.kit-gallery-case {
+  display: grid;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.kit-gallery-case[data-case='dense'] {
+  gap: var(--space-1);
+}
+
+.kit-gallery-case h2 {
+  margin: 0;
+  font-size: var(--t-headline-size);
+  overflow-wrap: anywhere;
+}
+
+.kit-gallery-alarms {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--hp-tile);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+}

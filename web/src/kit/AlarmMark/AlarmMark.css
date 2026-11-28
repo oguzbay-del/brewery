@@ -1,0 +1,48 @@
+.kit-alarm {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-inline-size: 0;
+  color: var(--hp-ink);
+  font-size: var(--t-footnote-size);
+  overflow-wrap: anywhere;
+}
+
+.kit-alarm-shape {
+  display: grid;
+  flex: none;
+  place-items: center;
+  inline-size: var(--icon-md);
+  block-size: var(--icon-md);
+  background: var(--hp-a1);
+  color: var(--hp-bg);
+  font-weight: var(--t-headline-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+.kit-alarm[data-level='2'] .kit-alarm-shape {
+  background: var(--hp-a2);
+  color: var(--hp-a2-ink);
+  transform: rotate(45deg);
+}
+
+.kit-alarm[data-level='2'] .kit-alarm-shape > span {
+  transform: rotate(-45deg);
+}
+
+.kit-alarm[data-level='3'] .kit-alarm-shape {
+  background: var(--hp-a3);
+  border-radius: var(--radius-pill);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .kit-alarm[data-level='1'][data-acknowledged='false'] .kit-alarm-shape {
+    animation: kit-alarm-pulse calc(var(--motion-base) * 8) infinite;
+  }
+}
+
+@keyframes kit-alarm-pulse {
+  50% {
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,56 @@
+.kit-callout {
+  container-type: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  color: var(--label);
+}
+
+.kit-callout-message {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: start;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.kit-callout-icon {
+  flex: none;
+  inline-size: var(--icon-md);
+  block-size: var(--icon-md);
+  color: var(--blue);
+}
+
+.kit-callout[data-tone='success'] .kit-callout-icon {
+  color: var(--green);
+}
+
+.kit-callout[data-tone='warning'] .kit-callout-icon {
+  color: var(--yellow);
+}
+
+.kit-callout[data-tone='error'] .kit-callout-icon {
+  color: var(--red);
+}
+
+.kit-callout-text,
+.kit-callout-action {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.kit-callout-text {
+  font-size: var(--t-callout-size);
+  line-height: var(--t-callout-line);
+}
+
+@container (max-width: 280px) {
+  .kit-callout-action {
+    flex-basis: 100%;
+  }
+}
