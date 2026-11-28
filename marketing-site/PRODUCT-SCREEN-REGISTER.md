@@ -1,25 +1,25 @@
 # MQ-08 — Product screen register
 
-Initial source inventory, 28 November 2026. Source: src/data/productScreens.ts blob c13364b13ac3da8f8a3d6fe8bcba8d728eb29009 and src/components/ProductScreens.astro blob bfeca9dc962d7315dd5fddc27361d58888238ecf. The component uses the key to construct public/images/product/<key>.webp. Both EN and TR use the same image; the data file is the source of truth for bilingual captions and alt/title text. The owner prefers English images for both locales; actual image language, original file, capture commit/date, platform and rights/approval must be verified individually before acceptance. The existing bd caption mentions iPad, but this is not independent capture provenance.
+Initial source inventory, 28 November 2026. Source: src/data/productScreens.ts blob c13364b13ac3da8f8a3d6fe8bcba8d728eb29009 and src/components/ProductScreens.astro blob bfeca9dc962d7315dd5fddc27361d58888238ecf. The component uses the key to construct public/images/product/<key>.webp. Both EN and TR use the same image; the data file is the source of truth for bilingual captions and alt/title text. Owner decision recorded in #465 on 28 November 2026: keep all 16 Turkish interface concept images in both locales; label each concept preview. Original file, capture commit/date, platform and rights remain unverified. The unverified iPad reference is removed.
 
-| Asset key | Screen EN / TR | Declared dimensions | Placement keys (both locales where used) |
-|---|---|---|---|
-| ed | Recipe editor / Tarif editörü | 1209×842 | home; features/recipe-design |
-| bd | Brew day / Demleme günü | 1209×842 | home; how-it-works; homebrewers; features/brew-day |
-| fe | Fermentation overview / Fermantasyon özeti | 1209×842 | how-it-works; features/fermentation-monitoring |
-| bs | Batch summary / Parti özeti | 1209×929 | home; how-it-works; features/production-management |
-| pr | Production board / Üretim panosu | 1209×875 | breweries; modules; compare; features/production-management |
-| tk | Tank detail / Tank detayı | 1716×924 | breweries; features/production-management |
-| qa | Quality record / Kalite kaydı | 1716×1017 | breweries; modules; features/quality-laboratory |
-| inv | Inventory by lot / Lot bazında stok | 1209×902 | modules; features/inventory-costing |
-| lt | Lot traceability / Lot izlenebilirliği | 1716×615 | features/inventory-costing |
-| wiz | Recipe wizard / Tarif sihirbazı | 1209×842 | homebrewers; compare |
-| cmp | Recipe versions / Tarif sürümleri | 1716×677 | homebrewers; features/recipe-design |
-| cal | Brewing calendar / Üretim takvimi | 1209×764 | how-it-works; features/planning-scheduling |
-| tools | Measurement tool / Ölçüm aracı | 1209×791 | technical-principles; features/brewing-calculations |
-| hw | Value explanation / Değer açıklaması | 1209×842 | technical-principles |
-| cip | Cleaning and packaging record / Temizlik ve dolum kaydı | 1209×792 | features/packaging-compliance |
-| cl | Equipment calibration / Ekipman kalibrasyonu | 1209×1137 | features/equipment-calibration |
+| Asset key | Screen EN / TR | Declared dimensions | Placement keys (both locales where used) | UI language | Status | Old full-frame scale at 390 px |
+|---|---|---|---|---|---|---|
+| ed | Recipe editor / Tarif editörü | 1209×842 | home; features/recipe-design | TR | concept (per #354) | 26.6% |
+| bd | Brew day / Demleme günü | 1209×842 | home; how-it-works; homebrewers; features/brew-day | TR | concept (per #354) | 26.6% |
+| fe | Fermentation overview / Fermantasyon özeti | 1209×842 | how-it-works; features/fermentation-monitoring | TR | concept (per #354) | 26.6% |
+| bs | Batch summary / Parti özeti | 1209×929 | home; how-it-works; features/production-management | TR | concept (per #354) | 26.6% |
+| pr | Production board / Üretim panosu | 1209×875 | breweries; modules; compare; features/production-management | TR | concept (per #354) | 26.6% |
+| tk | Tank detail / Tank detayı | 1716×924 | breweries; features/production-management | TR | concept (per #354) | 18.8% |
+| qa | Quality record / Kalite kaydı | 1716×1017 | breweries; modules; features/quality-laboratory | TR | concept (per #354) | 18.8% |
+| inv | Inventory by lot / Lot bazında stok | 1209×902 | modules; features/inventory-costing | TR | concept (per #354) | 26.6% |
+| lt | Lot traceability / Lot izlenebilirliği | 1716×615 | features/inventory-costing | TR | concept (per #354) | 18.8% |
+| wiz | Recipe wizard / Tarif sihirbazı | 1209×842 | homebrewers; compare | TR | concept (per #354) | 26.6% |
+| cmp | Recipe versions / Tarif sürümleri | 1716×677 | homebrewers; features/recipe-design | TR | concept (per #354) | 18.8% |
+| cal | Brewing calendar / Üretim takvimi | 1209×764 | how-it-works; features/planning-scheduling | TR | concept (per #354) | 26.6% |
+| tools | Measurement tool / Ölçüm aracı | 1209×791 | technical-principles; features/brewing-calculations | TR | concept (per #354) | 26.6% |
+| hw | Value explanation / Değer açıklaması | 1209×842 | technical-principles | TR | concept (per #354) | 26.6% |
+| cip | Cleaning and packaging record / Temizlik ve dolum kaydı | 1209×792 | features/packaging-compliance | TR | concept (per #354) | 26.6% |
+| cl | Equipment calibration / Ekipman kalibrasyonu | 1209×1137 | features/equipment-calibration | TR | concept (per #354) | 26.6% |
 
 ## Presentation and refresh
 - Each figure links to the full-size WebP and uses the localized title as alt text and a localized caption from the data file.
@@ -51,4 +51,8 @@ The repository directory lists all 16 WebP assets. The directory history records
 | tools.webp | `2a682cd626bb04333029bc316afddd7846c9817f` |
 | wiz.webp | `933782c92da3c0c10ea23ec676daad400ea39cb7` |
 
-Platform, original capture path/date, actual image language and feature evidence remain unverified. Do not infer them from dimensions.
+Platform, original capture path/date and feature evidence remain unverified. Claude reviewed all 16 images and confirmed Turkish UI. Do not infer them from dimensions.
+
+## Round 1 visual review and correction
+
+Claude review on PR #468, head 33f2081: all 16 source dimensions and 17 page placements in both languages verified. At 390 px the old full-frame width is 322 px; the wide screens tk, qa and lt are not legible at this scale. The previous 135% crop showed about 435 px but clipped content. The new mobile presentation uses one horizontally scrollable 860 px detail view for all four 1716 px assets (tk, qa, lt, cmp), about 50% scale, with a visible hint and keyboard focus. Full-size link remains. Verify actual legibility, scroll containment, keyboard access and page overflow in current-head CI and screenshots; not yet accepted. The source files inv, fe and hw are cut at the bottom (Claude review); the component labels this limitation. Replacement source images are required to restore missing pixels; do not fabricate them. Other mobile legibility not checked. Capture before/after PNGs for home, inventory-costing and breweries, EN/TR, 390 and 1440. 
