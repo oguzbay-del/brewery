@@ -104,9 +104,10 @@ struct ModuleNoticeView: View {
 /// Settings screen: the modules of the workspace and their state.
 struct ModulesListView: View {
     let store: ModulesStore
+    @Binding var selection: String?
 
     var body: some View {
-        List {
+        List(selection: $selection) {
             switch store.phase {
             case .idle, .loading:
                 ProgressView(UiText.text("modules.loading"))
@@ -115,7 +116,7 @@ struct ModulesListView: View {
                     HStack {
                         Text(UiText.moduleName(module.id))
                         Spacer()
-                        Text(stateText(module)).foregroundStyle(DemlemeColor.label2)
+                        Text(Self.stateText(module)).foregroundStyle(DemlemeColor.label2)
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("module.row.\(module.id)")
@@ -139,7 +140,7 @@ struct ModulesListView: View {
         .navigationTitle(UiText.text("modules.title"))
     }
 
-    private func stateText(_ module: ModuleSnapshot) -> String {
+    static func stateText(_ module: ModuleSnapshot) -> String {
         UiText.text(module.readOnly ? "modules.read_only" : (module.enabled ? "modules.on" : "modules.off"))
     }
 }
