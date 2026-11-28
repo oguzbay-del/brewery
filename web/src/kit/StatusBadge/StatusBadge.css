@@ -1,0 +1,36 @@
+.kit-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-inline-size: 0;
+  min-block-size: var(--badge-size);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--fill);
+  color: var(--label);
+  font-size: var(--t-footnote-size);
+  line-height: var(--t-footnote-line);
+  overflow-wrap: anywhere;
+}
+
+.kit-status-badge svg {
+  flex: none;
+  inline-size: var(--icon-sm);
+  block-size: var(--icon-sm);
+}
+
+.kit-status-badge[data-tone='info'] svg {
+  color: var(--blue);
+}
+
+.kit-status-badge[data-tone='success'] svg {
+  color: var(--green);
+}
+
+.kit-status-badge[data-tone='warning'] svg {
+  color: var(--yellow);
+}
+
+.kit-status-badge[data-tone='error'] svg {
+  color: var(--red);
+}
