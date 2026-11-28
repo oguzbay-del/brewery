@@ -6,12 +6,12 @@
  */
 :root {
   --sx-band: #F0EFEB;
-  --sx-card: #FFFFFF;
+  --sx-card: var(--surface);
   --sx-soft: #F4F3F0;
   --sx-forest-2: #123E33;
-  --sx-on-dark: #F7F6F3;
+  --sx-on-dark: var(--page);
   --sx-on-dark-muted: #C9D3CF;
-  --sx-amber-on-dark: #F4A261;
+  --sx-amber-on-dark: var(--amber-fill);
 }
 
 /* Shared chips and kickers */
@@ -95,17 +95,19 @@
 .sx-card-link:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
 .sx-more { margin: 32px 0 0; }
 
-/* Dark quote band */
+/* Editorial Light quote band */
 .sx-quote-wrap { padding-block: 24px 0; }
 .sx-quote {
   position: relative; overflow: hidden; padding: 72px 64px; border-radius: var(--radius-panel);
-  background: radial-gradient(circle at 85% 20%, var(--sx-forest-2), var(--forest) 60%);
-  color: var(--sx-on-dark);
+  background: var(--sx-band);
+  color: var(--ink);
 }
-.sx-quote h2 { max-width: 760px; margin-bottom: 20px; color: var(--sx-on-dark); font-size: clamp(34px, 4vw, 52px); line-height: 1.1; }
-.sx-quote h2 em, .sx-cta h2 em { color: var(--sx-amber-on-dark); font-family: var(--serif); font-weight: 400; }
-.sx-quote > p { max-width: 640px; color: var(--sx-on-dark-muted); font-size: 17px; }
-.sx-quote-note { margin: 28px 0 0; color: var(--sx-on-dark-muted); font-size: 13px; letter-spacing: .04em; }
+.sx-quote h2 { max-width: 760px; margin-bottom: 20px; color: var(--ink); font-size: clamp(34px, 4vw, 52px); line-height: 1.1; }
+.sx-quote h2 em, .sx-cta h2 em { font-family: var(--serif); font-weight: 400; }
+.sx-quote h2 em { color: var(--amber); }
+.sx-cta h2 em { color: var(--sx-amber-on-dark); }
+.sx-quote > p { max-width: 640px; color: var(--muted); font-size: 17px; }
+.sx-quote-note { margin: 28px 0 0; color: var(--muted); font-size: 13px; letter-spacing: .04em; }
 .sx-light-link {
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 0;
   color: var(--sx-on-dark); font-weight: 700; font-size: 14px; text-decoration: none;
@@ -113,6 +115,10 @@
 }
 .sx-light-link:hover { color: var(--sx-amber-on-dark); border-color: currentColor; }
 .sx-light-link:focus-visible { outline: 3px solid var(--sx-amber-on-dark); outline-offset: 3px; }
+.sx-quote .sx-kicker-light { color: var(--amber); }
+.sx-quote .sx-light-link { color: var(--ink); border-color: var(--line); }
+.sx-quote .sx-light-link:hover { color: var(--amber); border-color: currentColor; }
+.sx-quote .sx-light-link:focus-visible { outline-color: var(--amber); }
 
 /* Audience cards */
 .sx-audience-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
@@ -594,4 +600,44 @@
   .not-found-page h1 { font-size: 30px; line-height: 1.27; }
   .not-found-page .not-found-actions { align-items: center; }
   .not-found-page .not-found-actions .button { width: 100%; max-width: 280px; }
+}
+
+/* Preserve the user's system palette in Windows High Contrast and other
+   forced-colors environments. Do not opt out of browser color adjustment. */
+@media (forced-colors: active) {
+  .site-header, .site-header .desktop-nav, .sx-cta, .sx-cta-inner,
+  .sx-quote, .sx-pill-dark {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: CanvasText !important;
+  }
+  .site-header .wordmark, .site-header .wordmark-text,
+  .site-header .wordmark-text::after, .sx-cta h2, .sx-cta h2 em,
+  .sx-cta-inner p:not(.sx-kicker), .sx-cta .sx-kicker,
+  .sx-quote h2, .sx-quote h2 em, .sx-quote > p,
+  .sx-quote .sx-kicker-light {
+    color: CanvasText !important;
+  }
+  .site-header .desktop-nav a, .site-header .lang-switch,
+  .hero-actions .hero-secondary, .sx-cta .sx-light-link,
+  .sx-quote .sx-light-link {
+    color: LinkText !important;
+    border-color: LinkText !important;
+  }
+  .site-header .desktop-nav a[aria-current],
+  .site-header .lang-switch, .hero-actions .hero-secondary,
+  .sx-cta .sx-light-link, .sx-quote .sx-light-link {
+    text-decoration: underline;
+  }
+  .site-header .header-cta, .sx-cta .button {
+    background: ButtonFace !important;
+    color: ButtonText !important;
+    border: 1px solid ButtonText !important;
+    box-shadow: none;
+  }
+  .site-header a:focus-visible, .hero-actions a:focus-visible,
+  .sx-cta a:focus-visible, .sx-quote a:focus-visible {
+    outline: 3px solid Highlight !important;
+    outline-offset: 3px;
+  }
 }

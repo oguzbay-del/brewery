@@ -17,17 +17,32 @@
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --mono: "SFMono-Regular", Consolas, monospace;
   --content: 1240px;
+  --gutter: 32px;
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --space-96: 96px;
+  --border-strong: #777C73;
+  --focus-ring: #0066cc;
+  --focus-ring-on-dark: var(--amber-fill);
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; }
-a:focus-visible, summary:focus-visible { outline: 3px solid #0066cc; outline-offset: 4px; }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 4px; }
+/* Home header and action area use dark surfaces, unlike the light pricing cards. */
+.sx-home-hero .site-header, .sx-home-hero .hero-actions { --focus-ring: var(--focus-ring-on-dark); }
 .skip-link { position: absolute; z-index: 20; top: 12px; left: 12px; padding: 12px 16px; transform: translateY(-160%); background: var(--ink); color: #fff; font-size: 14px; font-weight: 700; }
-.skip-link:focus { transform: translateY(0); }
+/* Reveal the skip link in flow so it cannot cover the header's home link. */
+.skip-link:focus { position: relative; inset: auto; display: block; width: fit-content; max-width: calc(100% - 24px); margin: 12px; transform: none; }
 :target { scroll-margin-top: 24px; }
 #main-content { scroll-margin-top: 24px; }
-.shell { width: min(var(--content), calc(100% - 64px)); margin-inline: auto; }
+.shell { width: min(var(--content), calc(100% - 2 * var(--gutter))); margin-inline: auto; }
 .site-header { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 32px; padding: 0 max(32px, calc((100vw - var(--content)) / 2)); background: var(--page); border-bottom: 1px solid rgba(80, 76, 65, .13); }
 .wordmark { display: inline-flex; flex-direction: row; align-items: center; gap: 9px; color: var(--forest); text-decoration: none; }
 .brand-symbol { display: block; flex: 0 0 auto; width: 31px; height: 40px; object-fit: contain; }
@@ -120,7 +135,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
 .back-top { justify-self: end; font-size: 11px; font-weight: 600; }
 .footer-bottom { display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--line); color: #66685e; font-family: var(--mono); font-size: 9px; letter-spacing: .3px; }
 @media (max-width: 1050px) {
-  .shell { width: min(var(--content), calc(100% - 48px)); }
+  .shell { --gutter: 24px; }
   .site-header { padding-inline: 24px; }
   .hero { gap: 38px; }
   h1 { font-size: clamp(50px, 6vw, 68px); }
@@ -128,7 +143,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
   .technical-layout { grid-template-columns: .3fr 1.2fr .7fr; gap: 4%; }
 }
 @media (max-width: 760px) {
-  .shell { width: calc(100% - 44px); }
+  .shell { --gutter: 22px; }
   .site-header { min-height: 72px; padding-inline: 22px; gap: 12px; }
   .wordmark { font-size: 25px; }
   .desktop-nav, .header-cta { display: none; }
@@ -177,7 +192,7 @@ h1 em, h2 em { color: var(--amber); font-weight: 400; }
   .back-top { grid-column: 2; grid-row: 1; }
 }
 @media (max-width: 380px) {
-  .shell { width: calc(100% - 36px); }
+  .shell { --gutter: 18px; }
   .site-header { padding-inline: 18px; }
   h1 { font-size: 44px; }
   .hero-art { min-height: 315px; }
@@ -424,8 +439,18 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; 
 .billing-grid article { border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); }
 .scope-inline { border-radius: var(--radius-card); }
 
-/* Sections: warm neutral bands and one forest panel for the technical story. */
-.technical-section { background: var(--forest); }
+/* Editorial Light technical story: change foreground and surface together. */
+.technical-section { background: var(--sx-band, var(--page)); color: var(--ink); }
+.technical-section .technical-mark,
+.technical-section .technical-copy .eyebrow,
+.technical-section .technical-copy h2 em,
+.technical-section .note-kicker,
+.technical-section .note-foot { color: var(--amber); }
+.technical-section .technical-copy .eyebrow-line { background: var(--amber); }
+.technical-section .technical-copy > p:not(.eyebrow) { color: var(--muted); }
+.technical-section .technical-copy .text-link { color: var(--ink); }
+.technical-section .technical-copy .text-link:hover { color: var(--amber); }
+.technical-section .technical-note { border-color: var(--line); }
 .closing-section { background: #EEE9DF; }
 .site-footer { background: var(--page); }
 @media (max-width: 760px) {
@@ -445,3 +470,17 @@ h1 em, h2 em { font-family: var(--serif); font-style: italic; font-weight: 400; 
 .page-photo-band { padding: 0 16px; margin-block: 8px 40px; }
 @media (max-width: 640px) { .page-photo-band { margin-block: 4px 28px; } .page-photo img { aspect-ratio: 4 / 3; } }
 .audience-hero-photo { max-width: none; padding: 0; }
+
+/* Long localized headings must wrap rather than widen the document. */
+@media (max-width: 760px) {
+  .audience-page-intro h1,
+  .audience-page-section h2,
+  .audience-feature-section h2,
+  .role-section h2,
+  .record-model-section h2,
+  .erp-boundary-section h2,
+  .audience-faq-section h2,
+  .pricing-cta h2 {
+    overflow-wrap: anywhere;
+  }
+}
