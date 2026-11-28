@@ -144,13 +144,71 @@ Order: decisions (T2.1–T2.3) → data (T2.4–T2.9) → API core (T2.10–T2.1
 | T2.34 | Fixes for the F2.2 findings | All critical and important findings are closed or are in the decision list; the end-to-end suite is green | F2.2 | Claude | Sonnet (fix), Opus (review) | done (2026-11-26) |
 | T2.35 | Stage 2 gate check | The gate items are satisfied; deviations are in an ADR | T2.9, T2.34, T2.36 | Claude | Opus | done (2026-11-27, ADR-0014) |
 
+## Stage 3: Web (Home MVP screens) · ACTIVE
+
+Gate (ADR-0014): Playwright and accessibility tests. Opus wrote this list on 2026-11-28. The screens are in plan › Ekran listesi (stage "Ev MVP") and in the concept. The mode rules are in plan › Mod ayrımı.
+
+Decisions for stage 3 (Claude, 2026-11-28):
+- The web app uses the API on the same origin. The Gateway sends `app.gristora.com/v1/*` to `api`. The host `api.gristora.com` stays for iOS, MCP and the open API. The web app needs no CORS. Local development uses the Vite proxy for `/v1`.
+- Web sign-in uses the redirect code flow of Apple and Google on the server (T3.1). Do not load the Apple JS or Google Identity Services scripts in the web app.
+- The router is our own code on the History API (T3.3). Do not add a router package.
+- Approved new dependencies: `react-aria-components@1.22.1` (UIQ-08) and `@sentry/react` with an exact version (T3.4). Do not add other dependencies without a Claude review.
+- In stage 3, the screens show Home mode. They hide Business fields and Business screens.
+
+Rules:
+- Do not calculate brewing values in the web app. Each calculated number comes from the API.
+- Each screen uses the text catalog (Turkish and English) and Kit parts when the part exists. Until UIQ-09 is done, a form can use native HTML controls with Kit CSS. UIQ-13 moves them to the Kit later.
+- Each screen shows the empty, loading and error states. Each screen hides an action when `permissions` in `GET /v1/me/session` does not have it, and keeps the 403 fallback.
+- Each screen task adds a Playwright spec with an axe check (WCAG 2.2 AA) at 1280 px and 400 px, in the light and dark themes. The spec can use API stubs. T3.27 adds the specs on the real API.
+- Writes send `X-CSRF-Token`, `If-Match` and `Idempotency-Key` as the OpenAPI document requires.
+- Tasks in one row of "Depends on" change the same files. Do them in that order.
+- Web tasks go to ChatGPT, server and infrastructure tasks to Claude (owner split, Oğuz, 2026-11-27). Make a GitHub issue for a row only when the row is ready.
+
+| Task | Description | Done criterion | Depends on | Owner | Model | Status |
+|---|---|---|---|---|---|---|
+| T3.a | Typed API client from the OpenAPI contract (Issue #250) | Unit tests pass | – | ChatGPT | – | done (2026-11-26, #250) |
+| T3.b | Text catalog TR/EN in the web app (Issue #251) | Catalog tests pass | – | ChatGPT | – | done (2026-11-26, #251) |
+| T3.c | App shell, theme and hash routes (Issue #252) | Playwright smoke and theme specs pass | T3.a, T3.b | ChatGPT | – | done (2026-11-25, PR #262) |
+| T3.d | Catalog group `ui` (Issue #314) | Catalog tests pass | T3.b | ChatGPT | – | done (2026-11-26, #314) |
+| T3.1 | Web sign-in on the server: `GET /v1/auth/{apple,google}/start` and the callback (Apple `form_post`) with state, nonce and PKCE; the session cookie and a redirect to the app; the email link opens a web page that calls `POST /v1/auth/email/verify`; the HTTPRoute for `app.` host `/v1/*` | api tests: a bad state gives 400; a callback with a used state gives 400; a good callback sets `__Host-session`; the kind test reaches `/v1/version` through the `app.` host; Opus security review | – | Claude | Sonnet, Opus (review) | todo |
+| T3.2 | Tools API: thin endpoints on the engine for the tools screen and the water page (gravity, hydrometer, refractometer, alcohol, dilution, carbonation, keg priming, strike and infusion temperature, water calculation, acid, profile match); one endpoint module | Endpoint tests for each tool; the OpenAPI difference has only the new operations; the API does not calculate (to be verified: the recipe calculation already gives the water and pH results) | – | Claude | Sonnet | todo |
+| T3.3 | Router on the History API (Issue #460): paths with parameters, deep links, back and forward, a not-found view, the breadcrumb on the web; change the current hash routes | vitest for path parse; Playwright: a deep link opens the screen; the back button works | T3.c | ChatGPT | – | todo |
+| T3.4 | Sentry for the web (ADR-0010; Issue #461): `@sentry/react`, DSN from the build setting, no personal data, release tag; source maps are made in CI and are not published | vitest: an error without a DSN sends nothing; the built files have no source map; Claude reviews the dependency | T3.c | ChatGPT | – | todo |
+| T3.5 | Web hosting: a small Rust static file service (`sunucu/crates/web-static`) with the SPA fallback, cache headers and security headers (CSP, HSTS, `frame-ancestors 'none'`); compose service and kind manifests | Unit tests for the fallback and the headers; `make kind-test` opens the app page through the `app.` host | T3.1 | Claude | Sonnet | todo |
+| T3.6 | Sign-in screens: sign in with Apple, Google and email link; the email link page; sign out; session start from `GET /v1/me/session`; a 401 opens sign-in; workspace choice | Playwright with API stubs: each method starts the correct redirect; sign out clears the state; axe clean | T3.1, T3.3 | ChatGPT | – | todo |
+| T3.7 | First open: create the workspace (mode, region, units), the equipment wizard (4 questions, `POST /equipment/wizard`) | Playwright: a new user ends on the recipe list with one equipment profile | T3.6 | ChatGPT | – | todo |
+| T3.8 | Recipe and batch list (Home landing): search, filter, folders, tags, favorites, the active batch card at the top | Playwright: filter and search change the list; an empty workspace shows the empty state | T3.7 | ChatGPT | – | todo |
+| T3.9 | Recipe editor (Home, simple): lines for fermentables, hops, yeast and misc from the library; edit session lock; live calculation from `calculate`; `If-Match` conflict view; publish | Playwright: an edit changes the calculated values from the API; a 412 shows the conflict view | T3.8 | ChatGPT | – | todo |
+| T3.10 | "How calculated" panel and style guide comparison in the editor | Playwright: the panel shows the values of the API; the style range marks out-of-range values | T3.9 | ChatGPT | – | todo |
+| T3.11 | Recipe wizard (Home first): start options (template, existing recipe, blank, import), steps of plan › Tarif sihirbazı; mead, cider and seltzer types | Playwright: each start option makes a draft recipe | T3.9 | ChatGPT | – | todo |
+| T3.12 | Mash steps and yeast starter, boil schedule, fermentation profile editor (profile endpoints and history restore) | Playwright: a changed profile shows in the recipe calculation; history restore works | T3.9 | ChatGPT | – | todo |
+| T3.13 | Water and mash pH page and water report entry | Playwright: a salt change shows the new values of the API | T3.2, T3.12 | ChatGPT | – | todo |
+| T3.14 | Recipe scale and compare (versions and recipes) | Playwright: scale preview does not save; compare shows the differences of the API | T3.9 | ChatGPT | – | todo |
+| T3.15 | Import with the mapping step (BeerXML, BeerJSON, `.bsmx`, Brewfather) and export | Playwright with fixtures: import shows unmatched lines; apply makes the recipe | T3.8 | ChatGPT | – | todo |
+| T3.16 | Ingredient library detail and own ingredient | Playwright: a new own ingredient shows in the editor picker | T3.9 | ChatGPT | – | todo |
+| T3.17 | Batch start: from a published version, equipment, date and volume; stock check and shopping list; calendar entry | Playwright: a batch starts; missing stock goes to the shopping list | T3.9 | ChatGPT | – | todo |
+| T3.18 | Brew day on the web: steps and timers from the API, measurements, actual values, print view of the brew sheet; paper scan upload and correction | Playwright: step state changes save; the print view has no app chrome | T3.17 | ChatGPT | – | todo |
+| T3.19 | Fermentation: measurement chart (`ChartContainer`, plain SVG, table alternative), alert rules, the action "Bottle / keg" (priming, count) | Playwright: a new measurement shows in the chart and the table; the action moves the batch to packaged | T3.18 | ChatGPT | – | todo |
+| T3.20 | Batch summary: plan against actual, tasting note, "new version from the note" | Playwright: the note makes a new recipe version | T3.19 | ChatGPT | – | todo |
+| T3.21 | Tools screen: refractometer, carbonation, dilution, unit converter | Playwright: each tool shows the result of the API | T3.2, T3.3 | ChatGPT | – | todo |
+| T3.22 | Calendar and backward planning | Playwright: backward plan gives the brew date from the target date | T3.17 | ChatGPT | – | todo |
+| T3.23 | Stock and shopping list (Home simple: amount, minimum), add stock | Playwright: add stock changes the total; below minimum shows the mark | T3.8 | ChatGPT | – | todo |
+| T3.24 | Settings (Home): workspace and mode, appearance, region and units, equipment and containers, calibration proposal, calculation, style guides, security (identities, passkeys, sessions, support access), notifications, devices (iSpindel and RAPT address, key rotation), data (export, import, recently deleted), help and support, account and account deletion | Playwright for each category; step-up shows for the actions that need it | T3.6 | ChatGPT | – | todo |
+| T3.25 | Notification bell and global search: list, actions, SSE update; search to the record | Playwright: a new event shows without reload; a search result opens the record | T3.8 | ChatGPT | – | todo |
+| T3.26 | Share a recipe or batch with a friend and accept an invitation on the web | Playwright: the invited user opens the shared recipe and cannot see other records | T3.6 | ChatGPT | – | todo |
+| T3.27 | Web end-to-end suite on compose with the real API (`make e2e-web`, CI job): the full Home flow of T2.33 in the browser; email link through mailpit | `make e2e-web` is green locally and in CI | T3.5, T3.20 | ChatGPT | – | todo |
+| T3.28 | Plan, concept and design system agree with the built web screens (screen list, mode table, screen counts) | `araclar/tutarlilik.py` is clean; concept has no overflow at 1280 px and 400 px | T3.24 | Claude | Sonnet | todo |
+| T3.29 | Stage 3 gate check: Playwright and axe on each Home MVP screen, TR and EN, four themes; UIQ-12 visual gate in report mode | Gate ADR; deviations are in the ADR | T3.27, T3.28, UIQ-12 | Claude | Opus | todo |
+
+Stage 3 also contains these open rows of other tables: B5 (#427), T2.58 (#403), UIQ-03b to UIQ-12, G7 (#435), G8 (#436).
+
 ## Stages 3–6
 
 The stages are in plan › Geliştirme düzeni and plan › Yol haritası. Opus writes the task list of a stage when the previous stage closes.
 
 | Stage | Content | Gate |
 |---|---|---|
-| 3 Web | Home MVP screens | Playwright, accessibility |
+| 3 Web | Home MVP screens (task list above) | Playwright, accessibility |
 | 4 iOS | SwiftUI, brew day package, Live Activity; the iPhone shows only the screens in plan › iPhone kapsamı | macOS CI is green; device test (Oğuz) |
 | 5 Home MVP beta | Cloud setup, beta | Interviews and golden test are complete; independent security review |
 | 6 Business | Business screens | Step by step |
