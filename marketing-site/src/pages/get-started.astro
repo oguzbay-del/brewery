@@ -106,13 +106,13 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
             <section class="wizard-step" data-step="3" hidden>
               <p class="step-kicker">STEP 03 OF 04</p>
               <h2 tabindex="-1">Choose your <em>billing term.</em></h2>
-              <p class="step-description">Longer commitments receive a larger discount against the monthly reference rate.</p>
+              <p class="step-description">Proposed discounts are shown against the monthly reference rate. Final commercial terms are not yet approved.</p>
               <fieldset class="billing-options">
                 <legend>Billing frequency</legend>
-                <label><input type="radio" name="term" value="monthly" aria-label="Monthly billing" checked /><span><strong>Monthly</strong><small>Flexible month-to-month</small><b>0% saving</b></span></label>
-                <label><input type="radio" name="term" value="annual" aria-label="Annual billing" /><span><strong>Annually</strong><small>One-year commitment</small><b>15% saving</b></span></label>
-                <label><input type="radio" name="term" value="two-year" aria-label="Two-year billing" /><span><strong>2 years</strong><small>Two-year commitment</small><b>25% saving</b></span></label>
-                <label><input type="radio" name="term" value="three-year" aria-label="Three-year billing" /><span><strong>3 years</strong><small>Three-year commitment</small><b>35% saving</b></span></label>
+                <label><input type="radio" name="term" value="monthly" aria-label="Monthly billing" checked /><span><strong>Monthly</strong><small>Flexible month-to-month</small><b>0% proposed saving</b></span></label>
+                <label><input type="radio" name="term" value="annual" aria-label="Annual billing" /><span><strong>Annually</strong><small>One-year commitment</small><b>15% proposed saving</b></span></label>
+                <label><input type="radio" name="term" value="two-year" aria-label="Two-year billing" /><span><strong>2 years</strong><small>Two-year commitment</small><b>25% proposed saving</b></span></label>
+                <label><input type="radio" name="term" value="three-year" aria-label="Three-year billing" /><span><strong>3 years</strong><small>Three-year commitment</small><b>35% proposed saving</b></span></label>
               </fieldset>
               <div class="trial-note" id="trial-note">Proposed trial terms only; no trial is active in this preview.</div>
               <div class="contact-tier" id="custom-billing" hidden><strong>Custom team plan</strong><p>For teams above 20, billing terms and pricing are prepared individually.</p></div>
@@ -122,7 +122,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
               <p class="step-kicker">STEP 04 OF 04</p>
               <h2 tabindex="-1">Review your <em>plan.</em></h2>
               <p class="step-description">Review your brewing path, team size and billing term below. This summary does not send a quote request.</p>
-              <dl class="review-list"><div><dt>Brewing path</dt><dd id="review-audience">—</dd></div><div><dt>Users</dt><dd id="review-seats">—</dd></div><div><dt>Billing</dt><dd id="review-term">—</dd></div><div><dt>Saving</dt><dd id="review-discount">—</dd></div><div><dt>Trial</dt><dd id="review-trial">—</dd></div><div><dt>Intended payment method</dt><dd>Credit or debit card · not collected here</dd></div></dl>
+              <dl class="review-list"><div><dt>Brewing path</dt><dd id="review-audience">—</dd></div><div><dt>Users</dt><dd id="review-seats">—</dd></div><div><dt>Billing</dt><dd id="review-term">—</dd></div><div><dt>Proposed saving</dt><dd id="review-discount">—</dd></div><div><dt>Trial</dt><dd id="review-trial">—</dd></div><div><dt>Intended payment method</dt><dd>Credit or debit card · not collected here</dd></div></dl>
               <p class="step-helper">You can go back to change any choice. <a href={`${base}pricing/`}>Review all plans and terms</a>.</p>
             </section>
 
@@ -132,7 +132,7 @@ const breadcrumbData = buildBreadcrumbList(breadcrumbItems);
         </div>
         <aside class="wizard-summary" aria-live="polite">
           <p class="eyebrow">YOUR SELECTION</p><h2>Plan <em>summary</em></h2>
-          <dl><div><dt>Brewing path</dt><dd id="summary-audience">Choose a path</dd></div><div><dt>Users</dt><dd id="summary-seats">—</dd></div><div><dt>Term</dt><dd id="summary-term">Monthly</dd></div><div><dt>Saving</dt><dd id="summary-discount">0%</dd></div><div><dt>Trial</dt><dd id="summary-trial">Choose a path</dd></div></dl>
+          <dl><div><dt>Brewing path</dt><dd id="summary-audience">Choose a path</dd></div><div><dt>Users</dt><dd id="summary-seats">—</dd></div><div><dt>Term</dt><dd id="summary-term">Monthly</dd></div><div><dt>Proposed saving</dt><dd id="summary-discount">0%</dd></div><div><dt>Trial</dt><dd id="summary-trial">Choose a path</dd></div></dl>
           <p class="summary-note">Proposed terms only: Home has a planned three-month trial; Brewery has a planned one-month trial. Neither trial is active in this preview.</p>
           <a href={`${base}compare/`}>Compare functions ↗</a>
         </aside>
