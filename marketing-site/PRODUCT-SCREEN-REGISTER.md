@@ -23,7 +23,32 @@ Initial source inventory, 28 November 2026. Source: src/data/productScreens.ts b
 
 ## Presentation and refresh
 - Each figure links to the full-size WebP and uses the localized title as alt text and a localized caption from the data file.
-- Desktop uses full width, natural aspect ratio. At <=600px the component uses a centered 135% image with -17.5% start margin inside a clipped frame. This is intentional CSS, but whether the crop removes meaningful UI needs visual review; MQ-11a recorded repeated image-bound observations.
+- Desktop and mobile now use full width and natural aspect ratio (commit 6c60729). Previously, at <=600px, a centered 135% image was clipped. The full-size link remains for detail. Check the new preview for legibility and confirm the image-bound reports with exact-head CI.
 - For a replacement, verify original capture provenance, language, real feature and platform; retain the key if the screen meaning is unchanged, update dimensions and bilingual text when necessary, and rerun all placements in both languages. Do not use screenshots alone to assert feature availability.
-- TODO: verify actual asset files and original provenance per key, resolve G8 claims separately, inspect full-frame vs crop previews, add exact-head evidence and record approval. The table is a code-derived inventory, not a completed visual inspection.
+- TODO: verify original capture provenance per key, resolve G8 claims separately, inspect full-frame vs crop previews, add exact-head evidence and record approval. The table is a code-derived inventory, not a completed visual inspection.
 
+
+## Verified repository asset provenance
+
+The repository directory lists all 16 WebP assets. The directory history records introduction in commit `8230b7aa1d2f8998ceed77e6ab950b6861343236` (2026-11-26, W353 / PR #354). This is the repository import date, not the image capture date. The blob IDs identify the current stored files, not the original capture or feature availability.
+
+| File under public/images/product/ | Git blob SHA |
+|---|---|
+| bd.webp | `21b59b4f461dfb28ec770d803bd4910c1cc8110d` |
+| bs.webp | `c2ff89c39c33771bfd19ac26698b23dcddb9e614` |
+| cal.webp | `33797812169dda04740845cb7baebdc857b38af7` |
+| cip.webp | `965a7d08947fbc2699dc650884fc219d3d61cd7a` |
+| cl.webp | `1b5ed65fdb1247f47c78107103df69a157d24346` |
+| cmp.webp | `e05b052ba78a69fd38a6da102c5501fe282d8ef9` |
+| ed.webp | `dc62f5b0a89f41825e18c651642d9d5c181f2577` |
+| fe.webp | `ec6690693611a6b0a051cb57187dd3133026e41c` |
+| hw.webp | `665d23b26e19e004f4dd81506a2fd9dc4e4db8d3` |
+| inv.webp | `5741dba0adc1ba2b2e0673ff1260910c32d11203` |
+| lt.webp | `8c630872d61f07636c9bde31640d1283df32ddd2` |
+| pr.webp | `f05a371fad15cd4165ad665a6947cf905212464f` |
+| qa.webp | `46d612e918b82f5c9c1cf1eae0d6508e46f7a565` |
+| tk.webp | `2a614ef6ce53d8a86742b5f433bbd65ba1618ebe` |
+| tools.webp | `2a682cd626bb04333029bc316afddd7846c9817f` |
+| wiz.webp | `933782c92da3c0c10ea23ec676daad400ea39cb7` |
+
+Platform, original capture path/date, actual image language and feature evidence remain unverified. Do not infer them from dimensions.
