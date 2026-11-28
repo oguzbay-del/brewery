@@ -78,7 +78,7 @@ jobs:
         run: |
           set -uo pipefail
           for size in 11-inch 13-inch; do
-            name=$(xcrun simctl list devices available "iPad Pro" | grep -oE "iPad Pro $size[^(]*\\([^)]*\\)" | sort -V | tail -n 1)
+            name=$(xcrun simctl list devices available "iPad Pro" | grep -oE "iPad Pro ${size}[^(]*\\([^)]*\\)" | sort -V | tail -n 1)
             [ -n "$name" ] || { echo "::warning::no iPad Pro $size simulator"; continue; }
             echo "Using simulator: $name"
             xcodebuild test \
