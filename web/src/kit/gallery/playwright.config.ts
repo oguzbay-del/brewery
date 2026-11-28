@@ -18,7 +18,7 @@ export default defineConfig({
   webServer: {
     command: `npm run build:kit && npm run preview -- --mode kit --host 127.0.0.1 --port ${port} --strictPort`,
     url: `http://127.0.0.1:${port}/kit.html`,
-    cwd: new URL('../../../..', import.meta.url).pathname,
+    cwd: new URL('../../../', import.meta.url).pathname,
     reuseExistingServer: false,
     timeout: 120_000,
   },
