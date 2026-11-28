@@ -71,3 +71,31 @@ jobs:
             -destination "platform=iOS Simulator,name=$SIM_NAME" \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
+      - name: iPad visual and accessibility tests (report mode)
+        # Report mode (UIQ-11): a failure does not block. Screenshots are in the result bundle.
+        continue-on-error: true
+        working-directory: ios
+        run: |
+          set -uo pipefail
+          for size in 11-inch 13-inch; do
+            name=$(xcrun simctl list devices available "iPad Pro" | grep -oE "iPad Pro $size[^(]*\\([^)]*\\)" | sort -V | tail -n 1)
+            [ -n "$name" ] || { echo "::warning::no iPad Pro $size simulator"; continue; }
+            echo "Using simulator: $name"
+            xcodebuild test \
+              -project Demleme.xcodeproj \
+              -scheme Demleme \
+              -skipPackagePluginValidation \
+              -only-testing:DemlemeUITests/IPadAdaptiveUITests \
+              -only-testing:DemlemeUITests/IPadVisualUITests \
+              -destination "platform=iOS Simulator,name=$name" \
+              -resultBundlePath "ipad-$size.xcresult" \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGNING_REQUIRED=NO || echo "::warning::iPad tests failed on $name"
+          done
+      - name: Upload iPad result bundles
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipad-xcresult
+          path: ios/ipad-*.xcresult
+          if-no-files-found: ignore
