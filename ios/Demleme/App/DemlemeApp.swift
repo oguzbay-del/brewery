@@ -15,7 +15,15 @@ struct DemlemeApp: App {
 
     var body: some Scene {
         WindowGroup {
+            #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-KitGallery") {
+                KitGallery()
+            } else {
+                ContentView(store: store, scanStore: scanStore, batchStore: batchStore)
+            }
+            #else
             ContentView(store: store, scanStore: scanStore, batchStore: batchStore)
+            #endif
         }
     }
 

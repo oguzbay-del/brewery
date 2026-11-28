@@ -10,7 +10,7 @@ struct ScanView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: DemlemeMetric.space4) {
                 if batchMode {
                     BatchScanView(store: batch, modules: modules)
                     Button(UiText.text("scan.batch_close")) { batchMode = false }
@@ -19,7 +19,7 @@ struct ScanView: View {
                     single
                 }
             }
-            .padding()
+            .padding(DemlemeMetric.space4)
         }
         .task { await store.loadPermissions() }
     }
@@ -71,7 +71,7 @@ struct ScanView: View {
         Button(UiText.text("scan.resolve")) {
             Task { await store.resolve(store.manualCode) }
         }
-        .buttonStyle(.borderedProminent)
+        .buttonStyle(.gristoraPrimary)
         .accessibilityIdentifier("scan.resolve")
     }
 
@@ -84,7 +84,7 @@ struct ScanView: View {
                     Task { await store.resolve(code) }
                 }
                 .frame(height: 280)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: DemlemeMetric.radiusMd))
                 .accessibilityIdentifier("scan.camera_view")
             }
             Button(UiText.text(cameraOn ? "scan.camera_close" : "scan.camera")) { cameraOn.toggle() }
@@ -123,7 +123,7 @@ struct ScanCardView: View {
     private var offered: [ScanAction] { card.actions.filter(store.isOffered) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DemlemeMetric.space3) {
             Text(UiText.text("scan.kind_" + card.kind.rawValue))
                 .font(.caption)
                 .foregroundStyle(DemlemeColor.label2)
@@ -148,7 +148,7 @@ struct ScanCardView: View {
             }
             ForEach(offered, id: \.rawValue) { action in
                 Button(UiText.text(action.textKey)) { start(action) }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.gristoraSecondary)
                     .disabled(writesBlocked || store.actionState == .running)
                     .accessibilityIdentifier("scan.action." + action.rawValue)
             }
@@ -159,9 +159,9 @@ struct ScanCardView: View {
             }
             actionMessage
         }
-        .padding()
+        .padding(DemlemeMetric.space4)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(DemlemeColor.card, in: RoundedRectangle(cornerRadius: 12))
+        .background(DemlemeColor.card, in: RoundedRectangle(cornerRadius: DemlemeMetric.radiusMd))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("scan.card")
         .confirmationDialog(UiText.text("scan.new_status"), isPresented: $askStatus, titleVisibility: .visible) {
