@@ -39,7 +39,8 @@ const tr = lang === "tr";
   figcaption p { margin:.35rem 0 0; }
   @media(max-width:600px) {
     .frames { grid-template-columns:1fr; }
-    .screen-crop { overflow:hidden; border-radius:6px; }
-    .screen-crop img { width:135%; max-width:none; margin-inline-start:-17.5%; }
+    /* Keep the whole product screen visible. The full-size link provides detail. */
+    .screen-crop { min-inline-size:0; }
+    .screen-crop img { max-inline-size:100%; }
   }
 </style>
