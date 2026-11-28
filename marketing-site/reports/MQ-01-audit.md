@@ -159,3 +159,19 @@ Next: review lower sections and missing matrix coverage using MQ-11a report evid
 | Existing warm paper/photo composition is strong in features, technical principles, pricing, FAQ and plan configuration; restrained forest closing CTA fits the new direction | corresponding 1440px PNGs | MQ-03/04 reuse these patterns and reduce one-off CSS; no wholesale redesign. |
 
 These are observed composition findings, not a claim that every page passed VQG. The remaining mobile lower sections and missing TR subpages, module and 404 captures require MQ-11a evidence. Keep MQ-01 open until the missing required evidence is addressed. No layout code changed in this audit.
+
+
+## 10. MQ-11a automated visual evidence (28 November)
+
+[Marketing CI run 46070250039](https://github.com/oguzbay-del/brewery/actions/runs/46070250039), job 140745197613, passed at PR #459 head `f1fe3cebac840fd4b9ce49434dba3ec730019708`. Parsed 149 MQ11A_REPORT JSON log records, all with this exact head SHA. The [screenshot archive 15232837081](https://github.com/oguzbay-del/brewery/actions/runs/46070250039/artifacts/15232837081) exists (104,783,873 bytes); its image contents have not yet been inspected in this review. The new checks are report-only; a green job does not mean zero defects.
+
+| Finding | Observed evidence | Proposed action |
+|---|---|---|
+| P1: Modules heading contrast | EN /modules/ and TR /tr/modules/; 390px and EN 1440px: `#erp-boundary > em`, axe measured 2.13:1 (#8b4a1f against #0b2f26), expected at least 3:1 | Fix the semantic foreground/surface pairing in the Editorial Light work, then rerun axe in both locales. |
+| P1: TR brewery mobile horizontal overflow | /tr/breweries/, 320px default: document and body scrollWidth 337px (17px beyond viewport). Two records refer to one page-level symptom. | Identify the overflowing element; fix its layout instead of hiding page overflow. Verify 320 and 390px and long Turkish text. |
+| P2 investigation: product screenshot bounds | /, 320px default: all three `#product-screens` images extend from approximately -15px to 336px. | Inspect actual screenshots and frame clipping; distinguish intentional crop from content outside the viewport. Do not classify every image finding as a defect. |
+| P2 investigation: focus-state target size | / and /faq/, 390px, keyboard-focus: axe reports the home-logo link partly obscured. | Inspect focus/skip-link overlay and tab sequence; reproduce before changing the header. |
+
+Raw log totals: 94 outside-viewport records, 68 axe color-contrast records, 2 page-overflow records and 2 axe target-size records (166 observations, not 166 unique defects). The counts include repeated routes, widths and states. Deduplicate by selector and cause during triage. The two concrete P1 observations take priority over aesthetic changes. Verify the fixes at their new head SHAs. Do not treat these logs as manual screen-reader, zoom or full mobile screenshot review.
+
+Remaining: module detail and interactive-state coverage, manual mobile composition inspection, root-cause triage of the remaining repeated findings. No product, protected workflow, baseline or production changes in this audit.
