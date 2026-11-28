@@ -601,3 +601,43 @@
   .not-found-page .not-found-actions { align-items: center; }
   .not-found-page .not-found-actions .button { width: 100%; max-width: 280px; }
 }
+
+/* Preserve the user's system palette in Windows High Contrast and other
+   forced-colors environments. Do not opt out of browser color adjustment. */
+@media (forced-colors: active) {
+  .site-header, .site-header .desktop-nav, .sx-cta, .sx-cta-inner,
+  .sx-quote, .sx-pill-dark {
+    background: Canvas !important;
+    color: CanvasText !important;
+    border-color: CanvasText !important;
+  }
+  .site-header .wordmark, .site-header .wordmark-text,
+  .site-header .wordmark-text::after, .sx-cta h2, .sx-cta h2 em,
+  .sx-cta-inner p:not(.sx-kicker), .sx-cta .sx-kicker,
+  .sx-quote h2, .sx-quote h2 em, .sx-quote > p,
+  .sx-quote .sx-kicker-light {
+    color: CanvasText !important;
+  }
+  .site-header .desktop-nav a, .site-header .lang-switch,
+  .hero-actions .hero-secondary, .sx-cta .sx-light-link,
+  .sx-quote .sx-light-link {
+    color: LinkText !important;
+    border-color: LinkText !important;
+  }
+  .site-header .desktop-nav a[aria-current],
+  .site-header .lang-switch, .hero-actions .hero-secondary,
+  .sx-cta .sx-light-link, .sx-quote .sx-light-link {
+    text-decoration: underline;
+  }
+  .site-header .header-cta, .sx-cta .button {
+    background: ButtonFace !important;
+    color: ButtonText !important;
+    border: 1px solid ButtonText !important;
+    box-shadow: none;
+  }
+  .site-header a:focus-visible, .hero-actions a:focus-visible,
+  .sx-cta a:focus-visible, .sx-quote a:focus-visible {
+    outline: 3px solid Highlight !important;
+    outline-offset: 3px;
+  }
+}
