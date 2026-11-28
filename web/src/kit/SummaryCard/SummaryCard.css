@@ -1,0 +1,51 @@
+.kit-summary-card {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-2);
+  min-inline-size: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  color: var(--label);
+}
+
+.kit-summary-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-inline-size: 0;
+  color: var(--tint);
+  font-size: var(--t-footnote-size);
+  font-weight: var(--t-headline-weight);
+  overflow-wrap: anywhere;
+}
+
+.kit-summary-metric {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+
+.kit-summary-value {
+  min-inline-size: 0;
+  font-family: var(--font-round);
+  font-size: var(--t-metric-size);
+  font-weight: var(--t-metric-weight);
+  line-height: var(--t-metric-line);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.kit-summary-unit,
+.kit-summary-description {
+  color: var(--label2);
+  font-size: var(--t-footnote-size);
+  line-height: var(--t-footnote-line);
+  overflow-wrap: anywhere;
+}
+
+.kit-summary-description {
+  margin: 0;
+}
