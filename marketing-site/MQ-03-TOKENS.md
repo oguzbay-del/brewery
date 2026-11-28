@@ -13,7 +13,7 @@ Scope: marketing-site only. DESIGN.md governs the target. This records the imple
 | Supporting text | --muted #475569 |
 | Decorative boundary | --line rgba(11,47,38,.18); not a control boundary |
 | Strong boundary | --border-strong #777C73; candidate for meaningful boundaries, verify actual state |
-| Focus | --focus-ring #0066cc; existing link and summary focus color, 3px outline and 4px offset |
+| Focus | --focus-ring #0066cc on light surfaces; --focus-ring-on-dark aliases --amber-fill #F4A261; 3px outline and 4px offset |
 | Accent text | --amber #8B4A1F |
 | Accent fill | --amber-fill #F4A261 |
 | Accent ink | --amber-ink #0B2F26 |
@@ -60,3 +60,7 @@ Claude review on PR #467, head 847cd60, compared base d980641 and head in Chromi
 - Forced-colors overrides use !important only inside that media query so user-selected system colors win over local component colors. Actual forced-colors screenshots remain open.
 - MQ-06 backlog: legacy 6.5 px wordmark subtitle and 8 px note-kicker; check legibility and responsive type rather than changing in this package.
 - Current reviewed head 847cd60: marketing CI 46133802751 and guard 46133802753 passed. Full EN/TR before/after screenshot set, real browser zoom and forest focus screenshots remain open. No visual acceptance.
+
+## Scoped focus correction
+
+Commit eadc01a adds --focus-ring-on-dark (alias of --amber-fill) and applies it to the home hero header and action area only. The solid forest header is a confirmed source-level dark surface. Amber-fill / forest is 7.0:1 in the round 1 contrast measurement above; blue / forest was 2.6:1. This ratio is not a browser test of every focused element or the photo overlay. The effective stitch-layout.css rules make pricing-page plan-business and start-page wizard-summary light cards, so do not blindly assign a dark-surface token to those classes. Compare-page table headers are also light in that cascade. Existing dark CTA and audience band focus styles remain. Check actual focus on EN/TR home and pricing, forced-colors, and focus visibility at mobile and desktop. No visual approval yet.
