@@ -132,6 +132,38 @@ async function inspectGeometry(page) {
         }
       }
     }
+    // Compare only direct, visible children of known CTA wrappers. Mixed
+    // typography, button widths and intentional centered text are not defects.
+    for (const group of document.querySelectorAll(".sx-cta-inner")) {
+      const children = Array.from(group.children).filter(visible);
+      const bounds = group.getBoundingClientRect();
+      const style = getComputedStyle(group);
+      const left = bounds.left + group.clientLeft + parseFloat(style.paddingLeft);
+      const right = bounds.left + group.clientLeft + group.clientWidth - parseFloat(style.paddingRight);
+      for (const child of children) {
+        const box = child.getBoundingClientRect();
+        if (box.left < left - tolerance || box.right > right + tolerance) {
+          report("cta-alignment-review", child, "CTA child fits its content column", {
+            group: identify(group), left: Math.round(box.left), right: Math.round(box.right),
+            expectedLeft: Math.round(left), expectedRight: Math.round(right),
+          }, "P2");
+        }
+      }
+    }
+    // Section heading bounds, not arbitrary identical text alignment: allow
+    // center-aligned headings and editorial columns within the section.
+    for (const heading of document.querySelectorAll(".section-heading, .sx-heading")) {
+      const parent = heading.parentElement;
+      if (!parent || !visible(heading) || !visible(parent)) continue;
+      const a = heading.getBoundingClientRect();
+      const b = parent.getBoundingClientRect();
+      if (a.left < b.left - tolerance || a.right > b.right + tolerance) {
+        report("section-alignment-review", heading, "Heading fits its section", {
+          section: identify(parent), left: Math.round(a.left), right: Math.round(a.right),
+          sectionLeft: Math.round(b.left), sectionRight: Math.round(b.right),
+        }, "P2");
+      }
+    }
     return findings;
   });
 }
@@ -159,6 +191,10 @@ test("MQ-11a detects an intentional geometry defect in an isolated fixture", asy
   await page.setContent('<main><div style="width:50px;height:30px;overflow:hidden"><button style="width:120px;height:50px">Clipped control</button></div></main>');
   const clipped = await inspectGeometry(page);
   expect(clipped.some((f) => f.rule === "ancestor-clipping-review")).toBe(true);
+  await page.setContent('<main><div class="sx-cta-inner" style="width:200px;padding:20px"><div style="width:300px">CTA</div></div><section style="width:100px"><div class="section-heading" style="width:150px">Heading</div></section></main>');
+  const alignment = await inspectGeometry(page);
+  expect(alignment.some((f) => f.rule === "cta-alignment-review")).toBe(true);
+  expect(alignment.some((f) => f.rule === "section-alignment-review")).toBe(true);
 });
 
 const cases = routes.flatMap((route) => widths.map((width) => ({
@@ -280,7 +316,14 @@ for (const { route, width, state } of cases) {
         locale: route.locale, viewport: { width, height: 900 },
         browser: testInfo.project.name, browserVersion: browser.version(),
         state, screenshot, findings,
-        limitations: ["Not a visual acceptance pass", "Intentional scroll regions excluded from element checks"],
+        limitations: [
+          "Not a visual acceptance pass",
+          "Labelled comparison, role and diagram scroll regions excluded from element checks",
+          "Sibling overlap limited to card grids; intended overlays are not compared",
+          "Image bounds require human review for intentional frame crops",
+          "Alignment checks are limited to CTA children and known section headings",
+          "Deduplicate across cases by cause; raw observations are retained",
+        ],
       };
       await writeFile(testInfo.outputPath(name + ".json"), JSON.stringify(evidence, null, 2));
       // Current workflow archives PNG only. Log each report for traceable evidence
