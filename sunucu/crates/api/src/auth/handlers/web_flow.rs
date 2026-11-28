@@ -637,6 +637,9 @@ mod tests {
         assert_eq!(apple_user_name(Some("not json")), "");
         assert_eq!(apple_user_name(None), "");
         let long = format!(r#"{{"name":{{"firstName":"{}"}}}}"#, "a".repeat(300));
-        assert_eq!(apple_user_name(Some(&long)).chars().count(), MAX_DISPLAY_NAME);
+        assert_eq!(
+            apple_user_name(Some(&long)).chars().count(),
+            MAX_DISPLAY_NAME
+        );
     }
 }
