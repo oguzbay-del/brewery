@@ -175,3 +175,29 @@ These are observed composition findings, not a claim that every page passed VQG.
 Raw log totals: 94 outside-viewport records, 68 axe color-contrast records, 2 page-overflow records and 2 axe target-size records (166 observations, not 166 unique defects). The counts include repeated routes, widths and states. Deduplicate by selector and cause during triage. The two concrete P1 observations take priority over aesthetic changes. Verify the fixes at their new head SHAs. Do not treat these logs as manual screen-reader, zoom or full mobile screenshot review.
 
 Remaining: module detail and interactive-state coverage, manual mobile composition inspection, root-cause triage of the remaining repeated findings. No product, protected workflow, baseline or production changes in this audit.
+
+
+## 11. Final audit triage and remaining visual verification (28 November)
+
+The [MQ-11a CI run 46100612497](https://github.com/oguzbay-del/brewery/actions/runs/46100612497), job 140841972938, passed. Its 163 JSON log records all identify PR head `288e59f6ab0c815d8fccf8f3d24cb42a7ad0a66e` and tested merge SHA `783b3f7c579df48af371333062a1325c3a8cbeae`. The [responsive screenshot artifact 15245511063](https://github.com/oguzbay-del/brewery/actions/runs/46100612497/artifacts/15245511063) is listed at 108,351,639 bytes with the same PR head. It includes the new route/state coverage; this session verified the archive metadata, not the individual PNG contents.
+
+| Root-cause group (provisional) | Observations | Priority and action |
+|---|---:|---|
+| Shared ProductScreens image bounds | 106 | P1 investigation: 14 route paths, 320/390px; same structural selector with varying figure indexes. MQ-08 must inspect the image/frame geometry and confirm intentional cropping or correct it. |
+| Modules boundary heading | 8 | P1: default state, both locales, 390/1440px including anchored detail cases. Contrast 2.13:1 vs 3:1 minimum. Correct the foreground/surface pairing. |
+| Forced-colors homepage foreground/background | 64 | P1 investigation: EN/TR at 390/1440px. Header, nav, hero secondary action, technical panel and closing CTA text report light foreground on white background (1.08:1 or 1.53:1; amber 2.06:1). Inspect actual forced-colors rendering and background overrides; do not treat as 64 separate defects or as proven default-theme contrast failures. |
+| TR brewery page overflow | 2 | P1: one page-level symptom at 320px (document/body). Fix the source element, not page overflow masking. |
+| Header link partly obscured during keyboard focus | 2 | P1 investigation: / and /faq/ at 390px. Axe reports available height 12.6px vs 24px target; inspect skip-link overlay and focus sequence. |
+
+Total 182 raw observations across 163 cases. These five groups are a provisional triage, not five verified root causes. The default-state contrast findings are separate from forced-colors. Report-only geometry is not a release gate or visual acceptance.
+
+### Pilot handoff
+
+1. Resolve P1 contrast and horizontal overflow first. Verify on EN/TR, 320/390/768/1024/1440px as applicable.
+2. Inspect actual ProductScreens clipping, focus state and forced-colors captures before changing shared layout. Keep intentional comparison-table scrolling and existing hard assertions.
+3. Then pilot Editorial Light on the homepage: preserve brand hero, use the paper/white editorial surfaces for technical content, retain authentic product screens and clear audience paths. Use MQ-03/04 tokens and components. Review the P2 findings from sections 8–9.
+4. Re-run MQ-11a on changed routes and compare exact-head evidence; keep MQ-11 baseline approval and MQ-14 manual accessibility separate.
+
+### Evidence limitations
+
+The earlier 36-image artifact and ten Lighthouse reports were inspected as recorded in sections 8–9. Full mobile lower sections, new TR subpages, modules and 404 PNGs in the newer archive were not manually inspected in this session. The report includes current branch CI evidence rather than an independently captured current-main or production screenshot set. No actual browser zoom or screen-reader acceptance is claimed. The issue permits documenting screenshot verification limitations; carry the outstanding manual review into MQ-11/MQ-14 and the relevant pilot work before release. The audit records the known defects, test gaps and pilot criteria; it does not certify visual acceptance.
