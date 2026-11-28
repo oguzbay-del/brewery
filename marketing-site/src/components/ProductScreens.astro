@@ -16,12 +16,16 @@ const tr = lang === "tr";
       const screen = screens[key];
       const [title, caption] = screen[lang];
       const src = import.meta.env.BASE_URL + "images/product/" + key + ".webp";
+      const wide = screen.width > 1500;
+      const truncated = key === "inv" || key === "fe" || key === "hw";
       return <figure>
-        <a href={src} aria-label={tr ? title + " · Tam boy aç" : title + " · Open full size"}>
-          <div class="screen-crop"><img src={src} width={screen.width} height={screen.height} alt={title} loading="lazy" decoding="async" /></div>
-          <span>{tr ? "Tam boy aç" : "Open full size"} ↗</span>
-        </a>
-        <figcaption><strong>{title}</strong><p>{caption}</p></figcaption>
+        <div class="screen-frame">
+          <p class="screen-note">{tr ? "Kavram önizlemesi" : "Concept preview"} · {tr ? "Türkçe arayüz" : "Turkish interface"}</p>
+          {wide && <p class="pan-hint">{tr ? "Ayrıntılar için ekranı yatay kaydırın." : "Scroll the screen horizontally for details."}</p>}
+          <div class:list={["screen-crop", { "wide-screen": wide }]} tabindex={wide ? 0 : undefined} role={wide ? "region" : undefined} aria-label={wide ? title : undefined}><img src={src} width={screen.width} height={screen.height} alt={title} loading="lazy" decoding="async" /></div>
+          <a href={src} aria-label={tr ? title + " · Tam boy aç" : title + " · Open full size"}>{tr ? "Tam boy aç" : "Open full size"} ↗</a>
+        </div>
+        <figcaption><strong>{title}</strong><p>{caption}</p>{truncated && <p class="screen-note">{tr ? "Kaynak görselin alt bölümü eksik." : "The source image is cut off at the bottom."}</p>}</figcaption>
       </figure>;
     })}
   </div>
@@ -31,15 +35,21 @@ const tr = lang === "tr";
   .intro { margin-bottom: 1.4rem; }
   .frames { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:clamp(1rem,2vw,2rem); }
   figure { margin:0; min-width:0; }
-  a { display:block; position:relative; overflow:hidden; border-radius:14px; background:#e7e8e1; padding:12px; }
+  .screen-frame { min-inline-size:0; border-radius:14px; background:#e7e8e1; padding:12px; }
   img { width:100%; height:auto; display:block; border-radius:6px; }
-  a span { display:block; width:fit-content; margin:.5rem 0 0 auto; color:#233a30; text-decoration:underline; font-size:.87rem; }
+  .screen-frame a { display:block; width:fit-content; margin:.5rem 0 0 auto; color:#233a30; text-decoration:underline; font-size:.87rem; }
+  .screen-note, .pan-hint { margin:0 0 .5rem; color:var(--ink); font-size:.87rem; }
+  .pan-hint { display:none; }
+  .screen-crop:focus-visible { outline:3px solid var(--focus-ring, #0066cc); outline-offset:2px; }
   figcaption { padding:.8rem .1rem; }
   figcaption strong { font-size:1.15rem; color:var(--ink); }
   figcaption p { margin:.35rem 0 0; }
   @media(max-width:600px) {
     .frames { grid-template-columns:1fr; }
-    .screen-crop { overflow:hidden; border-radius:6px; }
-    .screen-crop img { width:135%; max-width:none; margin-inline-start:-17.5%; }
+    .screen-crop { min-inline-size:0; }
+    .screen-crop img { max-inline-size:100%; }
+    .wide-screen { overflow-x:auto; }
+    .wide-screen img { inline-size:860px; max-inline-size:none; }
+    .pan-hint { display:block; }
   }
 </style>
