@@ -39,6 +39,7 @@ pub mod stock;
 pub mod subscription;
 pub mod support;
 pub mod support_access;
+pub mod tools;
 pub mod trash;
 
 use std::sync::Arc;

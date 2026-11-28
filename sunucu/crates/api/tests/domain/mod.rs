@@ -49,6 +49,11 @@ async fn start_engine() -> (String, oneshot::Sender<()>) {
         Server::builder()
             .add_service(engine_service::service::server())
             .add_service(engine_service::recipe::server())
+            .add_service(engine_service::tool::server())
+            .add_service(engine_service::mash::server())
+            .add_service(engine_service::water::server())
+            .add_service(engine_service::yeast::server())
+            .add_service(engine_service::fermentation::server())
             .serve_with_incoming_shutdown(TcpListenerStream::new(listener), async {
                 let _ = rx.await;
             })

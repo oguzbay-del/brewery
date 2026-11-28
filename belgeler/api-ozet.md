@@ -2,7 +2,7 @@
 
 Bu dosya sozlesme/openapi/openapi.json kaynağından belgeler/uret-api-ozet.py ile üretilir. Kaynak sözleşmeyi değiştirin; bu dosyayı elle düzenlemeyin.
 
-Toplam **253** operasyon. Yetki ve adım bilgisi yalnız OpenAPI operasyon alanlarından alınır. Boş hücre, sözleşmede ilgili bilgi bulunmadığını gösterir.
+Toplam **267** operasyon. Yetki ve adım bilgisi yalnız OpenAPI operasyon alanlarından alınır. Boş hücre, sözleşmede ilgili bilgi bulunmadığını gösterir.
 
 ## access
 
@@ -414,6 +414,27 @@ Service status and version
 | GET | `/healthz` | Liveness probe (unversioned). |  |  |  |
 | GET | `/readyz` | Readiness probe (unversioned): the database must answer. |  |  |  |
 | GET | `/v1/version` | Reports the API and engine versions. |  |  |  |
+
+## tools
+
+Calculators and water tools on the engine (no recipe needed)
+
+| Yöntem | Yol | Açıklama | Yetki / ek adım | Idempotency-Key | If-Match |
+|---|---|---|---|---|---|
+| POST | `/v1/workspaces/{workspace_id}/tools/acid-adjust` | Acid amount for a mash and a sparge target pH. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/alcohol` | Alcohol by volume and by weight from OG and FG. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/carbonation` | Priming sugar by agent, keg pressure and the residual CO2. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/dilution` | Dilutes a batch with water or with wort of another gravity. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/gravity-convert` | Converts a gravity reading between SG, degrees Plato and degrees Brix. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/hydrometer-correct` | Corrects a hydrometer reading for the sample temperature. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/infusion-amount` | Amount of infusion water for a step. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/infusion-temp` | Temperature of the infusion water for a step. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/keg-priming` | Sugar for natural carbonation of a keg, with pressures and warnings. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/profile-match` | Best salt additions for a target water profile. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/refractometer-fermenting` | Refractometer reading of fermenting wort (with a known OG) to the current gravity. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/refractometer-unfermented` | Refractometer reading of unfermented wort to original gravity. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/strike-temp` | Strike water temperature for a mash step. |  |  |  |
+| POST | `/v1/workspaces/{workspace_id}/tools/water-calculate` | Water screen: ion profiles, mash figures and the mash pH, for one set of source waters and salts. It needs no recipe. |  |  |  |
 
 ## trash
 

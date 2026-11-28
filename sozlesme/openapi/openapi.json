@@ -84562,6 +84562,4967 @@
         "x-permission": "recipe.edit"
       }
     },
+    "/v1/workspaces/{workspace_id}/tools/acid-adjust": {
+      "post": {
+        "operationId": "tool_acid_adjust",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "acid": "lactic",
+                "concentration_pct": 88.0,
+                "grain_kg": 5.0,
+                "mash_ph": 5.8,
+                "mash_thickness_l_per_kg": 3.0,
+                "sparge_bicarbonate_ppm": 120.0,
+                "sparge_l": 10.0,
+                "sparge_target_ph": 6.0,
+                "sparge_water_ph": 7.4,
+                "target_ph": 5.4
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "converged": null,
+                  "engine_version": "0.1.0",
+                  "mash_amount": 4.0,
+                  "resulting_ph": null,
+                  "source": "engine",
+                  "sparge_acid_ml": 1.0,
+                  "sparge_l": 10.0
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Mash and sparge acid"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Acid amount for a mash and a sparge target pH.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/alcohol": {
+      "post": {
+        "operationId": "tool_alcohol",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "fg_sg": 1.01,
+                "og_sg": 1.05
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "abv_pct": 5.25,
+                  "abw_pct": 4.1,
+                  "engine_version": "0.1.0",
+                  "source": "engine"
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "ABV and ABW in percent"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Alcohol by volume and by weight from OG and FG.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/carbonation": {
+      "post": {
+        "operationId": "tool_carbonation",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "agent": "corn_sugar",
+                "co2_volumes": 2.4,
+                "temp_c": 20.0,
+                "type": "bottle",
+                "volume_l": 20.0
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "corn_sugar_g": 120.0,
+                  "dme_g": 160.0,
+                  "engine_version": "0.1.0",
+                  "keg_pressure_bar": 0.9,
+                  "priming_g": 120.0,
+                  "residual_co2_volumes": 0.85,
+                  "source": "engine",
+                  "sugar_equiv": 100.0,
+                  "table_sugar_g": 110.0
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Priming amounts and the keg pressure"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Priming sugar by agent, keg pressure and the residual CO2.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/dilution": {
+      "post": {
+        "operationId": "tool_dilution",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "added_is_wort": false,
+                "added_volume_l": 5.0,
+                "sg": 1.07,
+                "volume_l": 20.0
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "engine_version": "0.1.0",
+                  "sg": 1.056,
+                  "source": "engine",
+                  "total_volume_l": 25.0
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The total volume and gravity"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dilutes a batch with water or with wort of another gravity.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/gravity-convert": {
+      "post": {
+        "operationId": "tool_gravity_convert",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "from": "sg",
+                "to": "plato",
+                "value": 1.05
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "engine_version": "0.1.0",
+                  "source": "engine",
+                  "value": 12.39
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The converted value"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Converts a gravity reading between SG, degrees Plato and degrees Brix.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/hydrometer-correct": {
+      "post": {
+        "operationId": "tool_hydrometer_correct",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "calibration_temp_c": 20.0,
+                "sample_temp_c": 30.0,
+                "sg": 1.05
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "corrected_sg": 1.0526,
+                  "engine_version": "0.1.0",
+                  "source": "engine"
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The corrected gravity"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Corrects a hydrometer reading for the sample temperature.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/infusion-amount": {
+      "post": {
+        "operationId": "tool_infusion_amount",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "grain_kg": 5.0,
+                "infusion_c": 95.0,
+                "mash_c": 66.0,
+                "mash_water_l": 15.0,
+                "target_c": 72.0,
+                "tun": {
+                  "mass_kg": 4.0,
+                  "specific_heat_cal": 0.12,
+                  "volume_l": 30.0
+                }
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "added_l": 5.0,
+                  "engine_version": "0.1.0",
+                  "source": "engine"
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The water to add"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Amount of infusion water for a step.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/infusion-temp": {
+      "post": {
+        "operationId": "tool_infusion_temp",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "added_l": 5.0,
+                "grain_kg": 5.0,
+                "mash_c": 66.0,
+                "mash_water_l": 15.0,
+                "target_c": 72.0,
+                "tun": {
+                  "mass_kg": 4.0,
+                  "specific_heat_cal": 0.12,
+                  "volume_l": 30.0
+                }
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "above_boiling": false,
+                  "engine_version": "0.1.0",
+                  "infusion_c": 95.0,
+                  "source": "engine"
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The infusion temperature"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Temperature of the infusion water for a step.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/keg-priming": {
+      "post": {
+        "operationId": "tool_keg_priming",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "beer_l": 19.0,
+                "co2_vol": 2.4,
+                "conditioning_c": 20.0,
+                "fermentation_max_c": 20.0,
+                "headspace_l": 1.0,
+                "mode": "full",
+                "purged": true,
+                "serving_c": 4.0,
+                "sugar": "dextrose"
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "bottle_equivalent_g": 90.0,
+                  "co2_topup_bar": null,
+                  "engine_version": "0.1.0",
+                  "headspace_share_pct": 5.5,
+                  "peak_bar": 1.0,
+                  "peak_co2_vol": 2.5,
+                  "peak_total_gauge_bar": 1.0,
+                  "serving_bar": 0.9,
+                  "source": "engine",
+                  "sugar_g": 95.0,
+                  "warnings": []
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Sugar amounts, pressures and warnings"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sugar for natural carbonation of a keg, with pressures and warnings.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/profile-match": {
+      "post": {
+        "operationId": "tool_profile_match",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "combine_salts": false,
+                "excluded": [
+                  "chalk"
+                ],
+                "kind": "all_grain",
+                "target": {
+                  "bicarbonate_ppm": 20.0,
+                  "calcium_ppm": 100.0,
+                  "chloride_ppm": 60.0,
+                  "magnesium_ppm": 10.0,
+                  "sodium_ppm": 10.0,
+                  "sulfate_ppm": 150.0
+                },
+                "volumes": {
+                  "batch_l": 21.0,
+                  "mash_water_l": 15.0,
+                  "sparge_l": 10.0
+                },
+                "waters": [
+                  {
+                    "amount_l": 25.0,
+                    "ions": {
+                      "bicarbonate_ppm": 20.0,
+                      "calcium_ppm": 10.0,
+                      "chloride_ppm": 5.0,
+                      "magnesium_ppm": 2.0,
+                      "sodium_ppm": 5.0,
+                      "sulfate_ppm": 5.0
+                    },
+                    "ph": 7.0
+                  }
+                ]
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "best_fit": null,
+                  "engine_version": "0.1.0",
+                  "mash": [
+                    {
+                      "amount_g": 3.0,
+                      "salt": "gypsum"
+                    }
+                  ],
+                  "residual_ppm": 2.0,
+                  "source": "engine",
+                  "sparge": []
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Salt additions and the resulting profile"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Best salt additions for a target water profile.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/refractometer-fermenting": {
+      "post": {
+        "operationId": "tool_refractometer_fermenting",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "brix": 8.0,
+                "og_sg": 1.06
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "engine_version": "0.1.0",
+                  "fg_sg": 1.012,
+                  "source": "engine"
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The current gravity"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Refractometer reading of fermenting wort (with a known OG) to the current gravity.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/refractometer-unfermented": {
+      "post": {
+        "operationId": "tool_refractometer_unfermented",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "brix": 12.0,
+                "wort_correction_factor": 1.04,
+                "zero_brix": 0.0
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "engine_version": "0.1.0",
+                  "og_sg": 1.0464,
+                  "source": "engine"
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The original gravity"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Refractometer reading of unfermented wort to original gravity.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/strike-temp": {
+      "post": {
+        "operationId": "tool_strike_temp",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "grain_c": 20.0,
+                "grain_kg": 5.0,
+                "step_c": 66.0,
+                "tun": {
+                  "mass_kg": 4.0,
+                  "specific_heat_cal": 0.12,
+                  "volume_l": 30.0
+                },
+                "water_l": 15.0
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "engine_version": "0.1.0",
+                  "source": "engine",
+                  "strike_c": 73.5
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The strike temperature"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Strike water temperature for a mash step.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
+    "/v1/workspaces/{workspace_id}/tools/water-calculate": {
+      "post": {
+        "operationId": "tool_water_calculate",
+        "parameters": [
+          {
+            "description": "Workspace",
+            "in": "path",
+            "name": "workspace_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "kind": "all_grain",
+                "mash_ph": {
+                  "grains": [
+                    {
+                      "amount_kg": 5.0,
+                      "color_srm": 3.0,
+                      "kind": "grain"
+                    }
+                  ],
+                  "mash_thickness_l_per_kg": 3.0,
+                  "target_ph": 5.4
+                },
+                "salts": [
+                  {
+                    "amount_g": 3.0,
+                    "salt": "gypsum",
+                    "usage": "mash"
+                  }
+                ],
+                "volumes": {
+                  "batch_l": 21.0,
+                  "boil_l": 25.0,
+                  "cool_loss_l": 0.0,
+                  "fermenter_top_up_l": 0.0,
+                  "has_boil_ingredients": true,
+                  "kettle_top_up_l": 0.0,
+                  "mash_available_l": 14.0,
+                  "mash_water_l": 15.0,
+                  "post_boil_l": 22.0,
+                  "sparge_l": 10.0,
+                  "trub_loss_l": 1.0
+                },
+                "waters": [
+                  {
+                    "amount_l": 25.0,
+                    "ions": {
+                      "bicarbonate_ppm": 120.0,
+                      "calcium_ppm": 50.0,
+                      "chloride_ppm": 20.0,
+                      "magnesium_ppm": 10.0,
+                      "sodium_ppm": 15.0,
+                      "sulfate_ppm": 60.0
+                    },
+                    "ph": 7.4
+                  }
+                ]
+              },
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "base": null,
+                  "beer": null,
+                  "boil": null,
+                  "boil_scale": 1.0,
+                  "engine_version": "0.1.0",
+                  "mash": null,
+                  "mash_and_sparge": null,
+                  "mash_ph": null,
+                  "mash_stats": null,
+                  "source": "engine",
+                  "sparge": null,
+                  "warnings": [],
+                  "water_ph": 7.4
+                },
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Ion profiles, figures and the mash pH"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "malformed_request": {
+                    "summary": "Malformed request",
+                    "value": {
+                      "code": "malformed_request",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 400,
+                      "title": "Malformed request",
+                      "type": "/errors/malformed_request"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Malformed request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unauthenticated": {
+                    "summary": "Unauthenticated",
+                    "value": {
+                      "code": "unauthenticated",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 401,
+                      "title": "Unauthenticated",
+                      "type": "/errors/unauthenticated"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unauthenticated"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "forbidden": {
+                    "summary": "Forbidden",
+                    "value": {
+                      "code": "forbidden",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 403,
+                      "title": "Forbidden",
+                      "type": "/errors/forbidden"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "not_found": {
+                    "summary": "Not found",
+                    "value": {
+                      "code": "not_found",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 404,
+                      "title": "Not found",
+                      "type": "/errors/not_found"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "payload_too_large": {
+                    "summary": "Payload too large",
+                    "value": {
+                      "code": "payload_too_large",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 413,
+                      "title": "Payload too large",
+                      "type": "/errors/payload_too_large"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Payload too large"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unsupported_media_type": {
+                    "summary": "Unsupported media type",
+                    "value": {
+                      "code": "unsupported_media_type",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 415,
+                      "title": "Unsupported media type",
+                      "type": "/errors/unsupported_media_type"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Unsupported media type"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "calculation_failed": {
+                    "summary": "Calculation failed",
+                    "value": {
+                      "code": "calculation_failed",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Calculation failed",
+                      "type": "/errors/calculation_failed"
+                    }
+                  },
+                  "validation_failed": {
+                    "summary": "Validation failed",
+                    "value": {
+                      "code": "validation_failed",
+                      "errors": [
+                        {
+                          "code": "out_of_range",
+                          "field": "/fermentables/0/amount_kg",
+                          "params": {
+                            "max": 1000,
+                            "min": 0
+                          }
+                        }
+                      ],
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 422,
+                      "title": "Validation failed",
+                      "type": "/errors/validation_failed"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Validation failed; Calculation failed"
+          },
+          "426": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "upgrade_required": {
+                    "summary": "Upgrade required",
+                    "value": {
+                      "code": "upgrade_required",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 426,
+                      "title": "Upgrade required",
+                      "type": "/errors/upgrade_required"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Upgrade required"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "rate_limited": {
+                    "summary": "Rate limited",
+                    "value": {
+                      "code": "rate_limited",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 429,
+                      "title": "Rate limited",
+                      "type": "/errors/rate_limited"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Rate limited",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal": {
+                    "summary": "Internal error",
+                    "value": {
+                      "code": "internal",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 500,
+                      "title": "Internal error",
+                      "type": "/errors/internal"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Internal error"
+          },
+          "503": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "unavailable": {
+                    "summary": "Service unavailable",
+                    "value": {
+                      "code": "unavailable",
+                      "request_id": "0192f1c07a3b7000800000000000000a",
+                      "status": 503,
+                      "title": "Service unavailable",
+                      "type": "/errors/unavailable"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Service unavailable",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds to wait before retrying",
+                "schema": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          },
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Water screen: ion profiles, mash figures and the mash pH, for one set of source waters and\nsalts. It needs no recipe.",
+        "tags": [
+          "tools"
+        ],
+        "x-concurrency": "none",
+        "x-module": "core",
+        "x-permission": "none"
+      }
+    },
     "/v1/workspaces/{workspace_id}/trash": {
       "get": {
         "operationId": "trash_list",
@@ -92358,6 +97319,10 @@
     {
       "description": "Global search over recipes, batches, ingredients and stock",
       "name": "search"
+    },
+    {
+      "description": "Calculators and water tools on the engine (no recipe needed)",
+      "name": "tools"
     },
     {
       "description": "Recently deleted records (30 days) and their restore",
