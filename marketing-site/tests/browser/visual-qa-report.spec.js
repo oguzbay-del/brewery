@@ -6,7 +6,7 @@ import AxeBuilder from "@axe-core/playwright";
 const widths = [320, 390, 768, 1024, 1440];
 const families = [
   "", "breweries/", "homebrewers/", "features/", "features/recipe-design/",
-  "modules/", "modules/core/", "how-it-works/", "technical-principles/", "faq/",
+  "modules/", "modules/#core", "how-it-works/", "technical-principles/", "faq/",
   "pricing/", "compare/", "get-started/",
 ];
 const routes = ["en", "tr"].flatMap((locale) =>
@@ -190,6 +190,8 @@ for (const { route, width, state } of cases) {
       const response = await page.goto(route.path, { waitUntil: "load" });
       if (route.missing) expect(response?.status()).toBe(404);
       else expect(response?.ok()).toBeTruthy();
+      // Module details are anchored cards, not separate pages.
+      if (route.path.endsWith("#core")) await expect(page.locator("article#core")).toBeVisible();
       await page.evaluate(async () => {
         await document.fonts.ready;
         await Promise.allSettled(Array.from(document.images, (img) => {
@@ -265,7 +267,7 @@ for (const { route, width, state } of cases) {
         }
       }
       const name = "mq11a-" + route.locale + "-" +
-        (route.path.split("/").filter(Boolean).join("-") || "home") +
+        (route.path.replace("#", "").split("/").filter(Boolean).join("-") || "home") +
         "-" + width + "-" + state;
       const screenshot = name + ".png";
       await page.screenshot({
