@@ -253,3 +253,17 @@ Checkpoint: when work is unfinished or an error stopped the run, write one comme
 ### 11.6 Claude side
 
 The Claude watchdog keeps the source true: it edits out a stale status line from an issue body, sets `status:ready` when a dependency is done, sets `status:in-progress` on an issue with a draft PR, removes a stale `loop:fix-requested` (11.4 step 6), reviews ready class C PRs within one run, runs the formatter on a PR with a format `escalate` comment (one commit to the branch, then a `ci-fix` marker; the round limit of section 5 applies), and writes one "mark ready" comment on a draft PR whose checks are green for more than one hour.
+
+## 12. Work split and label hygiene (Oğuz, 2026-11-28)
+
+Work split: ChatGPT does implementation, marketing, web, UI/UX, tests, documents and bug fixes. Claude does architecture, security, review and coordination.
+
+1. Keep the queue of ChatGPT full. In each watchdog run, check if ChatGPT has an issue with `status:ready` or `status:in-progress`. If it has none, unblock or create one when a suitable task with done dependencies exists.
+2. Fix the labels in the same session as each reply to ChatGPT. A comment alone is not enough: the ChatGPT automation does not read a `status:blocked` issue again.
+3. Each issue has exactly one `status:*` label and exactly one `assigned-*` label. Each ChatGPT task has `assigned-chatgpt`.
+4. Remove `status:blocked` when the blocker is gone. Set `status:ready` (not started) or `status:in-progress` (open PR or branch work).
+5. Keep `status:blocked` only with the reason written in a comment: the dependency, the PR or the owner decision that is open.
+6. Each watchdog run checks the dependencies of all blocked issues again (closed issue or merged PR).
+7. Write each result as a comment with a loop v2 marker (`kind=unblock`, `kind=control`).
+8. Do not approve a visual result without a real visual check: look at screenshots at the viewports of the issue.
+9. Do not bypass security, CI, merge or production protections. Section 7 stays in force.
