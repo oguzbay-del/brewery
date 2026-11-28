@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import './Callout.css';
 
 export type CalloutTone = 'info' | 'success' | 'warning' | 'error';
 
