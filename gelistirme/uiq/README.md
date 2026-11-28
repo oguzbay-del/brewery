@@ -41,7 +41,7 @@ The single source is `tasarim-sistemi/tokens.json`. Do not edit generated files 
 | `layout` | `sidebar-*`, `inspector-*`, `content-min`, `form-max`, `content-max`, `bp-sidebar`, `bp-inspector` | `bp-*` is the sum of the panel widths. A test checks the sums. |
 | `z` | `z-base`…`z-skip-link` | The only z-index values. |
 | `motion` | `motion-fast`, `motion-base` | 0 ms when reduced motion is on. |
-| chart palette | to be added (UIQ-03b) | Series colors are not status colors. Each series also has a shape or a label. |
+| chart palette | `chart-1` … `chart-6` | Series colors are not status colors. Each series also has a fixed marker (circle, square, triangle, diamond, cross, dashed line) and a label. Contrast against `card` is 4.5:1 or more in the four themes. |
 
 Density: the web has `data-density="regular|compact"` on a table or a list. Compact uses `row-compact`. The iPad uses only regular and relaxed.
 
@@ -181,7 +181,7 @@ The order is in the dependency column. Tasks that change the same files are in a
 | UIQ-01 | Visual audit of the current web and iPad screens | `gelistirme/raporlar/UIQ-01-gorsel-denetim.md` | – | A | Claude | Sonnet (scan), Opus (review) | done (2026-11-27) |
 | UIQ-02 | Apple patterns mapped to the design system | Section 2 of this file | – | A | Claude | Opus | done (2026-11-27) |
 | UIQ-03a | Structural tokens (`size`, `layout`, `z`, `motion`) for CSS and Swift | Generators `--check` pass; token sum tests pass | – | C | Claude | Sonnet | done (2026-11-27) |
-| UIQ-03b | Chart palette in four themes; design system README and Artifact updated | 3:1 against `card` in each theme; `araclar/tutarlilik.py` clean | UIQ-03a | C | Claude | Opus | todo |
+| UIQ-03b | Chart palette in four themes; design system README and Artifact updated | 3:1 against `card` in each theme; `araclar/tutarlilik.py` clean | UIQ-03a | C | Claude | Opus | done (2026-11-28) |
 | UIQ-04 | React UI Kit skeleton: `web/src/kit/`, gallery entry `kit.html`, `Callout`, `StateView`, `SummaryCard`, `StatusBadge`, `AlarmMark` (no React Aria) | vitest and RTL for each part; gallery builds; axe clean | UIQ-03a | B | ChatGPT | – | todo |
 | UIQ-05 | SwiftUI Kit skeleton: `ios/Demleme/Kit/`, button styles, `SummaryCard`, `StatusBadge`, `AlarmMark`, `Callout`; previews | macOS CI green; previews in four themes | UIQ-03a | C | Claude | Sonnet | done (2026-11-27) |
 | UIQ-06 | Web adaptive `AppShell` (Sidebar + Content + Inspector), `check-css.mjs` | Geometry test at 7 viewports; no horizontal scroll | UIQ-04 | B | ChatGPT | – | todo |

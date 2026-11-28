@@ -16,6 +16,12 @@
   --yellow: #a04800;
   --red: #c40013;
   --blue: #0066cc;
+  --chart-1: #a35a00;
+  --chart-2: #00807c;
+  --chart-3: #6a4bd6;
+  --chart-4: #c2307a;
+  --chart-5: #26323f;
+  --chart-6: #7d7466;
   --frame: #1d1d1f;
   --hp-bg: #cfd0d2;
   --hp-tile: #e2e3e5;
@@ -47,6 +53,12 @@
   --yellow: #ffd60a;
   --red: #ff453a;
   --blue: #0a84ff;
+  --chart-1: #f4a261;
+  --chart-2: #2fd0c8;
+  --chart-3: #9d8cff;
+  --chart-4: #ff6fb0;
+  --chart-5: #f2f4f7;
+  --chart-6: #8a8478;
   --frame: #3a3a3c;
   --hp-bg: #2b2c2e;
   --hp-tile: #3a3b3e;
@@ -72,6 +84,12 @@
   --tint: #ffc266;
   --tint-fill: #ffc266;
   --tint-ink: #000000;
+  --chart-1: #f4a261;
+  --chart-2: #2fd0c8;
+  --chart-3: #9d8cff;
+  --chart-4: #ff6fb0;
+  --chart-5: #f2f4f7;
+  --chart-6: #8a8478;
 }
 :root {
   --space-1: 4px;

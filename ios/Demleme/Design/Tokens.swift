@@ -21,6 +21,12 @@ enum DemlemeColor {
     static let yellow = Color("yellow")
     static let red = Color("red")
     static let blue = Color("blue")
+    static let chart1 = Color("chart-1")
+    static let chart2 = Color("chart-2")
+    static let chart3 = Color("chart-3")
+    static let chart4 = Color("chart-4")
+    static let chart5 = Color("chart-5")
+    static let chart6 = Color("chart-6")
     static let frame = Color("frame")
     static let hpBg = Color("hp-bg")
     static let hpTile = Color("hp-tile")
@@ -51,6 +57,12 @@ enum DemlemeColor {
         "yellow",
         "red",
         "blue",
+        "chart-1",
+        "chart-2",
+        "chart-3",
+        "chart-4",
+        "chart-5",
+        "chart-6",
         "frame",
         "hp-bg",
         "hp-tile",

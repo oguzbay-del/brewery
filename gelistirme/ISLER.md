@@ -227,7 +227,7 @@ Rules:
 | UIQ-01 audit | Claude | Sonnet, Opus | – | done (2026-11-27) |
 | UIQ-02 Apple patterns | Claude | Opus | – | done (2026-11-27) |
 | UIQ-03a structural tokens | Claude | Sonnet | – | done (2026-11-27) |
-| UIQ-03b chart palette, design system README and Artifact | Claude | Opus | – | todo |
+| UIQ-03b chart palette, design system README and Artifact | Claude | Opus | – | done (2026-11-28) |
 | UIQ-04 React Kit skeleton and gallery | ChatGPT | – | #444 | todo |
 | UIQ-05 SwiftUI Kit skeleton | Claude | Sonnet | – | done (2026-11-27) |
 | UIQ-06 web adaptive AppShell, `check-css.mjs` | ChatGPT | – | #447 | blocked (UIQ-04, UIQ-08) |

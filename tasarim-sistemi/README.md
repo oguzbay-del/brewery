@@ -17,6 +17,7 @@ GRISTORA; ev biracıları ve küçük bira fabrikaları için iPad, iPhone ve we
 - `tint-fill` kullanılan yerler: ana düğme, demleme sayaç halkası, `BrewReturnBar`, seçili kenar çubuğu, grafik çubukları, takvim şeritleri. Ekranda tek ana düğme olur.
 - Durum renkleri yalnız durum için: `green` tamam, `yellow` uyarı (açık temada turuncu), `red` hata ve acil, `blue` bilgi ve sistem eylemi. Hiçbiri marka rengi değil; durum her zaman bir kelime veya ikonla birlikte.
 - Seçili satır `tint-soft`. Ayırıcı ve ince kenar `sep`.
+- Grafik serileri `chart-1`…`chart-6` (UIQ-03b): amber, camgöbeği, mor, pembe, koyu arduvaz (koyu temada açık), taş grisi. Her seri sabit bir işaret taşır: daire, kare, üçgen, eşkenar dörtgen, artı, kesikli çizgi; renk tek başına anlam taşımaz, seri adı lejantta veya çizginin ucunda yazılır. Dört temada da `card` üzerinde en az 4.5:1 (en düşük 4.58:1); deuteranopi ve protanopi benzetiminde en yakın iki seri arasında ΔE ≥ 9. Seri renkleri durum rengi değildir: hedef aralığı ve alarm `green`, `yellow`, `red` ile ve kelimeyle gösterilir. Tek seri çizilen grafikte `chart-1` kullanılır; ızgara çizgisi `sep`, eksen yazısı `label2`.
 - `frame` yalnız konseptteki cihaz çerçevesi ve kapak içindir.
 
 ## Temalar ve erişilebilirlik
