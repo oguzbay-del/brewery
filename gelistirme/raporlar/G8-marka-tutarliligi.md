@@ -4,11 +4,19 @@
 
 ## 1. Uyumsuzluklar ve öneriler
 
-| Bulgu | Kaynak | Öneri |
-|---|---|---|
-| EN/TR karşılaştırma ve iş akışı sayfalarında planlanan özelliklerin olgunluk açıklaması farklı; karşılaştırma tablosu canlı sunucu hakkı okumuyor. | [EN compare](../../marketing-site/src/pages/compare.astro), [TR compare](../../marketing-site/src/pages/tr/compare.astro), §4.4 | Gerçek doğrulanmış işlev ve plan kapsamını iki dilde aynı şekilde göster. |
-| Ana sayfaların hero/meta açıklaması geliştirme durumunu gösteriyor; ürün derinliği EN/TR olgunluk ifadesi farklı. | [EN ana sayfa](../../marketing-site/src/pages/index.astro), [TR ana sayfa](../../marketing-site/src/pages/tr/index.astro), §4.3 | Her iki dilde yalnız doğrulanmış ürün işlevlerine dayalı metin kullan; planlanan iddiaları çıkar. |
-| iOS görünen adı GRISTORA, ancak uygulama bundle kimliği hâlâ `app.demleme.Demleme`. ADR-0012 §4 hedefi `com.gristora.app`. | [ios/project.yml](../../ios/project.yml), ADR-0012 §4 | İlk TestFlight yüklemesinden önce uygulama ve test hedeflerinin kimliklerini ADR ile eşleştir; imzalama, Apple giriş ve universal link etkilerini Claude ile doğrula. İç proje ve hedef adlarının değişmesi gerekmez. |
+Öncelik: yüksek = doğrulanmamış ürün veya ticari iddia; orta = dil, kayıt veya marka tutarsızlığı. Kaynak satırı henüz belirlenmediyse dosya ve rapor bölümü gösterilir; satır numarası uydurulmaz.
+
+| ID | Bulgu | Kaynak | Öncelik | Düzeltme | Sorumlu |
+|---|---|---|---|---|---|
+| G8-01 | Gerçek OG, IBU, ABV yeniden hesabı doğrulanmadı. Gerçek ABV ölçümden geliyor. | sunucu/crates/api/src/batches.rs:9; marketing-site/src/data/features.ts; §3.2 | Yüksek | Doğrulanmamış yeniden hesap iddiasını EN/TR kaldır (#470). | ChatGPT |
+| G8-02 | Pazarlama aşamaları sunucu STAGES değerleriyle aynı değil. | sunucu/crates/api/src/batches.rs:54; §3.2 | Yüksek | Ayrı paketlemeye hazır/paketlendi/kapandı iddiasını doğrulanmış aşamalarla sınırla (#470). | ChatGPT |
+| G8-03 | Paket adedi cinsinden maya otomatik düşümü desteklenmiyor. | sunucu/crates/api/src/stock.rs:10; §3.2 | Yüksek | Otomatik tüketim iddiasını kg/L kanıtıyla sınırla, adet desteği vaat etme. | ChatGPT |
+| G8-04 | Ev için Cost & reports Simplified gösteriliyor; sunucuda cost_reports Ev için Disabled. | marketing-site/src/data/modules.ts:12; sunucu/crates/api/src/modules.rs; §4.6 | Yüksek | Ev modül erişimini gerçek hakla eşleştir; reçete maliyeti ayrı kanıt gerektirir (#472). | ChatGPT |
+| G8-05 | Plan seçici dönem indirimlerini kesin gösterirken fiyat sayfası öneri olarak tanımlar. | marketing-site/src/pages/{get-started,pricing}.astro ve TR karşılıkları; §4.1–4.2 | Yüksek | İndirimleri ticari onaya bağlı öneri olarak iki dilde eşleştir (#471). | ChatGPT |
+| G8-06 | EN/TR özellik, karşılaştırma ve iş akışı metinlerinde aynı iddianın olgunluğu farklı anlaşılıyor; karşılaştırma canlı hak okumuyor. | marketing-site/src/pages/features/[slug].astro ve TR karşılığı; compare.astro, how-it-works.astro; §3.3, §4.4 | Yüksek | Doğrulanmamış iddiayı kaldır; kaldırılmış olgunluk etiketlerini geri getirme. | ChatGPT |
+| G8-07 | iOS bundle kimliği app.demleme.Demleme, ADR-0012 §4 hedefi com.gristora.app. | ios/project.yml; ADR-0012 §4 | Orta | İlk TestFlight öncesi imza, Apple giriş ve universal link etkilerini incele; sahip kararı olmadan kimliği değiştirme. | Claude / Oğuz |
+| G8-08 | EN/TR ana sayfa ürün derinliği metinlerinde doğrulanmamış kapsam farklı biçimde sunuluyor. | marketing-site/src/pages/index.astro ve tr/index.astro; §4.3 | Orta | Tam cümleleri ve kaynak satırlarını doğrula; yalnız kanıtlanmış ürün kapsamını yaz. Geliştirme durumunu açıklamak tek başına yanlış iddia değildir. | ChatGPT |
+| G8-09 | Pazarlamada dokuz, sunucu erişim kaydında sekiz modül var; Connections açıkça ikinci sürüm olarak işaretli. | marketing-site/src/data/modules.ts:15; sunucu/crates/api/src/modules.rs; §4.6 | Orta | Katalog ile etkin modül sayısını ayır; Connections mevcut bir özellik olarak sunulmuyor, bu tek başına yanlış kullanılabilirlik iddiası değildir. | ChatGPT |
 
 ## 2. Doğrulanmış ortak öğeler
 
@@ -1019,7 +1027,7 @@ Kaynaklar: [pazarlama modül verisi](../../marketing-site/src/data/modules.ts) (
 | Cost & reports | Disabled / ücretli Full, aksi halde ReadOnly | Sunucu kimliği cost_reports; pazarlama Ev için Simplified gösteriyor. Ayrı API modülü eşlemesi yok. | **Uyumsuzluk:** Ev maliyetini etkin Cost & reports modülü gibi sunma. Reçete maliyetinin Core içindeki kanıtını ayrı doğrula. |
 | Tax & compliance | Disabled / ücretli Full, aksi halde ReadOnly | Sunucu kimliği tax_compliance; ayrı API modülü eşlemesi yok. | TTB/HMRC, beyan, saklama ve mevzuat uyumu için doğrudan işlev ve mevzuat kanıtı gerekir. |
 | Team | Disabled / ücretli Full, aksi halde ReadOnly | access ve shared-devices API kayıtları; davet kabulü Core istisnasıdır. | Yetki, ortak cihaz ve onay akışlarının kapsamını ayrı belirt. |
-| Connections | Ürün modülü kaydında yok | Pazarlamada ikinci sürüm; MCP ve açık API. | **Uyumsuzluk:** dokuzuncu etkin modül veya kullanılabilir MCP/açık API olarak tanıtma. |
+| Connections | Ürün modülü kaydında yok | Pazarlamada ikinci sürüm; MCP ve açık API. | Katalog ile erişim kaydı farklıdır; kaynak ikinci sürüm olarak açıkça niteler. Etkin modül veya kullanılabilir MCP/açık API olarak tanıtma. |
 
 Erişim durumu çalışma alanı modu, ücretli hak ve plan ile belirlenir. Plan Business modülünü kapsamıyorsa ücretli hak tek başına yazmayı açmaz. Export işlemleri ayrı istisna taşır. Bu tablo sunucu kodu denetimidir; gerçek kullanıcı abonelik durumu, çalışan ödeme akışı veya dağıtım kanıtı değildir.
 
