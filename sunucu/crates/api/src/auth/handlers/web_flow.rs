@@ -34,6 +34,8 @@ const KEY_PREFIX: &str = "webauth:state:";
 const MAX_PARAM_LEN: usize = 4096;
 const MAX_RETURN_TO_LEN: usize = 512;
 const MAX_TOKEN_RESPONSE: usize = 65_536;
+/// Longest display name taken from the Apple `user` form field.
+const MAX_DISPLAY_NAME: usize = 100;
 
 /// What the server keeps for one flow.
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -304,9 +306,12 @@ fn apple_user_name(raw: Option<&str>) -> String {
             .trim()
             .to_owned()
     };
+    // The field comes from the browser form, so keep the name short.
     format!("{} {}", part("firstName"), part("lastName"))
         .trim()
-        .to_owned()
+        .chars()
+        .take(MAX_DISPLAY_NAME)
+        .collect()
 }
 
 /// The Google token endpoint answer (the part the flow needs).
@@ -631,5 +636,7 @@ mod tests {
         assert_eq!(apple_user_name(Some(raw)), "Sam Brewer");
         assert_eq!(apple_user_name(Some("not json")), "");
         assert_eq!(apple_user_name(None), "");
+        let long = format!(r#"{{"name":{{"firstName":"{}"}}}}"#, "a".repeat(300));
+        assert_eq!(apple_user_name(Some(&long)).chars().count(), MAX_DISPLAY_NAME);
     }
 }
