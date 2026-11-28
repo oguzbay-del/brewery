@@ -48,13 +48,13 @@ struct ModuleReadOnlyBanner: View {
     let moduleID: String
 
     var body: some View {
-        Text(UiText.text("modules.read_only_banner", ["module": UiText.moduleName(moduleID)]))
-            .font(.footnote)
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(DemlemeColor.tintSoft)
-            .foregroundStyle(DemlemeColor.tintInk)
-            .accessibilityIdentifier("module.read_only_banner")
+        Callout(
+            tone: .info,
+            title: UiText.text("modules.read_only_banner", ["module": UiText.moduleName(moduleID)])
+        )
+        .padding(DemlemeMetric.space3)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("module.read_only_banner")
     }
 }
 
@@ -68,13 +68,15 @@ struct ModuleWriteButton: View {
 
     var body: some View {
         let blocked = store.access(for: moduleID).blocksWrites
-        VStack(spacing: 4) {
+        let reason = UiText.text("modules.read_only_reason", ["module": UiText.moduleName(moduleID)])
+        VStack(spacing: DemlemeMetric.space1) {
             Button(title, action: action)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.gristoraPrimary)
                 .disabled(blocked)
+                .accessibilityHint(blocked ? reason : "")
                 .accessibilityIdentifier("module.write_button")
             if blocked {
-                Text(UiText.text("modules.read_only_reason", ["module": UiText.moduleName(moduleID)]))
+                Text(reason)
                     .font(.caption)
                     .foregroundStyle(DemlemeColor.label2)
             }
@@ -82,20 +84,19 @@ struct ModuleWriteButton: View {
     }
 }
 
-/// Alert for a 403 `module_disabled` or `module_read_only` answer to a write.
+/// Callout for a 403 `module_disabled` or `module_read_only` answer to a write.
 struct ModuleNoticeView: View {
     let store: ModulesStore
 
     var body: some View {
         if let notice = store.notice {
-            HStack {
-                Text(UiText.text(notice == .disabled ? "modules.api_disabled" : "modules.api_read_only"))
-                    .font(.footnote)
-                Spacer()
-                Button(UiText.text("modules.dismiss")) { store.dismissNotice() }
-            }
-            .padding(12)
-            .background(DemlemeColor.fill)
+            Callout(
+                tone: notice == .disabled ? .error : .warning,
+                title: UiText.text(notice == .disabled ? "modules.api_disabled" : "modules.api_read_only"),
+                action: CalloutAction(title: UiText.text("modules.dismiss")) { store.dismissNotice() }
+            )
+            .padding(DemlemeMetric.space3)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("module.notice")
         }
     }
@@ -104,9 +105,10 @@ struct ModuleNoticeView: View {
 /// Settings screen: the modules of the workspace and their state.
 struct ModulesListView: View {
     let store: ModulesStore
+    @Binding var selection: String?
 
     var body: some View {
-        List {
+        List(selection: $selection) {
             switch store.phase {
             case .idle, .loading:
                 ProgressView(UiText.text("modules.loading"))
@@ -115,7 +117,7 @@ struct ModulesListView: View {
                     HStack {
                         Text(UiText.moduleName(module.id))
                         Spacer()
-                        Text(stateText(module)).foregroundStyle(DemlemeColor.label2)
+                        Text(Self.stateText(module)).foregroundStyle(DemlemeColor.label2)
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("module.row.\(module.id)")
@@ -139,7 +141,7 @@ struct ModulesListView: View {
         .navigationTitle(UiText.text("modules.title"))
     }
 
-    private func stateText(_ module: ModuleSnapshot) -> String {
+    static func stateText(_ module: ModuleSnapshot) -> String {
         UiText.text(module.readOnly ? "modules.read_only" : (module.enabled ? "modules.on" : "modules.off"))
     }
 }
