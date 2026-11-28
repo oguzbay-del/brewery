@@ -1005,3 +1005,22 @@ Kaynaklar: [EN teknik ilkeler](../../marketing-site/src/pages/technical-principl
 
 Teknik ilkelerin altı maddesi iki dilde eşleşiyor; bunlar uygulama sertifikası değil, tasarım ve yayın standardıdır. EN SSS sekiz, TR dokuz soru içerir; ek TR sorusu ürün tanımıdır. SSS yanıtları FAQPage yapılandırılmış verisine de taşınır. Dolayısıyla metin güncellemesi yapılırsa meta açıklamalar ve yapılandırılmış veri de aynı doğrulanmış kapsamı yansıtmalıdır. Uygulama ve pazarlama koduna bu rapor kapsamında müdahale edilmedi.
 
+### 4.6 Dokuz pazarlama modülü ve gerçek erişim modeli (28 Kasım 2026)
+
+Kaynaklar: [pazarlama modül verisi](../../marketing-site/src/data/modules.ts) (blob `05c1e0b`), [TR modül adları](../../marketing-site/src/data/modules.tr.ts) (`46e7b18`), [API modül kaydı](../../sunucu/crates/api/src/modules.rs) (`ce549fe`). `PRODUCT_MODULES`, `MODULE_KEY_MAP` ve `module_access_for_plan` doğrudan incelendi. Kaynakta sekiz ürün modülü var; pazarlama dokuz modül gösteriyor. Bir modülün erişim kaydında bulunması, bütün tanıtım maddelerinin tamamlandığını göstermez.
+
+| Pazarlama modülü | Sunucu erişim tanımı (Ev / İşletme) | Kanıt ve sınır | Düzeltme önerisi |
+|---|---|---|---|
+| Core | Full / Full, ücretsiz | recipes, recipe_org, batches, brew_day, tools, notifications, import-export Core'a eşlenir. §3.1–3.3. | Tamamlanmış alt işlevleri ayrı doğrula; bütün içe aktarma formatlarını kapsama alma. |
+| Devices | Full / Full, ücretsiz | devices API kaydı mevcut. §3.6. | Marka uyumluluğunu ve sensör kapsamını doğrulama olmadan ilan etme. |
+| Stock | Full / Full, ücretsiz | stock API kaydı; kod yorumunda işlem düzeyinde Ev/İşletme ayrımı henüz uygulanmadığı açık. | Pazarlamadaki basitleştirilmiş Ev / tam İşletme ayrımını aktif yetki kontrolü sanma. |
+| Production | Disabled / ücretli Full, aksi halde ReadOnly | containers ve vessels yolları Production'a eşlenir; batches ve brew_day Core'dadır. | Parti kaydıyla ücretli tank ve kap işlevlerini ayır; tam transfer/çizelgeleme işlevi ayrı kanıt ister. |
+| Quality | Disabled / ücretli Full, aksi halde ReadOnly | Erişim tanımı var; MODULE_KEY_MAP'te Quality'ye eşlenen ayrı API modülü yok. | Laboratuvar, CIP, serbest bırakma ve geri çağırma kapsamının her birini ayrı kaynakla doğrula. |
+| Cost & reports | Disabled / ücretli Full, aksi halde ReadOnly | Sunucu kimliği cost_reports; pazarlama Ev için Simplified gösteriyor. Ayrı API modülü eşlemesi yok. | **Uyumsuzluk:** Ev maliyetini etkin Cost & reports modülü gibi sunma. Reçete maliyetinin Core içindeki kanıtını ayrı doğrula. |
+| Tax & compliance | Disabled / ücretli Full, aksi halde ReadOnly | Sunucu kimliği tax_compliance; ayrı API modülü eşlemesi yok. | TTB/HMRC, beyan, saklama ve mevzuat uyumu için doğrudan işlev ve mevzuat kanıtı gerekir. |
+| Team | Disabled / ücretli Full, aksi halde ReadOnly | access ve shared-devices API kayıtları; davet kabulü Core istisnasıdır. | Yetki, ortak cihaz ve onay akışlarının kapsamını ayrı belirt. |
+| Connections | Ürün modülü kaydında yok | Pazarlamada ikinci sürüm; MCP ve açık API. | **Uyumsuzluk:** dokuzuncu etkin modül veya kullanılabilir MCP/açık API olarak tanıtma. |
+
+Erişim durumu çalışma alanı modu, ücretli hak ve plan ile belirlenir. Plan Business modülünü kapsamıyorsa ücretli hak tek başına yazmayı açmaz. Export işlemleri ayrı istisna taşır. Bu tablo sunucu kodu denetimidir; gerçek kullanıcı abonelik durumu, çalışan ödeme akışı veya dağıtım kanıtı değildir.
+
+**Yayın sınırı:** [41 — claims guardrails](../../web-stratejisi/41-gristora-public-marketing-claims-guardrails.md) başındaki 16 Kasım sahip kararı eski olgunluk uyarısı kuralından üstündür. Uyarı kaldırmak için doğrulanmamış maddeyi şimdiki zamana çevirmek yerine yayın kapsamından çıkar. Modül sayısı ve Ev maliyet kapsamı için ürün kanıtına göre metin düzeltmesi önerilir; bu rapor uygulama veya pazarlama kodunu değiştirmez.
