@@ -17,7 +17,6 @@ variable "host_ipv4_addresses" {
     app  = list(string)
     api  = list(string)
     auth = list(string)
-    www  = list(string)
   })
 
   validation {
@@ -43,6 +42,10 @@ resource "google_dns_managed_zone" "gristora" {
   dns_name    = "gristora.com."
   description = "Public DNS zone for GRISTORA."
   visibility  = "public"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   depends_on = [google_project_service.dns]
 }
