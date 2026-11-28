@@ -9,13 +9,13 @@ struct BatchScanView: View {
 
     var body: some View {
         @Bindable var store = store
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DemlemeMetric.space3) {
             Text(UiText.text("scan.batch_title")).font(.title2.bold())
             if DataScannerView.isAvailable {
                 if cameraOn {
                     DataScannerView { code in store.add(code) }
                         .frame(height: 240)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: DemlemeMetric.radiusMd))
                 }
                 Button(UiText.text(cameraOn ? "scan.camera_close" : "scan.camera")) { cameraOn.toggle() }
             }
@@ -71,7 +71,7 @@ struct BatchScanView: View {
             Button(UiText.text("scan.batch_submit")) {
                 Task { await store.submit(onModuleError: modules.noteWriteError) }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.gristoraPrimary)
             .disabled(store.codes.isEmpty || store.running || blocked)
             .accessibilityIdentifier("batch.submit")
             Button(UiText.text("scan.batch_clear")) { store.clear() }

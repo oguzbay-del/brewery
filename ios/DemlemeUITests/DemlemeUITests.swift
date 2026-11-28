@@ -45,7 +45,7 @@ final class DemlemeUITests: XCTestCase {
         let tab = app.tabBars.buttons["Kegs"]
         XCTAssertTrue(tab.waitForExistence(timeout: 5))
         tab.tap()
-        XCTAssertTrue(app.staticTexts["module.read_only_banner"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["module.read_only_banner"].waitForExistence(timeout: 5))
         let write = app.buttons["module.write_button"]
         XCTAssertTrue(write.exists)
         XCTAssertFalse(write.isEnabled)

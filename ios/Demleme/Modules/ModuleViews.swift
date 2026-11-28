@@ -48,13 +48,13 @@ struct ModuleReadOnlyBanner: View {
     let moduleID: String
 
     var body: some View {
-        Text(UiText.text("modules.read_only_banner", ["module": UiText.moduleName(moduleID)]))
-            .font(.footnote)
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(DemlemeColor.tintSoft)
-            .foregroundStyle(DemlemeColor.tintInk)
-            .accessibilityIdentifier("module.read_only_banner")
+        Callout(
+            tone: .info,
+            title: UiText.text("modules.read_only_banner", ["module": UiText.moduleName(moduleID)])
+        )
+        .padding(DemlemeMetric.space3)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("module.read_only_banner")
     }
 }
 
@@ -68,13 +68,15 @@ struct ModuleWriteButton: View {
 
     var body: some View {
         let blocked = store.access(for: moduleID).blocksWrites
-        VStack(spacing: 4) {
+        let reason = UiText.text("modules.read_only_reason", ["module": UiText.moduleName(moduleID)])
+        VStack(spacing: DemlemeMetric.space1) {
             Button(title, action: action)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.gristoraPrimary)
                 .disabled(blocked)
+                .accessibilityHint(blocked ? reason : "")
                 .accessibilityIdentifier("module.write_button")
             if blocked {
-                Text(UiText.text("modules.read_only_reason", ["module": UiText.moduleName(moduleID)]))
+                Text(reason)
                     .font(.caption)
                     .foregroundStyle(DemlemeColor.label2)
             }
@@ -82,20 +84,19 @@ struct ModuleWriteButton: View {
     }
 }
 
-/// Alert for a 403 `module_disabled` or `module_read_only` answer to a write.
+/// Callout for a 403 `module_disabled` or `module_read_only` answer to a write.
 struct ModuleNoticeView: View {
     let store: ModulesStore
 
     var body: some View {
         if let notice = store.notice {
-            HStack {
-                Text(UiText.text(notice == .disabled ? "modules.api_disabled" : "modules.api_read_only"))
-                    .font(.footnote)
-                Spacer()
-                Button(UiText.text("modules.dismiss")) { store.dismissNotice() }
-            }
-            .padding(12)
-            .background(DemlemeColor.fill)
+            Callout(
+                tone: notice == .disabled ? .error : .warning,
+                title: UiText.text(notice == .disabled ? "modules.api_disabled" : "modules.api_read_only"),
+                action: CalloutAction(title: UiText.text("modules.dismiss")) { store.dismissNotice() }
+            )
+            .padding(DemlemeMetric.space3)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("module.notice")
         }
     }
