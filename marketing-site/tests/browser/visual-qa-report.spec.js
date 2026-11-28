@@ -6,7 +6,7 @@ import AxeBuilder from "@axe-core/playwright";
 const widths = [320, 390, 768, 1024, 1440];
 const families = [
   "", "breweries/", "homebrewers/", "features/", "features/recipe-design/",
-  "modules/", "how-it-works/", "technical-principles/", "faq/",
+  "modules/", "modules/core/", "how-it-works/", "technical-principles/", "faq/",
   "pricing/", "compare/", "get-started/",
 ];
 const routes = ["en", "tr"].flatMap((locale) =>
@@ -172,6 +172,12 @@ for (const route of routes.filter((r) => r.path === "/" || r.path === "/tr/" || 
   }
 }
 
+for (const route of routes.filter((r) => r.path === "/" || r.path === "/tr/")) {
+  for (const width of [320, 390]) {
+    cases.push({ route, width, state: "mobile-menu-open" });
+  }
+}
+
 for (const { route, width, state } of cases) {
     test(`MQ-11a visual report ${route.locale} ${route.path} ${width}px ${state}`, async ({ page, browser }, testInfo) => {
       test.setTimeout(60_000);
@@ -191,7 +197,23 @@ for (const { route, width, state } of cases) {
           return img.decode();
         }));
       });
+      if (state === "mobile-menu-open") {
+        const menu = page.locator("details.mobile-menu");
+        await menu.locator("summary").click();
+        await expect(menu).toHaveAttribute("open", "");
+        await expect(menu.locator("nav")).toBeVisible();
+      }
       const findings = await inspectGeometry(page);
+      if (state === "mobile-menu-open") {
+        const menuBounds = await page.locator("details.mobile-menu nav").boundingBox();
+        if (!menuBounds || menuBounds.x < -1 || menuBounds.x + menuBounds.width > width + 1) {
+          findings.push({
+            rule: "mobile-menu-bounds", selector: "details.mobile-menu nav",
+            expected: "Expanded menu stays within horizontal viewport bounds",
+            actual: menuBounds, severity: "P1",
+          });
+        }
+      }
       if (state === "keyboard-focus") {
         await page.keyboard.press("Tab");
         const focus = await page.evaluate(() => {
