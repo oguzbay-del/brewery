@@ -39,3 +39,7 @@ Do not set a new crop position from the alt description alone. Inspect the actua
 - Verify full-page and section previews at the five standard widths; note any source mismatch or missing image and confirm hero overlay contrast and fetch priority. Use same-environment Lighthouse comparison.
 - Record exact head, CI run, screenshot artifact and actual human review result. No claims of visual acceptance until images have been inspected.
 - No source photos, public copy, CSS or optimizer changes in this initial commit. No new dependencies or production changes.
+
+## Verified optimizer contract
+
+Source: `scripts/optimize-photos.py` blob `9ce9cc376f87715158a12334faadb7ee0f96fb43`. The candidate width arrays match PagePhoto for all three families. Feature photos are cropped to 3:2 before encoding; the named FOCUS_Y overrides are all 0.50 and the default is 0.50. Hero images preserve source aspect in the optimizer. Global CSS uses a 1408:768 hero frame, a 3:2 feature frame, and 4:3 at <=640px. The CSS therefore performs a second crop on some mobile images. Verify actual subject retention before changing focal position. AVIF quality 65 and WebP quality 84 are existing settings; curated sources also receive progressive JPEG quality 90. The optimizer reads the existing raw JPG/PNG files and the owner-supplied ZIP; it skips superseded curated keys and writes only derived files. Actual rendered sizes, visual crops and Lighthouse comparisons still require evidence.
